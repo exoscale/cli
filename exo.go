@@ -86,6 +86,10 @@ func main() {
 
 	vm, err := client.AsyncToVirtualMachine(*resp)
 
+	if err != nil {
+		fmt.Printf("got error: %+v\n", err)
+	}
+
 	fmt.Printf("new machine up and running at: %s\n", vm.Nic[0].Ipaddress)
 
 
