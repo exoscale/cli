@@ -3,7 +3,6 @@ package egoscale
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"net/url"
 	"strings"
 )
@@ -21,13 +20,6 @@ func (exo *Client) CreateVirtualMachine(p MachineProfile) (string, error) {
 	}
 	if len(p.Keypair) > 0 {
 		params.Set("keypair", p.Keypair)
-	}
-
-	i := 0
-	for k, v := range p.Tags {
-		params.Set(fmt.Sprintf("tag[%d].key", i), k)
-		params.Set(fmt.Sprintf("tag[%d].value", i), v)
-		i = i + 1
 	}
 
 	params.Set("securitygroupids", strings.Join(p.SecurityGroups, ","))
