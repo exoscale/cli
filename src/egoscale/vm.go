@@ -39,28 +39,62 @@ func (exo *Client) CreateVirtualMachine(p MachineProfile) (string, error) {
 	return r.JobID, nil
 }
 
-func (exo *Client) StartVirtualMachine(id string) error {
+func (exo *Client) StartVirtualMachine(id string) (string, error) {
 	params := url.Values{}
 	params.Set("id", id)
 
-	_, err := exo.Request("startVirtualMachine", params)
+	resp, err := exo.Request("startVirtualMachine", params)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	var r StartVirtualMachineResponse
+
+	if err := json.Unmarshal(resp, &r); err != nil {
+		return "", err
+	}
+
+	return r.JobID, nil
 }
 
-func (exo *Client) StopVirtualMachine(id string) error {
+func (exo *Client) StopVirtualMachine(id string) (string, error) {
 	params := url.Values{}
 	params.Set("id", id)
 
-	_, err := exo.Request("stopVirtualMachine", params)
+	resp, err := exo.Request("stopVirtualMachine", params)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	var r StopVirtualMachineResponse
+
+	if err := json.Unmarshal(resp, &r); err != nil {
+		return "", err
+	}
+
+	return r.JobID, nil
+}
+
+func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {
+
+	params := url.Values{}
+	params.Set("id", id)
+
+	resp, err := exo.Request("listVirtualMachines", params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var r ListVirtualMachinesResponse
+
+	if err := json.Unmarshal(resp, &r); err != nil {
+		return nil, err
+	}
+
+	machine := r.VirtualMachines[0]
+	return machine, nil
+
 }
