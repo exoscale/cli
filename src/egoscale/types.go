@@ -2,6 +2,7 @@ package egoscale
 
 import (
 	"net/http"
+	"encoding/json"
 )
 
 type Client struct {
@@ -37,7 +38,6 @@ type SecurityGroupRule struct {
 
 type MachineProfile struct {
 	Name string
-	Tags map[string]string
 	SecurityGroups []string
 	Keypair string
 	Userdata string
@@ -337,6 +337,10 @@ type AuthorizeSecurityGroupEgressResponse struct {
 
 }
 
+type DeployVirtualMachineWrappedResponse struct {
+	Wrapped DeployVirtualMachineResponse `json:"virtualmachine"`
+}
+
 type DeployVirtualMachineResponse struct {
 	JobID string `json:"jobid,omitempty"`
 	Account string `json:"account,omitempty"`
@@ -480,5 +484,21 @@ type DeployVirtualMachineResponse struct {
 	Templatename string `json:"templatename,omitempty"`
 	Zoneid string `json:"zoneid,omitempty"`
 	Zonename string `json:"zonename,omitempty"`
+
+}
+
+
+type QueryAsyncJobResultResponse struct {
+	Accountid string `json:"accountid,omitempty"`
+	Cmd string `json:"cmd,omitempty"`
+	Created string `json:"created,omitempty"`
+	Jobinstanceid string `json:"jobinstanceid,omitempty"`
+	Jobinstancetype string `json:"jobinstancetype,omitempty"`
+	Jobprocstatus int `json:"jobprocstatus,omitempty"`
+	Jobresult json.RawMessage `json:"jobresult,omitempty"`
+	Jobresultcode int `json:"jobresultcode,omitempty"`
+	Jobresulttype string `json:"jobresulttype,omitempty"`
+	Jobstatus int `json:"jobstatus,omitempty"`
+	Userid string `json:"userid,omitempty"`
 
 }
