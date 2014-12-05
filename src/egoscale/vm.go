@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/url"
 	"strings"
+	"fmt"
 )
 
 func (exo *Client) CreateVirtualMachine(p MachineProfile) (string, error) {
@@ -77,6 +78,44 @@ func (exo *Client) StopVirtualMachine(id string) (string, error) {
 	return r.JobID, nil
 }
 
+func (exo *Client) RebootVirtualMachine(id string) (string, error) {
+	params := url.Values{}
+	params.Set("id", id)
+
+	resp, err := exo.Request("rebootVirtualMachine", params)
+
+	if err != nil {
+		return "", err
+	}
+
+	var r RebootVirtualMachineResponse
+
+	if err := json.Unmarshal(resp, &r); err != nil {
+		return "", err
+	}
+
+	return r.JobID, nil
+}
+
+func (exo *Client) DestroyVirtualMachine(id string) (string, error) {
+	params := url.Values{}
+	params.Set("id", id)
+
+	resp, err := exo.Request("destroyVirtualMachine", params)
+
+	if err != nil {
+		return "", err
+	}
+
+	var r DestroyVirtualMachineResponse
+
+	if err := json.Unmarshal(resp, &r); err != nil {
+		return "", err
+	}
+
+	return r.JobID, nil
+}
+
 func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {
 
 	params := url.Values{}
@@ -94,7 +133,10 @@ func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {
 		return nil, err
 	}
 
-	machine := r.VirtualMachines[0]
-	return machine, nil
-
+	if len(r.VirtualMachines) == 1 {
+		machine := r.VirtualMachines[0]
+		return machine, nil
+	} else {
+		return nil, fmt.Errorf("cannot retrieve virtualmachine with id %s", id)
+	}
 }
