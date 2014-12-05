@@ -13,7 +13,7 @@ func (exo *Client) CreateEgressRule(rule SecurityGroupRule) (*AuthorizeSecurityG
 	params.Set("cidrlist", rule.Cidr)
 	params.Set("protocol", rule.Protocol)
 
-	if (rule.Protocol == "icmp") {
+	if (rule.Protocol == "ICMP") {
 		params.Set("icmpcode", fmt.Sprintf("%d", rule.IcmpCode))
 		params.Set("icmptype", fmt.Sprintf("%d", rule.IcmpType))
 	} else {
