@@ -19,4 +19,6 @@ func main() {
 		return
 	}
 	fmt.Printf("got response: %+v\n", topo)
+
+
 }
