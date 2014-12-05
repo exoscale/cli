@@ -4,6 +4,7 @@ import (
 	"egoscale"
 	"os"
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -51,8 +52,6 @@ func main() {
 		sgid = resp.Id
 	}
 
-	tags := make(map[string]string)
-	tags["docker-machine"] = "true"
 	profile := egoscale.MachineProfile{
 		Template: topo.Images["ubuntu-14.04"][10],
 		ServiceOffering: topo.Profiles["large"],
@@ -61,15 +60,33 @@ func main() {
 		Userdata: "#cloud-config\nmanage_etc_hosts: true\nfqdn: deployed-by-egoscale\n",
 		Zone: topo.Zones["ch-gva-2"],
 		Name: "deployed-by-egoscale",
-		Tags: tags,
 	}
 
-	resp, err := client.CreateVirtualMachine(profile)
+	jobid, err := client.CreateVirtualMachine(profile)
 
 	if err != nil {
 		fmt.Printf("got error: %+v\n", err)
 		return
 	}
 
-	fmt.Printf("got reply: %s\n", resp)
+	var resp *egoscale.QueryAsyncJobResultResponse
+
+	for i := 0; i <= 10; i++ {
+		resp, err = client.PollAsyncJob(jobid)
+		if err != nil {
+			fmt.Printf("got error: %+v\n", err)
+			return
+		}
+
+		if (resp.Jobstatus == 1) {
+			break
+		}
+		time.Sleep(5 * time.Second)
+	}
+
+	vm, err := client.AsyncToVirtualMachine(*resp)
+
+	fmt.Printf("new machine up and running at: %s\n", vm.Nic[0].Ipaddress)
+
+
 }
