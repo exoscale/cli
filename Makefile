@@ -6,10 +6,12 @@ GO=env GOPATH=$(GOPATH) go
 RM?=rm -f
 LN=ln -s
 MAIN=exo.go
-SRCS=		src/egoscale/types.go				\
-				src/egoscale/error.go				\
-				src/egoscale/topology.go     \
-				src/egoscale/request.go     \
+SRCS=		src/egoscale/types.go		 \
+				src/egoscale/error.go		 \
+				src/egoscale/topology.go \
+				src/egoscale/groups.go   \
+				src/egoscale/vm.go       \
+				src/egoscale/request.go  \
 				src/egoscale/init.go
 
 all: $(PROGRAM)
