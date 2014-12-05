@@ -36,7 +36,6 @@ func (exo *Client) CreateEgressRule(rule SecurityGroupRule) (*AuthorizeSecurityG
 
 func (exo *Client) CreateIngressRule(rule SecurityGroupRule) (*AuthorizeSecurityGroupIngressResponse, error) {
 
-	fmt.Printf("got securitygroupid: %s\n", rule.SecurityGroupId)
 	params := url.Values{}
 	params.Set("securitygroupid", rule.SecurityGroupId)
 	params.Set("cidrlist", rule.Cidr)
@@ -80,7 +79,6 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityG
 		return nil, err
 	}
 
-	fmt.Printf("got group response: %+v\n", r.Wrapped)
 	sgid := r.Wrapped.Id
 
 	for _, erule := range(egress) {
