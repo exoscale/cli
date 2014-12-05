@@ -36,6 +36,7 @@ func (exo *Client) CreateEgressRule(rule SecurityGroupRule) (*AuthorizeSecurityG
 
 func (exo *Client) CreateIngressRule(rule SecurityGroupRule) (*AuthorizeSecurityGroupIngressResponse, error) {
 
+	fmt.Printf("got securitygroupid: %s\n", rule.SecurityGroupId)
 	params := url.Values{}
 	params.Set("securitygroupid", rule.SecurityGroupId)
 	params.Set("cidrlist", rule.Cidr)
@@ -63,14 +64,14 @@ func (exo *Client) CreateIngressRule(rule SecurityGroupRule) (*AuthorizeSecurity
 	return &r, nil
 }
 
-func (exo *Client) CreateSecurityGroupWithRules(name string, egress []SecurityGroupRule, ingress []SecurityGroupRule) (*CreateSecurityGroupResponse, error) {
+func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityGroupRule, egress []SecurityGroupRule) (*CreateSecurityGroupResponse, error) {
 
 	params := url.Values{}
 	params.Set("name", name)
 
 	resp, err := exo.Request("createSecurityGroup", params)
 
-	var r CreateSecurityGroupResponse
+	var r CreateSecurityGroupResponseWrapper
 	if err := json.Unmarshal(resp, &r); err != nil {
 		return nil, err
 	}
@@ -79,7 +80,11 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, egress []SecurityGr
 		return nil, err
 	}
 
+	fmt.Printf("got group response: %+v\n", r.Wrapped)
+	sgid := r.Wrapped.Id
+
 	for _, erule := range(egress) {
+		erule.SecurityGroupId = sgid
 		_, err = exo.CreateEgressRule(erule)
 		if (err != nil) {
 			return nil, err
@@ -87,11 +92,13 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, egress []SecurityGr
 	}
 
 	for _, inrule := range(ingress) {
+		inrule.SecurityGroupId = sgid
+		fmt.Printf("group ID: %s\n", inrule.SecurityGroupId)
 		_, err = exo.CreateIngressRule(inrule)
 		if (err != nil) {
 			return nil, err
 		}
 	}
 
-	return &r, nil
+	return &r.Wrapped, nil
 }
