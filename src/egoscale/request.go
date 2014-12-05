@@ -6,11 +6,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	//	"net/http"
 	"io/ioutil"
 	"net/url"
 	"strings"
-//	"time"
 )
 
 func rawValue(b json.RawMessage) (json.RawMessage, error) {
