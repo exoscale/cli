@@ -38,3 +38,29 @@ func (exo *Client) CreateVirtualMachine(p MachineProfile) (string, error) {
 
 	return r.JobID, nil
 }
+
+func (exo *Client) StartVirtualMachine(id string) error {
+	params := url.Values{}
+	params.Set("id", id)
+
+	_, err := exo.Request("startVirtualMachine", params)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (exo *Client) StopVirtualMachine(id string) error {
+	params := url.Values{}
+	params.Set("id", id)
+
+	_, err := exo.Request("stopVirtualMachine", params)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
