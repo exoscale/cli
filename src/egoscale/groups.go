@@ -95,7 +95,6 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityG
 
 	for _, inrule := range(ingress) {
 		inrule.SecurityGroupId = sgid
-		fmt.Printf("group ID: %s\n", inrule.SecurityGroupId)
 		_, err = exo.CreateIngressRule(inrule)
 		if (err != nil) {
 			return nil, err
