@@ -1239,3 +1239,11 @@ type RebootVirtualMachineResponse struct {
 	Zoneid string `json:"zoneid,omitempty"`
 	Zonename string `json:"zonename,omitempty"`
 }
+
+type CreateSSHKeyPairWrappedResponse struct {
+	Wrapped CreateSSHKeyPairResponse `json:"keypair,omitempty"`
+}
+
+type CreateSSHKeyPairResponse struct {
+	Privatekey string `json:"privatekey,omitempty"`
+}
