@@ -140,3 +140,24 @@ func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {
 		return nil, fmt.Errorf("cannot retrieve virtualmachine with id %s", id)
 	}
 }
+
+
+func (exo *Client) ListVirtualMachines(id string) ([]*VirtualMachine, error) {
+
+	params := url.Values{}
+	params.Set("id", id)
+
+	resp, err := exo.Request("listVirtualMachines", params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var r ListVirtualMachinesResponse
+
+	if err := json.Unmarshal(resp, &r); err != nil {
+		return nil, err
+	}
+
+	return r.VirtualMachines, nil
+}
