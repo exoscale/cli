@@ -12,11 +12,15 @@ type Client struct {
 	apiSecret string
 }
 
-
 type Error struct {
 	ErrorCode int `json:"errorcode"`
 	CSErrorCode int `json:"cserrorcode"`
 	ErrorText string `json:"errortext"`
+}
+
+type StandardResponse struct {
+	Success string `json:"success"`
+	DisplayText string `json:"displaytext"`
 }
 
 type Topology struct {
@@ -377,7 +381,6 @@ type VirtualMachine struct {
 	Zonename string `json:"zonename,omitempty"`
 }
 
-
 type StartVirtualMachineResponse struct {
 	JobID string `json:"jobid,omitempty"`
 }
@@ -390,7 +393,6 @@ type DestroyVirtualMachineResponse struct {
 	JobID string `json:"jobid,omitempty"`
 }
 
-
 type RebootVirtualMachineResponse struct {
 	JobID string `json:"jobid,omitempty"`
 }
@@ -400,5 +402,9 @@ type CreateSSHKeyPairWrappedResponse struct {
 }
 
 type CreateSSHKeyPairResponse struct {
+	Privatekey string `json:"privatekey,omitempty"`
+}
+
+type DeleteSSHKeyPairResponse struct {
 	Privatekey string `json:"privatekey,omitempty"`
 }
