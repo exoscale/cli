@@ -3,9 +3,9 @@ package egoscale
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strings"
-	"fmt"
 )
 
 func (exo *Client) CreateVirtualMachine(p MachineProfile) (string, error) {
@@ -140,7 +140,6 @@ func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {
 		return nil, fmt.Errorf("cannot retrieve virtualmachine with id %s", id)
 	}
 }
-
 
 func (exo *Client) ListVirtualMachines(id string) ([]*VirtualMachine, error) {
 
