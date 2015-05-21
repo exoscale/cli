@@ -19,8 +19,8 @@ type Error struct {
 }
 
 type StandardResponse struct {
-	Success bool `json:"success"`
-	DisplayText string `json:displaytext`
+	Success string `json:"success"`
+	DisplayText string `json:"displaytext"`
 }
 
 type Topology struct {
