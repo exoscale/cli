@@ -96,6 +96,29 @@ func (exo *Client) GetKeypairs() ([]string, error) {
 	return keypairs, nil
 }
 
+func (exo *Client) GetAffinityGroups() (map[string]string, error) {
+	var affinitygroups map[string]string
+	params := url.Values{}
+
+	resp, err := exo.Request("listAffinityGroups", params)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var r ListAffinityGroupsResponse
+	if err := json.Unmarshal(resp, &r); err != nil {
+		return nil, err
+	}
+
+	affinitygroups = make(map[string]string)
+	for _, affinitygroup := range r.AffinityGroups {
+		affinitygroups[affinitygroup.Name] = affinitygroup.Id
+	}
+	return affinitygroups, nil
+
+}
+
 func (exo *Client) GetImages() (map[string]map[int]string, error) {
 	var images map[string]map[int]string
 	images = make(map[string]map[int]string)
@@ -153,6 +176,10 @@ func (exo *Client) GetTopology() (*Topology, error) {
 	if err != nil {
 		return nil, err
 	}
+	affinitygroups, err := exo.GetAffinityGroups()
+	if err != nil {
+		return nil, err
+	}
 	profiles, err := exo.GetProfiles()
 	if err != nil {
 		return nil, err
@@ -163,6 +190,7 @@ func (exo *Client) GetTopology() (*Topology, error) {
 		Profiles:       profiles,
 		Images:         images,
 		Keypairs:       keypairs,
+		AffinityGroups: affinitygroups,
 		SecurityGroups: groups,
 	}
 
