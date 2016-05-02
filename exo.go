@@ -52,11 +52,34 @@ func main() {
 		sgid = resp.Id
 	}
 
+
+	agid, present := topo.AffinityGroups["egoscale"]
+	if !present {
+		//Affinity Group Create is an async call
+		jobid, err := client.CreateAffinityGroup("egoscale")
+
+		var resp *egoscale.QueryAsyncJobResultResponse
+		for i := 0; i <= 10; i++ {
+			resp, err = client.PollAsyncJob(jobid)
+			if err != nil {
+				fmt.Printf("got error: %+v\n", err)
+				return
+			}
+
+			if (resp.Jobstatus == 1) {
+				break
+			}
+			time.Sleep(5 * time.Second)
+		}
+	}
+	fmt.Printf("Affinity Group ID :%v\n",agid)
+
 	profile := egoscale.MachineProfile{
 		Template: topo.Images["ubuntu-14.04"][10],
 		ServiceOffering: topo.Profiles["large"],
 		SecurityGroups: []string{ sgid,},
 		Keypair: topo.Keypairs[0],
+		AffinityGroups: []string{"egoscale"},
 		Userdata: "#cloud-config\nmanage_etc_hosts: true\nfqdn: deployed-by-egoscale\n",
 		Zone: topo.Zones["ch-gva-2"],
 		Name: "deployed-by-egoscale",

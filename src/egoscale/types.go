@@ -29,6 +29,7 @@ type Topology struct {
 	Profiles       map[string]string
 	Keypairs       []string
 	SecurityGroups map[string]string
+	AffinityGroups map[string]string
 }
 
 type SecurityGroupRule struct {
@@ -48,6 +49,7 @@ type MachineProfile struct {
 	ServiceOffering string
 	Template        string
 	Zone            string
+	AffinityGroups  []string
 }
 
 type ListZonesResponse struct {
@@ -147,6 +149,21 @@ type ListSSHKeyPairsResponse struct {
 type SSHKeyPair struct {
 	Fingerprint string `json:"fingerprint,omitempty"`
 	Name        string `json:"name,omitempty"`
+}
+
+type ListAffinityGroupsResponse struct {
+	 Count      	int 				`json:"count"`
+	 AffinityGroups []*AffinityGroup 	`json:"affinitygroup"`
+}
+
+type AffinityGroup struct {
+	Name 		string `json:"name,omitempty"`
+	Type 		string `json:"type,omitempty"`
+	Description string `json:"description,omitempty"`
+	Id   		string `json:"id,omitempty"`
+	Domainid 	string `json:"domainid,omitempty"`
+	Domain 		string `json:"domain,omitempty"`
+	Account 	string `json:"account,omitempty"`
 }
 
 type ListSecurityGroupsResponse struct {
@@ -400,6 +417,14 @@ type CreateSSHKeyPairWrappedResponse struct {
 
 type CreateSSHKeyPairResponse struct {
 	Privatekey string `json:"privatekey,omitempty"`
+}
+
+type CreateAffinityGroupResponse struct {
+	JobId string `json:"jobid,omitempty"`
+}
+
+type DeleteAffinityGroupResponse struct {
+	JobId string `json:"jobid,omitempty"`
 }
 
 type DeleteSSHKeyPairResponse struct {

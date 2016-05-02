@@ -34,3 +34,4 @@ func (exo *Client) AsyncToVirtualMachine(resp QueryAsyncJobResultResponse) (*Dep
 
 	return &r.Wrapped, nil
 }
+
