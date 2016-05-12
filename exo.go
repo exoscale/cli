@@ -2,8 +2,8 @@ package main
 
 import (
 	"egoscale"
-	"os"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -11,7 +11,7 @@ func main() {
 
 	endpoint := os.Getenv("EXOSCALE_ENDPOINT")
 	apiKey := os.Getenv("EXOSCALE_API_KEY")
-	apiSecret:= os.Getenv("EXOSCALE_API_SECRET")
+	apiSecret := os.Getenv("EXOSCALE_API_SECRET")
 	client := egoscale.NewClient(endpoint, apiKey, apiSecret)
 
 	topo, err := client.GetTopology()
@@ -23,35 +23,34 @@ func main() {
 	rules := []egoscale.SecurityGroupRule{
 		{
 			SecurityGroupId: "",
-			Cidr: "0.0.0.0/0",
-			Protocol: "TCP",
-			Port: 22,
+			Cidr:            "0.0.0.0/0",
+			Protocol:        "TCP",
+			Port:            22,
 		},
 		{
 			SecurityGroupId: "",
-			Cidr: "0.0.0.0/0",
-			Protocol: "TCP",
-			Port: 2376,
+			Cidr:            "0.0.0.0/0",
+			Protocol:        "TCP",
+			Port:            2376,
 		},
 		{
 			SecurityGroupId: "",
-			Cidr: "0.0.0.0/0",
-			Protocol: "ICMP",
-			IcmpType: 8,
-			IcmpCode: 0,
+			Cidr:            "0.0.0.0/0",
+			Protocol:        "ICMP",
+			IcmpType:        8,
+			IcmpCode:        0,
 		},
 	}
 
 	sgid, present := topo.SecurityGroups["egoscale"]
 	if !present {
-		resp, err := client.CreateSecurityGroupWithRules("egoscale", rules, make([]egoscale.SecurityGroupRule,0,0))
+		resp, err := client.CreateSecurityGroupWithRules("egoscale", rules, make([]egoscale.SecurityGroupRule, 0, 0))
 		if err != nil {
 			fmt.Printf("got error: %+v\n", err)
 			return
 		}
 		sgid = resp.Id
 	}
-
 
 	agid, present := topo.AffinityGroups["egoscale"]
 	if !present {
@@ -66,23 +65,23 @@ func main() {
 				return
 			}
 
-			if (resp.Jobstatus == 1) {
+			if resp.Jobstatus == 1 {
 				break
 			}
 			time.Sleep(5 * time.Second)
 		}
 	}
-	fmt.Printf("Affinity Group ID :%v\n",agid)
+	fmt.Printf("Affinity Group ID :%v\n", agid)
 
 	profile := egoscale.MachineProfile{
-		Template: topo.Images["ubuntu-14.04"][10],
+		Template:        topo.Images["ubuntu-14.04"][10],
 		ServiceOffering: topo.Profiles["large"],
-		SecurityGroups: []string{ sgid,},
-		Keypair: topo.Keypairs[0],
-		AffinityGroups: []string{"egoscale"},
-		Userdata: "#cloud-config\nmanage_etc_hosts: true\nfqdn: deployed-by-egoscale\n",
-		Zone: topo.Zones["ch-gva-2"],
-		Name: "deployed-by-egoscale",
+		SecurityGroups:  []string{sgid},
+		Keypair:         topo.Keypairs[0],
+		AffinityGroups:  []string{"egoscale"},
+		Userdata:        "#cloud-config\nmanage_etc_hosts: true\nfqdn: deployed-by-egoscale\n",
+		Zone:            topo.Zones["ch-gva-2"],
+		Name:            "deployed-by-egoscale",
 	}
 
 	jobid, err := client.CreateVirtualMachine(profile)
@@ -101,7 +100,7 @@ func main() {
 			return
 		}
 
-		if (resp.Jobstatus == 1) {
+		if resp.Jobstatus == 1 {
 			break
 		}
 		time.Sleep(5 * time.Second)
@@ -114,6 +113,5 @@ func main() {
 	}
 
 	fmt.Printf("new machine up and running at: %s\n", vm.Nic[0].Ipaddress)
-
 
 }

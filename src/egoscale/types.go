@@ -152,18 +152,18 @@ type SSHKeyPair struct {
 }
 
 type ListAffinityGroupsResponse struct {
-	 Count      	int 				`json:"count"`
-	 AffinityGroups []*AffinityGroup 	`json:"affinitygroup"`
+	Count          int              `json:"count"`
+	AffinityGroups []*AffinityGroup `json:"affinitygroup"`
 }
 
 type AffinityGroup struct {
-	Name 		string `json:"name,omitempty"`
-	Type 		string `json:"type,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Type        string `json:"type,omitempty"`
 	Description string `json:"description,omitempty"`
-	Id   		string `json:"id,omitempty"`
-	Domainid 	string `json:"domainid,omitempty"`
-	Domain 		string `json:"domain,omitempty"`
-	Account 	string `json:"account,omitempty"`
+	Id          string `json:"id,omitempty"`
+	Domainid    string `json:"domainid,omitempty"`
+	Domain      string `json:"domain,omitempty"`
+	Account     string `json:"account,omitempty"`
 }
 
 type ListSecurityGroupsResponse struct {

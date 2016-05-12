@@ -73,9 +73,7 @@ func (exo *Client) GetProfiles() (map[string]string, error) {
 	return profiles, nil
 }
 
-func (exo *Client) GetKeypairs() ([]string, error) {
-
-	var keypairs []string
+func (exo *Client) GetKeypairs() ([]SSHKeyPair, error) {
 	params := url.Values{}
 
 	resp, err := exo.Request("listSSHKeyPairs", params)
@@ -89,9 +87,9 @@ func (exo *Client) GetKeypairs() ([]string, error) {
 		return nil, err
 	}
 
-	keypairs = make([]string, r.Count, r.Count)
+	var keypairs = make([]SSHKeyPair, r.Count, r.Count)
 	for i, keypair := range r.SSHKeyPairs {
-		keypairs[i] = keypair.Name
+		keypairs[i] = *keypair
 	}
 	return keypairs, nil
 }
@@ -176,6 +174,13 @@ func (exo *Client) GetTopology() (*Topology, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	/* Convert the ssh keypair to contain just the name */
+	keynames := make([]string, len(keypairs))
+	for i, k := range keypairs {
+		keynames[i] = k.Name
+	}
+
 	affinitygroups, err := exo.GetAffinityGroups()
 	if err != nil {
 		return nil, err
@@ -189,7 +194,7 @@ func (exo *Client) GetTopology() (*Topology, error) {
 		Zones:          zones,
 		Profiles:       profiles,
 		Images:         images,
-		Keypairs:       keypairs,
+		Keypairs:       keynames,
 		AffinityGroups: affinitygroups,
 		SecurityGroups: groups,
 	}
