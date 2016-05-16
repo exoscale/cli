@@ -166,6 +166,10 @@ type AffinityGroup struct {
 	Account     string `json:"account,omitempty"`
 }
 
+type CreateAffinityGroupResponseWrapper struct {
+	Wrapped AffinityGroup `json:"affinitygroup"`
+}
+
 type ListSecurityGroupsResponse struct {
 	Count          int              `json:"count"`
 	SecurityGroups []*SecurityGroup `json:"securitygroup"`
