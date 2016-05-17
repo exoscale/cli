@@ -464,12 +464,12 @@ type DNSRecord struct {
 	Id 					int64	`json:"id,omitempty"`
 	DomainId 			int64	`json:"domain_id,omitempty"`
 	Name 				string 	`json:"name"`
-	Ttl 				int64	`json:"ttl,omitempty"`
+	Ttl 				int	`json:"ttl,omitempty"`
 	CreatedAt			string 	`json:"created_at,omitempty"`
 	UpdatedAt			string 	`json:"updated_at,omitempty"`
 	Content 			string 	`json:"content"`
 	RecordType 			string 	`json:"record_type"`
-	Prio 				int64 	`json:"prio,omitempty"`
+	Prio 				int 	`json:"prio,omitempty"`
 }
 
 type DNSRecordResponse struct {
