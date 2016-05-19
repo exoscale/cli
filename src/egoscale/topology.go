@@ -29,6 +29,26 @@ func (exo *Client) GetSecurityGroups() (map[string]string, error) {
 	return sgs, nil
 }
 
+func (exo *Client) GetSecurityGroupId(name string) (string, error) {
+	params := url.Values{}
+	resp, err := exo.Request("listSecurityGroups", params); if err != nil {
+		return "", err
+	}
+
+	var r ListSecurityGroupsResponse
+	err = json.Unmarshal(resp, &r); if err != nil {
+		return "", err
+	}
+
+	for _, sg := range r.SecurityGroups {
+		if sg.Name == name {
+			return sg.Id, nil
+		}
+	}
+
+	return "", nil
+}
+
 func (exo *Client) GetZones() (map[string]string, error) {
 	var zones map[string]string
 	params := url.Values{}
