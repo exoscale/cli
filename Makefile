@@ -7,14 +7,15 @@ RM?=rm -f
 LN=ln -s
 MAIN=exo.go
 SRCS=		src/egoscale/types.go		 \
-				src/egoscale/error.go		 \
-				src/egoscale/topology.go \
-				src/egoscale/groups.go   \
-				src/egoscale/vm.go       \
-				src/egoscale/request.go  \
-				src/egoscale/async.go  \
-				src/egoscale/keypair.go  \
-				src/egoscale/init.go
+			src/egoscale/error.go		 \
+			src/egoscale/topology.go \
+			src/egoscale/groups.go   \
+			src/egoscale/vm.go       \
+			src/egoscale/dns.go       \
+			src/egoscale/request.go  \
+			src/egoscale/async.go  \
+			src/egoscale/keypair.go  \
+			src/egoscale/init.go
 
 all: $(PROGRAM)
 
