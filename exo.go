@@ -33,6 +33,12 @@ func main() {
 			Protocol:        "TCP",
 			Port:            2376,
 		},
+                {
+			SecurityGroupId: "",
+                        UserSecurityGroup: "{account: \"antoine.coetsier@gmail.com\", group: \"default\"}",
+			Protocol:        "TCP",
+			Port:            443,
+		},
 		{
 			SecurityGroupId: "",
 			Cidr:            "0.0.0.0/0",

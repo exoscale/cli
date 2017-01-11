@@ -39,6 +39,12 @@ type SecurityGroupRule struct {
 	Port            int
 	Protocol        string
 	SecurityGroupId string
+        UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
+}
+
+type UserSecurityGroup struct {
+        Group    string   `json:"group,omitempty"`
+        Account  string   `json:"account,omitempty"`
 }
 
 type MachineProfile struct {
