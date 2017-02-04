@@ -450,6 +450,19 @@ type CreateSSHKeyPairResponse struct {
 	Privatekey string `json:"privatekey,omitempty"`
 }
 
+type RemoveIpFromNicResponse struct {
+	Success bool `json:"success"`
+	DisplayText string `json:"displaytext"`
+}
+
+type AddIpToNicResponse struct {
+	Id string `json:"id"`
+	IpAddress string `json:"ipaddress"`
+	NetworkId string `json:"networkid"`
+	NicId string `json:"nicid"`
+	VmId string `json:"virtualmachineid"`
+}
+
 type CreateAffinityGroupResponse struct {
 	JobId string `json:"jobid,omitempty"`
 }
