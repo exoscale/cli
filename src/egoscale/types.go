@@ -403,7 +403,10 @@ type VirtualMachine struct {
 		Netmask      string   `json:"netmask,omitempty"`
 		Networkid    string   `json:"networkid,omitempty"`
 		Networkname  string   `json:"networkname,omitempty"`
-		Secondaryip  []string `json:"secondaryip,omitempty"`
+		Secondaryip  []struct {
+			Id		string `json:"id,omitempty"`
+			IpAddress	string `json:"ipaddress,omitempty"`
+		} `json:"secondaryip,omitempty"`
 		Traffictype  string   `json:"traffictype,omitempty"`
 		Type         string   `json:"type,omitempty"`
 	} `json:"nic,omitempty"`
@@ -415,7 +418,7 @@ type VirtualMachine struct {
 	Publicipid          string `json:"publicipid,omitempty"`
 	Rootdeviceid        int64  `json:"rootdeviceid,omitempty"`
 	Rootdevicetype      string `json:"rootdevicetype,omitempty"`
-	SecurityGroup       []struct {
+	SecurityGroups      []struct {
 		Account     string `json:"account,omitempty"`
 		Description string `json:"description,omitempty"`
 		Id          string `json:"id,omitempty"`

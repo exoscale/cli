@@ -30,7 +30,6 @@ func rawValue(b json.RawMessage) (json.RawMessage, error) {
 	for _, v := range m {
 		return v, nil
 	}
-	//return nil, fmt.Errorf("Unable to extract raw value from:\n\n%s\n\n", string(b))
 	return nil, nil
 }
 
