@@ -144,10 +144,9 @@ func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {
 	}
 }
 
-func (exo *Client) ListVirtualMachines(id string) ([]*VirtualMachine, error) {
+func (exo *Client) ListVirtualMachines() ([]*VirtualMachine, error) {
 
 	params := url.Values{}
-	params.Set("id", id)
 
 	resp, err := exo.Request("listVirtualMachines", params)
 
