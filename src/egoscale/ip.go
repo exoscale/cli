@@ -38,8 +38,8 @@ func (exo *Client) RemoveIpFromNic(nic_id string) (string, error) {
 		return "", err
 	}
 
-	if r.Success {
-		return r.DisplayText, nil
+	if r.Success == false {
+		return "", errors.New(r.DisplayText)
 	}
-	return "", errors.New(r.DisplayText)
+	return r.DisplayText, nil
 }

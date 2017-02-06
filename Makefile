@@ -15,6 +15,7 @@ SRCS=		src/egoscale/types.go		 \
 			src/egoscale/request.go  \
 			src/egoscale/async.go  \
 			src/egoscale/keypair.go  \
+			src/egoscale/ip.go  \
 			src/egoscale/init.go
 
 all: $(PROGRAM)
