@@ -1,7 +1,6 @@
 package egoscale
 
 import (
-	"errors"
 	"encoding/json"
 	"net/url"
 )
@@ -37,9 +36,5 @@ func (exo *Client) RemoveIpFromNic(nic_id string) (string, error) {
 	if err := json.Unmarshal(resp, &r); err != nil {
 		return "", err
 	}
-
-	if r.Success == false {
-		return "", errors.New(r.DisplayText)
-	}
-	return r.DisplayText, nil
+	return r.JobID, nil
 }

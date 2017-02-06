@@ -461,8 +461,7 @@ type CreateSSHKeyPairResponse struct {
 }
 
 type RemoveIpFromNicResponse struct {
-	Success bool `json:"success"`
-	DisplayText string `json:"displaytext"`
+	JobID string `json:"jobid,omitempty"`
 }
 
 type AddIpToNicResponse struct {
