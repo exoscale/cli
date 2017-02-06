@@ -21,8 +21,7 @@ all: $(PROGRAM)
 
 $(PROGRAM): $(MAIN) $(SRCS)
 				$(GO) build egoscale
-				#$(GO) build -o exo $(MAIN)
-				$(GO) build -o g $(MAIN)
+				$(GO) build -o $(PROGRAM) $(MAIN)
 
 clean:
 				$(RM) $(PROGRAM)

@@ -415,6 +415,12 @@ type VirtualMachine struct {
 	Publicipid          string `json:"publicipid,omitempty"`
 	Rootdeviceid        int64  `json:"rootdeviceid,omitempty"`
 	Rootdevicetype      string `json:"rootdevicetype,omitempty"`
+	SecurityGroup       []struct {
+		Account     string `json:"account,omitempty"`
+		Description string `json:"description,omitempty"`
+		Id          string `json:"id,omitempty"`
+		Name        string `json:"name,omitemtpy"`
+	} `json:"securitygroup,omitempty"`
 	Serviceofferingid   string `json:"serviceofferingid,omitempty"`
 	Serviceofferingname string `json:"serviceofferingname,omitempty"`
 	Servicestate        string `json:"servicestate,omitempty"`

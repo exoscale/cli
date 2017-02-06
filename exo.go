@@ -13,7 +13,7 @@ func main() {
 	apiSecret := os.Getenv("EXOSCALE_API_SECRET")
 	client := egoscale.NewClient(endpoint, apiKey, apiSecret)
 
-	topo, err := client.GetTopology()
+	_, err := client.GetTopology()
 	if err != nil {
 		fmt.Printf("got error: %+v\n", err)
 		return
