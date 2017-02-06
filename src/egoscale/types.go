@@ -420,6 +420,7 @@ type VirtualMachine struct {
 		Description string `json:"description,omitempty"`
 		Id          string `json:"id,omitempty"`
 		Name        string `json:"name,omitemtpy"`
+		Tags        []string `json:"tags,omitempty"`
 	} `json:"securitygroup,omitempty"`
 	Serviceofferingid   string `json:"serviceofferingid,omitempty"`
 	Serviceofferingname string `json:"serviceofferingname,omitempty"`
