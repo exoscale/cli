@@ -31,12 +31,14 @@ func (exo *Client) GetSecurityGroups() (map[string]SecurityGroup, error) {
 
 func (exo *Client) GetSecurityGroupId(name string) (string, error) {
 	params := url.Values{}
-	resp, err := exo.Request("listSecurityGroups", params); if err != nil {
+	resp, err := exo.Request("listSecurityGroups", params)
+	if err != nil {
 		return "", err
 	}
 
 	var r ListSecurityGroupsResponse
-	err = json.Unmarshal(resp, &r); if err != nil {
+	err = json.Unmarshal(resp, &r)
+	if err != nil {
 		return "", err
 	}
 
@@ -191,7 +193,7 @@ func (exo *Client) GetTopology() (*Topology, error) {
 		return nil, err
 	}
 	groups := make(map[string]string)
-	for k,v := range securityGroups {
+	for k, v := range securityGroups {
 		groups[k] = v.Id
 	}
 
