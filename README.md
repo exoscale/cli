@@ -1,6 +1,8 @@
 egoscale: exoscale driver for golang
 ====================================
 
+[![Build Status](https://travis-ci.org/exoscale/egoscale.svg?branch=master)](https://travis-ci.org/exoscale/egoscale)
+
 An API wrapper for the exoscale public cloud
 
 ### License

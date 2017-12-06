@@ -89,7 +89,7 @@ func (exo *Client) Request(command string, params url.Values) (json.RawMessage, 
 	params.Set("command", command)
 	params.Set("response", "json")
 
-	for k, _ := range params {
+	for k := range params {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
