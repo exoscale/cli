@@ -139,6 +139,7 @@ func (exo *Client) GetAffinityGroups() (map[string]string, error) {
 
 }
 
+// GetImages list the available featured images and group them by name, then size.
 func (exo *Client) GetImages() (map[string]map[int]string, error) {
 	var images map[string]map[int]string
 	images = make(map[string]map[int]string)
@@ -157,15 +158,16 @@ func (exo *Client) GetImages() (map[string]map[int]string, error) {
 		return nil, err
 	}
 
-	re := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9.]+)`)
+	re := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9.]+)\b`)
 	for _, template := range r.Templates {
 		size := int(template.Size / (1024 * 1024 * 1024))
 
-		if _, present := images[template.Name]; !present {
-			images[template.Name] = make(map[int]string)
-		}
+		fullname := strings.ToLower(template.Name)
 
-		images[template.Name][size] = template.Id
+		if _, present := images[fullname]; !present {
+			images[fullname] = make(map[int]string)
+		}
+		images[fullname][size] = template.Id
 
 		submatch := re.FindStringSubmatch(template.Name)
 		if len(submatch) > 0 {
@@ -177,8 +179,6 @@ func (exo *Client) GetImages() (map[string]map[int]string, error) {
 				images[image] = make(map[int]string)
 			}
 			images[image][size] = template.Id
-
-			images[fmt.Sprintf("%s-%s", name, version)][size] = template.Id
 		}
 	}
 	return images, nil
