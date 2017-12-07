@@ -157,17 +157,23 @@ func (exo *Client) GetImages() (map[string]map[int]string, error) {
 		return nil, err
 	}
 
-	re := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9.]+).*$`)
+	re := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9.]+)`)
 	for _, template := range r.Templates {
 		size := int(template.Size / (1024 * 1024 * 1024))
+
+		if _, present := images[template.Name]; !present {
+			images[template.Name] = make(map[int]string)
+		}
+
+		images[template.Name][size] = template.Id
+
 		submatch := re.FindStringSubmatch(template.Name)
 		if len(submatch) > 0 {
 			name := strings.Replace(strings.ToLower(submatch[1]), " ", "-", -1)
 			version := submatch[2]
 			image := fmt.Sprintf("%s-%s", name, version)
 
-			_, present := images[image]
-			if !present {
+			if _, present := images[image]; !present {
 				images[image] = make(map[int]string)
 			}
 			images[image][size] = template.Id
