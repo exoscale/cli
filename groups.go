@@ -29,8 +29,8 @@ func (exo *Client) CreateEgressRule(rule SecurityGroupRule) (*AuthorizeSecurityG
 		params.Set("icmpcode", fmt.Sprintf("%d", rule.IcmpCode))
 		params.Set("icmptype", fmt.Sprintf("%d", rule.IcmpType))
 	} else if rule.Protocol == "TCP" || rule.Protocol == "UDP" {
-		params.Set("startport", fmt.Sprintf("%d", rule.Port))
-		params.Set("endport", fmt.Sprintf("%d", rule.Port))
+		params.Set("startport", fmt.Sprintf("%d", rule.StartPort))
+		params.Set("endport", fmt.Sprintf("%d", rule.EndPort))
 	} else {
 		return nil, fmt.Errorf("Invalid Egress rule Protocol: %s", rule.Protocol)
 	}
@@ -71,8 +71,8 @@ func (exo *Client) CreateIngressRule(rule SecurityGroupRule) (*AuthorizeSecurity
 		params.Set("icmpcode", fmt.Sprintf("%d", rule.IcmpCode))
 		params.Set("icmptype", fmt.Sprintf("%d", rule.IcmpType))
 	} else if rule.Protocol == "TCP" || rule.Protocol == "UDP" {
-		params.Set("startport", fmt.Sprintf("%d", rule.Port))
-		params.Set("endport", fmt.Sprintf("%d", rule.Port))
+		params.Set("startport", fmt.Sprintf("%d", rule.StartPort))
+		params.Set("endport", fmt.Sprintf("%d", rule.EndPort))
 	} else {
 		return nil, fmt.Errorf("Invalid Egress rule Protocol: %s", rule.Protocol)
 	}

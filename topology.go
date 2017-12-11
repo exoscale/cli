@@ -8,22 +8,32 @@ import (
 	"strings"
 )
 
-func (exo *Client) GetSecurityGroups() (map[string]SecurityGroup, error) {
-	var sgs map[string]SecurityGroup
-	params := url.Values{}
+func (exo *Client) GetSecurityGroups(params url.Values) ([]*SecurityGroup, error) {
 	resp, err := exo.Request("listSecurityGroups", params)
-
 	if err != nil {
 		return nil, err
 	}
 
 	var r ListSecurityGroupsResponse
-	if err := json.Unmarshal(resp, &r); err != nil {
+	err = json.Unmarshal(resp, &r)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.SecurityGroups, nil
+}
+
+func (exo *Client) GetSecurityGroupsByName() (map[string]SecurityGroup, error) {
+	var sgs map[string]SecurityGroup
+	params := url.Values{}
+	securityGroups, err := exo.GetSecurityGroups(params)
+
+	if err != nil {
 		return nil, err
 	}
 
 	sgs = make(map[string]SecurityGroup)
-	for _, sg := range r.SecurityGroups {
+	for _, sg := range securityGroups {
 		sgs[sg.Name] = *sg
 	}
 	return sgs, nil
@@ -31,18 +41,13 @@ func (exo *Client) GetSecurityGroups() (map[string]SecurityGroup, error) {
 
 func (exo *Client) GetSecurityGroupId(name string) (string, error) {
 	params := url.Values{}
-	resp, err := exo.Request("listSecurityGroups", params)
+	params.Set("name", name)
+	securityGroups, err := exo.GetSecurityGroups(params)
 	if err != nil {
 		return "", err
 	}
 
-	var r ListSecurityGroupsResponse
-	err = json.Unmarshal(resp, &r)
-	if err != nil {
-		return "", err
-	}
-
-	for _, sg := range r.SecurityGroups {
+	for _, sg := range securityGroups {
 		if sg.Name == name {
 			return sg.Id, nil
 		}
@@ -194,7 +199,7 @@ func (exo *Client) GetTopology() (*Topology, error) {
 	if err != nil {
 		return nil, err
 	}
-	securityGroups, err := exo.GetSecurityGroups()
+	securityGroups, err := exo.GetSecurityGroupsByName()
 	if err != nil {
 		return nil, err
 	}

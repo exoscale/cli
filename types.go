@@ -32,21 +32,6 @@ type Topology struct {
 	AffinityGroups map[string]string
 }
 
-type SecurityGroupRule struct {
-	Cidr                  string
-	IcmpType              int
-	IcmpCode              int
-	Port                  int
-	Protocol              string
-	SecurityGroupId       string
-	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
-}
-
-type UserSecurityGroup struct {
-	Group   string `json:"group,omitempty"`
-	Account string `json:"account,omitempty"`
-}
-
 type MachineProfile struct {
 	Name            string
 	SecurityGroups  []string
@@ -181,41 +166,45 @@ type ListSecurityGroupsResponse struct {
 	SecurityGroups []*SecurityGroup `json:"securitygroup"`
 }
 
+// SecurityGroup represent a firewalling set of rules
 type SecurityGroup struct {
-	Account      string `json:"account,omitempty"`
-	Description  string `json:"description,omitempty"`
-	Domain       string `json:"domain,omitempty"`
-	Domainid     string `json:"domainid,omitempty"`
-	Id           string `json:"id,omitempty"`
-	Name         string `json:"name,omitempty"`
-	Project      string `json:"project,omitempty"`
-	Projectid    string `json:"projectid,omitempty"`
-	IngressRules []struct {
-		RuleId    string   `json:"ruleid,omitempty"`
-		Protocol  string   `json:"protocol,omitempty"`
-		StartPort int      `json:"startport,omitempty"`
-		EndPort   int      `json:"endport,omitempty"`
-		Cidr      string   `json:"cidr,omitempty"`
-		IcmpCode  int      `json:"icmpcode,omitempty"`
-		IcmpType  int      `json:"icmptype,omitempty"`
-		Tags      []string `json:"tags,omitempty"`
-	} `json:"ingressrule,omitempty"`
-	EgressRules []struct {
-		RuleId    string   `json:"ruleid,omitempty"`
-		Protocol  string   `json:"protocol,omitempty"`
-		StartPort int      `json:"startport,omitempty"`
-		EndPort   int      `json:"endport,omitempty"`
-		Cidr      string   `json:"cidr,omitempty"`
-		IcmpCode  int      `json:"icmpcode,omitempty"`
-		IcmpType  int      `json:"icmptype,omitempty"`
-		Tags      []string `json:"tags,omitempty"`
-	} `json:"egressrule,omitempty"`
-	Tags []string `json:"tags,omitempty"`
+	Account      string               `json:"account,omitempty"`
+	Description  string               `json:"description,omitempty"`
+	Domain       string               `json:"domain,omitempty"`
+	Domainid     string               `json:"domainid,omitempty"`
+	Id           string               `json:"id,omitempty"`
+	Name         string               `json:"name,omitempty"`
+	Project      string               `json:"project,omitempty"`
+	Projectid    string               `json:"projectid,omitempty"`
+	IngressRules []*SecurityGroupRule `json:"ingressrule,omitempty"`
+	EgressRules  []*SecurityGroupRule `json:"egressrule,omitempty"`
+	Tags         []string             `json:"tags,omitempty"`
+}
+
+// SecurityGroupRule represents the ingress/egress rule
+type SecurityGroupRule struct {
+	RuleId                string   `json:"ruleid,omitempty"`
+	Cidr                  string   `json:"cidr,omitempty"`
+	IcmpType              int      `json:"icmptype,omitempty"`
+	IcmpCode              int      `json:"icmpcode,omitempty"`
+	StartPort             int      `json:"startport,omitempty"`
+	EndPort               int      `json:"endport,omitempty"`
+	Protocol              string   `json:"protocol,omitempty"`
+	Tags                  []string `json:"tags,omitempty"`
+	SecurityGroupId       string
+	UserSecurityGroupList []*UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
+}
+
+// UserSecurityGroup represents the traffic of another security group
+type UserSecurityGroup struct {
+	Group   string `json:"group,omitempty"`
+	Account string `json:"account,omitempty"`
 }
 
 type CreateSecurityGroupResponseWrapper struct {
 	Wrapped CreateSecurityGroupResponse `json:"securitygroup"`
 }
+
 type CreateSecurityGroupResponse struct {
 	Account     string `json:"account,omitempty"`
 	Description string `json:"description,omitempty"`
