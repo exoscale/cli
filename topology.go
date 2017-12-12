@@ -23,7 +23,7 @@ func (exo *Client) GetSecurityGroups(params url.Values) ([]*SecurityGroup, error
 	return r.SecurityGroups, nil
 }
 
-func (exo *Client) GetSecurityGroupsByName() (map[string]SecurityGroup, error) {
+func (exo *Client) GetAllSecurityGroups() (map[string]SecurityGroup, error) {
 	var sgs map[string]SecurityGroup
 	params := url.Values{}
 	securityGroups, err := exo.GetSecurityGroups(params)
@@ -56,9 +56,7 @@ func (exo *Client) GetSecurityGroupId(name string) (string, error) {
 	return "", nil
 }
 
-func (exo *Client) GetZones() (map[string]string, error) {
-	var zones map[string]string
-	params := url.Values{}
+func (exo *Client) GetZones(params url.Values) ([]*Zone, error) {
 	resp, err := exo.Request("listZones", params)
 
 	if err != nil {
@@ -70,8 +68,19 @@ func (exo *Client) GetZones() (map[string]string, error) {
 		return nil, err
 	}
 
+	return r.Zones, nil
+}
+
+func (exo *Client) GetAllZones() (map[string]string, error) {
+	var zones map[string]string
+	params := url.Values{}
+	response, err := exo.GetZones(params)
+	if err != nil {
+		return zones, err
+	}
+
 	zones = make(map[string]string)
-	for _, zone := range r.Zones {
+	for _, zone := range response {
 		zones[zone.Name] = zone.Id
 	}
 	return zones, nil
@@ -191,7 +200,7 @@ func (exo *Client) GetImages() (map[string]map[int]string, error) {
 
 func (exo *Client) GetTopology() (*Topology, error) {
 
-	zones, err := exo.GetZones()
+	zones, err := exo.GetAllZones()
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +208,7 @@ func (exo *Client) GetTopology() (*Topology, error) {
 	if err != nil {
 		return nil, err
 	}
-	securityGroups, err := exo.GetSecurityGroupsByName()
+	securityGroups, err := exo.GetAllSecurityGroups()
 	if err != nil {
 		return nil, err
 	}

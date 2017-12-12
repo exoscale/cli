@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetImages(t *testing.T) {
-	ts := newServer(`
+	ts := newServer(200, `
 {
 	"listtemplatesresponse (doesn't matter)": {
 		"count": 0,
@@ -98,7 +98,7 @@ func TestGetImages(t *testing.T) {
 }
 
 func TestGetSecurityGroups(t *testing.T) {
-	ts := newServer(`
+	ts := newServer(200, `
 {
 	"listsecurityresponse (doesn't matter)": {
 		"count": 1,
@@ -159,9 +159,10 @@ func TestGetSecurityGroups(t *testing.T) {
 	}
 }
 
-func newServer(response string) *httptest.Server {
+func newServer(code int, response string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(code)
 		w.Write([]byte(response))
 	})
 	return httptest.NewServer(mux)

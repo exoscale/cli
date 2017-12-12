@@ -8,8 +8,13 @@ import (
 	"strings"
 )
 
-func (exo *Client) CreateVirtualMachine(p MachineProfile) (string, error) {
+// CreateVirtualMachine is an alias for DeployVirtualMachine
+func (exo *Client) CreateVirtualMachine(p MachineProfile, async AsyncInfo) (*VirtualMachine, error) {
+	return exo.DeployVirtualMachine(p, async)
+}
 
+// DeployVirtualMachine creates a new VM
+func (exo *Client) DeployVirtualMachine(p MachineProfile, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
 	params.Set("serviceofferingid", p.ServiceOffering)
 	params.Set("templateid", p.Template)
@@ -28,95 +33,57 @@ func (exo *Client) CreateVirtualMachine(p MachineProfile) (string, error) {
 
 	params.Set("securitygroupids", strings.Join(p.SecurityGroups, ","))
 
-	resp, err := exo.Request("deployVirtualMachine", params)
-
-	if err != nil {
-		return "", err
-	}
-
-	var r DeployVirtualMachineResponse
-
-	if err := json.Unmarshal(resp, &r); err != nil {
-		return "", err
-	}
-
-	return r.JobID, nil
+	return exo.doVirtualMachine("deploy", params, async)
 }
 
-func (exo *Client) StartVirtualMachine(id string) (string, error) {
+// StartVirtualMachine starts the VM and returns its new state
+func (exo *Client) StartVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
 	params.Set("id", id)
 
-	resp, err := exo.Request("startVirtualMachine", params)
-
-	if err != nil {
-		return "", err
-	}
-
-	var r StartVirtualMachineResponse
-
-	if err := json.Unmarshal(resp, &r); err != nil {
-		return "", err
-	}
-
-	return r.JobID, nil
+	return exo.doVirtualMachine("start", params, async)
 }
 
-func (exo *Client) StopVirtualMachine(id string) (string, error) {
+// StopVirtualMachine stops the VM and returns its new state
+func (exo *Client) StopVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
 	params.Set("id", id)
 
-	resp, err := exo.Request("stopVirtualMachine", params)
-
-	if err != nil {
-		return "", err
-	}
-
-	var r StopVirtualMachineResponse
-
-	if err := json.Unmarshal(resp, &r); err != nil {
-		return "", err
-	}
-
-	return r.JobID, nil
+	return exo.doVirtualMachine("stop", params, async)
 }
 
-func (exo *Client) RebootVirtualMachine(id string) (string, error) {
+// RebootVirtualMachine reboots the VM and returns its new state
+func (exo *Client) RebootVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
 	params.Set("id", id)
 
-	resp, err := exo.Request("rebootVirtualMachine", params)
-
-	if err != nil {
-		return "", err
-	}
-
-	var r RebootVirtualMachineResponse
-
-	if err := json.Unmarshal(resp, &r); err != nil {
-		return "", err
-	}
-
-	return r.JobID, nil
+	return exo.doVirtualMachine("reboot", params, async)
 }
 
-func (exo *Client) DestroyVirtualMachine(id string) (string, error) {
+// DeleteVirtualMachine is an alias for DestroyVirtualMachine
+func (exo *Client) DeleteVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
+	return exo.DestroyVirtualMachine(id, async)
+}
+
+func (exo *Client) DestroyVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
 	params.Set("id", id)
 
-	resp, err := exo.Request("destroyVirtualMachine", params)
+	return exo.doVirtualMachine("destroy", params, async)
+}
 
+func (exo *Client) doVirtualMachine(action string, params url.Values, async AsyncInfo) (*VirtualMachine, error) {
+	resp, err := exo.AsyncRequest(action+"VirtualMachine", params, async)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	var r DestroyVirtualMachineResponse
-
+	var r VirtualMachineResponse
 	if err := json.Unmarshal(resp, &r); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return r.JobID, nil
+	return r.VirtualMachine, nil
 }
 
 func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {

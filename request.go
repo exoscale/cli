@@ -7,10 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
 	"strings"
+	"time"
 )
 
 func csQuotePlus(s string) string {
@@ -59,7 +61,7 @@ func (exo *Client) ParseResponse(resp *http.Response) (json.RawMessage, error) {
 	}
 
 	if resp.StatusCode >= 400 {
-		var e Error
+		var e ErrorResponse
 		if err := json.Unmarshal(b, &e); err != nil {
 			return nil, err
 		}
@@ -79,38 +81,96 @@ func (exo *Client) ParseResponse(resp *http.Response) (json.RawMessage, error) {
 	return b, nil
 }
 
-func (exo *Client) Request(command string, params url.Values) (json.RawMessage, error) {
+// AsyncRequest performs an asynchronous request and polls it for retries * day [s]
+func (exo *Client) AsyncRequest(command string, params url.Values, async AsyncInfo) (json.RawMessage, error) {
+	body, err := exo.request(command, params)
+	if err != nil {
+		return nil, err
+	}
 
+	// This is not a Job
+	var job JobResultResponse
+	if err := json.Unmarshal(body, &job); err != nil {
+		return nil, err
+	}
+
+	if job.JobId != "" {
+		if job.JobStatus == SUCCESS {
+			return *job.JobResult, nil
+		} else if job.JobStatus == FAILURE {
+			return nil, fmt.Errorf("Job %s failed. %s", job.JobId, job.JobResultType)
+		}
+
+		// we've go a pending job
+		for async.Retries > 0 {
+			time.Sleep(time.Duration(async.Delay) * time.Second)
+
+			async.Retries--
+
+			resp, err := exo.PollAsyncJob(job.JobId)
+			if err != nil {
+				return nil, err
+			}
+
+			if resp.JobStatus == SUCCESS {
+				return *resp.JobResult, nil
+			} else if resp.JobStatus == FAILURE {
+				return nil, fmt.Errorf("Job %s failed. %s", job.JobId, resp.JobResultType)
+			}
+		}
+
+		return nil, fmt.Errorf("Maximum number of retries reached")
+	} else {
+		// the job is done
+		return body, nil
+	}
+}
+
+// Request performs a sync request (one try only)
+func (exo *Client) Request(command string, params url.Values) (json.RawMessage, error) {
+	return exo.AsyncRequest(command, params, AsyncInfo{})
+}
+
+// request makes a Request while being close to the metal
+func (exo *Client) request(command string, params url.Values) (json.RawMessage, error) {
 	mac := hmac.New(sha1.New, []byte(exo.apiSecret))
-	keys := make([]string, 0)
-	unencoded := make([]string, 0)
 
 	params.Set("apikey", exo.apiKey)
 	params.Set("command", command)
 	params.Set("response", "json")
 
+	keys := make([]string, 0)
+	unencoded := make([]string, 0)
 	for k := range params {
 		keys = append(keys, k)
 	}
+
 	sort.Strings(keys)
 	for _, k := range keys {
-		arg := k + "=" + csEncode(params[k][0])
+		arg := fmt.Sprintf("%s=%s", k, csEncode(params[k][0]))
 		unencoded = append(unencoded, arg)
 	}
+
 	sign_string := strings.ToLower(strings.Join(unencoded, "&"))
 
 	mac.Write([]byte(sign_string))
 	signature := csEncode(base64.StdEncoding.EncodeToString(mac.Sum(nil)))
 	query := params.Encode()
-	url := exo.endpoint + "?" + csQuotePlus(query) + "&signature=" + signature
+	url := fmt.Sprintf("%s?%s&signature=%s", exo.endpoint, csQuotePlus(query), signature)
 
+	log.Printf("[DEBUG] GET %s", csQuotePlus(query))
 	resp, err := exo.client.Get(url)
 	if err != nil {
 		return nil, err
 	}
-
 	defer resp.Body.Close()
-	return exo.ParseResponse(resp)
+
+	body, err := exo.ParseResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }
 
 func (exo *Client) DetailedRequest(uri string, params string, method string, header http.Header) (json.RawMessage, error) {

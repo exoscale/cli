@@ -6,21 +6,40 @@ import (
 	"net/url"
 )
 
-func (exo *Client) CreateEgressRule(rule SecurityGroupRule) (*AuthorizeSecurityGroupEgressResponse, error) {
+// CreateEgressRule is an alias of AuthorizeSecurityGroupEgress
+func (exo *Client) CreateEgressRule(rule SecurityGroupRule, async AsyncInfo) (*SecurityGroupRule, error) {
+	return exo.AuthorizeSecurityGroupEgress(rule, async)
+}
 
+// AutorizeSecurityGroupEgress authorizes a particular egress rule for this security group
+func (exo *Client) AuthorizeSecurityGroupEgress(rule SecurityGroupRule, async AsyncInfo) (*SecurityGroupRule, error) {
+	return exo.doSecurityGroupRule("authorize", "Egress", rule, async)
+}
+
+// CreateIngressRule is an alias of AuthorizeSecurityGroupIngress
+func (exo *Client) CreateIngressRule(rule SecurityGroupRule, async AsyncInfo) (*SecurityGroupRule, error) {
+	return exo.AuthorizeSecurityGroupIngress(rule, async)
+}
+
+// AutorizeSecurityGroupIngress authorizes a particular ingress rule for this security group
+func (exo *Client) AuthorizeSecurityGroupIngress(rule SecurityGroupRule, async AsyncInfo) (*SecurityGroupRule, error) {
+	return exo.doSecurityGroupRule("authorize", "Ingress", rule, async)
+}
+
+func (exo *Client) doSecurityGroupRule(action string, kind string, rule SecurityGroupRule, async AsyncInfo) (*SecurityGroupRule, error) {
 	params := url.Values{}
 	params.Set("securitygroupid", rule.SecurityGroupId)
 
 	if rule.Cidr != "" {
 		params.Set("cidrlist", rule.Cidr)
 	} else if len(rule.UserSecurityGroupList) > 0 {
-		usg, err := json.Marshal(rule.UserSecurityGroupList)
-		if err != nil {
-			return nil, err
+		for i, usg := range rule.UserSecurityGroupList {
+			key := fmt.Sprintf("usersecuritygrouplist[%d]", i)
+			params.Set(key+".account", usg.Account)
+			params.Set(key+".group", usg.Group)
 		}
-		params.Set("usersecuritygrouplist", string(usg))
 	} else {
-		return nil, fmt.Errorf("No Egress rule CIDR or Security Group List provided")
+		return nil, fmt.Errorf("No CIDR or Security Group List provided")
 	}
 
 	params.Set("protocol", rule.Protocol)
@@ -32,68 +51,23 @@ func (exo *Client) CreateEgressRule(rule SecurityGroupRule) (*AuthorizeSecurityG
 		params.Set("startport", fmt.Sprintf("%d", rule.StartPort))
 		params.Set("endport", fmt.Sprintf("%d", rule.EndPort))
 	} else {
-		return nil, fmt.Errorf("Invalid Egress rule Protocol: %s", rule.Protocol)
+		return nil, fmt.Errorf("Invalid rule Protocol: %s", rule.Protocol)
 	}
 
-	resp, err := exo.Request("authorizeSecurityGroupEgress", params)
+	resp, err := exo.AsyncRequest(action+"SecurityGroup"+kind, params, async)
 	if err != nil {
 		return nil, err
 	}
 
-	var r AuthorizeSecurityGroupEgressResponse
+	var r SecurityGroupRuleResponse
 	if err := json.Unmarshal(resp, &r); err != nil {
 		return nil, err
 	}
 
-	return &r, nil
+	return r.SecurityGroupRule, nil
 }
 
-func (exo *Client) CreateIngressRule(rule SecurityGroupRule) (*AuthorizeSecurityGroupIngressResponse, error) {
-
-	params := url.Values{}
-	params.Set("securitygroupid", rule.SecurityGroupId)
-
-	if rule.Cidr != "" {
-		params.Set("cidrlist", rule.Cidr)
-	} else if len(rule.UserSecurityGroupList) > 0 {
-		for i := 0; i < len(rule.UserSecurityGroupList); i++ {
-			params.Set(fmt.Sprintf("usersecuritygrouplist[%d].account", i), rule.UserSecurityGroupList[i].Account)
-			params.Set(fmt.Sprintf("usersecuritygrouplist[%d].group", i), rule.UserSecurityGroupList[i].Group)
-
-		}
-	} else {
-		return nil, fmt.Errorf("No Ingress rule CIDR or Security Group List provided")
-	}
-
-	params.Set("protocol", rule.Protocol)
-
-	if rule.Protocol == "ICMP" {
-		params.Set("icmpcode", fmt.Sprintf("%d", rule.IcmpCode))
-		params.Set("icmptype", fmt.Sprintf("%d", rule.IcmpType))
-	} else if rule.Protocol == "TCP" || rule.Protocol == "UDP" {
-		params.Set("startport", fmt.Sprintf("%d", rule.StartPort))
-		params.Set("endport", fmt.Sprintf("%d", rule.EndPort))
-	} else {
-		return nil, fmt.Errorf("Invalid Egress rule Protocol: %s", rule.Protocol)
-	}
-
-	fmt.Printf("## params: %+v\n", params)
-
-	resp, err := exo.Request("authorizeSecurityGroupIngress", params)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var r AuthorizeSecurityGroupIngressResponse
-	if err := json.Unmarshal(resp, &r); err != nil {
-		return nil, err
-	}
-
-	return &r, nil
-}
-
-func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityGroupRule, egress []SecurityGroupRule) (*CreateSecurityGroupResponse, error) {
+func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityGroupRule, egress []SecurityGroupRule, async AsyncInfo) (*CreateSecurityGroupResponse, error) {
 
 	params := url.Values{}
 	params.Set("name", name)
@@ -113,7 +87,7 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityG
 
 	for _, erule := range egress {
 		erule.SecurityGroupId = sgid
-		_, err = exo.CreateEgressRule(erule)
+		_, err = exo.CreateEgressRule(erule, async)
 		if err != nil {
 			return nil, err
 		}
@@ -121,7 +95,7 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityG
 
 	for _, inrule := range ingress {
 		inrule.SecurityGroupId = sgid
-		_, err = exo.CreateIngressRule(inrule)
+		_, err = exo.CreateIngressRule(inrule, async)
 		if err != nil {
 			return nil, err
 		}

@@ -5,38 +5,37 @@ import (
 	"net/url"
 )
 
-func (exo *Client) CreateAffinityGroup(name string) (string, error) {
+func (exo *Client) CreateAffinityGroup(name string, async AsyncInfo) (*AffinityGroup, error) {
 	params := url.Values{}
 	params.Set("name", name)
 	params.Set("type", "host anti-affinity")
 
-	resp, err := exo.Request("createAffinityGroup", params)
+	resp, err := exo.AsyncRequest("createAffinityGroup", params, async)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	var r CreateAffinityGroupResponse
 	if err := json.Unmarshal(resp, &r); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return r.JobId, nil
+	return &r.AffinityGroup, nil
 }
 
-func (exo *Client) DeleteAffinityGroup(name string) (string, error) {
+func (exo *Client) DeleteAffinityGroup(name string, async AsyncInfo) (bool, error) {
 	params := url.Values{}
 	params.Set("name", name)
 
-	resp, err := exo.Request("deleteAffinityGroup", params)
+	resp, err := exo.AsyncRequest("deleteAffinityGroup", params, async)
 	if err != nil {
-		return "", err
+		return false, err
 	}
 
-	var r DeleteAffinityGroupResponse
+	var r BooleanResponse
 	if err := json.Unmarshal(resp, &r); err != nil {
-		return "", err
+		return false, err
 	}
 
-	return r.JobId, nil
-
+	return r.Success, nil
 }
