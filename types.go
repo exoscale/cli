@@ -24,7 +24,7 @@ type StandardResponse struct {
 }
 
 type Topology struct {
-	Zones          map[string]string
+	Zones          map[string]*Zone
 	Images         map[string]map[int]string
 	Profiles       map[string]string
 	Keypairs       []string
@@ -53,11 +53,6 @@ type IpAddressProfile struct {
 type AsyncInfo struct {
 	Retries int
 	Delay   int
-}
-
-type ListZonesResponse struct {
-	Count int     `json:"count"`
-	Zones []*Zone `json:"zone"`
 }
 
 type Zone struct {
@@ -101,11 +96,6 @@ type ServiceOffering struct {
 	Name                   string            `json:"name,omitempty"`
 	NetworkRate            int               `json:"networkrate,omitempty"`
 	ServiceOfferingDetails map[string]string `json:"serviceofferingdetails,omitempty"`
-}
-
-type ListTemplatesResponse struct {
-	Count     int        `json:"count"`
-	Templates []Template `json:"template"`
 }
 
 type Template struct {
@@ -407,19 +397,36 @@ type DNSError struct {
 
 // IpAddress represents an IP Address
 type IpAddress struct {
-	AssociatedAt          string   `json:"associated,omitempty"`
-	AssociatedNetworkId   string   `json:"associatednetworkid,omitempty"`
-	AssociatedNetworkName string   `json:"associatednetworkname,omitempty"`
-	Id                    string   `json:"id"`
-	DomainId              string   `json:"domainid,omitempty"`
-	DomainName            string   `json:"domainname,omitempty"`
-	IpAddress             string   `json:"ipaddress"`
-	IsElastic             bool     `json:"iselastic,omitempty"`
-	IsPortable            bool     `json:"isportable,omitempty"`
-	IsSourceNat           bool     `json:"issourcenat,omitempty"`
-	IsSystem              bool     `json:"issystem,omitempty"`
-	State                 string   `json:"state,omitempty"`
-	ZoneId                string   `json:"zoneid,omitempty"`
-	ZoneName              string   `json:"zonename,omitempty"`
-	Tags                  []string `json:"tags,omitempty"`
+	Id                        string        `json:"id"`
+	Account                   string        `json:"account,omitempty"`
+	AllocatedAt               string        `json:"allocated,omitempty"`
+	AssociatedNetworkId       string        `json:"associatednetworkid,omitempty"`
+	AssociatedNetworkName     string        `json:"associatednetworkname,omitempty"`
+	DomainId                  string        `json:"domainid,omitempty"`
+	DomainName                string        `json:"domainname,omitempty"`
+	ForDisplay                bool          `json:"fordisplay,omitempty"`
+	ForVirtualNetwork         bool          `json:"forvirtualnetwork,omitempty"`
+	IpAddress                 string        `json:"ipaddress"`
+	IsElastic                 bool          `json:"iselastic,omitempty"`
+	IsPortable                bool          `json:"isportable,omitempty"`
+	IsSourceNat               bool          `json:"issourcenat,omitempty"`
+	IsSystem                  bool          `json:"issystem,omitempty"`
+	NetworkId                 string        `json:"networkid,omitempty"`
+	PhysicalNetworkId         string        `json:"physicalnetworkid,omitempty"`
+	Project                   string        `json:"project,omitempty"`
+	ProjectId                 string        `json:"projectid,omitempty"`
+	Purpose                   string        `json:"purpose,omitempty"`
+	State                     string        `json:"state,omitempty"`
+	VirtualMachineDisplayName string        `json:"virtualmachinedisplayname,omitempty"`
+	VirtualMachineId          string        `json:"virtualmachineid,omitempty"`
+	VirtualMachineName        string        `json:"virtualmachineName,omitempty"`
+	VlanId                    string        `json:"vlanid,omitempty"`
+	VlanName                  string        `json:"vlanname,omitempty"`
+	VmIpAddress               string        `json:"vmipaddress,omitempty"`
+	VpcId                     string        `json:"vpcid,omitempty"`
+	ZoneId                    string        `json:"zoneid,omitempty"`
+	ZoneName                  string        `json:"zonename,omitempty"`
+	Tags                      []string      `json:"tags,omitempty"`
+	JobId                     string        `json:"jobid,omitempty"`
+	JobStatus                 JobStatusType `json:"jobstatus,omitempty"`
 }

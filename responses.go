@@ -79,3 +79,21 @@ type AddIpToNicResponse struct {
 	SecondaryIp      []string `json:"secondaryip,omitempty"`
 	VirtualMachineId string   `json:"virtualmachineid"`
 }
+
+// ListZonesResponse represents a list of zones
+type ListZonesResponse struct {
+	Count int     `json:"count"`
+	Zone  []*Zone `json:"zone"`
+}
+
+// ListPublicIpAddressesResponse represents a list of public IP addresses
+type ListPublicIpAddressesResponse struct {
+	Count           int          `json:"count"`
+	PublicIpAddress []*IpAddress `json:"publicipaddress"`
+}
+
+// ListTemplatesResponse represents a list of templates
+type ListTemplatesResponse struct {
+	Count    int        `json:"count"`
+	Template []Template `json:"template"`
+}

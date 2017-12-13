@@ -49,6 +49,29 @@ func (exo *Client) DisassociateIpAddress(ipAddressId string, async AsyncInfo) (b
 	return r.Success, nil
 }
 
+// GetAllIpAddresses returns all the public IP addresses
+func (exo *Client) GetAllIpAddresses() ([]*IpAddress, error) {
+	params := url.Values{}
+
+	return exo.ListPublicIpAddresses(params)
+}
+
+func (exo *Client) ListPublicIpAddresses(params url.Values) ([]*IpAddress, error) {
+	resp, err := exo.Request("listPublicIpAddresses", params)
+	if err != nil {
+		return nil, err
+	}
+
+	var r ListPublicIpAddressesResponse
+	if err := json.Unmarshal(resp, &r); err != nil {
+		return nil, err
+	}
+
+	return r.PublicIpAddress, nil
+}
+
+// TODO move to nic.go
+
 // AddIpToNic
 func (exo *Client) AddIpToNic(nic_id string, ip_address string, async AsyncInfo) (string, error) {
 	params := url.Values{}

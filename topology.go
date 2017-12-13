@@ -56,9 +56,9 @@ func (exo *Client) GetSecurityGroupId(name string) (string, error) {
 	return "", nil
 }
 
+// GetZones return the zones given the params.
 func (exo *Client) GetZones(params url.Values) ([]*Zone, error) {
 	resp, err := exo.Request("listZones", params)
-
 	if err != nil {
 		return nil, err
 	}
@@ -68,20 +68,20 @@ func (exo *Client) GetZones(params url.Values) ([]*Zone, error) {
 		return nil, err
 	}
 
-	return r.Zones, nil
+	return r.Zone, nil
 }
 
-func (exo *Client) GetAllZones() (map[string]string, error) {
-	var zones map[string]string
+func (exo *Client) GetAllZones() (map[string]*Zone, error) {
+	var zones map[string]*Zone
 	params := url.Values{}
 	response, err := exo.GetZones(params)
 	if err != nil {
 		return zones, err
 	}
 
-	zones = make(map[string]string)
+	zones = make(map[string]*Zone)
 	for _, zone := range response {
-		zones[zone.Name] = zone.Id
+		zones[strings.ToLower(zone.Name)] = zone
 	}
 	return zones, nil
 }
@@ -173,7 +173,7 @@ func (exo *Client) GetImages() (map[string]map[int]string, error) {
 	}
 
 	re := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9.]+)\b`)
-	for _, template := range r.Templates {
+	for _, template := range r.Template {
 		size := int(template.Size / (1024 * 1024 * 1024))
 
 		fullname := strings.ToLower(template.Name)
@@ -232,6 +232,7 @@ func (exo *Client) GetTopology() (*Topology, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	profiles, err := exo.GetProfiles()
 	if err != nil {
 		return nil, err
