@@ -72,12 +72,7 @@ type SecurityGroupRuleResponse struct {
 
 // AddIpToNicResponse represents the addition of an IP to a NIC
 type AddIpToNicResponse struct {
-	Id               string   `json:"id"`
-	IpAddress        string   `json:"ipaddress"`
-	NetworkId        string   `json:"networkid"`
-	NicId            string   `json:"nicid"`
-	SecondaryIp      []string `json:"secondaryip,omitempty"`
-	VirtualMachineId string   `json:"virtualmachineid"`
+	NicSecondaryIp *NicSecondaryIp `json:"nicsecondaryip"`
 }
 
 // ListZonesResponse represents a list of zones
@@ -94,6 +89,12 @@ type ListPublicIpAddressesResponse struct {
 
 // ListTemplatesResponse represents a list of templates
 type ListTemplatesResponse struct {
-	Count    int        `json:"count"`
-	Template []Template `json:"template"`
+	Count    int         `json:"count"`
+	Template []*Template `json:"template"`
+}
+
+// ListNicsResponse represents a list of templates
+type ListNicsResponse struct {
+	Count int    `json:"count"`
+	Nic   []*Nic `json:"nic"`
 }

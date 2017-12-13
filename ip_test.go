@@ -108,13 +108,9 @@ func TestDisassociateIpAddress(t *testing.T) {
 
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	ipAddressId := "fakeId"
-	ok, err := cs.DestroyIpAddress(ipAddressId, async)
+	err := cs.DestroyIpAddress(ipAddressId, async)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	if !ok {
-		t.Errorf("Expected ok")
 	}
 }
 
@@ -133,12 +129,8 @@ func TestDisassociateIpAddressBadId(t *testing.T) {
 
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	ipAddressId := "fakeId"
-	ok, err := cs.DestroyIpAddress(ipAddressId, async)
+	err := cs.DestroyIpAddress(ipAddressId, async)
 	if err == nil {
 		t.Errorf("Expected an error, got nothing")
-	}
-
-	if ok {
-		t.Errorf("Expected ko")
 	}
 }

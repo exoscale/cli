@@ -305,25 +305,26 @@ type VirtualMachine struct {
 
 // Nic represents a Network Interface Controller (NIC)
 type Nic struct {
-	Broadcasturi string `json:"broadcasturi,omitempty"`
-	Gateway      string `json:"gateway,omitempty"`
 	Id           string `json:"id,omitempty"`
-	Ip6address   string `json:"ip6address,omitempty"`
-	Ip6cidr      string `json:"ip6cidr,omitempty"`
-	Ip6gateway   string `json:"ip6gateway,omitempty"`
-	Ipaddress    string `json:"ipaddress,omitempty"`
-	Isdefault    bool   `json:"isdefault,omitempty"`
-	Isolationuri string `json:"isolationuri,omitempty"`
-	Macaddress   string `json:"macaddress,omitempty"`
+	BroadcastUri string `json:"broadcasturi,omitempty"`
+	Gateway      string `json:"gateway,omitempty"`
+	Ip6Address   string `json:"ip6address,omitempty"`
+	Ip6Cidr      string `json:"ip6cidr,omitempty"`
+	Ip6Gateway   string `json:"ip6gateway,omitempty"`
+	IpAddress    string `json:"ipaddress,omitempty"`
+	IsDefault    bool   `json:"isdefault,omitempty"`
+	IsolationUri string `json:"isolationuri,omitempty"`
+	MacAddress   string `json:"macaddress,omitempty"`
 	Netmask      string `json:"netmask,omitempty"`
-	Networkid    string `json:"networkid,omitempty"`
-	Networkname  string `json:"networkname,omitempty"`
+	NetworkId    string `json:"networkid,omitempty"`
+	NetworkName  string `json:"networkname,omitempty"`
 	Secondaryip  []struct {
 		Id        string `json:"id,omitempty"`
 		IpAddress string `json:"ipaddress,omitempty"`
 	} `json:"secondaryip,omitempty"`
-	Traffictype string `json:"traffictype,omitempty"`
-	Type        string `json:"type,omitempty"`
+	Traffictype      string `json:"traffictype,omitempty"`
+	Type             string `json:"type,omitempty"`
+	VirtualMachineId string `json:"virtualmachineid,omitempty"`
 }
 
 type StartVirtualMachineResponse struct {
@@ -429,4 +430,13 @@ type IpAddress struct {
 	Tags                      []string      `json:"tags,omitempty"`
 	JobId                     string        `json:"jobid,omitempty"`
 	JobStatus                 JobStatusType `json:"jobstatus,omitempty"`
+}
+
+// NicSecondaryIp represents a link between NicId and IpAddress.
+type NicSecondaryIp struct {
+	Id               string `json:"id"`
+	IpAddress        string `json:"ipaddress"`
+	NetworkId        string `json:"networkid"`
+	NicId            string `json:"nicid"`
+	VirtualMachineId string `json:"virtualmachineid,omitempty"`
 }
