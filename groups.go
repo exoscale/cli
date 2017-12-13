@@ -11,7 +11,7 @@ func (exo *Client) CreateEgressRule(rule SecurityGroupRule, async AsyncInfo) (*S
 	return exo.AuthorizeSecurityGroupEgress(rule, async)
 }
 
-// AutorizeSecurityGroupEgress authorizes a particular egress rule for this security group
+// AuthorizeSecurityGroupEgress authorizes a particular egress rule for this security group
 func (exo *Client) AuthorizeSecurityGroupEgress(rule SecurityGroupRule, async AsyncInfo) (*SecurityGroupRule, error) {
 	return exo.doSecurityGroupRule("authorize", "Egress", rule, async)
 }
@@ -21,7 +21,7 @@ func (exo *Client) CreateIngressRule(rule SecurityGroupRule, async AsyncInfo) (*
 	return exo.AuthorizeSecurityGroupIngress(rule, async)
 }
 
-// AutorizeSecurityGroupIngress authorizes a particular ingress rule for this security group
+// AuthorizeSecurityGroupIngress authorizes a particular ingress rule for this security group
 func (exo *Client) AuthorizeSecurityGroupIngress(rule SecurityGroupRule, async AsyncInfo) (*SecurityGroupRule, error) {
 	return exo.doSecurityGroupRule("authorize", "Ingress", rule, async)
 }
