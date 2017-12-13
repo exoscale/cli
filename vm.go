@@ -37,38 +37,38 @@ func (exo *Client) DeployVirtualMachine(p VirtualMachineProfile, async AsyncInfo
 }
 
 // StartVirtualMachine starts the VM and returns its new state
-func (exo *Client) StartVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) StartVirtualMachine(virtualMachineId string, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
-	params.Set("id", string(id))
+	params.Set("id", virtualMachineId)
 
 	return exo.doVirtualMachine("start", params, async)
 }
 
 // StopVirtualMachine stops the VM and returns its new state
-func (exo *Client) StopVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) StopVirtualMachine(virtualMachineId string, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
-	params.Set("id", string(id))
+	params.Set("id", virtualMachineId)
 
 	return exo.doVirtualMachine("stop", params, async)
 }
 
 // RebootVirtualMachine reboots the VM and returns its new state
-func (exo *Client) RebootVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) RebootVirtualMachine(virtualMachineId string, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
-	params.Set("id", string(id))
+	params.Set("id", virtualMachineId)
 
 	return exo.doVirtualMachine("reboot", params, async)
 }
 
 // DeleteVirtualMachine is an alias for DestroyVirtualMachine
-func (exo *Client) DeleteVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
-	return exo.DestroyVirtualMachine(id, async)
+func (exo *Client) DeleteVirtualMachine(virtualMachineId string, async AsyncInfo) (*VirtualMachine, error) {
+	return exo.DestroyVirtualMachine(virtualMachineId, async)
 }
 
 // DestroyVirtualMachine destroy the VM
-func (exo *Client) DestroyVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) DestroyVirtualMachine(virtualMachineId string, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
-	params.Set("id", string(id))
+	params.Set("id", virtualMachineId)
 
 	return exo.doVirtualMachine("destroy", params, async)
 }
@@ -89,10 +89,10 @@ func (exo *Client) doVirtualMachine(action string, params url.Values, async Asyn
 }
 
 // GetVirtualMachine
-func (exo *Client) GetVirtualMachine(id VirtualMachineId) (*VirtualMachine, error) {
+func (exo *Client) GetVirtualMachine(virtualMachineId string) (*VirtualMachine, error) {
 
 	params := url.Values{}
-	params.Set("id", string(id))
+	params.Set("id", virtualMachineId)
 
 	resp, err := exo.Request("listVirtualMachines", params)
 	if err != nil {
@@ -109,7 +109,7 @@ func (exo *Client) GetVirtualMachine(id VirtualMachineId) (*VirtualMachine, erro
 		machine := r.VirtualMachines[0]
 		return machine, nil
 	} else {
-		return nil, fmt.Errorf("cannot retrieve virtualmachine with id %s", id)
+		return nil, fmt.Errorf("cannot retrieve virtualmachine with id %s", virtualMachineId)
 	}
 }
 

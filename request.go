@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"sort"
@@ -158,7 +157,6 @@ func (exo *Client) request(command string, params url.Values) (json.RawMessage, 
 	query := params.Encode()
 	url := fmt.Sprintf("%s?%s&signature=%s", exo.endpoint, csQuotePlus(query), signature)
 
-	log.Printf("[DEBUG] GET %s", csQuotePlus(query))
 	resp, err := exo.client.Get(url)
 	if err != nil {
 		return nil, err

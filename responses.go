@@ -72,10 +72,10 @@ type SecurityGroupRuleResponse struct {
 
 // AddIpToNicResponse represents the addition of an IP to a NIC
 type AddIpToNicResponse struct {
-	Id               string           `json:"id"`
-	IpAddress        string           `json:"ipaddress"`
-	NetworkId        string           `json:"networkid"`
-	NicId            string           `json:"nicid"`
-	SecondaryIp      []string         `json:"secondaryip,omitempty"`
-	VirtualMachineId VirtualMachineId `json:"virtualmachineid"`
+	Id               string   `json:"id"`
+	IpAddress        string   `json:"ipaddress"`
+	NetworkId        string   `json:"networkid"`
+	NicId            string   `json:"nicid"`
+	SecondaryIp      []string `json:"secondaryip,omitempty"`
+	VirtualMachineId string   `json:"virtualmachineid"`
 }

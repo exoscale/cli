@@ -246,12 +246,9 @@ type ListVirtualMachinesResponse struct {
 	VirtualMachines []*VirtualMachine `json:"virtualmachine"`
 }
 
-// VirtualMachineId represents a VM identifier
-type VirtualMachineId string
-
 // VirtualMachine reprents a virtual machine
 type VirtualMachine struct {
-	Id                    VirtualMachineId  `json:"id,omitempty"`
+	Id                    string            `json:"id,omitempty"`
 	Account               string            `json:"account,omitempty"`
 	CpuNumber             int               `json:"cpunumber,omitempty"`
 	CpuSpeed              int               `json:"cpuspeed,omitempty"`
