@@ -67,19 +67,19 @@ func (exo *Client) doSecurityGroupRule(action string, kind string, rule Security
 	return r.SecurityGroupRule, nil
 }
 
-func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityGroupRule, egress []SecurityGroupRule, async AsyncInfo) (*CreateSecurityGroupResponse, error) {
+// CreateGroupSecurityWithRules creats a SG with the given set of rules
+func (exo *Client) CreateSecurityGroupWithRules(name string, ingress, egress []SecurityGroupRule, async AsyncInfo) (*CreateSecurityGroupResponse, error) {
 
 	params := url.Values{}
 	params.Set("name", name)
 
 	resp, err := exo.Request("createSecurityGroup", params)
-
-	var r CreateSecurityGroupResponseWrapper
-	if err := json.Unmarshal(resp, &r); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
-	if err != nil {
+	var r CreateSecurityGroupResponseWrapper
+	if err := json.Unmarshal(resp, &r); err != nil {
 		return nil, err
 	}
 
@@ -104,6 +104,7 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []SecurityG
 	return &r.Wrapped, nil
 }
 
+// DeleteSecurityGroup deletes a Security Group by name.
 func (exo *Client) DeleteSecurityGroup(name string) error {
 	params := url.Values{}
 	params.Set("name", name)

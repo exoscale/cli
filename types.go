@@ -32,8 +32,8 @@ type Topology struct {
 	AffinityGroups map[string]string
 }
 
-// MachineProfile represents the machine creation request
-type MachineProfile struct {
+// VirtualMachineProfile represents the machine creation request
+type VirtualMachineProfile struct {
 	Name            string
 	SecurityGroups  []string
 	Keypair         string
@@ -246,9 +246,12 @@ type ListVirtualMachinesResponse struct {
 	VirtualMachines []*VirtualMachine `json:"virtualmachine"`
 }
 
+// VirtualMachineId represents a VM identifier
+type VirtualMachineId string
+
 // VirtualMachine reprents a virtual machine
 type VirtualMachine struct {
-	Id                    string            `json:"id,omitempty"`
+	Id                    VirtualMachineId  `json:"id,omitempty"`
 	Account               string            `json:"account,omitempty"`
 	CpuNumber             int               `json:"cpunumber,omitempty"`
 	CpuSpeed              int               `json:"cpuspeed,omitempty"`
@@ -354,18 +357,6 @@ type CreateSSHKeyPairWrappedResponse struct {
 
 type CreateSSHKeyPairResponse struct {
 	Privatekey string `json:"privatekey,omitempty"`
-}
-
-type RemoveIpFromNicResponse struct {
-	JobID string `json:"jobid,omitempty"`
-}
-
-type AddIpToNicResponse struct {
-	Id        string `json:"id"`
-	IpAddress string `json:"ipaddress"`
-	NetworkId string `json:"networkid"`
-	NicId     string `json:"nicid"`
-	VmId      string `json:"virtualmachineid"`
 }
 
 type DeleteSSHKeyPairResponse struct {

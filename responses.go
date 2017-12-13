@@ -65,7 +65,17 @@ type VirtualMachineResponse struct {
 	VirtualMachine *VirtualMachine `json:"virtualmachine"`
 }
 
-// SecurityGroupRuleResponse struct {
+// SecurityGroupRuleResponse represents a deployed security group
 type SecurityGroupRuleResponse struct {
 	SecurityGroupRule *SecurityGroupRule `json:"securitygrouprule,omitempty"`
+}
+
+// AddIpToNicResponse represents the addition of an IP to a NIC
+type AddIpToNicResponse struct {
+	Id               string           `json:"id"`
+	IpAddress        string           `json:"ipaddress"`
+	NetworkId        string           `json:"networkid"`
+	NicId            string           `json:"nicid"`
+	SecondaryIp      []string         `json:"secondaryip,omitempty"`
+	VirtualMachineId VirtualMachineId `json:"virtualmachineid"`
 }

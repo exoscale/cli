@@ -49,12 +49,13 @@ func (exo *Client) DisassociateIpAddress(ipAddressId string, async AsyncInfo) (b
 	return r.Success, nil
 }
 
-func (exo *Client) AddIpToNic(nic_id string, ip_address string) (string, error) {
+// AddIpToNic
+func (exo *Client) AddIpToNic(nic_id string, ip_address string, async AsyncInfo) (string, error) {
 	params := url.Values{}
 	params.Set("nicid", nic_id)
 	params.Set("ipaddress", ip_address)
 
-	resp, err := exo.Request("addIpToNic", params)
+	resp, err := exo.AsyncRequest("addIpToNic", params, async)
 	if err != nil {
 		return "", err
 	}
@@ -67,18 +68,19 @@ func (exo *Client) AddIpToNic(nic_id string, ip_address string) (string, error) 
 	return r.Id, nil
 }
 
-func (exo *Client) RemoveIpFromNic(nic_id string) (string, error) {
+// RemoveIpFromNic removes the IP from the NIC
+func (exo *Client) RemoveIpFromNic(nic_id string, async AsyncInfo) (bool, error) {
 	params := url.Values{}
 	params.Set("id", nic_id)
 
-	resp, err := exo.Request("removeIpFromNic", params)
+	resp, err := exo.AsyncRequest("removeIpFromNic", params, async)
 	if err != nil {
-		return "", err
+		return false, err
 	}
 
-	var r RemoveIpFromNicResponse
+	var r BooleanResponse
 	if err := json.Unmarshal(resp, &r); err != nil {
-		return "", err
+		return false, err
 	}
-	return r.JobID, nil
+	return r.Success, nil
 }

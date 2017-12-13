@@ -9,12 +9,12 @@ import (
 )
 
 // CreateVirtualMachine is an alias for DeployVirtualMachine
-func (exo *Client) CreateVirtualMachine(p MachineProfile, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) CreateVirtualMachine(p VirtualMachineProfile, async AsyncInfo) (*VirtualMachine, error) {
 	return exo.DeployVirtualMachine(p, async)
 }
 
 // DeployVirtualMachine creates a new VM
-func (exo *Client) DeployVirtualMachine(p MachineProfile, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) DeployVirtualMachine(p VirtualMachineProfile, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
 	params.Set("serviceofferingid", p.ServiceOffering)
 	params.Set("templateid", p.Template)
@@ -37,41 +37,43 @@ func (exo *Client) DeployVirtualMachine(p MachineProfile, async AsyncInfo) (*Vir
 }
 
 // StartVirtualMachine starts the VM and returns its new state
-func (exo *Client) StartVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) StartVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
-	params.Set("id", id)
+	params.Set("id", string(id))
 
 	return exo.doVirtualMachine("start", params, async)
 }
 
 // StopVirtualMachine stops the VM and returns its new state
-func (exo *Client) StopVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) StopVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
-	params.Set("id", id)
+	params.Set("id", string(id))
 
 	return exo.doVirtualMachine("stop", params, async)
 }
 
 // RebootVirtualMachine reboots the VM and returns its new state
-func (exo *Client) RebootVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) RebootVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
-	params.Set("id", id)
+	params.Set("id", string(id))
 
 	return exo.doVirtualMachine("reboot", params, async)
 }
 
 // DeleteVirtualMachine is an alias for DestroyVirtualMachine
-func (exo *Client) DeleteVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
+func (exo *Client) DeleteVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
 	return exo.DestroyVirtualMachine(id, async)
 }
 
-func (exo *Client) DestroyVirtualMachine(id string, async AsyncInfo) (*VirtualMachine, error) {
+// DestroyVirtualMachine destroy the VM
+func (exo *Client) DestroyVirtualMachine(id VirtualMachineId, async AsyncInfo) (*VirtualMachine, error) {
 	params := url.Values{}
-	params.Set("id", id)
+	params.Set("id", string(id))
 
 	return exo.doVirtualMachine("destroy", params, async)
 }
 
+// doVirtualMachine is a utility function to perform the API call
 func (exo *Client) doVirtualMachine(action string, params url.Values, async AsyncInfo) (*VirtualMachine, error) {
 	resp, err := exo.AsyncRequest(action+"VirtualMachine", params, async)
 	if err != nil {
@@ -86,10 +88,11 @@ func (exo *Client) doVirtualMachine(action string, params url.Values, async Asyn
 	return r.VirtualMachine, nil
 }
 
-func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {
+// GetVirtualMachine
+func (exo *Client) GetVirtualMachine(id VirtualMachineId) (*VirtualMachine, error) {
 
 	params := url.Values{}
-	params.Set("id", id)
+	params.Set("id", string(id))
 
 	resp, err := exo.Request("listVirtualMachines", params)
 	if err != nil {
@@ -110,6 +113,7 @@ func (exo *Client) GetVirtualMachine(id string) (*VirtualMachine, error) {
 	}
 }
 
+// ListVirtualMachines lists all the VM
 func (exo *Client) ListVirtualMachines() ([]*VirtualMachine, error) {
 
 	resp, err := exo.Request("listVirtualMachines", url.Values{})

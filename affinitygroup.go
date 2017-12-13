@@ -5,6 +5,7 @@ import (
 	"net/url"
 )
 
+// CreateAffinityGroup creates an affinity group of type (`Anti Affinity`)
 func (exo *Client) CreateAffinityGroup(name string, async AsyncInfo) (*AffinityGroup, error) {
 	params := url.Values{}
 	params.Set("name", name)
@@ -23,6 +24,7 @@ func (exo *Client) CreateAffinityGroup(name string, async AsyncInfo) (*AffinityG
 	return &r.AffinityGroup, nil
 }
 
+// DeleteAffinityGroup deletes an affinity group by name
 func (exo *Client) DeleteAffinityGroup(name string, async AsyncInfo) (bool, error) {
 	params := url.Values{}
 	params.Set("name", name)
