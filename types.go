@@ -261,7 +261,7 @@ type VirtualMachine struct {
 	GuestOsId             string            `json:"guestosid,omitempty"`
 	HaEnable              bool              `json:"haenable,omitempty"`
 	HostId                string            `json:"hostid,omitempty"`
-	Hostname              string            `json:"hostname,omitempty"`
+	HostName              string            `json:"hostname,omitempty"`
 	Hypervisor            string            `json:"hypervisor,omitempty"`
 	InstanceName          string            `json:"instancename,omitempty"`
 	IsDynamicallyScalable bool              `json:"isdynamicallyscalable,omitempty"`
