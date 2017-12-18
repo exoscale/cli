@@ -98,3 +98,9 @@ type ListNicsResponse struct {
 	Count int    `json:"count"`
 	Nic   []*Nic `json:"nic"`
 }
+
+// ListVolumesResponse represents a list of volumes
+type ListVolumesResponse struct {
+	Count  int       `json:"count"`
+	Volume []*Volume `json:"volume"`
+}
