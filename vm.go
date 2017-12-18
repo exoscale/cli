@@ -19,6 +19,9 @@ func (exo *Client) DeployVirtualMachine(p VirtualMachineProfile, async AsyncInfo
 	params.Set("serviceofferingid", p.ServiceOffering)
 	params.Set("templateid", p.Template)
 	params.Set("zoneid", p.Zone)
+	if p.DiskSize > 0 {
+		params.Set("rootdisksize", fmt.Sprintf("%d", p.DiskSize))
+	}
 
 	params.Set("displayname", p.Name)
 	if len(p.Userdata) > 0 {

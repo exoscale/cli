@@ -35,6 +35,7 @@ type Topology struct {
 // VirtualMachineProfile represents the machine creation request
 type VirtualMachineProfile struct {
 	Name            string
+	DiskSize        uint64
 	SecurityGroups  []string
 	Keypair         string
 	Userdata        string
