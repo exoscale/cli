@@ -24,8 +24,8 @@ func (exo *Client) DeployVirtualMachine(p VirtualMachineProfile, async AsyncInfo
 	}
 
 	params.Set("displayname", p.Name)
-	if len(p.Userdata) > 0 {
-		params.Set("userdata", base64.StdEncoding.EncodeToString([]byte(p.Userdata)))
+	if len(p.UserData) > 0 {
+		params.Set("userdata", base64.StdEncoding.EncodeToString([]byte(p.UserData)))
 	}
 	if len(p.Keypair) > 0 {
 		params.Set("keypair", p.Keypair)

@@ -38,7 +38,7 @@ type VirtualMachineProfile struct {
 	DiskSize        uint64
 	SecurityGroups  []string
 	Keypair         string
-	Userdata        string
+	UserData        string
 	ServiceOffering string
 	Template        string
 	Zone            string

@@ -155,9 +155,10 @@ func (exo *Client) request(command string, params url.Values) (json.RawMessage, 
 	mac.Write([]byte(sign_string))
 	signature := csEncode(base64.StdEncoding.EncodeToString(mac.Sum(nil)))
 	query := params.Encode()
-	url := fmt.Sprintf("%s?%s&signature=%s", exo.endpoint, csQuotePlus(query), signature)
+	reader := strings.NewReader(fmt.Sprintf("%s&signature=%s", csQuotePlus(query), signature))
 
-	resp, err := exo.client.Get(url)
+	// Use PostForm?
+	resp, err := exo.client.Post(exo.endpoint, "application/x-www-form-urlencoded", reader)
 	if err != nil {
 		return nil, err
 	}
