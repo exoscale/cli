@@ -2,9 +2,6 @@ package egoscale
 
 import (
 	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"testing"
 )
 
@@ -55,7 +52,7 @@ func TestGetImages(t *testing.T) {
 	var tests = []struct {
 		uuid  string
 		names []string
-		size  int
+		size  int64
 	}{
 		{
 			"4c0732a0-3df0-4f66-8d16-009f91cf05d6",
@@ -95,75 +92,4 @@ func TestGetImages(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestGetSecurityGroups(t *testing.T) {
-	ts := newServer(200, `
-{
-	"listsecurityresponse (doesn't matter)": {
-		"count": 1,
-		"securitygroup": [
-			{
-				"account": "john.doe@example.org",
-				"description": "Default Security Group",
-				"egressrule": [],
-				"id": "8282c50e-db68-4584-84ef-394ca68165fc",
-				"ingressrule": [
-					{
-						"cidr": "0.0.0.0/0",
-						"endport": 22,
-						"protocol": "tcp",
-						"ruleid": "933aa3f0-1e0b-4428-ab13-ee0bd0874f03",
-						"startport": 22,
-						"tags": []
-					},
-					{
-						"cidr": "0.0.0.0/0",
-						"icmpcode": 0,
-						"icmptype": 8,
-						"protocol": "icmp",
-						"ruleid": "db864f8d-6f08-4fa6-84e1-ba1742930db6",
-						"tags": []
-					},
-					{
-						"protocol": "tcp",
-						"startport": 80,
-						"endport": 80,
-						"usersecuritygrouplist": [
-							{
-								"account": "john.doe@example.org",
-								"group": "other"
-							}
-						]
-					}
-				],
-				"name": "dummy",
-				"tags": []
-			}
-		]
-	}
-}
-	`)
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "TOKEN", "SECRET")
-	params := url.Values{}
-	securityGroups, err := cs.GetSecurityGroups(params)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	sg := securityGroups[0]
-	if sg.IngressRules[2].UserSecurityGroupList[0].Group != "other" {
-		t.Errorf("UserSecurityGroupList %s not found", "other")
-	}
-}
-
-func newServer(code int, response string) *httptest.Server {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(code)
-		w.Write([]byte(response))
-	})
-	return httptest.NewServer(mux)
 }
