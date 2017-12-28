@@ -1,60 +1,65 @@
-/*
-Service Offerings
-
-A service offering correspond to some hardware features (CPU, RAM).
-
-See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/service_offerings.html
-*/
 package egoscale
 
 // ServiceOffering corresponds to the Compute Offerings
 type ServiceOffering struct {
-	CpuNumber              int               `json:"cpunumber,omitempty"`
-	CpuSpeed               int               `json:"cpuspeed,omitempty"`
-	DisplayText            string            `json:"displaytext,omitempty"`
-	Domain                 string            `json:"domain,omitempty"`
-	DomainId               string            `json:"domainid,omitempty"`
-	HostTags               string            `json:"hosttags,omitempty"`
-	Id                     string            `json:"id,omitempty"`
-	IsCustomized           bool              `json:"iscustomized,omitempty"`
-	IsSystem               bool              `json:"issystem,omitempty"`
-	IsVolatile             bool              `json:"isvolatile,omitempty"`
-	Memory                 int               `json:"memory,omitempty"`
-	Name                   string            `json:"name,omitempty"`
-	NetworkRate            int               `json:"networkrate,omitempty"`
-	ServiceOfferingDetails map[string]string `json:"serviceofferingdetails,omitempty"`
+	ID                        string            `json:"id"`
+	CPUNumber                 int               `json:"cpunumber"`
+	CPUSpeed                  int               `json:"cpuspeed"`
+	Created                   string            `json:"created"`
+	DefaultUse                bool              `json:"defaultuse,omitempty"`
+	DeploymentPlanner         string            `json:"deploymentplanner,omitempty"`
+	DiskBytesReadRate         int64             `json:"diskBytesReadRate,omitempty"`
+	DiskBytesWriteRate        int64             `json:"diskBytesWriteRate,omitempty"`
+	DiskIopsReadRate          int64             `json:"diskIopsReadRate,omitempty"`
+	DiskIopsWriteRate         int64             `json:"diskIopsWriteRate,omitempty"`
+	DisplayText               string            `json:"displaytext,omitempty"`
+	Domain                    string            `json:"domain"`
+	DomainID                  string            `json:"domainid"`
+	HostTags                  string            `json:"hosttags,omitempty"`
+	HypervisorSnapshotReserve int               `json:"hypervisorsnapshotreserve,omitempty"`
+	IsCustomized              bool              `json:"iscustomized,omitempty"`
+	IsCustomizedIops          bool              `json:"iscustomizediops,omitempty"`
+	IsSystem                  bool              `json:"issystem,omitempty"`
+	IsVolatile                bool              `json:"isvolatile,omitempty"`
+	LimitCPUUse               bool              `json:"limitcpuuse,omitempty"`
+	MaxIops                   int64             `json:"maxiops,omitempty"`
+	Memory                    int               `json:"memory,omitempty"`
+	MinIops                   int64             `json:"miniops,omitempty"`
+	Name                      string            `json:"name,omitempty"`
+	NetworkRate               int               `json:"networkrate,omitempty"`
+	OfferHA                   bool              `json:"offerha,omitempty"`
+	ServiceOfferingDetails    map[string]string `json:"serviceofferingdetails,omitempty"`
+	StorageType               string            `json:"storagetype,omitempty"`
+	SystemVMType              string            `json:"systemvmtype,omitempty"`
+	Tags                      []*ResourceTag    `json:"tags,omitempty"`
 }
 
-// ListServiceOfferingRequest represents a query for service offerings
-type ListServiceOfferingsRequest struct {
-	DomainId         string `json:"domainid,omitempty"`
-	Id               string `json:"id,omitempty"`
+// ListServiceOfferings represents a query for service offerings
+//
+// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listServiceOfferings.html
+type ListServiceOfferings struct {
+	DomainID         string `json:"domainid,omitempty"`
+	ID               string `json:"id,omitempty"`
+	IsRecursive      bool   `json:"isrecursive,omitempty"`
 	IsSystem         bool   `json:"issystem,omitempty"`
 	Keyword          string `json:"keyword,omitempty"`
 	Name             string `json:"name,omitempty"`
 	Page             int    `json:"page,omitempty"`
 	PageSize         int    `json:"pagesize,omitempty"`
-	SystemVmType     string `json:"systemvmtype"`
-	VirtualMachineId string `json:"virtualmachineid"`
+	SystemVMType     string `json:"systemvmtype,omitempty"` // consoleproxy, secondarystoragevm, or domainrouter
+	VirtualMachineID string `json:"virtualmachineid,omitempty"`
 }
 
-// Command returns the CloudStack API command
-func (req *ListServiceOfferingsRequest) Command() string {
+func (req *ListServiceOfferings) name() string {
 	return "listServiceOfferings"
+}
+
+func (req *ListServiceOfferings) response() interface{} {
+	return new(ListServiceOfferingsResponse)
 }
 
 // ListServiceOfferingsResponse represents a list of service offerings
 type ListServiceOfferingsResponse struct {
 	Count           int                `json:"count"`
 	ServiceOffering []*ServiceOffering `json:"serviceoffering"`
-}
-
-func (exo *Client) ListServiceOfferings(req *ListServiceOfferingsRequest) ([]*ServiceOffering, error) {
-	var r ListServiceOfferingsResponse
-	err := exo.Request(req, &r)
-	if err != nil {
-		return nil, err
-	}
-
-	return r.ServiceOffering, nil
 }

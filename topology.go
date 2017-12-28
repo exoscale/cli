@@ -6,119 +6,129 @@ import (
 	"strings"
 )
 
-// Deprecated: GetSecurityGroups returns all security groups
+// GetSecurityGroups returns all security groups
+//
+// Deprecated: do it yourself
 func (exo *Client) GetSecurityGroups() (map[string]SecurityGroup, error) {
 	var sgs map[string]SecurityGroup
-	resp := new(ListSecurityGroupsResponse)
-	err := exo.Request(&ListSecurityGroupsRequest{}, resp)
+	resp, err := exo.Request(&ListSecurityGroups{})
 	if err != nil {
 		return nil, err
 	}
 
 	sgs = make(map[string]SecurityGroup)
-	for _, sg := range resp.SecurityGroup {
+	for _, sg := range resp.(*ListSecurityGroupsResponse).SecurityGroup {
 		sgs[sg.Name] = *sg
 	}
 	return sgs, nil
 }
 
-// Deprecated: GetSecurityGroupId returns security group by name
-func (exo *Client) GetSecurityGroupId(name string) (string, error) {
-	resp := new(ListSecurityGroupsResponse)
-	err := exo.Request(&ListSecurityGroupsRequest{SecurityGroupName: name}, resp)
+// GetSecurityGroupID returns security group by name
+//
+// Deprecated: do it yourself
+func (exo *Client) GetSecurityGroupID(name string) (string, error) {
+	resp, err := exo.Request(&ListSecurityGroups{SecurityGroupName: name})
 	if err != nil {
 		return "", err
 	}
 
-	for _, sg := range resp.SecurityGroup {
+	for _, sg := range resp.(*ListSecurityGroupsResponse).SecurityGroup {
 		if sg.Name == name {
-			return sg.Id, nil
+			return sg.ID, nil
 		}
 	}
 
 	return "", nil
 }
 
-// Deprecated: GetAllZones returns all the zone id by name
+// GetAllZones returns all the zone id by name
+//
+// Deprecated: do it yourself
 func (exo *Client) GetAllZones() (map[string]string, error) {
 	var zones map[string]string
-	r := new(ListZonesResponse)
-	err := exo.Request(&ListZonesRequest{}, r)
+	resp, err := exo.Request(&ListZones{})
 	if err != nil {
 		return zones, err
 	}
 
 	zones = make(map[string]string)
-	for _, zone := range r.Zone {
-		zones[strings.ToLower(zone.Name)] = zone.Id
+	for _, zone := range resp.(*ListZonesResponse).Zone {
+		zones[strings.ToLower(zone.Name)] = zone.ID
 	}
 	return zones, nil
 }
 
-// Deprecated: GetProfiles returns a mapping of the service offerings by name
+// GetProfiles returns a mapping of the service offerings by name
+//
+// Deprecated: do it yourself
 func (exo *Client) GetProfiles() (map[string]string, error) {
 	profiles := make(map[string]string)
-	r := new(ListServiceOfferingsResponse)
-	err := exo.Request(&ListServiceOfferingsRequest{}, r)
+	resp, err := exo.Request(&ListServiceOfferings{})
 	if err != nil {
 		return profiles, nil
 	}
 
-	for _, offering := range r.ServiceOffering {
-		profiles[strings.ToLower(offering.Name)] = offering.Id
+	for _, offering := range resp.(*ListServiceOfferingsResponse).ServiceOffering {
+		profiles[strings.ToLower(offering.Name)] = offering.ID
 	}
 
 	return profiles, nil
 }
 
-// Deprecated: GetKeypairs returns the list of SSH keyPairs
-func (exo *Client) GetKeypairs() ([]SshKeyPair, error) {
-	var keypairs []SshKeyPair
+// GetKeypairs returns the list of SSH keyPairs
+//
+// Deprecated: do it yourself
+func (exo *Client) GetKeypairs() ([]SSHKeyPair, error) {
+	var keypairs []SSHKeyPair
 
-	resp := new(ListSshKeyPairsResponse)
-	err := exo.Request(&ListSshKeyPairsRequest{}, resp)
+	resp, err := exo.Request(&ListSSHKeyPairs{})
 	if err != nil {
 		return keypairs, err
 	}
-	keypairs = make([]SshKeyPair, resp.Count)
-	for i, keypair := range resp.SshKeyPair {
+
+	r := resp.(*ListSSHKeyPairsResponse)
+	keypairs = make([]SSHKeyPair, r.Count)
+	for i, keypair := range r.SSHKeyPair {
 		keypairs[i] = *keypair
 	}
 	return keypairs, nil
 }
 
+// GetAffinityGroups returns a mapping of the (anti-)affinity groups
+//
+// Deprecated: do it yourself
 func (exo *Client) GetAffinityGroups() (map[string]string, error) {
 	var affinitygroups map[string]string
 
-	resp := new(ListAffinityGroupsResponse)
-	err := exo.Request(&ListAffinityGroupsRequest{}, resp)
+	resp, err := exo.Request(&ListAffinityGroups{})
 	if err != nil {
 		return affinitygroups, err
 	}
 
 	affinitygroups = make(map[string]string)
-	for _, affinitygroup := range resp.AffinityGroup {
-		affinitygroups[affinitygroup.Name] = affinitygroup.Id
+	for _, affinitygroup := range resp.(*ListAffinityGroupsResponse).AffinityGroup {
+		affinitygroups[affinitygroup.Name] = affinitygroup.ID
 	}
 	return affinitygroups, nil
 }
 
-// Deprecated: GetImages list the available featured images and group them by name, then size.
+// GetImages list the available featured images and group them by name, then size.
+//
+// Deprecated: do it yourself
 func (exo *Client) GetImages() (map[string]map[int64]string, error) {
 	var images map[string]map[int64]string
 	images = make(map[string]map[int64]string)
 	re := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9.]+)\b`)
 
-	resp := new(ListTemplatesResponse)
-	err := exo.Request(&ListTemplatesRequest{
+	resp, err := exo.Request(&ListTemplates{
 		TemplateFilter: "featured",
-		ZoneId:         "1", // XXX: Hack to list only CH-GVA
-	}, resp)
+		ZoneID:         "1", // XXX: Hack to list only CH-GVA
+	})
 	if err != nil {
 		return images, err
 	}
 
-	for _, template := range resp.Template {
+	for _, template := range resp.(*ListTemplatesResponse).Template {
 		size := int64(template.Size >> 30) // B to GiB
 
 		fullname := strings.ToLower(template.Name)
@@ -126,7 +136,7 @@ func (exo *Client) GetImages() (map[string]map[int64]string, error) {
 		if _, present := images[fullname]; !present {
 			images[fullname] = make(map[int64]string)
 		}
-		images[fullname][size] = template.Id
+		images[fullname][size] = template.ID
 
 		submatch := re.FindStringSubmatch(template.Name)
 		if len(submatch) > 0 {
@@ -137,13 +147,15 @@ func (exo *Client) GetImages() (map[string]map[int64]string, error) {
 			if _, present := images[image]; !present {
 				images[image] = make(map[int64]string)
 			}
-			images[image][size] = template.Id
+			images[image][size] = template.ID
 		}
 	}
 	return images, nil
 }
 
-// Deprecated: GetTopology returns an big, yet incomplete view of the world
+// GetTopology returns an big, yet incomplete view of the world
+//
+// Deprecated: will go away in the future
 func (exo *Client) GetTopology() (*Topology, error) {
 	zones, err := exo.GetAllZones()
 	if err != nil {
@@ -159,7 +171,7 @@ func (exo *Client) GetTopology() (*Topology, error) {
 	}
 	groups := make(map[string]string)
 	for k, v := range securityGroups {
-		groups[k] = v.Id
+		groups[k] = v.ID
 	}
 
 	keypairs, err := exo.GetKeypairs()

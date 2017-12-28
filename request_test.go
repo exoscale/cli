@@ -18,23 +18,32 @@ func TestPrepareValues(t *testing.T) {
 
 	profile := struct {
 		IgnoreMe string
-		Zone     string  `json:"myzone,omitempty"`
-		Name     string  `json:"name"`
-		Id       int     `json:"id"`
-		Uid      uint    `json:"uid"`
-		Num      float64 `json:"num"`
-		Bytes    []byte  `json:"bytes"`
-		Tags     []*tag  `json:"tags,omitempty"`
+		Zone     string            `json:"myzone,omitempty"`
+		Name     string            `json:"name"`
+		NoName   string            `json:"omitempty"`
+		ID       int               `json:"id"`
+		UserID   uint              `json:"user_id"`
+		IsGreat  bool              `json:"is_great"`
+		Num      float64           `json:"num"`
+		Bytes    []byte            `json:"bytes"`
+		IDs      []string          `json:"ids,omitempty"`
+		Tags     []*tag            `json:"tags,omitempty"`
+		Map      map[string]string `json:"map"`
 	}{
 		IgnoreMe: "bar",
 		Name:     "world",
-		Id:       1,
-		Uid:      uint(2),
+		NoName:   "foo",
+		ID:       1,
+		UserID:   uint(2),
 		Num:      3.14,
 		Bytes:    []byte("exo"),
+		IDs:      []string{"1", "2", "three"},
 		Tags: []*tag{
 			{Name: "foo"},
 			{Name: "bar", IsVisible: false},
+		},
+		Map: map[string]string{
+			"foo": "bar",
 		},
 	}
 
@@ -48,12 +57,20 @@ func TestPrepareValues(t *testing.T) {
 		t.Errorf("myzone params shouldn't be set, got %v", params.Get("myzone"))
 	}
 
+	if params.Get("NoName") != "foo" {
+		t.Errorf("NoName params wasn't properly set, got %v", params.Get("NoName"))
+	}
+
 	if params.Get("name") != "world" {
 		t.Errorf("name params wasn't properly set, got %v", params.Get("name"))
 	}
 
 	if params.Get("bytes") != "ZXhv" {
 		t.Errorf("bytes params wasn't properly encoded in base 64, got %v", params.Get("bytes"))
+	}
+
+	if params.Get("ids") != "1,2,three" {
+		t.Errorf("array of strings, wasn't property encoded, got %v", params.Get("ids"))
 	}
 
 	if _, ok := params["ignoreme"]; ok {
@@ -63,6 +80,17 @@ func TestPrepareValues(t *testing.T) {
 	v := params.Get("tags[0].name")
 	if v != "foo" {
 		t.Errorf("expected tags to be serialized as foo, got %#v", v)
+	}
+
+	k := params.Get("map[0].key")
+	v = params.Get("map[0].value")
+	if k != "foo" && v != "bar" {
+		t.Errorf("expected map to be serialized as \"foo\" => \"bar\", got %#v => %#v", k, v)
+	}
+
+	v = params.Get("is_great")
+	if v != "false" {
+		t.Errorf("expected bool to be serialized as \"false\", got %#v", v)
 	}
 }
 
@@ -141,15 +169,67 @@ func TestPrepareValuesSliceString(t *testing.T) {
 	}
 }
 
-func TestBooleanRequest(t *testing.T) {
+func TestPrepareValuesMap(t *testing.T) {
+	profile := struct {
+		RequiredField map[string]string `json:"requiredfield"`
+	}{}
+
 	params := url.Values{}
-	params.Set("command", "destroyVirtualMachine")
+	err := prepareValues("", &params, &profile)
+	if err == nil {
+		t.Errorf("It should have failed")
+	}
+}
+
+func TestRequest(t *testing.T) {
+	params := url.Values{}
+	params.Set("command", "listApis")
+	params.Set("token", "TOKEN")
+	params.Set("name", "dummy")
+	params.Set("response", "json")
+	ts := newPostServer(params, `
+{
+	"listapisresponse": {
+		"api": [{
+			"name": "dummy",
+			"description": "this is a test",
+			"isasync": false,
+			"since": "4.4",
+			"type": "list",
+			"name": "listDummies",
+			"params": [],
+			"related": "",
+			"response": []
+		}],
+		"count": 1
+	}
+}
+	`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	req := &ListAPIs{
+		Name: "dummy",
+	}
+	resp, err := cs.Request(req)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	apis := resp.(*ListAPIsResponse)
+	if apis.Count != 1 {
+		t.Errorf("Expected exactly one API, got %d", apis.Count)
+	}
+}
+
+func TestBooleanAsyncRequest(t *testing.T) {
+	params := url.Values{}
+	params.Set("command", "expungevirtualmachine")
 	params.Set("token", "TOKEN")
 	params.Set("id", "123")
 	params.Set("response", "json")
 	ts := newPostServer(params, `
 {
-	"destroyvirtualmachine": {
+	"expungevirtualmarchine": {
 		"jobid": "1",
 		"jobresult": {
 			"success": true,
@@ -162,8 +242,8 @@ func TestBooleanRequest(t *testing.T) {
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
-	req := &DestroyVirtualMachineRequest{
-		Id: "123",
+	req := &ExpungeVirtualMachine{
+		ID: "123",
 	}
 	err := cs.BooleanAsyncRequest(req, AsyncInfo{})
 
@@ -199,7 +279,6 @@ func newPostServer(params url.Values, response string) *httptest.Server {
 			}
 		}
 
-		log.Printf("len %d", len(errors))
 		if len(errors) == 0 {
 			w.WriteHeader(200)
 			w.Write([]byte(response))

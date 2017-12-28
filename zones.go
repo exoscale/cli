@@ -1,28 +1,23 @@
-/*
-Zones
-
-A Zone corresponds to a Data Center.
-*/
 package egoscale
 
 // Zone represents a data center
 type Zone struct {
-	Id                    string            `json:"id"`
+	ID                    string            `json:"id"`
 	AllocationState       string            `json:"allocationstate,omitempty"`
 	Capacity              string            `json:"capacity,omitempty"`
 	Description           string            `json:"description,omitempty"`
 	DhcpProvider          string            `json:"dhcpprovider,omitempty"`
 	DisplayText           string            `json:"displaytext,omitempty"`
-	Dns1                  string            `json:"dns1,omitempty"`
-	Dns2                  string            `json:"dns2,omitempty"`
+	DNS1                  string            `json:"dns1,omitempty"`
+	DNS2                  string            `json:"dns2,omitempty"`
 	Domain                string            `json:"domain,omitempty"`
-	DomainId              string            `json:"domainid,omitempty"`
+	DomainID              string            `json:"domainid,omitempty"`
 	DomainName            string            `json:"domainname,omitempty"`
 	GuestCidrAddress      string            `json:"guestcidraddress,omitempty"`
-	InternalDns1          string            `json:"internaldns1,omitempty"`
-	InternalDns2          string            `json:"internaldns2,omitempty"`
-	Ip6Dns1               string            `json:"ip6dns1,omitempty"`
-	Ip6Dns2               string            `json:"ip6dns2,omitempty"`
+	InternalDNS1          string            `json:"internaldns1,omitempty"`
+	InternalDNS2          string            `json:"internaldns2,omitempty"`
+	IP6DNS1               string            `json:"ip6dns1,omitempty"`
+	IP6DNS2               string            `json:"ip6dns2,omitempty"`
 	LocalStorageEnabled   bool              `json:"localstorageenabled,omitempty"`
 	Name                  string            `json:"name,omitempty"`
 	NetworkType           string            `json:"networktype,omitempty"`
@@ -33,11 +28,13 @@ type Zone struct {
 	Tags                  []*ResourceTag    `json:"tags,omitempty"`
 }
 
-// ListZonesRequest represents a query for zones
-type ListZonesRequest struct {
+// ListZones represents a query for zones
+//
+// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listZones.html
+type ListZones struct {
 	Available      bool           `json:"available,omitempty"`
-	DomainId       string         `json:"domainid,omitempty"`
-	Id             string         `json:"id,omitempty"`
+	DomainID       string         `json:"domainid,omitempty"`
+	ID             string         `json:"id,omitempty"`
 	Keyword        string         `json:"keyword,omitempty"`
 	Name           string         `json:"name,omitempty"`
 	Page           int            `json:"page,omitempty"`
@@ -46,9 +43,12 @@ type ListZonesRequest struct {
 	Tags           []*ResourceTag `json:"tags,omitempty"`
 }
 
-// Command returns the CloudStack API command
-func (req *ListZonesRequest) Command() string {
+func (req *ListZones) name() string {
 	return "listZones"
+}
+
+func (req *ListZones) response() interface{} {
+	return new(ListZonesResponse)
 }
 
 // ListZonesResponse represents a list of zones
