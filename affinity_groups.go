@@ -1,5 +1,9 @@
 package egoscale
 
+import (
+	"net/url"
+)
+
 // AffinityGroup represents an (anti-)affinity group
 type AffinityGroup struct {
 	ID                string   `json:"id,omitempty"`
@@ -56,6 +60,14 @@ func (req *UpdateVMAffinityGroup) name() string {
 
 func (req *UpdateVMAffinityGroup) asyncResponse() interface{} {
 	return new(UpdateVMAffinityGroupResponse)
+}
+
+func (req *UpdateVMAffinityGroup) onBeforeSend(params *url.Values) error {
+	// Either AffinityGroupIDs or AffinityGroupNames must be set
+	if len(req.AffinityGroupIDs) == 0 && len(req.AffinityGroupNames) == 0 {
+		params.Set("affinitygroupids", "")
+	}
+	return nil
 }
 
 // UpdateVMAffinityGroupResponse represents the new VM
