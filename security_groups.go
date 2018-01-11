@@ -100,7 +100,7 @@ func (req *DeleteSecurityGroup) response() interface{} {
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/authorizeSecurityGroupIngress.html
 type AuthorizeSecurityGroupIngress struct {
 	Account               string               `json:"account,omitempty"`
-	CidrList              string               `json:"cidrlist,omitempty"`
+	CidrList              []string             `json:"cidrlist,omitempty"`
 	Description           string               `json:"description,omitempty"`
 	DomainID              string               `json:"domainid,omitempty"`
 	IcmpType              int                  `json:"icmptype,omitempty"`
