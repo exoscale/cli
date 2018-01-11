@@ -411,7 +411,7 @@ type ListVirtualMachinesResponse struct {
 	VirtualMachine []*VirtualMachine `json:"virtualmachine"`
 }
 
-// AddNicToVirtualMachine adds a NIC to a VM
+// AddNicToVirtualMachine (Async) adds a NIC to a VM
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/addNicToVirtualMachine.html
 type AddNicToVirtualMachine struct {
@@ -431,7 +431,7 @@ func (req *AddNicToVirtualMachine) asyncResponse() interface{} {
 // AddNicToVirtualMachineResponse represents the modified VM
 type AddNicToVirtualMachineResponse VirtualMachineResponse
 
-// RemoveNicFromVirtualMachine removes a NIC from a VM
+// RemoveNicFromVirtualMachine (Async) removes a NIC from a VM
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/removeNicFromVirtualMachine.html
 type RemoveNicFromVirtualMachine struct {
@@ -449,3 +449,23 @@ func (req *RemoveNicFromVirtualMachine) asyncResponse() interface{} {
 
 // RemoveNicFromVirtualMachineResponse represents the modified VM
 type RemoveNicFromVirtualMachineResponse VirtualMachineResponse
+
+// UpdateDefaultNicForVirtualMachine (Async) adds a NIC to a VM
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateDefaultNicForVirtualMachine.html
+type UpdateDefaultNicForVirtualMachine struct {
+	NetworkID        string `json:"networkdid"`
+	VirtualMachineID string `json:"virtualmachineid"`
+	IPAddress        string `json:"ipaddress,omitempty"`
+}
+
+func (req *UpdateDefaultNicForVirtualMachine) name() string {
+	return "updateDefaultNicForVirtualMachine"
+}
+
+func (req *UpdateDefaultNicForVirtualMachine) asyncResponse() interface{} {
+	return new(UpdateDefaultNicForVirtualMachineResponse)
+}
+
+// UpdateDefaultNicForVirtualMachineResponse represents the modified VM
+type UpdateDefaultNicForVirtualMachineResponse VirtualMachineResponse

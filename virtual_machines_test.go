@@ -21,8 +21,7 @@ func TestVirtualMachines(t *testing.T) {
 	var _ AsyncCommand = (*ExpungeVirtualMachine)(nil)
 	var _ AsyncCommand = (*AddNicToVirtualMachine)(nil)
 	var _ AsyncCommand = (*RemoveNicFromVirtualMachine)(nil)
-	// TODO implement
-	//var _ AsyncCommand = (*UpdateDefaultNICFromVirtualMachine)(nil)
+	var _ AsyncCommand = (*UpdateDefaultNicForVirtualMachine)(nil)
 }
 
 func TestDeployVirtualMachine(t *testing.T) {
@@ -151,4 +150,12 @@ func TestRemoveNicFromVirtualMachine(t *testing.T) {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*RemoveNicFromVirtualMachineResponse)
+}
+
+func TestUpdateDefaultNicForVirtualMachine(t *testing.T) {
+	req := &UpdateDefaultNicForVirtualMachine{}
+	if req.name() != "updateDefaultNicForVirtualMachine" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.asyncResponse().(*UpdateDefaultNicForVirtualMachineResponse)
 }
