@@ -285,7 +285,7 @@ func (req *ExpungeVirtualMachine) name() string {
 }
 
 func (req *ExpungeVirtualMachine) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // ScaleVirtualMachine (Async) represents the scaling of a VM
@@ -305,7 +305,7 @@ func (req *ScaleVirtualMachine) name() string {
 }
 
 func (req *ScaleVirtualMachine) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // ChangeServiceForVirtualMachine represents the scaling of a VM

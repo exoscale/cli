@@ -80,27 +80,27 @@ func (e *ErrorResponse) Error() string {
 	return fmt.Sprintf("API error %d (internal code: %d): %s", e.ErrorCode, e.CsErrorCode, e.ErrorText)
 }
 
-// BooleanResponse represents a boolean response (usually after a deletion)
-type BooleanResponse struct {
+// booleanAsyncResponse represents a boolean response (usually after a deletion)
+type booleanAsyncResponse struct {
 	Success     bool   `json:"success"`
 	DisplayText string `json:"diplaytext,omitempty"`
 }
 
 // Error formats a CloudStack job response into a standard error
-func (e *BooleanResponse) Error() error {
+func (e *booleanAsyncResponse) Error() error {
 	if e.Success {
 		return nil
 	}
 	return fmt.Errorf("API error: %s", e.DisplayText)
 }
 
-// XXX HACK Sync boolean call returns success as a string
-type booleanResponse struct {
+// booleanAsyncResponse represents a boolean response for sync calls
+type booleanSyncResponse struct {
 	Success     string `json:"success"`
 	DisplayText string `json:"displaytext,omitempty"`
 }
 
-func (e *booleanResponse) Error() error {
+func (e *booleanSyncResponse) Error() error {
 	if e.Success == "true" {
 		return nil
 	}
@@ -243,7 +243,7 @@ func (exo *Client) BooleanRequest(req Command) error {
 		return err
 	}
 
-	return resp.(*booleanResponse).Error()
+	return resp.(*booleanSyncResponse).Error()
 }
 
 // BooleanAsyncRequest performs a sync request on a boolean call
@@ -253,7 +253,7 @@ func (exo *Client) BooleanAsyncRequest(req AsyncCommand, async AsyncInfo) error 
 		return err
 	}
 
-	return resp.(*BooleanResponse).Error()
+	return resp.(*booleanAsyncResponse).Error()
 }
 
 // Request performs a sync request on a generic command

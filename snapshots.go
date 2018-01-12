@@ -96,7 +96,7 @@ func (req *DeleteSnapshot) name() string {
 }
 
 func (req *DeleteSnapshot) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // RevertSnapshot revert a volume snapshot
@@ -111,5 +111,5 @@ func (req *RevertSnapshot) name() string {
 }
 
 func (req *RevertSnapshot) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }

@@ -31,7 +31,7 @@ func (req *CreateTags) name() string {
 }
 
 func (req *CreateTags) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // DeleteTags (Async) deletes the resource tag(s)
@@ -48,7 +48,7 @@ func (req *DeleteTags) name() string {
 }
 
 func (req *DeleteTags) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // ListTags list resource tag(s)

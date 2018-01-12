@@ -92,7 +92,7 @@ func (req *DeleteSecurityGroup) name() string {
 }
 
 func (req *DeleteSecurityGroup) response() interface{} {
-	return new(booleanResponse)
+	return new(booleanSyncResponse)
 }
 
 // AuthorizeSecurityGroupIngress (Async) represents the ingress rule creation
@@ -168,7 +168,7 @@ func (req *RevokeSecurityGroupIngress) name() string {
 }
 
 func (req *RevokeSecurityGroupIngress) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // RevokeSecurityGroupEgress (Async) represents the ingress/egress rule deletion
@@ -183,7 +183,7 @@ func (req *RevokeSecurityGroupEgress) name() string {
 }
 
 func (req *RevokeSecurityGroupEgress) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // ListSecurityGroups represents a search for security groups

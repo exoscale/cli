@@ -181,7 +181,7 @@ func (req *DeleteNetwork) name() string {
 }
 
 func (req *DeleteNetwork) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // ListNetworks represents a query to a network

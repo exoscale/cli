@@ -75,7 +75,7 @@ func (*DisassociateIPAddress) name() string {
 	return "disassociateIpAddress"
 }
 func (*DisassociateIPAddress) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // UpdateIPAddress (Async) represents the IP modification

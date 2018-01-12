@@ -83,7 +83,7 @@ func (req *RemoveIPFromNic) name() string {
 }
 
 func (req *RemoveIPFromNic) asyncResponse() interface{} {
-	return new(BooleanResponse)
+	return new(booleanAsyncResponse)
 }
 
 // ListNics lists the NIC of a VM
