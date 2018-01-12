@@ -48,7 +48,7 @@ func (req *DeleteSSHKeyPair) name() string {
 }
 
 func (req *DeleteSSHKeyPair) response() interface{} {
-	return new(BooleanResponse)
+	return new(booleanResponse)
 }
 
 // RegisterSSHKeyPair represents a new registration of a public key in a keypair

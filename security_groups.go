@@ -92,13 +92,7 @@ func (req *DeleteSecurityGroup) name() string {
 }
 
 func (req *DeleteSecurityGroup) response() interface{} {
-	return new(DeleteSecurityGroupResponse)
-}
-
-// DeleteSecurityGroupResponse fixes the fact that it serializes the bool as a string...
-type DeleteSecurityGroupResponse struct {
-	Success     string `json:"success"`
-	DisplayText string `json:"displaytext,omitempty"`
+	return new(booleanResponse)
 }
 
 // AuthorizeSecurityGroupIngress (Async) represents the ingress rule creation

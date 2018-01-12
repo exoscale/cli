@@ -45,7 +45,7 @@ func TestDeleteSecurityGroup(t *testing.T) {
 	if req.name() != "deleteSecurityGroup" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*DeleteSecurityGroupResponse)
+	_ = req.response().(*booleanResponse)
 }
 
 func TestListSecurityGroups(t *testing.T) {

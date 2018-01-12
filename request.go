@@ -94,6 +94,20 @@ func (e *BooleanResponse) Error() error {
 	return fmt.Errorf("API error: %s", e.DisplayText)
 }
 
+// XXX HACK Sync boolean call returns success as a string
+type booleanResponse struct {
+	Success     string `json:"success"`
+	DisplayText string `json:"displaytext,omitempty"`
+}
+
+func (e *booleanResponse) Error() error {
+	if e.Success == "true" {
+		return nil
+	}
+
+	return fmt.Errorf("API error: %s", e.DisplayText)
+}
+
 // AsyncInfo represents the details for any async call
 //
 // It retries at most Retries time and waits for Delay between each retry
@@ -229,7 +243,7 @@ func (exo *Client) BooleanRequest(req Command) error {
 		return err
 	}
 
-	return resp.(*BooleanResponse).Error()
+	return resp.(*booleanResponse).Error()
 }
 
 // BooleanAsyncRequest performs a sync request on a boolean call
