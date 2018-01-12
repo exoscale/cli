@@ -76,8 +76,8 @@ type ErrorResponse struct {
 }
 
 // Error formats a CloudStack error into a standard error
-func (e *ErrorResponse) Error() error {
-	return fmt.Errorf("API error %d (internal code: %d): %s", e.ErrorCode, e.CsErrorCode, e.ErrorText)
+func (e *ErrorResponse) Error() string {
+	return fmt.Sprintf("API error %d (internal code: %d): %s", e.ErrorCode, e.CsErrorCode, e.ErrorText)
 }
 
 // BooleanResponse represents a boolean response (usually after a deletion)
@@ -155,7 +155,7 @@ func (exo *Client) parseResponse(resp *http.Response) (json.RawMessage, error) {
 		if err := json.Unmarshal(b, &e); err != nil {
 			return nil, err
 		}
-		return b, e.Error()
+		return b, &e
 	}
 	return b, nil
 }
@@ -205,7 +205,7 @@ func (exo *Client) AsyncRequest(req AsyncCommand, async AsyncInfo) (interface{},
 		if err := json.Unmarshal(*result.JobResult, &errorResponse); err != nil {
 			return nil, err
 		}
-		return errorResponse, errorResponse.Error()
+		return errorResponse, errorResponse
 	}
 
 	if result.JobStatus == PENDING {
@@ -216,7 +216,7 @@ func (exo *Client) AsyncRequest(req AsyncCommand, async AsyncInfo) (interface{},
 		if err := json.Unmarshal(*result.JobResult, errorResponse); err != nil {
 			return nil, err
 		}
-		return errorResponse, errorResponse.Error()
+		return errorResponse, errorResponse
 	}
 
 	return resp, nil
@@ -253,7 +253,7 @@ func (exo *Client) Request(req Command) (interface{}, error) {
 	if err := json.Unmarshal(body, resp); err != nil {
 		r := new(ErrorResponse)
 		if e := json.Unmarshal(body, &r); e != nil {
-			return r, r.Error()
+			return nil, r
 		}
 		return nil, err
 	}
@@ -272,7 +272,7 @@ func (exo *Client) Request(req Request, v interface{}) error {
 	if err := json.Unmarshal(resp, v); err != nil {
 		var r ErrorResponse
 		if e := json.Unmarshal(resp, &r); e == nil {
-			return r.Error()
+			return r
 		}
 		return err
 	}
