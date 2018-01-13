@@ -564,8 +564,7 @@ func prepareMap(prefix string, params *url.Values, m interface{}) error {
 		default:
 			return fmt.Errorf("Only map[string]string are supported (XXX)")
 		}
-		params.Set(fmt.Sprintf("%s[%d].key", prefix, i), keyName)
-		params.Set(fmt.Sprintf("%s[%d].vaue", prefix, i), keyValue)
+		params.Set(fmt.Sprintf("%s[%d].%s", prefix, i, keyName), keyValue)
 	}
 	return nil
 }

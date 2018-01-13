@@ -85,10 +85,9 @@ func TestPrepareValues(t *testing.T) {
 		t.Errorf("expected tags to be serialized as foo, got %#v", v)
 	}
 
-	k := params.Get("map[0].key")
-	v = params.Get("map[0].value")
-	if k != "foo" && v != "bar" {
-		t.Errorf("expected map to be serialized as \"foo\" => \"bar\", got %#v => %#v", k, v)
+	v = params.Get("map[0].foo")
+	if v != "bar" {
+		t.Errorf("expected map to be serialized as .foo => \"bar\", got .foo => %#v", v)
 	}
 
 	v = params.Get("is_great")
