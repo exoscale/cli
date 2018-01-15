@@ -114,7 +114,7 @@ func (req *CreateNetwork) name() string {
 	return "createNetwork"
 }
 
-func (req *CreateNetwork) asyncResponse() interface{} {
+func (req *CreateNetwork) response() interface{} {
 	return new(CreateNetworkResponse)
 }
 

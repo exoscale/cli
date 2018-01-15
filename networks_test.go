@@ -5,11 +5,11 @@ import (
 )
 
 func TestListNetworksIsACommand(t *testing.T) {
+	var _ Command = (*CreateNetwork)(nil)
+	var _ AsyncCommand = (*DeleteNetwork)(nil)
 	var _ Command = (*ListNetworks)(nil)
-	var _ AsyncCommand = (*CreateNetwork)(nil)
 	var _ AsyncCommand = (*RestartNetwork)(nil)
 	var _ AsyncCommand = (*UpdateNetwork)(nil)
-	var _ AsyncCommand = (*DeleteNetwork)(nil)
 }
 
 func TestListNetworks(t *testing.T) {
@@ -25,7 +25,7 @@ func TestCreateNetwork(t *testing.T) {
 	if req.name() != "createNetwork" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*CreateNetworkResponse)
+	_ = req.response().(*CreateNetworkResponse)
 }
 
 func TestRestartNetwork(t *testing.T) {
