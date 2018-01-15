@@ -369,7 +369,7 @@ type ListVirtualMachines struct {
 	AffinityGroupID   string            `json:"affinitygroupid,omitempty"`
 	Details           map[string]string `json:"details,omitempty"`
 	DisplayVM         bool              `json:"displayvm,omitempty"` // root only
-	DomainID          string            `json:"domainin,omitempty"`
+	DomainID          string            `json:"domainid,omitempty"`
 	ForVirtualNetwork bool              `json:"forvirtualnetwork,omitempty"`
 	GroupID           string            `json:"groupid,omitempty"`
 	HostID            string            `json:"hostid,omitempty"`
