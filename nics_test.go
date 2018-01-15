@@ -12,7 +12,7 @@ func TestNics(t *testing.T) {
 
 func TestAddIPToNic(t *testing.T) {
 	req := &AddIPToNic{}
-	if req.name() != "addIpToNic" {
+	if req.APIName() != "addIpToNic" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*AddIPToNicResponse)
@@ -20,7 +20,7 @@ func TestAddIPToNic(t *testing.T) {
 
 func TestRemoveIPFromNic(t *testing.T) {
 	req := &RemoveIPFromNic{}
-	if req.name() != "removeIpFromNic" {
+	if req.APIName() != "removeIpFromNic" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)
@@ -28,7 +28,7 @@ func TestRemoveIPFromNic(t *testing.T) {
 
 func TestListNics(t *testing.T) {
 	req := &ListNics{}
-	if req.name() != "listNics" {
+	if req.APIName() != "listNics" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListNicsResponse)

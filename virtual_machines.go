@@ -179,7 +179,8 @@ type DeployVirtualMachine struct {
 	UserData           string            `json:"userdata,omitempty"` // the client is responsible to base64/gzip it
 }
 
-func (*DeployVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*DeployVirtualMachine) APIName() string {
 	return "deployVirtualMachine"
 }
 
@@ -199,7 +200,8 @@ type StartVirtualMachine struct {
 	HostID            string `json:"hostid,omitempty"`            // root only
 }
 
-func (*StartVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*StartVirtualMachine) APIName() string {
 	return "startVirtualMachine"
 }
 func (*StartVirtualMachine) asyncResponse() interface{} {
@@ -217,7 +219,8 @@ type StopVirtualMachine struct {
 	Forced *bool  `json:"forced,omitempty"`
 }
 
-func (*StopVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*StopVirtualMachine) APIName() string {
 	return "stopVirtualMachine"
 }
 
@@ -235,7 +238,8 @@ type RebootVirtualMachine struct {
 	ID string `json:"id"`
 }
 
-func (*RebootVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*RebootVirtualMachine) APIName() string {
 	return "rebootVirtualMachine"
 }
 
@@ -255,7 +259,8 @@ type RestoreVirtualMachine struct {
 	RootDiskSize     string `json:"rootdisksize,omitempty"` // in GiB, Exoscale specific
 }
 
-func (*RestoreVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*RestoreVirtualMachine) APIName() string {
 	return "restoreVirtualMachine"
 }
 
@@ -273,7 +278,8 @@ type RecoverVirtualMachine struct {
 	ID string `json:"virtualmachineid"`
 }
 
-func (*RecoverVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*RecoverVirtualMachine) APIName() string {
 	return "recoverVirtualMachine"
 }
 
@@ -292,7 +298,8 @@ type DestroyVirtualMachine struct {
 	Expunge *bool  `json:"expunge,omitempty"`
 }
 
-func (*DestroyVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*DestroyVirtualMachine) APIName() string {
 	return "destroyVirtualMachine"
 }
 
@@ -321,7 +328,8 @@ type UpdateVirtualMachine struct {
 	UserData              string            `json:"userdata,omitempty"`
 }
 
-func (*UpdateVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*UpdateVirtualMachine) APIName() string {
 	return "updateVirtualMachine"
 }
 
@@ -337,7 +345,8 @@ type ExpungeVirtualMachine struct {
 	ID string `json:"id"`
 }
 
-func (*ExpungeVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*ExpungeVirtualMachine) APIName() string {
 	return "expungeVirtualMachine"
 }
 
@@ -357,7 +366,8 @@ type ScaleVirtualMachine struct {
 	Details           map[string]string `json:"details,omitempty"`
 }
 
-func (*ScaleVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*ScaleVirtualMachine) APIName() string {
 	return "scaleVirtualMachine"
 }
 
@@ -370,7 +380,8 @@ func (*ScaleVirtualMachine) asyncResponse() interface{} {
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/changeServiceForVirtualMachine.html
 type ChangeServiceForVirtualMachine ScaleVirtualMachine
 
-func (*ChangeServiceForVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*ChangeServiceForVirtualMachine) APIName() string {
 	return "changeServiceForVirtualMachine"
 }
 
@@ -386,7 +397,8 @@ type ChangeServiceForVirtualMachineResponse VirtualMachineResponse
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/resetPasswordForVirtualMachine.html
 type ResetPasswordForVirtualMachine ScaleVirtualMachine
 
-func (*ResetPasswordForVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*ResetPasswordForVirtualMachine) APIName() string {
 	return "resetPasswordForVirtualMachine"
 }
 
@@ -404,7 +416,8 @@ type GetVMPassword struct {
 	ID string `json:"id"`
 }
 
-func (*GetVMPassword) name() string {
+// APIName returns the CloudStack API command name
+func (*GetVMPassword) APIName() string {
 	return "getVMPassword"
 }
 
@@ -454,7 +467,8 @@ type ListVirtualMachines struct {
 	ZoneID            string            `json:"zoneid,omitempty"`
 }
 
-func (*ListVirtualMachines) name() string {
+// APIName returns the CloudStack API command name
+func (*ListVirtualMachines) APIName() string {
 	return "listVirtualMachines"
 }
 
@@ -477,7 +491,8 @@ type AddNicToVirtualMachine struct {
 	IPAddress        net.IP `json:"ipaddress,omitempty"`
 }
 
-func (*AddNicToVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*AddNicToVirtualMachine) APIName() string {
 	return "addNicToVirtualMachine"
 }
 
@@ -496,7 +511,8 @@ type RemoveNicFromVirtualMachine struct {
 	VirtualMachineID string `json:"virtualmachineid"`
 }
 
-func (*RemoveNicFromVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*RemoveNicFromVirtualMachine) APIName() string {
 	return "removeNicFromVirtualMachine"
 }
 
@@ -516,7 +532,8 @@ type UpdateDefaultNicForVirtualMachine struct {
 	IPAddress        net.IP `json:"ipaddress,omitempty"`
 }
 
-func (*UpdateDefaultNicForVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*UpdateDefaultNicForVirtualMachine) APIName() string {
 	return "updateDefaultNicForVirtualMachine"
 }
 

@@ -11,7 +11,7 @@ func TestEvents(t *testing.T) {
 
 func TestListEvents(t *testing.T) {
 	req := &ListEvents{}
-	if req.name() != "listEvents" {
+	if req.APIName() != "listEvents" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListEventsResponse)
@@ -19,7 +19,7 @@ func TestListEvents(t *testing.T) {
 
 func TestListEventTypes(t *testing.T) {
 	req := &ListEventTypes{}
-	if req.name() != "listEventTypes" {
+	if req.APIName() != "listEventTypes" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListEventTypesResponse)

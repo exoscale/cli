@@ -46,7 +46,8 @@ type ListNics struct {
 	PageSize         int    `json:"pagesize,omitempty"`
 }
 
-func (*ListNics) name() string {
+// APIName returns the CloudStack API command name
+func (*ListNics) APIName() string {
 	return "listNics"
 }
 
@@ -66,7 +67,8 @@ type AddIPToNic struct {
 	IPAddress net.IP `json:"ipaddress"`
 }
 
-func (*AddIPToNic) name() string {
+// APIName returns the CloudStack API command name
+func (*AddIPToNic) APIName() string {
 	return "addIpToNic"
 }
 func (*AddIPToNic) asyncResponse() interface{} {
@@ -83,7 +85,8 @@ type RemoveIPFromNic struct {
 	ID string `json:"id"`
 }
 
-func (*RemoveIPFromNic) name() string {
+// APIName returns the CloudStack API command name
+func (*RemoveIPFromNic) APIName() string {
 	return "removeIpFromNic"
 }
 

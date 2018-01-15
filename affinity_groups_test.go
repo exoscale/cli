@@ -14,7 +14,7 @@ func TestAffinityGroups(t *testing.T) {
 
 func TestCreateAffinityGroup(t *testing.T) {
 	req := &CreateAffinityGroup{}
-	if req.name() != "createAffinityGroup" {
+	if req.APIName() != "createAffinityGroup" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*CreateAffinityGroupResponse)
@@ -22,7 +22,7 @@ func TestCreateAffinityGroup(t *testing.T) {
 
 func TestDeleteAffinityGroup(t *testing.T) {
 	req := &DeleteAffinityGroup{}
-	if req.name() != "deleteAffinityGroup" {
+	if req.APIName() != "deleteAffinityGroup" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)
@@ -30,7 +30,7 @@ func TestDeleteAffinityGroup(t *testing.T) {
 
 func TestListAffinityGroups(t *testing.T) {
 	req := &ListAffinityGroups{}
-	if req.name() != "listAffinityGroups" {
+	if req.APIName() != "listAffinityGroups" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListAffinityGroupsResponse)
@@ -38,7 +38,7 @@ func TestListAffinityGroups(t *testing.T) {
 
 func TestListAffinityGroupTypes(t *testing.T) {
 	req := &ListAffinityGroupTypes{}
-	if req.name() != "listAffinityGroupTypes" {
+	if req.APIName() != "listAffinityGroupTypes" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListAffinityGroupTypesResponse)
@@ -46,7 +46,7 @@ func TestListAffinityGroupTypes(t *testing.T) {
 
 func TestUpdateVMAffinityGroup(t *testing.T) {
 	req := &UpdateVMAffinityGroup{}
-	if req.name() != "updateVMAffinityGroup" {
+	if req.APIName() != "updateVMAffinityGroup" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*UpdateVMAffinityGroupResponse)

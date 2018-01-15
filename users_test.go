@@ -10,7 +10,7 @@ func TestUsers(t *testing.T) {
 
 func TestRegisterUserKeys(t *testing.T) {
 	req := &RegisterUserKeys{}
-	if req.name() != "registerUserKeys" {
+	if req.APIName() != "registerUserKeys" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*RegisterUserKeysResponse)

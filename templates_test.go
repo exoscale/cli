@@ -18,7 +18,7 @@ func TestTemplate(t *testing.T) {
 
 func TestListTemplates(t *testing.T) {
 	req := &ListTemplates{}
-	if req.name() != "listTemplates" {
+	if req.APIName() != "listTemplates" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListTemplatesResponse)

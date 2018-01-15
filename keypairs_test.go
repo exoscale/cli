@@ -14,7 +14,7 @@ func TestSSHKeyPairs(t *testing.T) {
 
 func TestResetSSHKeyForVirtualMachine(t *testing.T) {
 	req := &ResetSSHKeyForVirtualMachine{}
-	if req.name() != "resetSSHKeyForVirtualMachine" {
+	if req.APIName() != "resetSSHKeyForVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*ResetSSHKeyForVirtualMachineResponse)
@@ -22,7 +22,7 @@ func TestResetSSHKeyForVirtualMachine(t *testing.T) {
 
 func TestRegisterSSHKeyPair(t *testing.T) {
 	req := &RegisterSSHKeyPair{}
-	if req.name() != "registerSSHKeyPair" {
+	if req.APIName() != "registerSSHKeyPair" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*RegisterSSHKeyPairResponse)
@@ -30,7 +30,7 @@ func TestRegisterSSHKeyPair(t *testing.T) {
 
 func TestCreateSSHKeyPair(t *testing.T) {
 	req := &CreateSSHKeyPair{}
-	if req.name() != "createSSHKeyPair" {
+	if req.APIName() != "createSSHKeyPair" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*CreateSSHKeyPairResponse)
@@ -38,7 +38,7 @@ func TestCreateSSHKeyPair(t *testing.T) {
 
 func TestDeleteSSHKeyPair(t *testing.T) {
 	req := &DeleteSSHKeyPair{}
-	if req.name() != "deleteSSHKeyPair" {
+	if req.APIName() != "deleteSSHKeyPair" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*booleanSyncResponse)
@@ -46,7 +46,7 @@ func TestDeleteSSHKeyPair(t *testing.T) {
 
 func TestListSSHKeyPairs(t *testing.T) {
 	req := &ListSSHKeyPairs{}
-	if req.name() != "listSSHKeyPairs" {
+	if req.APIName() != "listSSHKeyPairs" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListSSHKeyPairsResponse)

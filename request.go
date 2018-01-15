@@ -20,18 +20,24 @@ import (
 	"time"
 )
 
-// Command represent a CloudStack request
+// Command represents a CloudStack request
 type Command interface {
 	// CloudStack API command name
-	name() string
+	APIName() string
+}
+
+// SyncCommand represents a CloudStack synchronous request
+type SyncCommand interface {
+	// CloudStack API command name
+	APIName() string
 	// Response interface to Unmarshal the JSON into
 	response() interface{}
 }
 
-// AsyncCommand represents a async CloudStack request
+// AsyncCommand represents a CloudStack asynchronous request
 type AsyncCommand interface {
 	// CloudStack API command name
-	name() string
+	APIName() string
 	// Response interface to Unmarshal the JSON into
 	asyncResponse() interface{}
 }
@@ -233,7 +239,7 @@ func (exo *Client) processAsyncJob(ctx context.Context, job *asyncJob) {
 	defer close(job.responseChan)
 	defer close(job.errorChan)
 
-	body, err := exo.request(job.command.name(), job.command)
+	body, err := exo.request(job.command.APIName(), job.command)
 	if err != nil {
 		job.errorChan <- err
 		return
@@ -337,7 +343,7 @@ func (exo *Client) AsyncRequest(req AsyncCommand, async AsyncInfo) (interface{},
 }
 
 // BooleanRequest performs a sync request on a boolean call
-func (exo *Client) BooleanRequest(req Command) error {
+func (exo *Client) BooleanRequest(req SyncCommand) error {
 	resp, err := exo.Request(req)
 	if err != nil {
 		return err
@@ -357,8 +363,8 @@ func (exo *Client) BooleanAsyncRequest(req AsyncCommand, async AsyncInfo) error 
 }
 
 // Request performs a sync request on a generic command
-func (exo *Client) Request(req Command) (interface{}, error) {
-	body, err := exo.request(req.name(), req)
+func (exo *Client) Request(req SyncCommand) (interface{}, error) {
+	body, err := exo.request(req.APIName(), req)
 	if err != nil {
 		return nil, err
 	}

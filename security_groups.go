@@ -70,7 +70,8 @@ type CreateSecurityGroup struct {
 	Description string `json:"description,omitempty"`
 }
 
-func (*CreateSecurityGroup) name() string {
+// APIName returns the CloudStack API command name
+func (*CreateSecurityGroup) APIName() string {
 	return "createSecurityGroup"
 }
 
@@ -92,7 +93,8 @@ type DeleteSecurityGroup struct {
 	ProjectID string `json:"project,omitempty"`
 }
 
-func (*DeleteSecurityGroup) name() string {
+// APIName returns the CloudStack API command name
+func (*DeleteSecurityGroup) APIName() string {
 	return "deleteSecurityGroup"
 }
 
@@ -119,7 +121,8 @@ type AuthorizeSecurityGroupIngress struct {
 	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
 }
 
-func (*AuthorizeSecurityGroupIngress) name() string {
+// APIName returns the CloudStack API command name
+func (*AuthorizeSecurityGroupIngress) APIName() string {
 	return "authorizeSecurityGroupIngress"
 }
 
@@ -145,7 +148,8 @@ type AuthorizeSecurityGroupIngressResponse SecurityGroupResponse
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/authorizeSecurityGroupEgress.html
 type AuthorizeSecurityGroupEgress AuthorizeSecurityGroupIngress
 
-func (*AuthorizeSecurityGroupEgress) name() string {
+// APIName returns the CloudStack API command name
+func (*AuthorizeSecurityGroupEgress) APIName() string {
 	return "authorizeSecurityGroupEgress"
 }
 
@@ -168,7 +172,8 @@ type RevokeSecurityGroupIngress struct {
 	ID string `json:"id"`
 }
 
-func (*RevokeSecurityGroupIngress) name() string {
+// APIName returns the CloudStack API command name
+func (*RevokeSecurityGroupIngress) APIName() string {
 	return "revokeSecurityGroupIngress"
 }
 
@@ -183,7 +188,8 @@ type RevokeSecurityGroupEgress struct {
 	ID string `json:"id"`
 }
 
-func (*RevokeSecurityGroupEgress) name() string {
+// APIName returns the CloudStack API command name
+func (*RevokeSecurityGroupEgress) APIName() string {
 	return "revokeSecurityGroupEgress"
 }
 
@@ -210,7 +216,8 @@ type ListSecurityGroups struct {
 	VirtualMachineID  string        `json:"virtualmachineid,omitempty"`
 }
 
-func (*ListSecurityGroups) name() string {
+// APIName returns the CloudStack API command name
+func (*ListSecurityGroups) APIName() string {
 	return "listSecurityGroups"
 }
 

@@ -12,7 +12,7 @@ func TestTags(t *testing.T) {
 
 func TestCreateTags(t *testing.T) {
 	req := &CreateTags{}
-	if req.name() != "createTags" {
+	if req.APIName() != "createTags" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)
@@ -20,7 +20,7 @@ func TestCreateTags(t *testing.T) {
 
 func TestDeleteTags(t *testing.T) {
 	req := &DeleteTags{}
-	if req.name() != "deleteTags" {
+	if req.APIName() != "deleteTags" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)
@@ -28,7 +28,7 @@ func TestDeleteTags(t *testing.T) {
 
 func TestListTags(t *testing.T) {
 	req := &ListTags{}
-	if req.name() != "listTags" {
+	if req.APIName() != "listTags" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListTagsResponse)

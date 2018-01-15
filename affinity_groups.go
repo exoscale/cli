@@ -32,7 +32,8 @@ type CreateAffinityGroup struct {
 	DomainID    string `json:"domainid,omitempty"`
 }
 
-func (*CreateAffinityGroup) name() string {
+// APIName returns the CloudStack API command name
+func (*CreateAffinityGroup) APIName() string {
 	return "createAffinityGroup"
 }
 
@@ -54,7 +55,8 @@ type UpdateVMAffinityGroup struct {
 	AffinityGroupNames []string `json:"affinitygroupnames,omitempty"` // mutually exclusive with ids
 }
 
-func (*UpdateVMAffinityGroup) name() string {
+// APIName returns the CloudStack API command name
+func (*UpdateVMAffinityGroup) APIName() string {
 	return "updateVMAffinityGroup"
 }
 
@@ -85,7 +87,8 @@ type DeleteAffinityGroup struct {
 	DomainID    string `json:"domainid,omitempty"`
 }
 
-func (*DeleteAffinityGroup) name() string {
+// APIName returns the CloudStack API command name
+func (*DeleteAffinityGroup) APIName() string {
 	return "deleteAffinityGroup"
 }
 
@@ -110,7 +113,8 @@ type ListAffinityGroups struct {
 	VirtualMachineID string `json:"virtualmachineid,omitempty"`
 }
 
-func (*ListAffinityGroups) name() string {
+// APIName returns the CloudStack API command name
+func (*ListAffinityGroups) APIName() string {
 	return "listAffinityGroups"
 }
 
@@ -127,7 +131,8 @@ type ListAffinityGroupTypes struct {
 	PageSize int    `json:"pagesize,omitempty"`
 }
 
-func (*ListAffinityGroupTypes) name() string {
+// APIName returns the CloudStack API command name
+func (*ListAffinityGroupTypes) APIName() string {
 	return "listAffinityGroupTypes"
 }
 

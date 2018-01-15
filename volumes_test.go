@@ -19,7 +19,7 @@ func TestVolume(t *testing.T) {
 
 func TestListVolumes(t *testing.T) {
 	req := &ListVolumes{}
-	if req.name() != "listVolumes" {
+	if req.APIName() != "listVolumes" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListVolumesResponse)
@@ -27,7 +27,7 @@ func TestListVolumes(t *testing.T) {
 
 func TestResizeVolume(t *testing.T) {
 	req := &ResizeVolume{}
-	if req.name() != "resizeVolume" {
+	if req.APIName() != "resizeVolume" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*ResizeVolumeResponse)

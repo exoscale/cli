@@ -20,7 +20,8 @@ type CreateSSHKeyPair struct {
 	ProjectID string `json:"projectid,omitempty"`
 }
 
-func (*CreateSSHKeyPair) name() string {
+// APIName returns the CloudStack API command name
+func (*CreateSSHKeyPair) APIName() string {
 	return "createSSHKeyPair"
 }
 
@@ -43,7 +44,8 @@ type DeleteSSHKeyPair struct {
 	ProjectID string `json:"projectid,omitempty"`
 }
 
-func (*DeleteSSHKeyPair) name() string {
+// APIName returns the CloudStack API command name
+func (*DeleteSSHKeyPair) APIName() string {
 	return "deleteSSHKeyPair"
 }
 
@@ -62,7 +64,8 @@ type RegisterSSHKeyPair struct {
 	ProjectID string `json:"projectid,omitempty"`
 }
 
-func (*RegisterSSHKeyPair) name() string {
+// APIName returns the CloudStack API command name
+func (*RegisterSSHKeyPair) APIName() string {
 	return "registerSSHKeyPair"
 }
 
@@ -91,7 +94,8 @@ type ListSSHKeyPairs struct {
 	ProjectID   string `json:"projectid,omitempty"`
 }
 
-func (*ListSSHKeyPairs) name() string {
+// APIName returns the CloudStack API command name
+func (*ListSSHKeyPairs) APIName() string {
 	return "listSSHKeyPairs"
 }
 
@@ -116,7 +120,8 @@ type ResetSSHKeyForVirtualMachine struct {
 	ProjectID string `json:"projectid,omitempty"`
 }
 
-func (*ResetSSHKeyForVirtualMachine) name() string {
+// APIName returns the CloudStack API command name
+func (*ResetSSHKeyForVirtualMachine) APIName() string {
 	return "resetSSHKeyForVirtualMachine"
 }
 
