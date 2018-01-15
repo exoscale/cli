@@ -42,7 +42,7 @@ type ListZones struct {
 	Keyword        string        `json:"keyword,omitempty" doc:"List by keyword"`
 	Name           string        `json:"name,omitempty" doc:"the name of the zone"`
 	NetworkType    string        `json:"networktype,omitempty" doc:"the network type of the zone that the virtual machine belongs to"`
-	Page           int           `json:"page,omitempty" `
+	Page           int           `json:"page,omitempty"`
 	PageSize       int           `json:"pagesize,omitempty"`
 	ShowCapacities *bool         `json:"showcapacities,omitempty" doc:"flag to display the capacity of the zones"`
 	Tags           []ResourceTag `json:"tags,omitempty" doc:"List zones by resource tags (key/value pairs)"`

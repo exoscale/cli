@@ -9,32 +9,33 @@ const (
 	// VirtualMachineTypeName is the resource type name of a VM
 	VirtualMachineTypeName ResourceTypeName = "user_vm"
 	// IPAddressTypeName is the resource type name of an IP address
-	IPAddressTypeName = "public_ip"
+	IPAddressTypeName ResourceTypeName = "public_ip"
 	// VolumeTypeName is the resource type name of a volume
-	VolumeTypeName = "volume"
+	VolumeTypeName ResourceTypeName = "volume"
 	// SnapshotTypeName is the resource type name of a snapshot
-	SnapshotTypeName = "snapshot"
+	SnapshotTypeName ResourceTypeName = "snapshot"
 	// TemplateTypeName is the resource type name of a template
-	TemplateTypeName = "template"
+	TemplateTypeName ResourceTypeName = "template"
 	// ProjectTypeName is the resource type name of a project
-	ProjectTypeName = "project"
+	ProjectTypeName ResourceTypeName = "project"
 	// NetworkTypeName is the resource type name of a network
-	NetworkTypeName = "network"
+	NetworkTypeName ResourceTypeName = "network"
 	// VPCTypeName is the resource type name of a VPC
-	VPCTypeName = "vpc"
+	VPCTypeName ResourceTypeName = "vpc"
 	// CPUTypeName is the resource type name of a CPU
-	CPUTypeName = "cpu"
+	CPUTypeName ResourceTypeName = "cpu"
 	// MemoryTypeName is the resource type name of Memory
-	MemoryTypeName = "memory"
+	MemoryTypeName ResourceTypeName = "memory"
 	// PrimaryStorageTypeName is the resource type name of primary storage
-	PrimaryStorageTypeName = "primary_storage"
+	PrimaryStorageTypeName ResourceTypeName = "primary_storage"
 	// SecondaryStorageTypeName is the resource type name of secondary storage
-	SecondaryStorageTypeName = "secondary_storage"
+	SecondaryStorageTypeName ResourceTypeName = "secondary_storage"
 )
 
 // ResourceType represents the ID of a resource type (for limits)
 type ResourceType int64
 
+//go:generate stringer -type=ResourceType
 const (
 	// VirtualMachineType is the resource type ID of a VM
 	VirtualMachineType ResourceType = iota

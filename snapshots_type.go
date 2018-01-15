@@ -5,7 +5,7 @@ package egoscale
 // See: https://github.com/apache/cloudstack/blob/master/api/src/main/java/com/cloud/storage/Snapshot.java
 type SnapshotState int
 
-//go:generate stringer -type SnapshotType
+//go:generate stringer -type SnapshotState
 const (
 	// Allocated ... (TODO)
 	Allocated SnapshotState = iota

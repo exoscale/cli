@@ -18,12 +18,32 @@ before_install:
   - chmod +x $GOPATH/bin/dep
   - npm i -g codeclimate-test-reporter
 
-script:
-  - dep ensure
-  - go test -race -coverprofile=coverage.out -covermode=atomic .
-
-after_success:
-  - >
-    if [ "${TRAVIS_GO_VERSION}" = "1.10" ]; then
-      codeclimate-test-reporter < coverage.out;
-    fi
+jobs:
+  include:
+  - stage: test
+    script: |
+      dep ensure
+      go test -race .
+  - stage: coverage
+    script: |
+      dep ensure
+      go test -coverprofile=coverage.out -covermode=atomic .
+      codeclimate-test-reporter < coverage.out
+  - stage: cmd-linux
+    script: |
+      dep ensure
+      cd cmd/cs
+      dep ensure
+      GOOS=linux go build -ldflags "-s" .
+  - stage: cmd-windows
+    script: |
+      dep ensure
+      cd cmd/cs
+      dep ensure
+      GOOS=windows go build -ldflags "-s" .
+  - stage: cmd-darwin
+    script: |
+      dep ensure
+      cd cmd/cs
+      dep ensure
+      GOOS=darwin go build -ldflags "-s" .
