@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -29,6 +30,7 @@ func TestPrepareValues(t *testing.T) {
 		IDs      []string          `json:"ids,omitempty"`
 		Tags     []*tag            `json:"tags,omitempty"`
 		Map      map[string]string `json:"map"`
+		IP       net.IP            `json:"ip,omitempty"`
 	}{
 		IgnoreMe: "bar",
 		Name:     "world",
@@ -45,6 +47,7 @@ func TestPrepareValues(t *testing.T) {
 		Map: map[string]string{
 			"foo": "bar",
 		},
+		IP: net.IPv4(192, 168, 0, 11),
 	}
 
 	params := url.Values{}
@@ -91,6 +94,11 @@ func TestPrepareValues(t *testing.T) {
 	v = params.Get("is_great")
 	if v != "false" {
 		t.Errorf("expected bool to be serialized as \"false\", got %#v", v)
+	}
+
+	v = params.Get("ip")
+	if v != "192.168.0.11" {
+		t.Errorf("expected ip to be serialized as \"192.168.0.11\", got %#v", v)
 	}
 }
 
@@ -161,6 +169,32 @@ func TestPrepareValuesSliceString(t *testing.T) {
 	profile := struct {
 		RequiredField []string `json:"requiredfield"`
 	}{}
+
+	params := url.Values{}
+	err := prepareValues("", &params, &profile)
+	if err == nil {
+		t.Errorf("It should have failed")
+	}
+}
+
+func TestPrepareValuesIP(t *testing.T) {
+	profile := struct {
+		RequiredField net.IP `json:"requiredfield"`
+	}{}
+
+	params := url.Values{}
+	err := prepareValues("", &params, &profile)
+	if err == nil {
+		t.Errorf("It should have failed")
+	}
+}
+
+func TestPrepareValuesIPZero(t *testing.T) {
+	profile := struct {
+		RequiredField net.IP `json:"requiredfield"`
+	}{
+		RequiredField: net.IPv4zero,
+	}
 
 	params := url.Values{}
 	err := prepareValues("", &params, &profile)

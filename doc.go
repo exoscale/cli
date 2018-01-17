@@ -29,6 +29,10 @@ Elastic IPs
 
 See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/networking_and_traffic.html#about-elastic-ips
 
+Networks
+
+See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/4.8/networking_and_traffic.html
+
 NICs
 
 See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/networking_and_traffic.html#configuring-multiple-ip-addresses-on-a-single-nic

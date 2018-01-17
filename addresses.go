@@ -1,5 +1,7 @@
 package egoscale
 
+import "net"
+
 // IPAddress represents an IP Address
 type IPAddress struct {
 	ID                        string         `json:"id"`
@@ -11,7 +13,7 @@ type IPAddress struct {
 	DomainName                string         `json:"domainname,omitempty"`
 	ForDisplay                bool           `json:"fordisplay,omitempty"`
 	ForVirtualNetwork         bool           `json:"forvirtualnetwork,omitempty"`
-	IPAddress                 string         `json:"ipaddress"`
+	IPAddress                 net.IP         `json:"ipaddress"`
 	IsElastic                 bool           `json:"iselastic,omitempty"`
 	IsPortable                bool           `json:"isportable,omitempty"`
 	IsSourceNat               bool           `json:"issourcenat,omitempty"`
@@ -27,7 +29,7 @@ type IPAddress struct {
 	VirtualMachineName        string         `json:"virtualmachineName,omitempty"`
 	VlanID                    string         `json:"vlanid,omitempty"`
 	VlanName                  string         `json:"vlanname,omitempty"`
-	VMIPAddress               string         `json:"vmipaddress,omitempty"`
+	VMIPAddress               net.IP         `json:"vmipaddress,omitempty"`
 	VpcID                     string         `json:"vpcid,omitempty"`
 	ZoneID                    string         `json:"zoneid,omitempty"`
 	ZoneName                  string         `json:"zonename,omitempty"`
@@ -109,7 +111,7 @@ type ListPublicIPAddresses struct {
 	ForLoadBalancing   bool           `json:"forloadbalancing,omitempty"`
 	ForVirtualNetwork  string         `json:"forvirtualnetwork,omitempty"`
 	ID                 string         `json:"id,omitempty"`
-	IPAddress          string         `json:"ipaddress,omitempty"`
+	IPAddress          net.IP         `json:"ipaddress,omitempty"`
 	IsElastic          bool           `json:"iselastic,omitempty"`
 	IsRecursive        bool           `json:"isrecursive,omitempty"`
 	IsSourceNat        bool           `json:"issourcenat,omitempty"`

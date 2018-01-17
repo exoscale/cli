@@ -1,5 +1,7 @@
 package egoscale
 
+import "net"
+
 // Zone represents a data center
 type Zone struct {
 	ID                    string            `json:"id"`
@@ -8,16 +10,16 @@ type Zone struct {
 	Description           string            `json:"description,omitempty"`
 	DhcpProvider          string            `json:"dhcpprovider,omitempty"`
 	DisplayText           string            `json:"displaytext,omitempty"`
-	DNS1                  string            `json:"dns1,omitempty"`
-	DNS2                  string            `json:"dns2,omitempty"`
+	DNS1                  net.IP            `json:"dns1,omitempty"`
+	DNS2                  net.IP            `json:"dns2,omitempty"`
 	Domain                string            `json:"domain,omitempty"`
 	DomainID              string            `json:"domainid,omitempty"`
 	DomainName            string            `json:"domainname,omitempty"`
 	GuestCidrAddress      string            `json:"guestcidraddress,omitempty"`
-	InternalDNS1          string            `json:"internaldns1,omitempty"`
-	InternalDNS2          string            `json:"internaldns2,omitempty"`
-	IP6DNS1               string            `json:"ip6dns1,omitempty"`
-	IP6DNS2               string            `json:"ip6dns2,omitempty"`
+	InternalDNS1          net.IP            `json:"internaldns1,omitempty"`
+	InternalDNS2          net.IP            `json:"internaldns2,omitempty"`
+	IP6DNS1               net.IP            `json:"ip6dns1,omitempty"`
+	IP6DNS2               net.IP            `json:"ip6dns2,omitempty"`
 	LocalStorageEnabled   bool              `json:"localstorageenabled,omitempty"`
 	Name                  string            `json:"name,omitempty"`
 	NetworkType           string            `json:"networktype,omitempty"`

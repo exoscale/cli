@@ -1,5 +1,7 @@
 package egoscale
 
+import "net"
+
 // VirtualMachine reprents a virtual machine
 type VirtualMachine struct {
 	ID                    string            `json:"id,omitempty"`
@@ -75,6 +77,42 @@ type VirtualMachine struct {
 	JobStatus             JobStatusType     `json:"jobstatus,omitempty"`
 }
 
+// NicsByType returns the corresponding interfaces base on the given type
+func (vm *VirtualMachine) NicsByType(nicType string) []Nic {
+	nics := make([]Nic, 0)
+	for _, nic := range vm.Nic {
+		if nic.Type == nicType {
+			// XXX The CloudStack API forgets to specify it
+			nic.VirtualMachineID = vm.ID
+			nics = append(nics, *nic)
+		}
+	}
+	return nics
+}
+
+// NicByNetworkID returns the corresponding interface based on the given NetworkID
+func (vm *VirtualMachine) NicByNetworkID(networkID string) *Nic {
+	for _, nic := range vm.Nic {
+		if nic.NetworkID == networkID {
+			nic.VirtualMachineID = vm.ID
+			return nic
+		}
+	}
+	return nil
+}
+
+// NicByID returns the corresponding interface base on its ID
+func (vm *VirtualMachine) NicByID(nicID string) *Nic {
+	for _, nic := range vm.Nic {
+		if nic.ID == nicID {
+			nic.VirtualMachineID = vm.ID
+			return nic
+		}
+	}
+
+	return nil
+}
+
 // IPToNetwork represents a mapping between ip and networks
 type IPToNetwork struct {
 	IP        string `json:"ip,omitempty"`
@@ -107,8 +145,8 @@ type DeployVirtualMachine struct {
 	Group              string            `json:"group,omitempty"`
 	HostID             string            `json:"hostid,omitempty"`
 	Hypervisor         string            `json:"hypervisor,omitempty"`
-	IP6Address         string            `json:"ip6address,omitempty"`
-	IPAddress          string            `json:"ipaddress,omitempty"`
+	IP6Address         net.IP            `json:"ip6address,omitempty"`
+	IPAddress          net.IP            `json:"ipaddress,omitempty"`
 	IPToNetworkList    []*IPToNetwork    `json:"iptonetworklist,omitempty"`
 	Keyboard           string            `json:"keyboard,omitempty"`
 	KeyPair            string            `json:"keypair,omitempty"`
@@ -415,9 +453,9 @@ type ListVirtualMachinesResponse struct {
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/addNicToVirtualMachine.html
 type AddNicToVirtualMachine struct {
-	NetworkID        string `json:"networkdid"`
+	NetworkID        string `json:"networkid"`
 	VirtualMachineID string `json:"virtualmachineid"`
-	IPAddress        string `json:"ipaddress,omitempty"`
+	IPAddress        net.IP `json:"ipaddress,omitempty"`
 }
 
 func (req *AddNicToVirtualMachine) name() string {
@@ -454,9 +492,9 @@ type RemoveNicFromVirtualMachineResponse VirtualMachineResponse
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateDefaultNicForVirtualMachine.html
 type UpdateDefaultNicForVirtualMachine struct {
-	NetworkID        string `json:"networkdid"`
+	NetworkID        string `json:"networkid"`
 	VirtualMachineID string `json:"virtualmachineid"`
-	IPAddress        string `json:"ipaddress,omitempty"`
+	IPAddress        net.IP `json:"ipaddress,omitempty"`
 }
 
 func (req *UpdateDefaultNicForVirtualMachine) name() string {

@@ -1,5 +1,7 @@
 package egoscale
 
+import "net"
+
 // Network represents a network
 type Network struct {
 	ID                          string         `json:"id"`
@@ -12,17 +14,17 @@ type Network struct {
 	Cidr                        string         `json:"cidr,omitempty"`
 	DisplayNetwork              bool           `json:"diplaynetwork,omitempty"`
 	DisplayText                 string         `json:"displaytext"`
-	DNS1                        string         `json:"dns1,omitempty"`
-	DNS2                        string         `json:"dns2,omitempty"`
+	DNS1                        net.IP         `json:"dns1,omitempty"`
+	DNS2                        net.IP         `json:"dns2,omitempty"`
 	Domain                      string         `json:"domain,omitempty"`
 	DomainID                    string         `json:"domainid,omitempty"`
-	Gateway                     string         `json:"gateway,omitempty"`
+	Gateway                     net.IP         `json:"gateway,omitempty"`
 	IP6Cidr                     string         `json:"ip6cidr,omitempty"`
-	IP6Gateway                  string         `json:"ip6gateway,omitempty"`
+	IP6Gateway                  net.IP         `json:"ip6gateway,omitempty"`
 	IsDefault                   bool           `json:"isdefault,omitempty"`
 	IsPersistent                bool           `json:"ispersistent,omitempty"`
 	Name                        string         `json:"name"`
-	Netmask                     string         `json:"netmask,omitempty"`
+	Netmask                     net.IP         `json:"netmask,omitempty"`
 	NetworkCidr                 string         `json:"networkcidr,omitempty"`
 	NetworkDomain               string         `json:"networkdomain,omitempty"`
 	NetworkOfferingAvailability string         `json:"networkofferingavailability,omitempty"`
@@ -93,18 +95,18 @@ type CreateNetwork struct {
 	ACLType           string `json:"acltype,omitempty"`        // Account or Domain
 	DisplayNetwork    bool   `json:"displaynetwork,omitempty"` // root only
 	DomainID          string `json:"domainid,omitempty"`
-	EndIP             string `json:"endip,omitempty"`
-	EndIpv6           string `json:"endipv6,omitempty"`
-	Gateway           string `json:"gateway,omitempty"`
+	EndIP             net.IP `json:"endip,omitempty"`
+	EndIpv6           net.IP `json:"endipv6,omitempty"`
+	Gateway           net.IP `json:"gateway,omitempty"`
 	IP6Cidr           string `json:"ip6cidr,omitempty"`
-	IP6Gateway        string `json:"ip6gateway,omitempty"`
+	IP6Gateway        net.IP `json:"ip6gateway,omitempty"`
 	IsolatedPVlan     string `json:"isolatedpvlan,omitempty"`
-	Netmask           string `json:"netmask,omitempty"`
+	Netmask           net.IP `json:"netmask,omitempty"`
 	NetworkDomain     string `json:"networkdomain,omitempty"`
 	PhysicalNetworkID string `json:"physicalnetworkid,omitempty"`
 	ProjectID         string `json:"projectid,omitempty"`
-	StartIP           string `json:"startip,omitempty"`
-	StartIpv6         string `json:"startipv6,omitempty"`
+	StartIP           net.IP `json:"startip,omitempty"`
+	StartIpv6         net.IP `json:"startipv6,omitempty"`
 	SubdomainAccess   string `json:"subdomainaccess,omitempty"`
 	Vlan              string `json:"vlan,omitempty"`
 	VpcID             string `json:"vpcid,omitempty"`
@@ -128,13 +130,13 @@ type UpdateNetwork struct {
 	ID                string `json:"id"`
 	ChangeCidr        bool   `json:"changecidr,omitempty"`
 	CustomID          string `json:"customid,omitempty"` // root only
-	DisplayNetwork    string `json:"displaynetwork"`
-	DisplayText       string `json:"displaytext"`
+	DisplayNetwork    string `json:"displaynetwork,omitempty"`
+	DisplayText       string `json:"displaytext,omitempty"`
 	Forced            bool   `json:"forced,omitempty"`
 	GuestVMCidr       string `json:"guestvmcidr,omitempty"`
-	Name              string `json:"name"`
+	Name              string `json:"name,omitempty"`
 	NetworkDomain     string `json:"networkdomain,omitempty"`
-	NetworkOfferingID string `json:"networkofferingid"`
+	NetworkOfferingID string `json:"networkofferingid,omitempty"`
 	UpdateInSequence  bool   `json:"updateinsequence,omitempty"`
 }
 

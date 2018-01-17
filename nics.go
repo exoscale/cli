@@ -1,18 +1,23 @@
 package egoscale
 
+import (
+	"fmt"
+	"net"
+)
+
 // Nic represents a Network Interface Controller (NIC)
 type Nic struct {
 	ID               string            `json:"id,omitempty"`
 	BroadcastURI     string            `json:"broadcasturi,omitempty"`
-	Gateway          string            `json:"gateway,omitempty"`
-	IP6Address       string            `json:"ip6address,omitempty"`
+	Gateway          net.IP            `json:"gateway,omitempty"`
+	IP6Address       net.IP            `json:"ip6address,omitempty"`
 	IP6Cidr          string            `json:"ip6cidr,omitempty"`
-	IP6Gateway       string            `json:"ip6gateway,omitempty"`
-	IPAddress        string            `json:"ipaddress,omitempty"`
+	IP6Gateway       net.IP            `json:"ip6gateway,omitempty"`
+	IPAddress        net.IP            `json:"ipaddress,omitempty"`
 	IsDefault        bool              `json:"isdefault,omitempty"`
 	IsolationURI     string            `json:"isolationuri,omitempty"`
 	MacAddress       string            `json:"macaddress,omitempty"`
-	Netmask          string            `json:"netmask,omitempty"`
+	Netmask          net.IP            `json:"netmask,omitempty"`
 	NetworkID        string            `json:"networkid,omitempty"`
 	NetworkName      string            `json:"networkname,omitempty"`
 	SecondaryIP      []*NicSecondaryIP `json:"secondaryip,omitempty"`
@@ -24,7 +29,7 @@ type Nic struct {
 // NicSecondaryIP represents a link between NicID and IPAddress
 type NicSecondaryIP struct {
 	ID               string `json:"id"`
-	IPAddress        string `json:"ipaddress"`
+	IPAddress        net.IP `json:"ipaddress"`
 	NetworkID        string `json:"networkid"`
 	NicID            string `json:"nicid"`
 	VirtualMachineID string `json:"virtualmachineid,omitempty"`
@@ -58,7 +63,7 @@ type ListNicsResponse struct {
 // AddIPToNic represents the assignation of a secondary IP
 type AddIPToNic struct {
 	NicID     string `json:"nicid"`
-	IPAddress string `json:"ipaddress"`
+	IPAddress net.IP `json:"ipaddress"`
 }
 
 func (req *AddIPToNic) name() string {
@@ -102,9 +107,13 @@ func (exo *Client) ListNics(req *ListNics) ([]*Nic, error) {
 //
 // Deprecated: use the API directly
 func (exo *Client) AddIPToNic(nicID string, ipAddress string, async AsyncInfo) (*NicSecondaryIP, error) {
+	ip := net.ParseIP(ipAddress)
+	if ip == nil {
+		return nil, fmt.Errorf("%s is not a valid IP address", ipAddress)
+	}
 	req := &AddIPToNic{
 		NicID:     nicID,
-		IPAddress: ipAddress,
+		IPAddress: ip,
 	}
 	resp, err := exo.AsyncRequest(req, async)
 	if err != nil {
