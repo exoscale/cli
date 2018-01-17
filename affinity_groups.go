@@ -32,17 +32,17 @@ type CreateAffinityGroup struct {
 	DomainID    string `json:"domainid,omitempty"`
 }
 
-func (req *CreateAffinityGroup) name() string {
+func (*CreateAffinityGroup) name() string {
 	return "createAffinityGroup"
 }
 
-func (req *CreateAffinityGroup) asyncResponse() interface{} {
+func (*CreateAffinityGroup) asyncResponse() interface{} {
 	return new(CreateAffinityGroupResponse)
 }
 
 // CreateAffinityGroupResponse represents the response of the creation of an (anti-)affinity group
 type CreateAffinityGroupResponse struct {
-	AffinityGroup *AffinityGroup `json:"affinitygroup"`
+	AffinityGroup AffinityGroup `json:"affinitygroup"`
 }
 
 // UpdateVMAffinityGroup (Async) represents a modification of a (anti-)affinity group
@@ -54,11 +54,11 @@ type UpdateVMAffinityGroup struct {
 	AffinityGroupNames []string `json:"affinitygroupnames,omitempty"` // mutually exclusive with ids
 }
 
-func (req *UpdateVMAffinityGroup) name() string {
+func (*UpdateVMAffinityGroup) name() string {
 	return "updateVMAffinityGroup"
 }
 
-func (req *UpdateVMAffinityGroup) asyncResponse() interface{} {
+func (*UpdateVMAffinityGroup) asyncResponse() interface{} {
 	return new(UpdateVMAffinityGroupResponse)
 }
 
@@ -85,11 +85,11 @@ type DeleteAffinityGroup struct {
 	DomainID    string `json:"domainid,omitempty"`
 }
 
-func (req *DeleteAffinityGroup) name() string {
+func (*DeleteAffinityGroup) name() string {
 	return "deleteAffinityGroup"
 }
 
-func (req *DeleteAffinityGroup) asyncResponse() interface{} {
+func (*DeleteAffinityGroup) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
@@ -110,11 +110,11 @@ type ListAffinityGroups struct {
 	VirtualMachineID string `json:"virtualmachineid,omitempty"`
 }
 
-func (req *ListAffinityGroups) name() string {
+func (*ListAffinityGroups) name() string {
 	return "listAffinityGroups"
 }
 
-func (req *ListAffinityGroups) response() interface{} {
+func (*ListAffinityGroups) response() interface{} {
 	return new(ListAffinityGroupsResponse)
 }
 
@@ -127,24 +127,24 @@ type ListAffinityGroupTypes struct {
 	PageSize int    `json:"pagesize,omitempty"`
 }
 
-func (req *ListAffinityGroupTypes) name() string {
+func (*ListAffinityGroupTypes) name() string {
 	return "listAffinityGroupTypes"
 }
 
-func (req *ListAffinityGroupTypes) response() interface{} {
+func (*ListAffinityGroupTypes) response() interface{} {
 	return new(ListAffinityGroupTypesResponse)
 }
 
 // ListAffinityGroupsResponse represents a list of (anti-)affinity groups
 type ListAffinityGroupsResponse struct {
-	Count         int              `json:"count"`
-	AffinityGroup []*AffinityGroup `json:"affinitygroup"`
+	Count         int             `json:"count"`
+	AffinityGroup []AffinityGroup `json:"affinitygroup"`
 }
 
 // ListAffinityGroupTypesResponse represents a list of (anti-)affinity group types
 type ListAffinityGroupTypesResponse struct {
-	Count             int                  `json:"count"`
-	AffinityGroupType []*AffinityGroupType `json:"affinitygrouptype"`
+	Count             int                 `json:"count"`
+	AffinityGroupType []AffinityGroupType `json:"affinitygrouptype"`
 }
 
 // Legacy methods
@@ -161,7 +161,8 @@ func (exo *Client) CreateAffinityGroup(name string, async AsyncInfo) (*AffinityG
 		return nil, err
 	}
 
-	return resp.(CreateAffinityGroupResponse).AffinityGroup, nil
+	ag := resp.(*CreateAffinityGroupResponse).AffinityGroup
+	return &ag, nil
 }
 
 // DeleteAffinityGroup deletes a group

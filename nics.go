@@ -7,23 +7,23 @@ import (
 
 // Nic represents a Network Interface Controller (NIC)
 type Nic struct {
-	ID               string            `json:"id,omitempty"`
-	BroadcastURI     string            `json:"broadcasturi,omitempty"`
-	Gateway          net.IP            `json:"gateway,omitempty"`
-	IP6Address       net.IP            `json:"ip6address,omitempty"`
-	IP6Cidr          string            `json:"ip6cidr,omitempty"`
-	IP6Gateway       net.IP            `json:"ip6gateway,omitempty"`
-	IPAddress        net.IP            `json:"ipaddress,omitempty"`
-	IsDefault        bool              `json:"isdefault,omitempty"`
-	IsolationURI     string            `json:"isolationuri,omitempty"`
-	MacAddress       string            `json:"macaddress,omitempty"`
-	Netmask          net.IP            `json:"netmask,omitempty"`
-	NetworkID        string            `json:"networkid,omitempty"`
-	NetworkName      string            `json:"networkname,omitempty"`
-	SecondaryIP      []*NicSecondaryIP `json:"secondaryip,omitempty"`
-	Traffictype      string            `json:"traffictype,omitempty"`
-	Type             string            `json:"type,omitempty"`
-	VirtualMachineID string            `json:"virtualmachineid,omitempty"`
+	ID               string           `json:"id,omitempty"`
+	BroadcastURI     string           `json:"broadcasturi,omitempty"`
+	Gateway          net.IP           `json:"gateway,omitempty"`
+	IP6Address       net.IP           `json:"ip6address,omitempty"`
+	IP6Cidr          string           `json:"ip6cidr,omitempty"`
+	IP6Gateway       net.IP           `json:"ip6gateway,omitempty"`
+	IPAddress        net.IP           `json:"ipaddress,omitempty"`
+	IsDefault        bool             `json:"isdefault,omitempty"`
+	IsolationURI     string           `json:"isolationuri,omitempty"`
+	MacAddress       string           `json:"macaddress,omitempty"`
+	Netmask          net.IP           `json:"netmask,omitempty"`
+	NetworkID        string           `json:"networkid,omitempty"`
+	NetworkName      string           `json:"networkname,omitempty"`
+	SecondaryIP      []NicSecondaryIP `json:"secondaryip,omitempty"`
+	Traffictype      string           `json:"traffictype,omitempty"`
+	Type             string           `json:"type,omitempty"`
+	VirtualMachineID string           `json:"virtualmachineid,omitempty"`
 }
 
 // NicSecondaryIP represents a link between NicID and IPAddress
@@ -46,18 +46,18 @@ type ListNics struct {
 	PageSize         int    `json:"pagesize,omitempty"`
 }
 
-func (req *ListNics) name() string {
+func (*ListNics) name() string {
 	return "listNics"
 }
 
-func (req *ListNics) response() interface{} {
+func (*ListNics) response() interface{} {
 	return new(ListNicsResponse)
 }
 
 // ListNicsResponse represents a list of templates
 type ListNicsResponse struct {
-	Count int    `json:"count"`
-	Nic   []*Nic `json:"nic"`
+	Count int   `json:"count"`
+	Nic   []Nic `json:"nic"`
 }
 
 // AddIPToNic represents the assignation of a secondary IP
@@ -66,16 +66,16 @@ type AddIPToNic struct {
 	IPAddress net.IP `json:"ipaddress"`
 }
 
-func (req *AddIPToNic) name() string {
+func (*AddIPToNic) name() string {
 	return "addIpToNic"
 }
-func (req *AddIPToNic) asyncResponse() interface{} {
+func (*AddIPToNic) asyncResponse() interface{} {
 	return new(AddIPToNicResponse)
 }
 
 // AddIPToNicResponse represents the addition of an IP to a NIC
 type AddIPToNicResponse struct {
-	NicSecondaryIP *NicSecondaryIP `json:"nicsecondaryip"`
+	NicSecondaryIP NicSecondaryIP `json:"nicsecondaryip"`
 }
 
 // RemoveIPFromNic represents a deletion request
@@ -83,18 +83,18 @@ type RemoveIPFromNic struct {
 	ID string `json:"id"`
 }
 
-func (req *RemoveIPFromNic) name() string {
+func (*RemoveIPFromNic) name() string {
 	return "removeIpFromNic"
 }
 
-func (req *RemoveIPFromNic) asyncResponse() interface{} {
+func (*RemoveIPFromNic) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
 // ListNics lists the NIC of a VM
 //
 // Deprecated: use the API directly
-func (exo *Client) ListNics(req *ListNics) ([]*Nic, error) {
+func (exo *Client) ListNics(req *ListNics) ([]Nic, error) {
 	resp, err := exo.Request(req)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,8 @@ func (exo *Client) AddIPToNic(nicID string, ipAddress string, async AsyncInfo) (
 		return nil, err
 	}
 
-	return resp.(AddIPToNicResponse).NicSecondaryIP, nil
+	nic := resp.(AddIPToNicResponse).NicSecondaryIP
+	return &nic, nil
 }
 
 // RemoveIPFromNic removes an IP from a NIC

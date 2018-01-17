@@ -7,40 +7,40 @@ import (
 
 // SecurityGroup represent a firewalling set of rules
 type SecurityGroup struct {
-	ID                  string         `json:"id"`
-	Account             string         `json:"account,omitempty"`
-	Description         string         `json:"description,omitempty"`
-	Domain              string         `json:"domain,omitempty"`
-	DomainID            string         `json:"domainid,omitempty"`
-	Name                string         `json:"name"`
-	Project             string         `json:"project,omitempty"`
-	ProjectID           string         `json:"projectid,omitempty"`
-	VirtualMachineCount int            `json:"virtualmachinecount,omitempty"` // CloudStack 4.6+
-	VirtualMachineIDs   []string       `json:"virtualmachineids,omitempty"`   // CloudStack 4.6+
-	IngressRule         []*IngressRule `json:"ingressrule"`
-	EgressRule          []*EgressRule  `json:"egressrule"`
-	Tags                []*ResourceTag `json:"tags,omitempty"`
-	JobID               string         `json:"jobid,omitempty"`
-	JobStatus           JobStatusType  `json:"jobstatus,omitempty"`
+	ID                  string        `json:"id"`
+	Account             string        `json:"account,omitempty"`
+	Description         string        `json:"description,omitempty"`
+	Domain              string        `json:"domain,omitempty"`
+	DomainID            string        `json:"domainid,omitempty"`
+	Name                string        `json:"name"`
+	Project             string        `json:"project,omitempty"`
+	ProjectID           string        `json:"projectid,omitempty"`
+	VirtualMachineCount int           `json:"virtualmachinecount,omitempty"` // CloudStack 4.6+
+	VirtualMachineIDs   []string      `json:"virtualmachineids,omitempty"`   // CloudStack 4.6+
+	IngressRule         []IngressRule `json:"ingressrule"`
+	EgressRule          []EgressRule  `json:"egressrule"`
+	Tags                []ResourceTag `json:"tags,omitempty"`
+	JobID               string        `json:"jobid,omitempty"`
+	JobStatus           JobStatusType `json:"jobstatus,omitempty"`
 }
 
 // IngressRule represents the ingress rule
 type IngressRule struct {
-	RuleID                string               `json:"ruleid"`
-	Account               string               `json:"account,omitempty"`
-	Cidr                  string               `json:"cidr,omitempty"`
-	Description           string               `json:"description,omitempty"`
-	IcmpType              int                  `json:"icmptype,omitempty"`
-	IcmpCode              int                  `json:"icmpcode,omitempty"`
-	StartPort             int                  `json:"startport,omitempty"`
-	EndPort               int                  `json:"endport,omitempty"`
-	Protocol              string               `json:"protocol,omitempty"`
-	Tags                  []*ResourceTag       `json:"tags,omitempty"`
-	SecurityGroupID       string               `json:"securitygroupid,omitempty"`
-	SecurityGroupName     string               `json:"securitygroupname,omitempty"`
-	UserSecurityGroupList []*UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
-	JobID                 string               `json:"jobid,omitempty"`
-	JobStatus             JobStatusType        `json:"jobstatus,omitempty"`
+	RuleID                string              `json:"ruleid"`
+	Account               string              `json:"account,omitempty"`
+	Cidr                  string              `json:"cidr,omitempty"`
+	Description           string              `json:"description,omitempty"`
+	IcmpType              int                 `json:"icmptype,omitempty"`
+	IcmpCode              int                 `json:"icmpcode,omitempty"`
+	StartPort             int                 `json:"startport,omitempty"`
+	EndPort               int                 `json:"endport,omitempty"`
+	Protocol              string              `json:"protocol,omitempty"`
+	Tags                  []ResourceTag       `json:"tags,omitempty"`
+	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
+	SecurityGroupName     string              `json:"securitygroupname,omitempty"`
+	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
+	JobID                 string              `json:"jobid,omitempty"`
+	JobStatus             JobStatusType       `json:"jobstatus,omitempty"`
 }
 
 // EgressRule represents the ingress rule
@@ -54,7 +54,7 @@ type UserSecurityGroup struct {
 
 // SecurityGroupResponse represents a generic security group response
 type SecurityGroupResponse struct {
-	SecurityGroup *SecurityGroup `json:"securitygroup"`
+	SecurityGroup SecurityGroup `json:"securitygroup"`
 }
 
 // CreateSecurityGroup represents a security group creation
@@ -65,11 +65,11 @@ type CreateSecurityGroup struct {
 	Description string `json:"description,omitempty"`
 }
 
-func (req *CreateSecurityGroup) name() string {
+func (*CreateSecurityGroup) name() string {
 	return "createSecurityGroup"
 }
 
-func (req *CreateSecurityGroup) response() interface{} {
+func (*CreateSecurityGroup) response() interface{} {
 	return new(CreateSecurityGroupResponse)
 }
 
@@ -87,11 +87,11 @@ type DeleteSecurityGroup struct {
 	ProjectID string `json:"project,omitempty"`
 }
 
-func (req *DeleteSecurityGroup) name() string {
+func (*DeleteSecurityGroup) name() string {
 	return "deleteSecurityGroup"
 }
 
-func (req *DeleteSecurityGroup) response() interface{} {
+func (*DeleteSecurityGroup) response() interface{} {
 	return new(booleanSyncResponse)
 }
 
@@ -99,26 +99,26 @@ func (req *DeleteSecurityGroup) response() interface{} {
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/authorizeSecurityGroupIngress.html
 type AuthorizeSecurityGroupIngress struct {
-	Account               string               `json:"account,omitempty"`
-	CidrList              []string             `json:"cidrlist,omitempty"`
-	Description           string               `json:"description,omitempty"`
-	DomainID              string               `json:"domainid,omitempty"`
-	IcmpType              int                  `json:"icmptype,omitempty"`
-	IcmpCode              int                  `json:"icmpcode,omitempty"`
-	StartPort             int                  `json:"startport,omitempty"`
-	EndPort               int                  `json:"endport,omitempty"`
-	ProjectID             string               `json:"projectid,omitempty"`
-	Protocol              string               `json:"protocol,omitempty"`
-	SecurityGroupID       string               `json:"securitygroupid,omitempty"`
-	SecurityGroupName     string               `json:"securitygroupname,omitempty"`
-	UserSecurityGroupList []*UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
+	Account               string              `json:"account,omitempty"`
+	CidrList              []string            `json:"cidrlist,omitempty"`
+	Description           string              `json:"description,omitempty"`
+	DomainID              string              `json:"domainid,omitempty"`
+	IcmpType              int                 `json:"icmptype,omitempty"`
+	IcmpCode              int                 `json:"icmpcode,omitempty"`
+	StartPort             int                 `json:"startport,omitempty"`
+	EndPort               int                 `json:"endport,omitempty"`
+	ProjectID             string              `json:"projectid,omitempty"`
+	Protocol              string              `json:"protocol,omitempty"`
+	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
+	SecurityGroupName     string              `json:"securitygroupname,omitempty"`
+	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
 }
 
-func (req *AuthorizeSecurityGroupIngress) name() string {
+func (*AuthorizeSecurityGroupIngress) name() string {
 	return "authorizeSecurityGroupIngress"
 }
 
-func (req *AuthorizeSecurityGroupIngress) asyncResponse() interface{} {
+func (*AuthorizeSecurityGroupIngress) asyncResponse() interface{} {
 	return new(AuthorizeSecurityGroupIngressResponse)
 }
 
@@ -140,11 +140,11 @@ type AuthorizeSecurityGroupIngressResponse SecurityGroupResponse
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/authorizeSecurityGroupEgress.html
 type AuthorizeSecurityGroupEgress AuthorizeSecurityGroupIngress
 
-func (req *AuthorizeSecurityGroupEgress) name() string {
+func (*AuthorizeSecurityGroupEgress) name() string {
 	return "authorizeSecurityGroupEgress"
 }
 
-func (req *AuthorizeSecurityGroupEgress) asyncResponse() interface{} {
+func (*AuthorizeSecurityGroupEgress) asyncResponse() interface{} {
 	return new(AuthorizeSecurityGroupEgressResponse)
 }
 
@@ -163,11 +163,11 @@ type RevokeSecurityGroupIngress struct {
 	ID string `json:"id"`
 }
 
-func (req *RevokeSecurityGroupIngress) name() string {
+func (*RevokeSecurityGroupIngress) name() string {
 	return "revokeSecurityGroupIngress"
 }
 
-func (req *RevokeSecurityGroupIngress) asyncResponse() interface{} {
+func (*RevokeSecurityGroupIngress) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
@@ -178,11 +178,11 @@ type RevokeSecurityGroupEgress struct {
 	ID string `json:"id"`
 }
 
-func (req *RevokeSecurityGroupEgress) name() string {
+func (*RevokeSecurityGroupEgress) name() string {
 	return "revokeSecurityGroupEgress"
 }
 
-func (req *RevokeSecurityGroupEgress) asyncResponse() interface{} {
+func (*RevokeSecurityGroupEgress) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
@@ -190,39 +190,39 @@ func (req *RevokeSecurityGroupEgress) asyncResponse() interface{} {
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listSecurityGroups.html
 type ListSecurityGroups struct {
-	Account           string         `json:"account,omitempty"`
-	DomainID          string         `json:"domainid,omitempty"`
-	ID                string         `json:"id,omitempty"`
-	IsRecursive       bool           `json:"isrecursive,omitempty"`
-	Keyword           string         `json:"keyword,omitempty"`
-	ListAll           bool           `json:"listall,omitempty"`
-	Page              int            `json:"page,omitempty"`
-	PageSize          int            `json:"pagesize,omitempty"`
-	ProjectID         string         `json:"projectid,omitempty"`
-	Type              string         `json:"type,omitempty"`
-	SecurityGroupName string         `json:"securitygroupname,omitempty"`
-	Tags              []*ResourceTag `json:"tags,omitempty"`
-	VirtualMachineID  string         `json:"virtualmachineid,omitempty"`
+	Account           string        `json:"account,omitempty"`
+	DomainID          string        `json:"domainid,omitempty"`
+	ID                string        `json:"id,omitempty"`
+	IsRecursive       bool          `json:"isrecursive,omitempty"`
+	Keyword           string        `json:"keyword,omitempty"`
+	ListAll           bool          `json:"listall,omitempty"`
+	Page              int           `json:"page,omitempty"`
+	PageSize          int           `json:"pagesize,omitempty"`
+	ProjectID         string        `json:"projectid,omitempty"`
+	Type              string        `json:"type,omitempty"`
+	SecurityGroupName string        `json:"securitygroupname,omitempty"`
+	Tags              []ResourceTag `json:"tags,omitempty"`
+	VirtualMachineID  string        `json:"virtualmachineid,omitempty"`
 }
 
-func (req *ListSecurityGroups) name() string {
+func (*ListSecurityGroups) name() string {
 	return "listSecurityGroups"
 }
 
-func (req *ListSecurityGroups) response() interface{} {
+func (*ListSecurityGroups) response() interface{} {
 	return new(ListSecurityGroupsResponse)
 }
 
 // ListSecurityGroupsResponse represents a list of security groups
 type ListSecurityGroupsResponse struct {
-	Count         int              `json:"count"`
-	SecurityGroup []*SecurityGroup `json:"securitygroup"`
+	Count         int             `json:"count"`
+	SecurityGroup []SecurityGroup `json:"securitygroup"`
 }
 
 // CreateIngressRule creates a set of ingress rules
 //
 // Deprecated: use the API directly
-func (exo *Client) CreateIngressRule(req *AuthorizeSecurityGroupIngress, async AsyncInfo) ([]*IngressRule, error) {
+func (exo *Client) CreateIngressRule(req *AuthorizeSecurityGroupIngress, async AsyncInfo) ([]IngressRule, error) {
 	resp, err := exo.AsyncRequest(req, async)
 	if err != nil {
 		return nil, err
@@ -233,7 +233,7 @@ func (exo *Client) CreateIngressRule(req *AuthorizeSecurityGroupIngress, async A
 // CreateEgressRule creates a set of egress rules
 //
 // Deprecated: use the API directly
-func (exo *Client) CreateEgressRule(req *AuthorizeSecurityGroupEgress, async AsyncInfo) ([]*EgressRule, error) {
+func (exo *Client) CreateEgressRule(req *AuthorizeSecurityGroupEgress, async AsyncInfo) ([]EgressRule, error) {
 	resp, err := exo.AsyncRequest(req, async)
 	if err != nil {
 		return nil, err
@@ -245,7 +245,7 @@ func (exo *Client) CreateEgressRule(req *AuthorizeSecurityGroupEgress, async Asy
 // Warning: it doesn't rollback in case of a failure!
 //
 // Deprecated: use the API directly
-func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []*AuthorizeSecurityGroupIngress, egress []*AuthorizeSecurityGroupEgress, async AsyncInfo) (*SecurityGroup, error) {
+func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []AuthorizeSecurityGroupIngress, egress []AuthorizeSecurityGroupEgress, async AsyncInfo) (*SecurityGroup, error) {
 	req := &CreateSecurityGroup{
 		Name: name,
 	}
@@ -255,19 +255,21 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []*Authoriz
 	}
 
 	sg := resp.(*SecurityGroupResponse).SecurityGroup
-
+	reqs := make([]AsyncCommand, 0, len(ingress)+len(egress))
+	// Egress rules
 	for _, ereq := range egress {
 		ereq.SecurityGroupID = sg.ID
+		reqs = append(reqs, &ereq)
 
-		_, err := exo.AsyncRequest(ereq, async)
-		if err != nil {
-			return nil, err
-		}
 	}
+	// Ingress rules
 	for _, ireq := range ingress {
 		ireq.SecurityGroupID = sg.ID
+		reqs = append(reqs, &ireq)
+	}
 
-		_, err := exo.AsyncRequest(ireq, async)
+	for _, r := range reqs {
+		_, err := exo.AsyncRequest(r, async)
 		if err != nil {
 			return nil, err
 		}
@@ -280,7 +282,8 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []*Authoriz
 		return nil, err
 	}
 
-	return r.(*ListSecurityGroupsResponse).SecurityGroup[0], nil
+	sg = r.(*ListSecurityGroupsResponse).SecurityGroup[0]
+	return &sg, nil
 }
 
 // DeleteSecurityGroup deletes a security group

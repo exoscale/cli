@@ -43,18 +43,18 @@ type ListEvents struct {
 	Type        string `json:"type,omitempty"`
 }
 
-func (req *ListEvents) name() string {
+func (*ListEvents) name() string {
 	return "listEvents"
 }
 
-func (req *ListEvents) response() interface{} {
+func (*ListEvents) response() interface{} {
 	return new(ListEventsResponse)
 }
 
 // ListEventsResponse represents a response of a list query
 type ListEventsResponse struct {
-	Count int      `json:"count"`
-	Event []*Event `json:"event"`
+	Count int     `json:"count"`
+	Event []Event `json:"event"`
 }
 
 // ListEventTypes list the event types
@@ -62,16 +62,16 @@ type ListEventsResponse struct {
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listEventTypes.html
 type ListEventTypes struct{}
 
-func (req *ListEventTypes) name() string {
+func (*ListEventTypes) name() string {
 	return "listEventTypes"
 }
 
-func (req *ListEventTypes) response() interface{} {
+func (*ListEventTypes) response() interface{} {
 	return new(ListEventTypesResponse)
 }
 
 // ListEventTypesResponse represents a response of a list query
 type ListEventTypesResponse struct {
-	Count     int          `json:"count"`
-	EventType []*EventType `json:"eventtype"`
+	Count     int         `json:"count"`
+	EventType []EventType `json:"eventtype"`
 }

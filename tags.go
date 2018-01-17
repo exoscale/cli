@@ -20,17 +20,17 @@ type ResourceTag struct {
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createTags.html
 type CreateTags struct {
-	ResourceIDs  []string       `json:"resourceids"`
-	ResourceType string         `json:"resourcetype"`
-	Tags         []*ResourceTag `json:"tags"`
-	Customer     string         `json:"customer,omitempty"`
+	ResourceIDs  []string      `json:"resourceids"`
+	ResourceType string        `json:"resourcetype"`
+	Tags         []ResourceTag `json:"tags"`
+	Customer     string        `json:"customer,omitempty"`
 }
 
-func (req *CreateTags) name() string {
+func (*CreateTags) name() string {
 	return "createTags"
 }
 
-func (req *CreateTags) asyncResponse() interface{} {
+func (*CreateTags) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
@@ -38,16 +38,16 @@ func (req *CreateTags) asyncResponse() interface{} {
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteTags.html
 type DeleteTags struct {
-	ResourceIDs  []string       `json:"resourceids"`
-	ResourceType string         `json:"resourcetype"`
-	Tags         []*ResourceTag `json:"tags,omitempty"`
+	ResourceIDs  []string      `json:"resourceids"`
+	ResourceType string        `json:"resourcetype"`
+	Tags         []ResourceTag `json:"tags,omitempty"`
 }
 
-func (req *DeleteTags) name() string {
+func (*DeleteTags) name() string {
 	return "deleteTags"
 }
 
-func (req *DeleteTags) asyncResponse() interface{} {
+func (*DeleteTags) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
@@ -70,16 +70,16 @@ type ListTags struct {
 	Value        string `json:"value,omitempty"`
 }
 
-func (req *ListTags) name() string {
+func (*ListTags) name() string {
 	return "listTags"
 }
 
-func (req *ListTags) response() interface{} {
+func (*ListTags) response() interface{} {
 	return new(ListTagsResponse)
 }
 
 // ListTagsResponse represents a list of resource tags
 type ListTagsResponse struct {
-	Count int            `json:"count"`
-	Tag   []*ResourceTag `json:"tag"`
+	Count int           `json:"count"`
+	Tag   []ResourceTag `json:"tag"`
 }

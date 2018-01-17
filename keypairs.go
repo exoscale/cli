@@ -20,17 +20,17 @@ type CreateSSHKeyPair struct {
 	ProjectID string `json:"projectid,omitempty"`
 }
 
-func (req *CreateSSHKeyPair) name() string {
+func (*CreateSSHKeyPair) name() string {
 	return "createSSHKeyPair"
 }
 
-func (req *CreateSSHKeyPair) response() interface{} {
+func (*CreateSSHKeyPair) response() interface{} {
 	return new(CreateSSHKeyPairResponse)
 }
 
 // CreateSSHKeyPairResponse represents the creation of an SSH Key Pair
 type CreateSSHKeyPairResponse struct {
-	KeyPair *SSHKeyPair `json:"keypair"`
+	KeyPair SSHKeyPair `json:"keypair"`
 }
 
 // DeleteSSHKeyPair represents a new keypair to be created
@@ -43,11 +43,11 @@ type DeleteSSHKeyPair struct {
 	ProjectID string `json:"projectid,omitempty"`
 }
 
-func (req *DeleteSSHKeyPair) name() string {
+func (*DeleteSSHKeyPair) name() string {
 	return "deleteSSHKeyPair"
 }
 
-func (req *DeleteSSHKeyPair) response() interface{} {
+func (*DeleteSSHKeyPair) response() interface{} {
 	return new(booleanSyncResponse)
 }
 
@@ -62,17 +62,17 @@ type RegisterSSHKeyPair struct {
 	ProjectID string `json:"projectid,omitempty"`
 }
 
-func (req *RegisterSSHKeyPair) name() string {
+func (*RegisterSSHKeyPair) name() string {
 	return "registerSSHKeyPair"
 }
 
-func (req *RegisterSSHKeyPair) response() interface{} {
+func (*RegisterSSHKeyPair) response() interface{} {
 	return new(RegisterSSHKeyPairResponse)
 }
 
 // RegisterSSHKeyPairResponse represents the creation of an SSH Key Pair
 type RegisterSSHKeyPairResponse struct {
-	KeyPair *SSHKeyPair `json:"keypair"`
+	KeyPair SSHKeyPair `json:"keypair"`
 }
 
 // ListSSHKeyPairs represents a query for a list of SSH KeyPairs
@@ -91,18 +91,18 @@ type ListSSHKeyPairs struct {
 	ProjectID   string `json:"projectid,omitempty"`
 }
 
-func (req *ListSSHKeyPairs) name() string {
+func (*ListSSHKeyPairs) name() string {
 	return "listSSHKeyPairs"
 }
 
-func (req *ListSSHKeyPairs) response() interface{} {
+func (*ListSSHKeyPairs) response() interface{} {
 	return new(ListSSHKeyPairsResponse)
 }
 
 // ListSSHKeyPairsResponse represents a list of SSH key pairs
 type ListSSHKeyPairsResponse struct {
-	Count      int           `json:"count"`
-	SSHKeyPair []*SSHKeyPair `json:"sshkeypair"`
+	Count      int          `json:"count"`
+	SSHKeyPair []SSHKeyPair `json:"sshkeypair"`
 }
 
 // ResetSSHKeyForVirtualMachine (Async) represents a change for the key pairs
@@ -116,11 +116,11 @@ type ResetSSHKeyForVirtualMachine struct {
 	ProjectID string `json:"projectid,omitempty"`
 }
 
-func (req *ResetSSHKeyForVirtualMachine) name() string {
+func (*ResetSSHKeyForVirtualMachine) name() string {
 	return "resetSSHKeyForVirtualMachine"
 }
 
-func (req *ResetSSHKeyForVirtualMachine) asyncResponse() interface{} {
+func (*ResetSSHKeyForVirtualMachine) asyncResponse() interface{} {
 	return new(ResetSSHKeyForVirtualMachineResponse)
 }
 
@@ -139,7 +139,8 @@ func (exo *Client) CreateKeypair(name string) (*SSHKeyPair, error) {
 		return nil, err
 	}
 
-	return resp.(*CreateSSHKeyPairResponse).KeyPair, nil
+	keypair := resp.(*CreateSSHKeyPairResponse).KeyPair
+	return &keypair, nil
 }
 
 // DeleteKeypair deletes an SSH key pair
@@ -165,5 +166,6 @@ func (exo *Client) RegisterKeypair(name string, publicKey string) (*SSHKeyPair, 
 		return nil, err
 	}
 
-	return resp.(*RegisterSSHKeyPairResponse).KeyPair, nil
+	keypair := resp.(*RegisterSSHKeyPairResponse).KeyPair
+	return &keypair, nil
 }

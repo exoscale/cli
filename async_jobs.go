@@ -27,11 +27,11 @@ type QueryAsyncJobResult struct {
 	JobID string `json:"jobid"`
 }
 
-func (req *QueryAsyncJobResult) name() string {
+func (*QueryAsyncJobResult) name() string {
 	return "queryAsyncJobResult"
 }
 
-func (req *QueryAsyncJobResult) response() interface{} {
+func (*QueryAsyncJobResult) response() interface{} {
 	return new(QueryAsyncJobResultResponse)
 }
 
@@ -51,16 +51,16 @@ type ListAsyncJobs struct {
 	StartDate   string `json:"startdate,omitempty"`
 }
 
-func (req *ListAsyncJobs) name() string {
+func (*ListAsyncJobs) name() string {
 	return "listAsyncJobs"
 }
 
-func (req *ListAsyncJobs) response() interface{} {
+func (*ListAsyncJobs) response() interface{} {
 	return new(ListAsyncJobsResponse)
 }
 
 // ListAsyncJobsResponse represents a list of job results
 type ListAsyncJobsResponse struct {
-	Count     int               `json:"count"`
-	AsyncJobs []*AsyncJobResult `json:"asyncjobs"`
+	Count     int              `json:"count"`
+	AsyncJobs []AsyncJobResult `json:"asyncjobs"`
 }

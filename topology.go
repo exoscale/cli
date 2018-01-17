@@ -18,7 +18,7 @@ func (exo *Client) GetSecurityGroups() (map[string]SecurityGroup, error) {
 
 	sgs = make(map[string]SecurityGroup)
 	for _, sg := range resp.(*ListSecurityGroupsResponse).SecurityGroup {
-		sgs[sg.Name] = *sg
+		sgs[sg.Name] = sg
 	}
 	return sgs, nil
 }
@@ -89,7 +89,7 @@ func (exo *Client) GetKeypairs() ([]SSHKeyPair, error) {
 	r := resp.(*ListSSHKeyPairsResponse)
 	keypairs = make([]SSHKeyPair, r.Count)
 	for i, keypair := range r.SSHKeyPair {
-		keypairs[i] = *keypair
+		keypairs[i] = keypair
 	}
 	return keypairs, nil
 }

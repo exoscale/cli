@@ -50,7 +50,7 @@ type DNSRecord struct {
 
 // DNSRecordResponse represents the creation of a DNS record
 type DNSRecordResponse struct {
-	Record *DNSRecord `json:"record"`
+	Record DNSRecord `json:"record"`
 }
 
 // DNSErrorResponse represents an error in the API
@@ -129,27 +129,27 @@ func (exo *Client) GetRecord(domain string, recordID int64) (*DNSRecord, error) 
 		return nil, err
 	}
 
-	var r *DNSRecordResponse
+	var r DNSRecordResponse
 	if err = json.Unmarshal(resp, &r); err != nil {
 		return nil, err
 	}
 
-	return r.Record, nil
+	return &(r.Record), nil
 }
 
 // GetRecords returns the DNS records
-func (exo *Client) GetRecords(name string) ([]*DNSRecord, error) {
+func (exo *Client) GetRecords(name string) ([]DNSRecord, error) {
 	resp, err := exo.dnsRequest("/v1/domains/"+name+"/records", "", "GET")
 	if err != nil {
 		return nil, err
 	}
 
-	var r []*DNSRecordResponse
+	var r []DNSRecordResponse
 	if err = json.Unmarshal(resp, &r); err != nil {
 		return nil, err
 	}
 
-	records := make([]*DNSRecord, 0, len(r))
+	records := make([]DNSRecord, 0, len(r))
 	for _, rec := range r {
 		records = append(records, rec.Record)
 	}
@@ -160,7 +160,7 @@ func (exo *Client) GetRecords(name string) ([]*DNSRecord, error) {
 // CreateRecord creates a DNS record
 func (exo *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
 	body, err := json.Marshal(DNSRecordResponse{
-		Record: &rec,
+		Record: rec,
 	})
 	if err != nil {
 		return nil, err
@@ -171,18 +171,18 @@ func (exo *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 		return nil, err
 	}
 
-	var r *DNSRecordResponse
+	var r DNSRecordResponse
 	if err = json.Unmarshal(resp, &r); err != nil {
 		return nil, err
 	}
 
-	return r.Record, nil
+	return &(r.Record), nil
 }
 
 // UpdateRecord updates a DNS record
 func (exo *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
 	body, err := json.Marshal(DNSRecordResponse{
-		Record: &rec,
+		Record: rec,
 	})
 	if err != nil {
 		return nil, err
@@ -194,12 +194,12 @@ func (exo *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 		return nil, err
 	}
 
-	var r *DNSRecordResponse
+	var r DNSRecordResponse
 	if err = json.Unmarshal(resp, &r); err != nil {
 		return nil, err
 	}
 
-	return r.Record, nil
+	return &(r.Record), nil
 }
 
 // DeleteRecord deletes a record

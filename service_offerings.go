@@ -31,7 +31,7 @@ type ServiceOffering struct {
 	ServiceOfferingDetails    map[string]string `json:"serviceofferingdetails,omitempty"`
 	StorageType               string            `json:"storagetype,omitempty"`
 	SystemVMType              string            `json:"systemvmtype,omitempty"`
-	Tags                      []*ResourceTag    `json:"tags,omitempty"`
+	Tags                      []ResourceTag     `json:"tags,omitempty"`
 }
 
 // ListServiceOfferings represents a query for service offerings
@@ -50,16 +50,16 @@ type ListServiceOfferings struct {
 	VirtualMachineID string `json:"virtualmachineid,omitempty"`
 }
 
-func (req *ListServiceOfferings) name() string {
+func (*ListServiceOfferings) name() string {
 	return "listServiceOfferings"
 }
 
-func (req *ListServiceOfferings) response() interface{} {
+func (*ListServiceOfferings) response() interface{} {
 	return new(ListServiceOfferingsResponse)
 }
 
 // ListServiceOfferingsResponse represents a list of service offerings
 type ListServiceOfferingsResponse struct {
-	Count           int                `json:"count"`
-	ServiceOffering []*ServiceOffering `json:"serviceoffering"`
+	Count           int               `json:"count"`
+	ServiceOffering []ServiceOffering `json:"serviceoffering"`
 }

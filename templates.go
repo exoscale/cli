@@ -1,9 +1,3 @@
-/*
-Templates
-
-See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/templates.html
-*/
-
 package egoscale
 
 // Template represents a machine to be deployed
@@ -45,33 +39,33 @@ type Template struct {
 
 // ListTemplates represents a template query filter
 type ListTemplates struct {
-	TemplateFilter string         `json:"templatefilter"` // featured, etc.
-	Account        string         `json:"account,omitempty"`
-	DomainID       string         `json:"domainid,omitempty"`
-	Hypervisor     string         `json:"hypervisor,omitempty"`
-	ID             string         `json:"id,omitempty"`
-	IsRecursive    bool           `json:"isrecursive,omitempty"`
-	Keyword        string         `json:"keyword,omitempty"`
-	ListAll        bool           `json:"listall,omitempty"`
-	Name           string         `json:"name,omitempty"`
-	Page           int            `json:"page,omitempty"`
-	PageSize       int            `json:"pagesize,omitempty"`
-	ProjectID      string         `json:"projectid,omitempty"`
-	ShowRemoved    bool           `json:"showremoved,omitempty"`
-	Tags           []*ResourceTag `json:"tags,omitempty"`
-	ZoneID         string         `json:"zoneid,omitempty"`
+	TemplateFilter string        `json:"templatefilter"` // featured, etc.
+	Account        string        `json:"account,omitempty"`
+	DomainID       string        `json:"domainid,omitempty"`
+	Hypervisor     string        `json:"hypervisor,omitempty"`
+	ID             string        `json:"id,omitempty"`
+	IsRecursive    bool          `json:"isrecursive,omitempty"`
+	Keyword        string        `json:"keyword,omitempty"`
+	ListAll        bool          `json:"listall,omitempty"`
+	Name           string        `json:"name,omitempty"`
+	Page           int           `json:"page,omitempty"`
+	PageSize       int           `json:"pagesize,omitempty"`
+	ProjectID      string        `json:"projectid,omitempty"`
+	ShowRemoved    bool          `json:"showremoved,omitempty"`
+	Tags           []ResourceTag `json:"tags,omitempty"`
+	ZoneID         string        `json:"zoneid,omitempty"`
 }
 
-func (req *ListTemplates) name() string {
+func (*ListTemplates) name() string {
 	return "listTemplates"
 }
 
-func (req *ListTemplates) response() interface{} {
+func (*ListTemplates) response() interface{} {
 	return new(ListTemplatesResponse)
 }
 
 // ListTemplatesResponse represents a list of templates
 type ListTemplatesResponse struct {
-	Count    int         `json:"count"`
-	Template []*Template `json:"template"`
+	Count    int        `json:"count"`
+	Template []Template `json:"template"`
 }

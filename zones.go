@@ -27,34 +27,34 @@ type Zone struct {
 	SecurityGroupsEnabled bool              `json:"securitygroupsenabled,omitempty"`
 	Vlan                  string            `json:"vlan,omitempty"`
 	ZoneToken             string            `json:"zonetoken,omitempty"`
-	Tags                  []*ResourceTag    `json:"tags,omitempty"`
+	Tags                  []ResourceTag     `json:"tags,omitempty"`
 }
 
 // ListZones represents a query for zones
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listZones.html
 type ListZones struct {
-	Available      bool           `json:"available,omitempty"`
-	DomainID       string         `json:"domainid,omitempty"`
-	ID             string         `json:"id,omitempty"`
-	Keyword        string         `json:"keyword,omitempty"`
-	Name           string         `json:"name,omitempty"`
-	Page           int            `json:"page,omitempty"`
-	PageSize       int            `json:"pagesize,omitempty"`
-	ShowCapacities bool           `json:"showcapacities,omitempty"`
-	Tags           []*ResourceTag `json:"tags,omitempty"`
+	Available      bool          `json:"available,omitempty"`
+	DomainID       string        `json:"domainid,omitempty"`
+	ID             string        `json:"id,omitempty"`
+	Keyword        string        `json:"keyword,omitempty"`
+	Name           string        `json:"name,omitempty"`
+	Page           int           `json:"page,omitempty"`
+	PageSize       int           `json:"pagesize,omitempty"`
+	ShowCapacities bool          `json:"showcapacities,omitempty"`
+	Tags           []ResourceTag `json:"tags,omitempty"`
 }
 
-func (req *ListZones) name() string {
+func (*ListZones) name() string {
 	return "listZones"
 }
 
-func (req *ListZones) response() interface{} {
+func (*ListZones) response() interface{} {
 	return new(ListZonesResponse)
 }
 
 // ListZonesResponse represents a list of zones
 type ListZonesResponse struct {
-	Count int     `json:"count"`
-	Zone  []*Zone `json:"zone"`
+	Count int    `json:"count"`
+	Zone  []Zone `json:"zone"`
 }

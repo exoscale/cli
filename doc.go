@@ -2,6 +2,12 @@
 
 Package egoscale is a mapping for with the CloudStack API (http://cloudstack.apache.org/api.html) from Go. It has been designed against the Exoscale (https://www.exoscale.ch/) infrastructure but should fit other CloudStack services.
 
+Requests and Responses
+
+The paradigm used in this library is that CloudStack defines two types of requests synchronous (client.Request) and asynchronous (client.AsyncRequest). And when the expected responses is a success message, you may use the boolean requests variants (client.BooleanRequest, client.BooleanAsyncRequest). To build a request, construct the adequate struct. This library expects a pointer for efficiency reasons only. The response is a struct corresponding to the request itself. E.g. DeployVirtualMachine gives DeployVirtualMachineResponse, as a pointer as well to avoid big copies.
+
+Then everything within the struct is not a pointer.
+
 Affinity and Anti-Affinity groups
 
 Affinity and Anti-Affinity groups provide a way to influence where VMs should run. See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html#affinity-groups
@@ -17,7 +23,7 @@ All the available APIs on the server and provided by the API Discovery plugin
 		panic(err)
 	}
 
-	for _, api := range resp.(*ListAPIsResponse).API {
+	for _, api := range resp.(*egoscale.ListAPIsResponse).API {
 		fmt.Println("%s %s", api.Name, api.Description)
 	}
 	// Output:
@@ -42,13 +48,13 @@ Security Groups
 
 Security Groups provide a way to isolate traffic to VMs.
 
-	resp, err := cs.Request(&CreateSecurityGroup{
+	resp, err := cs.Request(&egoscale.CreateSecurityGroup{
 		Name: "Load balancer",
 		Description: "Opens HTTP/HTTPS ports from the outside world",
 	})
-	securityGroup := resp.(*CreateSecurityGroupResponse).SecurityGroup
+	securityGroup := resp.(*egoscale.CreateSecurityGroupResponse).SecurityGroup
 	// ...
-	err = client.BooleanRequest(&DeleteSecurityGroup{
+	err = client.BooleanRequest(&egoscale.DeleteSecurityGroup{
 		ID: securityGroup.ID,
 	})
 	// ...
@@ -72,6 +78,12 @@ Virtual Machines
 ... todo ...
 
 See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html
+
+Templates
+
+... todo ...
+
+See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/templates.html
 
 Zones
 

@@ -304,7 +304,7 @@ func (exo *Client) Request(req Command) (interface{}, error) {
 	resp := req.response()
 	if err := json.Unmarshal(body, resp); err != nil {
 		r := new(ErrorResponse)
-		if e := json.Unmarshal(body, &r); e != nil {
+		if e := json.Unmarshal(body, r); e != nil {
 			return nil, r
 		}
 		return nil, err
@@ -312,25 +312,6 @@ func (exo *Client) Request(req Command) (interface{}, error) {
 
 	return resp, nil
 }
-
-// Request performs a simple request
-/*
-func (exo *Client) Request(req Request, v interface{}) error {
-	resp, err := exo.request(req.Name(), req)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(resp, v); err != nil {
-		var r ErrorResponse
-		if e := json.Unmarshal(resp, &r); e == nil {
-			return r
-		}
-		return err
-	}
-
-	return nil
-}*/
 
 // request makes a Request while being close to the metal
 func (exo *Client) request(command string, req interface{}) (json.RawMessage, error) {

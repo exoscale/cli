@@ -69,10 +69,10 @@ type VirtualMachine struct {
 	Vgpu                  string            `json:"vgpu,omitempty"`     // not in the doc
 	ZoneID                string            `json:"zoneid,omitempty"`
 	ZoneName              string            `json:"zonename,omitempty"`
-	AffinityGroup         []*AffinityGroup  `json:"affinitygroup,omitempty"`
-	Nic                   []*Nic            `json:"nic,omitempty"`
-	SecurityGroup         []*SecurityGroup  `json:"securitygroup,omitempty"`
-	Tags                  []*ResourceTag    `json:"tags,omitempty"`
+	AffinityGroup         []AffinityGroup   `json:"affinitygroup,omitempty"`
+	Nic                   []Nic             `json:"nic,omitempty"`
+	SecurityGroup         []SecurityGroup   `json:"securitygroup,omitempty"`
+	Tags                  []ResourceTag     `json:"tags,omitempty"`
 	JobID                 string            `json:"jobid,omitempty"`
 	JobStatus             JobStatusType     `json:"jobstatus,omitempty"`
 }
@@ -84,7 +84,7 @@ func (vm *VirtualMachine) NicsByType(nicType string) []Nic {
 		if nic.Type == nicType {
 			// XXX The CloudStack API forgets to specify it
 			nic.VirtualMachineID = vm.ID
-			nics = append(nics, *nic)
+			nics = append(nics, nic)
 		}
 	}
 	return nics
@@ -95,7 +95,7 @@ func (vm *VirtualMachine) NicByNetworkID(networkID string) *Nic {
 	for _, nic := range vm.Nic {
 		if nic.NetworkID == networkID {
 			nic.VirtualMachineID = vm.ID
-			return nic
+			return &nic
 		}
 	}
 	return nil
@@ -106,7 +106,7 @@ func (vm *VirtualMachine) NicByID(nicID string) *Nic {
 	for _, nic := range vm.Nic {
 		if nic.ID == nicID {
 			nic.VirtualMachineID = vm.ID
-			return nic
+			return &nic
 		}
 	}
 
@@ -122,7 +122,7 @@ type IPToNetwork struct {
 
 // VirtualMachineResponse represents a generic Virtual Machine response
 type VirtualMachineResponse struct {
-	VirtualMachine *VirtualMachine `json:"virtualmachine"`
+	VirtualMachine VirtualMachine `json:"virtualmachine"`
 }
 
 // DeployVirtualMachine (Async) represents the machine creation
@@ -147,7 +147,7 @@ type DeployVirtualMachine struct {
 	Hypervisor         string            `json:"hypervisor,omitempty"`
 	IP6Address         net.IP            `json:"ip6address,omitempty"`
 	IPAddress          net.IP            `json:"ipaddress,omitempty"`
-	IPToNetworkList    []*IPToNetwork    `json:"iptonetworklist,omitempty"`
+	IPToNetworkList    []IPToNetwork     `json:"iptonetworklist,omitempty"`
 	Keyboard           string            `json:"keyboard,omitempty"`
 	KeyPair            string            `json:"keypair,omitempty"`
 	Name               string            `json:"name,omitempty"`
@@ -161,11 +161,11 @@ type DeployVirtualMachine struct {
 	UserData           string            `json:"userdata,omitempty"` // the client is responsible to base64/gzip it
 }
 
-func (req *DeployVirtualMachine) name() string {
+func (*DeployVirtualMachine) name() string {
 	return "deployVirtualMachine"
 }
 
-func (req *DeployVirtualMachine) asyncResponse() interface{} {
+func (*DeployVirtualMachine) asyncResponse() interface{} {
 	return new(DeployVirtualMachineResponse)
 }
 
@@ -181,10 +181,10 @@ type StartVirtualMachine struct {
 	HostID            string `json:"hostid,omitempty"`            // root only
 }
 
-func (req *StartVirtualMachine) name() string {
+func (*StartVirtualMachine) name() string {
 	return "startVirtualMachine"
 }
-func (req *StartVirtualMachine) asyncResponse() interface{} {
+func (*StartVirtualMachine) asyncResponse() interface{} {
 	return new(StartVirtualMachineResponse)
 }
 
@@ -199,11 +199,11 @@ type StopVirtualMachine struct {
 	Forced bool   `json:"forced,omitempty"`
 }
 
-func (req *StopVirtualMachine) name() string {
+func (*StopVirtualMachine) name() string {
 	return "stopVirtualMachine"
 }
 
-func (req *StopVirtualMachine) asyncResponse() interface{} {
+func (*StopVirtualMachine) asyncResponse() interface{} {
 	return new(StopVirtualMachineResponse)
 }
 
@@ -217,11 +217,11 @@ type RebootVirtualMachine struct {
 	ID string `json:"id"`
 }
 
-func (req *RebootVirtualMachine) name() string {
+func (*RebootVirtualMachine) name() string {
 	return "rebootVirtualMachine"
 }
 
-func (req *RebootVirtualMachine) asyncResponse() interface{} {
+func (*RebootVirtualMachine) asyncResponse() interface{} {
 	return new(RebootVirtualMachineResponse)
 }
 
@@ -236,11 +236,11 @@ type RestoreVirtualMachine struct {
 	TemplateID       string `json:"templateid,omitempty"`
 }
 
-func (req *RestoreVirtualMachine) name() string {
+func (*RestoreVirtualMachine) name() string {
 	return "restoreVirtualMachine"
 }
 
-func (req *RestoreVirtualMachine) asyncResponse() interface{} {
+func (*RestoreVirtualMachine) asyncResponse() interface{} {
 	return new(RestoreVirtualMachineResponse)
 }
 
@@ -254,11 +254,11 @@ type RecoverVirtualMachine struct {
 	ID string `json:"virtualmachineid"`
 }
 
-func (req *RecoverVirtualMachine) name() string {
+func (*RecoverVirtualMachine) name() string {
 	return "recoverVirtualMachine"
 }
 
-func (req *RecoverVirtualMachine) response() interface{} {
+func (*RecoverVirtualMachine) response() interface{} {
 	return new(RecoverVirtualMachineResponse)
 }
 
@@ -273,11 +273,11 @@ type DestroyVirtualMachine struct {
 	Expunge bool   `json:"expunge,omitempty"`
 }
 
-func (req *DestroyVirtualMachine) name() string {
+func (*DestroyVirtualMachine) name() string {
 	return "destroyVirtualMachine"
 }
 
-func (req *DestroyVirtualMachine) asyncResponse() interface{} {
+func (*DestroyVirtualMachine) asyncResponse() interface{} {
 	return new(DestroyVirtualMachineResponse)
 }
 
@@ -302,11 +302,11 @@ type UpdateVirtualMachine struct {
 	UserData              []byte            `json:"userdata,omitempty"`
 }
 
-func (req *UpdateVirtualMachine) name() string {
+func (*UpdateVirtualMachine) name() string {
 	return "updateVirtualMachine"
 }
 
-func (req *UpdateVirtualMachine) response() interface{} {
+func (*UpdateVirtualMachine) response() interface{} {
 	return new(UpdateVirtualMachineResponse)
 }
 
@@ -318,11 +318,11 @@ type ExpungeVirtualMachine struct {
 	ID string `json:"id"`
 }
 
-func (req *ExpungeVirtualMachine) name() string {
+func (*ExpungeVirtualMachine) name() string {
 	return "expungeVirtualMachine"
 }
 
-func (req *ExpungeVirtualMachine) asyncResponse() interface{} {
+func (*ExpungeVirtualMachine) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
@@ -338,11 +338,11 @@ type ScaleVirtualMachine struct {
 	Details           map[string]string `json:"details,omitempty"`
 }
 
-func (req *ScaleVirtualMachine) name() string {
+func (*ScaleVirtualMachine) name() string {
 	return "scaleVirtualMachine"
 }
 
-func (req *ScaleVirtualMachine) asyncResponse() interface{} {
+func (*ScaleVirtualMachine) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
@@ -351,11 +351,11 @@ func (req *ScaleVirtualMachine) asyncResponse() interface{} {
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/changeServiceForVirtualMachine.html
 type ChangeServiceForVirtualMachine ScaleVirtualMachine
 
-func (req *ChangeServiceForVirtualMachine) name() string {
+func (*ChangeServiceForVirtualMachine) name() string {
 	return "changeServiceForVirtualMachine"
 }
 
-func (req *ChangeServiceForVirtualMachine) response() interface{} {
+func (*ChangeServiceForVirtualMachine) response() interface{} {
 	return new(ChangeServiceForVirtualMachineResponse)
 }
 
@@ -367,11 +367,11 @@ type ChangeServiceForVirtualMachineResponse VirtualMachineResponse
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/resetPasswordForVirtualMachine.html
 type ResetPasswordForVirtualMachine ScaleVirtualMachine
 
-func (req *ResetPasswordForVirtualMachine) name() string {
+func (*ResetPasswordForVirtualMachine) name() string {
 	return "resetPasswordForVirtualMachine"
 }
 
-func (req *ResetPasswordForVirtualMachine) asyncResponse() interface{} {
+func (*ResetPasswordForVirtualMachine) asyncResponse() interface{} {
 	return new(ResetPasswordForVirtualMachineResponse)
 }
 
@@ -385,11 +385,11 @@ type GetVMPassword struct {
 	ID string `json:"id"`
 }
 
-func (req *GetVMPassword) name() string {
+func (*GetVMPassword) name() string {
 	return "getVMPassword"
 }
 
-func (req *GetVMPassword) response() interface{} {
+func (*GetVMPassword) response() interface{} {
 	return new(GetVMPasswordResponse)
 }
 
@@ -428,25 +428,25 @@ type ListVirtualMachines struct {
 	ServiceOfferindID string            `json:"serviceofferingid,omitempty"`
 	State             string            `json:"state,omitempty"` // Running, Stopped, Present, ...
 	StorageID         string            `json:"storageid,omitempty"`
-	Tags              []*ResourceTag    `json:"tags,omitempty"`
+	Tags              []ResourceTag     `json:"tags,omitempty"`
 	TemplateID        string            `json:"templateid,omitempty"`
 	UserID            string            `json:"userid,omitempty"`
 	VpcID             string            `json:"vpcid,omitempty"`
 	ZoneID            string            `json:"zoneid,omitempty"`
 }
 
-func (req *ListVirtualMachines) name() string {
+func (*ListVirtualMachines) name() string {
 	return "listVirtualMachines"
 }
 
-func (req *ListVirtualMachines) response() interface{} {
+func (*ListVirtualMachines) response() interface{} {
 	return new(ListVirtualMachinesResponse)
 }
 
 // ListVirtualMachinesResponse represents a list of virtual machines
 type ListVirtualMachinesResponse struct {
-	Count          int               `json:"count"`
-	VirtualMachine []*VirtualMachine `json:"virtualmachine"`
+	Count          int              `json:"count"`
+	VirtualMachine []VirtualMachine `json:"virtualmachine"`
 }
 
 // AddNicToVirtualMachine (Async) adds a NIC to a VM
@@ -458,11 +458,11 @@ type AddNicToVirtualMachine struct {
 	IPAddress        net.IP `json:"ipaddress,omitempty"`
 }
 
-func (req *AddNicToVirtualMachine) name() string {
+func (*AddNicToVirtualMachine) name() string {
 	return "addNicToVirtualMachine"
 }
 
-func (req *AddNicToVirtualMachine) asyncResponse() interface{} {
+func (*AddNicToVirtualMachine) asyncResponse() interface{} {
 	return new(AddNicToVirtualMachineResponse)
 }
 
@@ -477,11 +477,11 @@ type RemoveNicFromVirtualMachine struct {
 	VirtualMachineID string `json:"virtualmachineid"`
 }
 
-func (req *RemoveNicFromVirtualMachine) name() string {
+func (*RemoveNicFromVirtualMachine) name() string {
 	return "removeNicFromVirtualMachine"
 }
 
-func (req *RemoveNicFromVirtualMachine) asyncResponse() interface{} {
+func (*RemoveNicFromVirtualMachine) asyncResponse() interface{} {
 	return new(RemoveNicFromVirtualMachineResponse)
 }
 
@@ -497,11 +497,11 @@ type UpdateDefaultNicForVirtualMachine struct {
 	IPAddress        net.IP `json:"ipaddress,omitempty"`
 }
 
-func (req *UpdateDefaultNicForVirtualMachine) name() string {
+func (*UpdateDefaultNicForVirtualMachine) name() string {
 	return "updateDefaultNicForVirtualMachine"
 }
 
-func (req *UpdateDefaultNicForVirtualMachine) asyncResponse() interface{} {
+func (*UpdateDefaultNicForVirtualMachine) asyncResponse() interface{} {
 	return new(UpdateDefaultNicForVirtualMachineResponse)
 }
 
