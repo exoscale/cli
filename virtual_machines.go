@@ -158,7 +158,7 @@ type DeployVirtualMachine struct {
 	SecurityGroupNames []string          `json:"securitygroupnames,omitempty"` // does nothing, mutually exclusive
 	Size               string            `json:"size,omitempty"`               // mutually exclusive with DiskOfferingID
 	StartVM            bool              `json:"startvm,omitempty"`
-	UserData           []byte            `json:"userdata,omitempty"`
+	UserData           string            `json:"userdata,omitempty"` // the client is responsible to base64/gzip it
 }
 
 func (req *DeployVirtualMachine) name() string {
