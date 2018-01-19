@@ -65,26 +65,26 @@ const (
 	// APILimitExceeded represents ... (TODO)
 	APILimitExceeded = 429
 	// MalformedParameterError represents ... (TODO)
-	MalformedParameterError
+	MalformedParameterError = 430
 	// ParamError represents ... (TODO)
-	ParamError
+	ParamError = 431
 
 	// InternalError represents a server error
 	InternalError = 530
 	// AccountError represents ... (TODO)
-	AccountError
+	AccountError = 531
 	// AccountResourceLimitError represents ... (TODO)
-	AccountResourceLimitError
+	AccountResourceLimitError = 532
 	// InsufficientCapacityError represents ... (TODO)
-	InsufficientCapacityError
+	InsufficientCapacityError = 533
 	// ResourceUnavailableError represents ... (TODO)
-	ResourceUnavailableError
+	ResourceUnavailableError = 534
 	// ResourceAllocationError represents ... (TODO)
-	ResourceAllocationError
+	ResourceAllocationError = 535
 	// ResourceInUseError represents ... (TODO)
-	ResourceInUseError
+	ResourceInUseError = 536
 	// NetworkRuleConflictError represents ... (TODO)
-	NetworkRuleConflictError
+	NetworkRuleConflictError = 537
 )
 
 // ErrorCode represents the CloudStack ApiErrorCode enum
