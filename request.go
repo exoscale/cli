@@ -474,7 +474,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 							(*params).Set(name, strings.Join(elems, ","))
 						}
 					}
-				case reflect.Ptr:
+				default:
 					if val.Len() == 0 {
 						if required {
 							return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), field.Name, val.Kind())
@@ -484,10 +484,6 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 						if err != nil {
 							return err
 						}
-					}
-				default:
-					if required {
-						return fmt.Errorf("Unsupported type %s.%s ([]%s)", typeof.Name(), field.Name, field.Type.Elem().Kind())
 					}
 				}
 			case reflect.Map:

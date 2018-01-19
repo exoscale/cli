@@ -18,19 +18,20 @@ func TestPrepareValues(t *testing.T) {
 	}
 
 	profile := struct {
-		IgnoreMe string
-		Zone     string            `json:"myzone,omitempty"`
-		Name     string            `json:"name"`
-		NoName   string            `json:"omitempty"`
-		ID       int               `json:"id"`
-		UserID   uint              `json:"user_id"`
-		IsGreat  bool              `json:"is_great"`
-		Num      float64           `json:"num"`
-		Bytes    []byte            `json:"bytes"`
-		IDs      []string          `json:"ids,omitempty"`
-		Tags     []*tag            `json:"tags,omitempty"`
-		Map      map[string]string `json:"map"`
-		IP       net.IP            `json:"ip,omitempty"`
+		IgnoreMe    string
+		Zone        string            `json:"myzone,omitempty"`
+		Name        string            `json:"name"`
+		NoName      string            `json:"omitempty"`
+		ID          int               `json:"id"`
+		UserID      uint              `json:"user_id"`
+		IsGreat     bool              `json:"is_great"`
+		Num         float64           `json:"num"`
+		Bytes       []byte            `json:"bytes"`
+		IDs         []string          `json:"ids,omitempty"`
+		TagPointers []*tag            `json:"tagpointers,omitempty"`
+		Tags        []tag             `json:"tags,omitempty"`
+		Map         map[string]string `json:"map"`
+		IP          net.IP            `json:"ip,omitempty"`
 	}{
 		IgnoreMe: "bar",
 		Name:     "world",
@@ -40,7 +41,11 @@ func TestPrepareValues(t *testing.T) {
 		Num:      3.14,
 		Bytes:    []byte("exo"),
 		IDs:      []string{"1", "2", "three"},
-		Tags: []*tag{
+		TagPointers: []*tag{
+			{Name: "foo"},
+			{Name: "bar", IsVisible: false},
+		},
+		Tags: []tag{
 			{Name: "foo"},
 			{Name: "bar", IsVisible: false},
 		},
@@ -83,6 +88,11 @@ func TestPrepareValues(t *testing.T) {
 	v := params.Get("tags[0].name")
 	if v != "foo" {
 		t.Errorf("expected tags to be serialized as foo, got %#v", v)
+	}
+
+	v = params.Get("tagpointers[0].name")
+	if v != "foo" {
+		t.Errorf("expected tag pointers to be serialized as foo, got %#v", v)
 	}
 
 	v = params.Get("map[0].foo")
