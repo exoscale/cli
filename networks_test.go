@@ -5,11 +5,19 @@ import (
 )
 
 func TestListNetworksIsACommand(t *testing.T) {
+	var _ Taggable = (*Network)(nil)
 	var _ Command = (*CreateNetwork)(nil)
 	var _ AsyncCommand = (*DeleteNetwork)(nil)
 	var _ Command = (*ListNetworks)(nil)
 	var _ AsyncCommand = (*RestartNetwork)(nil)
 	var _ AsyncCommand = (*UpdateNetwork)(nil)
+}
+
+func TestNetwork(t *testing.T) {
+	instance := &Network{}
+	if instance.ResourceType() != "Network" {
+		t.Errorf("ResourceType doesn't match")
+	}
 }
 
 func TestListNetworks(t *testing.T) {

@@ -37,6 +37,11 @@ type Template struct {
 	Zonename              string            `json:"zonename,omitempty"`
 }
 
+// ResourceType returns the type of the resource
+func (*Template) ResourceType() string {
+	return "Template"
+}
+
 // ListTemplates represents a template query filter
 type ListTemplates struct {
 	TemplateFilter string        `json:"templatefilter"` // featured, etc.

@@ -77,6 +77,11 @@ type VirtualMachine struct {
 	JobStatus             JobStatusType     `json:"jobstatus,omitempty"`
 }
 
+// ResourceType returns the type of the resource
+func (*VirtualMachine) ResourceType() string {
+	return "UserVM"
+}
+
 // NicsByType returns the corresponding interfaces base on the given type
 func (vm *VirtualMachine) NicsByType(nicType string) []Nic {
 	nics := make([]Nic, 0)

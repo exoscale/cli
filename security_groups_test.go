@@ -5,6 +5,7 @@ import (
 )
 
 func TestGroupsRequests(t *testing.T) {
+	var _ Taggable = (*SecurityGroup)(nil)
 	var _ AsyncCommand = (*AuthorizeSecurityGroupEgress)(nil)
 	var _ onBeforeHook = (*AuthorizeSecurityGroupEgress)(nil)
 	var _ AsyncCommand = (*AuthorizeSecurityGroupIngress)(nil)
@@ -14,6 +15,13 @@ func TestGroupsRequests(t *testing.T) {
 	var _ Command = (*ListSecurityGroups)(nil)
 	var _ AsyncCommand = (*RevokeSecurityGroupEgress)(nil)
 	var _ AsyncCommand = (*RevokeSecurityGroupIngress)(nil)
+}
+
+func TestSecurityGroup(t *testing.T) {
+	instance := &SecurityGroup{}
+	if instance.ResourceType() != "SecurityGroup" {
+		t.Errorf("ResourceType doesn't match")
+	}
 }
 
 func TestAuthorizeSecurityGroupEgress(t *testing.T) {

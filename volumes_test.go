@@ -5,8 +5,16 @@ import (
 )
 
 func TestVolumes(t *testing.T) {
+	var _ Taggable = (*Volume)(nil)
 	var _ Command = (*ListVolumes)(nil)
 	var _ AsyncCommand = (*ResizeVolume)(nil)
+}
+
+func TestVolume(t *testing.T) {
+	instance := &Volume{}
+	if instance.ResourceType() != "Volume" {
+		t.Errorf("ResourceType doesn't match")
+	}
 }
 
 func TestListVolumes(t *testing.T) {

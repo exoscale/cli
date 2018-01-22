@@ -5,10 +5,18 @@ import (
 )
 
 func TestAddressess(t *testing.T) {
+	var _ Taggable = (*IPAddress)(nil)
 	var _ AsyncCommand = (*AssociateIPAddress)(nil)
 	var _ AsyncCommand = (*DisassociateIPAddress)(nil)
 	var _ Command = (*ListPublicIPAddresses)(nil)
 	var _ AsyncCommand = (*UpdateIPAddress)(nil)
+}
+
+func TestIPAddress(t *testing.T) {
+	instance := &IPAddress{}
+	if instance.ResourceType() != "PublicIpAddress" {
+		t.Errorf("ResourceType doesn't match")
+	}
 }
 
 func TestAssociateIPAddress(t *testing.T) {

@@ -56,6 +56,11 @@ type Network struct {
 	Tags                        []ResourceTag `json:"tags"`
 }
 
+// ResourceType returns the type of the resource
+func (*Network) ResourceType() string {
+	return "Network"
+}
+
 // Service is a feature of a network
 type Service struct {
 	Name       string              `json:"name"`

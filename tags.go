@@ -1,5 +1,13 @@
 package egoscale
 
+// Taggable represents a resource which can have tags attached
+//
+// This is a helper to fill the resourcetype of a CreateTags call
+type Taggable interface {
+	// CloudStack resource type of the Taggable type
+	ResourceType() string
+}
+
 // ResourceTag is a tag associated with a resource
 //
 // http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/4.9/management.html

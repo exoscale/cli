@@ -33,6 +33,11 @@ type Volume struct {
 	JobStatus                  JobStatusType `json:"jobstatus,omitempty"`
 }
 
+// ResourceType returns the type of the resource
+func (*Volume) ResourceType() string {
+	return "Volume"
+}
+
 // ResizeVolume (Async) resizes a volume
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/resizeVolume.html

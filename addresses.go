@@ -38,6 +38,11 @@ type IPAddress struct {
 	JobStatus                 JobStatusType `json:"jobstatus,omitempty"`
 }
 
+// ResourceType returns the type of the resource
+func (*IPAddress) ResourceType() string {
+	return "PublicIpAddress"
+}
+
 // AssociateIPAddress (Async) represents the IP creation
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/associateIpAddress.html

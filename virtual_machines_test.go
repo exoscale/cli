@@ -5,6 +5,7 @@ import (
 )
 
 func TestVirtualMachines(t *testing.T) {
+	var _ Taggable = (*VirtualMachine)(nil)
 	var _ AsyncCommand = (*DeployVirtualMachine)(nil)
 	var _ AsyncCommand = (*DestroyVirtualMachine)(nil)
 	var _ AsyncCommand = (*RebootVirtualMachine)(nil)
@@ -22,6 +23,13 @@ func TestVirtualMachines(t *testing.T) {
 	var _ AsyncCommand = (*AddNicToVirtualMachine)(nil)
 	var _ AsyncCommand = (*RemoveNicFromVirtualMachine)(nil)
 	var _ AsyncCommand = (*UpdateDefaultNicForVirtualMachine)(nil)
+}
+
+func TestVirtualMachine(t *testing.T) {
+	instance := &VirtualMachine{}
+	if instance.ResourceType() != "UserVM" {
+		t.Errorf("ResourceType doesn't match")
+	}
 }
 
 func TestDeployVirtualMachine(t *testing.T) {

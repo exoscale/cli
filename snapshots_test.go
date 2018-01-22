@@ -5,10 +5,18 @@ import (
 )
 
 func TestSnapshots(t *testing.T) {
+	var _ Taggable = (*Snapshot)(nil)
 	var _ AsyncCommand = (*CreateSnapshot)(nil)
 	var _ Command = (*ListSnapshots)(nil)
 	var _ AsyncCommand = (*DeleteSnapshot)(nil)
 	var _ AsyncCommand = (*RevertSnapshot)(nil)
+}
+
+func TestSnapshot(t *testing.T) {
+	instance := &Snapshot{}
+	if instance.ResourceType() != "Snapshot" {
+		t.Errorf("ResourceType doesn't match")
+	}
 }
 
 func TestCreateSnapshot(t *testing.T) {

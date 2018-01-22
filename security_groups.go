@@ -24,6 +24,11 @@ type SecurityGroup struct {
 	JobStatus           JobStatusType `json:"jobstatus,omitempty"`
 }
 
+// ResourceType returns the type of the resource
+func (*SecurityGroup) ResourceType() string {
+	return "SecurityGroup"
+}
+
 // IngressRule represents the ingress rule
 type IngressRule struct {
 	RuleID                string              `json:"ruleid"`

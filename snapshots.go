@@ -25,6 +25,11 @@ type Snapshot struct {
 	JobStatus    JobStatusType `json:"jobstatus,omitempty"`
 }
 
+// ResourceType returns the type of the resource
+func (*Snapshot) ResourceType() string {
+	return "Snapshot"
+}
+
 // CreateSnapshot represents a request to create a volume snapshot
 //
 // CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/createSnapshot.html
