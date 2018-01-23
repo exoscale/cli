@@ -57,8 +57,16 @@ type Account struct {
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listAccounts.html
 type ListAccounts struct {
-	AccountType int64  `json:"accounttype,omitempty"`
-	DomainID    string `json:"domainid,omitempty"`
+	AccountType       int64  `json:"accounttype,omitempty"`
+	DomainID          string `json:"domainid,omitempty"`
+	ID                string `json:"id,omitempty"`
+	IsCleanUpRequired bool   `json:"iscleanuprequired,omitempty"`
+	IsRecursive       bool   `json:"isrecursive,omitempty"`
+	Keyword           string `json:"keyword,omitempty"`
+	ListAll           bool   `json:"listall,omitempty"`
+	Page              int    `json:"page,omitempty"`
+	PageSize          int    `json:"pagesize,omitempty"`
+	State             string `json:"state,omitempty"`
 }
 
 func (*ListAccounts) name() string {

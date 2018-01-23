@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestListNetworksIsACommand(t *testing.T) {
+func TestNetworks(t *testing.T) {
 	var _ Taggable = (*Network)(nil)
 	var _ Command = (*CreateNetwork)(nil)
 	var _ AsyncCommand = (*DeleteNetwork)(nil)
