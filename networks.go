@@ -1,6 +1,9 @@
 package egoscale
 
-import "net"
+import (
+	"net"
+	"net/url"
+)
 
 // Network represents a network
 type Network struct {
@@ -86,8 +89,8 @@ type NetworkResponse struct {
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createNetwork.html
 type CreateNetwork struct {
-	DisplayText       string `json:"displaytext"`
-	Name              string `json:"name"`
+	DisplayText       string `json:"displaytext,omitempty"`
+	Name              string `json:"name,omitempty"`
 	NetworkOfferingID string `json:"networkofferingid"`
 	ZoneID            string `json:"zoneid"`
 	Account           string `json:"account,omitempty"`
@@ -118,6 +121,17 @@ func (*CreateNetwork) name() string {
 
 func (*CreateNetwork) response() interface{} {
 	return new(CreateNetworkResponse)
+}
+
+func (req *CreateNetwork) onBeforeSend(params *url.Values) error {
+	// Those fields are required but might be empty
+	if req.Name == "" {
+		params.Set("name", "")
+	}
+	if req.DisplayText == "" {
+		params.Set("displaytext", "")
+	}
+	return nil
 }
 
 // CreateNetworkResponse represents a freshly created network
