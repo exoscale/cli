@@ -299,7 +299,7 @@ type UpdateVirtualMachine struct {
 	Name                  string            `json:"name,omitempty"` // must reboot
 	OsTypeID              int64             `json:"ostypeid,omitempty"`
 	SecurityGroupIDs      []string          `json:"securitygroupids,omitempty"`
-	UserData              []byte            `json:"userdata,omitempty"`
+	UserData              string            `json:"userdata,omitempty"`
 }
 
 func (*UpdateVirtualMachine) name() string {
