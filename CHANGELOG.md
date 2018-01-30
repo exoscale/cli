@@ -1,3 +1,33 @@
+Changelog
+=========
+
+0.9.7
+-----
+
+- feat: add Taggable interface to expose ResourceType
+
+0.9.6
+-----
+
+- fix: update UpdateVirtualMachine userdata
+- fix. Network's name/displaytext might be empty
+
+0.9.5
+-----
+
+- fix: serialization of slice
+
+0.9.4
+-----
+
+- fix: constants
+
+0.9.3
+-----
+
+- change: userdata expects a string
+- change: no pointer in sub-struct's
+
 0.9.2
 -----
 
