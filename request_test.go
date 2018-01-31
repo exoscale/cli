@@ -288,10 +288,44 @@ func TestBooleanAsyncRequest(t *testing.T) {
 	req := &ExpungeVirtualMachine{
 		ID: "123",
 	}
-	err := cs.BooleanAsyncRequest(req, AsyncInfo{})
+	err := cs.BooleanAsyncRequest(req, AsyncInfo{Delay: 1, Retries: 1})
 
 	if err != nil {
 		t.Errorf(err.Error())
+	}
+}
+
+func TestBooleanAsyncRequestTimeout(t *testing.T) {
+	params := url.Values{}
+	params.Set("command", "expungevirtualmachine")
+	params.Set("token", "TOKEN")
+	params.Set("id", "123")
+	params.Set("response", "json")
+	ts := newPostServer(params, `
+{
+	"expungevirtualmarchine": {
+		"jobid": "1",
+		"jobresult": {
+			"success": false
+		},
+		"jobstatus": 0
+	}
+}
+	`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	req := &ExpungeVirtualMachine{
+		ID: "123",
+	}
+	err := cs.BooleanAsyncRequest(req, AsyncInfo{Delay: 1, Retries: 2})
+
+	if err == nil {
+		t.Error("An error was expected")
+	}
+
+	if err.Error() != "Maximum number of retries reached" {
+		t.Errorf("Unexpected error message: %s", err.Error())
 	}
 }
 
