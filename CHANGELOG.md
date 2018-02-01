@@ -5,6 +5,10 @@ Changelog
 -----
 
 - feat: add Taggable interface to expose ResourceType
+- feat: add (Create|Update|Delete|List)InstanceGroup(s)
+- feat: add RegisterUserKeys
+- feat: add ListResourceLimits
+- feat: add ListAccounts
 
 0.9.6
 -----
