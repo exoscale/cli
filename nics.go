@@ -109,7 +109,7 @@ func (exo *Client) ListNics(req *ListNics) ([]Nic, error) {
 // AddIPToNic adds an IP to a NIC
 //
 // Deprecated: use the API directly
-func (exo *Client) AddIPToNic(nicID string, ipAddress string, async AsyncInfo) (*NicSecondaryIP, error) {
+func (exo *Client) AddIPToNic(nicID string, ipAddress string) (*NicSecondaryIP, error) {
 	ip := net.ParseIP(ipAddress)
 	if ip == nil {
 		return nil, fmt.Errorf("%s is not a valid IP address", ipAddress)
@@ -118,7 +118,7 @@ func (exo *Client) AddIPToNic(nicID string, ipAddress string, async AsyncInfo) (
 		NicID:     nicID,
 		IPAddress: ip,
 	}
-	resp, err := exo.AsyncRequest(req, async)
+	resp, err := exo.Request(req)
 	if err != nil {
 		return nil, err
 	}
@@ -130,9 +130,9 @@ func (exo *Client) AddIPToNic(nicID string, ipAddress string, async AsyncInfo) (
 // RemoveIPFromNic removes an IP from a NIC
 //
 // Deprecated: use the API directly
-func (exo *Client) RemoveIPFromNic(secondaryNicID string, async AsyncInfo) error {
+func (exo *Client) RemoveIPFromNic(secondaryNicID string) error {
 	req := &RemoveIPFromNic{
 		ID: secondaryNicID,
 	}
-	return exo.BooleanAsyncRequest(req, async)
+	return exo.BooleanRequest(req)
 }

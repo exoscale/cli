@@ -157,11 +157,11 @@ type ListAffinityGroupTypesResponse struct {
 // CreateAffinityGroup creates a group
 //
 // Deprecated: Use the API directly
-func (exo *Client) CreateAffinityGroup(name string, async AsyncInfo) (*AffinityGroup, error) {
+func (exo *Client) CreateAffinityGroup(name string) (*AffinityGroup, error) {
 	req := &CreateAffinityGroup{
 		Name: name,
 	}
-	resp, err := exo.AsyncRequest(req, async)
+	resp, err := exo.Request(req)
 	if err != nil {
 		return nil, err
 	}
@@ -173,9 +173,9 @@ func (exo *Client) CreateAffinityGroup(name string, async AsyncInfo) (*AffinityG
 // DeleteAffinityGroup deletes a group
 //
 // Deprecated: Use the API directly
-func (exo *Client) DeleteAffinityGroup(name string, async AsyncInfo) error {
+func (exo *Client) DeleteAffinityGroup(name string) error {
 	req := &DeleteAffinityGroup{
 		Name: name,
 	}
-	return exo.BooleanAsyncRequest(req, async)
+	return exo.BooleanRequest(req)
 }

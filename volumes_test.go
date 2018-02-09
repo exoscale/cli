@@ -6,8 +6,8 @@ import (
 
 func TestVolumes(t *testing.T) {
 	var _ Taggable = (*Volume)(nil)
-	var _ Command = (*ListVolumes)(nil)
-	var _ AsyncCommand = (*ResizeVolume)(nil)
+	var _ syncCommand = (*ListVolumes)(nil)
+	var _ asyncCommand = (*ResizeVolume)(nil)
 }
 
 func TestVolume(t *testing.T) {

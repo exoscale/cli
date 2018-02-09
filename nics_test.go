@@ -5,9 +5,9 @@ import (
 )
 
 func TestNics(t *testing.T) {
-	var _ AsyncCommand = (*AddIPToNic)(nil)
-	var _ AsyncCommand = (*RemoveIPFromNic)(nil)
-	var _ Command = (*ListNics)(nil)
+	var _ asyncCommand = (*AddIPToNic)(nil)
+	var _ asyncCommand = (*RemoveIPFromNic)(nil)
+	var _ syncCommand = (*ListNics)(nil)
 }
 
 func TestAddIPToNic(t *testing.T) {

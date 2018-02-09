@@ -234,8 +234,8 @@ type ListSecurityGroupsResponse struct {
 // CreateIngressRule creates a set of ingress rules
 //
 // Deprecated: use the API directly
-func (exo *Client) CreateIngressRule(req *AuthorizeSecurityGroupIngress, async AsyncInfo) ([]IngressRule, error) {
-	resp, err := exo.AsyncRequest(req, async)
+func (exo *Client) CreateIngressRule(req *AuthorizeSecurityGroupIngress) ([]IngressRule, error) {
+	resp, err := exo.Request(req)
 	if err != nil {
 		return nil, err
 	}
@@ -245,8 +245,8 @@ func (exo *Client) CreateIngressRule(req *AuthorizeSecurityGroupIngress, async A
 // CreateEgressRule creates a set of egress rules
 //
 // Deprecated: use the API directly
-func (exo *Client) CreateEgressRule(req *AuthorizeSecurityGroupEgress, async AsyncInfo) ([]EgressRule, error) {
-	resp, err := exo.AsyncRequest(req, async)
+func (exo *Client) CreateEgressRule(req *AuthorizeSecurityGroupEgress) ([]EgressRule, error) {
+	resp, err := exo.Request(req)
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +257,7 @@ func (exo *Client) CreateEgressRule(req *AuthorizeSecurityGroupEgress, async Asy
 // Warning: it doesn't rollback in case of a failure!
 //
 // Deprecated: use the API directly
-func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []AuthorizeSecurityGroupIngress, egress []AuthorizeSecurityGroupEgress, async AsyncInfo) (*SecurityGroup, error) {
+func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []AuthorizeSecurityGroupIngress, egress []AuthorizeSecurityGroupEgress) (*SecurityGroup, error) {
 	req := &CreateSecurityGroup{
 		Name: name,
 	}
@@ -267,7 +267,7 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []Authorize
 	}
 
 	sg := resp.(*SecurityGroupResponse).SecurityGroup
-	reqs := make([]AsyncCommand, 0, len(ingress)+len(egress))
+	reqs := make([]asyncCommand, 0, len(ingress)+len(egress))
 	// Egress rules
 	for _, ereq := range egress {
 		ereq.SecurityGroupID = sg.ID
@@ -281,7 +281,7 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []Authorize
 	}
 
 	for _, r := range reqs {
-		_, err := exo.AsyncRequest(r, async)
+		_, err := exo.Request(r)
 		if err != nil {
 			return nil, err
 		}

@@ -6,10 +6,10 @@ import (
 
 func TestAddressess(t *testing.T) {
 	var _ Taggable = (*IPAddress)(nil)
-	var _ AsyncCommand = (*AssociateIPAddress)(nil)
-	var _ AsyncCommand = (*DisassociateIPAddress)(nil)
-	var _ Command = (*ListPublicIPAddresses)(nil)
-	var _ AsyncCommand = (*UpdateIPAddress)(nil)
+	var _ asyncCommand = (*AssociateIPAddress)(nil)
+	var _ asyncCommand = (*DisassociateIPAddress)(nil)
+	var _ syncCommand = (*ListPublicIPAddresses)(nil)
+	var _ asyncCommand = (*UpdateIPAddress)(nil)
 }
 
 func TestIPAddress(t *testing.T) {

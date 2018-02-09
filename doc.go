@@ -4,7 +4,7 @@ Package egoscale is a mapping for with the CloudStack API (http://cloudstack.apa
 
 Requests and Responses
 
-The paradigm used in this library is that CloudStack defines two types of requests synchronous (client.Request) and asynchronous (client.AsyncRequest). And when the expected responses is a success message, you may use the boolean requests variants (client.BooleanRequest, client.BooleanAsyncRequest). To build a request, construct the adequate struct. This library expects a pointer for efficiency reasons only. The response is a struct corresponding to the request itself. E.g. DeployVirtualMachine gives DeployVirtualMachineResponse, as a pointer as well to avoid big copies.
+To build a request, construct the adequate struct. This library expects a pointer for efficiency reasons only. The response is a struct corresponding to the request itself. E.g. DeployVirtualMachine gives DeployVirtualMachineResponse, as a pointer as well to avoid big copies.
 
 Then everything within the struct is not a pointer.
 

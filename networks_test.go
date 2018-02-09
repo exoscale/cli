@@ -6,11 +6,11 @@ import (
 
 func TestNetworks(t *testing.T) {
 	var _ Taggable = (*Network)(nil)
-	var _ Command = (*CreateNetwork)(nil)
-	var _ AsyncCommand = (*DeleteNetwork)(nil)
-	var _ Command = (*ListNetworks)(nil)
-	var _ AsyncCommand = (*RestartNetwork)(nil)
-	var _ AsyncCommand = (*UpdateNetwork)(nil)
+	var _ syncCommand = (*CreateNetwork)(nil)
+	var _ asyncCommand = (*DeleteNetwork)(nil)
+	var _ syncCommand = (*ListNetworks)(nil)
+	var _ asyncCommand = (*RestartNetwork)(nil)
+	var _ asyncCommand = (*UpdateNetwork)(nil)
 }
 
 func TestNetwork(t *testing.T) {

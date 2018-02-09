@@ -1,15 +1,16 @@
 package egoscale
 
 import (
+	"net/url"
 	"testing"
 )
 
 func TestAffinityGroups(t *testing.T) {
-	var _ AsyncCommand = (*CreateAffinityGroup)(nil)
-	var _ AsyncCommand = (*DeleteAffinityGroup)(nil)
-	var _ Command = (*ListAffinityGroupTypes)(nil)
-	var _ Command = (*ListAffinityGroups)(nil)
-	var _ AsyncCommand = (*UpdateVMAffinityGroup)(nil)
+	var _ asyncCommand = (*CreateAffinityGroup)(nil)
+	var _ asyncCommand = (*DeleteAffinityGroup)(nil)
+	var _ syncCommand = (*ListAffinityGroupTypes)(nil)
+	var _ syncCommand = (*ListAffinityGroups)(nil)
+	var _ asyncCommand = (*UpdateVMAffinityGroup)(nil)
 }
 
 func TestCreateAffinityGroup(t *testing.T) {
@@ -50,4 +51,17 @@ func TestUpdateVMAffinityGroup(t *testing.T) {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*UpdateVMAffinityGroupResponse)
+}
+
+func TestUpdateVMOnBeforeSend(t *testing.T) {
+	req := &UpdateVMAffinityGroup{}
+	params := url.Values{}
+
+	if err := req.onBeforeSend(&params); err != nil {
+		t.Error(err)
+	}
+
+	if _, ok := params["affinitygroupids"]; !ok {
+		t.Errorf("affinitygroupids should have been set")
+	}
 }

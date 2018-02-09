@@ -5,11 +5,11 @@ import (
 )
 
 func TestSSHKeyPairs(t *testing.T) {
-	var _ AsyncCommand = (*ResetSSHKeyForVirtualMachine)(nil)
-	var _ Command = (*RegisterSSHKeyPair)(nil)
-	var _ Command = (*CreateSSHKeyPair)(nil)
-	var _ Command = (*DeleteSSHKeyPair)(nil)
-	var _ Command = (*ListSSHKeyPairs)(nil)
+	var _ asyncCommand = (*ResetSSHKeyForVirtualMachine)(nil)
+	var _ syncCommand = (*RegisterSSHKeyPair)(nil)
+	var _ syncCommand = (*CreateSSHKeyPair)(nil)
+	var _ syncCommand = (*DeleteSSHKeyPair)(nil)
+	var _ syncCommand = (*ListSSHKeyPairs)(nil)
 }
 
 func TestResetSSHKeyForVirtualMachine(t *testing.T) {

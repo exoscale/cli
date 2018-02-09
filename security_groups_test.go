@@ -6,15 +6,15 @@ import (
 
 func TestGroupsRequests(t *testing.T) {
 	var _ Taggable = (*SecurityGroup)(nil)
-	var _ AsyncCommand = (*AuthorizeSecurityGroupEgress)(nil)
+	var _ asyncCommand = (*AuthorizeSecurityGroupEgress)(nil)
 	var _ onBeforeHook = (*AuthorizeSecurityGroupEgress)(nil)
-	var _ AsyncCommand = (*AuthorizeSecurityGroupIngress)(nil)
+	var _ asyncCommand = (*AuthorizeSecurityGroupIngress)(nil)
 	var _ onBeforeHook = (*AuthorizeSecurityGroupIngress)(nil)
-	var _ Command = (*CreateSecurityGroup)(nil)
-	var _ Command = (*DeleteSecurityGroup)(nil)
-	var _ Command = (*ListSecurityGroups)(nil)
-	var _ AsyncCommand = (*RevokeSecurityGroupEgress)(nil)
-	var _ AsyncCommand = (*RevokeSecurityGroupIngress)(nil)
+	var _ syncCommand = (*CreateSecurityGroup)(nil)
+	var _ syncCommand = (*DeleteSecurityGroup)(nil)
+	var _ syncCommand = (*ListSecurityGroups)(nil)
+	var _ asyncCommand = (*RevokeSecurityGroupEgress)(nil)
+	var _ asyncCommand = (*RevokeSecurityGroupIngress)(nil)
 }
 
 func TestSecurityGroup(t *testing.T) {
