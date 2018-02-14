@@ -9,7 +9,7 @@ egoscale: exoscale driver for golang
 [![GoDoc](https://godoc.org/github.com/exoscale/egoscale?status.svg)](https://godoc.org/github.com/exoscale/egoscale)
 [![Go Report Card](https://goreportcard.com/badge/github.com/exoscale/egoscale)](https://goreportcard.com/report/github.com/exoscale/egoscale)
 
-An API wrapper for the CloudStack based [Exoscale public cloud](https://www.exoscale.ch).
+An API wrapper for the CloudStack based [Exoscale public cloud](https://www.exoscale.com).
 
 ### License
 
