@@ -239,6 +239,7 @@ type RebootVirtualMachineResponse VirtualMachineResponse
 type RestoreVirtualMachine struct {
 	VirtualMachineID string `json:"virtualmachineid"`
 	TemplateID       string `json:"templateid,omitempty"`
+	RootDiskSize     string `json:"rootdisksize,omitempty"` // in GiB, Exoscale specific
 }
 
 func (*RestoreVirtualMachine) name() string {
