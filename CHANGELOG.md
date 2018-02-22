@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.8
+-----
+
+- feat: add RootDiskSize to RestoreVirtualMachine
+- fix: monotonic polling using Context
+
 0.9.7
 -----
 
