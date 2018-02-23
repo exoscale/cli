@@ -116,10 +116,17 @@ type JobResultResponse struct {
 
 // ErrorResponse represents the standard error response from CloudStack
 type ErrorResponse struct {
-	ErrorCode   ErrorCode `json:"errorcode"`
-	CsErrorCode int       `json:"cserrorcode"`
-	ErrorText   string    `json:"errortext"`
-	UUIDList    []string  `json:"uuidList,omitempty"` // uuid*L*ist is not a typo
+	ErrorCode   ErrorCode  `json:"errorcode"`
+	CsErrorCode int        `json:"cserrorcode"`
+	ErrorText   string     `json:"errortext"`
+	UUIDList    []UUIDItem `json:"uuidList,omitempty"` // uuid*L*ist is not a typo
+}
+
+// UUIDItem represents an item of the UUIDList part of an ErrorResponse
+type UUIDItem struct {
+	Description      string `json:"description,omitempty"`
+	SerialVersionUID int64  `json:"serialVersionUID,omitempty"`
+	UUID             string `json:"uuid"`
 }
 
 // Error formats a CloudStack error into a standard error
