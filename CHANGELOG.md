@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.9
+-----
+
+- fix: affinity groups virtualmachineIds attribute
+- fix: uuidList is not a list of strings
+
 0.9.8
 -----
 
