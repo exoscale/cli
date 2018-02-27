@@ -36,6 +36,8 @@ type NicSecondaryIP struct {
 }
 
 // ListNics represents the NIC search
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listNics.html
 type ListNics struct {
 	VirtualMachineID string `json:"virtualmachineid"`
 	ForDisplay       bool   `json:"fordisplay,omitempty"`
@@ -61,13 +63,15 @@ type ListNicsResponse struct {
 	Nic   []Nic `json:"nic"`
 }
 
-// AddIPToNic represents the assignation of a secondary IP
+// AddIPToNic (Async) represents the assignation of a secondary IP
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/addIpToNic.html
 type AddIPToNic struct {
 	NicID     string `json:"nicid"`
 	IPAddress net.IP `json:"ipaddress"`
 }
 
-// APIName returns the CloudStack API command name
+// APIName returns the CloudStack API command name: addIpToNic
 func (*AddIPToNic) APIName() string {
 	return "addIpToNic"
 }
@@ -80,18 +84,41 @@ type AddIPToNicResponse struct {
 	NicSecondaryIP NicSecondaryIP `json:"nicsecondaryip"`
 }
 
-// RemoveIPFromNic represents a deletion request
+// RemoveIPFromNic (Async) represents a deletion request
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/removeIpFromNic.html
 type RemoveIPFromNic struct {
 	ID string `json:"id"`
 }
 
-// APIName returns the CloudStack API command name
+// APIName returns the CloudStack API command name: removeIpFromNic
 func (*RemoveIPFromNic) APIName() string {
 	return "removeIpFromNic"
 }
 
 func (*RemoveIPFromNic) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
+}
+
+// ActivateIP6 (Async) activates the IP6 on the given NIC
+//
+// Exoscale specific API: https://community.exoscale.ch/api/compute/#activateip6_GET
+type ActivateIP6 struct {
+	NicID string `json:"nicid"`
+}
+
+// APIName returns the CloudStack API command name: activateIp6
+func (*ActivateIP6) APIName() string {
+	return "activateIp6"
+}
+
+func (*ActivateIP6) asyncResponse() interface{} {
+	return new(ActivateIP6Response)
+}
+
+// ActivateIP6Response represents the modified NIC
+type ActivateIP6Response struct {
+	Nic Nic `json:"nic"`
 }
 
 // ListNics lists the NIC of a VM

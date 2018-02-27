@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.13
+------
+
+- feat: IP4 and IP6 flags to DeployVirtualMachine
+- feat: add ActivateIP6
+
 0.9.12
 ------
 

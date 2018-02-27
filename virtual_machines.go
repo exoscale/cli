@@ -208,8 +208,10 @@ type DeployVirtualMachine struct {
 	Group              string            `json:"group,omitempty"`
 	HostID             string            `json:"hostid,omitempty"`
 	Hypervisor         string            `json:"hypervisor,omitempty"`
-	IP6Address         net.IP            `json:"ip6address,omitempty"`
+	IP4                *bool             `json:"ip4,omitempty"` // Exoscale specific
+	IP6                *bool             `json:"ip6,omitempty"` // Exoscale specific
 	IPAddress          net.IP            `json:"ipaddress,omitempty"`
+	IP6Address         net.IP            `json:"ip6address,omitempty"`
 	IPToNetworkList    []IPToNetwork     `json:"iptonetworklist,omitempty"`
 	Keyboard           string            `json:"keyboard,omitempty"`
 	KeyPair            string            `json:"keypair,omitempty"`
