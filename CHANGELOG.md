@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.9.10
+------
+
+- fix: typo made ListAll required in ListPublicIPAddresses
+- fix: all bool are now *bool, respecting CS default value
+- feat: (*VM).DefaultNic() to obtain the main Nic
+
 0.9.9
 -----
 
