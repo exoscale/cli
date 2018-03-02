@@ -74,10 +74,10 @@ type ListAccounts struct {
 	AccountType       int64  `json:"accounttype,omitempty"`
 	DomainID          string `json:"domainid,omitempty"`
 	ID                string `json:"id,omitempty"`
-	IsCleanUpRequired bool   `json:"iscleanuprequired,omitempty"`
-	IsRecursive       bool   `json:"isrecursive,omitempty"`
+	IsCleanUpRequired *bool  `json:"iscleanuprequired,omitempty"`
+	IsRecursive       *bool  `json:"isrecursive,omitempty"`
 	Keyword           string `json:"keyword,omitempty"`
-	ListAll           bool   `json:"listall,omitempty"`
+	ListAll           *bool  `json:"listall,omitempty"`
 	Page              int    `json:"page,omitempty"`
 	PageSize          int    `json:"pagesize,omitempty"`
 	State             string `json:"state,omitempty"`

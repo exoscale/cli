@@ -100,9 +100,9 @@ type ListAffinityGroups struct {
 	Account          string `json:"account,omitempty"`
 	DomainID         string `json:"domainid,omitempty"`
 	ID               string `json:"id,omitempty"`
-	IsRecursive      bool   `json:"isrecursive,omitempty"`
+	IsRecursive      *bool  `json:"isrecursive,omitempty"`
 	Keyword          string `json:"keyword,omitempty"`
-	ListAll          bool   `json:"listall,omitempty"`
+	ListAll          *bool  `json:"listall,omitempty"`
 	Name             string `json:"name,omitempty"`
 	Page             int    `json:"page,omitempty"`
 	PageSize         int    `json:"pagesize,omitempty"`
