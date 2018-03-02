@@ -122,7 +122,7 @@ type ListPublicIPAddresses struct {
 	IsSourceNat        *bool         `json:"issourcenat,omitempty"`
 	IsStaticNat        *bool         `json:"isstaticnat,omitempty"`
 	Keyword            string        `json:"keyword,omitempty"`
-	ListAll            *bool         `json:"listall,omiempty"`
+	ListAll            *bool         `json:"listall,omitempty"`
 	Page               int           `json:"page,omitempty"`
 	PageSize           int           `json:"pagesize,omitempty"`
 	PhysicalNetworkID  string        `json:"physicalnetworkid,omitempty"`
