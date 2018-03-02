@@ -1,6 +1,7 @@
 package egoscale
 
 import (
+	"net"
 	"testing"
 )
 
@@ -166,4 +167,84 @@ func TestUpdateDefaultNicForVirtualMachine(t *testing.T) {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*UpdateDefaultNicForVirtualMachineResponse)
+}
+
+func TestNicHelpers(t *testing.T) {
+	vm := &VirtualMachine{
+		Nic: []Nic{
+			{
+				ID:           "2b50e232-b6d3-491c-92ce-12b24c6123e5",
+				IsDefault:    true,
+				MacAddress:   "06:aa:14:00:00:18",
+				IPAddress:    net.ParseIP("192.168.0.10"),
+				Gateway:      net.ParseIP("192.168.0.1"),
+				Netmask:      net.ParseIP("255.255.255.0"),
+				NetworkID:    "d48bfccc-c11f-438f-8177-9cf6a40dc4d8",
+				NetworkName:  "defaultGuestNetwork",
+				BroadcastURI: "vlan://untagged",
+				TrafficType:  "Guest",
+				Type:         "Shared",
+			}, {
+				BroadcastURI: "vxlan://001",
+				ID:           "10b8ffc8-62b3-4b87-82d0-fb7f31bc99b6",
+				IsDefault:    false,
+				MacAddress:   "0a:7b:5e:00:25:fa",
+				NetworkID:    "5f1033fe-2abd-4dda-80b6-c946e21a78ec",
+				NetworkName:  "privNetForBasicZone1",
+				TrafficType:  "Guest",
+				Type:         "Isolated",
+			}, {
+				BroadcastURI: "vxlan://002",
+				ID:           "10b8ffc8-62b3-4b87-82d0-fb7f31bc99b7",
+				IsDefault:    false,
+				MacAddress:   "0a:7b:5e:00:25:ff",
+				NetworkID:    "5f1033fe-2abd-4dda-80b6-c946e21a72ec",
+				NetworkName:  "privNetForBasicZone2",
+				TrafficType:  "Guest",
+				Type:         "Isolated",
+			},
+		},
+	}
+
+	nic := vm.DefaultNic()
+	if nic.IPAddress.String() != "192.168.0.10" {
+		t.Errorf("Default NIC doesn't match")
+	}
+
+	nic1 := vm.NicByID("2b50e232-b6d3-491c-92ce-12b24c6123e5")
+	if nic.ID != nic1.ID {
+		t.Errorf("NicByID does not match %#v %#v", nic, nic1)
+	}
+
+	if len(vm.NicsByType("Isolated")) != 2 {
+		t.Errorf("Isolated nics count does not match")
+	}
+
+	if len(vm.NicsByType("Shared")) != 1 {
+		t.Errorf("Shared nics count does not match")
+	}
+
+	if len(vm.NicsByType("Dummy")) != 0 {
+		t.Errorf("Dummy nics count does not match")
+	}
+
+	if vm.NicByNetworkID("5f1033fe-2abd-4dda-80b6-c946e21a78ec") == nil {
+		t.Errorf("NetworkID nic wasn't found")
+	}
+
+	if vm.NicByNetworkID("5f1033fe-2abd-4dda-80b6-c946e21a78ed") != nil {
+		t.Errorf("NetworkID nic was found??")
+	}
+}
+
+func TestNicNoDefault(t *testing.T) {
+	vm := &VirtualMachine{
+		Nic: []Nic{},
+	}
+
+	// code coverage...
+	nic := vm.DefaultNic()
+	if nic != nil {
+		t.Errorf("Default NIC wasn't nil?")
+	}
 }

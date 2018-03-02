@@ -82,6 +82,17 @@ func (*VirtualMachine) ResourceType() string {
 	return "UserVM"
 }
 
+// DefaultNic returns the default nic
+func (vm *VirtualMachine) DefaultNic() *Nic {
+	for _, nic := range vm.Nic {
+		if nic.IsDefault {
+			return &nic
+		}
+	}
+
+	return nil
+}
+
 // NicsByType returns the corresponding interfaces base on the given type
 func (vm *VirtualMachine) NicsByType(nicType string) []Nic {
 	nics := make([]Nic, 0)
@@ -96,6 +107,8 @@ func (vm *VirtualMachine) NicsByType(nicType string) []Nic {
 }
 
 // NicByNetworkID returns the corresponding interface based on the given NetworkID
+//
+// A VM cannot be connected twice to a same network.
 func (vm *VirtualMachine) NicByNetworkID(networkID string) *Nic {
 	for _, nic := range vm.Nic {
 		if nic.NetworkID == networkID {
