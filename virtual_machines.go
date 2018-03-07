@@ -1,9 +1,12 @@
 package egoscale
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/url"
+
+	"github.com/jinzhu/copier"
 )
 
 // VirtualMachine reprents a virtual machine
@@ -84,6 +87,44 @@ type VirtualMachine struct {
 // ResourceType returns the type of the resource
 func (*VirtualMachine) ResourceType() string {
 	return "UserVM"
+}
+
+// Get fills the VM
+func (vm *VirtualMachine) Get(ctx context.Context, client *Client) error {
+	if vm.ID == "" && vm.Name == "" {
+		return fmt.Errorf("A VirtualMachine may only be searched using ID or Name")
+	}
+
+	resp, err := client.RequestWithContext(ctx, &ListVirtualMachines{
+		ID:   vm.ID,
+		Name: vm.Name,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	vms := resp.(*ListVirtualMachinesResponse)
+	count := len(vms.VirtualMachine)
+	if count == 0 {
+		return &ErrorResponse{
+			ErrorCode: ParamError,
+			ErrorText: fmt.Sprintf("VirtualMachine not found. id: %s, name: %s", vm.ID, vm.Name),
+		}
+	} else if count > 1 {
+		return fmt.Errorf("More than one VirtualMachine was found. Query: id: %s, name: %s", vm.ID, vm.Name)
+	}
+
+	return copier.Copy(vm, vms.VirtualMachine[0])
+}
+
+// Delete destroys the VM
+func (vm *VirtualMachine) Delete(ctx context.Context, client *Client) error {
+	_, err := client.RequestWithContext(ctx, &DestroyVirtualMachine{
+		ID: vm.ID,
+	})
+
+	return err
 }
 
 // DefaultNic returns the default nic

@@ -59,6 +59,19 @@ Security Groups provide a way to isolate traffic to VMs.
 	})
 	// ...
 
+Security Group also implement the generic Get and Delete interface (Gettable and Deletable).
+
+    sg := &egoscale.SecurityGroup{Name: "Load balancer"}
+	if err := cs.Get(sg); err != nil {
+        ...
+	}
+	// The SecurityGroup has been loaded with the SecurityGroup informations
+
+	if err := cs.Delete(sg); err != nil {
+		...
+	}
+	// The SecurityGroup has been deleted
+
 See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/networking_and_traffic.html#security-groups
 
 Service Offerings
@@ -75,19 +88,19 @@ See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/sta
 
 Virtual Machines
 
-... todo ...
+The VM object is the big contenter, it implements the Get and Delete interface.
 
 See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html
 
 Templates
 
-... todo ...
+A Template corresponds to the kind of machines that can be deployed.
 
 See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/templates.html
 
 Zones
 
-A Zone corresponds to a Data Center.
+A Zone corresponds to a Data Center. You may list them.
 
 */
 package egoscale

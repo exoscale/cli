@@ -1,7 +1,11 @@
 package egoscale
 
 import (
+	"context"
+	"fmt"
 	"net/url"
+
+	"github.com/jinzhu/copier"
 )
 
 // AffinityGroup represents an (anti-)affinity group
@@ -12,6 +16,8 @@ type AffinityGroup struct {
 	Domain            string   `json:"domain,omitempty"`
 	DomainID          string   `json:"domainid,omitempty"`
 	Name              string   `json:"name,omitempty"`
+	Project           string   `json:"project,omitempty"`
+	ProjectID         string   `json:"projectid,omitempty"`
 	Type              string   `json:"type,omitempty"`
 	VirtualMachineIDs []string `json:"virtualmachineIds,omitempty"` // *I*ds is not a typo
 }
@@ -19,6 +25,56 @@ type AffinityGroup struct {
 // AffinityGroupType represent an affinity group type
 type AffinityGroupType struct {
 	Type string `json:"type"`
+}
+
+// Get loads the given Affinity Group
+func (ag *AffinityGroup) Get(ctx context.Context, client *Client) error {
+	if ag.ID == "" && ag.Name == "" {
+		return fmt.Errorf("An Affinity Group may only be searched using ID or Name")
+	}
+
+	resp, err := client.RequestWithContext(ctx, &ListAffinityGroups{
+		ID:   ag.ID,
+		Name: ag.Name,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	ags := resp.(*ListAffinityGroupsResponse)
+	count := len(ags.AffinityGroup)
+	if count == 0 {
+		return &ErrorResponse{
+			ErrorCode: ParamError,
+			ErrorText: fmt.Sprintf("AffinityGroup not found id: %s, name: %s", ag.ID, ag.Name),
+		}
+	} else if count > 1 {
+		return fmt.Errorf("More than one Affinity Group was found. Query; id: %s, name: %s", ag.ID, ag.Name)
+	}
+
+	return copier.Copy(ag, ags.AffinityGroup[0])
+}
+
+// Delete removes the given Affinity Group
+func (ag *AffinityGroup) Delete(ctx context.Context, client *Client) error {
+	if ag.ID == "" && ag.Name == "" {
+		return fmt.Errorf("An Affinity Group may only be deleted using ID or Name")
+	}
+
+	req := &DeleteAffinityGroup{
+		Account:   ag.Account,
+		DomainID:  ag.DomainID,
+		ProjectID: ag.ProjectID,
+	}
+
+	if ag.ID != "" {
+		req.ID = ag.ID
+	} else {
+		req.Name = ag.Name
+	}
+
+	return client.BooleanRequestWithContext(ctx, req)
 }
 
 // CreateAffinityGroup (Async) represents a new (anti-)affinity group
@@ -79,12 +135,11 @@ type UpdateVMAffinityGroupResponse VirtualMachineResponse
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteAffinityGroup.html
 type DeleteAffinityGroup struct {
-	ID          string `json:"id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Type        string `json:"type,omitempty"`
-	Account     string `json:"account,omitempty"`
-	Description string `json:"description,omitempty"`
-	DomainID    string `json:"domainid,omitempty"`
+	Account   string `json:"account,omitempty"` // must be specified with DomainID
+	DomainID  string `json:"domainid,omitempty"`
+	ID        string `json:"id,omitempty"`   // mutually exclusive with Name
+	Name      string `json:"name,omitempty"` // mutually exclusive with ID
+	ProjectID string `json:"projectid,omitempty"`
 }
 
 // APIName returns the CloudStack API command name
@@ -150,32 +205,4 @@ type ListAffinityGroupsResponse struct {
 type ListAffinityGroupTypesResponse struct {
 	Count             int                 `json:"count"`
 	AffinityGroupType []AffinityGroupType `json:"affinitygrouptype"`
-}
-
-// Legacy methods
-
-// CreateAffinityGroup creates a group
-//
-// Deprecated: Use the API directly
-func (exo *Client) CreateAffinityGroup(name string) (*AffinityGroup, error) {
-	req := &CreateAffinityGroup{
-		Name: name,
-	}
-	resp, err := exo.Request(req)
-	if err != nil {
-		return nil, err
-	}
-
-	ag := resp.(*CreateAffinityGroupResponse).AffinityGroup
-	return &ag, nil
-}
-
-// DeleteAffinityGroup deletes a group
-//
-// Deprecated: Use the API directly
-func (exo *Client) DeleteAffinityGroup(name string) error {
-	req := &DeleteAffinityGroup{
-		Name: name,
-	}
-	return exo.BooleanRequest(req)
 }

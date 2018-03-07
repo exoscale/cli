@@ -172,10 +172,10 @@ func (exo *Client) parseResponse(resp *http.Response) (json.RawMessage, error) {
 
 	if resp.StatusCode >= 400 {
 		errorResponse := new(ErrorResponse)
-		if err := json.Unmarshal(b, errorResponse); err != nil {
+		if json.Unmarshal(b, errorResponse) == nil {
 			return nil, err
 		}
-		return nil, errorResponse
+		return nil, fmt.Errorf("%d %s", resp.StatusCode, b)
 	}
 
 	return b, nil

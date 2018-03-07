@@ -79,3 +79,82 @@ func TestRevokeSecurityGroupIngress(t *testing.T) {
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)
 }
+
+func TestGetSecurityGroup(t *testing.T) {
+	ts := newServer(200, `
+{"listsecuritygroupsresponse": {
+	"count": 1,
+	"securitygroup": [
+		{
+			"account": "yoan.blanc@exoscale.ch",
+			"description": "dummy (for test)",
+			"domain": "yoan.blanc@exoscale.ch",
+			"domainid": "2da0d0d3-e7b2-42ef-805d-eb2ea90ae7ef",
+			"egressrule": [],
+			"id": "4bfe1073-a6d4-48bd-8f24-2ab586674092",
+			"ingressrule": [
+				{
+					"cidr": "0.0.0.0/0",
+					"description": "SSH",
+					"endport": 22,
+					"protocol": "tcp",
+					"ruleid": "fc03b5b1-1d15-4933-99c3-afa0b8f2ab25",
+					"startport": 22,
+					"tags": []
+				}
+			],
+			"name": "ssh",
+			"tags": []
+		}
+	]
+}}`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	sg := &SecurityGroup{
+		ID: "4bfe1073-a6d4-48bd-8f24-2ab586674092",
+	}
+	if err := cs.Get(sg); err != nil {
+		t.Error(err)
+	}
+
+	if sg.Account != "yoan.blanc@exoscale.ch" {
+		t.Errorf("Account doesn't match, got %v", sg.Account)
+	}
+}
+
+func TestGetSecurityGroupMissing(t *testing.T) {
+	ts := newServer(200, `
+{"listsecuritygroupsresponse": {
+	"count": 0,
+	"securitygroup": []
+}}`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	sg := &SecurityGroup{
+		ID: "4bfe1073-a6d4-48bd-8f24-2ab586674092",
+	}
+	if err := cs.Get(sg); err == nil {
+		t.Errorf("Missing Security Group should have failed")
+	}
+}
+
+func TestGetSecurityGroupError(t *testing.T) {
+	ts := newServer(200, `
+{"listsecuritygroupsresponse": {
+	"cserrorcode": 9999,
+	"errorcode": 431,
+	"errortext": "Unable to execute API command listsecuritygroups due to invalid value. Invalid parameter id value=4bfe1073-a6d4-48bd-8f24-2ab5866740 due to incorrect long value format, or entity does not exist or due to incorrect parameter annotation for the field in api cmd class.",
+	"uuidList": []
+}}`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	sg := &SecurityGroup{
+		ID: "4bfe1073-a6d4-48bd-8f24-2ab5866740",
+	}
+	if err := cs.Get(sg); err == nil {
+		t.Errorf("Missing Security Group should have failed")
+	}
+}

@@ -1,21 +1,6 @@
 package egoscale
 
-import (
-	"net/http"
-	"time"
-)
-
-// Client represents the CloudStack API client
-type Client struct {
-	client    *http.Client
-	endpoint  string
-	apiKey    string
-	apiSecret string
-	// Timeout represents the default timeout for the async requests
-	Timeout time.Duration
-	// RetryStrategy represents the waiting strategy for polling the async requests
-	RetryStrategy RetryStrategyFunc
-}
+import "time"
 
 // RetryStrategyFunc represents a how much time to wait between two calls to CloudStack
 type RetryStrategyFunc func(int64) time.Duration

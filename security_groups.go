@@ -1,8 +1,12 @@
 package egoscale
 
 import (
+	"context"
+	"fmt"
 	"net/url"
 	"strconv"
+
+	"github.com/jinzhu/copier"
 )
 
 // SecurityGroup represent a firewalling set of rules
@@ -27,6 +31,56 @@ type SecurityGroup struct {
 // ResourceType returns the type of the resource
 func (*SecurityGroup) ResourceType() string {
 	return "SecurityGroup"
+}
+
+// Get loads the given Security Group
+func (sg *SecurityGroup) Get(ctx context.Context, client *Client) error {
+	if sg.ID == "" && sg.Name == "" {
+		return fmt.Errorf("A SecurityGroup may only be searched using ID or Name")
+	}
+	resp, err := client.RequestWithContext(ctx, &ListSecurityGroups{
+		ID:                sg.ID,
+		SecurityGroupName: sg.Name,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	sgs := resp.(*ListSecurityGroupsResponse)
+	count := len(sgs.SecurityGroup)
+	if count == 0 {
+		err := &ErrorResponse{
+			ErrorCode: ParamError,
+			ErrorText: fmt.Sprintf("SecurityGroup not found id: %s, name: %s", sg.ID, sg.Name),
+		}
+		return err
+	} else if count > 1 {
+		return fmt.Errorf("More than one SecurityGroup was found. Query: id: %s, name: %s", sg.ID, sg.Name)
+	}
+
+	return copier.Copy(sg, sgs.SecurityGroup[0])
+}
+
+// Delete deletes the given Security Group
+func (sg *SecurityGroup) Delete(ctx context.Context, client *Client) error {
+	if sg.ID == "" && sg.Name == "" {
+		return fmt.Errorf("A SecurityGroup may only be deleted using ID or Name")
+	}
+
+	req := &DeleteSecurityGroup{
+		Account:   sg.Account,
+		DomainID:  sg.DomainID,
+		ProjectID: sg.ProjectID,
+	}
+
+	if sg.ID != "" {
+		req.ID = sg.ID
+	} else {
+		req.Name = sg.Name
+	}
+
+	return client.BooleanRequestWithContext(ctx, req)
 }
 
 // IngressRule represents the ingress rule
@@ -86,10 +140,10 @@ type CreateSecurityGroupResponse SecurityGroupResponse
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSecurityGroup.html
 type DeleteSecurityGroup struct {
-	Account   string `json:"account,omitempty"`
-	DomainID  string `json:"domainid,omitempty"`
-	ID        string `json:"id,omitempty"`   // Mutually exclusive with name
-	Name      string `json:"name,omitempty"` // Mutually exclusive with id
+	Account   string `json:"account,omitempty"`  // Must be specified with Domain ID
+	DomainID  string `json:"domainid,omitempty"` // Must be specified with Account
+	ID        string `json:"id,omitempty"`       // Mutually exclusive with name
+	Name      string `json:"name,omitempty"`     // Mutually exclusive with id
 	ProjectID string `json:"project,omitempty"`
 }
 
@@ -296,14 +350,4 @@ func (exo *Client) CreateSecurityGroupWithRules(name string, ingress []Authorize
 
 	sg = r.(*ListSecurityGroupsResponse).SecurityGroup[0]
 	return &sg, nil
-}
-
-// DeleteSecurityGroup deletes a security group
-//
-// Deprecated: use the API directly
-func (exo *Client) DeleteSecurityGroup(name string) error {
-	req := &DeleteSecurityGroup{
-		Name: name,
-	}
-	return exo.BooleanRequest(req)
 }

@@ -23,24 +23,6 @@ func (exo *Client) GetSecurityGroups() (map[string]SecurityGroup, error) {
 	return sgs, nil
 }
 
-// GetSecurityGroupID returns security group by name
-//
-// Deprecated: do it yourself
-func (exo *Client) GetSecurityGroupID(name string) (string, error) {
-	resp, err := exo.Request(&ListSecurityGroups{SecurityGroupName: name})
-	if err != nil {
-		return "", err
-	}
-
-	for _, sg := range resp.(*ListSecurityGroupsResponse).SecurityGroup {
-		if sg.Name == name {
-			return sg.ID, nil
-		}
-	}
-
-	return "", nil
-}
-
 // GetAllZones returns all the zone id by name
 //
 // Deprecated: do it yourself

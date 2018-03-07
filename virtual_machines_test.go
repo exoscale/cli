@@ -215,6 +215,145 @@ func TestDeployOnBeforeSendBothAG(t *testing.T) {
 	}
 }
 
+func TestGetVirtualMachine(t *testing.T) {
+	ts := newServer(200, `
+{"listvirtualmachinesresponse": {
+	"count": 1,
+	"virtualmachine": [
+		{
+			"account": "yoan.blanc@exoscale.ch",
+			"affinitygroup": [],
+			"cpunumber": 1,
+			"cpuspeed": 2198,
+			"cpuused": "0%",
+			"created": "2018-01-19T14:37:08+0100",
+			"diskioread": 0,
+			"diskiowrite": 13734,
+			"diskkbsread": 0,
+			"diskkbswrite": 94342,
+			"displayname": "test",
+			"displayvm": true,
+			"domain": "ROOT",
+			"domainid": "1874276d-4cac-448b-aa5e-de00fd4157e8",
+			"haenable": false,
+			"hostid": "70c12af4-b1cb-4133-97dd-3579bb88a8ce",
+			"hostname": "virt-hv-pp005.dk2.p.exoscale.net",
+			"hypervisor": "KVM",
+			"id": "69069d5e-1591-4214-937e-4c8cba63fcfb",
+			"instancename": "i-2-188150-VM",
+			"isdynamicallyscalable": false,
+			"keypair": "test-yoan",
+			"memory": 1024,
+			"name": "test",
+			"networkkbsread": 5542,
+			"networkkbswrite": 8813,
+			"nic": [
+				{
+					"broadcasturi": "vlan://untagged",
+					"gateway": "159.100.248.1",
+					"id": "75d1367c-319a-4658-b31d-1a26496061ff",
+					"ipaddress": "159.100.251.247",
+					"isdefault": true,
+					"macaddress": "06:6d:cc:00:00:3c",
+					"netmask": "255.255.252.0",
+					"networkid": "d48bfccc-c11f-438f-8177-9cf6a40dc4f8",
+					"networkname": "defaultGuestNetwork",
+					"traffictype": "Guest",
+					"type": "Shared"
+				}
+			],
+			"oscategoryid": "ca158095-a6d2-4b0c-95e3-9a2e5123cbfc",
+			"ostypeid": 140,
+			"passwordenabled": true,
+			"securitygroup": [
+				{
+					"account": "default",
+					"description": "",
+					"id": "41471067-d3c2-41ef-ae45-f57e00078843",
+					"name": "default security group",
+					"tags": []
+				}
+			],
+			"serviceofferingid": "84925525-7825-418b-845b-1aed179bbc40",
+			"serviceofferingname": "Tiny",
+			"state": "Running",
+			"tags": [],
+			"templatedisplaytext": "Linux CentOS 7.4 64-bit 10G Disk (2018-01-08-d617dd)",
+			"templateid": "934b4d48-d82e-42f5-8f14-b34de3af9854",
+			"templatename": "Linux CentOS 7.4 64-bit",
+			"zoneid": "381d0a95-ed3a-4ad9-b41c-b97073c1a433",
+			"zonename": "ch-dk-2"
+		}
+	]
+}}`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	vm := &VirtualMachine{
+		ID: "69069d5e-1591-4214-937e-4c8cba63fcfb",
+	}
+	if err := cs.Get(vm); err != nil {
+		t.Error(err)
+	}
+
+	if vm.Account != "yoan.blanc@exoscale.ch" {
+		t.Errorf("Account doesn't match, got %v", vm.Account)
+	}
+}
+
+func TestGetVirtualMachineNotFound(t *testing.T) {
+	ts := newServer(200, `
+{"listvirtualmachinesresponse": {
+	"count": 0,
+	"virtualmachine": []
+}}`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	vm := &VirtualMachine{
+		ID: "69069d5e-1591-4214-937e-4c8cba63fcfb",
+	}
+	if err := cs.Get(vm); err == nil {
+		t.Errorf("An exception was expected")
+	}
+}
+
+func TestGetVirtualMachineBadQuery(t *testing.T) {
+	ts := newServer(200, `
+{"listvirtualmachinesresponse": {
+	"count": 0,
+	"virtualmachine": []
+}}`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	vm := &VirtualMachine{}
+	if err := cs.Get(vm); err == nil {
+		t.Errorf("An exception was expected")
+	}
+}
+
+func TestDelVirtualMachine(t *testing.T) {
+	ts := newServer(200, `
+{"destroyvirtualmachineresponse": {
+	"jobid": "1",
+	"jobresult": {
+		"success": true,
+		"displaytext": "good job!"
+	},
+	"jobstatus": 1
+}}`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	vm := &VirtualMachine{
+		ID: "test",
+	}
+	if err := cs.Delete(vm); err != nil {
+		t.Error(err)
+	}
+}
+
 func TestNicHelpers(t *testing.T) {
 	vm := &VirtualMachine{
 		Nic: []Nic{

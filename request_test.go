@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -16,7 +15,7 @@ import (
 func TestRequest(t *testing.T) {
 	params := url.Values{}
 	params.Set("command", "listApis")
-	params.Set("apikey", "TOKEN")
+	params.Set("apikey", "KEY")
 	params.Set("name", "dummy")
 	params.Set("response", "json")
 	ts := newPostServer(params, `
@@ -39,7 +38,7 @@ func TestRequest(t *testing.T) {
 	`)
 	defer ts.Close()
 
-	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	cs := NewClient(ts.URL, "KEY", "SECRET")
 	req := &ListAPIs{
 		Name: "dummy",
 	}
@@ -55,7 +54,7 @@ func TestRequest(t *testing.T) {
 
 func TestBooleanAsyncRequest(t *testing.T) {
 	params := url.Values{}
-	params.Set("command", "expungevirtualmachine")
+	params.Set("command", "expungeVirtualMachine")
 	params.Set("apikey", "TOKEN")
 	params.Set("id", "123")
 	params.Set("response", "json")
@@ -232,6 +231,11 @@ func newPostServer(params url.Values, response string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		errors := make(map[string][]string)
+		if r.ParseForm() != nil {
+			w.WriteHeader(500)
+			w.Write([]byte("Cannot parse the form"))
+			return
+		}
 		for k, expected := range params {
 			if values, ok := (r.PostForm)[k]; ok {
 				for i, value := range values {
@@ -243,6 +247,9 @@ func newPostServer(params url.Values, response string) *httptest.Server {
 						errors[k][i] = fmt.Sprintf("%s expected %v, got %v", k, e, value)
 					}
 				}
+			} else {
+				errors[k] = make([]string, 1)
+				errors[k][0] = fmt.Sprintf("%s was expected", k)
 			}
 		}
 
@@ -253,7 +260,6 @@ func newPostServer(params url.Values, response string) *httptest.Server {
 			w.WriteHeader(400)
 			body, _ := json.Marshal(errors)
 			w.Write(body)
-			log.Println(body)
 		}
 	})
 	return httptest.NewServer(mux)
