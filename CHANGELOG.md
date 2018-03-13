@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.9.11
+------
+
+- feat: CloudStack API name is now public `APIName()`
+- feat: enforce the mutual exclusivity of some fields
+- feat: add `context.Context` to `RequestWithContext` and `BooleanRequestWithContext`
+- change: `AsyncRequest` and `BooleanAsyncRequest` are gone, use `Request` and `BooleanRequest` instead.
+- change: `AsyncInfo` is no more
+
 0.9.10
 ------
 
