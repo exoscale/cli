@@ -1,6 +1,10 @@
 package egoscale
 
-import "net"
+import (
+	"fmt"
+	"net"
+	"net/url"
+)
 
 // VirtualMachine reprents a virtual machine
 type VirtualMachine struct {
@@ -151,10 +155,10 @@ type DeployVirtualMachine struct {
 	TemplateID         string            `json:"templateid"`
 	ZoneID             string            `json:"zoneid"`
 	Account            string            `json:"account,omitempty"`
-	AffinityGroupIDs   []string          `json:"affinitygroupids,omitempty"`
-	AffinityGroupNames []string          `json:"affinitygroupnames,omitempty"`
-	CustomID           string            `json:"customid,omitempty"`          // root only
-	DeploymentPlanner  string            `json:"deploymentplanner,omitempty"` // root only
+	AffinityGroupIDs   []string          `json:"affinitygroupids,omitempty"`   // mutually exclusive with AffinityGroupNames
+	AffinityGroupNames []string          `json:"affinitygroupnames,omitempty"` // mutually exclusive with AffinityGroupIDs
+	CustomID           string            `json:"customid,omitempty"`           // root only
+	DeploymentPlanner  string            `json:"deploymentplanner,omitempty"`  // root only
 	Details            map[string]string `json:"details,omitempty"`
 	DiskOfferingID     string            `json:"diskofferingid,omitempty"`
 	DisplayName        string            `json:"displayname,omitempty"`
@@ -171,9 +175,9 @@ type DeployVirtualMachine struct {
 	Name               string            `json:"name,omitempty"`
 	NetworkIDs         []string          `json:"networkids,omitempty"` // mutually exclusive with IPToNetworkList
 	ProjectID          string            `json:"projectid,omitempty"`
-	RootDiskSize       int64             `json:"rootdisksize,omitempty"` // in GiB
-	SecurityGroupIDs   []string          `json:"securitygroupids,omitempty"`
-	SecurityGroupNames []string          `json:"securitygroupnames,omitempty"` // does nothing, mutually exclusive
+	RootDiskSize       int64             `json:"rootdisksize,omitempty"`       // in GiB
+	SecurityGroupIDs   []string          `json:"securitygroupids,omitempty"`   // mutually exclusive with SecurityGroupNames
+	SecurityGroupNames []string          `json:"securitygroupnames,omitempty"` // mutually exclusive with SecurityGroupIDs
 	Size               string            `json:"size,omitempty"`               // mutually exclusive with DiskOfferingID
 	StartVM            *bool             `json:"startvm,omitempty"`
 	UserData           string            `json:"userdata,omitempty"` // the client is responsible to base64/gzip it
@@ -182,6 +186,20 @@ type DeployVirtualMachine struct {
 // APIName returns the CloudStack API command name
 func (*DeployVirtualMachine) APIName() string {
 	return "deployVirtualMachine"
+}
+
+func (req *DeployVirtualMachine) onBeforeSend(params *url.Values) error {
+	// Either AffinityGroupIDs or AffinityGroupNames must be set
+	if len(req.AffinityGroupIDs) > 0 && len(req.AffinityGroupNames) > 0 {
+		return fmt.Errorf("Either AffinityGroupIDs or AffinityGroupNames must be set")
+	}
+
+	// Either SecurityGroupIDs or SecurityGroupNames must be set
+	if len(req.SecurityGroupIDs) > 0 && len(req.SecurityGroupNames) > 0 {
+		return fmt.Errorf("Either SecurityGroupIDs or SecurityGroupNames must be set")
+	}
+
+	return nil
 }
 
 func (*DeployVirtualMachine) asyncResponse() interface{} {
@@ -323,7 +341,7 @@ type UpdateVirtualMachine struct {
 	HAEnable              *bool             `json:"haenable,omitempty"`
 	IsDynamicallyScalable *bool             `json:"isdynamicallyscalable,omitempty"`
 	Name                  string            `json:"name,omitempty"` // must reboot
-	OsTypeID              int64             `json:"ostypeid,omitempty"`
+	OSTypeID              int64             `json:"ostypeid,omitempty"`
 	SecurityGroupIDs      []string          `json:"securitygroupids,omitempty"`
 	UserData              string            `json:"userdata,omitempty"`
 }
