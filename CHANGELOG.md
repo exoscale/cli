@@ -1,12 +1,26 @@
 Changelog
 =========
 
+0.9.12
+------
+
+- feat: add `BooleanRequestWithContext`
+- feat: add `client.Get`, `client.GetWithContext` to fetch a resource
+- feat: add `cleint.Delete`, `client.DeleteWithContext` to delete a resource
+- feat: `SSHKeyPair` is `Gettable` and `Deletable`
+- feat: `VirtualMachine` is `Gettable` and `Deletable`
+- feat: `AffinityGroup` is `Gettable` and `Deletable`
+- feat: `SecurityGroup` is `Gettable` and `Deletable`
+- remove: deprecated methods `CreateAffinityGroup`, `DeleteAffinityGroup`
+- remove: deprecated methods `CreateKeypair`, `DeleteKeypair`, `RegisterKeypair`
+- remove: deprecated method `GetSecurityGroupID`
+
 0.9.11
 ------
 
 - feat: CloudStack API name is now public `APIName()`
 - feat: enforce the mutual exclusivity of some fields
-- feat: add `context.Context` to `RequestWithContext` and `BooleanRequestWithContext`
+- feat: add `context.Context` to `RequestWithContext`
 - change: `AsyncRequest` and `BooleanAsyncRequest` are gone, use `Request` and `BooleanRequest` instead.
 - change: `AsyncInfo` is no more
 
