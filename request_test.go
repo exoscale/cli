@@ -1,12 +1,14 @@
 package egoscale
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
@@ -14,7 +16,7 @@ import (
 func TestRequest(t *testing.T) {
 	params := url.Values{}
 	params.Set("command", "listApis")
-	params.Set("token", "TOKEN")
+	params.Set("apikey", "TOKEN")
 	params.Set("name", "dummy")
 	params.Set("response", "json")
 	ts := newPostServer(params, `
@@ -54,7 +56,7 @@ func TestRequest(t *testing.T) {
 func TestBooleanAsyncRequest(t *testing.T) {
 	params := url.Values{}
 	params.Set("command", "expungevirtualmachine")
-	params.Set("token", "TOKEN")
+	params.Set("apikey", "TOKEN")
 	params.Set("id", "123")
 	params.Set("response", "json")
 	ts := newPostServer(params, `
@@ -75,20 +77,57 @@ func TestBooleanAsyncRequest(t *testing.T) {
 	req := &ExpungeVirtualMachine{
 		ID: "123",
 	}
-	err := cs.BooleanRequest(req)
+	if err := cs.BooleanRequest(req); err != nil {
+		t.Errorf(err.Error())
+	}
 
-	if err != nil {
+	// WithContext
+	if err := cs.BooleanRequestWithContext(context.Background(), req); err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
-func TestBooleanAsyncRequestTimeout(t *testing.T) {
-	params := url.Values{}
-	params.Set("command", "expungevirtualmachine")
-	params.Set("token", "TOKEN")
-	params.Set("id", "123")
-	params.Set("response", "json")
-	ts := newPostServer(params, `
+func TestBooleanRequestTimeout(t *testing.T) {
+	ts := newSleepyServer(time.Second, 200, `
+{
+	"expungevirtualmarchine": {
+		"jobid": "1",
+		"jobresult": {
+			"success": false
+		},
+		"jobstatus": 0
+	}
+}
+	`)
+	defer ts.Close()
+	done := make(chan bool)
+
+	go func() {
+		cs := NewClientWithTimeout(ts.URL, "TOKEN", "SECRET", time.Millisecond)
+
+		req := &ExpungeVirtualMachine{
+			ID: "123",
+		}
+		err := cs.BooleanRequest(req)
+
+		if err == nil {
+			t.Error("An error was expected")
+		}
+
+		// We expect the HTTP Client to timeout
+		msg := err.Error()
+		if !strings.HasPrefix(msg, "Post") {
+			t.Errorf("Unexpected error message: %s", err.Error())
+		}
+
+		done <- true
+	}()
+
+	<-done
+}
+
+func TestBooleanRequestWithContext(t *testing.T) {
+	ts := newSleepyServer(time.Second, 200, `
 {
 	"expungevirtualmarchine": {
 		"jobid": "1",
@@ -101,24 +140,88 @@ func TestBooleanAsyncRequestTimeout(t *testing.T) {
 	`)
 	defer ts.Close()
 
-	cs := NewClientWithTimeout(ts.URL, "TOKEN", "SECRET", time.Second)
-	req := &ExpungeVirtualMachine{
-		ID: "123",
-	}
-	err := cs.BooleanRequest(req)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	defer cancel()
 
-	if err == nil {
-		t.Error("An error was expected")
-	}
+	done := make(chan bool)
 
-	if err.Error() != "context deadline exceeded" {
-		t.Errorf("Unexpected error message: %s", err.Error())
-	}
+	go func() {
+		cs := NewClient(ts.URL, "TOKEN", "SECRET")
+		req := &ExpungeVirtualMachine{
+			ID: "123",
+		}
+		err := cs.BooleanRequestWithContext(ctx, req)
+
+		if err == nil {
+			t.Error("An error was expected")
+		}
+
+		// We expect the context to timeout
+		msg := err.Error()
+		if !strings.HasPrefix(msg, "Post") {
+			t.Errorf("Unexpected error message: %s", err.Error())
+		}
+
+		done <- true
+	}()
+
+	<-done
 }
 
+func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
+	ts := newSleepyServer(time.Second, 200, `
+{
+	"expungevirtualmarchine": {
+		"jobid": "1",
+		"jobresult": {
+			"success": false
+		},
+		"jobstatus": 0
+	}
+}
+	`)
+	defer ts.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	done := make(chan bool)
+
+	go func() {
+		cs := NewClientWithTimeout(ts.URL, "TOKEN", "SECRET", time.Millisecond)
+		req := &ExpungeVirtualMachine{
+			ID: "123",
+		}
+		err := cs.BooleanRequestWithContext(ctx, req)
+
+		if err == nil {
+			t.Error("An error was expected")
+		}
+
+		// We expect the client to timeout
+		msg := err.Error()
+		if !strings.HasPrefix(msg, "Post") || !strings.Contains(msg, "net/http: request canceled") {
+			t.Errorf("Unexpected error message: %s", err.Error())
+		}
+
+		done <- true
+	}()
+
+	<-done
+}
 func newServer(code int, response string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(code)
+		w.Write([]byte(response))
+	})
+	return httptest.NewServer(mux)
+}
+
+func newSleepyServer(sleep time.Duration, code int, response string) *httptest.Server {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(sleep)
 		w.WriteHeader(code)
 		w.Write([]byte(response))
 	})
