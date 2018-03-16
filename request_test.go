@@ -52,6 +52,33 @@ func TestRequest(t *testing.T) {
 	}
 }
 
+func TestRequestSignatureFailure(t *testing.T) {
+	ts := newServer(401, `
+{"createsshkeypairresponse" : {
+	"uuidList":[],
+	"errorcode":401,
+	"errortext":"unable to verify usercredentials and/or request signature"
+}}
+	`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	req := &CreateSSHKeyPair{
+		Name: "123",
+	}
+
+	if _, err := cs.Request(req); err == nil {
+		t.Errorf("This should have failed?")
+		r, ok := err.(*ErrorResponse)
+		if !ok {
+			t.Errorf("A CloudStack error was expected, got %v", err)
+		}
+		if r.ErrorCode != Unauthorized {
+			t.Errorf("Unauthorized error was expected")
+		}
+	}
+}
+
 func TestBooleanAsyncRequest(t *testing.T) {
 	params := url.Values{}
 	params.Set("command", "expungeVirtualMachine")
@@ -77,12 +104,12 @@ func TestBooleanAsyncRequest(t *testing.T) {
 		ID: "123",
 	}
 	if err := cs.BooleanRequest(req); err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 
 	// WithContext
 	if err := cs.BooleanRequestWithContext(context.Background(), req); err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 }
 
@@ -208,6 +235,7 @@ func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 
 	<-done
 }
+
 func newServer(code int, response string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
