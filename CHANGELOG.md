@@ -6,6 +6,7 @@ Changelog
 
 - feat: IP4 and IP6 flags to DeployVirtualMachine
 - feat: add ActivateIP6
+- fix: error message was gobbled on 40x
 
 0.9.12
 ------
@@ -62,7 +63,7 @@ Changelog
 -----
 
 - fix: update UpdateVirtualMachine userdata
-- fix. Network's name/displaytext might be empty
+- fix: Network's name/displaytext might be empty
 
 0.9.5
 -----
