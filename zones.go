@@ -1,6 +1,9 @@
 package egoscale
 
-import "net"
+import (
+	"context"
+	"net"
+)
 
 // Zone represents a data center
 type Zone struct {
@@ -28,6 +31,51 @@ type Zone struct {
 	Vlan                  string            `json:"vlan,omitempty"`
 	ZoneToken             string            `json:"zonetoken,omitempty"`
 	Tags                  []ResourceTag     `json:"tags,omitempty"`
+}
+
+// List fetches all the zones
+func (zone *Zone) List(ctx context.Context, client *Client) (<-chan interface{}, <-chan error) {
+	outChan := make(chan interface{}, client.PageSize)
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(outChan)
+		defer close(errChan)
+
+		page := 0
+		count := 0
+
+		req := &ListZones{
+			DomainID: zone.DomainID,
+			ID:       zone.ID,
+			Name:     zone.Name,
+			PageSize: client.PageSize,
+		}
+
+		for {
+			req.Page = page
+
+			resp, err := client.RequestWithContext(ctx, req)
+			if err != nil {
+				errChan <- err
+				break
+			}
+
+			zones := resp.(*ListZonesResponse)
+			for _, zone := range zones.Zone {
+				count += 1
+				outChan <- zone
+			}
+
+			if count >= zones.Count {
+				break
+			}
+
+			page += 1
+		}
+	}()
+
+	return outChan, errChan
 }
 
 // ListZones represents a query for zones
