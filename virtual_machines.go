@@ -183,6 +183,13 @@ type IPToNetwork struct {
 	NetworkID string `json:"networkid,omitempty"`
 }
 
+// Password represents an encrypted password
+//
+// TODO: method to decrypt it, https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=34014652
+type Password struct {
+	EncryptedPassword string `json:"encryptedpassword"`
+}
+
 // VirtualMachineResponse represents a generic Virtual Machine response
 type VirtualMachineResponse struct {
 	VirtualMachine VirtualMachine `json:"virtualmachine"`
@@ -489,7 +496,7 @@ func (*GetVMPassword) response() interface{} {
 // GetVMPasswordResponse represents the encrypted password
 type GetVMPasswordResponse struct {
 	// Base64 encrypted password for the VM
-	EncryptedPassword string `json:"encryptedpassword"`
+	Password Password `json:"password"`
 }
 
 // ListVirtualMachines represents a search for a VM

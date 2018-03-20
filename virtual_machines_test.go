@@ -354,6 +354,28 @@ func TestDelVirtualMachine(t *testing.T) {
 	}
 }
 
+func TestGetVirtualMachinePassword(t *testing.T) {
+	ts := newServer(200, `
+{"getvmresponse": {
+	"password": {
+		"encryptedpassword": "test"
+	}
+}}`)
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	req := &GetVMPassword{
+		ID: "test",
+	}
+	resp, err := cs.Request(req)
+	if err != nil {
+		t.Error(err)
+	}
+	if resp.(*GetVMPasswordResponse).Password.EncryptedPassword != "test" {
+		t.Errorf("Encrypted password missing")
+	}
+}
+
 func TestNicHelpers(t *testing.T) {
 	vm := &VirtualMachine{
 		Nic: []Nic{
