@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.14
+------
+
+- fix: `GetVMPassword` response
+- remove: deprecated `GetTopology`, `GetImages`, and al
+
 0.9.13
 ------
 
