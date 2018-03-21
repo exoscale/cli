@@ -81,7 +81,7 @@ func TestRevokeSecurityGroupIngress(t *testing.T) {
 }
 
 func TestGetSecurityGroup(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listsecuritygroupsresponse": {
 	"count": 1,
 	"securitygroup": [
@@ -107,7 +107,7 @@ func TestGetSecurityGroup(t *testing.T) {
 			"tags": []
 		}
 	]
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -124,11 +124,11 @@ func TestGetSecurityGroup(t *testing.T) {
 }
 
 func TestGetSecurityGroupMissing(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listsecuritygroupsresponse": {
 	"count": 0,
 	"securitygroup": []
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -141,13 +141,13 @@ func TestGetSecurityGroupMissing(t *testing.T) {
 }
 
 func TestGetSecurityGroupError(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listsecuritygroupsresponse": {
 	"cserrorcode": 9999,
 	"errorcode": 431,
 	"errortext": "Unable to execute API command listsecuritygroups due to invalid value. Invalid parameter id value=4bfe1073-a6d4-48bd-8f24-2ab5866740 due to incorrect long value format, or entity does not exist or due to incorrect parameter annotation for the field in api cmd class.",
 	"uuidList": []
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")

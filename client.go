@@ -7,44 +7,12 @@ import (
 	"time"
 )
 
-// Gettable represents an Interface that can be "Get" by the client
-type Gettable interface {
-	// Get populates the given resource or throws
-	Get(context context.Context, client *Client) error
-}
-
-// Deletable represents an Interface that can be "Delete" by the client
-type Deletable interface {
-	// Delete removes the given resource(s) or throws
-	Delete(context context.Context, client *Client) error
-}
-
-// Listable represents an Interface that can be "List" by the client
-type Listable interface {
-	// List search the given resources and paginates till the end of time
-	List(context context.Context, client *Client) (<-chan interface{}, <-chan error)
-}
-
-// Client represents the CloudStack API client
-type Client struct {
-	client    *http.Client
-	endpoint  string
-	apiKey    string
-	apiSecret string
-	// PageSize represents the default size for a paginated result
-	PageSize int
-	// Timeout represents the default timeout for the async requests
-	Timeout time.Duration
-	// RetryStrategy represents the waiting strategy for polling the async requests
-	RetryStrategy RetryStrategyFunc
-}
-
 // Get populates the given resource or fails
 func (client *Client) Get(g Gettable) error {
 	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
 	defer cancel()
 
-	return g.Get(ctx, client)
+	return client.GetWithContext(ctx, g)
 }
 
 // GetWithContext populates the given resource or fails
@@ -57,7 +25,7 @@ func (client *Client) Delete(g Deletable) error {
 	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
 	defer cancel()
 
-	return g.Delete(ctx, client)
+	return client.DeleteWithContext(ctx, g)
 }
 
 // DeleteWithContext removes the given resource of fails
@@ -75,7 +43,7 @@ func (client *Client) List(g Listable) ([]interface{}, error) {
 
 // ListWithContext lists the given resources (and paginate till the end)
 func (client *Client) ListWithContext(ctx context.Context, g Listable) ([]interface{}, error) {
-	inChan, errChan := g.List(ctx, client)
+	inChan, errChan := client.AsyncListWithContext(ctx, g)
 
 	s := make([]interface{}, 0)
 	var err error
@@ -99,7 +67,7 @@ func (client *Client) ListWithContext(ctx context.Context, g Listable) ([]interf
 			errChan = nil
 		}
 
-		if inChan != nil && errChan != nil {
+		if inChan == nil && errChan == nil {
 			break
 		}
 	}
@@ -112,16 +80,13 @@ func (client *Client) AsyncList(g Listable) (<-chan interface{}, <-chan error) {
 	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
 	defer cancel()
 
-	return g.List(ctx, client)
+	return client.AsyncListWithContext(ctx, g)
 }
 
-// AsyncList lists the given resources and paginates
+// AsyncListWithContext lists the given resources and paginates
 func (client *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-chan interface{}, <-chan error) {
 	return g.List(ctx, client)
 }
-
-// RetryStrategyFunc represents a how much time to wait between two calls to CloudStack
-type RetryStrategyFunc func(int64) time.Duration
 
 // NewClientWithTimeout creates a CloudStack API client
 //

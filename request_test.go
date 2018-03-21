@@ -53,13 +53,13 @@ func TestRequest(t *testing.T) {
 }
 
 func TestRequestSignatureFailure(t *testing.T) {
-	ts := newServer(401, `
+	ts := newServer(response{401, `
 {"createsshkeypairresponse" : {
 	"uuidList":[],
 	"errorcode":401,
 	"errortext":"unable to verify usercredentials and/or request signature"
 }}
-	`)
+	`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
@@ -236,11 +236,18 @@ func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 	<-done
 }
 
-func newServer(code int, response string) *httptest.Server {
+type response struct {
+	code int
+	body string
+}
+
+func newServer(responses ...response) *httptest.Server {
+	i := 0
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(code)
-		w.Write([]byte(response))
+		w.WriteHeader(responses[i].code)
+		w.Write([]byte(responses[i].body))
+		i += 1
 	})
 	return httptest.NewServer(mux)
 }

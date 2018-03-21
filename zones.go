@@ -35,6 +35,7 @@ type Zone struct {
 
 // List fetches all the zones
 func (zone *Zone) List(ctx context.Context, client *Client) (<-chan interface{}, <-chan error) {
+	pageSize := client.PageSize
 	outChan := make(chan interface{}, client.PageSize)
 	errChan := make(chan error, 1)
 
@@ -42,14 +43,13 @@ func (zone *Zone) List(ctx context.Context, client *Client) (<-chan interface{},
 		defer close(outChan)
 		defer close(errChan)
 
-		page := 0
-		count := 0
+		page := 1
 
 		req := &ListZones{
 			DomainID: zone.DomainID,
 			ID:       zone.ID,
 			Name:     zone.Name,
-			PageSize: client.PageSize,
+			PageSize: pageSize,
 		}
 
 		for {
@@ -63,15 +63,14 @@ func (zone *Zone) List(ctx context.Context, client *Client) (<-chan interface{},
 
 			zones := resp.(*ListZonesResponse)
 			for _, zone := range zones.Zone {
-				count += 1
 				outChan <- zone
 			}
 
-			if count >= zones.Count {
+			if len(zones.Zone) < pageSize {
 				break
 			}
 
-			page += 1
+			page++
 		}
 	}()
 

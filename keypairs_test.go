@@ -53,7 +53,7 @@ func TestListSSHKeyPairs(t *testing.T) {
 }
 
 func TestGetSSHKeyPair(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listsshkeypairsresponse": {
 	"count": 1,
 	"sshkeypair": [
@@ -62,7 +62,7 @@ func TestGetSSHKeyPair(t *testing.T) {
 			"name": "yoan@herp"
 		}
 	]
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -79,7 +79,7 @@ func TestGetSSHKeyPair(t *testing.T) {
 }
 
 func TestGetSSHKeyPairToMany(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listsshkeypairsresponse": {
 	"count": 2,
 	"sshkeypair": [
@@ -92,7 +92,7 @@ func TestGetSSHKeyPairToMany(t *testing.T) {
 			"name": "yoan@derp"
 		}
 	]
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -105,11 +105,11 @@ func TestGetSSHKeyPairToMany(t *testing.T) {
 }
 
 func TestGetSSHKeyPairNotFound(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listsshkeypairsresponse": {
 	"count": 0,
 	"sshkeypair": []
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -122,10 +122,10 @@ func TestGetSSHKeyPairNotFound(t *testing.T) {
 }
 
 func TestDelSSHKeyPair(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"deletesshkeypair": {
 	"success": "true"
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")

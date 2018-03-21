@@ -216,7 +216,7 @@ func TestDeployOnBeforeSendBothAG(t *testing.T) {
 }
 
 func TestGetVirtualMachine(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listvirtualmachinesresponse": {
 	"count": 1,
 	"virtualmachine": [
@@ -285,8 +285,7 @@ func TestGetVirtualMachine(t *testing.T) {
 			"zonename": "ch-dk-2"
 		}
 	]
-}}`)
-
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -303,11 +302,11 @@ func TestGetVirtualMachine(t *testing.T) {
 }
 
 func TestGetVirtualMachineNotFound(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listvirtualmachinesresponse": {
 	"count": 0,
 	"virtualmachine": []
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -320,11 +319,11 @@ func TestGetVirtualMachineNotFound(t *testing.T) {
 }
 
 func TestGetVirtualMachineBadQuery(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listvirtualmachinesresponse": {
 	"count": 0,
 	"virtualmachine": []
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -335,7 +334,7 @@ func TestGetVirtualMachineBadQuery(t *testing.T) {
 }
 
 func TestDelVirtualMachine(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"destroyvirtualmachineresponse": {
 	"jobid": "1",
 	"jobresult": {
@@ -343,7 +342,7 @@ func TestDelVirtualMachine(t *testing.T) {
 		"displaytext": "good job!"
 	},
 	"jobstatus": 1
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -356,12 +355,12 @@ func TestDelVirtualMachine(t *testing.T) {
 }
 
 func TestGetVirtualMachinePassword(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"getvmresponse": {
 	"password": {
 		"encryptedpassword": "test"
 	}
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")

@@ -53,7 +53,7 @@ func TestUpdateIPAddress(t *testing.T) {
 }
 
 func TestGetIPAddress(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listpublicipaddressesresponse": {
 	"count": 1,
 	"publicipaddress": [
@@ -78,7 +78,7 @@ func TestGetIPAddress(t *testing.T) {
 			"zonename": "ch-gva-2"
 		}
 	]
-}}`)
+}}`})
 
 	defer ts.Close()
 
@@ -97,7 +97,7 @@ func TestGetIPAddress(t *testing.T) {
 }
 
 func TestGetIPAddressInvalid(t *testing.T) {
-	ts := newServer(400, ``)
+	ts := newServer(response{400, ``})
 
 	defer ts.Close()
 
@@ -109,9 +109,9 @@ func TestGetIPAddressInvalid(t *testing.T) {
 }
 
 func TestGetIPAddressMissing(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listpublicipaddressesresponse":{}}
-`)
+`})
 
 	defer ts.Close()
 
@@ -125,7 +125,7 @@ func TestGetIPAddressMissing(t *testing.T) {
 }
 
 func TestGetIPAddressMultiple(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listpublicipaddressesresponse":{
 	"count": 2,
 	"publicipaddress": [
@@ -133,7 +133,7 @@ func TestGetIPAddressMultiple(t *testing.T) {
 		{"id": "2"}
 	]
 }}
-`)
+`})
 
 	defer ts.Close()
 
@@ -147,11 +147,11 @@ func TestGetIPAddressMultiple(t *testing.T) {
 }
 
 func TestGetIPAddressError(t *testing.T) {
-	ts := newServer(400, `
+	ts := newServer(response{400, `
 {"listpublicipaddressesresponse": {
 	"errorcode": 431,
 	"errortext": "foo"
-}}`)
+}}`})
 
 	defer ts.Close()
 
@@ -165,7 +165,7 @@ func TestGetIPAddressError(t *testing.T) {
 }
 
 func TestDeleteIPAddress(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"queryasyncjobresultresponse": {
 	"jobid": "b1ac7d06-3320-4388-b234-43420bcb236c",
 	"jobprocstatus": 0,
@@ -173,7 +173,7 @@ func TestDeleteIPAddress(t *testing.T) {
 		"success": true
 	},
 	"jobstatus": 2
-}}`)
+}}`})
 
 	defer ts.Close()
 
@@ -187,7 +187,7 @@ func TestDeleteIPAddress(t *testing.T) {
 }
 
 func TestDeleteIPAddressInvalid(t *testing.T) {
-	ts := newServer(400, ``)
+	ts := newServer(response{400, ``})
 
 	defer ts.Close()
 
@@ -199,7 +199,7 @@ func TestDeleteIPAddressInvalid(t *testing.T) {
 }
 
 func TestDeleteIPAddressError(t *testing.T) {
-	ts := newServer(400, `
+	ts := newServer(response{400, `
 {"queryasyncjobresultresponse": {
 	"jobid": "b1ac7d06-3320-4388-b234-43420bcb236c",
 	"jobprocstatus": 0,
@@ -208,7 +208,7 @@ func TestDeleteIPAddressError(t *testing.T) {
 		"errortext": "Only elastic IP can be released explicitly."
 	},
 	"jobstatus": 2
-}}`)
+}}`})
 
 	defer ts.Close()
 

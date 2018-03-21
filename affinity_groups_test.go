@@ -67,7 +67,7 @@ func TestUpdateVMOnBeforeSend(t *testing.T) {
 }
 
 func TestGetAffinityGroup(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listaffinitygroupsresponse": {
 	"affinitygroup": [
 		{
@@ -81,7 +81,7 @@ func TestGetAffinityGroup(t *testing.T) {
 		}
 	],
 	"count": 1
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -98,11 +98,11 @@ func TestGetAffinityGroup(t *testing.T) {
 }
 
 func TestGetAffinityGroupNotFound(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"listaffinitygroupsresponse": {
 	"affinitygroup": [],
 	"count": 0
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -115,7 +115,7 @@ func TestGetAffinityGroupNotFound(t *testing.T) {
 }
 
 func TestGetAffinityGroupBadQuery(t *testing.T) {
-	ts := newServer(200, "{}")
+	ts := newServer(response{200, "{}"})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
@@ -127,7 +127,7 @@ func TestGetAffinityGroupBadQuery(t *testing.T) {
 }
 
 func TestDelAffinityGroup(t *testing.T) {
-	ts := newServer(200, `
+	ts := newServer(response{200, `
 {"deleteaffinitygroup": {
 	"jobid": "1",
 	"jobresult": {
@@ -135,7 +135,7 @@ func TestDelAffinityGroup(t *testing.T) {
 		"displaytext": "good job!"
 	},
 	"jobstatus": 1
-}}`)
+}}`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
