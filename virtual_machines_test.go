@@ -286,6 +286,7 @@ func TestGetVirtualMachine(t *testing.T) {
 		}
 	]
 }}`)
+
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
