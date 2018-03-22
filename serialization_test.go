@@ -12,6 +12,9 @@ func TestPrepareValues(t *testing.T) {
 		IsVisible bool   `json:"isvisible,omitempty"`
 	}
 
+	tr := true
+	f := false
+
 	profile := struct {
 		IgnoreMe    string
 		Zone        string            `json:"myzone,omitempty"`
@@ -20,6 +23,8 @@ func TestPrepareValues(t *testing.T) {
 		ID          int               `json:"id"`
 		UserID      uint              `json:"user_id"`
 		IsGreat     bool              `json:"is_great"`
+		IsActive    *bool             `json:"is_active"`
+		IsAlive     *bool             `json:"is_alive"`
 		Num         float64           `json:"num"`
 		Bytes       []byte            `json:"bytes"`
 		IDs         []string          `json:"ids,omitempty"`
@@ -33,6 +38,8 @@ func TestPrepareValues(t *testing.T) {
 		NoName:   "foo",
 		ID:       1,
 		UserID:   uint(2),
+		IsActive: &tr,
+		IsAlive:  &f,
 		Num:      3.14,
 		Bytes:    []byte("exo"),
 		IDs:      []string{"1", "2", "three"},
@@ -58,6 +65,14 @@ func TestPrepareValues(t *testing.T) {
 
 	if _, ok := params["myzone"]; ok {
 		t.Errorf("myzone params shouldn't be set, got %v", params.Get("myzone"))
+	}
+
+	if params.Get("is_active") != "true" {
+		t.Errorf("IsActive params wasn't properly set, got %v", params.Get("IsActive"))
+	}
+
+	if params.Get("is_alive") != "false" {
+		t.Errorf("IsAlive params wasn't properly set, got %v", params.Get("IsAlive"))
 	}
 
 	if params.Get("NoName") != "foo" {
@@ -130,6 +145,18 @@ func TestPrepareValuesBoolRequired(t *testing.T) {
 	}
 	if params.Get("requiredfield") != "false" {
 		t.Errorf("bool params wasn't set to false (default value)")
+	}
+}
+
+func TestPrepareValuesBoolPtrRequired(t *testing.T) {
+	profile := struct {
+		RequiredField *bool `json:"requiredfield"`
+	}{}
+
+	params := url.Values{}
+	err := prepareValues("", &params, &profile)
+	if err == nil {
+		t.Errorf("It should have failed")
 	}
 }
 
@@ -216,5 +243,46 @@ func TestPrepareValuesMap(t *testing.T) {
 	err := prepareValues("", &params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
+	}
+}
+
+func TestPrepareValuesBoolPtr(t *testing.T) {
+	tru := new(bool)
+	f := new(bool)
+	*tru = true
+	*f = false
+
+	profile := struct {
+		IsOne   bool  `json:"is_one,omitempty"`
+		IsTwo   bool  `json:"is_two,omitempty"`
+		IsThree *bool `json:"is_three,omitempty"`
+		IsFour  *bool `json:"is_four,omitempty"`
+		IsFive  *bool `json:"is_five,omitempty"`
+	}{
+		IsOne:   true,
+		IsTwo:   false,
+		IsThree: tru,
+		IsFour:  f,
+	}
+
+	params := url.Values{}
+	err := prepareValues("", &params, &profile)
+	if err != nil {
+		t.Error(err)
+	}
+	if params["is_one"][0] != "true" {
+		t.Errorf("Expected is_one to be true")
+	}
+	if is_two, ok := params["is_two"]; ok {
+		t.Errorf("Expected is_two to be missing, got %v", is_two)
+	}
+	if params["is_three"][0] != "true" {
+		t.Errorf("Expected is_three to be true")
+	}
+	if params["is_four"][0] != "false" {
+		t.Errorf("Expected is_four to be false")
+	}
+	if is_five, ok := params["is_five"]; ok {
+		t.Errorf("Expected is_five to be missing, got %v", is_five)
 	}
 }
