@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.15
+------
+
+- feat: `IPAddress` is `Gettable` and `Deletable`
+- fix: serialization of *bool
+
 0.9.14
 ------
 
