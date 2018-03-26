@@ -1,7 +1,7 @@
 package egoscale
 
 import (
-	"fmt"
+	"context"
 	"net"
 )
 
@@ -24,6 +24,50 @@ type Nic struct {
 	TrafficType      string           `json:"traffictype,omitempty"`
 	Type             string           `json:"type,omitempty"`
 	VirtualMachineID string           `json:"virtualmachineid,omitempty"`
+}
+
+// List fetches all the nics
+func (nic *Nic) List(ctx context.Context, client *Client) (<-chan interface{}, <-chan error) {
+	pageSize := client.PageSize
+	outChan := make(chan interface{}, client.PageSize)
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(outChan)
+		defer close(errChan)
+
+		page := 1
+
+		req := &ListNics{
+			VirtualMachineID: nic.VirtualMachineID,
+			NicID:            nic.ID,
+			NetworkID:        nic.NetworkID,
+			PageSize:         pageSize,
+		}
+
+		for {
+			req.Page = page
+
+			resp, err := client.RequestWithContext(ctx, req)
+			if err != nil {
+				errChan <- err
+				break
+			}
+
+			nics := resp.(*ListNicsResponse)
+			for _, zone := range nics.Nic {
+				outChan <- zone
+			}
+
+			if len(nics.Nic) < pageSize {
+				break
+			}
+
+			page++
+		}
+	}()
+
+	return outChan, errChan
 }
 
 // NicSecondaryIP represents a link between NicID and IPAddress
@@ -119,47 +163,4 @@ func (*ActivateIP6) asyncResponse() interface{} {
 // ActivateIP6Response represents the modified NIC
 type ActivateIP6Response struct {
 	Nic Nic `json:"nic"`
-}
-
-// ListNics lists the NIC of a VM
-//
-// Deprecated: use the API directly
-func (exo *Client) ListNics(req *ListNics) ([]Nic, error) {
-	resp, err := exo.Request(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp.(*ListNicsResponse).Nic, nil
-}
-
-// AddIPToNic adds an IP to a NIC
-//
-// Deprecated: use the API directly
-func (exo *Client) AddIPToNic(nicID string, ipAddress string) (*NicSecondaryIP, error) {
-	ip := net.ParseIP(ipAddress)
-	if ip == nil {
-		return nil, fmt.Errorf("%s is not a valid IP address", ipAddress)
-	}
-	req := &AddIPToNic{
-		NicID:     nicID,
-		IPAddress: ip,
-	}
-	resp, err := exo.Request(req)
-	if err != nil {
-		return nil, err
-	}
-
-	nic := resp.(AddIPToNicResponse).NicSecondaryIP
-	return &nic, nil
-}
-
-// RemoveIPFromNic removes an IP from a NIC
-//
-// Deprecated: use the API directly
-func (exo *Client) RemoveIPFromNic(secondaryNicID string) error {
-	req := &RemoveIPFromNic{
-		ID: secondaryNicID,
-	}
-	return exo.BooleanRequest(req)
 }
