@@ -1,7 +1,7 @@
 package egoscale
 
 import (
-	"fmt"
+	"context"
 )
 
 // Volume represents a volume linked to a VM
@@ -36,6 +36,52 @@ type Volume struct {
 // ResourceType returns the type of the resource
 func (*Volume) ResourceType() string {
 	return "Volume"
+}
+
+// List fetches the volumes
+func (vol *Volume) List(ctx context.Context, client *Client) (<-chan interface{}, <-chan error) {
+	pageSize := client.PageSize
+	outChan := make(chan interface{}, client.PageSize)
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(outChan)
+		defer close(errChan)
+
+		page := 1
+
+		req := &ListVolumes{
+			Account:          vol.Account,
+			DomainID:         vol.DomainID,
+			Name:             vol.Name,
+			Type:             vol.Type,
+			VirtualMachineID: vol.VirtualMachineID,
+			ZoneID:           vol.ZoneID,
+		}
+
+		for {
+			req.Page = page
+
+			resp, err := client.RequestWithContext(ctx, req)
+			if err != nil {
+				errChan <- err
+				break
+			}
+
+			volumes := resp.(*ListVolumesResponse)
+			for _, volume := range volumes.Volume {
+				outChan <- volume
+			}
+
+			if len(volumes.Volume) < pageSize {
+				break
+			}
+
+			page++
+		}
+	}()
+
+	return outChan, errChan
 }
 
 // ResizeVolume (Async) resizes a volume
@@ -100,24 +146,4 @@ func (*ListVolumes) response() interface{} {
 type ListVolumesResponse struct {
 	Count  int      `json:"count"`
 	Volume []Volume `json:"volume"`
-}
-
-// GetRootVolumeForVirtualMachine returns the root volume of a VM
-//
-// Deprecated: helper function shouldn't be used
-func (exo *Client) GetRootVolumeForVirtualMachine(virtualMachineID string) (*Volume, error) {
-	resp, err := exo.Request(&ListVolumes{
-		VirtualMachineID: virtualMachineID,
-		Type:             "ROOT",
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	r := resp.(*ListVolumesResponse)
-	if r.Count != 1 {
-		return nil, fmt.Errorf("Expected exactly one volume for %v, got %d", virtualMachineID, r.Count)
-	}
-
-	return &(r.Volume[0]), nil
 }
