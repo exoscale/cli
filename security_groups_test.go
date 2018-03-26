@@ -1,6 +1,7 @@
 package egoscale
 
 import (
+	"net/url"
 	"testing"
 )
 
@@ -78,6 +79,24 @@ func TestRevokeSecurityGroupIngress(t *testing.T) {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)
+}
+
+func TestAuthorizeSecurityGroupEgressOnBeforeSend(t *testing.T) {
+	req := &AuthorizeSecurityGroupEgress{
+		Protocol: "ICMP",
+	}
+	params := url.Values{}
+
+	if err := req.onBeforeSend(&params); err != nil {
+		t.Error(err)
+	}
+
+	if _, ok := params["icmpcode"]; !ok {
+		t.Errorf("icmpcode should have been set")
+	}
+	if _, ok := params["icmptype"]; !ok {
+		t.Errorf("icmptype should have been set")
+	}
 }
 
 func TestGetSecurityGroup(t *testing.T) {

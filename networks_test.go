@@ -1,6 +1,7 @@
 package egoscale
 
 import (
+	"net/url"
 	"testing"
 )
 
@@ -58,4 +59,20 @@ func TestDeleteNetwork(t *testing.T) {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)
+}
+
+func TestCreateNetworkOnBeforeSend(t *testing.T) {
+	req := &CreateNetwork{}
+	params := url.Values{}
+
+	if err := req.onBeforeSend(&params); err != nil {
+		t.Error(err)
+	}
+
+	if _, ok := params["name"]; !ok {
+		t.Errorf("name should have been set")
+	}
+	if _, ok := params["displaytext"]; !ok {
+		t.Errorf("displaytext should have been set")
+	}
 }
