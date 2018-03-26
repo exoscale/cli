@@ -100,7 +100,30 @@ See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/lat
 
 Zones
 
-A Zone corresponds to a Data Center. You may list them.
+A Zone corresponds to a Data Center. You may list them. Zone implements the Listable interface, which let you perform a list in two different ways. The first exposes the underlying CloudStack request while the second one hide them and you only manipulate the structs of your interest.
+
+	// Using ListZones request
+	req := &egoscale.ListZones{}
+	resp, err := client.Request(req)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, zone := range resp.(*egoscale.ListZonesResponse) {
+		...
+	}
+
+	// Using client.List
+	zone := &egoscale.Zone{}
+	zones, err := client.List(zone)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, z := range zones {
+		zone := z.(egoscale.Zone)
+		...
+	}
 
 */
 package egoscale

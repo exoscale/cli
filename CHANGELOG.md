@@ -1,6 +1,17 @@
 Changelog
 =========
 
+0.9.16
+------
+
+- feat: new `Listable` interface
+- feat: `Nic` is `Listable`
+- feat: `Volume` is `Listable`
+- feat: `Zone` is `Listable`
+- feat: `AffinityGroup` is `Listable`
+- remove: deprecated methods `ListNics`, `AddIPToNic`, and `RemoveIPFromNic`
+- remove: deprecated method `GetRoomVolumeForVirtualMachine`
+
 0.9.15
 ------
 
