@@ -61,9 +61,9 @@ Security Groups provide a way to isolate traffic to VMs.
 
 Security Group also implement the generic Get and Delete interface (Gettable and Deletable).
 
-    sg := &egoscale.SecurityGroup{Name: "Load balancer"}
+	sg := &egoscale.SecurityGroup{Name: "Load balancer"}
 	if err := cs.Get(sg); err != nil {
-        ...
+		...
 	}
 	// The SecurityGroup has been loaded with the SecurityGroup informations
 
