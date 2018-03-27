@@ -190,6 +190,10 @@ func (req *AuthorizeSecurityGroupIngress) onBeforeSend(params *url.Values) error
 		params.Set("icmpcode", strconv.FormatInt(int64(req.IcmpCode), 10))
 		params.Set("icmptype", strconv.FormatInt(int64(req.IcmpType), 10))
 	}
+	// StartPort may be zero but can also be omitted...
+	if req.EndPort != 0 && req.StartPort == 0 {
+		params.Set("startport", "0")
+	}
 	return nil
 }
 

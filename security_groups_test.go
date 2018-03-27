@@ -81,7 +81,7 @@ func TestRevokeSecurityGroupIngress(t *testing.T) {
 	_ = req.asyncResponse().(*booleanAsyncResponse)
 }
 
-func TestAuthorizeSecurityGroupEgressOnBeforeSend(t *testing.T) {
+func TestAuthorizeSecurityGroupEgressOnBeforeSendICMP(t *testing.T) {
 	req := &AuthorizeSecurityGroupEgress{
 		Protocol: "ICMP",
 	}
@@ -96,6 +96,23 @@ func TestAuthorizeSecurityGroupEgressOnBeforeSend(t *testing.T) {
 	}
 	if _, ok := params["icmptype"]; !ok {
 		t.Errorf("icmptype should have been set")
+	}
+}
+
+func TestAuthorizeSecurityGroupEgressOnBeforeSendTCP(t *testing.T) {
+	req := &AuthorizeSecurityGroupEgress{
+		Protocol:  "TCP",
+		StartPort: 0,
+		EndPort:   1024,
+	}
+	params := url.Values{}
+
+	if err := req.onBeforeSend(&params); err != nil {
+		t.Error(err)
+	}
+
+	if _, ok := params["startport"]; !ok {
+		t.Errorf("startport should have been set")
 	}
 }
 

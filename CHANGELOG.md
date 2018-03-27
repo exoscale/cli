@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.17
+------
+
+- fix: `AuthorizeSecurityGroup(In|E)gress` startport may be zero
+
 0.9.16
 ------
 
