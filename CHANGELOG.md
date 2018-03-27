@@ -10,7 +10,7 @@ Changelog
 - feat: `Zone` is `Listable`
 - feat: `AffinityGroup` is `Listable`
 - remove: deprecated methods `ListNics`, `AddIPToNic`, and `RemoveIPFromNic`
-- remove: deprecated method `GetRoomVolumeForVirtualMachine`
+- remove: deprecated method `GetRootVolumeForVirtualMachine`
 
 0.9.15
 ------
