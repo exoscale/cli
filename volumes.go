@@ -57,6 +57,7 @@ func (vol *Volume) List(ctx context.Context, client *Client) (<-chan interface{}
 			Type:             vol.Type,
 			VirtualMachineID: vol.VirtualMachineID,
 			ZoneID:           vol.ZoneID,
+			PageSize:         pageSize,
 		}
 
 		for {
