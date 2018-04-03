@@ -1,7 +1,6 @@
 package egoscale
 
 import (
-	"context"
 	"net"
 )
 
@@ -26,48 +25,15 @@ type Nic struct {
 	VirtualMachineID string           `json:"virtualmachineid,omitempty"`
 }
 
-// List fetches all the nics
-func (nic *Nic) List(ctx context.Context, client *Client) (<-chan interface{}, <-chan error) {
-	pageSize := client.PageSize
-	outChan := make(chan interface{}, client.PageSize)
-	errChan := make(chan error, 1)
+// ListRequest build a ListNics request from the given Nic
+func (nic *Nic) ListRequest() (ListCommand, error) {
+	req := &ListNics{
+		VirtualMachineID: nic.VirtualMachineID,
+		NicID:            nic.ID,
+		NetworkID:        nic.NetworkID,
+	}
 
-	go func() {
-		defer close(outChan)
-		defer close(errChan)
-
-		page := 1
-
-		req := &ListNics{
-			VirtualMachineID: nic.VirtualMachineID,
-			NicID:            nic.ID,
-			NetworkID:        nic.NetworkID,
-			PageSize:         pageSize,
-		}
-
-		for {
-			req.Page = page
-
-			resp, err := client.RequestWithContext(ctx, req)
-			if err != nil {
-				errChan <- err
-				break
-			}
-
-			nics := resp.(*ListNicsResponse)
-			for _, zone := range nics.Nic {
-				outChan <- zone
-			}
-
-			if len(nics.Nic) < pageSize {
-				break
-			}
-
-			page++
-		}
-	}()
-
-	return outChan, errChan
+	return req, nil
 }
 
 // NicSecondaryIP represents a link between NicID and IPAddress
@@ -99,6 +65,23 @@ func (*ListNics) APIName() string {
 
 func (*ListNics) response() interface{} {
 	return new(ListNicsResponse)
+}
+
+// SetPage sets the current page
+func (ls *ListNics) SetPage(page int) {
+	ls.Page = page
+}
+
+// SetPageSize sets the page size
+func (ls *ListNics) SetPageSize(pageSize int) {
+	ls.PageSize = pageSize
+}
+
+func (*ListNics) each(resp interface{}, callback ListCommandFunc) {
+	nics := resp.(*ListNicsResponse)
+	for _, nic := range nics.Nic {
+		callback(nic, nil)
+	}
 }
 
 // ListNicsResponse represents a list of templates

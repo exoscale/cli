@@ -5,10 +5,6 @@ import (
 	"time"
 )
 
-func TestZones(t *testing.T) {
-	var _ Command = (*ListZones)(nil)
-}
-
 func TestListZones(t *testing.T) {
 	req := &ListZones{}
 	if req.APIName() != "listZones" {

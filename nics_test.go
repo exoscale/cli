@@ -4,13 +4,6 @@ import (
 	"testing"
 )
 
-func TestNics(t *testing.T) {
-	var _ asyncCommand = (*AddIPToNic)(nil)
-	var _ asyncCommand = (*RemoveIPFromNic)(nil)
-	var _ syncCommand = (*ListNics)(nil)
-	var _ asyncCommand = (*ActivateIP6)(nil)
-}
-
 func TestAddIPToNic(t *testing.T) {
 	req := &AddIPToNic{}
 	if req.APIName() != "addIpToNic" {

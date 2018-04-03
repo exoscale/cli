@@ -85,7 +85,51 @@ func (client *Client) AsyncList(g Listable) (<-chan interface{}, <-chan error) {
 
 // AsyncListWithContext lists the given resources and paginates
 func (client *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-chan interface{}, <-chan error) {
-	return g.List(ctx, client)
+	pageSize := client.PageSize
+	outChan := make(chan interface{}, pageSize)
+	errChan := make(chan error, 1)
+
+	go func() {
+		defer close(outChan)
+		defer close(errChan)
+
+		page := 1
+
+		req, err := g.ListRequest()
+		if err != nil {
+			errChan <- err
+			return
+		}
+		req.SetPageSize(pageSize)
+
+		for {
+			req.SetPage(page)
+			resp, err := client.RequestWithContext(ctx, req)
+			if err != nil {
+				errChan <- err
+				break
+			}
+
+			size := 0
+			req.each(resp, func(element interface{}, err error) {
+				if element != nil {
+					size++
+					outChan <- element
+				} else {
+					size += pageSize
+					errChan <- err
+				}
+			})
+
+			if size < pageSize {
+				break
+			}
+
+			page++
+		}
+	}()
+
+	return outChan, errChan
 }
 
 // NewClientWithTimeout creates a CloudStack API client

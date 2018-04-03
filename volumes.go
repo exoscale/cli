@@ -1,9 +1,5 @@
 package egoscale
 
-import (
-	"context"
-)
-
 // Volume represents a volume linked to a VM
 type Volume struct {
 	ID                         string        `json:"id"`
@@ -38,51 +34,18 @@ func (*Volume) ResourceType() string {
 	return "Volume"
 }
 
-// List fetches the volumes
-func (vol *Volume) List(ctx context.Context, client *Client) (<-chan interface{}, <-chan error) {
-	pageSize := client.PageSize
-	outChan := make(chan interface{}, client.PageSize)
-	errChan := make(chan error, 1)
+// ListRequest builds the ListVolumes request
+func (vol *Volume) ListRequest() (ListCommand, error) {
+	req := &ListVolumes{
+		Account:          vol.Account,
+		DomainID:         vol.DomainID,
+		Name:             vol.Name,
+		Type:             vol.Type,
+		VirtualMachineID: vol.VirtualMachineID,
+		ZoneID:           vol.ZoneID,
+	}
 
-	go func() {
-		defer close(outChan)
-		defer close(errChan)
-
-		page := 1
-
-		req := &ListVolumes{
-			Account:          vol.Account,
-			DomainID:         vol.DomainID,
-			Name:             vol.Name,
-			Type:             vol.Type,
-			VirtualMachineID: vol.VirtualMachineID,
-			ZoneID:           vol.ZoneID,
-			PageSize:         pageSize,
-		}
-
-		for {
-			req.Page = page
-
-			resp, err := client.RequestWithContext(ctx, req)
-			if err != nil {
-				errChan <- err
-				break
-			}
-
-			volumes := resp.(*ListVolumesResponse)
-			for _, volume := range volumes.Volume {
-				outChan <- volume
-			}
-
-			if len(volumes.Volume) < pageSize {
-				break
-			}
-
-			page++
-		}
-	}()
-
-	return outChan, errChan
+	return req, nil
 }
 
 // ResizeVolume (Async) resizes a volume
@@ -141,6 +104,23 @@ func (*ListVolumes) APIName() string {
 
 func (*ListVolumes) response() interface{} {
 	return new(ListVolumesResponse)
+}
+
+// SetPage sets the current page
+func (ls *ListVolumes) SetPage(page int) {
+	ls.Page = page
+}
+
+// SetPageSize sets the page size
+func (ls *ListVolumes) SetPageSize(pageSize int) {
+	ls.PageSize = pageSize
+}
+
+func (*ListVolumes) each(resp interface{}, callback ListCommandFunc) {
+	volumes := resp.(*ListVolumesResponse)
+	for _, volume := range volumes.Volume {
+		callback(volume, nil)
+	}
 }
 
 // ListVolumesResponse represents a list of volumes

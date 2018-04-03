@@ -20,8 +20,8 @@ type Deletable interface {
 
 // Listable represents an Interface that can be "List" by the client
 type Listable interface {
-	// List search the given resources and paginates till the end of time
-	List(context context.Context, client *Client) (<-chan interface{}, <-chan error)
+	// ListRequest builds the list command
+	ListRequest() (ListCommand, error)
 }
 
 // Client represents the CloudStack API client
