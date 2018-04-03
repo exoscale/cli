@@ -84,6 +84,35 @@ func TestListZones(t *testing.T) {
 	}
 }
 
+func TestListZonesPaginateError(t *testing.T) {
+	ts := newServer(response{431, `
+{
+	"listzonesresponse": {
+		"cserrorcode": 9999,
+		"errorcode": 431,
+		"errortext": "Unable to execute API command listzones due to invalid value. Invalid parameter id value=1747ef5e-5451-41fd-9f1a-58913bae9701 due to incorrect long value format, or entity does not exist or due to incorrect parameter annotation for the field in api cmd class.",
+		"uuidList": []
+	}
+}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+
+	zone := &Zone{
+		ID: "1747ef5e-5451-41fd-9f1a-58913bae9701",
+	}
+
+	req, _ := zone.ListRequest()
+
+	cs.Paginate(req, func(i interface{}, e error) bool {
+		if e != nil {
+			return false
+		}
+		t.Errorf("No zones were expected")
+		return true
+	})
+}
+
 func TestListZonesPaginate(t *testing.T) {
 	ts := newServer(response{200, `
 {"listzonesresponse": {
@@ -158,6 +187,53 @@ func TestListZonesPaginate(t *testing.T) {
 
 	if counter != 4 {
 		t.Errorf("Four zones were expected, got %d", counter)
+	}
+}
+
+func TestListZonesAsyncError(t *testing.T) {
+	ts := newServer(response{431, `
+{
+	"listzonesresponse": {
+		"cserrorcode": 9999,
+		"errorcode": 431,
+		"errortext": "Unable to execute API command listzones due to invalid value. Invalid parameter id value=1747ef5e-5451-41fd-9f1a-58913bae9701 due to incorrect long value format, or entity does not exist or due to incorrect parameter annotation for the field in api cmd class.",
+		"uuidList": []
+	}
+}
+`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+
+	zone := &Zone{
+		ID: "1747ef5e-5451-41fd-9f1a-58913bae9701",
+	}
+
+	outChan, errChan := cs.AsyncListWithContext(context.TODO(), zone)
+
+	var err error
+	for {
+		select {
+		case _, ok := <-outChan:
+			if ok {
+				t.Errorf("No zones were expected")
+			} else {
+				outChan = nil
+			}
+		case e, ok := <-errChan:
+			if ok {
+				err = e
+			}
+			errChan = nil
+		}
+
+		if outChan == nil && errChan == nil {
+			break
+		}
+	}
+
+	if err == nil {
+		t.Errorf("An error was expected!")
 	}
 }
 
