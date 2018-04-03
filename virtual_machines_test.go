@@ -6,27 +6,6 @@ import (
 	"testing"
 )
 
-func TestVirtualMachines(t *testing.T) {
-	var _ Taggable = (*VirtualMachine)(nil)
-	var _ asyncCommand = (*DeployVirtualMachine)(nil)
-	var _ asyncCommand = (*DestroyVirtualMachine)(nil)
-	var _ asyncCommand = (*RebootVirtualMachine)(nil)
-	var _ asyncCommand = (*StartVirtualMachine)(nil)
-	var _ asyncCommand = (*StopVirtualMachine)(nil)
-	var _ asyncCommand = (*ResetPasswordForVirtualMachine)(nil)
-	var _ syncCommand = (*UpdateVirtualMachine)(nil)
-	var _ syncCommand = (*ListVirtualMachines)(nil)
-	var _ syncCommand = (*GetVMPassword)(nil)
-	var _ asyncCommand = (*RestoreVirtualMachine)(nil)
-	var _ syncCommand = (*ChangeServiceForVirtualMachine)(nil)
-	var _ asyncCommand = (*ScaleVirtualMachine)(nil)
-	var _ syncCommand = (*RecoverVirtualMachine)(nil)
-	var _ asyncCommand = (*ExpungeVirtualMachine)(nil)
-	var _ asyncCommand = (*AddNicToVirtualMachine)(nil)
-	var _ asyncCommand = (*RemoveNicFromVirtualMachine)(nil)
-	var _ asyncCommand = (*UpdateDefaultNicForVirtualMachine)(nil)
-}
-
 func TestVirtualMachine(t *testing.T) {
 	instance := &VirtualMachine{}
 	if instance.ResourceType() != "UserVM" {
@@ -376,6 +355,36 @@ func TestGetVirtualMachinePassword(t *testing.T) {
 	}
 }
 
+func TestListMachines(t *testing.T) {
+	ts := newServer(response{200, `
+{"listvirtualmachinesresponse": {
+	"count": 3,
+	"virtualmachine": [
+		{
+			"id": "84752707-a1d6-4e93-8207-bafeda83fe15"
+		},
+		{
+			"id": "f93238e1-cc6e-484b-9650-fe8921631b7b"
+		},
+		{
+			"id": "487eda20-eea1-43f7-9456-e870a359b173"
+		}
+	]
+}}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	req := &VirtualMachine{}
+	vms, err := cs.List(req)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(vms) != 3 {
+		t.Errorf("Expected three vms, got %d", len(vms))
+	}
+}
+
 func TestNicHelpers(t *testing.T) {
 	vm := &VirtualMachine{
 		Nic: []Nic{
@@ -416,6 +425,11 @@ func TestNicHelpers(t *testing.T) {
 	nic := vm.DefaultNic()
 	if nic.IPAddress.String() != "192.168.0.10" {
 		t.Errorf("Default NIC doesn't match")
+	}
+
+	ip := vm.IP()
+	if ip.String() != "192.168.0.10" {
+		t.Errorf("IP Address doesn't match")
 	}
 
 	nic1 := vm.NicByID("2b50e232-b6d3-491c-92ce-12b24c6123e5")
