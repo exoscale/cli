@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.9.18
+------
+
+- feat: `VirtualMachine` is `Listable`
+- feat: new `Client.Paginate` and `Client.PaginateWithContext`
+- change: the inner logic of `Listable`
+- remove: not working `Client.AsyncList`
+
 0.9.17
 ------
 

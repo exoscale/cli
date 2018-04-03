@@ -40,3 +40,6 @@ type Client struct {
 
 // RetryStrategyFunc represents a how much time to wait between two calls to CloudStack
 type RetryStrategyFunc func(int64) time.Duration
+
+// IterateItemFunc represents the callback to iterate a list of results, if false stops
+type IterateItemFunc func(interface{}, error) bool

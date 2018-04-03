@@ -43,93 +43,100 @@ func (client *Client) List(g Listable) ([]interface{}, error) {
 
 // ListWithContext lists the given resources (and paginate till the end)
 func (client *Client) ListWithContext(ctx context.Context, g Listable) ([]interface{}, error) {
-	inChan, errChan := client.AsyncListWithContext(ctx, g)
-
 	s := make([]interface{}, 0)
-	var err error
 
-	for {
-		select {
-		case elem, ok := <-inChan:
-			if ok {
-				s = append(s, elem)
-			} else {
-				inChan = nil
-			}
-		case e, ok := <-errChan:
-			if ok {
-				err = e
-			}
-			errChan = nil
-		case <-ctx.Done():
-			err = ctx.Err()
-			inChan = nil
-			errChan = nil
-		}
-
-		if inChan == nil && errChan == nil {
-			break
-		}
+	req, err := g.ListRequest()
+	if err != nil {
+		return s, err
 	}
+
+	client.PaginateWithContext(ctx, req, func(item interface{}, e error) bool {
+		if item != nil {
+			s = append(s, item)
+			return true
+		}
+		err = e
+		return false
+	})
 
 	return s, err
 }
 
-// AsyncList lists the given resources and paginates
-func (client *Client) AsyncList(g Listable) (<-chan interface{}, <-chan error) {
-	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
-	defer cancel()
-
-	return client.AsyncListWithContext(ctx, g)
-}
-
-// AsyncListWithContext lists the given resources and paginates
+// AsyncListWithContext lists the given resources (and paginate till the end)
 func (client *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-chan interface{}, <-chan error) {
-	pageSize := client.PageSize
-	outChan := make(chan interface{}, pageSize)
-	errChan := make(chan error, 1)
+	outChan := make(chan interface{}, client.PageSize)
+	errChan := make(chan error)
 
 	go func() {
 		defer close(outChan)
 		defer close(errChan)
-
-		page := 1
 
 		req, err := g.ListRequest()
 		if err != nil {
 			errChan <- err
 			return
 		}
-		req.SetPageSize(pageSize)
 
-		for {
-			req.SetPage(page)
-			resp, err := client.RequestWithContext(ctx, req)
-			if err != nil {
-				errChan <- err
-				break
+		client.PaginateWithContext(ctx, req, func(item interface{}, e error) bool {
+			if item != nil {
+				outChan <- item
+				return true
 			}
-
-			size := 0
-			req.each(resp, func(element interface{}, err error) {
-				if element != nil {
-					size++
-					outChan <- element
-				} else {
-					size += pageSize
-					errChan <- err
-				}
-			})
-
-			if size < pageSize {
-				break
-			}
-
-			page++
-		}
+			errChan <- e
+			return false
+		})
 	}()
 
 	return outChan, errChan
+}
+
+// Paginate runs the ListCommand and paginates
+func (client *Client) Paginate(req ListCommand, callback IterateItemFunc) {
+	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+	defer cancel()
+
+	client.PaginateWithContext(ctx, req, callback)
+}
+
+// PaginateWithContext runs the ListCommand as long as the ctx is valid
+func (client *Client) PaginateWithContext(ctx context.Context, req ListCommand, callback IterateItemFunc) {
+	pageSize := client.PageSize
+
+	page := 1
+
+	for {
+		req.SetPage(page)
+		req.SetPageSize(pageSize)
+		resp, err := client.RequestWithContext(ctx, req)
+		if err != nil {
+			callback(nil, err)
+			break
+		}
+
+		size := 0
+		didErr := false
+		req.each(resp, func(element interface{}, err error) bool {
+			// If the context was cancelled, kill it in flight
+			if e := ctx.Err(); e != nil {
+				element = nil
+				err = e
+			}
+
+			if callback(element, err) {
+				size++
+				return true
+			}
+
+			didErr = true
+			return false
+		})
+
+		if size < pageSize || didErr {
+			break
+		}
+
+		page++
+	}
 }
 
 // NewClientWithTimeout creates a CloudStack API client

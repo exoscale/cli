@@ -77,10 +77,12 @@ func (ls *ListNics) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-func (*ListNics) each(resp interface{}, callback ListCommandFunc) {
+func (*ListNics) each(resp interface{}, callback IterateItemFunc) {
 	nics := resp.(*ListNicsResponse)
 	for _, nic := range nics.Nic {
-		callback(nic, nil)
+		if !callback(nic, nil) {
+			break
+		}
 	}
 }
 

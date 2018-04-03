@@ -25,9 +25,6 @@ type asyncCommand interface {
 	asyncResponse() interface{}
 }
 
-// ListCommandFunc represents the callback to iterate a list of results
-type ListCommandFunc func(interface{}, error)
-
 // ListCommand represents a CloudStack list request
 type ListCommand interface {
 	Command
@@ -36,7 +33,7 @@ type ListCommand interface {
 	// SetPageSize defines the size of the page
 	SetPageSize(int)
 	// each reads the data from the response and feeds channels, and returns true if we are on the last page
-	each(interface{}, ListCommandFunc)
+	each(interface{}, IterateItemFunc)
 }
 
 // onBeforeHook represents an action to be done on the params before sending them

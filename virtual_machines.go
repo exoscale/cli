@@ -291,10 +291,12 @@ func (ls *ListVirtualMachines) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-func (*ListVirtualMachines) each(resp interface{}, callback ListCommandFunc) {
+func (*ListVirtualMachines) each(resp interface{}, callback IterateItemFunc) {
 	vms := resp.(*ListVirtualMachinesResponse)
 	for _, vm := range vms.VirtualMachine {
-		callback(vm, nil)
+		if !callback(vm, nil) {
+			break
+		}
 	}
 }
 
