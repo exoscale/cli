@@ -80,23 +80,32 @@ func TestRequestSignatureFailure(t *testing.T) {
 }
 
 func TestBooleanAsyncRequest(t *testing.T) {
-	params := url.Values{}
-	params.Set("command", "expungeVirtualMachine")
-	params.Set("apikey", "TOKEN")
-	params.Set("id", "123")
-	params.Set("response", "json")
-	ts := newPostServer(params, `
+	ts := newServer(response{200, `
 {
-	"expungevirtualmarchine": {
+	"expungevirtualmachine": {
 		"jobid": "1",
-		"jobresult": {
-			"success": true,
-			"displaytext": "good job!"
-		},
-		"jobstatus": 1
+		"jobresult": {},
+		"jobstatus": 0
 	}
 }
-	`)
+	`}, response{200, `
+{
+	"queryasyncjobresultresponse": {
+		"accountid": "1",
+		"cmd": "expunge",
+		"created": "2018-04-03T22:40:04+0200",
+		"jobid": "1",
+		"jobprocstatus": 0,
+		"jobresult": {
+			"success": true
+		},
+		"jobresultcode": 0,
+		"jobresulttype": "object",
+		"jobstatus": 1,
+		"userid": "1"
+	}
+}
+	`})
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
@@ -105,6 +114,41 @@ func TestBooleanAsyncRequest(t *testing.T) {
 	}
 	if err := cs.BooleanRequest(req); err != nil {
 		t.Error(err)
+	}
+}
+
+func TestBooleanAsyncRequestWithContext(t *testing.T) {
+	ts := newServer(response{200, `
+{
+	"expungevirtualmachine": {
+		"jobid": "1",
+		"jobresult": {},
+		"jobstatus": 0
+	}
+}
+	`}, response{200, `
+{
+	"queryasyncjobresultresponse": {
+		"accountid": "1",
+		"cmd": "expunge",
+		"created": "2018-04-03T22:40:04+0200",
+		"jobid": "1",
+		"jobprocstatus": 0,
+		"jobresult": {
+			"success": true
+		},
+		"jobresultcode": 0,
+		"jobresulttype": "object",
+		"jobstatus": 1,
+		"userid": "1"
+	}
+}
+	`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	req := &ExpungeVirtualMachine{
+		ID: "123",
 	}
 
 	// WithContext
@@ -245,6 +289,11 @@ func newServer(responses ...response) *httptest.Server {
 	i := 0
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if i >= len(responses) {
+			w.WriteHeader(500)
+			w.Write([]byte("{}"))
+			return
+		}
 		w.WriteHeader(responses[i].code)
 		w.Write([]byte(responses[i].body))
 		i += 1

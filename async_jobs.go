@@ -9,8 +9,8 @@ type AsyncJobResult struct {
 	AccountID       string           `json:"accountid"`
 	Cmd             string           `json:"cmd"`
 	Created         string           `json:"created"`
-	JobInstanceID   string           `json:"jobinstanceid"`
-	JobInstanceType string           `json:"jobinstancetype"`
+	JobInstanceID   string           `json:"jobinstanceid,omitempty"`
+	JobInstanceType string           `json:"jobinstancetype,omitempty"`
 	JobProcStatus   int              `json:"jobprocstatus"`
 	JobResult       *json.RawMessage `json:"jobresult"`
 	JobResultCode   int              `json:"jobresultcode"`

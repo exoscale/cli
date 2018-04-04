@@ -93,12 +93,16 @@ func (exo *Client) asyncRequest(ctx context.Context, request asyncCommand) (inte
 		time.Sleep(exo.RetryStrategy(int64(iteration)))
 
 		req := &QueryAsyncJobResult{JobID: jobResult.JobID}
-		resp, err := exo.Request(req)
+		resp, err := exo.syncRequest(ctx, req)
 		if err != nil {
 			return nil, err
 		}
 
-		result := resp.(*QueryAsyncJobResultResponse)
+		result, ok := resp.(*QueryAsyncJobResultResponse)
+		if !ok {
+			return nil, resp.(*ErrorResponse)
+		}
+
 		if result.JobStatus == Success {
 			response := request.asyncResponse()
 			if err := json.Unmarshal(*(result.JobResult), response); err != nil {
