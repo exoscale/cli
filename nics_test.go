@@ -20,7 +20,7 @@ func TestRemoveIPFromNic(t *testing.T) {
 	_ = req.asyncResponse().(*booleanAsyncResponse)
 }
 
-func TestListNics(t *testing.T) {
+func TestListNicsAPIName(t *testing.T) {
 	req := &ListNics{}
 	if req.APIName() != "listNics" {
 		t.Errorf("API call doesn't match")
@@ -36,7 +36,7 @@ func TestActivateIP6(t *testing.T) {
 	_ = req.asyncResponse().(*ActivateIP6Response)
 }
 
-func TestListNic(t *testing.T) {
+func TestListNics(t *testing.T) {
 	ts := newServer(response{200, `
 {"listnicsresponse": {
 	"count": 1,
@@ -74,6 +74,20 @@ func TestListNic(t *testing.T) {
 	}
 }
 
+func TestListNicInvalid(t *testing.T) {
+	ts := newServer()
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+
+	nic := new(Nic)
+
+	_, err := cs.List(nic)
+	if err == nil {
+		t.Error("An error was expected")
+	}
+}
+
 func TestListNicError(t *testing.T) {
 	ts := newServer(response{431, `
 {"listnicresponse": {
@@ -86,7 +100,10 @@ func TestListNicError(t *testing.T) {
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
 
-	nic := new(Nic)
+	nic := &Nic{
+		VirtualMachineID: "1",
+	}
+
 	_, err := cs.List(nic)
 	if err == nil {
 		t.Error("An error was expected")

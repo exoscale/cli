@@ -1,6 +1,7 @@
 package egoscale
 
 import (
+	"fmt"
 	"net"
 )
 
@@ -27,6 +28,10 @@ type Nic struct {
 
 // ListRequest build a ListNics request from the given Nic
 func (nic *Nic) ListRequest() (ListCommand, error) {
+	if nic.VirtualMachineID == "" {
+		return nil, fmt.Errorf("ListNics command requires the VirtualMachineID field to be set")
+	}
+
 	req := &ListNics{
 		VirtualMachineID: nic.VirtualMachineID,
 		NicID:            nic.ID,
@@ -40,8 +45,8 @@ func (nic *Nic) ListRequest() (ListCommand, error) {
 type NicSecondaryIP struct {
 	ID               string `json:"id"`
 	IPAddress        net.IP `json:"ipaddress"`
-	NetworkID        string `json:"networkid"`
-	NicID            string `json:"nicid"`
+	NetworkID        string `json:"networkid,omitempty"`
+	NicID            string `json:"nicid,omitempty"`
 	VirtualMachineID string `json:"virtualmachineid,omitempty"`
 }
 
