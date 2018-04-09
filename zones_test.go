@@ -209,7 +209,10 @@ func TestListZonesAsyncError(t *testing.T) {
 		ID: "1747ef5e-5451-41fd-9f1a-58913bae9701",
 	}
 
-	outChan, errChan := cs.AsyncListWithContext(context.TODO(), zone)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	outChan, errChan := cs.AsyncListWithContext(ctx, zone)
 
 	var err error
 	for {
@@ -294,7 +297,10 @@ func TestListZonesAsync(t *testing.T) {
 
 	zone := new(Zone)
 
-	outChan, errChan := cs.AsyncListWithContext(context.TODO(), zone)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	outChan, errChan := cs.AsyncListWithContext(ctx, zone)
 
 	counter := 0
 	for {

@@ -63,6 +63,35 @@ func (client *Client) ListWithContext(ctx context.Context, g Listable) ([]interf
 }
 
 // AsyncListWithContext lists the given resources (and paginate till the end)
+//
+//
+//	// NB: goroutine may leak if not read until the end. Create a proper context!
+//	ctx, cancel := context.WithCancel(context.Background())
+//	defer cancel()
+//
+//	outChan, errChan := client.AsyncListWithContext(ctx, new(egoscale.VirtualMachine))
+//
+//	for {
+//		select {
+//		case i, ok := <- outChan:
+//			if ok {
+//				vm := i.(egoscale.VirtualMachine)
+//				// ...
+//			} else {
+//				outChan = nil
+//			}
+//		case err, ok := <- errChan:
+//			if ok {
+//				// do something
+//			}
+//			// Once an error has been received, you can expect the channels to be closed.
+//			errChan = nil
+//		}
+//		if errChan == nil && outChan == nil {
+//			break
+//		}
+//	}
+//
 func (client *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-chan interface{}, <-chan error) {
 	outChan := make(chan interface{}, client.PageSize)
 	errChan := make(chan error)
@@ -141,7 +170,7 @@ func (client *Client) PaginateWithContext(ctx context.Context, req ListCommand, 
 
 // NewClientWithTimeout creates a CloudStack API client
 //
-// Timeout is set to booth the HTTP client and the client itself.
+// Timeout is set to both the HTTP client and the client itself.
 func NewClientWithTimeout(endpoint, apiKey, apiSecret string, timeout time.Duration) *Client {
 	client := &http.Client{
 		Timeout: timeout,
