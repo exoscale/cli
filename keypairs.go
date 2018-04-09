@@ -9,20 +9,12 @@ import (
 
 // Get populates the given SSHKeyPair
 func (ssh *SSHKeyPair) Get(ctx context.Context, client *Client) error {
-	resp, err := client.RequestWithContext(ctx, &ListSSHKeyPairs{
-		Account:     ssh.Account,
-		DomainID:    ssh.DomainID,
-		Name:        ssh.Name,
-		Fingerprint: ssh.Fingerprint,
-		ProjectID:   ssh.ProjectID,
-	})
-
+	sshs, err := client.ListWithContext(ctx, ssh)
 	if err != nil {
 		return err
 	}
 
-	sshs := resp.(*ListSSHKeyPairsResponse)
-	count := len(sshs.SSHKeyPair)
+	count := len(sshs)
 	if count == 0 {
 		return &ErrorResponse{
 			ErrorCode: ParamError,
@@ -32,7 +24,7 @@ func (ssh *SSHKeyPair) Get(ctx context.Context, client *Client) error {
 		return fmt.Errorf("More than one SSHKeyPair was found")
 	}
 
-	return copier.Copy(ssh, sshs.SSHKeyPair[0])
+	return copier.Copy(ssh, sshs[0])
 }
 
 // Delete removes the given SSH key, by Name
@@ -47,6 +39,19 @@ func (ssh *SSHKeyPair) Delete(ctx context.Context, client *Client) error {
 		DomainID:  ssh.DomainID,
 		ProjectID: ssh.ProjectID,
 	})
+}
+
+// ListRequest builds the ListSSHKeyPairs request
+func (ssh *SSHKeyPair) ListRequest() (ListCommand, error) {
+	req := &ListSSHKeyPairs{
+		Account:     ssh.Account,
+		DomainID:    ssh.DomainID,
+		Fingerprint: ssh.Fingerprint,
+		Name:        ssh.Name,
+		ProjectID:   ssh.ProjectID,
+	}
+
+	return req, nil
 }
 
 // APIName returns the CloudStack API command name
@@ -83,6 +88,25 @@ func (*ListSSHKeyPairs) APIName() string {
 
 func (*ListSSHKeyPairs) response() interface{} {
 	return new(ListSSHKeyPairsResponse)
+}
+
+func (*ListSSHKeyPairs) each(resp interface{}, callback IterateItemFunc) {
+	sshs := resp.(*ListSSHKeyPairsResponse)
+	for i := range sshs.SSHKeyPair {
+		if !callback(sshs.SSHKeyPair[i], nil) {
+			break
+		}
+	}
+}
+
+// SetPage sets the current page
+func (ls *ListSSHKeyPairs) SetPage(page int) {
+	ls.Page = page
+}
+
+// SetPageSize sets the page size
+func (ls *ListSSHKeyPairs) SetPageSize(pageSize int) {
+	ls.PageSize = pageSize
 }
 
 // APIName returns the CloudStack API command name

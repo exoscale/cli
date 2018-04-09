@@ -4,14 +4,6 @@ import (
 	"testing"
 )
 
-func TestSSHKeyPairs(t *testing.T) {
-	var _ asyncCommand = (*ResetSSHKeyForVirtualMachine)(nil)
-	var _ syncCommand = (*RegisterSSHKeyPair)(nil)
-	var _ syncCommand = (*CreateSSHKeyPair)(nil)
-	var _ syncCommand = (*DeleteSSHKeyPair)(nil)
-	var _ syncCommand = (*ListSSHKeyPairs)(nil)
-}
-
 func TestResetSSHKeyForVirtualMachine(t *testing.T) {
 	req := &ResetSSHKeyForVirtualMachine{}
 	if req.APIName() != "resetSSHKeyForVirtualMachine" {
@@ -44,7 +36,7 @@ func TestDeleteSSHKeyPair(t *testing.T) {
 	_ = req.response().(*booleanSyncResponse)
 }
 
-func TestListSSHKeyPairs(t *testing.T) {
+func TestListSSHKeyPairsResponse(t *testing.T) {
 	req := &ListSSHKeyPairs{}
 	if req.APIName() != "listSSHKeyPairs" {
 		t.Errorf("API call doesn't match")
@@ -101,6 +93,36 @@ func TestGetSSHKeyPairToMany(t *testing.T) {
 	}
 	if err := cs.Get(ssh); err == nil {
 		t.Errorf("An error was expected")
+	}
+}
+
+func TestListSSHKeyPairs(t *testing.T) {
+	ts := newServer(response{200, `
+{"listsshkeypairsresponse": {
+	"count": 2,
+	"sshkeypair": [
+		{
+			"fingerprint": "07:97:32:04:80:23:b9:a2:a2:46:fe:ab:a6:4b:20:76",
+			"name": "yoan@herp"
+		},
+		{
+			"fingerprint": "9e:97:54:95:82:22:eb:f8:9b:4f:28:6f:c7:f5:58:83",
+			"name": "yoan@derp"
+		}
+	]
+}}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	ssh := &SSHKeyPair{}
+
+	sshs, err := cs.List(ssh)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(sshs) != 2 {
+		t.Errorf("Expected two ssh keys, got %v", len(sshs))
 	}
 }
 
