@@ -6,6 +6,8 @@ import (
 )
 
 // Network represents a network
+//
+// See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/networking_and_traffic.html
 type Network struct {
 	ID                          string        `json:"id"`
 	Account                     string        `json:"account"`

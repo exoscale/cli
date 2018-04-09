@@ -9,6 +9,9 @@ import (
 )
 
 // AffinityGroup represents an (anti-)affinity group
+//
+// Affinity and Anti-Affinity groups provide a way to influence where VMs should run.
+// See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html#affinity-groups
 type AffinityGroup struct {
 	ID                string   `json:"id,omitempty"`
 	Account           string   `json:"account,omitempty"`

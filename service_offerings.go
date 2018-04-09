@@ -1,6 +1,10 @@
 package egoscale
 
 // ServiceOffering corresponds to the Compute Offerings
+//
+// A service offering correspond to some hardware features (CPU, RAM).
+//
+// See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/service_offerings.html
 type ServiceOffering struct {
 	ID                        string            `json:"id"`
 	CPUNumber                 int               `json:"cpunumber"`

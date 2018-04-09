@@ -4,7 +4,9 @@ import (
 	"net"
 )
 
-// VirtualMachine reprents a virtual machine
+// VirtualMachine represents a virtual machine
+//
+// See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html
 type VirtualMachine struct {
 	ID                    string            `json:"id,omitempty"`
 	Account               string            `json:"account,omitempty"`
