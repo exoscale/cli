@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.19
+------
+
+- feat: `SSHKeyPair` is `Listable`
+
 0.9.18
 ------
 
