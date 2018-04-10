@@ -20,7 +20,7 @@ All the available APIs on the server and provided by the API Discovery plugin
 	}
 
 	for _, api := range resp.(*egoscale.ListAPIsResponse).API {
-		fmt.Println("%s %s", api.Name, api.Description)
+		fmt.Printf("%s %s\n", api.Name, api.Description)
 	}
 	// Output:
 	// listNetworks Lists all available networks
