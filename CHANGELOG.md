@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.20 (unreleased)
+------
+
+- feat: `Template` is `Listable`
+- fix: `Template` was missing `tags`
+
 0.9.19
 ------
 
