@@ -9,7 +9,7 @@ type Template struct {
 	Bootable              bool              `json:"bootable,omitempty"`
 	Checksum              string            `json:"checksum,omitempty"`
 	Created               string            `json:"created,omitempty"`
-	CrossZones            bool              `json:"crossZones,omitempty"`
+	CrossZones            bool              `json:"crossZones,omitempty"` // not a typo
 	Details               map[string]string `json:"details,omitempty"`
 	DisplayText           string            `json:"displaytext,omitempty"`
 	Domain                string            `json:"domain,omitempty"`
@@ -36,7 +36,7 @@ type Template struct {
 	SSHKeyEnabled         bool              `json:"sshkeyenabled,omitempty"`
 	Status                string            `json:"status,omitempty"`
 	ZoneID                string            `json:"zoneid,omitempty"`
-	Zonename              string            `json:"zonename,omitempty"`
+	ZoneName              string            `json:"zonename,omitempty"`
 	Tags                  []ResourceTag     `json:"tags,omitempty"`
 }
 
