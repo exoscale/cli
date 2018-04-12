@@ -94,3 +94,44 @@ func (*ListPublicIPAddresses) APIName() string {
 func (*ListPublicIPAddresses) response() interface{} {
 	return new(ListPublicIPAddressesResponse)
 }
+
+// ListRequest builds the ListAdresses request
+func (ipaddress *IPAddress) ListRequest() (ListCommand, error) {
+	req := &ListPublicIPAddresses{
+		Account:            ipaddress.Account,
+		AllocatedNetworkID: ipaddress.AssociatedNetworkID,
+		DomainID:           ipaddress.DomainID,
+		ForDisplay:         &ipaddress.ForDisplay,
+		//ForVirtualNetwork:  ip.ForVirtualNetwork, change ForVirtualNetwork type for type bool
+		ID:                ipaddress.ID,
+		IPAddress:         ipaddress.IPAddress,
+		IsElastic:         &ipaddress.IsElastic,
+		IsSourceNat:       &ipaddress.IsSourceNat,
+		PhysicalNetworkID: ipaddress.PhysicalNetworkID,
+		ProjectID:         ipaddress.ProjectID,
+		VlanID:            ipaddress.VlanID,
+		VpcID:             ipaddress.VpcID,
+		ZoneID:            ipaddress.ZoneID,
+	}
+
+	return req, nil
+}
+
+// SetPage sets the current page
+func (ls *ListPublicIPAddresses) SetPage(page int) {
+	ls.Page = page
+}
+
+// SetPageSize sets the page size
+func (ls *ListPublicIPAddresses) SetPageSize(pageSize int) {
+	ls.PageSize = pageSize
+}
+
+func (*ListPublicIPAddresses) each(resp interface{}, callback IterateItemFunc) {
+	IPs := resp.(*ListPublicIPAddressesResponse)
+	for i := range IPs.PublicIPAddress {
+		if !callback(&IPs.PublicIPAddress[i], nil) {
+			break
+		}
+	}
+}
