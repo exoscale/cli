@@ -40,8 +40,8 @@ func (ls *ListNics) SetPageSize(pageSize int) {
 
 func (*ListNics) each(resp interface{}, callback IterateItemFunc) {
 	nics := resp.(*ListNicsResponse)
-	for _, nic := range nics.Nic {
-		if !callback(nic, nil) {
+	for i := range nics.Nic {
+		if !callback(&(nics.Nic[i]), nil) {
 			break
 		}
 	}

@@ -69,7 +69,7 @@ func TestListNics(t *testing.T) {
 		t.Errorf("One nic was expected, got %d", len(nics))
 	}
 
-	if !nics[0].(Nic).IsDefault {
+	if !nics[0].(*Nic).IsDefault {
 		t.Errorf("Nic should be default")
 	}
 }
