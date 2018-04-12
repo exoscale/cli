@@ -118,8 +118,8 @@ func (ls *ListVolumes) SetPageSize(pageSize int) {
 
 func (*ListVolumes) each(resp interface{}, callback IterateItemFunc) {
 	volumes := resp.(*ListVolumesResponse)
-	for _, volume := range volumes.Volume {
-		if !callback(volume, nil) {
+	for i := range volumes.Volume {
+		if !callback(&volumes.Volume[i], nil) {
 			break
 		}
 	}

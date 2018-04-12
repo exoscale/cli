@@ -93,7 +93,7 @@ func (*ListSSHKeyPairs) response() interface{} {
 func (*ListSSHKeyPairs) each(resp interface{}, callback IterateItemFunc) {
 	sshs := resp.(*ListSSHKeyPairsResponse)
 	for i := range sshs.SSHKeyPair {
-		if !callback(sshs.SSHKeyPair[i], nil) {
+		if !callback(&sshs.SSHKeyPair[i], nil) {
 			break
 		}
 	}

@@ -32,8 +32,8 @@ func (ls *ListZones) SetPageSize(pageSize int) {
 
 func (*ListZones) each(resp interface{}, callback IterateItemFunc) {
 	zones := resp.(*ListZonesResponse)
-	for _, zone := range zones.Zone {
-		if !callback(zone, nil) {
+	for i := range zones.Zone {
+		if !callback(&zones.Zone[i], nil) {
 			break
 		}
 	}

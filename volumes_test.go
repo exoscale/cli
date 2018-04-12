@@ -80,7 +80,7 @@ func TestListVolume(t *testing.T) {
 		t.Errorf("One volume was expected, got %d", len(volumes))
 	}
 
-	if volumes[0].(Volume).Type != "ROOT" {
+	if volumes[0].(*Volume).Type != "ROOT" {
 		t.Errorf("Volume should be root")
 	}
 }

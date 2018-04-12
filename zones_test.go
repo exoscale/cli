@@ -79,7 +79,7 @@ func TestListZones(t *testing.T) {
 		t.Errorf("Four zones were expected, got %d", len(zones))
 	}
 
-	if zones[2].(Zone).Name != "at-vie-1" {
+	if zones[2].(*Zone).Name != "at-vie-1" {
 		t.Errorf("Expected VIE1 to be third, got %#v", zones[2])
 	}
 }
@@ -177,7 +177,7 @@ func TestListZonesPaginate(t *testing.T) {
 			t.Error(e)
 			return false
 		}
-		z := i.(Zone)
+		z := i.(*Zone)
 		if z.ID == "" {
 			t.Errorf("Zone ID not set")
 		}
@@ -307,7 +307,7 @@ func TestListZonesAsync(t *testing.T) {
 		select {
 		case z, ok := <-outChan:
 			if ok {
-				zone := z.(Zone)
+				zone := z.(*Zone)
 				if zone.ID == "" {
 					t.Errorf("Zone has no ID")
 				}

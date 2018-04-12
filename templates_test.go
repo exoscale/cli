@@ -73,7 +73,7 @@ func TestListTemplates(t *testing.T) {
 		t.Fatalf("Expected one template, got %v", len(temps))
 	}
 
-	temp := temps[0].(Template)
+	temp := temps[0].(*Template)
 
 	if temp.ZoneID != zoneID && temp.ID != id {
 		t.Errorf("Wrong result")

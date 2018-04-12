@@ -25,7 +25,7 @@ func (temp *Template) ListRequest() (ListCommand, error) {
 func (*ListTemplates) each(resp interface{}, callback IterateItemFunc) {
 	temps := resp.(*ListTemplatesResponse)
 	for i := range temps.Template {
-		if !callback(temps.Template[i], nil) {
+		if !callback(&temps.Template[i], nil) {
 			break
 		}
 	}
