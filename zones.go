@@ -1,6 +1,8 @@
 package egoscale
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ListRequest builds the ListZones request
 func (zone *Zone) ListRequest() (ListCommand, error) {
