@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.9.20 (unreleased)
+0.9.20
 ------
 
 - feat: `Template` is `Listable`
