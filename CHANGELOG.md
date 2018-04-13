@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.9.21 (unrelelased)
+------
+
+- feat: `Network` is `Listable`
+- feat: `Zone` is `Gettable`
+- feat: generate command util
+
 0.9.20
 ------
 
