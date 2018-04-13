@@ -91,7 +91,12 @@ func (*ListSSHKeyPairs) response() interface{} {
 }
 
 func (*ListSSHKeyPairs) each(resp interface{}, callback IterateItemFunc) {
-	sshs := resp.(*ListSSHKeyPairsResponse)
+	sshs, ok := resp.(*ListSSHKeyPairsResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("ListSSHKeyPairsResponse expected, got %t", resp))
+		return
+	}
+
 	for i := range sshs.SSHKeyPair {
 		if !callback(&sshs.SSHKeyPair[i], nil) {
 			break

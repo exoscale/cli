@@ -5,6 +5,8 @@ Changelog
 ------
 
 - feat: `Template` is `Listable`
+- feat: `IPAddress` is `Listable`
+- change: `List` and `Paginate` return pointers
 - fix: `Template` was missing `tags`
 
 0.9.19

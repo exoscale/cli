@@ -292,7 +292,12 @@ func (ls *ListVirtualMachines) SetPageSize(pageSize int) {
 }
 
 func (*ListVirtualMachines) each(resp interface{}, callback IterateItemFunc) {
-	vms := resp.(*ListVirtualMachinesResponse)
+	vms, ok := resp.(*ListVirtualMachinesResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("ListVirtualMachinesResponse expected, got %t", resp))
+		return
+	}
+
 	for i := range vms.VirtualMachine {
 		if !callback(&vms.VirtualMachine[i], nil) {
 			break

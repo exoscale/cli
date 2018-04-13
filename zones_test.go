@@ -84,6 +84,19 @@ func TestListZones(t *testing.T) {
 	}
 }
 
+func TestListZonesTypeError(t *testing.T) {
+	ts := newServer(response{200, `
+{"listzonesresponse": []}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+
+	_, err := cs.List(&Zone{})
+	if err == nil {
+		t.Errorf("An error was expected")
+	}
+}
+
 func TestListZonesPaginateError(t *testing.T) {
 	ts := newServer(response{431, `
 {

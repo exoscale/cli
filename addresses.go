@@ -128,9 +128,14 @@ func (ls *ListPublicIPAddresses) SetPageSize(pageSize int) {
 }
 
 func (*ListPublicIPAddresses) each(resp interface{}, callback IterateItemFunc) {
-	IPs := resp.(*ListPublicIPAddressesResponse)
-	for i := range IPs.PublicIPAddress {
-		if !callback(&IPs.PublicIPAddress[i], nil) {
+	ips, ok := resp.(*ListPublicIPAddressesResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("ListPublicIPAddressesResponse expected, got %t", resp))
+		return
+	}
+
+	for i := range ips.PublicIPAddress {
+		if !callback(&ips.PublicIPAddress[i], nil) {
 			break
 		}
 	}

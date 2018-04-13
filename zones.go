@@ -1,5 +1,7 @@
 package egoscale
 
+import "fmt"
+
 // ListRequest builds the ListZones request
 func (zone *Zone) ListRequest() (ListCommand, error) {
 	req := &ListZones{
@@ -31,7 +33,12 @@ func (ls *ListZones) SetPageSize(pageSize int) {
 }
 
 func (*ListZones) each(resp interface{}, callback IterateItemFunc) {
-	zones := resp.(*ListZonesResponse)
+	zones, ok := resp.(*ListZonesResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("ListZonesResponse expected, got %t", resp))
+		return
+	}
+
 	for i := range zones.Zone {
 		if !callback(&zones.Zone[i], nil) {
 			break

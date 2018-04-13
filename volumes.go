@@ -1,5 +1,7 @@
 package egoscale
 
+import "fmt"
+
 // Volume represents a volume linked to a VM
 type Volume struct {
 	ID                         string        `json:"id"`
@@ -117,7 +119,12 @@ func (ls *ListVolumes) SetPageSize(pageSize int) {
 }
 
 func (*ListVolumes) each(resp interface{}, callback IterateItemFunc) {
-	volumes := resp.(*ListVolumesResponse)
+	volumes, ok := resp.(*ListVolumesResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("ListVolumesResponse expected, got %t", resp))
+		return
+	}
+
 	for i := range volumes.Volume {
 		if !callback(&volumes.Volume[i], nil) {
 			break

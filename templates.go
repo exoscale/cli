@@ -1,5 +1,7 @@
 package egoscale
 
+import "fmt"
+
 // ListRequest builds the ListTemplates request
 func (temp *Template) ListRequest() (ListCommand, error) {
 	req := &ListTemplates{
@@ -23,7 +25,12 @@ func (temp *Template) ListRequest() (ListCommand, error) {
 }
 
 func (*ListTemplates) each(resp interface{}, callback IterateItemFunc) {
-	temps := resp.(*ListTemplatesResponse)
+	temps, ok := resp.(*ListTemplatesResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("ListTemplatesResponse expected, got %t", resp))
+		return
+	}
+
 	for i := range temps.Template {
 		if !callback(&temps.Template[i], nil) {
 			break
