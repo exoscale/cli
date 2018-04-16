@@ -313,6 +313,55 @@ func TestListZonesPaginate(t *testing.T) {
 	}
 }
 
+func TestListZonesPaginateBreak(t *testing.T) {
+	ts := newServer(response{200, `
+{"listzonesresponse": {
+	"count": 4,
+	"zone": [
+		{
+			"allocationstate": "Enabled",
+			"dhcpprovider": "VirtualRouter",
+			"id": "1747ef5e-5451-41fd-9f1a-58913bae9702",
+			"localstorageenabled": true,
+			"name": "ch-gva-2",
+			"networktype": "Basic",
+			"securitygroupsenabled": true,
+			"tags": [],
+			"zonetoken": "f9a2983b-42e5-3b12-ae74-0b1f54cd6204"
+		},
+		{
+			"allocationstate": "Enabled",
+			"dhcpprovider": "VirtualRouter",
+			"id": "381d0a95-ed4a-4ad9-b41c-b97073c1a433",
+			"localstorageenabled": true,
+			"name": "ch-dk-2",
+			"networktype": "Basic",
+			"securitygroupsenabled": true,
+			"tags": [],
+			"zonetoken": "23a24359-121a-38af-a938-e225c97c397b"
+		}
+	]
+}}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+
+	zone := new(Zone)
+	req, _ := zone.ListRequest()
+
+	cs.Paginate(req, func(i interface{}, e error) bool {
+		if e != nil {
+			t.Error(e)
+			return false
+		}
+		z := i.(*Zone)
+		if z.ID == "" {
+			t.Errorf("Zone ID not set")
+		}
+		return false
+	})
+}
+
 func TestListZonesAsyncError(t *testing.T) {
 	ts := newServer(response{431, `
 {

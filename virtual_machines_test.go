@@ -364,6 +364,59 @@ func TestListMachines(t *testing.T) {
 	}
 }
 
+func TestListMachinesFailure(t *testing.T) {
+	ts := newServer(response{200, `
+{"listvirtualmachinesresponse": {
+	"count": 3,
+	"virtualmachine": {}
+}}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	req := &VirtualMachine{}
+	vms, err := cs.List(req)
+	if err == nil {
+		t.Errorf("Expected an error got %v", err)
+	}
+
+	if len(vms) != 0 {
+		t.Errorf("Expected 0 vms, got %d", len(vms))
+	}
+}
+
+func TestListMachinesPaginate(t *testing.T) {
+	ts := newServer(response{200, `
+{"listvirtualmachinesresponse": {
+	"count": 3,
+	"virtualmachine": [
+		{
+			"id": "84752707-a1d6-4e93-8207-bafeda83fe15"
+		},
+		{
+			"id": "f93238e1-cc6e-484b-9650-fe8921631b7b"
+		},
+		{
+			"id": "487eda20-eea1-43f7-9456-e870a359b173"
+		}
+	]
+}}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	vm := &VirtualMachine{}
+	req, err := vm.ListRequest()
+	if err != nil {
+		t.Error(err)
+	}
+	cs.Paginate(req, func(i interface{}, err error) bool {
+		if i.(*VirtualMachine).ID != "84752707-a1d6-4e93-8207-bafeda83fe15" {
+			t.Errorf("Expected id '84752707-a1d6-4e93-8207-bafeda83fe15', got %v", i.(*VirtualMachine).ID)
+		}
+		return false
+	})
+
+}
+
 func TestNicHelpers(t *testing.T) {
 	vm := &VirtualMachine{
 		Nic: []Nic{
