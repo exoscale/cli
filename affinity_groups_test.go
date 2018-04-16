@@ -125,24 +125,3 @@ func TestGetAffinityGroupBadQuery(t *testing.T) {
 		t.Errorf("Error was expected")
 	}
 }
-
-func TestDelAffinityGroup(t *testing.T) {
-	ts := newServer(response{200, `
-{"deleteaffinitygroup": {
-	"jobid": "1",
-	"jobresult": {
-		"success": true,
-		"displaytext": "good job!"
-	},
-	"jobstatus": 1
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	sg := &AffinityGroup{
-		ID: "6d7bc27c-6c8d-4b6a-ae97-83f73df18667",
-	}
-	if err := cs.Delete(sg); err != nil {
-		t.Error(err)
-	}
-}

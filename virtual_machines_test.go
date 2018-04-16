@@ -312,27 +312,6 @@ func TestGetVirtualMachineBadQuery(t *testing.T) {
 	}
 }
 
-func TestDelVirtualMachine(t *testing.T) {
-	ts := newServer(response{200, `
-{"destroyvirtualmachineresponse": {
-	"jobid": "1",
-	"jobresult": {
-		"success": true,
-		"displaytext": "good job!"
-	},
-	"jobstatus": 1
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	vm := &VirtualMachine{
-		ID: "test",
-	}
-	if err := cs.Delete(vm); err != nil {
-		t.Error(err)
-	}
-}
-
 func TestGetVirtualMachinePassword(t *testing.T) {
 	ts := newServer(response{200, `
 {"getvmresponse": {

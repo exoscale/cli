@@ -142,19 +142,3 @@ func TestGetSSHKeyPairNotFound(t *testing.T) {
 		t.Errorf("An error was expected")
 	}
 }
-
-func TestDelSSHKeyPair(t *testing.T) {
-	ts := newServer(response{200, `
-{"deletesshkeypair": {
-	"success": "true"
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	ssh := &SSHKeyPair{
-		Name: "test",
-	}
-	if err := cs.Delete(ssh); err != nil {
-		t.Error(err)
-	}
-}

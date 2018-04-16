@@ -163,64 +163,6 @@ func TestGetIPAddressError(t *testing.T) {
 		t.Errorf("An error was expected")
 	}
 }
-
-func TestDeleteIPAddress(t *testing.T) {
-	ts := newServer(response{200, `
-{"queryasyncjobresultresponse": {
-	"jobid": "b1ac7d06-3320-4388-b234-43420bcb236c",
-	"jobprocstatus": 0,
-	"jobresult": {
-		"success": true
-	},
-	"jobstatus": 2
-}}`})
-
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	eip := &IPAddress{
-		ID: "err",
-	}
-	if err := cs.Delete(eip); err != nil {
-		t.Error(err)
-	}
-}
-
-func TestDeleteIPAddressInvalid(t *testing.T) {
-	ts := newServer(response{400, ``})
-
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	eip := &IPAddress{}
-	if err := cs.Delete(eip); err == nil {
-		t.Errorf("An error was expected")
-	}
-}
-
-func TestDeleteIPAddressError(t *testing.T) {
-	ts := newServer(response{400, `
-{"queryasyncjobresultresponse": {
-	"jobid": "b1ac7d06-3320-4388-b234-43420bcb236c",
-	"jobprocstatus": 0,
-	"jobresult": {
-		"errorcode": 431,
-		"errortext": "Only elastic IP can be released explicitly."
-	},
-	"jobstatus": 2
-}}`})
-
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	eip := &IPAddress{
-		ID: "err",
-	}
-	if err := cs.Delete(eip); err == nil {
-		t.Errorf("An error was expected")
-	}
-}
-
 func TestListIPAddress(t *testing.T) {
 	ts := newServer(response{200, `
 		{"listPublicIpAddresses":{
@@ -270,5 +212,4 @@ func TestListIPAddress(t *testing.T) {
 	if ip.ZoneID != "91e5e9e4-c9ed-4b76-bee4-427004b3baf9" {
 		t.Errorf("Wrong ip address")
 	}
-
 }
