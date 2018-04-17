@@ -9,6 +9,7 @@ Changelog
 - feat: generate command util
 - fix: `CreateSnapshot` was missing the `Name` attribute
 - fix: `ListSnapshots` was missing the `IDs` attribute
+- fix: `ListZones` was missing the `NetworkType` attribute
 
 0.9.20
 ------

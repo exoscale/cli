@@ -36,15 +36,16 @@ type Zone struct {
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listZones.html
 type ListZones struct {
-	Available      *bool         `json:"available,omitempty"`
-	DomainID       string        `json:"domainid,omitempty"`
-	ID             string        `json:"id,omitempty"`
-	Keyword        string        `json:"keyword,omitempty"`
-	Name           string        `json:"name,omitempty"`
-	Page           int           `json:"page,omitempty"`
+	Available      *bool         `json:"available,omitempty" doc:"true if you want to retrieve all available Zones. False if you only want to return the Zones from which you have at least one VM. Default is false."`
+	DomainID       string        `json:"domainid,omitempty" doc:"the ID of the domain associated with the zone"`
+	ID             string        `json:"id,omitempty" doc:"the ID of the zone"`
+	Keyword        string        `json:"keyword,omitempty" doc:"List by keyword"`
+	Name           string        `json:"name,omitempty" doc:"the name of the zone"`
+	NetworkType    string        `json:"networktype,omitempty" doc:"the network type of the zone that the virtual machine belongs to"`
+	Page           int           `json:"page,omitempty" `
 	PageSize       int           `json:"pagesize,omitempty"`
-	ShowCapacities *bool         `json:"showcapacities,omitempty"`
-	Tags           []ResourceTag `json:"tags,omitempty"`
+	ShowCapacities *bool         `json:"showcapacities,omitempty" doc:"flag to display the capacity of the zones"`
+	Tags           []ResourceTag `json:"tags,omitempty" doc:"List zones by resource tags (key/value pairs)"`
 }
 
 // ListZonesResponse represents a list of zones
