@@ -57,7 +57,7 @@ func TestDeleteSecurityGroup(t *testing.T) {
 	_ = req.response().(*booleanSyncResponse)
 }
 
-func TestListSecurityGroups(t *testing.T) {
+func TestListSecurityGroupsApiName(t *testing.T) {
 	req := &ListSecurityGroups{}
 	if req.APIName() != "listSecurityGroups" {
 		t.Errorf("API call doesn't match")
@@ -193,4 +193,97 @@ func TestGetSecurityGroupError(t *testing.T) {
 	if err := cs.Get(sg); err == nil {
 		t.Errorf("Missing Security Group should have failed")
 	}
+}
+
+func TestListSecurityGroups(t *testing.T) {
+	ts := newServer(response{200, `
+		{"listsecuritygroupsresponse":{
+			"count": 2,
+			"securitygroup": [
+			  {
+				"account": "exoscale-1",
+				"description": "test",
+				"domain": "exoscale-1",
+				"domainid": "5b2f621e-3eb6-4a14-a315-d4d7d62f28ff",
+				"egressrule": [],
+				"id": "55c3b385-0a9b-4970-a5d9-ad1e7f13157d",
+				"ingressrule": [
+				  {
+					"cidr": "0.0.0.0/0",
+					"icmpcode": 0,
+					"icmptype": 8,
+					"protocol": "icmp",
+					"ruleid": "1d64f828-9267-4aeb-9cf9-703c3ed99627",
+					"tags": []
+				  },
+				  {
+					"cidr": "0.0.0.0/0",
+					"endport": 22,
+					"protocol": "tcp",
+					"ruleid": "1a84c747-1ad5-48ea-a75d-521638c403ea",
+					"startport": 22,
+					"tags": []
+				  },
+				  {
+					"cidr": "0.0.0.0/0",
+					"endport": 3389,
+					"protocol": "tcp",
+					"ruleid": "f2ab2e27-65a1-40b8-b8c2-9252dc75b5b3",
+					"startport": 3389,
+					"tags": []
+				  }
+				],
+				"name": "hello",
+				"tags": []
+			  },
+			  {
+				"account": "exoscale-1",
+				"description": "Default Security Group",
+				"domain": "exoscale-1",
+				"domainid": "5b2f621e-3eb6-4a14-a315-d4d7d62f28ff",
+				"egressrule": [],
+				"id": "b1b05d21-11de-4c38-804e-c9bdacdaaa70",
+				"ingressrule": [
+				  {
+					"cidr": "0.0.0.0/0",
+					"endport": 22,
+					"protocol": "tcp",
+					"ruleid": "4aa47b2c-9d1f-4856-9893-286fb8befa76",
+					"startport": 22,
+					"tags": []
+				  },
+				  {
+					"cidr": "0.0.0.0/0",
+					"description": "znc",
+					"endport": 1025,
+					"protocol": "tcp",
+					"ruleid": "45d0feca-f726-4b15-8e02-4de912c6dea7",
+					"startport": 1025,
+					"tags": []
+				  }
+				],
+				"name": "default",
+				"tags": []
+			  }
+			]
+		  }}`})
+
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	sgs, err := cs.List(&SecurityGroup{})
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+
+	if len(sgs) != 2 {
+		t.Errorf("Expected two sg, got %d", len(sgs))
+	}
+
+	sg := sgs[0].(*SecurityGroup)
+
+	if sg.ID != "55c3b385-0a9b-4970-a5d9-ad1e7f13157d" {
+		t.Errorf("Wrong security group")
+	}
+
 }
