@@ -161,6 +161,10 @@ func main() {
 					if typename != "string" {
 						expected = "string"
 					}
+				case "list":
+					if typename != "[]string" {
+						expected = "[]string"
+					}
 				case "map":
 					if !strings.HasPrefix(typename, "[]") {
 						expected = "array"
