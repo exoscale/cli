@@ -7,6 +7,8 @@ Changelog
 - feat: `Network` is `Listable`
 - feat: `Zone` is `Gettable`
 - feat: generate command util
+- fix: `CreateSnapshot` was missing the `Name` attribute
+- fix: `ListSnapshots` was missing the `IDs` attribute
 
 0.9.20
 ------
