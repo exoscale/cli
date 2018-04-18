@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+// Taggable represents a resource which can have tags attached
+//
+// This is a helper to fill the resourcetype of a CreateTags call
+type Taggable interface {
+	// CloudStack resource type of the Taggable type
+	ResourceType() string
+}
+
 // Gettable represents an Interface that can be "Get" by the client
 type Gettable interface {
 	// Get populates the given resource or throws
