@@ -44,6 +44,7 @@ type onBeforeHook interface {
 	onBeforeSend(params *url.Values) error
 }
 
+//go:generate stringer -type JobStatusType
 const (
 	// Pending represents a job in progress
 	Pending JobStatusType = iota
@@ -56,36 +57,37 @@ const (
 // JobStatusType represents the status of a Job
 type JobStatusType int
 
+//go:generate stringer -type ErrorCode
 const (
 	// Unauthorized represents ... (TODO)
 	Unauthorized ErrorCode = 401
 	// MethodNotAllowed represents ... (TODO)
-	MethodNotAllowed = 405
+	MethodNotAllowed ErrorCode = 405
 	// UnsupportedActionError represents ... (TODO)
-	UnsupportedActionError = 422
+	UnsupportedActionError ErrorCode = 422
 	// APILimitExceeded represents ... (TODO)
-	APILimitExceeded = 429
+	APILimitExceeded ErrorCode = 429
 	// MalformedParameterError represents ... (TODO)
-	MalformedParameterError = 430
+	MalformedParameterError ErrorCode = 430
 	// ParamError represents ... (TODO)
-	ParamError = 431
+	ParamError ErrorCode = 431
 
 	// InternalError represents a server error
-	InternalError = 530
+	InternalError ErrorCode = 530
 	// AccountError represents ... (TODO)
-	AccountError = 531
+	AccountError ErrorCode = 531
 	// AccountResourceLimitError represents ... (TODO)
-	AccountResourceLimitError = 532
+	AccountResourceLimitError ErrorCode = 532
 	// InsufficientCapacityError represents ... (TODO)
-	InsufficientCapacityError = 533
+	InsufficientCapacityError ErrorCode = 533
 	// ResourceUnavailableError represents ... (TODO)
-	ResourceUnavailableError = 534
+	ResourceUnavailableError ErrorCode = 534
 	// ResourceAllocationError represents ... (TODO)
-	ResourceAllocationError = 535
+	ResourceAllocationError ErrorCode = 535
 	// ResourceInUseError represents ... (TODO)
-	ResourceInUseError = 536
+	ResourceInUseError ErrorCode = 536
 	// NetworkRuleConflictError represents ... (TODO)
-	NetworkRuleConflictError = 537
+	NetworkRuleConflictError ErrorCode = 537
 )
 
 // ErrorCode represents the CloudStack ApiErrorCode enum

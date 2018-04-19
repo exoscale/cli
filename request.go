@@ -19,7 +19,7 @@ import (
 
 // Error formats a CloudStack error into a standard error
 func (e *ErrorResponse) Error() string {
-	return fmt.Sprintf("API error %d (internal code: %d): %s", e.ErrorCode, e.CsErrorCode, e.ErrorText)
+	return fmt.Sprintf("API error %s %d (%d): %s", e.ErrorCode, e.ErrorCode, e.CsErrorCode, e.ErrorText)
 }
 
 // Error formats a CloudStack job response into a standard error
