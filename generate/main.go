@@ -158,6 +158,7 @@ func main() {
 					}
 				case "string":
 				case "uuid":
+				case "tzdate":
 					if typename != "string" {
 						expected = "string"
 					}
