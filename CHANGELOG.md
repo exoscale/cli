@@ -10,6 +10,7 @@ Changelog
 - fix: `CreateSnapshot` was missing the `Name` attribute
 - fix: `ListSnapshots` was missing the `IDs` attribute
 - fix: `ListZones` was missing the `NetworkType` attribute
+- change: ICMP Type/Code are uint8 and TCP/UDP port are uint16
 
 0.9.20
 ------
