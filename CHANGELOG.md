@@ -1,12 +1,13 @@
 Changelog
 =========
 
-0.9.21 (unrelelased)
+0.9.21
 ------
 
 - feat: `Network` is `Listable`
 - feat: `Zone` is `Gettable`
-- feat: generate command util
+- feat: `Client.Payload` to help preview the HTTP parameters
+- feat: generate command utility
 - fix: `CreateSnapshot` was missing the `Name` attribute
 - fix: `ListSnapshots` was missing the `IDs` attribute
 - fix: `ListZones` was missing the `NetworkType` attribute
