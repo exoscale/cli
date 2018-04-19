@@ -66,7 +66,7 @@ func (exo *Client) parseResponse(resp *http.Response) (json.RawMessage, error) {
 
 // asyncRequest perform an asynchronous job with a context
 func (exo *Client) asyncRequest(ctx context.Context, request asyncCommand) (interface{}, error) {
-	body, err := exo.request(ctx, request.APIName(), request)
+	body, err := exo.request(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (exo *Client) asyncRequest(ctx context.Context, request asyncCommand) (inte
 
 // syncRequest performs a sync request with a context
 func (exo *Client) syncRequest(ctx context.Context, request syncCommand) (interface{}, error) {
-	body, err := exo.request(ctx, request.APIName(), request)
+	body, err := exo.request(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -203,18 +203,18 @@ func (exo *Client) RequestWithContext(ctx context.Context, request Command) (int
 	}
 }
 
-// request makes a Request while being close to the metal
-func (exo *Client) request(ctx context.Context, command string, req interface{}) (json.RawMessage, error) {
+// Payload builds the HTTP request from the given command
+func (exo *Client) Payload(request Command) (string, error) {
 	params := url.Values{}
-	err := prepareValues("", &params, req)
+	err := prepareValues("", &params, request)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	if hookReq, ok := req.(onBeforeHook); ok {
+	if hookReq, ok := request.(onBeforeHook); ok {
 		hookReq.onBeforeSend(&params)
 	}
 	params.Set("apikey", exo.apiKey)
-	params.Set("command", command)
+	params.Set("command", request.APIName())
 	params.Set("response", "json")
 
 	// This code is borrowed from net/url/url.go
@@ -244,7 +244,15 @@ func (exo *Client) request(ctx context.Context, command string, req interface{})
 	mac.Write([]byte(strings.ToLower(query)))
 	signature := csEncode(base64.StdEncoding.EncodeToString(mac.Sum(nil)))
 
-	payload := fmt.Sprintf("%s&signature=%s", csQuotePlus(query), signature)
+	return fmt.Sprintf("%s&signature=%s", csQuotePlus(query), signature), nil
+}
+
+// request makes a Request while being close to the metal
+func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, error) {
+	payload, err := exo.Payload(req)
+	if err != nil {
+		return nil, err
+	}
 
 	request, err := http.NewRequest("POST", exo.endpoint, strings.NewReader(payload))
 	if err != nil {
