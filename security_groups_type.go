@@ -25,10 +25,10 @@ type IngressRule struct {
 	Account               string              `json:"account,omitempty"`
 	Cidr                  string              `json:"cidr,omitempty"`
 	Description           string              `json:"description,omitempty"`
-	IcmpType              int                 `json:"icmptype,omitempty"`
-	IcmpCode              int                 `json:"icmpcode,omitempty"`
-	StartPort             int                 `json:"startport,omitempty"`
-	EndPort               int                 `json:"endport,omitempty"`
+	IcmpType              uint8               `json:"icmptype,omitempty"`
+	IcmpCode              uint8               `json:"icmpcode,omitempty"`
+	StartPort             uint16              `json:"startport,omitempty"`
+	EndPort               uint16              `json:"endport,omitempty"`
 	Protocol              string              `json:"protocol,omitempty"`
 	Tags                  []ResourceTag       `json:"tags,omitempty"`
 	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
@@ -82,10 +82,10 @@ type AuthorizeSecurityGroupIngress struct {
 	CidrList              []string            `json:"cidrlist,omitempty"`
 	Description           string              `json:"description,omitempty"`
 	DomainID              string              `json:"domainid,omitempty"`
-	IcmpType              int                 `json:"icmptype,omitempty"`
-	IcmpCode              int                 `json:"icmpcode,omitempty"`
-	StartPort             int                 `json:"startport,omitempty"`
-	EndPort               int                 `json:"endport,omitempty"`
+	IcmpType              uint8               `json:"icmptype,omitempty"`
+	IcmpCode              uint8               `json:"icmpcode,omitempty"`
+	StartPort             uint16              `json:"startport,omitempty"`
+	EndPort               uint16              `json:"endport,omitempty"`
 	ProjectID             string              `json:"projectid,omitempty"`
 	Protocol              string              `json:"protocol,omitempty"`
 	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
