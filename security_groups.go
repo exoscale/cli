@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/jinzhu/copier"
 )
@@ -109,7 +110,7 @@ func (*AuthorizeSecurityGroupIngress) asyncResponse() interface{} {
 
 func (req *AuthorizeSecurityGroupIngress) onBeforeSend(params *url.Values) error {
 	// ICMP code and type may be zero but can also be omitted...
-	if req.Protocol == "ICMP" {
+	if strings.HasPrefix(strings.ToLower(req.Protocol), "icmp") {
 		params.Set("icmpcode", strconv.FormatInt(int64(req.IcmpCode), 10))
 		params.Set("icmptype", strconv.FormatInt(int64(req.IcmpType), 10))
 	}
