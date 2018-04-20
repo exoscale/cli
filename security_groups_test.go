@@ -243,22 +243,13 @@ func TestListSecurityGroups(t *testing.T) {
 				"domainid": "5b2f621e-3eb6-4a14-a315-d4d7d62f28ff",
 				"egressrule": [],
 				"id": "b1b05d21-11de-4c38-804e-c9bdacdaaa70",
-				"ingressrule": [
+				"egressrule": [
 				  {
 					"cidr": "0.0.0.0/0",
-					"endport": 22,
+					"endport": 25,
 					"protocol": "tcp",
 					"ruleid": "4aa47b2c-9d1f-4856-9893-286fb8befa76",
-					"startport": 22,
-					"tags": []
-				  },
-				  {
-					"cidr": "0.0.0.0/0",
-					"description": "znc",
-					"endport": 1025,
-					"protocol": "tcp",
-					"ruleid": "45d0feca-f726-4b15-8e02-4de912c6dea7",
-					"startport": 1025,
+					"startport": 25,
 					"tags": []
 				  }
 				],
@@ -284,6 +275,18 @@ func TestListSecurityGroups(t *testing.T) {
 
 	if sg.ID != "55c3b385-0a9b-4970-a5d9-ad1e7f13157d" {
 		t.Errorf("Wrong security group")
+	}
+
+	ig, _ := sg.RuleByID("f2ab2e27-65a1-40b8-b8c2-9252dc75b5b3")
+	if ig == nil {
+		t.Errorf("ingress rule not found")
+	}
+
+	sg = sgs[1].(*SecurityGroup)
+
+	_, eg := sg.RuleByID("4aa47b2c-9d1f-4856-9893-286fb8befa76")
+	if eg == nil {
+		t.Errorf("egress rule not found")
 	}
 
 }

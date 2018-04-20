@@ -81,6 +81,23 @@ func (sg *SecurityGroup) Delete(ctx context.Context, client *Client) error {
 	return client.BooleanRequestWithContext(ctx, req)
 }
 
+// RuleByID returns IngressRule or EgressRule by a rule ID
+func (sg *SecurityGroup) RuleByID(ruleID string) (*IngressRule, *EgressRule) {
+	for i, in := range sg.IngressRule {
+		if ruleID == in.RuleID {
+			return &sg.IngressRule[i], nil
+		}
+	}
+
+	for i, out := range sg.EgressRule {
+		if ruleID == out.RuleID {
+			return nil, &sg.EgressRule[i]
+		}
+	}
+
+	return nil, nil
+}
+
 // APIName returns the CloudStack API command name
 func (*CreateSecurityGroup) APIName() string {
 	return "createSecurityGroup"
