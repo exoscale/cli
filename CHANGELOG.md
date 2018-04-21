@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.22 (unreleased)
+------
+
+- feat: `SecurityGroup` helper `RuleByID`
+- fix: `AuthorizeSecurityGroupIngress` support for ICMPv6
+
 0.9.21
 ------
 
