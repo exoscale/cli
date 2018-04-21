@@ -213,7 +213,7 @@ func (exo *Client) Payload(request Command) (string, error) {
 	if hookReq, ok := request.(onBeforeHook); ok {
 		hookReq.onBeforeSend(&params)
 	}
-	params.Set("apikey", exo.apiKey)
+	params.Set("apikey", exo.ApiKey)
 	params.Set("command", request.name())
 	params.Set("response", "json")
 
@@ -254,7 +254,7 @@ func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, e
 		return nil, err
 	}
 
-	request, err := http.NewRequest("POST", exo.endpoint, strings.NewReader(payload))
+	request, err := http.NewRequest("POST", exo.Endpoint, strings.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +263,7 @@ func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, e
 	request.Header.Add("Content-Length", strconv.Itoa(len(payload)))
 	request = request.WithContext(ctx)
 
-	resp, err := exo.client.Do(request)
+	resp, err := exo.HTTPClient.Do(request)
 	if err != nil {
 		return nil, err
 	}

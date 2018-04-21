@@ -34,9 +34,12 @@ type Listable interface {
 
 // Client represents the CloudStack API client
 type Client struct {
-	client    *http.Client
-	endpoint  string
-	apiKey    string
+	// HTTPClient holds the HTTP client
+	HTTPClient *http.Client
+	// Endpoints is CloudStack API
+	Endpoint string
+	// ApiKey is the identifier
+	ApiKey    string
 	apiSecret string
 	// PageSize represents the default size for a paginated result
 	PageSize int
