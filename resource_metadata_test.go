@@ -1,0 +1,17 @@
+package egoscale
+
+import (
+	"testing"
+)
+
+func TestResourceMetadata(t *testing.T) {
+	var _ Command = (*ListResourceDetails)(nil)
+}
+
+func TestListResourceDetailss(t *testing.T) {
+	req := &ListResourceDetails{}
+	if req.APIName() != "listResourceDetails" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.response().(*ListResourceDetailsResponse)
+}
