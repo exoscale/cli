@@ -280,38 +280,6 @@ func TestGetVirtualMachine(t *testing.T) {
 	}
 }
 
-func TestGetVirtualMachineNotFound(t *testing.T) {
-	ts := newServer(response{200, `
-{"listvirtualmachinesresponse": {
-	"count": 0,
-	"virtualmachine": []
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	vm := &VirtualMachine{
-		ID: "69069d5e-1591-4214-937e-4c8cba63fcfb",
-	}
-	if err := cs.Get(vm); err == nil {
-		t.Errorf("An exception was expected")
-	}
-}
-
-func TestGetVirtualMachineBadQuery(t *testing.T) {
-	ts := newServer(response{200, `
-{"listvirtualmachinesresponse": {
-	"count": 0,
-	"virtualmachine": []
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	vm := &VirtualMachine{}
-	if err := cs.Get(vm); err == nil {
-		t.Errorf("An exception was expected")
-	}
-}
-
 func TestGetVirtualMachinePassword(t *testing.T) {
 	ts := newServer(response{200, `
 {"getvmresponse": {

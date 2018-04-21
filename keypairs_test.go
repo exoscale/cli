@@ -70,32 +70,6 @@ func TestGetSSHKeyPair(t *testing.T) {
 	}
 }
 
-func TestGetSSHKeyPairToMany(t *testing.T) {
-	ts := newServer(response{200, `
-{"listsshkeypairsresponse": {
-	"count": 2,
-	"sshkeypair": [
-		{
-			"fingerprint": "07:97:32:04:80:23:b9:a2:a2:46:fe:ab:a6:4b:20:76",
-			"name": "yoan@herp"
-		},
-		{
-			"fingerprint": "9e:97:54:95:82:22:eb:f8:9b:4f:28:6f:c7:f5:58:83",
-			"name": "yoan@derp"
-		}
-	]
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	ssh := &SSHKeyPair{
-		Name: "Hello",
-	}
-	if err := cs.Get(ssh); err == nil {
-		t.Errorf("An error was expected")
-	}
-}
-
 func TestListSSHKeyPairs(t *testing.T) {
 	ts := newServer(response{200, `
 {"listsshkeypairsresponse": {

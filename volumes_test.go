@@ -80,52 +80,6 @@ func TestGetVolume(t *testing.T) {
 	}
 }
 
-func TestGetVolumeEmpty(t *testing.T) {
-	ts := newServer(response{200, `
-{"listvolumesresponse": {
-	"count": 0,
-	"volume": []
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-
-	if err := cs.Get(new(Volume)); err == nil {
-		t.Errorf("An error was expected")
-	}
-
-	volume := &Volume{
-		ID: "3613a751-5822-4d1d-b312-3036ef1acf86",
-	}
-
-	if err := cs.Get(volume); err == nil {
-		t.Errorf("An error was expected")
-	}
-}
-
-func TestGetVolumeNooMany(t *testing.T) {
-	ts := newServer(response{200, `
-{"listvolumesresponse": {
-	"count": 2,
-	"volume": [{
-		"id": "1"
-	}, {
-		"id": "2"
-	}]
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-
-	volume := &Volume{
-		ID: "3613a751-5822-4d1d-b312-3036ef1acf86",
-	}
-
-	if err := cs.Get(volume); err == nil {
-		t.Errorf("An error was expected")
-	}
-}
-
 func TestListVolume(t *testing.T) {
 	ts := newServer(response{200, `
 {"listvolumesresponse": {

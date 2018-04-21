@@ -96,32 +96,3 @@ func TestGetAffinityGroup(t *testing.T) {
 		t.Errorf("Account doesn't match, got %v", sg.Account)
 	}
 }
-
-func TestGetAffinityGroupNotFound(t *testing.T) {
-	ts := newServer(response{200, `
-{"listaffinitygroupsresponse": {
-	"affinitygroup": [],
-	"count": 0
-}}`})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	sg := &AffinityGroup{
-		ID: "6d7bc27c-6c8d-4b6a-ae97-83f73df18667",
-	}
-	if err := cs.Get(sg); err == nil {
-		t.Errorf("Error was expected")
-	}
-}
-
-func TestGetAffinityGroupBadQuery(t *testing.T) {
-	ts := newServer(response{200, "{}"})
-	defer ts.Close()
-
-	cs := NewClient(ts.URL, "KEY", "SECRET")
-	sg := &AffinityGroup{}
-
-	if err := cs.Get(sg); err == nil {
-		t.Errorf("Error was expected")
-	}
-}
