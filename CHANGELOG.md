@@ -7,8 +7,11 @@ Changelog
 - feat: `ListUsers`, `CreateUser`, `UpdateUser`
 - feat: `ListResourceDetails`
 - feat: `SecurityGroup` helper `RuleByID`
+- feat: `Sign` signs the payload
 - fix: `AuthorizeSecurityGroupIngress` support for ICMPv6
 - change: move `APIName()` into the `Client`, nice godoc
+- change: `Payload` doesn't sign the request anymore
+- change: `Client` exposes more of its underlying data
 
 0.9.21
 ------

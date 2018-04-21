@@ -190,7 +190,7 @@ func NewClientWithTimeout(endpoint, apiKey, apiSecret string, timeout time.Durat
 	cs := &Client{
 		HTTPClient:    client,
 		Endpoint:      endpoint,
-		ApiKey:        apiKey,
+		APIKey:        apiKey,
 		apiSecret:     apiSecret,
 		PageSize:      50,
 		Timeout:       timeout,

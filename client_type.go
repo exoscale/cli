@@ -38,8 +38,9 @@ type Client struct {
 	HTTPClient *http.Client
 	// Endpoints is CloudStack API
 	Endpoint string
-	// ApiKey is the identifier
-	ApiKey    string
+	// APIKey is the API identifier
+	APIKey string
+	// apisecret is the API secret, hence non exposed
 	apiSecret string
 	// PageSize represents the default size for a paginated result
 	PageSize int

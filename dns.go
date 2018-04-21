@@ -218,7 +218,7 @@ func (exo *Client) dnsRequest(uri string, params string, method string) (json.Ra
 	}
 
 	var hdr = make(http.Header)
-	hdr.Add("X-DNS-TOKEN", exo.ApiKey+":"+exo.apiSecret)
+	hdr.Add("X-DNS-TOKEN", exo.APIKey+":"+exo.apiSecret)
 	hdr.Add("Accept", "application/json")
 	if params != "" {
 		hdr.Add("Content-Type", "application/json")

@@ -213,7 +213,7 @@ func (exo *Client) Payload(request Command) (string, error) {
 	if hookReq, ok := request.(onBeforeHook); ok {
 		hookReq.onBeforeSend(&params)
 	}
-	params.Set("apikey", exo.ApiKey)
+	params.Set("apikey", exo.APIKey)
 	params.Set("command", request.name())
 	params.Set("response", "json")
 
@@ -238,13 +238,16 @@ func (exo *Client) Payload(request Command) (string, error) {
 		}
 	}
 
-	query := buf.String()
+	return buf.String(), nil
+}
 
+// Sign signs the HTTP request and return it
+func (exo *Client) Sign(query string) string {
 	mac := hmac.New(sha1.New, []byte(exo.apiSecret))
 	mac.Write([]byte(strings.ToLower(query)))
 	signature := csEncode(base64.StdEncoding.EncodeToString(mac.Sum(nil)))
 
-	return fmt.Sprintf("%s&signature=%s", csQuotePlus(query), signature), nil
+	return fmt.Sprintf("%s&signature=%s", csQuotePlus(query), signature)
 }
 
 // request makes a Request while being close to the metal
@@ -253,14 +256,15 @@ func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, e
 	if err != nil {
 		return nil, err
 	}
+	query := exo.Sign(payload)
 
-	request, err := http.NewRequest("POST", exo.Endpoint, strings.NewReader(payload))
+	request, err := http.NewRequest("POST", exo.Endpoint, strings.NewReader(query))
 	if err != nil {
 		return nil, err
 	}
 
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	request.Header.Add("Content-Length", strconv.Itoa(len(payload)))
+	request.Header.Add("Content-Length", strconv.Itoa(len(query)))
 	request = request.WithContext(ctx)
 
 	resp, err := exo.HTTPClient.Do(request)
