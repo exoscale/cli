@@ -14,22 +14,30 @@ $ cs listApis > listApis.json
 
 ## Find all errors
 
-Reading the Go code and the JSON description (`--apis`) it lists the errors per struct.
+Reading the Go code and the JSON description (`-apis`) it lists the errors per struct.
 
 ```console
-$ go run generate/main.go --apis listApis.json
+$ go run generate/main.go -apis listApis.json
 ...
 ```
 
 ## Find specific error
 
-Then, inspect the errors of a particular command using `--cmd`
+Then, inspect the errors of a particular command using `-cmd`
 
 ```
-$ go run generate/main.go --api listApis.json --cmd deleteSnapshot
+$ go run generate/main.go -apis listApis.json -cmd deleteSnapshot
 tag:id: missing `doc:"The ID of the snapshot"`
 
 snapshots.go:97.6: DeleteSnapshot has 1 error(s)
+```
+
+## Find errors in response
+
+All commands response may also be checked, but you have to give the expected output type.
+
+```
+go run generate/main.go -apis listApis.json -cmd listApis -type API
 ```
 
 Nothing more... nothing less...
@@ -37,7 +45,7 @@ Nothing more... nothing less...
 ## TODO
 
 - Check that the `APIName()` (Go) matches the command name (JSON).
-- Check that the `response` (JSON) structs matches the ones in Go.
+- Find the corresponding type for the responses.
 
 
 [go-cloudstack]: https://github.com/xanzy/go-cloudstack

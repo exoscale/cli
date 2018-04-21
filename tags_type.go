@@ -4,16 +4,16 @@ package egoscale
 //
 // http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/4.9/management.html
 type ResourceTag struct {
-	Account      string `json:"account,omitempty"`
-	Customer     string `json:"customer,omitempty"`
-	Domain       string `json:"domain,omitempty"`
-	DomainID     string `json:"domainid,omitempty"`
-	Key          string `json:"key"`
-	Project      string `json:"project,omitempty"`
-	ProjectID    string `json:"projectid,omitempty"`
-	ResourceID   string `json:"resourceid,omitempty"`
-	ResourceType string `json:"resourcetype,omitempty"`
-	Value        string `json:"value"`
+	Account      string `json:"account,omitempty" doc:"the account associated with the tag"`
+	Customer     string `json:"customer,omitempty" doc:"customer associated with the tag"`
+	Domain       string `json:"domain,omitempty" doc:"the domain associated with the tag"`
+	DomainID     string `json:"domainid,omitempty" doc:"the ID of the domain associated with the tag"`
+	Key          string `json:"key,omitempty" doc:"tag key name"`
+	Project      string `json:"project,omitempty" doc:"the project name where tag belongs to"`
+	ProjectID    string `json:"projectid,omitempty" doc:"the project id the tag belongs to"`
+	ResourceID   string `json:"resourceid,omitempty" doc:"id of the resource"`
+	ResourceType string `json:"resourcetype,omitempty" doc:"resource type"`
+	Value        string `json:"value,omitempty" doc:"tag value"`
 }
 
 // CreateTags (Async) creates resource tag(s)

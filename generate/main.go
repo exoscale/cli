@@ -19,6 +19,7 @@ import (
 
 var cmd = flag.String("cmd", "", "CloudStack command name")
 var source = flag.String("apis", "", "listApis response in JSON")
+var rtype = flag.String("type", "", "Actual type to check against the cmd (need cmd)")
 
 // fieldInfo represents the inner details of a field
 type fieldInfo struct {
@@ -96,24 +97,35 @@ func main() {
 	reDoc := regexp.MustCompile(`\bdoc:"(?P<doc>[^"]+)"`)
 
 	for _, a := range apis.API {
-		if cmd, ok := commands[strings.ToLower(a.Name)]; !ok {
+		name := strings.ToLower(a.Name)
+		params := a.Params
+
+		if strings.ToLower(*cmd) == name && *rtype != "" {
+			name = strings.ToLower(*rtype)
+			*cmd = name
+			params = a.Response
+			fmt.Fprintf(os.Stderr, "Checking return type of %sResult, using %q\n", a.Name, *rtype)
+		}
+
+		if command, ok := commands[name]; !ok {
 			// too much information
-			//fmt.Fprintf(os.Stderr, "Unknown command: %q\n", a.Name)
+			//fmt.Fprintf(os.Stderr, "Unknown command: %q\n", name)
 		} else {
 			// mapping from name to field
-			cmd.fields = make(map[string]fieldInfo)
-			cmd.errors = make(map[string]error)
+			command.fields = make(map[string]fieldInfo)
+			command.errors = make(map[string]error)
 
-			for i := 0; i < cmd.s.NumFields(); i++ {
-				f := cmd.s.Field(i)
+			for i := 0; i < command.s.NumFields(); i++ {
+				f := command.s.Field(i)
+
 				if !f.IsField() || !f.Exported() {
 					continue
 				}
 
-				tag := cmd.s.Tag(i)
+				tag := command.s.Tag(i)
 				match := re.FindStringSubmatch(tag)
 				if len(match) == 0 {
-					cmd.errors[f.Name()] = fmt.Errorf("Field error: no json annotation found")
+					command.errors[f.Name()] = fmt.Errorf("Field error: no json annotation found")
 					continue
 				}
 				name := match[1]
@@ -125,23 +137,46 @@ func main() {
 					doc = match[1]
 				}
 
-				cmd.fields[name] = fieldInfo{
+				command.fields[name] = fieldInfo{
 					Var:       f,
 					OmitEmpty: omitempty,
 					Doc:       doc,
 				}
 			}
 
-			for _, p := range a.Params {
-				field, ok := cmd.fields[p.Name]
+			for _, p := range params {
+				field, ok := command.fields[p.Name]
+
+				omit := ""
+				if !p.Required {
+					omit = ",omitempty"
+				}
 
 				if !ok {
-					cmd.errors[p.Name] = fmt.Errorf("Field missing")
+					doc := ""
+					if p.Description != "" {
+						doc = fmt.Sprintf(" doc:%q", p.Description)
+					}
+					command.errors[p.Name] = fmt.Errorf("missing field: %s %s `json:\"%s%s\"%s`", strings.Title(p.Name), p.Type, p.Name, omit, doc)
 					continue
 				}
-				delete(cmd.fields, p.Name)
+				delete(command.fields, p.Name)
 
 				typename := field.Var.Type().String()
+
+				if field.Doc != p.Description {
+					if field.Doc == "" {
+						command.errors[p.Name] = fmt.Errorf("missing `doc:%q`", p.Description)
+					} else {
+						command.errors[p.Name] = fmt.Errorf("wrong doc want %q got %q", p.Description, field.Doc)
+					}
+				}
+
+				if p.Required == field.OmitEmpty {
+					command.errors[p.Name] = fmt.Errorf("wrong omitempty, want `json:\"%s%s\"`", p.Name, omit)
+					continue
+				}
+
 				expected := ""
 				switch p.Type {
 				case "integer":
@@ -167,24 +202,21 @@ func main() {
 						expected = "[]string"
 					}
 				case "map":
+				case "set":
 					if !strings.HasPrefix(typename, "[]") {
 						expected = "array"
 					}
 				default:
-					cmd.errors[p.Name] = fmt.Errorf("Unknown type %q <=> %q", p.Type, field.Var.Type().String())
+					command.errors[p.Name] = fmt.Errorf("Unknown type %q <=> %q", p.Type, field.Var.Type().String())
 				}
 
 				if expected != "" {
-					cmd.errors[p.Name] = fmt.Errorf("Expected to be a slice[], got %q", typename)
-				}
-
-				if field.Doc != p.Description {
-					cmd.errors["tag:"+p.Name] = fmt.Errorf("missing `doc:%q`", p.Description)
+					command.errors[p.Name] = fmt.Errorf("Expected to be a slice[], got %q", typename)
 				}
 			}
 
-			for name := range cmd.fields {
-				cmd.errors[name] = fmt.Errorf("Extra field found")
+			for name := range command.fields {
+				command.errors[name] = fmt.Errorf("Extra field found")
 			}
 		}
 	}
