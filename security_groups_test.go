@@ -83,7 +83,25 @@ func TestRevokeSecurityGroupIngress(t *testing.T) {
 
 func TestAuthorizeSecurityGroupEgressOnBeforeSendICMP(t *testing.T) {
 	req := &AuthorizeSecurityGroupEgress{
-		Protocol: "ICMP",
+		Protocol: "icmp",
+	}
+	params := url.Values{}
+
+	if err := req.onBeforeSend(&params); err != nil {
+		t.Error(err)
+	}
+
+	if _, ok := params["icmpcode"]; !ok {
+		t.Errorf("icmpcode should have been set")
+	}
+	if _, ok := params["icmptype"]; !ok {
+		t.Errorf("icmptype should have been set")
+	}
+}
+
+func TestAuthorizeSecurityGroupEgressOnBeforeSendICMPv6(t *testing.T) {
+	req := &AuthorizeSecurityGroupEgress{
+		Protocol: "ICMPv6",
 	}
 	params := url.Values{}
 
