@@ -1,32 +1,5 @@
 package egoscale
 
-// User represents a User
-type User struct {
-	Account             string `json:"account,omitempty"`
-	AccountID           string `json:"accountid,omitempty"`
-	AccountType         string `json:"accounttype,omitempty"`
-	APIKey              string `json:"apikey,omitempty"`
-	Created             string `json:"created,omitempty"`
-	Domain              string `json:"domain,omitempty"`
-	DomainID            string `json:"domainid,omitempty"`
-	Email               string `json:"email,omitempty"`
-	FirstName           string `json:"firstname,omitempty"`
-	ID                  string `json:"id,omitempty"`
-	IsCallerChildDomain bool   `json:"iscallerchilddomain,omitempty"`
-	IsDefault           bool   `json:"isdefault,omitempty"`
-	LastName            string `json:"lastname,omitempty"`
-	SecretKey           string `json:"secretkey,omitempty"`
-	State               string `json:"state,omitempty"`
-	UserName            string `json:"username,omitempty"`
-}
-
-// RegisterUserKeys registers a new set of key of the given user
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/registerUserKeys.html
-type RegisterUserKeys struct {
-	ID string `json:"id"`
-}
-
 // APIName returns the CloudStack API command name
 func (*RegisterUserKeys) APIName() string {
 	return "registerUserKeys"
@@ -36,9 +9,29 @@ func (*RegisterUserKeys) response() interface{} {
 	return new(RegisterUserKeysResponse)
 }
 
-// RegisterUserKeysResponse represents a new set of UserKeys
-//
-// NB: only the APIKey and SecretKey will be filled
-type RegisterUserKeysResponse struct {
-	UserKeys User `json:"userkeys"`
+// APIName returns the CloudStack API command name
+func (*CreateUser) APIName() string {
+	return "createUser"
+}
+
+func (*CreateUser) response() interface{} {
+	return new(CreateUserResponse)
+}
+
+// APIName returns the CloudStack API command name
+func (*UpdateUser) APIName() string {
+	return "updateUser"
+}
+
+func (*UpdateUser) response() interface{} {
+	return new(UpdateUserResponse)
+}
+
+// APIName returns the CloudStack API command name
+func (*ListUsers) APIName() string {
+	return "listUsers"
+}
+
+func (*ListUsers) response() interface{} {
+	return new(ListUsersResponse)
 }
