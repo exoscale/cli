@@ -21,7 +21,7 @@ func TestSnapshot(t *testing.T) {
 
 func TestCreateSnapshot(t *testing.T) {
 	req := &CreateSnapshot{}
-	if req.APIName() != "createSnapshot" {
+	if req.name() != "createSnapshot" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*CreateSnapshotResponse)
@@ -29,7 +29,7 @@ func TestCreateSnapshot(t *testing.T) {
 
 func TestListSnapshots(t *testing.T) {
 	req := &ListSnapshots{}
-	if req.APIName() != "listSnapshots" {
+	if req.name() != "listSnapshots" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListSnapshotsResponse)
@@ -37,7 +37,7 @@ func TestListSnapshots(t *testing.T) {
 
 func TestDeleteSnapshot(t *testing.T) {
 	req := &DeleteSnapshot{}
-	if req.APIName() != "deleteSnapshot" {
+	if req.name() != "deleteSnapshot" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)
@@ -45,7 +45,7 @@ func TestDeleteSnapshot(t *testing.T) {
 
 func TestRevertSnapshot(t *testing.T) {
 	req := &RevertSnapshot{}
-	if req.APIName() != "revertSnapshot" {
+	if req.name() != "revertSnapshot" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.asyncResponse().(*booleanAsyncResponse)

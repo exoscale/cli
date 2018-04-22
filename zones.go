@@ -42,8 +42,8 @@ func (zone *Zone) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// APIName returns the CloudStack API command name
-func (*ListZones) APIName() string {
+// name returns the CloudStack API command name
+func (*ListZones) name() string {
 	return "listZones"
 }
 

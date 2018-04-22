@@ -10,7 +10,7 @@ func TestNetworkOfferings(t *testing.T) {
 
 func TestListNetworkOfferings(t *testing.T) {
 	req := &ListNetworkOfferings{}
-	if req.APIName() != "listNetworkOfferings" {
+	if req.name() != "listNetworkOfferings" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListNetworkOfferingsResponse)

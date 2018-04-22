@@ -1,7 +1,6 @@
 package egoscale
 
-// APIName returns the CloudStack API command name
-func (*RegisterUserKeys) APIName() string {
+func (*RegisterUserKeys) name() string {
 	return "registerUserKeys"
 }
 
@@ -9,8 +8,7 @@ func (*RegisterUserKeys) response() interface{} {
 	return new(RegisterUserKeysResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*CreateUser) APIName() string {
+func (*CreateUser) name() string {
 	return "createUser"
 }
 
@@ -18,8 +16,7 @@ func (*CreateUser) response() interface{} {
 	return new(CreateUserResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*UpdateUser) APIName() string {
+func (*UpdateUser) name() string {
 	return "updateUser"
 }
 
@@ -27,8 +24,7 @@ func (*UpdateUser) response() interface{} {
 	return new(UpdateUserResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ListUsers) APIName() string {
+func (*ListUsers) name() string {
 	return "listUsers"
 }
 

@@ -1,7 +1,6 @@
 package egoscale
 
-// APIName returns the CloudStack API command name
-func (*ListResourceDetails) APIName() string {
+func (*ListResourceDetails) name() string {
 	return "listResourceDetails"
 }
 

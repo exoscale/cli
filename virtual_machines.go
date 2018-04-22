@@ -131,8 +131,8 @@ func (vm *VirtualMachine) NicByID(nicID string) *Nic {
 	return nil
 }
 
-// APIName returns the CloudStack API command name
-func (*DeployVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*DeployVirtualMachine) name() string {
 	return "deployVirtualMachine"
 }
 
@@ -154,16 +154,16 @@ func (*DeployVirtualMachine) asyncResponse() interface{} {
 	return new(DeployVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*StartVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*StartVirtualMachine) name() string {
 	return "startVirtualMachine"
 }
 func (*StartVirtualMachine) asyncResponse() interface{} {
 	return new(StartVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*StopVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*StopVirtualMachine) name() string {
 	return "stopVirtualMachine"
 }
 
@@ -171,8 +171,8 @@ func (*StopVirtualMachine) asyncResponse() interface{} {
 	return new(StopVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*RebootVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*RebootVirtualMachine) name() string {
 	return "rebootVirtualMachine"
 }
 
@@ -183,8 +183,8 @@ func (*RebootVirtualMachine) asyncResponse() interface{} {
 // RebootVirtualMachineResponse represents a rebooted VM instance
 type RebootVirtualMachineResponse VirtualMachineResponse
 
-// APIName returns the CloudStack API command name
-func (*RestoreVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*RestoreVirtualMachine) name() string {
 	return "restoreVirtualMachine"
 }
 
@@ -192,8 +192,8 @@ func (*RestoreVirtualMachine) asyncResponse() interface{} {
 	return new(RestoreVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*RecoverVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*RecoverVirtualMachine) name() string {
 	return "recoverVirtualMachine"
 }
 
@@ -201,8 +201,8 @@ func (*RecoverVirtualMachine) response() interface{} {
 	return new(RecoverVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*DestroyVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*DestroyVirtualMachine) name() string {
 	return "destroyVirtualMachine"
 }
 
@@ -210,8 +210,8 @@ func (*DestroyVirtualMachine) asyncResponse() interface{} {
 	return new(DestroyVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*UpdateVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*UpdateVirtualMachine) name() string {
 	return "updateVirtualMachine"
 }
 
@@ -227,8 +227,8 @@ type ExpungeVirtualMachine struct {
 	ID string `json:"id"`
 }
 
-// APIName returns the CloudStack API command name
-func (*ExpungeVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*ExpungeVirtualMachine) name() string {
 	return "expungeVirtualMachine"
 }
 
@@ -236,8 +236,8 @@ func (*ExpungeVirtualMachine) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ScaleVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*ScaleVirtualMachine) name() string {
 	return "scaleVirtualMachine"
 }
 
@@ -245,8 +245,8 @@ func (*ScaleVirtualMachine) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ChangeServiceForVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*ChangeServiceForVirtualMachine) name() string {
 	return "changeServiceForVirtualMachine"
 }
 
@@ -254,8 +254,8 @@ func (*ChangeServiceForVirtualMachine) response() interface{} {
 	return new(ChangeServiceForVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ResetPasswordForVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*ResetPasswordForVirtualMachine) name() string {
 	return "resetPasswordForVirtualMachine"
 }
 
@@ -263,8 +263,8 @@ func (*ResetPasswordForVirtualMachine) asyncResponse() interface{} {
 	return new(ResetPasswordForVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*GetVMPassword) APIName() string {
+// name returns the CloudStack API command name
+func (*GetVMPassword) name() string {
 	return "getVMPassword"
 }
 
@@ -272,8 +272,8 @@ func (*GetVMPassword) response() interface{} {
 	return new(GetVMPasswordResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ListVirtualMachines) APIName() string {
+// name returns the CloudStack API command name
+func (*ListVirtualMachines) name() string {
 	return "listVirtualMachines"
 }
 
@@ -305,8 +305,8 @@ func (*ListVirtualMachines) each(resp interface{}, callback IterateItemFunc) {
 	}
 }
 
-// APIName returns the CloudStack API command name
-func (*AddNicToVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*AddNicToVirtualMachine) name() string {
 	return "addNicToVirtualMachine"
 }
 
@@ -314,8 +314,8 @@ func (*AddNicToVirtualMachine) asyncResponse() interface{} {
 	return new(AddNicToVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*RemoveNicFromVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*RemoveNicFromVirtualMachine) name() string {
 	return "removeNicFromVirtualMachine"
 }
 
@@ -323,8 +323,8 @@ func (*RemoveNicFromVirtualMachine) asyncResponse() interface{} {
 	return new(RemoveNicFromVirtualMachineResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*UpdateDefaultNicForVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*UpdateDefaultNicForVirtualMachine) name() string {
 	return "updateDefaultNicForVirtualMachine"
 }
 

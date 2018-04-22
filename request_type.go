@@ -8,7 +8,7 @@ import (
 // Command represents a CloudStack request
 type Command interface {
 	// CloudStack API command name
-	APIName() string
+	name() string
 }
 
 // SyncCommand represents a CloudStack synchronous request

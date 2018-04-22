@@ -168,6 +168,11 @@ func (client *Client) PaginateWithContext(ctx context.Context, req ListCommand, 
 	}
 }
 
+// APIName returns the CloudStack name of the given command
+func (client *Client) APIName(req Command) string {
+	return req.name()
+}
+
 // NewClientWithTimeout creates a CloudStack API client
 //
 // Timeout is set to both the HTTP client and the client itself.

@@ -53,8 +53,8 @@ func (*Template) ResourceType() string {
 	return "Template"
 }
 
-// APIName returns the CloudStack API command name
-func (*ListTemplates) APIName() string {
+// name returns the CloudStack API command name
+func (*ListTemplates) name() string {
 	return "listTemplates"
 }
 

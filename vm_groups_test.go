@@ -13,7 +13,7 @@ func TestInstanceGroup(t *testing.T) {
 
 func TestListInstanceGroups(t *testing.T) {
 	req := &ListInstanceGroups{}
-	if req.APIName() != "listInstanceGroups" {
+	if req.name() != "listInstanceGroups" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListInstanceGroupsResponse)
@@ -21,7 +21,7 @@ func TestListInstanceGroups(t *testing.T) {
 
 func TestCreateInstanceGroup(t *testing.T) {
 	req := &CreateInstanceGroup{}
-	if req.APIName() != "createInstanceGroup" {
+	if req.name() != "createInstanceGroup" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*CreateInstanceGroupResponse)
@@ -29,7 +29,7 @@ func TestCreateInstanceGroup(t *testing.T) {
 
 func TestUpdateInstanceGroup(t *testing.T) {
 	req := &UpdateInstanceGroup{}
-	if req.APIName() != "updateInstanceGroup" {
+	if req.name() != "updateInstanceGroup" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*UpdateInstanceGroupResponse)
@@ -37,7 +37,7 @@ func TestUpdateInstanceGroup(t *testing.T) {
 
 func TestDeleteInstanceGroup(t *testing.T) {
 	req := &DeleteInstanceGroup{}
-	if req.APIName() != "deleteInstanceGroup" {
+	if req.name() != "deleteInstanceGroup" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*booleanSyncResponse)

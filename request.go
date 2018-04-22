@@ -155,7 +155,7 @@ func (exo *Client) BooleanRequest(req Command) error {
 		return b.Error()
 	}
 
-	panic(fmt.Errorf("The command %s is not a proper boolean response. %#v", req.APIName(), resp))
+	panic(fmt.Errorf("The command %s is not a proper boolean response. %#v", req.name(), resp))
 }
 
 // BooleanRequestWithContext performs the given boolean command
@@ -173,7 +173,7 @@ func (exo *Client) BooleanRequestWithContext(ctx context.Context, req Command) e
 		return b.Error()
 	}
 
-	panic(fmt.Errorf("The command %s is not a proper boolean response. %#v", req.APIName(), resp))
+	panic(fmt.Errorf("The command %s is not a proper boolean response. %#v", req.name(), resp))
 }
 
 // Request performs the given command
@@ -187,7 +187,7 @@ func (exo *Client) Request(request Command) (interface{}, error) {
 	case asyncCommand:
 		return exo.asyncRequest(ctx, request.(asyncCommand))
 	default:
-		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.APIName()))
+		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.name()))
 	}
 }
 
@@ -199,7 +199,7 @@ func (exo *Client) RequestWithContext(ctx context.Context, request Command) (int
 	case asyncCommand:
 		return exo.asyncRequest(ctx, request.(asyncCommand))
 	default:
-		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.APIName()))
+		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.name()))
 	}
 }
 
@@ -214,7 +214,7 @@ func (exo *Client) Payload(request Command) (string, error) {
 		hookReq.onBeforeSend(&params)
 	}
 	params.Set("apikey", exo.apiKey)
-	params.Set("command", request.APIName())
+	params.Set("command", request.name())
 	params.Set("response", "json")
 
 	// This code is borrowed from net/url/url.go

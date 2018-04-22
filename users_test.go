@@ -13,7 +13,7 @@ func TestUsers(t *testing.T) {
 
 func TestCreateUser(t *testing.T) {
 	req := &CreateUser{}
-	if req.APIName() != "createUser" {
+	if req.name() != "createUser" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*CreateUserResponse)
@@ -21,7 +21,7 @@ func TestCreateUser(t *testing.T) {
 
 func TestRegisterUserKeys(t *testing.T) {
 	req := &RegisterUserKeys{}
-	if req.APIName() != "registerUserKeys" {
+	if req.name() != "registerUserKeys" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*RegisterUserKeysResponse)
@@ -29,7 +29,7 @@ func TestRegisterUserKeys(t *testing.T) {
 
 func TestUpdateUser(t *testing.T) {
 	req := &UpdateUser{}
-	if req.APIName() != "updateUser" {
+	if req.name() != "updateUser" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*UpdateUserResponse)
@@ -37,7 +37,7 @@ func TestUpdateUser(t *testing.T) {
 
 func TestListUsers(t *testing.T) {
 	req := &ListUsers{}
-	if req.APIName() != "listUsers" {
+	if req.name() != "listUsers" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListUsersResponse)

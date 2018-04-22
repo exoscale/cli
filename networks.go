@@ -35,8 +35,8 @@ func (*Network) ResourceType() string {
 	return "Network"
 }
 
-// APIName returns the CloudStack API command name
-func (*CreateNetwork) APIName() string {
+// name returns the CloudStack API command name
+func (*CreateNetwork) name() string {
 	return "createNetwork"
 }
 
@@ -55,8 +55,8 @@ func (req *CreateNetwork) onBeforeSend(params *url.Values) error {
 	return nil
 }
 
-// APIName returns the CloudStack API command name
-func (*UpdateNetwork) APIName() string {
+// name returns the CloudStack API command name
+func (*UpdateNetwork) name() string {
 	return "updateNetwork"
 }
 
@@ -64,8 +64,8 @@ func (*UpdateNetwork) asyncResponse() interface{} {
 	return new(UpdateNetworkResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*RestartNetwork) APIName() string {
+// name returns the CloudStack API command name
+func (*RestartNetwork) name() string {
 	return "restartNetwork"
 }
 
@@ -73,8 +73,8 @@ func (*RestartNetwork) asyncResponse() interface{} {
 	return new(RestartNetworkResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*DeleteNetwork) APIName() string {
+// name returns the CloudStack API command name
+func (*DeleteNetwork) name() string {
 	return "deleteNetwork"
 }
 
@@ -82,8 +82,8 @@ func (*DeleteNetwork) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ListNetworks) APIName() string {
+// name returns the CloudStack API command name
+func (*ListNetworks) name() string {
 	return "listNetworks"
 }
 

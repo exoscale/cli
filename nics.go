@@ -19,8 +19,8 @@ func (nic *Nic) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// APIName returns the CloudStack API command name
-func (*ListNics) APIName() string {
+// name returns the CloudStack API command name
+func (*ListNics) name() string {
 	return "listNics"
 }
 
@@ -47,16 +47,16 @@ func (*ListNics) each(resp interface{}, callback IterateItemFunc) {
 	}
 }
 
-// APIName returns the CloudStack API command name: addIpToNic
-func (*AddIPToNic) APIName() string {
+// name returns the CloudStack API command name: addIpToNic
+func (*AddIPToNic) name() string {
 	return "addIpToNic"
 }
 func (*AddIPToNic) asyncResponse() interface{} {
 	return new(AddIPToNicResponse)
 }
 
-// APIName returns the CloudStack API command name: removeIpFromNic
-func (*RemoveIPFromNic) APIName() string {
+// name returns the CloudStack API command name: removeIpFromNic
+func (*RemoveIPFromNic) name() string {
 	return "removeIpFromNic"
 }
 
@@ -64,8 +64,8 @@ func (*RemoveIPFromNic) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
-// APIName returns the CloudStack API command name: activateIp6
-func (*ActivateIP6) APIName() string {
+// name returns the CloudStack API command name: activateIp6
+func (*ActivateIP6) name() string {
 	return "activateIp6"
 }
 

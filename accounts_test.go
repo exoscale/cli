@@ -10,7 +10,7 @@ func TestAccounts(t *testing.T) {
 
 func TestListAccounts(t *testing.T) {
 	req := &ListAccounts{}
-	if req.APIName() != "listAccounts" {
+	if req.name() != "listAccounts" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListAccountsResponse)

@@ -50,8 +50,8 @@ func (vol *Volume) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// APIName returns the CloudStack API command name
-func (*ResizeVolume) APIName() string {
+// name returns the CloudStack API command name
+func (*ResizeVolume) name() string {
 	return "resizeVolume"
 }
 
@@ -64,8 +64,8 @@ type ResizeVolumeResponse struct {
 	Volume Volume `json:"volume"`
 }
 
-// APIName returns the CloudStack API command name
-func (*ListVolumes) APIName() string {
+// name returns the CloudStack API command name
+func (*ListVolumes) name() string {
 	return "listVolumes"
 }
 

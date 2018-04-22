@@ -10,7 +10,7 @@ func TestResourceLimits(t *testing.T) {
 
 func TestListResourceLimits(t *testing.T) {
 	req := &ListResourceLimits{}
-	if req.APIName() != "listResourceLimits" {
+	if req.name() != "listResourceLimits" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListResourceLimitsResponse)

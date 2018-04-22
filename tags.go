@@ -1,7 +1,7 @@
 package egoscale
 
-// APIName returns the CloudStack API command name
-func (*CreateTags) APIName() string {
+// name returns the CloudStack API command name
+func (*CreateTags) name() string {
 	return "createTags"
 }
 
@@ -9,8 +9,8 @@ func (*CreateTags) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*DeleteTags) APIName() string {
+// name returns the CloudStack API command name
+func (*DeleteTags) name() string {
 	return "deleteTags"
 }
 
@@ -18,8 +18,8 @@ func (*DeleteTags) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ListTags) APIName() string {
+// name returns the CloudStack API command name
+func (*ListTags) name() string {
 	return "listTags"
 }
 

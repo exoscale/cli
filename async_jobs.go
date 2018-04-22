@@ -7,8 +7,8 @@ type QueryAsyncJobResult struct {
 	JobID string `json:"jobid" doc:"the ID of the asychronous job"`
 }
 
-// APIName returns the CloudStack API command name
-func (*QueryAsyncJobResult) APIName() string {
+// name returns the CloudStack API command name
+func (*QueryAsyncJobResult) name() string {
 	return "queryAsyncJobResult"
 }
 
@@ -16,8 +16,8 @@ func (*QueryAsyncJobResult) response() interface{} {
 	return new(QueryAsyncJobResultResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ListAsyncJobs) APIName() string {
+// name returns the CloudStack API command name
+func (*ListAsyncJobs) name() string {
 	return "listAsyncJobs"
 }
 

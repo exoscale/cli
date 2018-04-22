@@ -6,6 +6,14 @@ import (
 	"testing"
 )
 
+func testClientAPIName(t *testing.T) {
+	cs := NewClient("ENDPOINT", "KEY", "SECRET")
+	req := &ListAPIs{}
+	if cs.APIName(req) != req.name() {
+		t.Errorf("APIName is wrong")
+	}
+}
+
 func TestClientSyncDelete(t *testing.T) {
 	resp := response{200, `
 {"deleteresponse": {

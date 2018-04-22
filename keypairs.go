@@ -54,8 +54,8 @@ func (ssh *SSHKeyPair) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// APIName returns the CloudStack API command name
-func (*CreateSSHKeyPair) APIName() string {
+// name returns the CloudStack API command name
+func (*CreateSSHKeyPair) name() string {
 	return "createSSHKeyPair"
 }
 
@@ -63,8 +63,8 @@ func (*CreateSSHKeyPair) response() interface{} {
 	return new(CreateSSHKeyPairResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*DeleteSSHKeyPair) APIName() string {
+// name returns the CloudStack API command name
+func (*DeleteSSHKeyPair) name() string {
 	return "deleteSSHKeyPair"
 }
 
@@ -72,8 +72,8 @@ func (*DeleteSSHKeyPair) response() interface{} {
 	return new(booleanSyncResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*RegisterSSHKeyPair) APIName() string {
+// name returns the CloudStack API command name
+func (*RegisterSSHKeyPair) name() string {
 	return "registerSSHKeyPair"
 }
 
@@ -81,8 +81,8 @@ func (*RegisterSSHKeyPair) response() interface{} {
 	return new(RegisterSSHKeyPairResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*ListSSHKeyPairs) APIName() string {
+// name returns the CloudStack API command name
+func (*ListSSHKeyPairs) name() string {
 	return "listSSHKeyPairs"
 }
 
@@ -114,8 +114,8 @@ func (ls *ListSSHKeyPairs) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-// APIName returns the CloudStack API command name
-func (*ResetSSHKeyForVirtualMachine) APIName() string {
+// name returns the CloudStack API command name
+func (*ResetSSHKeyForVirtualMachine) name() string {
 	return "resetSSHKeyForVirtualMachine"
 }
 

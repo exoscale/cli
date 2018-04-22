@@ -10,7 +10,7 @@ func TestResourceMetadata(t *testing.T) {
 
 func TestListResourceDetailss(t *testing.T) {
 	req := &ListResourceDetails{}
-	if req.APIName() != "listResourceDetails" {
+	if req.name() != "listResourceDetails" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListResourceDetailsResponse)

@@ -11,7 +11,7 @@ func TestAsyncJobs(t *testing.T) {
 
 func TestQueryAsyncJobResult(t *testing.T) {
 	req := &QueryAsyncJobResult{}
-	if req.APIName() != "queryAsyncJobResult" {
+	if req.name() != "queryAsyncJobResult" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*QueryAsyncJobResultResponse)
@@ -19,7 +19,7 @@ func TestQueryAsyncJobResult(t *testing.T) {
 
 func TestListAsyncJobs(t *testing.T) {
 	req := &ListAsyncJobs{}
-	if req.APIName() != "listAsyncJobs" {
+	if req.name() != "listAsyncJobs" {
 		t.Errorf("API call doesn't match")
 	}
 	_ = req.response().(*ListAsyncJobsResponse)

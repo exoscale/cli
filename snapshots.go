@@ -5,8 +5,8 @@ func (*Snapshot) ResourceType() string {
 	return "Snapshot"
 }
 
-// APIName returns the CloudStack API command name
-func (*CreateSnapshot) APIName() string {
+// name returns the CloudStack API command name
+func (*CreateSnapshot) name() string {
 	return "createSnapshot"
 }
 
@@ -19,8 +19,8 @@ type CreateSnapshotResponse struct {
 	Snapshot Snapshot `json:"snapshot"`
 }
 
-// APIName returns the CloudStack API command name
-func (*ListSnapshots) APIName() string {
+// name returns the CloudStack API command name
+func (*ListSnapshots) name() string {
 	return "listSnapshots"
 }
 
@@ -34,8 +34,8 @@ type ListSnapshotsResponse struct {
 	Snapshot []Snapshot `json:"snapshot"`
 }
 
-// APIName returns the CloudStack API command name
-func (*DeleteSnapshot) APIName() string {
+// name returns the CloudStack API command name
+func (*DeleteSnapshot) name() string {
 	return "deleteSnapshot"
 }
 
@@ -43,8 +43,8 @@ func (*DeleteSnapshot) asyncResponse() interface{} {
 	return new(booleanAsyncResponse)
 }
 
-// APIName returns the CloudStack API command name
-func (*RevertSnapshot) APIName() string {
+// name returns the CloudStack API command name
+func (*RevertSnapshot) name() string {
 	return "revertSnapshot"
 }
 
