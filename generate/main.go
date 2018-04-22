@@ -31,6 +31,7 @@ type fieldInfo struct {
 // command represents a struct within the source code
 type command struct {
 	name     string
+	sync     string
 	s        *types.Struct
 	position token.Pos
 	fields   map[string]fieldInfo
@@ -115,6 +116,10 @@ func main() {
 			command.fields = make(map[string]fieldInfo)
 			command.errors = make(map[string]error)
 
+			if a.IsAsync {
+				command.sync = " (A)"
+			}
+
 			for i := 0; i < command.s.NumFields(); i++ {
 				f := command.s.Field(i)
 
@@ -157,7 +162,7 @@ func main() {
 					if p.Description != "" {
 						doc = fmt.Sprintf(" doc:%q", p.Description)
 					}
-					command.errors[p.Name] = fmt.Errorf("missing field: %s %s `json:\"%s%s\"%s`", strings.Title(p.Name), p.Type, p.Name, omit, doc)
+					command.errors[p.Name] = fmt.Errorf("missing field:\n\t%s %s `json:\"%s%s\"%s`", strings.Title(p.Name), p.Type, p.Name, omit, doc)
 					continue
 				}
 				delete(command.fields, p.Name)
@@ -166,7 +171,7 @@ func main() {
 
 				if field.Doc != p.Description {
 					if field.Doc == "" {
-						command.errors[p.Name] = fmt.Errorf("missing `doc:%q`", p.Description)
+						command.errors[p.Name] = fmt.Errorf("missing doc:\n\t\t`doc:%q`", p.Description)
 					} else {
 						command.errors[p.Name] = fmt.Errorf("wrong doc want %q got %q", p.Description, field.Doc)
 					}
@@ -179,6 +184,10 @@ func main() {
 
 				expected := ""
 				switch p.Type {
+				case "short":
+					if typename != "int16" {
+						expected = "int16"
+					}
 				case "integer":
 					if typename != "int" {
 						expected = "int"
@@ -193,6 +202,7 @@ func main() {
 					}
 				case "string":
 				case "uuid":
+				case "date":
 				case "tzdate":
 					if typename != "string" {
 						expected = "string"
@@ -227,14 +237,19 @@ func main() {
 
 		if *cmd == "" {
 			if er != 0 {
-				fmt.Printf("%5d %s: %s\n", er, pos, c.name)
+				fmt.Printf("%5d %s: %s%s\n", er, pos, c.name, c.sync)
 			}
 		} else if strings.ToLower(*cmd) == name {
 			for k, e := range c.errors {
 				fmt.Printf("%s: %s\n", k, e.Error())
 			}
-			fmt.Printf("\n%s: %s has %d error(s)\n", pos, c.name, er)
+			fmt.Printf("\n%s: %s%s has %d error(s)\n", pos, c.name, c.sync, er)
 			os.Exit(er)
 		}
+	}
+
+	if *cmd != "" {
+		fmt.Printf("%s not found\n", *cmd)
+		os.Exit(1)
 	}
 }
