@@ -4,8 +4,11 @@ Changelog
 0.9.22 (unreleased)
 ------
 
+- feat: `ListUsers`, `CreateUser`, `UpdateUser`
+- feat: `ListResourceDetails`
 - feat: `SecurityGroup` helper `RuleByID`
 - fix: `AuthorizeSecurityGroupIngress` support for ICMPv6
+- change: move `APIName()` into the `Client`, nice godoc
 
 0.9.21
 ------
