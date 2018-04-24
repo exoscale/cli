@@ -55,7 +55,7 @@ func (exo *Client) parseResponse(resp *http.Response) (json.RawMessage, error) {
 
 	if resp.StatusCode >= 400 {
 		errorResponse := new(ErrorResponse)
-		if json.Unmarshal(b, errorResponse) == nil {
+		if e := json.Unmarshal(b, errorResponse); e == nil && errorResponse.ErrorCode > 0 {
 			return nil, errorResponse
 		}
 		return nil, fmt.Errorf("%d %s", resp.StatusCode, b)
@@ -74,7 +74,7 @@ func (exo *Client) asyncRequest(ctx context.Context, request asyncCommand) (inte
 	jobResult := new(AsyncJobResult)
 	if err := json.Unmarshal(body, jobResult); err != nil {
 		r := new(ErrorResponse)
-		if e := json.Unmarshal(body, r); e != nil {
+		if e := json.Unmarshal(body, r); e != nil && r.ErrorCode > 0 {
 			return nil, r
 		}
 		return nil, err
@@ -130,7 +130,7 @@ func (exo *Client) syncRequest(ctx context.Context, request syncCommand) (interf
 	response := request.response()
 	if err := json.Unmarshal(body, response); err != nil {
 		errResponse := new(ErrorResponse)
-		if json.Unmarshal(body, errResponse) == nil {
+		if e := json.Unmarshal(body, errResponse); e == nil && errResponse.ErrorCode > 0 {
 			return errResponse, nil
 		}
 		return nil, err

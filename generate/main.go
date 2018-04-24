@@ -208,7 +208,7 @@ func main() {
 						expected = "string"
 					}
 				case "list":
-					if typename != "[]string" {
+					if !strings.HasPrefix(typename, "[]") {
 						expected = "[]string"
 					}
 				case "map":
@@ -221,7 +221,7 @@ func main() {
 				}
 
 				if expected != "" {
-					command.errors[p.Name] = fmt.Errorf("Expected to be a slice[], got %q", typename)
+					command.errors[p.Name] = fmt.Errorf("Expected to be a %s, got %q", expected, typename)
 				}
 			}
 

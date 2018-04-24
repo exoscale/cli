@@ -79,7 +79,7 @@ func TestCreateNetworkOnBeforeSend(t *testing.T) {
 
 func TestListNetwork(t *testing.T) {
 	ts := newServer(response{200, `
-{"listNetworksresponse": {
+{"listnetworksresponse": {
 	"count": 5,
 	"network": [
 	  {
@@ -360,11 +360,11 @@ func TestListNetwork(t *testing.T) {
 	network := new(Network)
 	networks, err := cs.List(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if len(networks) != 5 {
-		t.Errorf("Four zones were expected, got %d", len(networks))
+		t.Errorf("Five networks were expected, got %d", len(networks))
 	}
 
 	if networks[0].(*Network).ID != "939a8c40-75b5-4a82-9d7e-f8813a26cf7c" {
@@ -385,11 +385,11 @@ func TestListNetworkEmpty(t *testing.T) {
 	network := new(Network)
 	networks, err := cs.List(network)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if len(networks) != 0 {
-		t.Errorf("zero zones were expected, got %d", len(networks))
+		t.Errorf("zero networks were expected, got %d", len(networks))
 	}
 }
 
@@ -410,7 +410,7 @@ func TestListNetworkFailure(t *testing.T) {
 	}
 
 	if len(networks) != 0 {
-		t.Errorf("zero zones were expected, got %d", len(networks))
+		t.Errorf("zero networks were expected, got %d", len(networks))
 	}
 }
 
@@ -497,10 +497,14 @@ func TestListNetworkPaginate(t *testing.T) {
 
 	req, err := network.ListRequest()
 	if err != nil {
-		t.Errorf("%v", err)
+		t.Fatal(err)
 	}
 	cs.Paginate(req, func(i interface{}, err error) bool {
-		if i.(*Network).Name != "klmfsdvds" {
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if net := i.(*Network); net.Name != "klmfsdvds" {
 			t.Errorf("klmfsdvds zone name was expected, got %s", i.(*Network).Name)
 		}
 		return false
@@ -554,11 +558,11 @@ func TestFindNetwork(t *testing.T) {
 
 	networks, err := cs.List(&Network{Name: "klmfsdvds", CanUseForDeploy: true, Type: "Isolated"})
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	if len(networks) != 1 {
-		t.Errorf("One zone was expected, got %d", len(networks))
+		t.Fatalf("One network was expected, got %d", len(networks))
 	}
 
 	net, ok := networks[0].(*Network)
@@ -567,7 +571,7 @@ func TestFindNetwork(t *testing.T) {
 	}
 
 	if networks[0].(*Network).Name != "klmfsdvds" {
-		t.Errorf("klmfsdvds zone name was expected, got %s", networks[0].(*Network).Name)
+		t.Errorf("klmfsdvds network name was expected, got %s", networks[0].(*Network).Name)
 	}
 
 }

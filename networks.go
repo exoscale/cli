@@ -12,19 +12,15 @@ func (network *Network) ListRequest() (ListCommand, error) {
 		Account:           network.Account,
 		ACLType:           network.ACLType,
 		CanUseForDeploy:   &network.CanUseForDeploy,
-		DisplayNetwork:    &network.DisplayNetwork,
 		DomainID:          network.DomainID,
-		ForVpc:            network.VpcID,
 		ID:                network.ID,
 		PhysicalNetworkID: network.PhysicalNetworkID,
 		ProjectID:         network.ProjectID,
 		RestartRequired:   &network.RestartRequired,
-		SpecifyRanges:     &network.SpecifyIPRanges,
-		//Tags: network.Tags
-		TrafficType: network.TrafficType,
-		Type:        network.Type,
-		VpcID:       network.VpcID,
-		ZoneID:      network.ZoneID,
+		TrafficType:       network.TrafficType,
+		Type:              network.Type,
+		VpcID:             network.VpcID,
+		ZoneID:            network.ZoneID,
 	}
 
 	return req, nil
