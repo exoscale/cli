@@ -57,3 +57,22 @@ type ListNetworkOfferingsResponse struct {
 	Count           int               `json:"count"`
 	NetworkOffering []NetworkOffering `json:"networkoffering"`
 }
+
+// UpdateNetworkOffering represents a modification of a network offering
+//
+// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/updateNetworkOffering.html
+type UpdateNetworkOffering struct {
+	Availability     string `json:"availability,omitempty" doc:"the availability of network offering. Default value is Required for Guest Virtual network offering; Optional for Guest Direct network offering"`
+	DisplayText      string `json:"displaytext,omitempty" doc:"the display text of the network offering"`
+	ID               string `json:"id,omitempty" doc:"the id of the network offering"`
+	KeepAliveEnabled *bool  `json:"keepaliveenabled,omitempty" doc:"if true keepalive will be turned on in the loadbalancer. At the time of writing this has only an effect on haproxy; the mode http and httpclose options are unset in the haproxy conf file."`
+	MaxConnections   int    `json:"maxconnections,omitempty" doc:"maximum number of concurrent connections supported by the network offering"`
+	Name             string `json:"name,omitempty" doc:"the name of the network offering"`
+	SortKey          int    `json:"sortkey,omitempty" doc:"sort key of the network offering, integer"`
+	State            string `json:"state,omitempty" doc:"update state for the network offering"`
+}
+
+// UpdateNetworkOfferingResponse represents a newly modified network offering
+type UpdateNetworkOfferingResponse struct {
+	NetworkOffering NetworkOffering `json:"networkoffering"`
+}
