@@ -1,3 +1,5 @@
+// A toolbox to check/generate CloudStack API commands from the JSON description
+
 package main
 
 import (
