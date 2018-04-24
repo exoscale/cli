@@ -296,7 +296,7 @@ func newServer(responses ...response) *httptest.Server {
 		}
 		w.WriteHeader(responses[i].code)
 		w.Write([]byte(responses[i].body))
-		i += 1
+		i++
 	})
 	return httptest.NewServer(mux)
 }

@@ -273,8 +273,8 @@ func TestPrepareValuesBoolPtr(t *testing.T) {
 	if params["is_one"][0] != "true" {
 		t.Errorf("Expected is_one to be true")
 	}
-	if is_two, ok := params["is_two"]; ok {
-		t.Errorf("Expected is_two to be missing, got %v", is_two)
+	if isTwo, ok := params["is_two"]; ok {
+		t.Errorf("Expected is_two to be missing, got %v", isTwo)
 	}
 	if params["is_three"][0] != "true" {
 		t.Errorf("Expected is_three to be true")
@@ -282,7 +282,7 @@ func TestPrepareValuesBoolPtr(t *testing.T) {
 	if params["is_four"][0] != "false" {
 		t.Errorf("Expected is_four to be false")
 	}
-	if is_five, ok := params["is_five"]; ok {
-		t.Errorf("Expected is_five to be missing, got %v", is_five)
+	if isFive, ok := params["is_five"]; ok {
+		t.Errorf("Expected is_five to be missing, got %v", isFive)
 	}
 }
