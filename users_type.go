@@ -28,7 +28,7 @@ type User struct {
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/registerUserKeys.html
 type RegisterUserKeys struct {
-	ID string `json:"id"`
+	ID string `json:"id" doc:"User id"`
 }
 
 // RegisterUserKeysResponse represents a new set of UserKeys
@@ -66,11 +66,11 @@ type UpdateUser struct {
 	Email         string `json:"email,omitempty" doc:"email"`
 	FirstName     string `json:"firstname,omitempty" doc:"first name"`
 	LastName      string `json:"lastname,omitempty" doc:"last name"`
-	Password      string `json:"password,omitempty" doc:"Clear text password (default hashed to SHA256SALT). If you wish to use any other hasing algorithm, you would need to write a custom authentication adapter. Can't be passed when command is executed via integration.api.port"`
+	Password      string `json:"password,omitempty" doc:"Clear text password (default hashed to SHA256SALT). If you wish to use any other hashing algorithm, you would need to write a custom authentication adapter. Can't be passed when command is executed via integration.api.port"`
 	Timezone      string `json:"timezone,omitempty" doc:"Specifies a timezone for this command. For more information on the timezone parameter, see Time Zone Format."`
 	UserAPIKey    string `json:"userapikey,omitempty" doc:"The API key for the user. Must be specified with userSecretKey"`
 	UserName      string `json:"username,omitempty" doc:"Unique username"`
-	UserSecretKey string `json:"usersecretkey,omitempty" doc:"The secret key for the user. Must be specified with userSecretKey"` // XXX Fix CloudStack doc
+	UserSecretKey string `json:"usersecretkey,omitempty" doc:"The secret key for the user. Must be specified with userApiKey"`
 }
 
 // UpdateUserResponse represents the freshly modified User
