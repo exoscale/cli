@@ -94,3 +94,30 @@ type ListAccountsResponse struct {
 	Count   int       `json:"count"`
 	Account []Account `json:"account"`
 }
+
+// EnableAccount represents the activation of an account
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/enableAccount.html
+type EnableAccount struct {
+	Account  string `json:"account,omitempty" doc:"Enables specified account."`
+	DomainID string `json:"domainid,omitempty" doc:"Enables specified account in this domain."`
+	ID       string `json:"id,omitempty" doc:"Account id"`
+}
+
+// EnableAccountResponse represents the modified account
+type EnableAccountResponse struct {
+	Account Account `json:"account"`
+}
+
+// DisableAccount (Async) represents the deactivation of an account
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/disableAccount.html
+type DisableAccount struct {
+	Lock     *bool  `json:"lock" doc:"If true, only lock the account; else disable the account"`
+	Account  string `json:"account,omitempty" doc:"Disables specified account."`
+	DomainID string `json:"domainid,omitempty" doc:"Disables specified account in this domain."`
+	ID       string `json:"id,omitempty" doc:"Account id"`
+}
+
+// DisableAccountResponse represents the modified account
+type DisableAccountResponse EnableAccountResponse
