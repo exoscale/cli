@@ -180,9 +180,6 @@ func (*RebootVirtualMachine) asyncResponse() interface{} {
 	return new(RebootVirtualMachineResponse)
 }
 
-// RebootVirtualMachineResponse represents a rebooted VM instance
-type RebootVirtualMachineResponse VirtualMachineResponse
-
 // name returns the CloudStack API command name
 func (*RestoreVirtualMachine) name() string {
 	return "restoreVirtualMachine"
@@ -219,14 +216,6 @@ func (*UpdateVirtualMachine) response() interface{} {
 	return new(UpdateVirtualMachineResponse)
 }
 
-// UpdateVirtualMachineResponse represents an updated VM instance
-type UpdateVirtualMachineResponse VirtualMachineResponse
-
-// ExpungeVirtualMachine represents the annihilation of a VM
-type ExpungeVirtualMachine struct {
-	ID string `json:"id"`
-}
-
 // name returns the CloudStack API command name
 func (*ExpungeVirtualMachine) name() string {
 	return "expungeVirtualMachine"
@@ -261,6 +250,14 @@ func (*ResetPasswordForVirtualMachine) name() string {
 
 func (*ResetPasswordForVirtualMachine) asyncResponse() interface{} {
 	return new(ResetPasswordForVirtualMachineResponse)
+}
+
+func (*GetVirtualMachineUserData) name() string {
+	return "getVirtualMachineUserData"
+}
+
+func (*GetVirtualMachineUserData) response() interface{} {
+	return new(GetVirtualMachineUserDataResponse)
 }
 
 // name returns the CloudStack API command name

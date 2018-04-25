@@ -125,6 +125,14 @@ func TestExpungeVirtualMachine(t *testing.T) {
 	_ = req.asyncResponse().(*booleanAsyncResponse)
 }
 
+func TestGetVirtualMachineUserData(t *testing.T) {
+	req := &GetVirtualMachineUserData{}
+	if req.name() != "getVirtualMachineUserData" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.response().(*GetVirtualMachineUserDataResponse)
+}
+
 func TestAddNicToVirtualMachine(t *testing.T) {
 	req := &AddNicToVirtualMachine{}
 	if req.name() != "addNicToVirtualMachine" {

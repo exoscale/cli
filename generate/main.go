@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -22,6 +23,17 @@ import (
 var cmd = flag.String("cmd", "", "CloudStack command name")
 var source = flag.String("apis", "", "listApis response in JSON")
 var rtype = flag.String("type", "", "Actual type to check against the cmd (need cmd)")
+
+var apiTypes = map[string]string{
+	"short":   "int16",
+	"integer": "int",
+	"long":    "int64",
+	"map":     "map[string]string",
+	"list":    "[]struct{}",
+	"set":     "[]struct{}",
+	"uuid":    "string",
+	"boolean": "*bool",
+}
 
 // fieldInfo represents the inner details of a field
 type fieldInfo struct {
@@ -164,7 +176,13 @@ func main() {
 					if p.Description != "" {
 						doc = fmt.Sprintf(" doc:%q", p.Description)
 					}
-					command.errors[p.Name] = fmt.Errorf("missing field:\n\t%s %s `json:\"%s%s\"%s`", strings.Title(p.Name), p.Type, p.Name, omit, doc)
+
+					apiType, ok := apiTypes[p.Type]
+					if !ok {
+						apiType = p.Type
+					}
+
+					command.errors[p.Name] = fmt.Errorf("missing field:\n\t%s %s `json:\"%s%s\"%s`", strings.Title(p.Name), apiType, p.Name, omit, doc)
 					continue
 				}
 				delete(command.fields, p.Name)
@@ -242,8 +260,13 @@ func main() {
 				fmt.Printf("%5d %s: %s%s\n", er, pos, c.name, c.sync)
 			}
 		} else if strings.ToLower(*cmd) == name {
+			errs := make([]string, 0, len(c.errors))
 			for k, e := range c.errors {
-				fmt.Printf("%s: %s\n", k, e.Error())
+				errs = append(errs, fmt.Sprintf("%s: %s", k, e.Error()))
+			}
+			sort.Strings(errs)
+			for _, e := range errs {
+				fmt.Println(e)
 			}
 			fmt.Printf("\n%s: %s%s has %d error(s)\n", pos, c.name, c.sync, er)
 			os.Exit(er)
