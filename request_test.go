@@ -2,8 +2,10 @@ package egoscale
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -18,7 +20,7 @@ func TestRequest(t *testing.T) {
 	params.Set("apikey", "KEY")
 	params.Set("name", "dummy")
 	params.Set("response", "json")
-	ts := newPostServer(params, `
+	ts := newGetServer(params, `
 {
 	"listapisresponse": {
 		"api": [{
@@ -160,7 +162,7 @@ func TestBooleanAsyncRequestWithContext(t *testing.T) {
 func TestBooleanRequestTimeout(t *testing.T) {
 	ts := newSleepyServer(time.Second, 200, `
 {
-	"expungevirtualmarchine": {
+	"expungevirtualmachine": {
 		"jobid": "1",
 		"jobresult": {
 			"success": false
@@ -186,7 +188,7 @@ func TestBooleanRequestTimeout(t *testing.T) {
 
 		// We expect the HTTP Client to timeout
 		msg := err.Error()
-		if !strings.HasPrefix(msg, "Post") {
+		if !strings.HasPrefix(msg, "Get") {
 			t.Errorf("Unexpected error message: %s", err.Error())
 		}
 
@@ -196,10 +198,10 @@ func TestBooleanRequestTimeout(t *testing.T) {
 	<-done
 }
 
-func TestBooleanRequestWithContext(t *testing.T) {
+func TestBooleanRequestWithContextTimeout(t *testing.T) {
 	ts := newSleepyServer(time.Second, 200, `
 {
-	"expungevirtualmarchine": {
+	"expungevirtualmachine": {
 		"jobid": "1",
 		"jobresult": {
 			"success": false
@@ -228,6 +230,58 @@ func TestBooleanRequestWithContext(t *testing.T) {
 
 		// We expect the context to timeout
 		msg := err.Error()
+		if !strings.HasPrefix(msg, "Get") {
+			t.Errorf("Unexpected error message: %s", err.Error())
+		}
+
+		done <- true
+	}()
+
+	<-done
+}
+
+func TestRequestWithContextTimeoutPost(t *testing.T) {
+	ts := newSleepyServer(time.Second, 200, `
+{
+	"deployvirtualmachineresponse": {
+		"jobid": "1",
+		"jobresult": {
+			"success": false
+		},
+		"jobstatus": 0
+	}
+}
+	`)
+	defer ts.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	defer cancel()
+
+	done := make(chan bool)
+
+	userData := make([]byte, 1<<11)
+	_, err := rand.Read(userData)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	go func() {
+		cs := NewClient(ts.URL, "TOKEN", "SECRET")
+		req := &DeployVirtualMachine{
+			ServiceOfferingID: "test",
+			TemplateID:        "test",
+			UserData:          base64.StdEncoding.EncodeToString(userData),
+			ZoneID:            "test",
+		}
+
+		_, err := cs.RequestWithContext(ctx, req)
+
+		if err == nil {
+			t.Error("An error was expected")
+		}
+
+		// We expect the context to timeout
+		msg := err.Error()
 		if !strings.HasPrefix(msg, "Post") {
 			t.Errorf("Unexpected error message: %s", err.Error())
 		}
@@ -241,7 +295,7 @@ func TestBooleanRequestWithContext(t *testing.T) {
 func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 	ts := newSleepyServer(time.Second, 200, `
 {
-	"expungevirtualmarchine": {
+	"expungevirtualmachine": {
 		"jobid": "1",
 		"jobresult": {
 			"success": false
@@ -270,7 +324,7 @@ func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 
 		// We expect the client to timeout
 		msg := err.Error()
-		if !strings.HasPrefix(msg, "Post") || !strings.Contains(msg, "net/http: request canceled") {
+		if !strings.HasPrefix(msg, "Get") || !strings.Contains(msg, "net/http: request canceled") {
 			t.Errorf("Unexpected error message: %s", err.Error())
 		}
 
@@ -311,17 +365,13 @@ func newSleepyServer(sleep time.Duration, code int, response string) *httptest.S
 	return httptest.NewServer(mux)
 }
 
-func newPostServer(params url.Values, response string) *httptest.Server {
+func newGetServer(params url.Values, response string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		errors := make(map[string][]string)
-		if r.ParseForm() != nil {
-			w.WriteHeader(500)
-			w.Write([]byte("Cannot parse the form"))
-			return
-		}
+		query := r.URL.Query()
 		for k, expected := range params {
-			if values, ok := (r.PostForm)[k]; ok {
+			if values, ok := query[k]; ok {
 				for i, value := range values {
 					e := expected[i]
 					if e != value {

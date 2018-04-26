@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -258,14 +259,28 @@ func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, e
 	}
 	query := exo.Sign(payload)
 
-	request, err := http.NewRequest("POST", exo.Endpoint, strings.NewReader(query))
+	method := "GET"
+	url := fmt.Sprintf("%s?%s", exo.Endpoint, query)
+
+	var body io.Reader
+	// respect Internet Explorer limit of 2048
+	if len(url) > 1<<11 {
+		url = exo.Endpoint
+		method = "POST"
+		body = strings.NewReader(query)
+	}
+
+	request, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
-
-	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	request.Header.Add("Content-Length", strconv.Itoa(len(query)))
 	request = request.WithContext(ctx)
+	request.Header.Add("User-Agent", fmt.Sprintf("exoscale/egoscale (%v)", Version))
+
+	if method == "POST" {
+		request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+		request.Header.Add("Content-Length", strconv.Itoa(len(query)))
+	}
 
 	resp, err := exo.HTTPClient.Do(request)
 	if err != nil {
@@ -273,10 +288,10 @@ func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, e
 	}
 	defer resp.Body.Close()
 
-	body, err := exo.parseResponse(resp)
+	text, err := exo.parseResponse(resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return body, nil
+	return text, nil
 }
