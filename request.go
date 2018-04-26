@@ -66,59 +66,24 @@ func (exo *Client) parseResponse(resp *http.Response) (json.RawMessage, error) {
 }
 
 // asyncRequest perform an asynchronous job with a context
-func (exo *Client) asyncRequest(ctx context.Context, request asyncCommand) (interface{}, error) {
-	body, err := exo.request(ctx, request)
-	if err != nil {
-		return nil, err
-	}
+func (exo *Client) asyncRequest(ctx context.Context, request AsyncCommand) (interface{}, error) {
+	var err error
 
-	jobResult := new(AsyncJobResult)
-	if err := json.Unmarshal(body, jobResult); err != nil {
-		r := new(ErrorResponse)
-		if e := json.Unmarshal(body, r); e != nil && r.ErrorCode > 0 {
-			return nil, r
+	res := request.asyncResponse()
+	exo.AsyncRequestWithContext(ctx, request, func(j *AsyncJobResult, er error) bool {
+		if er != nil {
+			err = er
+			return false
 		}
-		return nil, err
-	}
-
-	// Successful response
-	if jobResult.JobID == "" || jobResult.JobStatus != Pending {
-		response := request.asyncResponse()
-		if err := json.Unmarshal(*(jobResult.JobResult), response); err != nil {
-			return nil, err
-		}
-		return response, nil
-	}
-
-	for iteration := 0; ; iteration++ {
-		time.Sleep(exo.RetryStrategy(int64(iteration)))
-
-		req := &QueryAsyncJobResult{JobID: jobResult.JobID}
-		resp, err := exo.syncRequest(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-
-		result, ok := resp.(*QueryAsyncJobResultResponse)
-		if !ok {
-			return nil, resp.(*ErrorResponse)
-		}
-
-		if result.JobStatus == Success {
-			response := request.asyncResponse()
-			if err := json.Unmarshal(*(result.JobResult), response); err != nil {
-				return nil, err
+		if j.JobStatus == Success {
+			if r := j.Response(res); err != nil {
+				err = r
 			}
-			return response, nil
-
-		} else if result.JobStatus == Failure {
-			r := new(ErrorResponse)
-			if e := json.Unmarshal(*result.JobResult, r); e != nil {
-				return nil, e
-			}
-			return nil, r
+			return false
 		}
-	}
+		return true
+	})
+	return res, err
 }
 
 // syncRequest performs a sync request with a context
@@ -185,8 +150,8 @@ func (exo *Client) Request(request Command) (interface{}, error) {
 	switch request.(type) {
 	case syncCommand:
 		return exo.syncRequest(ctx, request.(syncCommand))
-	case asyncCommand:
-		return exo.asyncRequest(ctx, request.(asyncCommand))
+	case AsyncCommand:
+		return exo.asyncRequest(ctx, request.(AsyncCommand))
 	default:
 		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.name()))
 	}
@@ -197,10 +162,77 @@ func (exo *Client) RequestWithContext(ctx context.Context, request Command) (int
 	switch request.(type) {
 	case syncCommand:
 		return exo.syncRequest(ctx, request.(syncCommand))
-	case asyncCommand:
-		return exo.asyncRequest(ctx, request.(asyncCommand))
+	case AsyncCommand:
+		return exo.asyncRequest(ctx, request.(AsyncCommand))
 	default:
 		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.name()))
+	}
+}
+
+// AsyncRequest performs the given command
+func (exo *Client) AsyncRequest(request AsyncCommand, callback WaitAsyncJobResultFunc) {
+	ctx, cancel := context.WithTimeout(context.Background(), exo.Timeout)
+	defer cancel()
+	exo.AsyncRequestWithContext(ctx, request, callback)
+}
+
+// AsyncRequestWithContext preforms a request with a context
+func (exo *Client) AsyncRequestWithContext(ctx context.Context, request AsyncCommand, callback WaitAsyncJobResultFunc) {
+	body, err := exo.request(ctx, request)
+	if err != nil {
+		callback(nil, err)
+		return
+	}
+
+	jobResult := new(AsyncJobResult)
+	if err := json.Unmarshal(body, jobResult); err != nil {
+		r := new(ErrorResponse)
+		if e := json.Unmarshal(body, r); e != nil && r.ErrorCode > 0 {
+			if !callback(nil, r) {
+				return
+			}
+		}
+		if !callback(nil, err) {
+			return
+		}
+	}
+
+	// Successful response
+	if jobResult.JobID == "" || jobResult.JobStatus != Pending {
+		if !callback(jobResult, nil) {
+			return
+		}
+	}
+
+	for iteration := 0; ; iteration++ {
+		time.Sleep(exo.RetryStrategy(int64(iteration)))
+
+		req := &QueryAsyncJobResult{JobID: jobResult.JobID}
+		resp, err := exo.syncRequest(ctx, req)
+		if err != nil {
+			if !callback(nil, err) {
+				return
+			}
+		}
+
+		result, ok := resp.(*QueryAsyncJobResultResponse)
+		if !ok {
+			if !callback(nil, fmt.Errorf("AsyncJobResult expected, got %t", resp)) {
+				return
+			}
+		}
+
+		res := (*AsyncJobResult)(result)
+
+		if res.JobStatus == Failure {
+			if !callback(nil, res.Error()) {
+				return
+			}
+		} else {
+			if !callback(res, nil) {
+				return
+			}
+		}
 	}
 }
 

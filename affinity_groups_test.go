@@ -6,11 +6,11 @@ import (
 )
 
 func TestAffinityGroups(t *testing.T) {
-	var _ asyncCommand = (*CreateAffinityGroup)(nil)
-	var _ asyncCommand = (*DeleteAffinityGroup)(nil)
+	var _ AsyncCommand = (*CreateAffinityGroup)(nil)
+	var _ AsyncCommand = (*DeleteAffinityGroup)(nil)
 	var _ syncCommand = (*ListAffinityGroupTypes)(nil)
 	var _ syncCommand = (*ListAffinityGroups)(nil)
-	var _ asyncCommand = (*UpdateVMAffinityGroup)(nil)
+	var _ AsyncCommand = (*UpdateVMAffinityGroup)(nil)
 }
 
 func TestCreateAffinityGroup(t *testing.T) {

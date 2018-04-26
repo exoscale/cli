@@ -18,8 +18,8 @@ type syncCommand interface {
 	response() interface{}
 }
 
-// asyncCommand represents a async CloudStack request
-type asyncCommand interface {
+// AsyncCommand represents a async CloudStack request
+type AsyncCommand interface {
 	Command
 	// Response interface to Unmarshal the JSON into
 	asyncResponse() interface{}

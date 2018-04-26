@@ -109,7 +109,40 @@ An Elastic IP is a way to attach an IP address to many Virtual Machines. The API
 
 See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/networking_and_traffic.html#about-elastic-ips
 
+Asynchronous request
 
+This exemple request deploy a virtual machine, the callback func parameter return the job status (Success, Failure, other error during execution...)
+
+	//Deploy virtual machine request
+	req := &egoscale.DeployVirtualMachine{}
+
+	//Deploy virtual machine response
+	resp := &egoscale.DeployVirtualMachineResponse{}
+
+	//Make async request using egoscale client
+	fmt.Print("Deploying")
+	cs.AsyncRequest(req, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//Verify job status (Pending, Success or Failure)
+		if jobResult.JobStatus == Success {
+
+			//when job status is success then get the result with Response() methode
+			if err := jobResult.Response(r); err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println("Success")
+			//return false to stop polling job status
+			return false
+		}
+		fmt.Printf(".")
+		//return true to continue to polling job status
+		return true
+	})
 
 */
 package egoscale

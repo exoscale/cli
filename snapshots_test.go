@@ -6,10 +6,10 @@ import (
 
 func TestSnapshots(t *testing.T) {
 	var _ Taggable = (*Snapshot)(nil)
-	var _ asyncCommand = (*CreateSnapshot)(nil)
+	var _ AsyncCommand = (*CreateSnapshot)(nil)
 	var _ syncCommand = (*ListSnapshots)(nil)
-	var _ asyncCommand = (*DeleteSnapshot)(nil)
-	var _ asyncCommand = (*RevertSnapshot)(nil)
+	var _ AsyncCommand = (*DeleteSnapshot)(nil)
+	var _ AsyncCommand = (*RevertSnapshot)(nil)
 }
 
 func TestSnapshot(t *testing.T) {

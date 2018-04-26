@@ -198,7 +198,160 @@ func TestBooleanRequestTimeout(t *testing.T) {
 	<-done
 }
 
-func TestBooleanRequestWithContextTimeout(t *testing.T) {
+func TestAsyncRequestWithoutContext(t *testing.T) {
+
+	ts := newServer(response{200, `
+			{
+				"asyncjobresult": {
+					"jobid": "1",
+					"jobresult": {},
+					"jobstatus": 0
+				}
+			}
+				`}, response{200, `
+					{"queryasyncjobresultresponse": {
+							"jobid": "1",
+							"jobresult": {
+									"virtualmachine": {
+										"id": "f344b886-2a8b-4d2c-9662-1f18e5cdde6f",
+										"serviceofferingid": "71004023-bb72-4a97-b1e9-bc66dfce9470",
+										"templateid": "78c2cbe6-8e11-4722-b01f-bf06f4e28108",
+										"zoneid": "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
+										"jobid": "220504ac-b9e7-4fee-b402-47b3c4155fdb"
+									  }
+							},
+							"jobstatus": 1
+						}}`})
+
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	req := &DeployVirtualMachine{
+		Name:              "test",
+		ServiceOfferingID: "71004023-bb72-4a97-b1e9-bc66dfce9470",
+		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
+		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108",
+	}
+
+	resp := &DeployVirtualMachineResponse{}
+
+	// WithContext
+	cs.AsyncRequest(req, func(j *AsyncJobResult, err error) bool {
+		if err != nil {
+			t.Error(err)
+		}
+
+		if j.JobStatus == Success {
+
+			if r := j.Response(resp); r != nil {
+				t.Error(r)
+			}
+			return false
+		}
+		return true
+	})
+
+	if resp.VirtualMachine.ServiceOfferingID != "71004023-bb72-4a97-b1e9-bc66dfce9470" {
+		t.Errorf("Expected ServiceOfferingID %q, got %q", "71004023-bb72-4a97-b1e9-bc66dfce9470", resp.VirtualMachine.ServiceOfferingID)
+	}
+}
+
+func TestAsyncRequestWithoutContextFailure(t *testing.T) {
+
+	ts := newServer(response{200, `
+			{
+				"asyncjobresult": {
+					"jobid": "1",
+					"jobresult": {},
+					"jobstatus": 0
+				}
+			}
+			`}, response{200, `
+			{"queryasyncjobresultresponse": {
+					"jobid": "1",
+					"jobresult": {
+						"virtualmachine": []
+					},
+					"jobstatus": 1
+			}}`}, response{200, `
+				{
+					"asyncjobresult": {
+						"jobid": "1",
+						"jobresult": {},
+						"jobstatus": 0
+					}
+				}
+				`}, response{200, `
+				{"queryasyncjobresultresponse": {
+					"jobid": "1",
+					"jobresult": {
+						"virtualmachine": {}
+					},
+					"jobstatus": 2
+				}}`}, response{200, `
+				{
+					"asyncjobresult": {
+					"jobid": "1",
+					"jobresult": {},
+					"jobstatus": 0
+				}
+				}
+				`}, response{200, `
+				{"queryasyncjobresultresponse": {
+					"jobid": "1",
+					"jobresult": [],
+					"jobstatus": 1
+				}}`})
+
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	req := &DeployVirtualMachine{
+		Name:              "test",
+		ServiceOfferingID: "71004023-bb72-4a97-b1e9-bc66dfce9470",
+		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
+		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108"}
+
+	resp := &DeployVirtualMachineResponse{}
+
+	// WithContext
+	cs.AsyncRequest(req, func(j *AsyncJobResult, err error) bool {
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if j.JobStatus == Success {
+
+			if r := j.Response(resp); r != nil {
+				return false
+			}
+			t.Errorf("Expected an error, got <nil>")
+		}
+		return true
+	})
+
+	cs.AsyncRequest(req, func(j *AsyncJobResult, err error) bool {
+		return err == nil
+	})
+
+	cs.AsyncRequest(req, func(j *AsyncJobResult, err error) bool {
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if j.JobStatus == Success {
+
+			j.JobStatus = Failure
+			if r := j.Response(resp); r != nil {
+				return false
+			}
+			t.Errorf("Expected an error, got <nil>")
+		}
+		return true
+	})
+}
+
+func TestBooleanRequestWithContext(t *testing.T) {
 	ts := newSleepyServer(time.Second, 200, `
 {
 	"expungevirtualmachine": {
@@ -222,6 +375,7 @@ func TestBooleanRequestWithContextTimeout(t *testing.T) {
 		req := &ExpungeVirtualMachine{
 			ID: "123",
 		}
+
 		err := cs.BooleanRequestWithContext(ctx, req)
 
 		if err == nil {

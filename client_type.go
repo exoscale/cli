@@ -55,3 +55,6 @@ type RetryStrategyFunc func(int64) time.Duration
 
 // IterateItemFunc represents the callback to iterate a list of results, if false stops
 type IterateItemFunc func(interface{}, error) bool
+
+// WaitAsyncJobResultFunc represents the callback to wait a results of an async request, if false stops
+type WaitAsyncJobResultFunc func(*AsyncJobResult, error) bool

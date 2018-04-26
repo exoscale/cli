@@ -5,8 +5,8 @@ import (
 )
 
 func TestTags(t *testing.T) {
-	var _ asyncCommand = (*CreateTags)(nil)
-	var _ asyncCommand = (*DeleteTags)(nil)
+	var _ AsyncCommand = (*CreateTags)(nil)
+	var _ AsyncCommand = (*DeleteTags)(nil)
 	var _ syncCommand = (*ListTags)(nil)
 }
 
