@@ -3,6 +3,7 @@ package egoscale
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -169,8 +170,20 @@ func (client *Client) PaginateWithContext(ctx context.Context, req ListCommand, 
 }
 
 // APIName returns the CloudStack name of the given command
-func (client *Client) APIName(req Command) string {
-	return req.name()
+func (client *Client) APIName(request Command) string {
+	return request.name()
+}
+
+// Response returns the response structure of the given command
+func (client *Client) Response(request Command) interface{} {
+	switch request.(type) {
+	case syncCommand:
+		return (request.(syncCommand)).response()
+	case AsyncCommand:
+		return (request.(AsyncCommand)).asyncResponse()
+	default:
+		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.name()))
+	}
 }
 
 // NewClientWithTimeout creates a CloudStack API client
