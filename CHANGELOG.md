@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.9.22 (unreleased)
+0.9.22
 ------
 
 - feat: `ListUsers`, `CreateUser`, `UpdateUser`
