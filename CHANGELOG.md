@@ -11,6 +11,7 @@ Changelog
 - feat: `UpdateNetworkOffering`
 - feat: `GetVirtualMachineUserData`
 - feat: `EnableAccount` and `DisableAccount` (admin stuff)
+- feat: `AsyncRequest` and `AsyncRequestWithContext` to examine the polling
 - fix: `AuthorizeSecurityGroupIngress` support for ICMPv6
 - change: move `APIName()` into the `Client`, nice godoc
 - change: `Payload` doesn't sign the request anymore

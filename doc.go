@@ -8,6 +8,58 @@ To build a request, construct the adequate struct. This library expects a pointe
 
 Then everything within the struct is not a pointer. Find below some examples of how egoscale may be used to interact with a CloudStack endpoint, especially Exoscale itself. If anything feels odd or unclear, please let us know: https://github.com/exoscale/egoscale/issues
 
+	req := &egoscale.DeployVirtualMachine{
+		Size:              10,
+		ServiceOfferingID: "...",
+		TemplateID:        "...",
+		ZoneID:            "...",
+	}
+
+	fmt.Println("Deployment started")
+	resp, err := cs.Request(req)
+	if err != nil {
+		panic(err)
+	}
+
+	vm := resp.(*egoscale.DeployVirtualMachineResponse).VirtualMachine
+	fmt.Printf("Virtual Machine ID: %s\n", vm.ID)
+
+This exemple deploys a virtual machine while controlling the job status as it goes. It enables a finer control over errors, e.g. HTTP timeout, and eventually a way to kill it of (from the client side).
+
+	req := &egoscale.DeployVirtualMachine{
+		Size:              10,
+		ServiceOfferingID: "...",
+		TemplateID:        "...",
+		ZoneID:            "...",
+	}
+	resp := &egoscale.DeployVirtualMachineResponse{}
+
+	fmt.Println("Deployment started")
+	cs.AsyncRequest(req, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+		if err != nil {
+			// any kind of error
+			panic(err)
+		}
+
+		// Keep waiting
+		if jobResult.JobStatus == egoscale.Pending {
+			fmt.Println("wait...")
+			return true
+		}
+
+		// Unmarshal the response into the response struct
+		if err := jobResult.Response(resp); err != nil {
+			// JSON unmarshaling error
+			panic(err)
+		}
+
+		// Stop waiting
+		return false
+	})
+
+	fmt.Printf("Virtual Machine ID: %s\n", resp.VirtualMachine.ID)
+
+
 APIs
 
 All the available APIs on the server and provided by the API Discovery plugin
@@ -108,41 +160,6 @@ Elastic IPs
 An Elastic IP is a way to attach an IP address to many Virtual Machines. The API side of the story configures the external environment, like the routing. Some work is required within the machine to properly configure the interfaces.
 
 See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/networking_and_traffic.html#about-elastic-ips
-
-Asynchronous request
-
-This exemple request deploy a virtual machine, the callback func parameter return the job status (Success, Failure, other error during execution...)
-
-	//Deploy virtual machine request
-	req := &egoscale.DeployVirtualMachine{}
-
-	//Deploy virtual machine response
-	resp := &egoscale.DeployVirtualMachineResponse{}
-
-	//Make async request using egoscale client
-	fmt.Print("Deploying")
-	cs.AsyncRequest(req, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		//Verify job status (Pending, Success or Failure)
-		if jobResult.JobStatus == Success {
-
-			//when job status is success then get the result with Response() methode
-			if err := jobResult.Response(r); err != nil {
-				log.Fatal(err)
-			}
-
-			fmt.Println("Success")
-			//return false to stop polling job status
-			return false
-		}
-		fmt.Printf(".")
-		//return true to continue to polling job status
-		return true
-	})
 
 */
 package egoscale
