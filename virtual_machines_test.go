@@ -250,7 +250,6 @@ func TestGetVirtualMachine(t *testing.T) {
 				}
 			],
 			"oscategoryid": "ca158095-a6d2-4b0c-95e3-9a2e5123cbfc",
-			"ostypeid": 140,
 			"passwordenabled": true,
 			"securitygroup": [
 				{

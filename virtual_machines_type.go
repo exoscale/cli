@@ -47,7 +47,6 @@ type VirtualMachine struct {
 	NetworkKbsWrite       int64             `json:"networkkbswrite,omitempty" doc:"the outgoing network traffic on the host"`
 	Nic                   []Nic             `json:"nic,omitempty" doc:"the list of nics associated with vm"`
 	OsCategoryID          string            `json:"oscategoryid,omitempty" doc:"Os category ID of the virtual machine"`
-	OsTypeID              int64             `json:"ostypeid,omitempty" doc:"OS type id of the vm"`
 	Password              string            `json:"password,omitempty" doc:"the password (if exists) of the virtual machine"`
 	PasswordEnabled       bool              `json:"passwordenabled,omitempty" doc:"true if the password rest feature is enabled, false otherwise"`
 	PCIDevices            []string          `json:"pcidevices,omitempty" doc:"list of PCI devices"`
@@ -211,7 +210,6 @@ type UpdateVirtualMachine struct {
 	HAEnable              *bool             `json:"haenable,omitempty" doc:"true if high-availability is enabled for the virtual machine, false otherwise"`
 	IsDynamicallyScalable *bool             `json:"isdynamicallyscalable,omitempty" doc:"true if VM contains XS/VMWare tools inorder to support dynamic scaling of VM cpu/memory"`
 	Name                  string            `json:"name,omitempty" doc:"new host name of the vm. The VM has to be stopped/started for this update to take affect"`
-	OSTypeID              int64             `json:"ostypeid,omitempty" doc:"the ID of the OS type that best represents this VM."`
 	SecurityGroupIDs      []string          `json:"securitygroupids,omitempty" doc:"list of security group ids to be applied on the virtual machine."`
 	UserData              string            `json:"userdata,omitempty" doc:"an optional binary data that can be sent to the virtual machine upon a successful deployment. This binary data must be base64 encoded before adding it to the request. Using HTTP GET (via querystring), you can send up to 2KB of data after base64 encoding. Using HTTP POST(via POST body), you can send up to 32K of data after base64 encoding."`
 }
