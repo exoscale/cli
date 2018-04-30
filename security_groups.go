@@ -113,7 +113,7 @@ func (*DeleteSecurityGroup) name() string {
 }
 
 func (*DeleteSecurityGroup) response() interface{} {
-	return new(booleanSyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name
@@ -157,7 +157,7 @@ func (*RevokeSecurityGroupIngress) name() string {
 }
 
 func (*RevokeSecurityGroupIngress) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name
@@ -166,7 +166,7 @@ func (*RevokeSecurityGroupEgress) name() string {
 }
 
 func (*RevokeSecurityGroupEgress) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name

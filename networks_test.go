@@ -58,7 +58,7 @@ func TestDeleteNetwork(t *testing.T) {
 	if req.name() != "deleteNetwork" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestCreateNetworkOnBeforeSend(t *testing.T) {

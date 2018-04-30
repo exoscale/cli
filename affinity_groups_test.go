@@ -26,7 +26,7 @@ func TestDeleteAffinityGroup(t *testing.T) {
 	if req.name() != "deleteAffinityGroup" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestListAffinityGroups(t *testing.T) {

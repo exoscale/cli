@@ -69,7 +69,7 @@ func (*DeleteSSHKeyPair) name() string {
 }
 
 func (*DeleteSSHKeyPair) response() interface{} {
-	return new(booleanSyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name

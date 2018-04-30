@@ -40,5 +40,5 @@ func TestDeleteInstanceGroup(t *testing.T) {
 	if req.name() != "deleteInstanceGroup" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*booleanSyncResponse)
+	_ = req.response().(*booleanResponse)
 }

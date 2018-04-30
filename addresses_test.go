@@ -33,7 +33,7 @@ func TestDisassociateIPAddress(t *testing.T) {
 	if req.name() != "disassociateIpAddress" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestListPublicIPAddresses(t *testing.T) {

@@ -106,7 +106,7 @@ func TestScaleVirtualMachine(t *testing.T) {
 	if req.name() != "scaleVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestRecoverVirtualMachine(t *testing.T) {
@@ -122,7 +122,7 @@ func TestExpungeVirtualMachine(t *testing.T) {
 	if req.name() != "expungeVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestGetVirtualMachineUserData(t *testing.T) {

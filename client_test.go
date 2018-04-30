@@ -1,6 +1,7 @@
 package egoscale
 
 import (
+	"encoding/json"
 	"net"
 	"strings"
 	"testing"
@@ -15,15 +16,34 @@ func testClientAPIName(t *testing.T) {
 }
 
 func TestClientSyncDelete(t *testing.T) {
-	resp := response{200, `
+	respSuccessString := response{200, `
 {"deleteresponse": {
 	"success": "true"
 }}`}
-	respError := response{400, `
-	{"deleteresponse": {
-		"success": "false",
-		"displaytext": "herp derp"
-	}}`}
+	respSuccessBool := response{200, `
+{"deleteresponse": {
+	"success": true
+}}`}
+
+	respError := response{431, `
+{"deleteresponse": {
+	"errorcode": 431,
+	"cserrorcode": 9999,
+	"errortext": "This is a dummy error",
+	"uuidList": []
+}}`}
+	// those examples are not real as the API should always answer
+	// with the above kind of response
+	respErrorString := response{200, `
+{"deleteresponse": {
+	"success": "false",
+	"displaytext": "herp derp"
+}}`}
+	respErrorBool := response{200, `
+{"deleteresponse": {
+	"success": false,
+	"displaytext": "herp derp"
+}}`}
 
 	things := []Deletable{
 		&SecurityGroup{ID: "test"},
@@ -32,17 +52,21 @@ func TestClientSyncDelete(t *testing.T) {
 	}
 
 	for _, thing := range things {
-		ts := newServer(resp, respError)
+		ts := newServer(respSuccessString, respSuccessBool, respError, respErrorString, respErrorBool)
 		defer ts.Close()
 
 		cs := NewClient(ts.URL, "KEY", "SECRET")
 
-		if err := cs.Delete(thing); err != nil {
-			t.Errorf("Deletion of %#v. Err: %s", thing, err)
+		for i := 0; i < 2; i++ {
+			if err := cs.Delete(thing); err != nil {
+				t.Errorf("Deletion of %#v. Err: %s", thing, err)
+			}
 		}
 
-		if err := cs.Delete(thing); err == nil {
-			t.Errorf("Deletion of %#v. An error was expected", thing)
+		for i := 0; i < 3; i++ {
+			if err := cs.Delete(thing); err == nil {
+				t.Errorf("Deletion of %v an error was expected", thing)
+			}
 		}
 	}
 }
@@ -52,7 +76,7 @@ func TestClientAsyncDelete(t *testing.T) {
 {"deleteresponse": {
 	"jobid": "1",
 	"jobresult": {
-		"success": true
+		"success": "true"
 	},
 	"jobstatus": 1
 }}`}
@@ -201,5 +225,73 @@ func TestClientGetTooMany(t *testing.T) {
 		if !strings.HasPrefix(err.Error(), "More than one") {
 			t.Errorf("Bad error %s", err)
 		}
+	}
+}
+
+func TestBooleanResponse(t *testing.T) {
+	body := `{"success": true, "displaytext": "yay!"}`
+	response := new(booleanResponse)
+
+	err := json.Unmarshal([]byte(body), response)
+
+	if err != nil {
+		t.Fatalf("This shouldn't break")
+	}
+
+	success, _ := response.IsSuccess()
+	if !success {
+		t.Errorf("A success was expected")
+	}
+
+	if response.DisplayText != "yay!" {
+		t.Errorf("DisplayText doesn't match %q", response.DisplayText)
+	}
+}
+
+func TestBooleanResponseString(t *testing.T) {
+	body := `{"success": "true"}`
+	response := new(booleanResponse)
+
+	err := json.Unmarshal([]byte(body), response)
+
+	if err != nil {
+		t.Fatalf("This shouldn't break")
+	}
+
+	success, _ := response.IsSuccess()
+	if !success {
+		t.Errorf("A success was expected")
+	}
+}
+
+func TestBooleanResponseEmpty(t *testing.T) {
+	body := `{}`
+	response := new(booleanResponse)
+
+	err := json.Unmarshal([]byte(body), response)
+
+	if err != nil {
+		t.Fatalf("This shouldn't break")
+	}
+
+	err = response.Error()
+	if err == nil {
+		t.Errorf("The booleanResponse is not a valid one")
+	}
+}
+
+func TestBooleanResponseInvalid(t *testing.T) {
+	body := `{"success": 42}`
+	response := new(booleanResponse)
+
+	err := json.Unmarshal([]byte(body), response)
+
+	if err != nil {
+		t.Fatalf("This shouldn't break")
+	}
+
+	err = response.Error()
+	if err == nil {
+		t.Errorf("An error was expected")
 	}
 }

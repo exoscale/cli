@@ -6,7 +6,7 @@ func (*CreateTags) name() string {
 }
 
 func (*CreateTags) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name
@@ -15,7 +15,7 @@ func (*DeleteTags) name() string {
 }
 
 func (*DeleteTags) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name

@@ -75,7 +75,7 @@ func (*DisassociateIPAddress) name() string {
 	return "disassociateIpAddress"
 }
 func (*DisassociateIPAddress) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name

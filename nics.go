@@ -61,7 +61,7 @@ func (*RemoveIPFromNic) name() string {
 }
 
 func (*RemoveIPFromNic) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name: activateIp6

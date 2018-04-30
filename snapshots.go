@@ -40,7 +40,7 @@ func (*DeleteSnapshot) name() string {
 }
 
 func (*DeleteSnapshot) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name
@@ -49,5 +49,5 @@ func (*RevertSnapshot) name() string {
 }
 
 func (*RevertSnapshot) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }

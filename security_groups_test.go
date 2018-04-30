@@ -54,7 +54,7 @@ func TestDeleteSecurityGroup(t *testing.T) {
 	if req.name() != "deleteSecurityGroup" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*booleanSyncResponse)
+	_ = req.response().(*booleanResponse)
 }
 
 func TestListSecurityGroupsApiName(t *testing.T) {
@@ -70,7 +70,7 @@ func TestRevokeSecurityGroupEgress(t *testing.T) {
 	if req.name() != "revokeSecurityGroupEgress" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestRevokeSecurityGroupIngress(t *testing.T) {
@@ -78,7 +78,7 @@ func TestRevokeSecurityGroupIngress(t *testing.T) {
 	if req.name() != "revokeSecurityGroupIngress" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestAuthorizeSecurityGroupEgressOnBeforeSendICMP(t *testing.T) {

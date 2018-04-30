@@ -75,7 +75,7 @@ func (*DeleteInstanceGroup) name() string {
 }
 
 func (*DeleteInstanceGroup) response() interface{} {
-	return new(booleanSyncResponse)
+	return new(booleanResponse)
 }
 
 // ListInstanceGroups lists VM groups

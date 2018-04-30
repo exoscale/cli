@@ -123,14 +123,8 @@ type UUIDItem struct {
 	UUID             string `json:"uuid"`
 }
 
-// booleanAsyncResponse represents a boolean response (usually after a deletion)
-type booleanAsyncResponse struct {
-	Success     bool   `json:"success"`
-	DisplayText string `json:"diplaytext,omitempty"`
-}
-
-// booleanAsyncResponse represents a boolean response for sync calls
-type booleanSyncResponse struct {
-	Success     string `json:"success"`
-	DisplayText string `json:"displaytext,omitempty"`
+// booleanResponse represents a boolean response (usually after a deletion)
+type booleanResponse struct {
+	Success     json.RawMessage `json:"success"`
+	DisplayText string          `json:"displaytext,omitempty"`
 }

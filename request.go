@@ -23,19 +23,36 @@ func (e *ErrorResponse) Error() string {
 	return fmt.Sprintf("API error %s %d (%d): %s", e.ErrorCode, e.ErrorCode, e.CsErrorCode, e.ErrorText)
 }
 
-// Error formats a CloudStack job response into a standard error
-func (e *booleanAsyncResponse) Error() error {
-	if e.Success {
-		return nil
+// Success computes the values based on the RawMessage, either string or bool
+func (e *booleanResponse) IsSuccess() (bool, error) {
+	if e.Success == nil {
+		return false, fmt.Errorf("Not a valid booleanResponse")
 	}
-	return fmt.Errorf("API error: %s", e.DisplayText)
+
+	str := ""
+	if err := json.Unmarshal(e.Success, &str); err != nil {
+		boolean := false
+		if e := json.Unmarshal(e.Success, &boolean); e != nil {
+			return false, e
+		}
+		return boolean, nil
+	}
+	return str == "true", nil
 }
 
-func (e *booleanSyncResponse) Error() error {
-	if e.Success == "true" {
+// Error formats a CloudStack job response into a standard error
+func (e *booleanResponse) Error() error {
+	success, err := e.IsSuccess()
+
+	if err != nil {
+		return err
+	}
+
+	if success {
 		return nil
 	}
 
+	fmt.Printf("%#v", e)
 	return fmt.Errorf("API error: %s", e.DisplayText)
 }
 
@@ -94,7 +111,22 @@ func (exo *Client) syncRequest(ctx context.Context, request syncCommand) (interf
 	}
 
 	response := request.response()
-	if err := json.Unmarshal(body, response); err != nil {
+	err = json.Unmarshal(body, response)
+
+	// booleanResponse will alway be valid...
+	if err == nil {
+		if br, ok := response.(*booleanResponse); ok {
+			success, e := br.IsSuccess()
+			if e != nil {
+				return nil, e
+			}
+			if !success {
+				err = fmt.Errorf("Not a valid booleanResponse")
+			}
+		}
+	}
+
+	if err != nil {
 		errResponse := new(ErrorResponse)
 		if e := json.Unmarshal(body, errResponse); e == nil && errResponse.ErrorCode > 0 {
 			return errResponse, nil
@@ -112,12 +144,7 @@ func (exo *Client) BooleanRequest(req Command) error {
 		return err
 	}
 
-	// CloudStack returns a different type between sync and async success responses
-	if b, ok := resp.(*booleanSyncResponse); ok {
-		return b.Error()
-	}
-
-	if b, ok := resp.(*booleanAsyncResponse); ok {
+	if b, ok := resp.(*booleanResponse); ok {
 		return b.Error()
 	}
 
@@ -131,11 +158,7 @@ func (exo *Client) BooleanRequestWithContext(ctx context.Context, req Command) e
 		return err
 	}
 
-	// CloudStack returns a different type between sync and async success responses
-	if b, ok := resp.(*booleanSyncResponse); ok {
-		return b.Error()
-	}
-	if b, ok := resp.(*booleanAsyncResponse); ok {
+	if b, ok := resp.(*booleanResponse); ok {
 		return b.Error()
 	}
 

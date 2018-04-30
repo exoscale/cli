@@ -151,7 +151,7 @@ func (*DeleteAffinityGroup) name() string {
 }
 
 func (*DeleteAffinityGroup) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // ListAffinityGroups represents an (anti-)affinity groups search

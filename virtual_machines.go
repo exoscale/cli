@@ -222,7 +222,7 @@ func (*ExpungeVirtualMachine) name() string {
 }
 
 func (*ExpungeVirtualMachine) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name
@@ -231,7 +231,7 @@ func (*ScaleVirtualMachine) name() string {
 }
 
 func (*ScaleVirtualMachine) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name

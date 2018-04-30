@@ -33,7 +33,7 @@ func TestDeleteSSHKeyPair(t *testing.T) {
 	if req.name() != "deleteSSHKeyPair" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*booleanSyncResponse)
+	_ = req.response().(*booleanResponse)
 }
 
 func TestListSSHKeyPairsResponse(t *testing.T) {

@@ -75,7 +75,7 @@ func (*DeleteNetwork) name() string {
 }
 
 func (*DeleteNetwork) asyncResponse() interface{} {
-	return new(booleanAsyncResponse)
+	return new(booleanResponse)
 }
 
 // name returns the CloudStack API command name

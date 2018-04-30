@@ -17,7 +17,7 @@ func TestRemoveIPFromNic(t *testing.T) {
 	if req.name() != "removeIpFromNic" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestListNicsAPIName(t *testing.T) {

@@ -40,7 +40,7 @@ func TestDeleteSnapshot(t *testing.T) {
 	if req.name() != "deleteSnapshot" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestRevertSnapshot(t *testing.T) {
@@ -48,5 +48,5 @@ func TestRevertSnapshot(t *testing.T) {
 	if req.name() != "revertSnapshot" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*booleanAsyncResponse)
+	_ = req.asyncResponse().(*booleanResponse)
 }
