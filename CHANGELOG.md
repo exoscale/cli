@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.23
+------
+
+- feat: `booleanResponse` supports true booleans: https://github.com/apache/cloudstack/pull/2428
+
 0.9.22
 ------
 
