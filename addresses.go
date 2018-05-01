@@ -98,20 +98,20 @@ func (*ListPublicIPAddresses) response() interface{} {
 // ListRequest builds the ListAdresses request
 func (ipaddress *IPAddress) ListRequest() (ListCommand, error) {
 	req := &ListPublicIPAddresses{
-		Account:            ipaddress.Account,
-		AllocatedNetworkID: ipaddress.AssociatedNetworkID,
-		DomainID:           ipaddress.DomainID,
-		ForDisplay:         &ipaddress.ForDisplay,
-		//ForVirtualNetwork:  ip.ForVirtualNetwork, change ForVirtualNetwork type for type bool
-		ID:                ipaddress.ID,
-		IPAddress:         ipaddress.IPAddress,
-		IsElastic:         &ipaddress.IsElastic,
-		IsSourceNat:       &ipaddress.IsSourceNat,
-		PhysicalNetworkID: ipaddress.PhysicalNetworkID,
-		ProjectID:         ipaddress.ProjectID,
-		VlanID:            ipaddress.VlanID,
-		VpcID:             ipaddress.VpcID,
-		ZoneID:            ipaddress.ZoneID,
+		Account:             ipaddress.Account,
+		AssociatedNetworkID: ipaddress.AssociatedNetworkID,
+		DomainID:            ipaddress.DomainID,
+		ForDisplay:          &ipaddress.ForDisplay,
+		ForVirtualNetwork:   &ipaddress.ForVirtualNetwork,
+		ID:                  ipaddress.ID,
+		IPAddress:           ipaddress.IPAddress,
+		IsElastic:           &ipaddress.IsElastic,
+		IsSourceNat:         &ipaddress.IsSourceNat,
+		PhysicalNetworkID:   ipaddress.PhysicalNetworkID,
+		ProjectID:           ipaddress.ProjectID,
+		VlanID:              ipaddress.VlanID,
+		VpcID:               ipaddress.VpcID,
+		ZoneID:              ipaddress.ZoneID,
 	}
 
 	return req, nil

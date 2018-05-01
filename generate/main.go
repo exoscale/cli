@@ -33,6 +33,7 @@ var apiTypes = map[string]string{
 	"set":     "[]struct{}",
 	"uuid":    "string",
 	"boolean": "*bool",
+	"date":    "string",
 }
 
 // fieldInfo represents the inner details of a field
