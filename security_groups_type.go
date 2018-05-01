@@ -2,40 +2,38 @@ package egoscale
 
 // SecurityGroup represent a firewalling set of rules
 type SecurityGroup struct {
-	ID                  string        `json:"id"`
-	Account             string        `json:"account,omitempty"`
-	Description         string        `json:"description,omitempty"`
-	Domain              string        `json:"domain,omitempty"`
-	DomainID            string        `json:"domainid,omitempty"`
-	Name                string        `json:"name"`
-	Project             string        `json:"project,omitempty"`
-	ProjectID           string        `json:"projectid,omitempty"`
-	VirtualMachineCount int           `json:"virtualmachinecount,omitempty"` // CloudStack 4.6+
-	VirtualMachineIDs   []string      `json:"virtualmachineids,omitempty"`   // CloudStack 4.6+
-	IngressRule         []IngressRule `json:"ingressrule"`
-	EgressRule          []EgressRule  `json:"egressrule"`
-	Tags                []ResourceTag `json:"tags,omitempty"`
-	JobID               string        `json:"jobid,omitempty"`
-	JobStatus           JobStatusType `json:"jobstatus,omitempty"`
+	Account     string        `json:"account,omitempty" doc:"the account owning the security group"`
+	Description string        `json:"description,omitempty" doc:"the description of the security group"`
+	Domain      string        `json:"domain,omitempty" doc:"the domain name of the security group"`
+	DomainID    string        `json:"domainid,omitempty" doc:"the domain ID of the security group"`
+	EgressRule  []EgressRule  `json:"egressrule,omitempty" doc:"the list of egress rules associated with the security group"`
+	ID          string        `json:"id,omitempty" doc:"the ID of the security group"`
+	IngressRule []IngressRule `json:"ingressrule,omitempty" doc:"the list of ingress rules associated with the security group"`
+	JobID       string        `json:"jobid,omitempty"`
+	JobStatus   JobStatusType `json:"jobstatus,omitempty"`
+	Name        string        `json:"name,omitempty" doc:"the name of the security group"`
+	Project     string        `json:"project,omitempty" doc:"the project name of the group"`
+	ProjectID   string        `json:"projectid,omitempty" doc:"the project id of the group"`
+	Tags        []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with the rule"`
 }
 
 // IngressRule represents the ingress rule
 type IngressRule struct {
-	RuleID                string              `json:"ruleid"`
-	Account               string              `json:"account,omitempty"`
-	Cidr                  string              `json:"cidr,omitempty"`
-	Description           string              `json:"description,omitempty"`
-	IcmpType              uint8               `json:"icmptype,omitempty"`
-	IcmpCode              uint8               `json:"icmpcode,omitempty"`
-	StartPort             uint16              `json:"startport,omitempty"`
-	EndPort               uint16              `json:"endport,omitempty"`
-	Protocol              string              `json:"protocol,omitempty"`
-	Tags                  []ResourceTag       `json:"tags,omitempty"`
-	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
-	SecurityGroupName     string              `json:"securitygroupname,omitempty"`
-	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
+	Account               string              `json:"account,omitempty" doc:"account owning the security group rule"`
+	Cidr                  string              `json:"cidr,omitempty" doc:"the CIDR notation for the base IP address of the security group rule"`
+	Description           string              `json:"description,omitempty" doc:"description of the security group rule"`
+	EndPort               uint16              `json:"endport,omitempty" doc:"the ending IP of the security group rule "`
+	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"the code for the ICMP message response"`
+	IcmpType              uint8               `json:"icmptype,omitempty" doc:"the type of the ICMP message response"`
 	JobID                 string              `json:"jobid,omitempty"`
 	JobStatus             JobStatusType       `json:"jobstatus,omitempty"`
+	Protocol              string              `json:"protocol,omitempty" doc:"the protocol of the security group rule"`
+	RuleID                string              `json:"ruleid,omitempty" doc:"the id of the security group rule"`
+	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
+	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"security group name"`
+	StartPort             uint16              `json:"startport,omitempty" doc:"the starting IP of the security group rule"`
+	Tags                  []ResourceTag       `json:"tags,omitempty" doc:"the list of resource tags associated with the rule"`
+	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
 }
 
 // EgressRule represents the ingress rule
@@ -56,8 +54,11 @@ type SecurityGroupResponse struct {
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/createSecurityGroup.html
 type CreateSecurityGroup struct {
-	Name        string `json:"name"`
-	Description string `json:"description,omitempty"`
+	Name        string `json:"name" doc:"name of the security group"`
+	Account     string `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
+	Description string `json:"description,omitempty" doc:"the description of the security group"`
+	DomainID    string `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
+	ProjectID   string `json:"projectid,omitempty" doc:"Create security group for project"`
 }
 
 // CreateSecurityGroupResponse represents a new security group
@@ -67,30 +68,30 @@ type CreateSecurityGroupResponse SecurityGroupResponse
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSecurityGroup.html
 type DeleteSecurityGroup struct {
-	Account   string `json:"account,omitempty"`  // Must be specified with Domain ID
-	DomainID  string `json:"domainid,omitempty"` // Must be specified with Account
-	ID        string `json:"id,omitempty"`       // Mutually exclusive with name
-	Name      string `json:"name,omitempty"`     // Mutually exclusive with id
-	ProjectID string `json:"project,omitempty"`
+	Account   string `json:"account,omitempty" doc:"the account of the security group. Must be specified with domain ID"`
+	DomainID  string `json:"domainid,omitempty" doc:"the domain ID of account owning the security group"`
+	ID        string `json:"id,omitempty" doc:"The ID of the security group. Mutually exclusive with name parameter"`
+	Name      string `json:"name,omitempty" doc:"The ID of the security group. Mutually exclusive with id parameter"`
+	ProjectID string `json:"projectid,omitempty" doc:"the project of the security group"`
 }
 
 // AuthorizeSecurityGroupIngress (Async) represents the ingress rule creation
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/authorizeSecurityGroupIngress.html
 type AuthorizeSecurityGroupIngress struct {
-	Account               string              `json:"account,omitempty"`
-	CidrList              []string            `json:"cidrlist,omitempty"`
-	Description           string              `json:"description,omitempty"`
-	DomainID              string              `json:"domainid,omitempty"`
-	IcmpType              uint8               `json:"icmptype,omitempty"`
-	IcmpCode              uint8               `json:"icmpcode,omitempty"`
-	StartPort             uint16              `json:"startport,omitempty"`
-	EndPort               uint16              `json:"endport,omitempty"`
-	ProjectID             string              `json:"projectid,omitempty"`
-	Protocol              string              `json:"protocol,omitempty"`
-	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
-	SecurityGroupName     string              `json:"securitygroupname,omitempty"`
-	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
+	Account               string              `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
+	CidrList              []string            `json:"cidrlist,omitempty" doc:"the cidr list associated"`
+	Description           string              `json:"description,omitempty" doc:"the description of the ingress/egress rule"`
+	DomainID              string              `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
+	EndPort               uint16              `json:"endport,omitempty" doc:"end port for this ingress/egress rule"`
+	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"error code for this icmp message"`
+	IcmpType              uint8               `json:"icmptype,omitempty" doc:"type of the icmp message being sent"`
+	ProjectID             string              `json:"projectid,omitempty" doc:"an optional project of the security group"`
+	Protocol              string              `json:"protocol,omitempty" doc:"TCP is default. UDP, ICMP, ICMPv6, AH, ESP, GRE are the other supported protocols"`
+	SecurityGroupID       string              `json:"securitygroupid,omitempty" doc:"The ID of the security group. Mutually exclusive with securityGroupName parameter"`
+	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"The name of the security group. Mutually exclusive with securityGroupId parameter"`
+	StartPort             uint16              `json:"startport,omitempty" doc:"start port for this ingress/egress rule"`
+	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty" doc:"user to security group mapping"`
 }
 
 // AuthorizeSecurityGroupIngressResponse represents the new egress rule
@@ -110,33 +111,30 @@ type AuthorizeSecurityGroupEgressResponse CreateSecurityGroupResponse
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/revokeSecurityGroupIngress.html
 type RevokeSecurityGroupIngress struct {
-	ID string `json:"id"`
+	ID string `json:"id" doc:"The ID of the ingress/egress rule"`
 }
 
 // RevokeSecurityGroupEgress (Async) represents the ingress/egress rule deletion
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/revokeSecurityGroupEgress.html
-type RevokeSecurityGroupEgress struct {
-	ID string `json:"id"`
-}
+type RevokeSecurityGroupEgress RevokeSecurityGroupIngress
 
 // ListSecurityGroups represents a search for security groups
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listSecurityGroups.html
 type ListSecurityGroups struct {
-	Account           string        `json:"account,omitempty"`
-	DomainID          string        `json:"domainid,omitempty"`
-	ID                string        `json:"id,omitempty"`
-	IsRecursive       *bool         `json:"isrecursive,omitempty"`
-	Keyword           string        `json:"keyword,omitempty"`
-	ListAll           *bool         `json:"listall,omitempty"`
+	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	DomainID          string        `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	ID                string        `json:"id,omitempty" doc:"list the security group by the id provided"`
+	IsRecursive       *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	Keyword           string        `json:"keyword,omitempty" doc:"List by keyword"`
+	ListAll           *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Page              int           `json:"page,omitempty"`
 	PageSize          int           `json:"pagesize,omitempty"`
-	ProjectID         string        `json:"projectid,omitempty"`
-	Type              string        `json:"type,omitempty"`
-	SecurityGroupName string        `json:"securitygroupname,omitempty"`
-	Tags              []ResourceTag `json:"tags,omitempty"`
-	VirtualMachineID  string        `json:"virtualmachineid,omitempty"`
+	ProjectID         string        `json:"projectid,omitempty" doc:"list objects by project"`
+	SecurityGroupName string        `json:"securitygroupname,omitempty" doc:"lists security groups by name"`
+	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
+	VirtualMachineID  string        `json:"virtualmachineid,omitempty" doc:"lists security groups by virtual machine id"`
 }
 
 // ListSecurityGroupsResponse represents a list of security groups

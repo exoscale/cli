@@ -209,7 +209,8 @@ func main() {
 						expected = "int16"
 					}
 				case "integer":
-					if typename != "int" {
+					// uint are used by port and icmp types
+					if typename != "int" && typename != "uint16" && typename != "uint8" {
 						expected = "int"
 					}
 				case "long":
