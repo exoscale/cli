@@ -215,7 +215,7 @@ func main() {
 						expected = "int"
 					}
 				case "long":
-					if typename != "int64" {
+					if typename != "int64" && typename != "uint64" {
 						expected = "int64"
 					}
 				case "boolean":

@@ -336,7 +336,9 @@ type UpdateDefaultNicForVirtualMachineResponse VirtualMachineResponse
 // GetVirtualMachineUserData returns the user-data of the given VM
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/getVirtualMachineUserData.html
-type GetVirtualMachineUserData RebootVirtualMachine
+type GetVirtualMachineUserData struct {
+	VirtualMachineID string `json:"virtualmachineid" doc:"The ID of the virtual machine"`
+}
 
 // GetVirtualMachineUserDataResponse represents the base64 encoded user-data
 type GetVirtualMachineUserDataResponse struct {
