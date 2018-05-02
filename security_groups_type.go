@@ -9,8 +9,6 @@ type SecurityGroup struct {
 	EgressRule  []EgressRule  `json:"egressrule,omitempty" doc:"the list of egress rules associated with the security group"`
 	ID          string        `json:"id,omitempty" doc:"the ID of the security group"`
 	IngressRule []IngressRule `json:"ingressrule,omitempty" doc:"the list of ingress rules associated with the security group"`
-	JobID       string        `json:"jobid,omitempty"`
-	JobStatus   JobStatusType `json:"jobstatus,omitempty"`
 	Name        string        `json:"name,omitempty" doc:"the name of the security group"`
 	Project     string        `json:"project,omitempty" doc:"the project name of the group"`
 	ProjectID   string        `json:"projectid,omitempty" doc:"the project id of the group"`
@@ -25,8 +23,6 @@ type IngressRule struct {
 	EndPort               uint16              `json:"endport,omitempty" doc:"the ending IP of the security group rule "`
 	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"the code for the ICMP message response"`
 	IcmpType              uint8               `json:"icmptype,omitempty" doc:"the type of the ICMP message response"`
-	JobID                 string              `json:"jobid,omitempty"`
-	JobStatus             JobStatusType       `json:"jobstatus,omitempty"`
 	Protocol              string              `json:"protocol,omitempty" doc:"the protocol of the security group rule"`
 	RuleID                string              `json:"ruleid,omitempty" doc:"the id of the security group rule"`
 	SecurityGroupID       string              `json:"securitygroupid,omitempty"`

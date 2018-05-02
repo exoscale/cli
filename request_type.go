@@ -95,19 +95,6 @@ const (
 // See: https://github.com/apache/cloudstack/blob/master/api/src/org/apache/cloudstack/api/ApiErrorCode.java
 type ErrorCode int
 
-// JobResultResponse represents a generic response to a job task
-type JobResultResponse struct {
-	AccountID     string           `json:"accountid,omitempty"`
-	Cmd           string           `json:"cmd"`
-	Created       string           `json:"created"`
-	JobID         string           `json:"jobid"`
-	JobProcStatus int              `json:"jobprocstatus"`
-	JobResult     *json.RawMessage `json:"jobresult"`
-	JobStatus     JobStatusType    `json:"jobstatus"`
-	JobResultType string           `json:"jobresulttype"`
-	UserID        string           `json:"userid,omitempty"`
-}
-
 // ErrorResponse represents the standard error response from CloudStack
 type ErrorResponse struct {
 	ErrorCode   ErrorCode  `json:"errorcode"`

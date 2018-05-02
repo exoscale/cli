@@ -21,8 +21,6 @@ type Snapshot struct {
 	VolumeType   string        `json:"volumetype,omitempty"`
 	ZoneID       string        `json:"zoneid"`
 	Tags         []ResourceTag `json:"tags"`
-	JobID        string        `json:"jobid,omitempty"`
-	JobStatus    JobStatusType `json:"jobstatus,omitempty"`
 }
 
 // CreateSnapshot represents a request to create a volume snapshot

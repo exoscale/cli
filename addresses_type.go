@@ -22,8 +22,6 @@ type IPAddress struct {
 	IsSourceNat               bool          `json:"issourcenat,omitempty" doc:"true if the IP address is a source nat address, false otherwise"`
 	IsStaticNat               *bool         `json:"isstaticnat,omitempty" doc:"true if this ip is for static nat, false otherwise"`
 	IsSystem                  bool          `json:"issystem,omitempty" doc:"true if this ip is system ip (was allocated as a part of deployVm or createLbRule)"`
-	JobID                     string        `json:"jobid,omitempty"`
-	JobStatus                 JobStatusType `json:"jobstatus,omitempty"`
 	NetworkID                 string        `json:"networkid,omitempty" doc:"the ID of the Network where ip belongs to"`
 	PhysicalNetworkID         string        `json:"physicalnetworkid,omitempty" doc:"the physical network this belongs to"`
 	Project                   string        `json:"project,omitempty" doc:"the project name of the address"`

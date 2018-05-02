@@ -25,8 +25,6 @@ type Volume struct {
 	ZoneID                     string        `json:"zoneid,omitempty"`
 	ZoneName                   string        `json:"zonename,omitempty"`
 	Tags                       []ResourceTag `json:"tags,omitempty"`
-	JobID                      string        `json:"jobid,omitempty"`
-	JobStatus                  JobStatusType `json:"jobstatus,omitempty"`
 }
 
 // ResizeVolume (Async) resizes a volume

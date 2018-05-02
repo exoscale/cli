@@ -222,9 +222,9 @@ func (exo *Client) AsyncRequestWithContext(ctx context.Context, request AsyncCom
 
 	// Successful response
 	if jobResult.JobID == "" || jobResult.JobStatus != Pending {
-		if !callback(jobResult, nil) {
-			return
-		}
+		callback(jobResult, nil)
+		// without a JobID, the next requests will only fail
+		return
 	}
 
 	for iteration := 0; ; iteration++ {
@@ -232,17 +232,13 @@ func (exo *Client) AsyncRequestWithContext(ctx context.Context, request AsyncCom
 
 		req := &QueryAsyncJobResult{JobID: jobResult.JobID}
 		resp, err := exo.syncRequest(ctx, req)
-		if err != nil {
-			if !callback(nil, err) {
-				return
-			}
+		if err != nil && !callback(nil, err) {
+			return
 		}
 
 		result, ok := resp.(*QueryAsyncJobResultResponse)
-		if !ok {
-			if !callback(nil, fmt.Errorf("AsyncJobResult expected, got %t", resp)) {
-				return
-			}
+		if !ok && !callback(nil, fmt.Errorf("AsyncJobResult expected, got %t", resp)) {
+			return
 		}
 
 		res := (*AsyncJobResult)(result)
