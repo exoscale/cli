@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.24 (unreleased)
+------
+
+- feat: `Template` is `Gettable`
+
 0.9.23
 ------
 
