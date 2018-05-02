@@ -93,11 +93,58 @@ func (*Template) ResourceType() string {
 	return "Template"
 }
 
-// name returns the CloudStack API command name
 func (*ListTemplates) name() string {
 	return "listTemplates"
 }
 
 func (*ListTemplates) response() interface{} {
 	return new(ListTemplatesResponse)
+}
+
+func (*CreateTemplate) name() string {
+	return "createTemplate"
+}
+
+func (*CreateTemplate) asyncResponse() interface{} {
+	return new(CreateTemplateResponse)
+}
+
+func (*PrepareTemplate) name() string {
+	return "prepareTemplate"
+}
+
+func (*PrepareTemplate) asyncResponse() interface{} {
+	return new(PrepareTemplateResponse)
+}
+
+func (*CopyTemplate) name() string {
+	return "copyTemplate"
+}
+
+func (*CopyTemplate) asyncResponse() interface{} {
+	return new(CopyTemplateResponse)
+}
+
+func (*UpdateTemplate) name() string {
+	return "updateTemplate"
+}
+
+func (*UpdateTemplate) asyncResponse() interface{} {
+	return new(UpdateTemplateResponse)
+}
+
+func (*DeleteTemplate) name() string {
+	return "deleteTemplate"
+}
+
+func (*DeleteTemplate) asyncResponse() interface{} {
+	return new(booleanResponse)
+}
+
+func (*RegisterTemplate) name() string {
+	return "registerTemplate"
+}
+
+func (*RegisterTemplate) response() interface{} {
+	return new(RegisterTemplateResponse)
 }

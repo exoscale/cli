@@ -167,6 +167,10 @@ func main() {
 			}
 
 			for _, p := range params {
+				// ExtractTemplate contains an empty field
+				if p.Name == "" {
+					continue
+				}
 				field, ok := command.fields[p.Name]
 
 				omit := ""

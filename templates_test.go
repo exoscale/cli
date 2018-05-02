@@ -4,9 +4,67 @@ import (
 	"testing"
 )
 
-func TestTemplates(t *testing.T) {
-	var _ Taggable = (*Template)(nil)
-	var _ Command = (*ListTemplates)(nil)
+func TestTemplateResourceType(t *testing.T) {
+	instance := &Template{}
+	if instance.ResourceType() != "Template" {
+		t.Errorf("ResourceType doesn't match")
+	}
+}
+
+func TestCreateTemplate(t *testing.T) {
+	req := &CreateTemplate{}
+	if req.name() != "createTemplate" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.asyncResponse().(*CreateTemplateResponse)
+}
+
+func TestCopyTemplate(t *testing.T) {
+	req := &CopyTemplate{}
+	if req.name() != "copyTemplate" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.asyncResponse().(*CopyTemplateResponse)
+}
+
+func TestUpdateTemplate(t *testing.T) {
+	req := &UpdateTemplate{}
+	if req.name() != "updateTemplate" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.asyncResponse().(*UpdateTemplateResponse)
+}
+
+func TestListTemplates(t *testing.T) {
+	req := &ListTemplates{}
+	if req.name() != "listTemplates" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.response().(*ListTemplatesResponse)
+}
+
+func TestDeleteTemplate(t *testing.T) {
+	req := &DeleteTemplate{}
+	if req.name() != "deleteTemplate" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.asyncResponse().(*booleanResponse)
+}
+
+func TestPrepareTemplate(t *testing.T) {
+	req := &PrepareTemplate{}
+	if req.name() != "prepareTemplate" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.asyncResponse().(*PrepareTemplateResponse)
+}
+
+func TestRegisterTemplate(t *testing.T) {
+	req := &RegisterTemplate{}
+	if req.name() != "registerTemplate" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.response().(*RegisterTemplateResponse)
 }
 
 func TestTemplate(t *testing.T) {
@@ -67,7 +125,7 @@ func TestTemplateGet(t *testing.T) {
 	}
 }
 
-func TestListTemplates(t *testing.T) {
+func TestListTemplate(t *testing.T) {
 	ts := newServer(response{200, `
 		
 		{ "listtemplateresponse": {
