@@ -229,6 +229,7 @@ func main() {
 				case "date":
 				case "tzdate":
 				case "state":
+				case "imageformat":
 					if typename != "string" {
 						expected = "string"
 					}
