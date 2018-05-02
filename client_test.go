@@ -154,6 +154,7 @@ func TestClientGetNone(t *testing.T) {
 		&SecurityGroup{Name: "test affinity group"},
 		&VirtualMachine{ID: "1"},
 		&Volume{ID: "1"},
+		&Template{ID: "1", IsFeatured: true},
 	}
 
 	for _, thing := range things {
@@ -191,7 +192,8 @@ func TestClientGetTooMany(t *testing.T) {
 		"sshkeypair": [{}, {}],
 		"virtualmachine": [{}, {}],
 		"volume": [{}, {}],
-		"zone": [{}, {}]
+		"zone": [{}, {}],
+		"template": [{}, {}]
 	}}`}
 
 	things := []Gettable{
@@ -207,6 +209,7 @@ func TestClientGetTooMany(t *testing.T) {
 		&SecurityGroup{Name: "test affinity group"},
 		&VirtualMachine{ID: "1"},
 		&Volume{ID: "1"},
+		&Template{ID: "1", IsFeatured: true},
 	}
 
 	for _, thing := range things {

@@ -16,6 +16,57 @@ func TestTemplate(t *testing.T) {
 	}
 }
 
+func TestTemplateGet(t *testing.T) {
+	ts := newServer(response{200, `
+		
+		{ "listtemplateresponse": {
+			"count": 1,
+			"template": [
+			  {
+				"account": "exostack",
+				"checksum": "426b9c1efae42f84ea16e74a336f5202",
+				"created": "2018-01-30T09:15:36+0100",
+				"details": {
+				  "username": "debian"
+				},
+				"displaytext": "Linux Debian 9 64-bit 10G Disk (2018-01-18-25e9ec)",
+				"domain": "ROOT",
+				"domainid": "4a8857b8-7235-4e31-a7ef-b8b44d180850",
+				"format": "QCOW2",
+				"hypervisor": "KVM",
+				"id": "78c2cbe6-8e11-4722-b01f-bf06f4e28108",
+				"isfeatured": true,
+				"ispublic": true,
+				"isready": true,
+				"name": "Linux Debian 9 64-bit",
+				"ostypeid": "113038d0-a8cd-4d20-92be-ea313f87c3ac",
+				"ostypename": "Other PV (64-bit)",
+				"passwordenabled": true,
+				"size": 10737418240,
+				"zoneid": "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
+				"zonename": "ch-gva-2"
+			  }
+			]
+		  }}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	zoneID := "1128bd56-b4d9-4ac6-a7b9-c715b187ce11"
+	id := "78c2cbe6-8e11-4722-b01f-bf06f4e28108"
+	template := &Template{IsFeatured: true,
+		ZoneID: zoneID,
+		ID:     id,
+	}
+
+	if err := cs.Get(template); err != nil {
+		t.Error(err)
+	}
+
+	if template.Name == "" {
+		t.Errorf("Expected a name, got empty name")
+	}
+}
+
 func TestListTemplates(t *testing.T) {
 	ts := newServer(response{200, `
 		
