@@ -20,7 +20,7 @@ import (
 
 // Error formats a CloudStack error into a standard error
 func (e *ErrorResponse) Error() string {
-	return fmt.Sprintf("API error %s %d (%d): %s", e.ErrorCode, e.ErrorCode, e.CsErrorCode, e.ErrorText)
+	return fmt.Sprintf("API error %s %d (%s %d): %s", e.ErrorCode, e.ErrorCode, e.CSErrorCode, e.CSErrorCode, e.ErrorText)
 }
 
 // Success computes the values based on the RawMessage, either string or bool
