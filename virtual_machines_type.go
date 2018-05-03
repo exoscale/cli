@@ -345,3 +345,15 @@ type GetVirtualMachineUserDataResponse struct {
 	UserData         string `json:"userdata,omitempty" doc:"Base 64 encoded VM user data"`
 	VirtualMachineID string `json:"virtualmachineid,omitempty" doc:"the ID of the virtual machine"`
 }
+
+// MigrateVirtualMachine (Async) attempts migration of a VM to a different host or Root volume of the vm to a different storage pool
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/migrateVirtualMachine.html
+type MigrateVirtualMachine struct {
+	HostID           string `json:"hostid,omitempty" doc:"Destination Host ID to migrate VM to. Required for live migrating a VM from host to host"`
+	StorageID        string `json:"storageid,omitempty" doc:"Destination storage pool ID to migrate VM volumes to. Required for migrating the root disk volume"`
+	VirtualMachineID string `json:"virtualmachineid" doc:"the ID of the virtual machine"`
+}
+
+// MigrateVirtualMachineResponse represents the migrated VirtualMachine
+type MigrateVirtualMachineResponse VirtualMachineResponse

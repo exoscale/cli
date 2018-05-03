@@ -45,12 +45,13 @@ type fieldInfo struct {
 
 // command represents a struct within the source code
 type command struct {
-	name     string
-	sync     string
-	s        *types.Struct
-	position token.Pos
-	fields   map[string]fieldInfo
-	errors   map[string]error
+	name        string
+	description string
+	sync        string
+	s           *types.Struct
+	position    token.Pos
+	fields      map[string]fieldInfo
+	errors      map[string]error
 }
 
 func main() {
@@ -127,6 +128,7 @@ func main() {
 			// too much information
 			//fmt.Fprintf(os.Stderr, "Unknown command: %q\n", name)
 		} else {
+			command.description = a.Description
 			// mapping from name to field
 			command.fields = make(map[string]fieldInfo)
 			command.errors = make(map[string]error)
@@ -272,6 +274,7 @@ func main() {
 				fmt.Println(e)
 			}
 			fmt.Printf("\n%s: %s%s has %d error(s)\n", pos, c.name, c.sync, er)
+			fmt.Println(c.description)
 			os.Exit(er)
 		}
 	}

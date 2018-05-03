@@ -133,6 +133,14 @@ func TestGetVirtualMachineUserData(t *testing.T) {
 	_ = req.response().(*GetVirtualMachineUserDataResponse)
 }
 
+func TestMigrateVirtualMachine(t *testing.T) {
+	req := &MigrateVirtualMachine{}
+	if req.name() != "migrateVirtualMachine" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.asyncResponse().(*MigrateVirtualMachineResponse)
+}
+
 func TestAddNicToVirtualMachine(t *testing.T) {
 	req := &AddNicToVirtualMachine{}
 	if req.name() != "addNicToVirtualMachine" {

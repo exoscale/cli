@@ -260,6 +260,14 @@ func (*GetVirtualMachineUserData) response() interface{} {
 	return new(GetVirtualMachineUserDataResponse)
 }
 
+func (*MigrateVirtualMachine) name() string {
+	return "migrateVirtualMachine"
+}
+
+func (*MigrateVirtualMachine) asyncResponse() interface{} {
+	return new(MigrateVirtualMachineResponse)
+}
+
 // name returns the CloudStack API command name
 func (*GetVMPassword) name() string {
 	return "getVMPassword"
