@@ -172,6 +172,7 @@ func main() {
 					continue
 				}
 				field, ok := command.fields[p.Name]
+				description := strings.Trim(p.Description, " ")
 
 				omit := ""
 				if !p.Required {
@@ -180,8 +181,8 @@ func main() {
 
 				if !ok {
 					doc := ""
-					if p.Description != "" {
-						doc = fmt.Sprintf(" doc:%q", p.Description)
+					if description != "" {
+						doc = fmt.Sprintf(" doc:%q", description)
 					}
 
 					apiType, ok := apiTypes[p.Type]
@@ -196,7 +197,6 @@ func main() {
 
 				typename := field.Var.Type().String()
 
-				description := strings.Trim(p.Description, " ")
 				if field.Doc != description {
 					if field.Doc == "" {
 						command.errors[p.Name] = fmt.Errorf("missing doc:\n\t\t`doc:%q`", description)
@@ -216,6 +216,7 @@ func main() {
 					if typename != "int16" {
 						expected = "int16"
 					}
+				case "int":
 				case "integer":
 					// uint are used by port and icmp types
 					if typename != "int" && typename != "uint16" && typename != "uint8" {

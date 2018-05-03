@@ -74,9 +74,18 @@ type ResourceLimit struct {
 	ResourceTypeName ResourceTypeName `json:"resourcetypename,omitempty" doc:"resource type name. Values include user_vm, public_ip, volume, snapshot, template, project, network, vpc, cpu, memory, primary_storage, secondary_storage."`
 }
 
+// APILimit represents the limit count
+type APILimit struct {
+	Account     string `json:"account,omitempty" doc:"the account name of the api remaining count"`
+	Accountid   string `json:"accountid,omitempty" doc:"the account uuid of the api remaining count"`
+	APIAllowed  int    `json:"apiAllowed,omitempty" doc:"currently allowed number of apis"`
+	APIIssued   int    `json:"apiIssued,omitempty" doc:"number of api already issued"`
+	ExpireAfter int64  `json:"expireAfter,omitempty" doc:"seconds left to reset counters"`
+}
+
 // ListResourceLimits lists the resource limits
 //
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listResourceLimits.html
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/listResourceLimits.html
 type ListResourceLimits struct {
 	Account          string           `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID         string           `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -95,4 +104,30 @@ type ListResourceLimits struct {
 type ListResourceLimitsResponse struct {
 	Count         int             `json:"count"`
 	ResourceLimit []ResourceLimit `json:"resourcelimit"`
+}
+
+// UpdateResourceLimit updates the resource limit
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/root_admin/updateResourceLimit.html
+type UpdateResourceLimit struct {
+	Account      string       `json:"account,omitempty" doc:"Update resource for a specified account. Must be used with the domainId parameter."`
+	DomainID     string       `json:"domainid,omitempty" doc:"Update resource limits for all accounts in specified domain. If used with the account parameter, updates resource limits for a specified account in specified domain."`
+	Max          int64        `json:"max,omitempty" doc:"Maximum resource limit."`
+	ProjectID    string       `json:"projectid,omitempty" doc:"Update resource limits for project"`
+	ResourceType ResourceType `json:"resourcetype" doc:"Type of resource to update. Values are 0, 1, 2, 3, 4, 6, 7, 8, 9, 10 and 11. 0 - Instance. Number of instances a user can create. 1 - IP. Number of public IP addresses a user can own. 2 - Volume. Number of disk volumes a user can create. 3 - Snapshot. Number of snapshots a user can create. 4 - Template. Number of templates that a user can register/create. 6 - Network. Number of guest network a user can create. 7 - VPC. Number of VPC a user can create. 8 - CPU. Total number of CPU cores a user can use. 9 - Memory. Total Memory (in MB) a user can use. 10 - PrimaryStorage. Total primary storage space (in GiB) a user can use. 11 - SecondaryStorage. Total secondary storage space (in GiB) a user can use."`
+}
+
+// UpdateResourceLimitResponse represents an updated resource limit
+type UpdateResourceLimitResponse struct {
+	ResourceLimit ResourceLimit `json:"resourcelimit"`
+}
+
+// GetAPILimit gets API limit count for the caller
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/getApiLimit.html
+type GetAPILimit struct{}
+
+// GetAPILimitResponse represents the limits towards the API call
+type GetAPILimitResponse struct {
+	APILimit APILimit `json:"apilimit"`
 }
