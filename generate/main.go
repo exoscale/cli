@@ -196,11 +196,12 @@ func main() {
 
 				typename := field.Var.Type().String()
 
-				if field.Doc != p.Description {
+				description := strings.Trim(p.Description, " ")
+				if field.Doc != description {
 					if field.Doc == "" {
-						command.errors[p.Name] = fmt.Errorf("missing doc:\n\t\t`doc:%q`", p.Description)
+						command.errors[p.Name] = fmt.Errorf("missing doc:\n\t\t`doc:%q`", description)
 					} else {
-						command.errors[p.Name] = fmt.Errorf("wrong doc want %q got %q", p.Description, field.Doc)
+						command.errors[p.Name] = fmt.Errorf("wrong doc want %q got %q", description, field.Doc)
 					}
 				}
 
@@ -219,6 +220,10 @@ func main() {
 					// uint are used by port and icmp types
 					if typename != "int" && typename != "uint16" && typename != "uint8" {
 						expected = "int"
+					}
+					// skip enums
+					if typename == "egoscale.ResourceType" {
+						expected = ""
 					}
 				case "long":
 					if typename != "int64" && typename != "uint64" {
