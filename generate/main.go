@@ -20,6 +20,14 @@ import (
 	"github.com/exoscale/egoscale"
 )
 
+// must be sorted
+var ignoredFields = []string{
+	"project",
+	"projectid",
+	"vpc",
+	"vpcid",
+}
+
 var cmd = flag.String("cmd", "", "CloudStack command name")
 var source = flag.String("apis", "", "listApis response in JSON")
 var rtype = flag.String("type", "", "Actual type to check against the cmd (need cmd)")
@@ -167,8 +175,9 @@ func main() {
 			}
 
 			for _, p := range params {
-				// ExtractTemplate contains an empty field
-				if p.Name == "" {
+				index := sort.SearchStrings(ignoredFields, p.Name)
+				ignored := index < len(ignoredFields) && ignoredFields[index] == p.Name
+				if ignored {
 					continue
 				}
 				field, ok := command.fields[p.Name]
