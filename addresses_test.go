@@ -5,14 +5,6 @@ import (
 	"testing"
 )
 
-func TestAddressess(t *testing.T) {
-	var _ Taggable = (*IPAddress)(nil)
-	var _ AsyncCommand = (*AssociateIPAddress)(nil)
-	var _ AsyncCommand = (*DisassociateIPAddress)(nil)
-	var _ syncCommand = (*ListPublicIPAddresses)(nil)
-	var _ AsyncCommand = (*UpdateIPAddress)(nil)
-}
-
 func TestIPAddress(t *testing.T) {
 	instance := &IPAddress{}
 	if instance.ResourceType() != "PublicIpAddress" {
@@ -98,7 +90,7 @@ func TestGetIPAddress(t *testing.T) {
 
 func TestListIPAddress(t *testing.T) {
 	ts := newServer(response{200, `
-		{"listPublicIpAddresses":{
+		{"listpublicipaddressesresponse":{
 			"count": 1,
 			"publicipaddress": [
 			  {
@@ -149,7 +141,7 @@ func TestListIPAddress(t *testing.T) {
 
 func TestListIPAddressPaginate(t *testing.T) {
 	ts := newServer(response{200, `
-		{"listPublicIpAddresses":{
+		{"listpublicipaddressesresponse":{
 			"count": 1,
 			"publicipaddress": [
 			  {
@@ -217,10 +209,10 @@ func TestListIPAddressPaginate(t *testing.T) {
 
 func TestListIPAddressFailure(t *testing.T) {
 	ts := newServer(response{200, `
-		{"listPublicIpAddresses":{
-			"count": 1,
-			"publicipaddress": {}
-		  }}`})
+	{"listpublicipaddressesresponse": {
+		"count": 1,
+		"publicipaddress": {}
+	}`})
 
 	defer ts.Close()
 

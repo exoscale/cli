@@ -2,7 +2,6 @@ package egoscale
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -21,28 +20,6 @@ func csQuotePlus(s string) string {
 
 func csEncode(s string) string {
 	return csQuotePlus(url.QueryEscape(s))
-}
-
-func rawValue(b json.RawMessage) (json.RawMessage, error) {
-	var m map[string]json.RawMessage
-
-	if err := json.Unmarshal(b, &m); err != nil {
-		return nil, err
-	}
-	for _, v := range m {
-		return v, nil
-	}
-	return nil, nil
-}
-
-func rawValues(b json.RawMessage) (json.RawMessage, error) {
-	var i []json.RawMessage
-
-	if err := json.Unmarshal(b, &i); err != nil {
-		return nil, nil
-	}
-
-	return i[0], nil
 }
 
 // prepareValues uses a command to build a POST request

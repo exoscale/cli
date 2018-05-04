@@ -5,15 +5,6 @@ import (
 	"testing"
 )
 
-func TestNetworks(t *testing.T) {
-	var _ Taggable = (*Network)(nil)
-	var _ syncCommand = (*CreateNetwork)(nil)
-	var _ AsyncCommand = (*DeleteNetwork)(nil)
-	var _ syncCommand = (*ListNetworks)(nil)
-	var _ AsyncCommand = (*RestartNetwork)(nil)
-	var _ AsyncCommand = (*UpdateNetwork)(nil)
-}
-
 func TestNetwork(t *testing.T) {
 	instance := &Network{}
 	if instance.ResourceType() != "Network" {
@@ -374,7 +365,7 @@ func TestListNetwork(t *testing.T) {
 
 func TestListNetworkEmpty(t *testing.T) {
 	ts := newServer(response{200, `
-{"listNetworksresponse": {
+{"listnetworksresponse": {
 	"count": 0,
 	"network": []
   }}`})
@@ -395,7 +386,7 @@ func TestListNetworkEmpty(t *testing.T) {
 
 func TestListNetworkFailure(t *testing.T) {
 	ts := newServer(response{200, `
-{"listNetworksresponse": {
+{"listnetworksresponse": {
 	"count": 3456,
 	"network": {}
   }}`})
@@ -416,7 +407,7 @@ func TestListNetworkFailure(t *testing.T) {
 
 func TestListNetworkPaginate(t *testing.T) {
 	ts := newServer(response{200, `
-{"listNetworksresponse": {
+{"listnetworksresponse": {
 	"count": 2,
 	"network": [
 	  {
@@ -513,7 +504,7 @@ func TestListNetworkPaginate(t *testing.T) {
 
 func TestFindNetwork(t *testing.T) {
 	ts := newServer(response{200, `
-{"listNetworksresponse": {
+{"listnetworksresponse": {
 	"count": 1,
 	"network": [
 	  {

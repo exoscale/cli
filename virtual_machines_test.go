@@ -82,7 +82,7 @@ func TestGetVMPassword(t *testing.T) {
 	if req.name() != "getVMPassword" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*GetVMPasswordResponse)
+	_ = req.response().(*Password)
 }
 
 func TestRestoreVirtualMachine(t *testing.T) {
@@ -297,7 +297,7 @@ func TestGetVirtualMachine(t *testing.T) {
 
 func TestGetVirtualMachinePassword(t *testing.T) {
 	ts := newServer(response{200, `
-{"getvmresponse": {
+{"getvmpasswordresponse": {
 	"password": {
 		"encryptedpassword": "test"
 	}
@@ -312,7 +312,7 @@ func TestGetVirtualMachinePassword(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if resp.(*GetVMPasswordResponse).Password.EncryptedPassword != "test" {
+	if resp.(*Password).EncryptedPassword != "test" {
 		t.Errorf("Encrypted password missing")
 	}
 }

@@ -56,30 +56,51 @@ func (e *booleanResponse) Error() error {
 	return fmt.Errorf("API error: %s", e.DisplayText)
 }
 
-func (exo *Client) parseResponse(resp *http.Response) (json.RawMessage, error) {
+func (exo *Client) parseResponse(resp *http.Response, key string) (json.RawMessage, error) {
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	a, _ := rawValues(b)
+	m := map[string]json.RawMessage{}
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, err
+	}
 
-	if a == nil {
-		b, err = rawValue(b)
-		if err != nil {
-			return nil, err
+	response, ok := m[key]
+	if !ok {
+		for k := range m {
+			return nil, fmt.Errorf("Malformed JSON response, %q was expected, got %q", key, k)
 		}
 	}
 
 	if resp.StatusCode >= 400 {
 		errorResponse := new(ErrorResponse)
-		if e := json.Unmarshal(b, errorResponse); e == nil && errorResponse.ErrorCode > 0 {
+		if e := json.Unmarshal(response, errorResponse); e == nil && errorResponse.ErrorCode > 0 {
 			return nil, errorResponse
 		}
 		return nil, fmt.Errorf("%d %s", resp.StatusCode, b)
 	}
 
-	return b, nil
+	n := map[string]json.RawMessage{}
+	if err := json.Unmarshal(response, &n); err != nil {
+		return nil, err
+	}
+
+	if len(n) > 1 {
+		return response, nil
+	}
+
+	if len(n) == 1 {
+		for k := range n {
+			if k == "success" {
+				return response, nil
+			}
+			return n[k], nil
+		}
+	}
+
+	return response, nil
 }
 
 // asyncRequest perform an asynchronous job with a context
@@ -347,7 +368,8 @@ func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, e
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
-	text, err := exo.parseResponse(resp)
+	key := fmt.Sprintf("%sresponse", strings.ToLower(req.name()))
+	text, err := exo.parseResponse(resp, key)
 	if err != nil {
 		return nil, err
 	}

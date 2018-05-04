@@ -277,7 +277,7 @@ func (*GetVMPassword) name() string {
 }
 
 func (*GetVMPassword) response() interface{} {
-	return new(GetVMPasswordResponse)
+	return new(Password)
 }
 
 // name returns the CloudStack API command name

@@ -483,7 +483,8 @@ func TestListZonesTwoPages(t *testing.T) {
 	]
 }}`}, response{200, `
 {"listzonesresponse": {
-	"count": 4
+	"count": 4,
+	"zones": null
 }}`})
 	defer ts.Close()
 

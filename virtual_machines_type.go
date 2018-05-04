@@ -258,12 +258,6 @@ type ResetPasswordForVirtualMachineResponse VirtualMachineResponse
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/getVMPassword.html
 type GetVMPassword RebootVirtualMachine
 
-// GetVMPasswordResponse represents the encrypted password
-type GetVMPasswordResponse struct {
-	// Base64 encrypted password for the VM
-	Password Password `json:"password"`
-}
-
 // ListVirtualMachines represents a search for a VM
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listVirtualMachine.html
