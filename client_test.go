@@ -16,6 +16,26 @@ func TestClientAPIName(t *testing.T) {
 	}
 }
 
+func TestClientResponse(t *testing.T) {
+	cs := NewClient("ENDPOINT", "KEY", "SECRET")
+
+	r := cs.Response(&ListAPIs{})
+	switch r.(type) {
+	case *ListAPIsResponse:
+		// do nothing
+	default:
+		t.Errorf("request is wrong, got %t", r)
+	}
+
+	ar := cs.Response(&DeployVirtualMachine{})
+	switch ar.(type) {
+	case *VirtualMachine:
+		// do nothing
+	default:
+		t.Errorf("asyncRequest is wrong, got %t", ar)
+	}
+}
+
 func TestClientSyncDelete(t *testing.T) {
 	bodySuccessString := `
 {"delete%sresponse": {
@@ -55,12 +75,12 @@ func TestClientSyncDelete(t *testing.T) {
 
 		for i := 0; i < 2; i++ {
 			if err := cs.Delete(thing.deletable); err != nil {
-				t.Errorf("Deletion of %#v. Err: %s", thing, err)
+				t.Errorf("Deletion of %#v. Err: %s", thing.deletable, err)
 			}
 		}
 
 		if err := cs.Delete(thing.deletable); err == nil {
-			t.Errorf("Deletion of %v an error was expected", thing)
+			t.Errorf("Deletion of %v an error was expected", thing.deletable)
 		}
 	}
 }
@@ -118,6 +138,7 @@ func TestClientDeleteFailure(t *testing.T) {
 		&SecurityGroup{},
 		&SSHKeyPair{},
 		&VirtualMachine{},
+		&IPAddress{},
 	}
 
 	for _, thing := range things {
@@ -128,6 +149,27 @@ func TestClientDeleteFailure(t *testing.T) {
 
 		if err := cs.Delete(thing); err == nil {
 			t.Errorf("Deletion of %#v. Should have failed", thing)
+		}
+	}
+}
+
+func TestClientGetFailure(t *testing.T) {
+	things := []Gettable{
+		&AffinityGroup{},
+		&SecurityGroup{},
+		&SSHKeyPair{},
+		&VirtualMachine{},
+		&IPAddress{},
+	}
+
+	for _, thing := range things {
+		ts := newServer()
+		defer ts.Close()
+
+		cs := NewClient(ts.URL, "KEY", "SECRET")
+
+		if err := cs.Get(thing); err == nil {
+			t.Errorf("Get of %#v. Should have failed", thing)
 		}
 	}
 }
