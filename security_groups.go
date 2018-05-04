@@ -102,7 +102,7 @@ func (*CreateSecurityGroup) name() string {
 }
 
 func (*CreateSecurityGroup) response() interface{} {
-	return new(CreateSecurityGroupResponse)
+	return new(SecurityGroup)
 }
 
 // name returns the CloudStack API command name
@@ -120,7 +120,7 @@ func (*AuthorizeSecurityGroupIngress) name() string {
 }
 
 func (*AuthorizeSecurityGroupIngress) asyncResponse() interface{} {
-	return new(AuthorizeSecurityGroupIngressResponse)
+	return new(SecurityGroup)
 }
 
 func (req *AuthorizeSecurityGroupIngress) onBeforeSend(params *url.Values) error {
@@ -142,7 +142,7 @@ func (*AuthorizeSecurityGroupEgress) name() string {
 }
 
 func (*AuthorizeSecurityGroupEgress) asyncResponse() interface{} {
-	return new(AuthorizeSecurityGroupEgressResponse)
+	return new(SecurityGroup)
 }
 
 func (req *AuthorizeSecurityGroupEgress) onBeforeSend(params *url.Values) error {

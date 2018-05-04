@@ -20,9 +20,6 @@ type AsyncJobResult struct {
 	JobID           string           `json:"jobid"`
 }
 
-// QueryAsyncJobResultResponse represents the current status of an asynchronous job
-type QueryAsyncJobResultResponse AsyncJobResult
-
 // ListAsyncJobs list the asynchronous jobs
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listAsyncJobs.html

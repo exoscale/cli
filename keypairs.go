@@ -58,7 +58,7 @@ func (*CreateSSHKeyPair) name() string {
 }
 
 func (*CreateSSHKeyPair) response() interface{} {
-	return new(CreateSSHKeyPairResponse)
+	return new(SSHKeyPair)
 }
 
 // name returns the CloudStack API command name
@@ -76,7 +76,7 @@ func (*RegisterSSHKeyPair) name() string {
 }
 
 func (*RegisterSSHKeyPair) response() interface{} {
-	return new(RegisterSSHKeyPairResponse)
+	return new(SSHKeyPair)
 }
 
 // name returns the CloudStack API command name
@@ -118,5 +118,5 @@ func (*ResetSSHKeyForVirtualMachine) name() string {
 }
 
 func (*ResetSSHKeyForVirtualMachine) asyncResponse() interface{} {
-	return new(ResetSSHKeyForVirtualMachineResponse)
+	return new(VirtualMachine)
 }

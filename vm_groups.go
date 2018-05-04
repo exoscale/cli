@@ -10,11 +10,6 @@ type InstanceGroup struct {
 	Name     string `json:"name,omitempty" doc:"the name of the instance group"`
 }
 
-// InstanceGroupResponse represents a VM group
-type InstanceGroupResponse struct {
-	InstanceGroup InstanceGroup `json:"instancegroup"`
-}
-
 // CreateInstanceGroup creates a VM group
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createInstanceGroup.html
@@ -30,11 +25,8 @@ func (*CreateInstanceGroup) name() string {
 }
 
 func (*CreateInstanceGroup) response() interface{} {
-	return new(CreateInstanceGroupResponse)
+	return new(InstanceGroup)
 }
-
-// CreateInstanceGroupResponse represents a freshly created VM group
-type CreateInstanceGroupResponse InstanceGroupResponse
 
 // UpdateInstanceGroup updates a VM group
 //
@@ -50,11 +42,8 @@ func (*UpdateInstanceGroup) name() string {
 }
 
 func (*UpdateInstanceGroup) response() interface{} {
-	return new(UpdateInstanceGroupResponse)
+	return new(InstanceGroup)
 }
-
-// UpdateInstanceGroupResponse represents an updated VM group
-type UpdateInstanceGroupResponse InstanceGroupResponse
 
 // DeleteInstanceGroup deletes a VM group
 //

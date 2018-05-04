@@ -105,7 +105,7 @@ func (*CreateTemplate) name() string {
 }
 
 func (*CreateTemplate) asyncResponse() interface{} {
-	return new(CreateTemplateResponse)
+	return new(Template)
 }
 
 func (*PrepareTemplate) name() string {
@@ -113,7 +113,7 @@ func (*PrepareTemplate) name() string {
 }
 
 func (*PrepareTemplate) asyncResponse() interface{} {
-	return new(PrepareTemplateResponse)
+	return new(Template)
 }
 
 func (*CopyTemplate) name() string {
@@ -121,7 +121,7 @@ func (*CopyTemplate) name() string {
 }
 
 func (*CopyTemplate) asyncResponse() interface{} {
-	return new(CopyTemplateResponse)
+	return new(Template)
 }
 
 func (*UpdateTemplate) name() string {
@@ -129,7 +129,7 @@ func (*UpdateTemplate) name() string {
 }
 
 func (*UpdateTemplate) asyncResponse() interface{} {
-	return new(UpdateTemplateResponse)
+	return new(Template)
 }
 
 func (*DeleteTemplate) name() string {
@@ -145,5 +145,5 @@ func (*RegisterTemplate) name() string {
 }
 
 func (*RegisterTemplate) response() interface{} {
-	return new(RegisterTemplateResponse)
+	return new(Template)
 }

@@ -13,5 +13,5 @@ func (*UpdateNetworkOffering) name() string {
 }
 
 func (*UpdateNetworkOffering) response() interface{} {
-	return new(UpdateNetworkOfferingResponse)
+	return new(NetworkOffering)
 }

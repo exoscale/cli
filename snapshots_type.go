@@ -81,6 +81,12 @@ type ListSnapshots struct {
 	ZoneID       string        `json:"zoneid,omitempty" doc:"list snapshots by zone id"`
 }
 
+// ListSnapshotsResponse represents a list of volume snapshots
+type ListSnapshotsResponse struct {
+	Count    int        `json:"count"`
+	Snapshot []Snapshot `json:"snapshot"`
+}
+
 // DeleteSnapshot (Async) deletes a snapshot of a disk volume
 //
 // CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSnapshot.html

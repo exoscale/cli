@@ -4,11 +4,6 @@ import (
 	"testing"
 )
 
-func TestEvents(t *testing.T) {
-	var _ Command = (*ListEvents)(nil)
-	var _ Command = (*ListEventTypes)(nil)
-}
-
 func TestListEvents(t *testing.T) {
 	req := &ListEvents{}
 	if req.name() != "listEvents" {

@@ -64,11 +64,6 @@ type AddIPToNic struct {
 	IPAddress net.IP `json:"ipaddress,omitempty" doc:"Secondary IP Address"`
 }
 
-// AddIPToNicResponse represents the addition of an IP to a NIC
-type AddIPToNicResponse struct {
-	NicSecondaryIP NicSecondaryIP `json:"nicsecondaryip"`
-}
-
 // RemoveIPFromNic (Async) represents a deletion request
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/removeIpFromNic.html
@@ -81,9 +76,4 @@ type RemoveIPFromNic struct {
 // Exoscale specific API: https://community.exoscale.ch/api/compute/#activateip6_GET
 type ActivateIP6 struct {
 	NicID string `json:"nicid" doc:"the ID of the nic to which you want to assign the IPv6"`
-}
-
-// ActivateIP6Response represents the modified NIC
-type ActivateIP6Response struct {
-	Nic Nic `json:"nic"`
 }

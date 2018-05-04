@@ -235,7 +235,7 @@ func TestAsyncRequestWithoutContext(t *testing.T) {
 		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108",
 	}
 
-	resp := &DeployVirtualMachineResponse{}
+	resp := &VirtualMachine{}
 
 	// WithContext
 	cs.AsyncRequest(req, func(j *AsyncJobResult, err error) bool {
@@ -245,7 +245,6 @@ func TestAsyncRequestWithoutContext(t *testing.T) {
 		}
 
 		if j.JobStatus == Success {
-
 			if r := j.Response(resp); r != nil {
 				t.Error(r)
 			}
@@ -254,8 +253,8 @@ func TestAsyncRequestWithoutContext(t *testing.T) {
 		return true
 	})
 
-	if resp.VirtualMachine.ServiceOfferingID != "71004023-bb72-4a97-b1e9-bc66dfce9470" {
-		t.Errorf("Expected ServiceOfferingID %q, got %q", "71004023-bb72-4a97-b1e9-bc66dfce9470", resp.VirtualMachine.ServiceOfferingID)
+	if resp.ServiceOfferingID != "71004023-bb72-4a97-b1e9-bc66dfce9470" {
+		t.Errorf("Expected ServiceOfferingID %q, got %q", "71004023-bb72-4a97-b1e9-bc66dfce9470", resp.ServiceOfferingID)
 	}
 }
 
@@ -288,7 +287,7 @@ func TestAsyncRequestWithoutContextFailure(t *testing.T) {
 		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
 		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108"}
 
-	resp := &DeployVirtualMachineResponse{}
+	resp := &VirtualMachine{}
 
 	// WithContext
 	cs.AsyncRequest(req, func(j *AsyncJobResult, err error) bool {
@@ -370,7 +369,7 @@ func TestAsyncRequestWithoutContextFailureNextNext(t *testing.T) {
 		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
 		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108"}
 
-	resp := &DeployVirtualMachineResponse{}
+	resp := &VirtualMachine{}
 
 	cs.AsyncRequest(req, func(j *AsyncJobResult, err error) bool {
 		if err != nil {

@@ -9,7 +9,7 @@ func TestAddIPToNic(t *testing.T) {
 	if req.name() != "addIpToNic" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*AddIPToNicResponse)
+	_ = req.asyncResponse().(*NicSecondaryIP)
 }
 
 func TestRemoveIPFromNic(t *testing.T) {
@@ -33,7 +33,7 @@ func TestActivateIP6(t *testing.T) {
 	if req.name() != "activateIp6" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*ActivateIP6Response)
+	_ = req.asyncResponse().(*Nic)
 }
 
 func TestListNics(t *testing.T) {

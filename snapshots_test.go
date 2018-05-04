@@ -16,7 +16,7 @@ func TestCreateSnapshot(t *testing.T) {
 	if req.name() != "createSnapshot" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*CreateSnapshotResponse)
+	_ = req.asyncResponse().(*Snapshot)
 }
 
 func TestListSnapshots(t *testing.T) {

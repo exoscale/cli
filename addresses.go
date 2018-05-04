@@ -66,7 +66,7 @@ func (*AssociateIPAddress) name() string {
 }
 
 func (*AssociateIPAddress) asyncResponse() interface{} {
-	return new(AssociateIPAddressResponse)
+	return new(IPAddress)
 }
 
 // name returns the CloudStack API command name
@@ -82,7 +82,7 @@ func (*UpdateIPAddress) name() string {
 	return "updateIpAddress"
 }
 func (*UpdateIPAddress) asyncResponse() interface{} {
-	return new(UpdateIPAddressResponse)
+	return new(IPAddress)
 }
 
 // name returns the CloudStack API command name

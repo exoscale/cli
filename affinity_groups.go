@@ -63,7 +63,7 @@ func (*CreateAffinityGroup) name() string {
 }
 
 func (*CreateAffinityGroup) asyncResponse() interface{} {
-	return new(CreateAffinityGroupResponse)
+	return new(AffinityGroup)
 }
 
 // name returns the CloudStack API command name
@@ -72,7 +72,7 @@ func (*UpdateVMAffinityGroup) name() string {
 }
 
 func (*UpdateVMAffinityGroup) asyncResponse() interface{} {
-	return new(UpdateVMAffinityGroupResponse)
+	return new(VirtualMachine)
 }
 
 func (req *UpdateVMAffinityGroup) onBeforeSend(params *url.Values) error {

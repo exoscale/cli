@@ -5,19 +5,6 @@ import (
 	"testing"
 )
 
-func TestGroupsRequests(t *testing.T) {
-	var _ Taggable = (*SecurityGroup)(nil)
-	var _ AsyncCommand = (*AuthorizeSecurityGroupEgress)(nil)
-	var _ onBeforeHook = (*AuthorizeSecurityGroupEgress)(nil)
-	var _ AsyncCommand = (*AuthorizeSecurityGroupIngress)(nil)
-	var _ onBeforeHook = (*AuthorizeSecurityGroupIngress)(nil)
-	var _ syncCommand = (*CreateSecurityGroup)(nil)
-	var _ syncCommand = (*DeleteSecurityGroup)(nil)
-	var _ syncCommand = (*ListSecurityGroups)(nil)
-	var _ AsyncCommand = (*RevokeSecurityGroupEgress)(nil)
-	var _ AsyncCommand = (*RevokeSecurityGroupIngress)(nil)
-}
-
 func TestSecurityGroup(t *testing.T) {
 	instance := &SecurityGroup{}
 	if instance.ResourceType() != "SecurityGroup" {
@@ -30,7 +17,7 @@ func TestAuthorizeSecurityGroupEgress(t *testing.T) {
 	if req.name() != "authorizeSecurityGroupEgress" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*AuthorizeSecurityGroupEgressResponse)
+	_ = req.asyncResponse().(*SecurityGroup)
 }
 
 func TestAuthorizeSecurityGroupIngress(t *testing.T) {
@@ -38,7 +25,7 @@ func TestAuthorizeSecurityGroupIngress(t *testing.T) {
 	if req.name() != "authorizeSecurityGroupIngress" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*AuthorizeSecurityGroupIngressResponse)
+	_ = req.asyncResponse().(*SecurityGroup)
 }
 
 func TestCreateSecurityGroup(t *testing.T) {
@@ -46,7 +33,7 @@ func TestCreateSecurityGroup(t *testing.T) {
 	if req.name() != "createSecurityGroup" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*CreateSecurityGroupResponse)
+	_ = req.response().(*SecurityGroup)
 }
 
 func TestDeleteSecurityGroup(t *testing.T) {

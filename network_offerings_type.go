@@ -69,8 +69,3 @@ type UpdateNetworkOffering struct {
 	SortKey          int    `json:"sortkey,omitempty" doc:"sort key of the network offering, integer"`
 	State            string `json:"state,omitempty" doc:"update state for the network offering"`
 }
-
-// UpdateNetworkOfferingResponse represents a newly modified network offering
-type UpdateNetworkOfferingResponse struct {
-	NetworkOffering NetworkOffering `json:"networkoffering"`
-}

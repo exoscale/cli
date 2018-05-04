@@ -89,11 +89,6 @@ type VirtualMachineUserData struct {
 	VirtualMachineID string `json:"virtualmachineid,omitempty" doc:"the ID of the virtual machine"`
 }
 
-// VirtualMachineResponse represents a generic Virtual Machine response
-type VirtualMachineResponse struct {
-	VirtualMachine VirtualMachine `json:"virtualmachine"`
-}
-
 // DeployVirtualMachine (Async) represents the machine creation
 //
 // Regarding the UserData field, the client is responsible to base64 (and probably gzip) it. Doing it within this library would make the integration with other tools, e.g. Terraform harder.
@@ -133,9 +128,6 @@ type DeployVirtualMachine struct {
 	ZoneID             string            `json:"zoneid" doc:"availability zone for the virtual machine"`
 }
 
-// DeployVirtualMachineResponse represents a deployed VM instance
-type DeployVirtualMachineResponse VirtualMachineResponse
-
 // StartVirtualMachine (Async) represents the creation of the virtual machine
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/startVirtualMachine.html
@@ -145,9 +137,6 @@ type StartVirtualMachine struct {
 	HostID            string `json:"hostid,omitempty" doc:"destination Host ID to deploy the VM to - parameter available for root admin only"`
 }
 
-// StartVirtualMachineResponse represents a started VM instance
-type StartVirtualMachineResponse VirtualMachineResponse
-
 // StopVirtualMachine (Async) represents the stopping of the virtual machine
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/stopVirtualMachine.html
@@ -156,18 +145,12 @@ type StopVirtualMachine struct {
 	Forced *bool  `json:"forced,omitempty" doc:"Force stop the VM (vm is marked as Stopped even when command fails to be send to the backend).  The caller knows the VM is stopped."`
 }
 
-// StopVirtualMachineResponse represents a stopped VM instance
-type StopVirtualMachineResponse VirtualMachineResponse
-
 // RebootVirtualMachine (Async) represents the rebooting of the virtual machine
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/rebootVirtualMachine.html
 type RebootVirtualMachine struct {
 	ID string `json:"id" doc:"The ID of the virtual machine"`
 }
-
-// RebootVirtualMachineResponse represents a rebooted VM instance
-type RebootVirtualMachineResponse VirtualMachineResponse
 
 // RestoreVirtualMachine (Async) represents the restoration of the virtual machine
 //
@@ -178,16 +161,10 @@ type RestoreVirtualMachine struct {
 	RootDiskSize     int64  `json:"rootdisksize,omitempty" doc:"Optional field to resize root disk on restore. Value is in GB. Only applies to template-based deployments."`
 }
 
-// RestoreVirtualMachineResponse represents a restored VM instance
-type RestoreVirtualMachineResponse VirtualMachineResponse
-
 // RecoverVirtualMachine represents the restoration of the virtual machine
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/recoverVirtualMachine.html
 type RecoverVirtualMachine RebootVirtualMachine
-
-// RecoverVirtualMachineResponse represents a recovered VM instance
-type RecoverVirtualMachineResponse VirtualMachineResponse
 
 // DestroyVirtualMachine (Async) represents the destruction of the virtual machine
 //
@@ -196,9 +173,6 @@ type DestroyVirtualMachine struct {
 	ID      string `json:"id" doc:"The ID of the virtual machine"`
 	Expunge *bool  `json:"expunge,omitempty" doc:"If true is passed, the vm is expunged immediately. False by default."`
 }
-
-// DestroyVirtualMachineResponse represents a destroyed VM instance
-type DestroyVirtualMachineResponse VirtualMachineResponse
 
 // UpdateVirtualMachine represents the update of the virtual machine
 //
@@ -216,9 +190,6 @@ type UpdateVirtualMachine struct {
 	SecurityGroupIDs      []string          `json:"securitygroupids,omitempty" doc:"list of security group ids to be applied on the virtual machine."`
 	UserData              string            `json:"userdata,omitempty" doc:"an optional binary data that can be sent to the virtual machine upon a successful deployment. This binary data must be base64 encoded before adding it to the request. Using HTTP GET (via querystring), you can send up to 2KB of data after base64 encoding. Using HTTP POST(via POST body), you can send up to 32K of data after base64 encoding."`
 }
-
-// UpdateVirtualMachineResponse represents an updated VM instance
-type UpdateVirtualMachineResponse VirtualMachineResponse
 
 // ExpungeVirtualMachine represents the annihilation of a VM
 //
@@ -242,16 +213,10 @@ type ScaleVirtualMachine struct {
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/changeServiceForVirtualMachine.html
 type ChangeServiceForVirtualMachine ScaleVirtualMachine
 
-// ChangeServiceForVirtualMachineResponse represents an changed VM instance
-type ChangeServiceForVirtualMachineResponse VirtualMachineResponse
-
 // ResetPasswordForVirtualMachine resets the password for virtual machine. The virtual machine must be in a "Stopped" state...
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/resetPasswordForVirtualMachine.html
 type ResetPasswordForVirtualMachine RebootVirtualMachine
-
-// ResetPasswordForVirtualMachineResponse represents the updated vm
-type ResetPasswordForVirtualMachineResponse VirtualMachineResponse
 
 // GetVMPassword asks for an encrypted password
 //
@@ -306,9 +271,6 @@ type AddNicToVirtualMachine struct {
 	IPAddress        net.IP `json:"ipaddress,omitempty" doc:"IP Address for the new network"`
 }
 
-// AddNicToVirtualMachineResponse represents the modified VM
-type AddNicToVirtualMachineResponse VirtualMachineResponse
-
 // RemoveNicFromVirtualMachine (Async) removes a NIC from a VM
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/removeNicFromVirtualMachine.html
@@ -317,27 +279,16 @@ type RemoveNicFromVirtualMachine struct {
 	VirtualMachineID string `json:"virtualmachineid" doc:"Virtual Machine ID"`
 }
 
-// RemoveNicFromVirtualMachineResponse represents the modified VM
-type RemoveNicFromVirtualMachineResponse VirtualMachineResponse
-
 // UpdateDefaultNicForVirtualMachine (Async) adds a NIC to a VM
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateDefaultNicForVirtualMachine.html
 type UpdateDefaultNicForVirtualMachine RemoveNicFromVirtualMachine
-
-// UpdateDefaultNicForVirtualMachineResponse represents the modified VM
-type UpdateDefaultNicForVirtualMachineResponse VirtualMachineResponse
 
 // GetVirtualMachineUserData returns the user-data of the given VM
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/getVirtualMachineUserData.html
 type GetVirtualMachineUserData struct {
 	VirtualMachineID string `json:"virtualmachineid" doc:"The ID of the virtual machine"`
-}
-
-// GetVirtualMachineUserDataResponse represents the base64 encoded user-data
-type GetVirtualMachineUserDataResponse struct {
-	VirtualMachineUserData VirtualMachineUserData `json:"virtualmachineuserdata"`
 }
 
 // MigrateVirtualMachine (Async) attempts migration of a VM to a different host or Root volume of the vm to a different storage pool
@@ -348,6 +299,3 @@ type MigrateVirtualMachine struct {
 	StorageID        string `json:"storageid,omitempty" doc:"Destination storage pool ID to migrate VM volumes to. Required for migrating the root disk volume"`
 	VirtualMachineID string `json:"virtualmachineid" doc:"the ID of the virtual machine"`
 }
-
-// MigrateVirtualMachineResponse represents the migrated VirtualMachine
-type MigrateVirtualMachineResponse VirtualMachineResponse

@@ -24,7 +24,7 @@ func TestResizeVolume(t *testing.T) {
 	if req.name() != "resizeVolume" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*ResizeVolumeResponse)
+	_ = req.asyncResponse().(*Volume)
 }
 
 func TestGetVolume(t *testing.T) {

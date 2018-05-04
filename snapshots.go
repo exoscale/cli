@@ -11,12 +11,7 @@ func (*CreateSnapshot) name() string {
 }
 
 func (*CreateSnapshot) asyncResponse() interface{} {
-	return new(CreateSnapshotResponse)
-}
-
-// CreateSnapshotResponse represents a freshly created snapshot
-type CreateSnapshotResponse struct {
-	Snapshot Snapshot `json:"snapshot"`
+	return new(Snapshot)
 }
 
 // name returns the CloudStack API command name
@@ -26,12 +21,6 @@ func (*ListSnapshots) name() string {
 
 func (*ListSnapshots) response() interface{} {
 	return new(ListSnapshotsResponse)
-}
-
-// ListSnapshotsResponse represents a list of volume snapshots
-type ListSnapshotsResponse struct {
-	Count    int        `json:"count"`
-	Snapshot []Snapshot `json:"snapshot"`
 }
 
 // name returns the CloudStack API command name

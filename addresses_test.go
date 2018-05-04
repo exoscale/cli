@@ -17,7 +17,7 @@ func TestAssociateIPAddress(t *testing.T) {
 	if req.name() != "associateIpAddress" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*AssociateIPAddressResponse)
+	_ = req.asyncResponse().(*IPAddress)
 }
 
 func TestDisassociateIPAddress(t *testing.T) {
@@ -41,7 +41,7 @@ func TestUpdateIPAddress(t *testing.T) {
 	if req.name() != "updateIpAddress" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*UpdateIPAddressResponse)
+	_ = req.asyncResponse().(*IPAddress)
 }
 
 func TestGetIPAddress(t *testing.T) {

@@ -77,11 +77,6 @@ type ServiceProvider struct {
 	ServiceList                  []string `json:"servicelist,omitempty"`
 }
 
-// NetworkResponse represents a network
-type NetworkResponse struct {
-	Network Network `json:"network"`
-}
-
 // CreateNetwork creates a network
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createNetwork.html
@@ -110,9 +105,6 @@ type CreateNetwork struct {
 	ZoneID            string `json:"zoneid" doc:"the Zone ID for the network"`
 }
 
-// CreateNetworkResponse represents a freshly created network
-type CreateNetworkResponse NetworkResponse
-
 // UpdateNetwork (Async) updates a network
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateNetwork.html
@@ -128,9 +120,6 @@ type UpdateNetwork struct {
 	NetworkOfferingID string `json:"networkofferingid,omitempty" doc:"network offering ID"`
 }
 
-// UpdateNetworkResponse represents a freshly created network
-type UpdateNetworkResponse NetworkResponse
-
 // RestartNetwork (Async) updates a network
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/restartNetwork.html
@@ -138,9 +127,6 @@ type RestartNetwork struct {
 	ID      string `json:"id" doc:"The id of the network to restart."`
 	Cleanup *bool  `json:"cleanup,omitempty" doc:"If cleanup old network elements"`
 }
-
-// RestartNetworkResponse represents a freshly created network
-type RestartNetworkResponse NetworkResponse
 
 // DeleteNetwork deletes a network
 //

@@ -56,12 +56,7 @@ func (*ResizeVolume) name() string {
 }
 
 func (*ResizeVolume) asyncResponse() interface{} {
-	return new(ResizeVolumeResponse)
-}
-
-// ResizeVolumeResponse represents the new Volume
-type ResizeVolumeResponse struct {
-	Volume Volume `json:"volume"`
+	return new(Volume)
 }
 
 // name returns the CloudStack API command name

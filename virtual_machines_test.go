@@ -18,7 +18,7 @@ func TestDeployVirtualMachine(t *testing.T) {
 	if req.name() != "deployVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*DeployVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestDestroyVirtualMachine(t *testing.T) {
@@ -26,7 +26,7 @@ func TestDestroyVirtualMachine(t *testing.T) {
 	if req.name() != "destroyVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*DestroyVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestRebootVirtualMachine(t *testing.T) {
@@ -34,7 +34,7 @@ func TestRebootVirtualMachine(t *testing.T) {
 	if req.name() != "rebootVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*RebootVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestStartVirtualMachine(t *testing.T) {
@@ -42,7 +42,7 @@ func TestStartVirtualMachine(t *testing.T) {
 	if req.name() != "startVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*StartVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestStopVirtualMachine(t *testing.T) {
@@ -50,7 +50,7 @@ func TestStopVirtualMachine(t *testing.T) {
 	if req.name() != "stopVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*StopVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestResetPasswordForVirtualMachine(t *testing.T) {
@@ -58,7 +58,7 @@ func TestResetPasswordForVirtualMachine(t *testing.T) {
 	if req.name() != "resetPasswordForVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*ResetPasswordForVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestUpdateVirtualMachine(t *testing.T) {
@@ -66,7 +66,7 @@ func TestUpdateVirtualMachine(t *testing.T) {
 	if req.name() != "updateVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*UpdateVirtualMachineResponse)
+	_ = req.response().(*VirtualMachine)
 }
 
 func TestListVirtualMachines(t *testing.T) {
@@ -90,7 +90,7 @@ func TestRestoreVirtualMachine(t *testing.T) {
 	if req.name() != "restoreVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*RestoreVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestChangeServiceForVirtualMachine(t *testing.T) {
@@ -98,7 +98,7 @@ func TestChangeServiceForVirtualMachine(t *testing.T) {
 	if req.name() != "changeServiceForVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*ChangeServiceForVirtualMachineResponse)
+	_ = req.response().(*VirtualMachine)
 }
 
 func TestScaleVirtualMachine(t *testing.T) {
@@ -114,7 +114,7 @@ func TestRecoverVirtualMachine(t *testing.T) {
 	if req.name() != "recoverVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*RecoverVirtualMachineResponse)
+	_ = req.response().(*VirtualMachine)
 }
 
 func TestExpungeVirtualMachine(t *testing.T) {
@@ -130,7 +130,7 @@ func TestGetVirtualMachineUserData(t *testing.T) {
 	if req.name() != "getVirtualMachineUserData" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*GetVirtualMachineUserDataResponse)
+	_ = req.response().(*VirtualMachineUserData)
 }
 
 func TestMigrateVirtualMachine(t *testing.T) {
@@ -138,7 +138,7 @@ func TestMigrateVirtualMachine(t *testing.T) {
 	if req.name() != "migrateVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*MigrateVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestAddNicToVirtualMachine(t *testing.T) {
@@ -146,7 +146,7 @@ func TestAddNicToVirtualMachine(t *testing.T) {
 	if req.name() != "addNicToVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*AddNicToVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestRemoveNicFromVirtualMachine(t *testing.T) {
@@ -154,7 +154,7 @@ func TestRemoveNicFromVirtualMachine(t *testing.T) {
 	if req.name() != "removeNicFromVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*RemoveNicFromVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestUpdateDefaultNicForVirtualMachine(t *testing.T) {
@@ -162,7 +162,7 @@ func TestUpdateDefaultNicForVirtualMachine(t *testing.T) {
 	if req.name() != "updateDefaultNicForVirtualMachine" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*UpdateDefaultNicForVirtualMachineResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestDeployOnBeforeSend(t *testing.T) {

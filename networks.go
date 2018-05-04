@@ -35,7 +35,7 @@ func (*CreateNetwork) name() string {
 }
 
 func (*CreateNetwork) response() interface{} {
-	return new(CreateNetworkResponse)
+	return new(Network)
 }
 
 func (req *CreateNetwork) onBeforeSend(params *url.Values) error {
@@ -55,7 +55,7 @@ func (*UpdateNetwork) name() string {
 }
 
 func (*UpdateNetwork) asyncResponse() interface{} {
-	return new(UpdateNetworkResponse)
+	return new(Network)
 }
 
 // name returns the CloudStack API command name
@@ -64,7 +64,7 @@ func (*RestartNetwork) name() string {
 }
 
 func (*RestartNetwork) asyncResponse() interface{} {
-	return new(RestartNetworkResponse)
+	return new(Network)
 }
 
 // name returns the CloudStack API command name

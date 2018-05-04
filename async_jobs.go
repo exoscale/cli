@@ -1,6 +1,9 @@
 package egoscale
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // QueryAsyncJobResult represents a query to fetch the status of async job
 //
@@ -15,7 +18,7 @@ func (*QueryAsyncJobResult) name() string {
 }
 
 func (*QueryAsyncJobResult) response() interface{} {
-	return new(QueryAsyncJobResultResponse)
+	return new(AsyncJobResult)
 }
 
 // name returns the CloudStack API command name
@@ -32,12 +35,29 @@ func (a *AsyncJobResult) Response(i interface{}) error {
 	if a.JobStatus == Failure {
 		return a.Error()
 	}
+	var err error
 	if a.JobStatus == Success {
-		if err := json.Unmarshal(*(a.JobResult), i); err != nil {
-			return err
+		m := map[string]json.RawMessage{}
+		err = json.Unmarshal(*(a.JobResult), &m)
+
+		if err == nil {
+			if len(m) > 1 {
+				err = json.Unmarshal(*(a.JobResult), i)
+			} else if len(m) == 1 {
+				for k := range m {
+					if k == "success" {
+						err = json.Unmarshal(*(a.JobResult), i)
+					}
+					if err := json.Unmarshal(m[k], i); err != nil {
+						return err
+					}
+				}
+			} else {
+				return fmt.Errorf("Empty response")
+			}
 		}
 	}
-	return nil
+	return err
 }
 
 func (a *AsyncJobResult) Error() error {

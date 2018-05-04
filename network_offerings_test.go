@@ -4,11 +4,6 @@ import (
 	"testing"
 )
 
-func TestNetworkOfferings(t *testing.T) {
-	var _ Command = (*ListNetworkOfferings)(nil)
-	var _ Command = (*UpdateNetworkOffering)(nil)
-}
-
 func TestListNetworkOfferings(t *testing.T) {
 	req := &ListNetworkOfferings{}
 	if req.name() != "listNetworkOfferings" {
@@ -22,5 +17,5 @@ func TestUpdateNetworkOffering(t *testing.T) {
 	if req.name() != "updateNetworkOffering" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*UpdateNetworkOfferingResponse)
+	_ = req.response().(*NetworkOffering)
 }

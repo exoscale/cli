@@ -4,12 +4,6 @@ import (
 	"testing"
 )
 
-func TestAccounts(t *testing.T) {
-	var _ Command = (*ListAccounts)(nil)
-	var _ Command = (*EnableAccount)(nil)
-	var _ Command = (*DisableAccount)(nil)
-}
-
 func TestListAccounts(t *testing.T) {
 	req := &ListAccounts{}
 	if req.name() != "listAccounts" {
@@ -23,7 +17,7 @@ func TestEnableAccount(t *testing.T) {
 	if req.name() != "enableAccount" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*EnableAccountResponse)
+	_ = req.response().(*Account)
 }
 
 func TestDisableAccount(t *testing.T) {
@@ -31,5 +25,5 @@ func TestDisableAccount(t *testing.T) {
 	if req.name() != "disableAccount" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*DisableAccountResponse)
+	_ = req.asyncResponse().(*Account)
 }

@@ -101,11 +101,6 @@ type EnableAccount struct {
 	ID       string `json:"id,omitempty" doc:"Account id"`
 }
 
-// EnableAccountResponse represents the modified account
-type EnableAccountResponse struct {
-	Account Account `json:"account"`
-}
-
 // DisableAccount (Async) represents the deactivation of an account
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/disableAccount.html
@@ -115,6 +110,3 @@ type DisableAccount struct {
 	DomainID string `json:"domainid,omitempty" doc:"Disables specified account in this domain."`
 	ID       string `json:"id,omitempty" doc:"Account id"`
 }
-
-// DisableAccountResponse represents the modified account
-type DisableAccountResponse EnableAccountResponse

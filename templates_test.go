@@ -16,7 +16,7 @@ func TestCreateTemplate(t *testing.T) {
 	if req.name() != "createTemplate" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*CreateTemplateResponse)
+	_ = req.asyncResponse().(*Template)
 }
 
 func TestCopyTemplate(t *testing.T) {
@@ -24,7 +24,7 @@ func TestCopyTemplate(t *testing.T) {
 	if req.name() != "copyTemplate" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*CopyTemplateResponse)
+	_ = req.asyncResponse().(*Template)
 }
 
 func TestUpdateTemplate(t *testing.T) {
@@ -32,7 +32,7 @@ func TestUpdateTemplate(t *testing.T) {
 	if req.name() != "updateTemplate" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*UpdateTemplateResponse)
+	_ = req.asyncResponse().(*Template)
 }
 
 func TestListTemplates(t *testing.T) {
@@ -56,7 +56,7 @@ func TestPrepareTemplate(t *testing.T) {
 	if req.name() != "prepareTemplate" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*PrepareTemplateResponse)
+	_ = req.asyncResponse().(*Template)
 }
 
 func TestRegisterTemplate(t *testing.T) {
@@ -64,7 +64,7 @@ func TestRegisterTemplate(t *testing.T) {
 	if req.name() != "registerTemplate" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*RegisterTemplateResponse)
+	_ = req.response().(*Template)
 }
 
 func TestTemplate(t *testing.T) {

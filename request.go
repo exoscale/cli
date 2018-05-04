@@ -257,19 +257,19 @@ func (exo *Client) AsyncRequestWithContext(ctx context.Context, request AsyncCom
 			return
 		}
 
-		result, ok := resp.(*QueryAsyncJobResultResponse)
-		if !ok && !callback(nil, fmt.Errorf("AsyncJobResult expected, got %t", resp)) {
-			return
+		result, ok := resp.(*AsyncJobResult)
+		if !ok {
+			if !callback(nil, fmt.Errorf("AsyncJobResult expected, got %t", resp)) {
+				return
+			}
 		}
 
-		res := (*AsyncJobResult)(result)
-
-		if res.JobStatus == Failure {
-			if !callback(nil, res.Error()) {
+		if result.JobStatus == Failure {
+			if !callback(nil, result.Error()) {
 				return
 			}
 		} else {
-			if !callback(res, nil) {
+			if !callback(result, nil) {
 				return
 			}
 		}

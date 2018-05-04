@@ -20,11 +20,6 @@ type CreateSSHKeyPair struct {
 	DomainID string `json:"domainid,omitempty" doc:"an optional domainId for the ssh key. If the account parameter is used, domainId must also be used."`
 }
 
-// CreateSSHKeyPairResponse represents the creation of an SSH Key Pair
-type CreateSSHKeyPairResponse struct {
-	KeyPair SSHKeyPair `json:"keypair"`
-}
-
 // DeleteSSHKeyPair represents a new keypair to be created
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSSHKeyPair.html
@@ -42,11 +37,6 @@ type RegisterSSHKeyPair struct {
 	PublicKey string `json:"publickey" doc:"Public key material of the keypair"`
 	Account   string `json:"account,omitempty" doc:"an optional account for the ssh key. Must be used with domainId."`
 	DomainID  string `json:"domainid,omitempty" doc:"an optional domainId for the ssh key. If the account parameter is used, domainId must also be used."`
-}
-
-// RegisterSSHKeyPairResponse represents the creation of an SSH Key Pair
-type RegisterSSHKeyPairResponse struct {
-	KeyPair SSHKeyPair `json:"keypair"`
 }
 
 // ListSSHKeyPairs represents a query for a list of SSH KeyPairs
@@ -79,6 +69,3 @@ type ResetSSHKeyForVirtualMachine struct {
 	Account  string `json:"account,omitempty" doc:"an optional account for the ssh key. Must be used with domainId."`
 	DomainID string `json:"domainid,omitempty" doc:"an optional domainId for the virtual machine. If the account parameter is used, domainId must also be used."`
 }
-
-// ResetSSHKeyForVirtualMachineResponse represents the modified VirtualMachine
-type ResetSSHKeyForVirtualMachineResponse VirtualMachineResponse

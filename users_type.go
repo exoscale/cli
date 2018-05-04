@@ -26,16 +26,11 @@ type User struct {
 
 // RegisterUserKeys registers a new set of key of the given user
 //
+// NB: only the APIKey and SecretKey will be filled
+//
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/registerUserKeys.html
 type RegisterUserKeys struct {
 	ID string `json:"id" doc:"User id"`
-}
-
-// RegisterUserKeysResponse represents a new set of UserKeys
-//
-// NB: only the APIKey and SecretKey will be filled, hence the different key name
-type RegisterUserKeysResponse struct {
-	UserKeys User `json:"userkeys"`
 }
 
 // CreateUser represents the creation of a User
@@ -53,11 +48,6 @@ type CreateUser struct {
 	UserID    string `json:"userid,omitempty" doc:"User UUID, required for adding account from external provisioning system"`
 }
 
-// CreateUserResponse represents the freshly created User
-type CreateUserResponse struct {
-	User User `json:"user"`
-}
-
 // UpdateUser represents the modification of a User
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateUser.html
@@ -72,9 +62,6 @@ type UpdateUser struct {
 	UserName      string `json:"username,omitempty" doc:"Unique username"`
 	UserSecretKey string `json:"usersecretkey,omitempty" doc:"The secret key for the user. Must be specified with userApiKey"`
 }
-
-// UpdateUserResponse represents the freshly modified User
-type UpdateUserResponse CreateUserResponse
 
 // ListUsers represents the search for Users
 //

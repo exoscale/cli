@@ -5,7 +5,7 @@ func (*RegisterUserKeys) name() string {
 }
 
 func (*RegisterUserKeys) response() interface{} {
-	return new(RegisterUserKeysResponse)
+	return new(User)
 }
 
 func (*CreateUser) name() string {
@@ -13,7 +13,7 @@ func (*CreateUser) name() string {
 }
 
 func (*CreateUser) response() interface{} {
-	return new(CreateUserResponse)
+	return new(User)
 }
 
 func (*UpdateUser) name() string {
@@ -21,7 +21,7 @@ func (*UpdateUser) name() string {
 }
 
 func (*UpdateUser) response() interface{} {
-	return new(UpdateUserResponse)
+	return new(User)
 }
 
 func (*ListUsers) name() string {

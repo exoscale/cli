@@ -47,15 +47,14 @@ func (*ListNics) each(resp interface{}, callback IterateItemFunc) {
 	}
 }
 
-// name returns the CloudStack API command name: addIpToNic
 func (*AddIPToNic) name() string {
 	return "addIpToNic"
 }
+
 func (*AddIPToNic) asyncResponse() interface{} {
-	return new(AddIPToNicResponse)
+	return new(NicSecondaryIP)
 }
 
-// name returns the CloudStack API command name: removeIpFromNic
 func (*RemoveIPFromNic) name() string {
 	return "removeIpFromNic"
 }
@@ -70,5 +69,5 @@ func (*ActivateIP6) name() string {
 }
 
 func (*ActivateIP6) asyncResponse() interface{} {
-	return new(ActivateIP6Response)
+	return new(Nic)
 }

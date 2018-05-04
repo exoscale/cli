@@ -154,7 +154,7 @@ func (req *DeployVirtualMachine) onBeforeSend(params *url.Values) error {
 }
 
 func (*DeployVirtualMachine) asyncResponse() interface{} {
-	return new(DeployVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -162,7 +162,7 @@ func (*StartVirtualMachine) name() string {
 	return "startVirtualMachine"
 }
 func (*StartVirtualMachine) asyncResponse() interface{} {
-	return new(StartVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -171,7 +171,7 @@ func (*StopVirtualMachine) name() string {
 }
 
 func (*StopVirtualMachine) asyncResponse() interface{} {
-	return new(StopVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -180,7 +180,7 @@ func (*RebootVirtualMachine) name() string {
 }
 
 func (*RebootVirtualMachine) asyncResponse() interface{} {
-	return new(RebootVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -189,7 +189,7 @@ func (*RestoreVirtualMachine) name() string {
 }
 
 func (*RestoreVirtualMachine) asyncResponse() interface{} {
-	return new(RestoreVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -198,7 +198,7 @@ func (*RecoverVirtualMachine) name() string {
 }
 
 func (*RecoverVirtualMachine) response() interface{} {
-	return new(RecoverVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -207,7 +207,7 @@ func (*DestroyVirtualMachine) name() string {
 }
 
 func (*DestroyVirtualMachine) asyncResponse() interface{} {
-	return new(DestroyVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -216,7 +216,7 @@ func (*UpdateVirtualMachine) name() string {
 }
 
 func (*UpdateVirtualMachine) response() interface{} {
-	return new(UpdateVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -243,7 +243,7 @@ func (*ChangeServiceForVirtualMachine) name() string {
 }
 
 func (*ChangeServiceForVirtualMachine) response() interface{} {
-	return new(ChangeServiceForVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -252,7 +252,7 @@ func (*ResetPasswordForVirtualMachine) name() string {
 }
 
 func (*ResetPasswordForVirtualMachine) asyncResponse() interface{} {
-	return new(ResetPasswordForVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 func (*GetVirtualMachineUserData) name() string {
@@ -260,7 +260,7 @@ func (*GetVirtualMachineUserData) name() string {
 }
 
 func (*GetVirtualMachineUserData) response() interface{} {
-	return new(GetVirtualMachineUserDataResponse)
+	return new(VirtualMachineUserData)
 }
 
 func (*MigrateVirtualMachine) name() string {
@@ -268,7 +268,7 @@ func (*MigrateVirtualMachine) name() string {
 }
 
 func (*MigrateVirtualMachine) asyncResponse() interface{} {
-	return new(MigrateVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -319,7 +319,7 @@ func (*AddNicToVirtualMachine) name() string {
 }
 
 func (*AddNicToVirtualMachine) asyncResponse() interface{} {
-	return new(AddNicToVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -328,7 +328,7 @@ func (*RemoveNicFromVirtualMachine) name() string {
 }
 
 func (*RemoveNicFromVirtualMachine) asyncResponse() interface{} {
-	return new(RemoveNicFromVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // name returns the CloudStack API command name
@@ -337,7 +337,7 @@ func (*UpdateDefaultNicForVirtualMachine) name() string {
 }
 
 func (*UpdateDefaultNicForVirtualMachine) asyncResponse() interface{} {
-	return new(UpdateDefaultNicForVirtualMachineResponse)
+	return new(VirtualMachine)
 }
 
 // Decode decodes the base64 / gzipped encoded user data

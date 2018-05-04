@@ -89,11 +89,6 @@ type CreateTemplate struct {
 	VolumeID              string            `json:"volumeid,omitempty" doc:"the ID of the disk volume the template is being created from. Either this parameter, or snapshotId has to be passed in"`
 }
 
-// CreateTemplateResponse represents a freshly created template
-type CreateTemplateResponse struct {
-	Template Template `json:"template"`
-}
-
 // CopyTemplate (Async) represents a template copy
 //
 // CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/copyTemplate.html
@@ -102,9 +97,6 @@ type CopyTemplate struct {
 	ID           string `json:"id" doc:"Template ID."`
 	SourceZoneID string `json:"sourcezoneid,omitempty" doc:"ID of the zone the template is currently hosted on. If not specified and template is cross-zone, then we will sync this template to region wide image store."`
 }
-
-// CopyTemplateResponse represents the copied template
-type CopyTemplateResponse CreateTemplateResponse
 
 // UpdateTemplate represents a template change
 //
@@ -123,9 +115,6 @@ type UpdateTemplate struct {
 	SortKey               int               `json:"sortkey,omitempty" doc:"sort key of the template, integer"`
 }
 
-// UpdateTemplateResponse represents the updated template
-type UpdateTemplateResponse CreateTemplateResponse
-
 // DeleteTemplate (Async) represents the deletion of a template
 //
 // CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteTemplate.html
@@ -141,9 +130,6 @@ type PrepareTemplate struct {
 	TemplateID string `json:"templateid" doc:"template ID of the template to be prepared in primary storage(s)."`
 	ZoneID     string `json:"zoneid" doc:"zone ID of the template to be prepared in primary storage(s)."`
 }
-
-// PrepareTemplateResponse represents the prepared template
-type PrepareTemplateResponse CreateTemplateResponse
 
 // RegisterTemplate represents a template registration
 //
@@ -172,6 +158,3 @@ type RegisterTemplate struct {
 	URL                   string            `json:"url" doc:"the URL of where the template is hosted. Possible URL include http:// and https://"`
 	ZoneID                string            `json:"zoneid" doc:"the ID of the zone the template is to be hosted on"`
 }
-
-// RegisterTemplateResponse represents the registered template
-type RegisterTemplateResponse CreateTemplateResponse

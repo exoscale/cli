@@ -5,20 +5,12 @@ import (
 	"testing"
 )
 
-func TestAffinityGroups(t *testing.T) {
-	var _ AsyncCommand = (*CreateAffinityGroup)(nil)
-	var _ AsyncCommand = (*DeleteAffinityGroup)(nil)
-	var _ syncCommand = (*ListAffinityGroupTypes)(nil)
-	var _ syncCommand = (*ListAffinityGroups)(nil)
-	var _ AsyncCommand = (*UpdateVMAffinityGroup)(nil)
-}
-
 func TestCreateAffinityGroup(t *testing.T) {
 	req := &CreateAffinityGroup{}
 	if req.name() != "createAffinityGroup" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*CreateAffinityGroupResponse)
+	_ = req.asyncResponse().(*AffinityGroup)
 }
 
 func TestDeleteAffinityGroup(t *testing.T) {
@@ -50,7 +42,7 @@ func TestUpdateVMAffinityGroup(t *testing.T) {
 	if req.name() != "updateVMAffinityGroup" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.asyncResponse().(*UpdateVMAffinityGroupResponse)
+	_ = req.asyncResponse().(*VirtualMachine)
 }
 
 func TestUpdateVMOnBeforeSend(t *testing.T) {

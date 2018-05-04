@@ -39,11 +39,6 @@ type UserSecurityGroup struct {
 	Account string `json:"account,omitempty"`
 }
 
-// SecurityGroupResponse represents a generic security group response
-type SecurityGroupResponse struct {
-	SecurityGroup SecurityGroup `json:"securitygroup"`
-}
-
 // CreateSecurityGroup represents a security group creation
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/createSecurityGroup.html
@@ -53,9 +48,6 @@ type CreateSecurityGroup struct {
 	Description string `json:"description,omitempty" doc:"the description of the security group"`
 	DomainID    string `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
 }
-
-// CreateSecurityGroupResponse represents a new security group
-type CreateSecurityGroupResponse SecurityGroupResponse
 
 // DeleteSecurityGroup represents a security group deletion
 //
@@ -85,18 +77,10 @@ type AuthorizeSecurityGroupIngress struct {
 	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty" doc:"user to security group mapping"`
 }
 
-// AuthorizeSecurityGroupIngressResponse represents the new egress rule
-// /!\ the Cloud Stack API document is not fully accurate. /!\
-type AuthorizeSecurityGroupIngressResponse SecurityGroupResponse
-
 // AuthorizeSecurityGroupEgress (Async) represents the egress rule creation
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/authorizeSecurityGroupEgress.html
 type AuthorizeSecurityGroupEgress AuthorizeSecurityGroupIngress
-
-// AuthorizeSecurityGroupEgressResponse represents the new egress rule
-// /!\ the Cloud Stack API document is not fully accurate. /!\
-type AuthorizeSecurityGroupEgressResponse CreateSecurityGroupResponse
 
 // RevokeSecurityGroupIngress (Async) represents the ingress/egress rule deletion
 //

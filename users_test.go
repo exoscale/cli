@@ -4,19 +4,12 @@ import (
 	"testing"
 )
 
-func TestUsers(t *testing.T) {
-	var _ Command = (*CreateUser)(nil)
-	var _ Command = (*RegisterUserKeys)(nil)
-	var _ Command = (*UpdateUser)(nil)
-	var _ Command = (*ListUsers)(nil)
-}
-
 func TestCreateUser(t *testing.T) {
 	req := &CreateUser{}
 	if req.name() != "createUser" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*CreateUserResponse)
+	_ = req.response().(*User)
 }
 
 func TestRegisterUserKeys(t *testing.T) {
@@ -24,7 +17,7 @@ func TestRegisterUserKeys(t *testing.T) {
 	if req.name() != "registerUserKeys" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*RegisterUserKeysResponse)
+	_ = req.response().(*User)
 }
 
 func TestUpdateUser(t *testing.T) {
@@ -32,7 +25,7 @@ func TestUpdateUser(t *testing.T) {
 	if req.name() != "updateUser" {
 		t.Errorf("API call doesn't match")
 	}
-	_ = req.response().(*UpdateUserResponse)
+	_ = req.response().(*User)
 }
 
 func TestListUsers(t *testing.T) {

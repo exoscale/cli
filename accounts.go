@@ -13,7 +13,7 @@ func (*EnableAccount) name() string {
 }
 
 func (*EnableAccount) response() interface{} {
-	return new(EnableAccountResponse)
+	return new(Account)
 }
 
 func (*DisableAccount) name() string {
@@ -21,5 +21,5 @@ func (*DisableAccount) name() string {
 }
 
 func (*DisableAccount) asyncResponse() interface{} {
-	return new(DisableAccountResponse)
+	return new(Account)
 }

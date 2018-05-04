@@ -31,11 +31,6 @@ type CreateAffinityGroup struct {
 	Type        string `json:"type" doc:"Type of the affinity group from the available affinity/anti-affinity group types"`
 }
 
-// CreateAffinityGroupResponse represents the response of the creation of an (anti-)affinity group
-type CreateAffinityGroupResponse struct {
-	AffinityGroup AffinityGroup `json:"affinitygroup"`
-}
-
 // UpdateVMAffinityGroup (Async) represents a modification of a (anti-)affinity group
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateVMAffinityGroup.html
@@ -44,9 +39,6 @@ type UpdateVMAffinityGroup struct {
 	AffinityGroupIDs   []string `json:"affinitygroupids,omitempty" doc:"comma separated list of affinity groups id that are going to be applied to the virtual machine. Should be passed only when vm is created from a zone with Basic Network support. Mutually exclusive with securitygroupnames parameter"`
 	AffinityGroupNames []string `json:"affinitygroupnames,omitempty" doc:"comma separated list of affinity groups names that are going to be applied to the virtual machine. Should be passed only when vm is created from a zone with Basic Network support. Mutually exclusive with securitygroupids parameter"`
 }
-
-// UpdateVMAffinityGroupResponse represents the new VM
-type UpdateVMAffinityGroupResponse VirtualMachineResponse
 
 // DeleteAffinityGroup (Async) represents an (anti-)affinity group to be deleted
 //

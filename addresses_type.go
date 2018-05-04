@@ -50,11 +50,6 @@ type AssociateIPAddress struct {
 	ZoneID     string `json:"zoneid,omitempty" doc:"the ID of the availability zone you want to acquire an public IP address from"`
 }
 
-// AssociateIPAddressResponse represents the response to the creation of an IPAddress
-type AssociateIPAddressResponse struct {
-	IPAddress IPAddress `json:"ipaddress"`
-}
-
 // DisassociateIPAddress (Async) represents the IP deletion
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/disassociateIpAddress.html
@@ -70,9 +65,6 @@ type UpdateIPAddress struct {
 	CustomID   string `json:"customid,omitempty" doc:"an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only"`
 	ForDisplay *bool  `json:"fordisplay,omitempty" doc:"an optional field, whether to the display the ip to the end user or not"`
 }
-
-// UpdateIPAddressResponse represents the modified IP Address
-type UpdateIPAddressResponse AssociateIPAddressResponse
 
 // ListPublicIPAddresses represents a search for public IP addresses
 //
