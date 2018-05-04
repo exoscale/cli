@@ -4,14 +4,6 @@ import (
 	"testing"
 )
 
-func TestSnapshots(t *testing.T) {
-	var _ Taggable = (*Snapshot)(nil)
-	var _ AsyncCommand = (*CreateSnapshot)(nil)
-	var _ syncCommand = (*ListSnapshots)(nil)
-	var _ AsyncCommand = (*DeleteSnapshot)(nil)
-	var _ AsyncCommand = (*RevertSnapshot)(nil)
-}
-
 func TestSnapshot(t *testing.T) {
 	instance := &Snapshot{}
 	if instance.ResourceType() != "Snapshot" {

@@ -1,29 +1,56 @@
 package egoscale
 
+// SnapshotState represents the Snapshot.State enum
+//
+// See: https://github.com/apache/cloudstack/blob/master/api/src/main/java/com/cloud/storage/Snapshot.java
+type SnapshotState int
+
+//go:generate stringer -type SnapshotType
+const (
+	// Allocated ... (TODO)
+	Allocated SnapshotState = iota
+	// Creating ... (TODO)
+	Creating
+	// CreatedOnPrimary ... (TODO)
+	CreatedOnPrimary
+	// BackingUp ... (TODO)
+	BackingUp
+	// BackedUp ... (TODO)
+	BackedUp
+	// Copying ... (TODO)
+	Copying
+	// Destroying ... (TODO)
+	Destroying
+	// Destroyed ... (TODO)
+	Destroyed
+	// Error ... (TODO)
+	Error
+)
+
 // Snapshot represents a volume snapshot
 type Snapshot struct {
-	ID           string        `json:"id"`
-	Account      string        `json:"account"`
-	Created      string        `json:"created,omitempty"`
-	Domain       string        `json:"domain"`
-	DomainID     string        `json:"domainid"`
-	IntervalType string        `json:"intervaltype,omitempty"` // hourly, daily, weekly, monthly, ..., none
-	Name         string        `json:"name,omitempty"`
-	PhysicalSize int64         `json:"physicalsize"`
-	Project      string        `json:"project"`
-	ProjectID    string        `json:"projectid"`
-	Revertable   bool          `json:"revertable,omitempty"`
-	Size         int64         `json:"size,omitempty"`
-	SnapshotType string        `json:"snapshottype,omitempty"`
-	State        string        `json:"state"` // BackedUp, Creating, BackingUp, ...
-	VolumeID     string        `json:"volumeid"`
-	VolumeName   string        `json:"volumename,omitempty"`
-	VolumeType   string        `json:"volumetype,omitempty"`
-	ZoneID       string        `json:"zoneid"`
-	Tags         []ResourceTag `json:"tags"`
+	Account      string        `json:"account,omitempty" doc:"the account associated with the snapshot"`
+	Created      string        `json:"created,omitempty" doc:"  the date the snapshot was created"`
+	Domain       string        `json:"domain,omitempty" doc:"the domain name of the snapshot's account"`
+	DomainID     string        `json:"domainid,omitempty" doc:"the domain ID of the snapshot's account"`
+	ID           string        `json:"id,omitempty" doc:"ID of the snapshot"`
+	IntervalType string        `json:"intervaltype,omitempty" doc:"valid types are hourly, daily, weekly, monthy, template, and none."`
+	Name         string        `json:"name,omitempty" doc:"name of the snapshot"`
+	PhysicalSize int64         `json:"physicalsize,omitempty" doc:"physical size of the snapshot on image store"`
+	Project      string        `json:"project,omitempty" doc:"the project name of the snapshot"`
+	ProjectID    string        `json:"projectid,omitempty" doc:"the project id of the snapshot"`
+	Revertable   *bool         `json:"revertable,omitempty" doc:"indicates whether the underlying storage supports reverting the volume to this snapshot"`
+	Size         int64         `json:"size,omitempty" doc:"the size of original volume"`
+	SnapshotType string        `json:"snapshottype,omitempty" doc:"the type of the snapshot"`
+	State        SnapshotState `json:"state,omitempty" doc:"the state of the snapshot. BackedUp means that snapshot is ready to be used; Creating - the snapshot is being allocated on the primary storage; BackingUp - the snapshot is being backed up on secondary storage"`
+	Tags         []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with snapshot"`
+	VolumeID     string        `json:"volumeid,omitempty" doc:"ID of the disk volume"`
+	VolumeName   string        `json:"volumename,omitempty" doc:"name of the disk volume"`
+	VolumeType   string        `json:"volumetype,omitempty" doc:"type of the disk volume"`
+	ZoneID       string        `json:"zoneid,omitempty" doc:"id of the availability zone"`
 }
 
-// CreateSnapshot represents a request to create a volume snapshot
+// CreateSnapshot (Async) creates an instant snapshot of a volume
 //
 // CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/createSnapshot.html
 type CreateSnapshot struct {
@@ -57,14 +84,14 @@ type ListSnapshots struct {
 	ZoneID       string        `json:"zoneid,omitempty" doc:"list snapshots by zone id"`
 }
 
-// DeleteSnapshot represents the deletion of a volume snapshot
+// DeleteSnapshot (Async) deletes a snapshot of a disk volume
 //
 // CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSnapshot.html
 type DeleteSnapshot struct {
 	ID string `json:"id" doc:"The ID of the snapshot"`
 }
 
-// RevertSnapshot revert a volume snapshot
+// RevertSnapshot (Async) reverts a volume snapshot
 //
 // CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/revertSnapshot.html
 type RevertSnapshot struct {
