@@ -55,3 +55,9 @@ type ListServiceOfferings struct {
 	SystemVMType     string `json:"systemvmtype,omitempty" doc:"the system VM type. Possible types are \"consoleproxy\", \"secondarystoragevm\" or \"domainrouter\"."`
 	VirtualMachineID string `json:"virtualmachineid,omitempty" doc:"the ID of the virtual machine. Pass this in if you want to see the available service offering that a virtual machine can be changed to."`
 }
+
+// ListServiceOfferingsResponse represents a list of service offerings
+type ListServiceOfferingsResponse struct {
+	Count           int               `json:"count"`
+	ServiceOffering []ServiceOffering `json:"serviceoffering"`
+}

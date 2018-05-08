@@ -155,6 +155,7 @@ func TestClientGetNone(t *testing.T) {
 		&VirtualMachine{ID: "1"},
 		&Volume{ID: "1"},
 		&Template{ID: "1", IsFeatured: true},
+		&ServiceOffering{ID: "1"},
 	}
 
 	for _, thing := range things {
@@ -193,7 +194,8 @@ func TestClientGetTooMany(t *testing.T) {
 		"virtualmachine": [{}, {}],
 		"volume": [{}, {}],
 		"zone": [{}, {}],
-		"template": [{}, {}]
+		"template": [{}, {}],
+		"serviceoffering": [{}, {}]
 	}}`}
 
 	things := []Gettable{
@@ -210,6 +212,7 @@ func TestClientGetTooMany(t *testing.T) {
 		&VirtualMachine{ID: "1"},
 		&Volume{ID: "1"},
 		&Template{ID: "1", IsFeatured: true},
+		&ServiceOffering{ID: "1"},
 	}
 
 	for _, thing := range things {
