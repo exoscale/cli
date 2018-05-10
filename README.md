@@ -1,5 +1,4 @@
-egoscale: exoscale driver for golang
-====================================
+# egoscale: Exoscale driver for Go
 
 <a href="https://gopherize.me/gopher/9c1bc7cfe1d84cf43e477dbfc4aa86332065f1fd"><img src="gopher.png" align="right" alt=""></a>
 
@@ -11,7 +10,7 @@ egoscale: exoscale driver for golang
 
 An API wrapper for the CloudStack based [Exoscale public cloud](https://www.exoscale.com).
 
-### License
+## License
 
 Licensed under the Apache License, Version 2.0 (the "License"); you
 may not use this file except in compliance with the License. You may
