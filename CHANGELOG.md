@@ -5,6 +5,11 @@ Changelog
 ------
 
 - feat: `Template` is `Gettable`
+- feat: `ServiceOffering` is `Gettable`
+- feat: addition of `GetAPILimit`
+- feat: addition of `CreateTemplate`, `PrepareTemplate`, `CopyTemplate`, `UpdateTemplate`, `RegisterTemplate`
+- feat: addition of `MigrateVirtualMachine`
+- feat: cmd cli
 
 0.9.23
 ------
