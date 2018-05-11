@@ -64,7 +64,7 @@ type VirtualMachine struct {
 	ServiceState          string            `json:"servicestate,omitempty" doc:"State of the Service from LB rule"`
 	State                 string            `json:"state,omitempty" doc:"the state of the virtual machine"`
 	Tags                  []ResourceTag     `json:"tags,omitempty" doc:"the list of resource tags associated with vm"`
-	TemplateDisplayText   string            `json:"templatedisplaytext,omitempty" doc:" an alternate display text of the template for the virtual machine"`
+	TemplateDisplayText   string            `json:"templatedisplaytext,omitempty" doc:"an alternate display text of the template for the virtual machine"`
 	TemplateID            string            `json:"templateid,omitempty" doc:"the ID of the template for the virtual machine. A -1 is returned if the virtual machine was created from an ISO file."`
 	TemplateName          string            `json:"templatename,omitempty" doc:"the name of the template for the virtual machine"`
 	ZoneID                string            `json:"zoneid,omitempty" doc:"the ID of the availablility zone for the virtual machine"`
