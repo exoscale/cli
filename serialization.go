@@ -40,7 +40,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 		val := value.Field(i)
 		tag := field.Tag
 		if json, ok := tag.Lookup("json"); ok {
-			n, required := extractJSONTag(field.Name, json)
+			n, required := ExtractJSONTag(field.Name, json)
 			name := prefix + n
 
 			switch val.Kind() {
@@ -48,7 +48,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				v := val.Int()
 				if v == 0 {
 					if required {
-						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), field.Name, val.Kind())
+						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), n, val.Kind())
 					}
 				} else {
 					(*params).Set(name, strconv.FormatInt(v, 10))
@@ -57,7 +57,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				v := val.Uint()
 				if v == 0 {
 					if required {
-						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), field.Name, val.Kind())
+						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), n, val.Kind())
 					}
 				} else {
 					(*params).Set(name, strconv.FormatUint(v, 10))
@@ -66,7 +66,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				v := val.Float()
 				if v == 0 {
 					if required {
-						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), field.Name, val.Kind())
+						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), n, val.Kind())
 					}
 				} else {
 					(*params).Set(name, strconv.FormatFloat(v, 'f', -1, 64))
@@ -75,7 +75,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				v := val.String()
 				if v == "" {
 					if required {
-						return fmt.Errorf("%s.%s (%v) is required, got \"\"", typeof.Name(), field.Name, val.Kind())
+						return fmt.Errorf("%s.%s (%v) is required, got \"\"", typeof.Name(), n, val.Kind())
 					}
 				} else {
 					(*params).Set(name, v)
@@ -92,14 +92,14 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 			case reflect.Ptr:
 				if val.IsNil() {
 					if required {
-						return fmt.Errorf("%s.%s (%v) is required, got tempty ptr", typeof.Name(), field.Name, val.Kind())
+						return fmt.Errorf("%s.%s (%v) is required, got tempty ptr", typeof.Name(), n, val.Kind())
 					}
 				} else {
 					switch field.Type.Elem().Kind() {
 					case reflect.Bool:
 						params.Set(name, strconv.FormatBool(val.Elem().Bool()))
 					default:
-						log.Printf("[SKIP] %s.%s (%v) not supported", typeof.Name(), field.Name, field.Type.Elem().Kind())
+						log.Printf("[SKIP] %s.%s (%v) not supported", typeof.Name(), n, field.Type.Elem().Kind())
 					}
 				}
 			case reflect.Slice:
@@ -110,7 +110,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 						ip := (net.IP)(val.Bytes())
 						if ip == nil || ip.Equal(net.IPv4zero) {
 							if required {
-								return fmt.Errorf("%s.%s (%v) is required, got zero IPv4 address", typeof.Name(), field.Name, val.Kind())
+								return fmt.Errorf("%s.%s (%v) is required, got zero IPv4 address", typeof.Name(), n, val.Kind())
 							}
 						} else {
 							(*params).Set(name, ip.String())
@@ -118,7 +118,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 					default:
 						if val.Len() == 0 {
 							if required {
-								return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), field.Name, val.Kind())
+								return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), n, val.Kind())
 							}
 						} else {
 							v := val.Bytes()
@@ -129,7 +129,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 					{
 						if val.Len() == 0 {
 							if required {
-								return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), field.Name, val.Kind())
+								return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), n, val.Kind())
 							}
 						} else {
 							elems := make([]string, 0, val.Len())
@@ -144,7 +144,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				default:
 					if val.Len() == 0 {
 						if required {
-							return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), field.Name, val.Kind())
+							return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), n, val.Kind())
 						}
 					} else {
 						err := prepareList(name, params, val.Interface())
@@ -166,7 +166,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				}
 			default:
 				if required {
-					return fmt.Errorf("Unsupported type %s.%s (%v)", typeof.Name(), field.Name, val.Kind())
+					return fmt.Errorf("Unsupported type %s.%s (%v)", typeof.Name(), n, val.Kind())
 				}
 			}
 		} else {
@@ -216,8 +216,8 @@ func prepareMap(prefix string, params *url.Values, m interface{}) error {
 	return nil
 }
 
-// extractJSONTag returns the variable name or defaultName as well as if the field is required (!omitempty)
-func extractJSONTag(defaultName, jsonTag string) (string, bool) {
+// ExtractJSONTag returns the variable name or defaultName as well as if the field is required (!omitempty)
+func ExtractJSONTag(defaultName, jsonTag string) (string, bool) {
 	tags := strings.Split(jsonTag, ",")
 	name := tags[0]
 	required := true

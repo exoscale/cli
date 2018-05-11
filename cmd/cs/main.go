@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/exoscale/egoscale"
@@ -93,13 +95,9 @@ func main() {
 		fmt.Fprintln(os.Stdout, strings.Replace(payload, "&", "\\\n&", -1))
 
 		response := client.Response(method)
-		resp, err := json.MarshalIndent(response, "", "  ")
-		if err != nil {
-			log.Fatal(err)
-		}
 
-		fmt.Fprintln(os.Stdout, "")
-		printJSON(string(resp), client.Theme)
+		fmt.Fprintln(os.Stdout)
+		printResponseHelp(os.Stdout, response)
 		os.Exit(0)
 	}
 
@@ -438,4 +436,40 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 type Client struct {
 	*egoscale.Client
 	Theme string
+}
+
+func printResponseHelp(out io.Writer, response interface{}) {
+	value := reflect.ValueOf(response)
+	typeof := reflect.TypeOf(response)
+
+	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', tabwriter.FilterHTML)
+	fmt.Fprintln(w, "FIELD\tTYPE\tDOCUMENTATION")
+
+	for typeof.Kind() == reflect.Ptr {
+		typeof = typeof.Elem()
+		value = value.Elem()
+	}
+
+	for i := 0; i < typeof.NumField(); i++ {
+		field := typeof.Field(i)
+		tag := field.Tag
+		doc := "-"
+		if d, ok := tag.Lookup("doc"); ok {
+			doc = d
+		}
+
+		name := field.Type.Name()
+		if name == "" {
+			if field.Type.Kind() == reflect.Slice {
+				name = "[]" + field.Type.Elem().Name()
+			}
+		}
+
+		if json, ok := tag.Lookup("json"); ok {
+			n, _ := egoscale.ExtractJSONTag(field.Name, json)
+			fmt.Fprintf(w, "%s\t%s\t%s\n", n, name, doc)
+		}
+	}
+
+	w.Flush()
 }
