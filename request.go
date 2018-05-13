@@ -92,7 +92,9 @@ func (client *Client) parseResponse(resp *http.Response, key string) (json.RawMe
 
 	if len(n) == 1 {
 		for k := range n {
-			if k == "success" {
+			// boolean response and asyncjob result may also contain
+			// only one key
+			if k == "success" || k == "jobid" {
 				return response, nil
 			}
 			return n[k], nil
