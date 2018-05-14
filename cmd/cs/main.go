@@ -34,7 +34,7 @@ func main() {
 	app.HelpName = "cs"
 	app.Usage = "CloudStack at the fingerprints"
 	app.Description = "Exoscale Go CloudStack cli"
-	app.HideVersion = true
+	app.Version = egoscale.Version
 	app.Compiled = time.Now()
 	app.EnableBashCompletion = true
 	app.Flags = []cli.Flag{
@@ -210,6 +210,34 @@ func buildCommand(out *egoscale.Command, category string, method egoscale.Comman
 		Category: category,
 		HideHelp: hidden,
 		Hidden:   hidden,
+		BashComplete: func(c *cli.Context) {
+			val := reflect.ValueOf(method)
+			// we've got a pointer
+			value := val.Elem()
+
+			if value.Kind() != reflect.Struct {
+				log.Fatalf("struct was expected")
+			}
+
+			ty := value.Type()
+			for i := 0; i < value.NumField(); i++ {
+				field := ty.Field(i)
+
+				argName := ""
+				if json, ok := field.Tag.Lookup("json"); ok {
+					tags := strings.Split(json, ",")
+					argName = tags[0]
+				}
+
+				if argName == "" {
+					continue
+				}
+
+				if !c.IsSet(argName) {
+					fmt.Printf("--%s\n", argName)
+				}
+			}
+		},
 		Action: func(c *cli.Context) error {
 			*out = method
 			return nil
@@ -250,7 +278,7 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 				}
 			}
 			if argName == "" || argName == "omitempty" {
-				argName = strings.ToLower(field.Name)
+				continue
 			}
 		}
 
