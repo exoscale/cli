@@ -73,7 +73,7 @@ func (req *DNSErrorResponse) Error() error {
 }
 
 // CreateDomain creates a DNS domain
-func (exo *Client) CreateDomain(name string) (*DNSDomain, error) {
+func (client *Client) CreateDomain(name string) (*DNSDomain, error) {
 	m, err := json.Marshal(DNSDomainResponse{
 		Domain: &DNSDomain{
 			Name: name,
@@ -83,7 +83,7 @@ func (exo *Client) CreateDomain(name string) (*DNSDomain, error) {
 		return nil, err
 	}
 
-	resp, err := exo.dnsRequest("/v1/domains", string(m), "POST")
+	resp, err := client.dnsRequest("/v1/domains", string(m), "POST")
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +97,8 @@ func (exo *Client) CreateDomain(name string) (*DNSDomain, error) {
 }
 
 // GetDomain gets a DNS domain
-func (exo *Client) GetDomain(name string) (*DNSDomain, error) {
-	resp, err := exo.dnsRequest("/v1/domains/"+name, "", "GET")
+func (client *Client) GetDomain(name string) (*DNSDomain, error) {
+	resp, err := client.dnsRequest("/v1/domains/"+name, "", "GET")
 	if err != nil {
 		return nil, err
 	}
@@ -112,8 +112,8 @@ func (exo *Client) GetDomain(name string) (*DNSDomain, error) {
 }
 
 // DeleteDomain delets a DNS domain
-func (exo *Client) DeleteDomain(name string) error {
-	_, err := exo.dnsRequest("/v1/domains/"+name, "", "DELETE")
+func (client *Client) DeleteDomain(name string) error {
+	_, err := client.dnsRequest("/v1/domains/"+name, "", "DELETE")
 	if err != nil {
 		return err
 	}
@@ -122,9 +122,9 @@ func (exo *Client) DeleteDomain(name string) error {
 }
 
 // GetRecord returns a DNS record
-func (exo *Client) GetRecord(domain string, recordID int64) (*DNSRecord, error) {
+func (client *Client) GetRecord(domain string, recordID int64) (*DNSRecord, error) {
 	id := strconv.FormatInt(recordID, 10)
-	resp, err := exo.dnsRequest("/v1/domains/"+domain+"/records/"+id, "", "GET")
+	resp, err := client.dnsRequest("/v1/domains/"+domain+"/records/"+id, "", "GET")
 	if err != nil {
 		return nil, err
 	}
@@ -138,8 +138,8 @@ func (exo *Client) GetRecord(domain string, recordID int64) (*DNSRecord, error) 
 }
 
 // GetRecords returns the DNS records
-func (exo *Client) GetRecords(name string) ([]DNSRecord, error) {
-	resp, err := exo.dnsRequest("/v1/domains/"+name+"/records", "", "GET")
+func (client *Client) GetRecords(name string) ([]DNSRecord, error) {
+	resp, err := client.dnsRequest("/v1/domains/"+name+"/records", "", "GET")
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func (exo *Client) GetRecords(name string) ([]DNSRecord, error) {
 }
 
 // CreateRecord creates a DNS record
-func (exo *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
+func (client *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
 	body, err := json.Marshal(DNSRecordResponse{
 		Record: rec,
 	})
@@ -166,7 +166,7 @@ func (exo *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 		return nil, err
 	}
 
-	resp, err := exo.dnsRequest("/v1/domains/"+name+"/records", string(body), "POST")
+	resp, err := client.dnsRequest("/v1/domains/"+name+"/records", string(body), "POST")
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +180,7 @@ func (exo *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 }
 
 // UpdateRecord updates a DNS record
-func (exo *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
+func (client *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
 	body, err := json.Marshal(DNSRecordResponse{
 		Record: rec,
 	})
@@ -189,7 +189,7 @@ func (exo *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 	}
 
 	id := strconv.FormatInt(rec.ID, 10)
-	resp, err := exo.dnsRequest("/v1/domains/"+name+"/records/"+id, string(body), "PUT")
+	resp, err := client.dnsRequest("/v1/domains/"+name+"/records/"+id, string(body), "PUT")
 	if err != nil {
 		return nil, err
 	}
@@ -203,22 +203,22 @@ func (exo *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 }
 
 // DeleteRecord deletes a record
-func (exo *Client) DeleteRecord(name string, recordID int64) error {
+func (client *Client) DeleteRecord(name string, recordID int64) error {
 	id := strconv.FormatInt(recordID, 10)
-	_, err := exo.dnsRequest("/v1/domains/"+name+"/records/"+id, "", "DELETE")
+	_, err := client.dnsRequest("/v1/domains/"+name+"/records/"+id, "", "DELETE")
 
 	return err
 }
 
-func (exo *Client) dnsRequest(uri string, params string, method string) (json.RawMessage, error) {
-	url := exo.Endpoint + uri
+func (client *Client) dnsRequest(uri string, params string, method string) (json.RawMessage, error) {
+	url := client.Endpoint + uri
 	req, err := http.NewRequest(method, url, strings.NewReader(params))
 	if err != nil {
 		return nil, err
 	}
 
 	var hdr = make(http.Header)
-	hdr.Add("X-DNS-TOKEN", exo.APIKey+":"+exo.apiSecret)
+	hdr.Add("X-DNS-TOKEN", client.APIKey+":"+client.apiSecret)
 	hdr.Add("User-Agent", fmt.Sprintf("exoscale/egoscale (%v)", Version))
 	hdr.Add("Accept", "application/json")
 	if params != "" {
@@ -226,7 +226,7 @@ func (exo *Client) dnsRequest(uri string, params string, method string) (json.Ra
 	}
 	req.Header = hdr
 
-	response, err := exo.HTTPClient.Do(req)
+	response, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
