@@ -83,6 +83,12 @@ type Password struct {
 	EncryptedPassword string `json:"encryptedpassword"`
 }
 
+// VirtualMachineUserData represents the base64 encoded user-data
+type VirtualMachineUserData struct {
+	UserData         string `json:"userdata,omitempty" doc:"Base 64 encoded VM user data"`
+	VirtualMachineID string `json:"virtualmachineid,omitempty" doc:"the ID of the virtual machine"`
+}
+
 // VirtualMachineResponse represents a generic Virtual Machine response
 type VirtualMachineResponse struct {
 	VirtualMachine VirtualMachine `json:"virtualmachine"`
@@ -337,8 +343,7 @@ type GetVirtualMachineUserData struct {
 
 // GetVirtualMachineUserDataResponse represents the base64 encoded user-data
 type GetVirtualMachineUserDataResponse struct {
-	UserData         string `json:"userdata,omitempty" doc:"Base 64 encoded VM user data"`
-	VirtualMachineID string `json:"virtualmachineid,omitempty" doc:"the ID of the virtual machine"`
+	VirtualMachineUserData VirtualMachineUserData `json:"virtualmachineuserdata"`
 }
 
 // MigrateVirtualMachine (Async) attempts migration of a VM to a different host or Root volume of the vm to a different storage pool

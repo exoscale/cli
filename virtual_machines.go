@@ -1,8 +1,12 @@
 package egoscale
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
+	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/url"
 
@@ -334,4 +338,24 @@ func (*UpdateDefaultNicForVirtualMachine) name() string {
 
 func (*UpdateDefaultNicForVirtualMachine) asyncResponse() interface{} {
 	return new(UpdateDefaultNicForVirtualMachineResponse)
+}
+
+// Decode decodes the base64 / gzipped encoded user data
+func (userdata *VirtualMachineUserData) Decode() (string, error) {
+	data, err := base64.StdEncoding.DecodeString(userdata.UserData)
+	if err != nil {
+		return "", err
+	}
+	// 0x1f8b is the magic number for gzip
+	if len(data) < 2 || data[0] != 0x1f || data[1] != 0x8b {
+		return string(data), nil
+	}
+	gr, err := gzip.NewReader(bytes.NewBuffer(data))
+	defer gr.Close()
+
+	str, err := ioutil.ReadAll(gr)
+	if err != nil {
+		return "", err
+	}
+	return string(str), nil
 }

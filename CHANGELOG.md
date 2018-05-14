@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.25
+------
+
+- fix: `GetVirtualUserData` response with `Decode` method handling base64 and gzip
+
 0.9.24
 ------
 
