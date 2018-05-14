@@ -57,7 +57,6 @@ func (vm *VirtualMachine) ListRequest() (ListCommand, error) {
 		GroupID:    vm.GroupID,
 		ID:         vm.ID,
 		Name:       vm.Name,
-		ProjectID:  vm.ProjectID,
 		State:      vm.State,
 		TemplateID: vm.TemplateID,
 		ZoneID:     vm.ZoneID,

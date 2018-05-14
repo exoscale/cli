@@ -18,7 +18,6 @@ func (ipaddress *IPAddress) Get(ctx context.Context, client *Client) error {
 		IPAddress: ipaddress.IPAddress,
 		Account:   ipaddress.Account,
 		DomainID:  ipaddress.DomainID,
-		ProjectID: ipaddress.ProjectID,
 		ZoneID:    ipaddress.ZoneID,
 	}
 
@@ -108,9 +107,7 @@ func (ipaddress *IPAddress) ListRequest() (ListCommand, error) {
 		IsElastic:           &ipaddress.IsElastic,
 		IsSourceNat:         &ipaddress.IsSourceNat,
 		PhysicalNetworkID:   ipaddress.PhysicalNetworkID,
-		ProjectID:           ipaddress.ProjectID,
 		VlanID:              ipaddress.VlanID,
-		VpcID:               ipaddress.VpcID,
 		ZoneID:              ipaddress.ZoneID,
 	}
 

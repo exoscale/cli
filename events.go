@@ -6,12 +6,10 @@ type Event struct {
 	Created     string `json:"created,omitempty" doc:"the date the event was created"`
 	Description string `json:"description,omitempty" doc:"a brief description of the event"`
 	Domain      string `json:"domain,omitempty" doc:"the name of the account's domain"`
-	DomainID    string `json:"domainid,omitempty" doc:"the id of the account's domain" `
+	DomainID    string `json:"domainid,omitempty" doc:"the id of the account's domain"`
 	ID          string `json:"id,omitempty" doc:"the ID of the event"`
 	Level       string `json:"level,omitempty" doc:"the event level (INFO, WARN, ERROR)"`
 	ParentID    string `json:"parentid,omitempty" doc:"whether the event is parented"`
-	Project     string `json:"project,omitempty" doc:"the project name of the address"`
-	ProjectID   string `json:"projectid,omitempty" doc:"the project id of the ipaddress"`
 	State       string `json:"state,omitempty" doc:"the state of the event"`
 	Type        string `json:"type,omitempty" doc:"the type of the event (see event types)"`
 	UserName    string `json:"username,omitempty" doc:"the name of the user who performed the action (can be different from the account if an admin is performing an action for a user, e.g. starting/stopping a user's virtual machine)"`
@@ -38,7 +36,6 @@ type ListEvents struct {
 	ListAll     *bool  `json:"listall,omitempty"`
 	Page        int    `json:"page,omitempty" `
 	PageSize    int    `json:"pagesize,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
-	ProjectID   string `json:"projectid,omitempty" doc:"list objects by project"`
 	StartDate   string `json:"startdate,omitempty" doc:"the start date range of the list you want to retrieve (use format \"yyyy-MM-dd\" or the new format \"yyyy-MM-dd HH:mm:ss\")"`
 	Type        string `json:"type,omitempty" doc:"the event type (see event types)"`
 }

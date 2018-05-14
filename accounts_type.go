@@ -67,9 +67,6 @@ type Account struct {
 	VolumeAvailable           string            `json:"volumeavailable,omitempty" doc:"the total volume available for this account"`
 	VolumeLimit               string            `json:"volumelimit,omitempty" doc:"the total volume which can be used by this account"`
 	VolumeTotal               int64             `json:"volumetotal,omitempty" doc:"the total volume being used by this account"`
-	VpcAvailable              string            `json:"vpcavailable,omitempty" doc:"the total number of vpcs available to be created for this account"`
-	VpcLimit                  string            `json:"vpclimit,omitempty" doc:"the total number of vpcs the account can own"`
-	VpcTotal                  int64             `json:"vpctotal,omitempty" doc:"the total number of vpcs owned by account"`
 }
 
 // ListAccounts represents a query to display the accounts

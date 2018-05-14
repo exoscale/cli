@@ -53,7 +53,6 @@ func (sg *SecurityGroup) ListRequest() (ListCommand, error) {
 		Account:           sg.Account,
 		DomainID:          sg.DomainID,
 		ID:                sg.ID,
-		ProjectID:         sg.ProjectID,
 		SecurityGroupName: sg.Name,
 	}
 
@@ -67,9 +66,8 @@ func (sg *SecurityGroup) Delete(ctx context.Context, client *Client) error {
 	}
 
 	req := &DeleteSecurityGroup{
-		Account:   sg.Account,
-		DomainID:  sg.DomainID,
-		ProjectID: sg.ProjectID,
+		Account:  sg.Account,
+		DomainID: sg.DomainID,
 	}
 
 	if sg.ID != "" {

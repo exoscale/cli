@@ -49,7 +49,6 @@ func (temp *Template) ListRequest() (ListCommand, error) {
 		Account:    temp.Account,
 		DomainID:   temp.DomainID,
 		ID:         temp.ID,
-		ProjectID:  temp.ProjectID,
 		ZoneID:     temp.ZoneID,
 		Hypervisor: temp.Hypervisor,
 		//TODO Tags

@@ -28,8 +28,6 @@ type Template struct {
 	OsTypeID              string            `json:"ostypeid,omitempty" doc:"the ID of the OS type for this template."`
 	OsTypeName            string            `json:"ostypename,omitempty" doc:"the name of the OS type for this template."`
 	PasswordEnabled       bool              `json:"passwordenabled,omitempty" doc:"true if the reset password feature is enabled, false otherwise"`
-	Project               string            `json:"project,omitempty" doc:"the project name of the template"`
-	ProjectID             string            `json:"projectid,omitempty" doc:"the project id of the template"`
 	Removed               string            `json:"removed,omitempty" doc:"the date this template was removed"`
 	Size                  int64             `json:"size,omitempty" doc:"the size of the template"`
 	SourceTemplateID      string            `json:"sourcetemplateid,omitempty" doc:"the template ID of the parent template if present"`
@@ -59,7 +57,6 @@ type ListTemplates struct {
 	Name           string        `json:"name,omitempty" doc:"the template name"`
 	Page           int           `json:"page,omitempty"`
 	PageSize       int           `json:"pagesize,omitempty"`
-	ProjectID      string        `json:"projectid,omitempty" doc:"list objects by project"`
 	ShowRemoved    *bool         `json:"showremoved,omitempty" doc:"show removed templates as well"`
 	Tags           []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	ZoneID         string        `json:"zoneid,omitempty" doc:"list templates by zoneId"`
@@ -169,7 +166,6 @@ type RegisterTemplate struct {
 	Name                  string            `json:"name" doc:"the name of the template"`
 	OsTypeID              string            `json:"ostypeid" doc:"the ID of the OS Type that best represents the OS of this template."`
 	PasswordEnabled       *bool             `json:"passwordenabled,omitempty" doc:"true if the template supports the password reset feature; default is false"`
-	ProjectID             string            `json:"projectid,omitempty" doc:"Register template for the project"`
 	RequiresHVM           *bool             `json:"requireshvm,omitempty" doc:"true if this template requires HVM"`
 	SSHKeyEnabled         *bool             `json:"sshkeyenabled,omitempty" doc:"true if the template supports the sshkey upload feature; default is false"`
 	TemplateTag           string            `json:"templatetag,omitempty" doc:"the tag for this template."`

@@ -24,8 +24,6 @@ type IPAddress struct {
 	IsSystem                  bool          `json:"issystem,omitempty" doc:"true if this ip is system ip (was allocated as a part of deployVm or createLbRule)"`
 	NetworkID                 string        `json:"networkid,omitempty" doc:"the ID of the Network where ip belongs to"`
 	PhysicalNetworkID         string        `json:"physicalnetworkid,omitempty" doc:"the physical network this belongs to"`
-	Project                   string        `json:"project,omitempty" doc:"the project name of the address"`
-	ProjectID                 string        `json:"projectid,omitempty" doc:"the project id of the ipaddress"`
 	Purpose                   string        `json:"purpose,omitempty" doc:"purpose of the IP address. In Acton this value is not null for Ips with isSystem=true, and can have either StaticNat or LB value"`
 	State                     string        `json:"state,omitempty" doc:"State of the ip address. Can be: Allocatin, Allocated and Releasing"`
 	Tags                      []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with ip address"`
@@ -35,7 +33,6 @@ type IPAddress struct {
 	VlanID                    string        `json:"vlanid,omitempty" doc:"the ID of the VLAN associated with the IP address. This parameter is visible to ROOT admins only"`
 	VlanName                  string        `json:"vlanname,omitempty" doc:"the VLAN associated with the IP address"`
 	VMIPAddress               net.IP        `json:"vmipaddress,omitempty" doc:"virutal machine (dnat) ip address (not null only for static nat Ip)"`
-	VpcID                     string        `json:"vpcid,omitempty" doc:"VPC the ip belongs to"`
 	ZoneID                    string        `json:"zoneid,omitempty" doc:"the ID of the zone the public IP address belongs to"`
 	ZoneName                  string        `json:"zonename,omitempty" doc:"the name of the zone the public IP address belongs to"`
 }
@@ -49,9 +46,7 @@ type AssociateIPAddress struct {
 	ForDisplay *bool  `json:"fordisplay,omitempty" doc:"an optional field, whether to the display the ip to the end user or not"`
 	IsPortable *bool  `json:"isportable,omitempty" doc:"should be set to true if public IP is required to be transferable across zones, if not specified defaults to false"`
 	NetworkdID string `json:"networkid,omitempty" doc:"The network this ip address should be associated to."`
-	ProjectID  string `json:"projectid,omitempty" doc:"Deploy vm for the project"`
 	RegionID   int    `json:"regionid,omitempty" doc:"region ID from where portable ip is to be associated."`
-	VpcID      string `json:"vpcid,omitempty" doc:"the VPC you want the ip address to be associated with"`
 	ZoneID     string `json:"zoneid,omitempty" doc:"the ID of the availability zone you want to acquire an public IP address from"`
 }
 
@@ -101,10 +96,8 @@ type ListPublicIPAddresses struct {
 	Page                int           `json:"page,omitempty"`
 	PageSize            int           `json:"pagesize,omitempty"`
 	PhysicalNetworkID   string        `json:"physicalnetworkid,omitempty" doc:"lists all public IP addresses by physical network id"`
-	ProjectID           string        `json:"projectid,omitempty" doc:"list objects by project"`
 	Tags                []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	VlanID              string        `json:"vlanid,omitempty" doc:"lists all public IP addresses by VLAN ID"`
-	VpcID               string        `json:"vpcid,omitempty" doc:"List ips belonging to the VPC"`
 	ZoneID              string        `json:"zoneid,omitempty" doc:"lists all public IP addresses by Zone ID"`
 }
 

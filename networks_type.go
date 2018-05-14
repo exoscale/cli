@@ -36,8 +36,6 @@ type Network struct {
 	NetworkOfferingID           string        `json:"networkofferingid,omitempty" doc:"network offering id the network is created from"`
 	NetworkOfferingName         string        `json:"networkofferingname,omitempty" doc:"name of the network offering the network is created from"`
 	PhysicalNetworkID           string        `json:"physicalnetworkid,omitempty" doc:"the physical network id"`
-	Project                     string        `json:"project,omitempty" doc:"the project name of the address"`
-	ProjectID                   string        `json:"projectid,omitempty" doc:"the project id of the ipaddress"`
 	Related                     string        `json:"related,omitempty" doc:"related to what other network configuration"`
 	ReservedIPRange             string        `json:"reservediprange,omitempty" doc:"the network's IP range not to be used by CloudStack guest VMs and can be used for non CloudStack purposes"`
 	RestartRequired             bool          `json:"restartrequired,omitempty" doc:"true network requires restart"`
@@ -50,7 +48,6 @@ type Network struct {
 	TrafficType                 string        `json:"traffictype,omitempty" doc:"the traffic type of the network"`
 	Type                        string        `json:"type,omitempty" doc:"the type of the network"`
 	Vlan                        string        `json:"vlan,omitemtpy" doc:"The vlan of the network. This parameter is visible to ROOT admins only"`
-	VpcID                       string        `json:"vpcid,omitempty" doc:"VPC the network belongs to"`
 	ZoneID                      string        `json:"zoneid,omitempty" doc:"zone id of the network"`
 	ZoneName                    string        `json:"zonename,omitempty" doc:"the name of the zone the network belongs to"`
 	ZonesNetworkSpans           []Zone        `json:"zonesnetworkspans,omitempty" doc:"If a network is enabled for 'streched l2 subnet' then represents zones on which network currently spans"`
@@ -106,12 +103,10 @@ type CreateNetwork struct {
 	NetworkDomain     string `json:"networkdomain,omitempty" doc:"network domain"`
 	NetworkOfferingID string `json:"networkofferingid" doc:"the network offering id"`
 	PhysicalNetworkID string `json:"physicalnetworkid,omitempty" doc:"the Physical Network ID the network belongs to"`
-	ProjectID         string `json:"projectid,omitempty" doc:"an optional project for the ssh key"`
 	StartIP           net.IP `json:"startip,omitempty" doc:"the beginning IP address in the network IP range"`
 	StartIpv6         net.IP `json:"startipv6,omitempty" doc:"the beginning IPv6 address in the IPv6 network range"`
 	SubdomainAccess   *bool  `json:"subdomainaccess,omitempty" doc:"Defines whether to allow subdomains to use networks dedicated to their parent domain(s). Should be used with aclType=Domain, defaulted to allow.subdomain.network.access global config if not specified"`
 	Vlan              string `json:"vlan,omitempty" doc:"the ID or VID of the network"`
-	VpcID             string `json:"vpcid,omitempty" doc:"the VPC network belongs to"`
 	ZoneID            string `json:"zoneid" doc:"the Zone ID for the network"`
 }
 
@@ -164,7 +159,6 @@ type ListNetworks struct {
 	CanUseForDeploy   *bool         `json:"canusefordeploy,omitempty" doc:"list networks available for vm deployment"`
 	DisplayNetwork    *bool         `json:"displaynetwork,omitempty" doc:"list resources by display flag; only ROOT admin is eligible to pass this parameter"`
 	DomainID          string        `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
-	ForVpc            *bool         `json:"forvpc,omitempty" doc:"the network belongs to vpc"`
 	ID                string        `json:"id,omitempty" doc:"list networks by id"`
 	IsRecursive       *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	IsSystem          *bool         `json:"issystem,omitempty" doc:"true if network is system, false otherwise"`
@@ -173,14 +167,12 @@ type ListNetworks struct {
 	Page              int           `json:"page,omitempty"`
 	PageSize          int           `json:"pagesize,omitempty"`
 	PhysicalNetworkID string        `json:"physicalnetworkid,omitempty" doc:"list networks by physical network id"`
-	ProjectID         string        `json:"projectid,omitempty" doc:"list objects by project"`
 	RestartRequired   *bool         `json:"restartrequired,omitempty" doc:"list networks by restartRequired"`
 	SpecifyIPRanges   *bool         `json:"specifyipranges,omitempty" doc:"true if need to list only networks which support specifying ip ranges"`
 	SupportedServices []Service     `json:"supportedservices,omitempty" doc:"list networks supporting certain services"`
 	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	TrafficType       string        `json:"traffictype,omitempty" doc:"type of the traffic"`
 	Type              string        `json:"type,omitempty" doc:"the type of the network. Supported values are: Isolated and Shared"`
-	VpcID             string        `json:"vpcid,omitempty" doc:"List networks by VPC"`
 	ZoneID            string        `json:"zoneid,omitempty" doc:"the Zone ID of the network"`
 }
 

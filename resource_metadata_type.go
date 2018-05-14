@@ -13,7 +13,6 @@ type ListResourceDetails struct {
 	ListAll      bool   `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Page         int    `json:"page,omitempty"`
 	PageSize     int    `json:"pagesize,omitempty"`
-	ProjectID    string `json:"projectid,omitempty" doc:"list objects by project"`
 	ResourceID   string `json:"resourceid,omitempty" doc:"list by resource id"`
 	Value        string `json:"value,omitempty" doc:"list by key, value. Needs to be passed only along with key"`
 	IsRecursive  bool   `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`

@@ -22,11 +22,15 @@ import (
 
 // must be sorted
 var ignoredFields = []string{
+	"forvpc",
 	"policyid",
 	"project",
 	"projectid",
 	"vpc",
+	"vpcavailable",
 	"vpcid",
+	"vpclimit",
+	"vpctotal",
 }
 
 var cmd = flag.String("cmd", "", "CloudStack command name")

@@ -8,7 +8,6 @@ type NetworkOffering struct {
 	Details                  map[string]string `json:"details,omitempty" doc:"additional key/value details tied with network offering"`
 	DisplayText              string            `json:"displaytext,omitempty" doc:"an alternate display text of the network offering."`
 	EgressDefaultPolicy      bool              `json:"egressdefaultpolicy,omitempty" doc:"true if guest network default egress policy is allow; false if default egress policy is deny"`
-	ForVPC                   bool              `json:"forvpc,omitempty" doc:"true if network offering can be used by VPC networks only"`
 	GuestIPType              string            `json:"guestiptype,omitempty" doc:"guest type of the network offering, can be Shared or Isolated"`
 	ID                       string            `json:"id,omitempty" doc:"the id of the network offering"`
 	IsDefault                bool              `json:"isdefault,omitempty" doc:"true if network offering is default, false otherwise"`
@@ -32,7 +31,6 @@ type NetworkOffering struct {
 type ListNetworkOfferings struct {
 	Availability       string    `json:"availability,omitempty" doc:"the availability of network offering. Default value is Required"`
 	DisplayText        string    `json:"displaytext,omitempty" doc:"list network offerings by display text"`
-	ForVPC             *bool     `json:"forvpc,omitempty" doc:"the network offering can be used only for network creation inside the VPC"`
 	GuestIPType        string    `json:"guestiptype,omitempty" doc:"list network offerings by guest type: Shared or Isolated"`
 	ID                 string    `json:"id,omitempty" doc:"list network offerings by id"`
 	IsDefault          *bool     `json:"isdefault,omitempty" doc:"true if need to list only default network offerings. Default value is false"`

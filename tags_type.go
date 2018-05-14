@@ -9,8 +9,6 @@ type ResourceTag struct {
 	Domain       string `json:"domain,omitempty" doc:"the domain associated with the tag"`
 	DomainID     string `json:"domainid,omitempty" doc:"the ID of the domain associated with the tag"`
 	Key          string `json:"key,omitempty" doc:"tag key name"`
-	Project      string `json:"project,omitempty" doc:"the project name where tag belongs to"`
-	ProjectID    string `json:"projectid,omitempty" doc:"the project id the tag belongs to"`
 	ResourceID   string `json:"resourceid,omitempty" doc:"id of the resource"`
 	ResourceType string `json:"resourcetype,omitempty" doc:"resource type"`
 	Value        string `json:"value,omitempty" doc:"tag value"`
@@ -48,7 +46,6 @@ type ListTags struct {
 	ListAll      *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Page         int    `json:"page,omitempty"`
 	PageSize     int    `json:"pagesize,omitempty"`
-	ProjectID    string `json:"projectid,omitempty" doc:"list objects by project"`
 	ResourceID   string `json:"resourceid,omitempty" doc:"list by resource id"`
 	ResourceType string `json:"resourcetype,omitempty" doc:"list by resource type"`
 	Value        string `json:"value,omitempty" doc:"list by value"`

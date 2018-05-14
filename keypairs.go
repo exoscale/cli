@@ -34,10 +34,9 @@ func (ssh *SSHKeyPair) Delete(ctx context.Context, client *Client) error {
 	}
 
 	return client.BooleanRequestWithContext(ctx, &DeleteSSHKeyPair{
-		Name:      ssh.Name,
-		Account:   ssh.Account,
-		DomainID:  ssh.DomainID,
-		ProjectID: ssh.ProjectID,
+		Name:     ssh.Name,
+		Account:  ssh.Account,
+		DomainID: ssh.DomainID,
 	})
 }
 
@@ -48,7 +47,6 @@ func (ssh *SSHKeyPair) ListRequest() (ListCommand, error) {
 		DomainID:    ssh.DomainID,
 		Fingerprint: ssh.Fingerprint,
 		Name:        ssh.Name,
-		ProjectID:   ssh.ProjectID,
 	}
 
 	return req, nil

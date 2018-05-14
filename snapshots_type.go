@@ -37,8 +37,6 @@ type Snapshot struct {
 	IntervalType string        `json:"intervaltype,omitempty" doc:"valid types are hourly, daily, weekly, monthy, template, and none."`
 	Name         string        `json:"name,omitempty" doc:"name of the snapshot"`
 	PhysicalSize int64         `json:"physicalsize,omitempty" doc:"physical size of the snapshot on image store"`
-	Project      string        `json:"project,omitempty" doc:"the project name of the snapshot"`
-	ProjectID    string        `json:"projectid,omitempty" doc:"the project id of the snapshot"`
 	Revertable   *bool         `json:"revertable,omitempty" doc:"indicates whether the underlying storage supports reverting the volume to this snapshot"`
 	Size         int64         `json:"size,omitempty" doc:"the size of original volume"`
 	SnapshotType string        `json:"snapshottype,omitempty" doc:"the type of the snapshot"`
@@ -77,7 +75,6 @@ type ListSnapshots struct {
 	Name         string        `json:"name,omitempty" doc:"lists snapshot by snapshot name"`
 	Page         int           `json:"page,omitempty"`
 	PageSize     int           `json:"pagesize,omitempty"`
-	ProjectID    string        `json:"projectid,omitempty" doc:"list objects by project"`
 	SnapshotType string        `json:"snapshottype,omitempty" doc:"valid values are MANUAL or RECURRING."`
 	Tags         []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	VolumeID     string        `json:"volumeid,omitempty" doc:"the ID of the disk volume"`

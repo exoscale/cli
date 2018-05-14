@@ -52,8 +52,6 @@ type VirtualMachine struct {
 	PCIDevices            []string          `json:"pcidevices,omitempty" doc:"list of PCI devices"`
 	PodID                 string            `json:"podid,omitempty" doc:"the ID of the vm's pod"`
 	PodName               string            `json:"podname,omitempty" doc:"the name of the vm's pod"`
-	Project               string            `json:"project,omitempty" doc:"the project name of the vm"`
-	ProjectID             string            `json:"projectid,omitempty" doc:"the project id of the vm"`
 	PublicIP              string            `json:"publicip,omitempty" doc:"public IP address id associated with vm via Static nat rule"`
 	PublicIPID            string            `json:"publicipid,omitempty" doc:"public IP address id associated with vm via Static nat rule"`
 	RootDeviceID          int64             `json:"rootdeviceid,omitempty" doc:"device ID of the root volume"`
@@ -118,7 +116,6 @@ type DeployVirtualMachine struct {
 	KeyPair            string            `json:"keypair,omitempty" doc:"name of the ssh key pair used to login to the virtual machine"`
 	Name               string            `json:"name,omitempty" doc:"host name for the virtual machine"`
 	NetworkIDs         []string          `json:"networkids,omitempty" doc:"list of network ids used by virtual machine. Can't be specified with ipToNetworkList parameter"`
-	ProjectID          string            `json:"projectid,omitempty" doc:"Deploy vm for the project"`
 	RootDiskSize       int64             `json:"rootdisksize,omitempty" doc:"Optional field to resize root disk on deploy. Value is in GB. Only applies to template-based deployments. Analogous to details[0].rootdisksize, which takes precedence over this parameter if both are provided"`
 	SecurityGroupIDs   []string          `json:"securitygroupids,omitempty" doc:"comma separated list of security groups id that going to be applied to the virtual machine. Should be passed only when vm is created from a zone with Basic Network support. Mutually exclusive with securitygroupnames parameter"`
 	SecurityGroupNames []string          `json:"securitygroupnames,omitempty" doc:"comma separated list of security groups names that going to be applied to the virtual machine. Should be passed only when vm is created from a zone with Basic Network support. Mutually exclusive with securitygroupids parameter"`
@@ -222,7 +219,7 @@ type UpdateVirtualMachineResponse VirtualMachineResponse
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/expungeVirtualMachine.html
 type ExpungeVirtualMachine RebootVirtualMachine
 
-// ScaleVirtualMachine (Async) represents the scaling of a VM
+// ScaleVirtualMachine (Async) scales the virtual machine to a new service offering.
 //
 // ChangeServiceForVirtualMachine does the same thing but returns the
 // new Virtual Machine which is more consistent with the rest of the API.
@@ -234,7 +231,7 @@ type ScaleVirtualMachine struct {
 	Details           map[string]string `json:"details,omitempty" doc:"name value pairs of custom parameters for cpu,memory and cpunumber. example details[i].name=value"`
 }
 
-// ChangeServiceForVirtualMachine represents the scaling of a VM
+// ChangeServiceForVirtualMachine changes the service offering for a virtual machine. The virtual machine must be in a "Stopped" state for this command to take effect.
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/changeServiceForVirtualMachine.html
 type ChangeServiceForVirtualMachine ScaleVirtualMachine
@@ -286,13 +283,11 @@ type ListVirtualMachines struct {
 	Page              int           `json:"page,omitempty"`
 	PageSize          int           `json:"pagesize,omitempty"`
 	PodID             string        `json:"podid,omitempty" doc:"the pod ID"`
-	ProjectID         string        `json:"projectid,omitempty" doc:"list objects by project"`
 	ServiceOfferindID string        `json:"serviceofferingid,omitempty" doc:"list by the service offering"`
 	State             string        `json:"state,omitempty" doc:"state of the virtual machine"`
 	StorageID         string        `json:"storageid,omitempty" doc:"the storage ID where vm's volumes belong to"`
 	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	TemplateID        string        `json:"templateid,omitempty" doc:"list vms by template"`
-	VpcID             string        `json:"vpcid,omitempty" doc:"list vms by vpc"`
 	ZoneID            string        `json:"zoneid,omitempty" doc:"the availability zone ID"`
 }
 

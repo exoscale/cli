@@ -10,8 +10,6 @@ type SecurityGroup struct {
 	ID          string        `json:"id,omitempty" doc:"the ID of the security group"`
 	IngressRule []IngressRule `json:"ingressrule,omitempty" doc:"the list of ingress rules associated with the security group"`
 	Name        string        `json:"name,omitempty" doc:"the name of the security group"`
-	Project     string        `json:"project,omitempty" doc:"the project name of the group"`
-	ProjectID   string        `json:"projectid,omitempty" doc:"the project id of the group"`
 	Tags        []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with the rule"`
 }
 
@@ -54,7 +52,6 @@ type CreateSecurityGroup struct {
 	Account     string `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
 	Description string `json:"description,omitempty" doc:"the description of the security group"`
 	DomainID    string `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
-	ProjectID   string `json:"projectid,omitempty" doc:"Create security group for project"`
 }
 
 // CreateSecurityGroupResponse represents a new security group
@@ -64,11 +61,10 @@ type CreateSecurityGroupResponse SecurityGroupResponse
 //
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSecurityGroup.html
 type DeleteSecurityGroup struct {
-	Account   string `json:"account,omitempty" doc:"the account of the security group. Must be specified with domain ID"`
-	DomainID  string `json:"domainid,omitempty" doc:"the domain ID of account owning the security group"`
-	ID        string `json:"id,omitempty" doc:"The ID of the security group. Mutually exclusive with name parameter"`
-	Name      string `json:"name,omitempty" doc:"The ID of the security group. Mutually exclusive with id parameter"`
-	ProjectID string `json:"projectid,omitempty" doc:"the project of the security group"`
+	Account  string `json:"account,omitempty" doc:"the account of the security group. Must be specified with domain ID"`
+	DomainID string `json:"domainid,omitempty" doc:"the domain ID of account owning the security group"`
+	ID       string `json:"id,omitempty" doc:"The ID of the security group. Mutually exclusive with name parameter"`
+	Name     string `json:"name,omitempty" doc:"The ID of the security group. Mutually exclusive with id parameter"`
 }
 
 // AuthorizeSecurityGroupIngress (Async) represents the ingress rule creation
@@ -82,7 +78,6 @@ type AuthorizeSecurityGroupIngress struct {
 	EndPort               uint16              `json:"endport,omitempty" doc:"end port for this ingress/egress rule"`
 	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"error code for this icmp message"`
 	IcmpType              uint8               `json:"icmptype,omitempty" doc:"type of the icmp message being sent"`
-	ProjectID             string              `json:"projectid,omitempty" doc:"an optional project of the security group"`
 	Protocol              string              `json:"protocol,omitempty" doc:"TCP is default. UDP, ICMP, ICMPv6, AH, ESP, GRE are the other supported protocols"`
 	SecurityGroupID       string              `json:"securitygroupid,omitempty" doc:"The ID of the security group. Mutually exclusive with securityGroupName parameter"`
 	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"The name of the security group. Mutually exclusive with securityGroupId parameter"`
@@ -127,7 +122,6 @@ type ListSecurityGroups struct {
 	ListAll           *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Page              int           `json:"page,omitempty"`
 	PageSize          int           `json:"pagesize,omitempty"`
-	ProjectID         string        `json:"projectid,omitempty" doc:"list objects by project"`
 	SecurityGroupName string        `json:"securitygroupname,omitempty" doc:"lists security groups by name"`
 	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	VirtualMachineID  string        `json:"virtualmachineid,omitempty" doc:"lists security groups by virtual machine id"`

@@ -2,14 +2,12 @@ package egoscale
 
 // InstanceGroup represents a group of VM
 type InstanceGroup struct {
-	Account   string `json:"account,omitempty" doc:"the account owning the instance group"`
-	Created   string `json:"created,omitempty" doc:"time and date the instance group was created"`
-	Domain    string `json:"domain,omitempty" doc:"the domain name of the instance group"`
-	DomainID  string `json:"domainid,omitempty" doc:"the domain ID of the instance group"`
-	ID        string `json:"id,omitempty" doc:"the id of the instance group"`
-	Name      string `json:"name,omitempty" doc:"the name of the instance group"`
-	Project   string `json:"project,omitempty" doc:"the project name of the group"`
-	ProjectID string `json:"projectid,omitempty" doc:"the project id of the group"`
+	Account  string `json:"account,omitempty" doc:"the account owning the instance group"`
+	Created  string `json:"created,omitempty" doc:"time and date the instance group was created"`
+	Domain   string `json:"domain,omitempty" doc:"the domain name of the instance group"`
+	DomainID string `json:"domainid,omitempty" doc:"the domain ID of the instance group"`
+	ID       string `json:"id,omitempty" doc:"the id of the instance group"`
+	Name     string `json:"name,omitempty" doc:"the name of the instance group"`
 }
 
 // InstanceGroupResponse represents a VM group
@@ -21,10 +19,9 @@ type InstanceGroupResponse struct {
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createInstanceGroup.html
 type CreateInstanceGroup struct {
-	Name      string `json:"name" doc:"the name of the instance group"`
-	Account   string `json:"account,omitempty" doc:"the account of the instance group. The account parameter must be used with the domainId parameter."`
-	DomainID  string `json:"domainid,omitempty" doc:"the domain ID of account owning the instance group"`
-	ProjectID string `json:"projectid,omitempty" doc:"The project of the instance group"`
+	Name     string `json:"name" doc:"the name of the instance group"`
+	Account  string `json:"account,omitempty" doc:"the account of the instance group. The account parameter must be used with the domainId parameter."`
+	DomainID string `json:"domainid,omitempty" doc:"the domain ID of account owning the instance group"`
 }
 
 // name returns the CloudStack API command name
@@ -88,7 +85,6 @@ type ListInstanceGroups struct {
 	Name        string `json:"name,omitempty" doc:"list instance groups by name"`
 	Page        int    `json:"page,omitempty"`
 	PageSize    int    `json:"pagesize,omitempty"`
-	ProjectID   string `json:"projectid,omitempty" doc:"list objects by project"`
 }
 
 // name returns the CloudStack API command name

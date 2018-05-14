@@ -32,8 +32,6 @@ type Volume struct {
 	Path                       string        `json:"path,omitempty" doc:"the path of the volume"`
 	PodID                      string        `json:"podid,omitempty" doc:"ID of the pod"`
 	PodName                    string        `json:"podname,omitempty" doc:"name of the pod"`
-	Project                    string        `json:"project,omitempty" doc:"the project name of the vpn"`
-	ProjectID                  string        `json:"projectid,omitempty" doc:"the project id of the vpn"`
 	QuiesceVM                  bool          `json:"quiescevm,omitempty" doc:"need quiesce vm or not when taking snapshot"`
 	ServiceOfferingDisplayText string        `json:"serviceofferingdisplaytext,omitempty" doc:"the display text of the service offering for root disk"`
 	ServiceOfferingID          string        `json:"serviceofferingid,omitempty" doc:"ID of the service offering for root disk"`
@@ -85,7 +83,6 @@ type ListVolumes struct {
 	Page             int           `json:"page,omitempty"`
 	PageSize         int           `json:"pagesize,omitempty"`
 	PodID            string        `json:"podid,omitempty" doc:"the pod id the disk volume belongs to"`
-	ProjectID        string        `json:"projectid,omitempty" doc:"list objects by project"`
 	StorageID        string        `json:"storageid,omitempty" doc:"the ID of the storage pool, available to ROOT admin only"`
 	Tags             []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	Type             string        `json:"type,omitempty" doc:"the type of disk volume"`

@@ -15,11 +15,9 @@ func (network *Network) ListRequest() (ListCommand, error) {
 		DomainID:          network.DomainID,
 		ID:                network.ID,
 		PhysicalNetworkID: network.PhysicalNetworkID,
-		ProjectID:         network.ProjectID,
 		RestartRequired:   &network.RestartRequired,
 		TrafficType:       network.TrafficType,
 		Type:              network.Type,
-		VpcID:             network.VpcID,
 		ZoneID:            network.ZoneID,
 	}
 
