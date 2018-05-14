@@ -22,6 +22,7 @@ import (
 
 // must be sorted
 var ignoredFields = []string{
+	"policyid",
 	"project",
 	"projectid",
 	"vpc",
