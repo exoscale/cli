@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.9.24 (unreleased)
+0.9.24
 ------
 
 - feat: `Template` is `Gettable`
@@ -10,6 +10,7 @@ Changelog
 - feat: addition of `CreateTemplate`, `PrepareTemplate`, `CopyTemplate`, `UpdateTemplate`, `RegisterTemplate`
 - feat: addition of `MigrateVirtualMachine`
 - feat: cmd cli
+- change: remove useless fields related to Project and VPC
 
 0.9.23
 ------
