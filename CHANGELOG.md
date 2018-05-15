@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.10.0
+------
+
+- global: removal of all the `...Response` types
+
 0.9.26
 ------
 
