@@ -214,7 +214,7 @@ func (g *tagGeneric) Set(value string) error {
 
 func (g *tagGeneric) String() string {
 	m := g.value
-	if *m == nil {
+	if m == nil || *m == nil {
 		return ""
 	}
 	vs := make([]string, 0, len(*m))
