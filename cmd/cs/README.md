@@ -20,14 +20,30 @@ $ go install github.com/exoscale/egoscale/cmd/cs
 Create a config file `cloudstack.ini` or `$HOME/.cloudstack.ini`.
 
 ```ini
-; Exoscale credentials
+; Default region
 [cloudstack]
+
+; Exoscale credential
 endpoint = https://api.exoscale.ch/compute
 key = EXO...
 secret = ...
 
-; Pygments theme, see: https://xyproto.github.io/splash/docs/
+theme = fruity
+
+
+; Another region
+[cloudstack:production]
+
+endpoint = https://api.exoscale.ch/compute
+key = EXO...
+secret = ...
+
+theme = vim
+
+
+; global config for themes
 [exoscale]
+; Pygments theme, see: https://xyproto.github.io/splash/docs/
 ; dark
 theme = monokai
 ; light
@@ -38,4 +54,19 @@ theme = nocolors
 
 ### Themes
 
-Thanks to [Alec Thomas](http://swapoff.org/)' [chroma](https://github.com/alecthomas/chroma), it supports many themes for your output: <https://xyproto.github.io/splash/docs/>
+Thanks to [Alec Thomas](http://swapoff.org/)' [chroma](https://github.com/alecthomas/chroma), it supports many themes for your output:
+
+- <https://xyproto.github.io/splash/docs/>
+- <https://help.farbox.com/pygments.html>
+
+## Usage
+
+Some of the flags around a command.
+
+```
+$ cs (-h | --help)              global help
+$ cs <command> (-h | --help)    help of a specific command
+$ cs <command> (-d | --debug)   show the command and its expected output
+$ cs <command> (-D | --dry-run) show the signed command
+$ cs (-r | --region) <region>   specify a different region, default `cloudstack`
+```
