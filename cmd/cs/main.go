@@ -28,6 +28,9 @@ func main() {
 	var dryJSON bool
 	var region string
 	var theme string
+	var innerDebug bool
+	var innerRegion string
+	var innerDryRun bool
 
 	app := cli.NewApp()
 	app.Name = "cs"
@@ -74,13 +77,18 @@ func main() {
 		// global, hidden debug flag
 		cmd.Flags = append(cmd.Flags, cli.BoolFlag{
 			Name:        "debug, d",
-			Destination: &debug,
+			Destination: &innerDebug,
+			Hidden:      true,
+		})
+		cmd.Flags = append(cmd.Flags, cli.BoolFlag{
+			Name:        "dry-run, D",
+			Destination: &innerDryRun,
 			Hidden:      true,
 		})
 		// global, hidden region flag
 		cmd.Flags = append(cmd.Flags, cli.StringFlag{
 			Name:        "region, r",
-			Destination: &region,
+			Destination: &innerRegion,
 			Hidden:      true,
 		})
 
@@ -89,10 +97,16 @@ func main() {
 
 	app.Run(os.Args)
 
-	// ENV
-	r, ok := os.LookupEnv("CLOUDSTACK_REGION")
-	if ok {
-		region = r
+	// Picking a region
+	if region == "" {
+		if innerRegion == "" {
+			r, ok := os.LookupEnv("CLOUDSTACK_REGION")
+			if ok {
+				region = r
+			}
+		} else {
+			region = innerRegion
+		}
 	}
 
 	client, _ := buildClient(region)
@@ -105,7 +119,7 @@ func main() {
 	}
 
 	// Show request and quit
-	if debug {
+	if debug || innerDebug {
 		payload, err := client.Payload(method)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
@@ -122,7 +136,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if dryRun {
+	if dryRun || innerDryRun {
 		payload, err := client.Payload(method)
 		if err != nil {
 			log.Fatal(err)
