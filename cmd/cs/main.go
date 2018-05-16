@@ -58,7 +58,6 @@ func main() {
 		cli.StringFlag{
 			Name:        "region, r",
 			Usage:       "cloudstack.ini file section name",
-			Value:       "cloudstack",
 			Destination: &region,
 		},
 		cli.StringFlag{
@@ -71,8 +70,30 @@ func main() {
 
 	var method egoscale.Command
 	app.Commands = buildCommands(&method, methods)
+	for i, cmd := range app.Commands {
+		// global, hidden debug flag
+		cmd.Flags = append(cmd.Flags, cli.BoolFlag{
+			Name:        "debug, d",
+			Destination: &debug,
+			Hidden:      true,
+		})
+		// global, hidden region flag
+		cmd.Flags = append(cmd.Flags, cli.StringFlag{
+			Name:        "region, r",
+			Destination: &region,
+			Hidden:      true,
+		})
+
+		app.Commands[i].Flags = cmd.Flags
+	}
 
 	app.Run(os.Args)
+
+	// ENV
+	r, ok := os.LookupEnv("CLOUDSTACK_REGION")
+	if ok {
+		region = r
+	}
 
 	client, _ := buildClient(region)
 	if theme != "" {
@@ -161,6 +182,10 @@ func buildClient(region string) (*Client, error) {
 		log.Fatal(err)
 	}
 
+	if region == "" {
+		region = "cloudstack"
+	}
+
 	section, err := cfg.GetSection(region)
 	if err != nil {
 		log.Fatalf("Section %q not found in the config file %s", region, config)
@@ -182,10 +207,15 @@ func buildClient(region string) (*Client, error) {
 
 	client := &Client{cs, ""}
 
-	section, err = cfg.GetSection("exoscale")
+	th, err := section.GetKey("theme")
 	if err == nil {
-		theme, _ := section.GetKey("theme")
-		client.Theme = theme.String()
+		client.Theme = th.String()
+	} else {
+		section, err = cfg.GetSection("exoscale")
+		if err == nil {
+			theme, _ := section.GetKey("theme")
+			client.Theme = theme.String()
+		}
 	}
 
 	return client, nil
@@ -197,56 +227,52 @@ func buildCommands(out *egoscale.Command, methods map[string][]cmd) []cli.Comman
 	for category, ms := range methods {
 		for i := range ms {
 			s := ms[i]
-			commands = append(commands, buildCommand(out, category, s.command, s.hidden))
+			cmd := cli.Command{
+				Name:     _client.APIName(s.command),
+				Category: category,
+				HideHelp: s.hidden,
+				Hidden:   s.hidden,
+				Flags:    buildFlags(s.command),
+			}
+			// report back the current command
+			cmd.Action = func(c *cli.Context) error {
+				*out = s.command
+				return nil
+			}
+			// bash autocomplete
+			cmd.BashComplete = func(c *cli.Context) {
+				val := reflect.ValueOf(s.command)
+				// we've got a pointer
+				value := val.Elem()
+
+				if value.Kind() != reflect.Struct {
+					log.Fatalf("struct was expected")
+				}
+
+				ty := value.Type()
+				for i := 0; i < value.NumField(); i++ {
+					field := ty.Field(i)
+
+					argName := ""
+					if json, ok := field.Tag.Lookup("json"); ok {
+						tags := strings.Split(json, ",")
+						argName = tags[0]
+					}
+
+					if argName == "" {
+						continue
+					}
+
+					if !c.IsSet(argName) {
+						fmt.Printf("--%s\n", argName)
+					}
+				}
+			}
+			commands = append(commands, cmd)
 		}
 	}
 
 	return commands
-}
-
-func buildCommand(out *egoscale.Command, category string, method egoscale.Command, hidden bool) cli.Command {
-	command := cli.Command{
-		Name:     _client.APIName(method),
-		Category: category,
-		HideHelp: hidden,
-		Hidden:   hidden,
-		BashComplete: func(c *cli.Context) {
-			val := reflect.ValueOf(method)
-			// we've got a pointer
-			value := val.Elem()
-
-			if value.Kind() != reflect.Struct {
-				log.Fatalf("struct was expected")
-			}
-
-			ty := value.Type()
-			for i := 0; i < value.NumField(); i++ {
-				field := ty.Field(i)
-
-				argName := ""
-				if json, ok := field.Tag.Lookup("json"); ok {
-					tags := strings.Split(json, ",")
-					argName = tags[0]
-				}
-
-				if argName == "" {
-					continue
-				}
-
-				if !c.IsSet(argName) {
-					fmt.Printf("--%s\n", argName)
-				}
-			}
-		},
-		Action: func(c *cli.Context) error {
-			*out = method
-			return nil
-		},
-	}
-
-	command.Flags = buildFlags(method)
-
-	return command
 }
 
 func buildFlags(method egoscale.Command) []cli.Flag {
