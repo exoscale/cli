@@ -66,6 +66,10 @@ func (client *Client) parseResponse(resp *http.Response, key string) (json.RawMe
 		return nil, err
 	}
 
+	if resp.StatusCode >= 400 {
+		key = "errorresponse"
+	}
+
 	response, ok := m[key]
 	if !ok {
 		for k := range m {
