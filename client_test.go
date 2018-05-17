@@ -176,7 +176,7 @@ func TestClientGetFailure(t *testing.T) {
 
 func TestClientGetNone(t *testing.T) {
 	body := `{"list%sresponse": {}}`
-	bodyError := `{"list%sresponse": {
+	bodyError := `{"errorresponse": {
 		"cserrorcode": 9999,
 		"errorcode": 431,
 		"errortext": "Unable to execute API command due to invalid value.",
@@ -206,7 +206,7 @@ func TestClientGetNone(t *testing.T) {
 	for _, thing := range things {
 		ts := newServer(
 			response{200, fmt.Sprintf(body, thing.name)},
-			response{431, fmt.Sprintf(bodyError, thing.name)},
+			response{431, bodyError},
 		)
 		defer ts.Close()
 
