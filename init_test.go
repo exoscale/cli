@@ -5,6 +5,18 @@ import (
 	"time"
 )
 
+func TestMonotonicRetryStrategyFunc(t *testing.T) {
+	f := MonotonicRetryStrategyFunc(2)
+
+	if f(1) != time.Duration(2)*time.Second {
+		t.Error("mono(1) = 2")
+	}
+
+	if f(1000) != time.Duration(2)*time.Second {
+		t.Error("f(1000) = 2")
+	}
+}
+
 func TestFibonacciRetryStrategy(t *testing.T) {
 	var i int64
 

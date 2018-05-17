@@ -207,7 +207,7 @@ func NewClientWithTimeout(endpoint, apiKey, apiSecret string, timeout time.Durat
 		apiSecret:     apiSecret,
 		PageSize:      50,
 		Timeout:       timeout,
-		RetryStrategy: FibonacciRetryStrategy,
+		RetryStrategy: MonotonicRetryStrategyFunc(2),
 	}
 
 	return cs
@@ -217,6 +217,13 @@ func NewClientWithTimeout(endpoint, apiKey, apiSecret string, timeout time.Durat
 func NewClient(endpoint, apiKey, apiSecret string) *Client {
 	timeout := time.Duration(60 * time.Second)
 	return NewClientWithTimeout(endpoint, apiKey, apiSecret, timeout)
+}
+
+// MonotonicRetryStrategyFunc returns a function that waits for n seconds for each iteration
+func MonotonicRetryStrategyFunc(seconds int) RetryStrategyFunc {
+	return func(iteration int64) time.Duration {
+		return time.Duration(seconds) * time.Second
+	}
 }
 
 // FibonacciRetryStrategy waits for an increasing amount of time following the Fibonacci sequence
