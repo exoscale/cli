@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.26
+------
+
+- change: async timeout strategy wait two seconds and not fib(n) seconds
+
 0.9.25
 ------
 
