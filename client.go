@@ -215,7 +215,7 @@ func NewClientWithTimeout(endpoint, apiKey, apiSecret string, timeout time.Durat
 
 // NewClient creates a CloudStack API client with default timeout (60)
 func NewClient(endpoint, apiKey, apiSecret string) *Client {
-	timeout := time.Duration(60 * time.Second)
+	timeout := 60 * time.Second
 	return NewClientWithTimeout(endpoint, apiKey, apiSecret, timeout)
 }
 

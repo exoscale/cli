@@ -351,7 +351,10 @@ func (userdata *VirtualMachineUserData) Decode() (string, error) {
 		return string(data), nil
 	}
 	gr, err := gzip.NewReader(bytes.NewBuffer(data))
-	defer gr.Close()
+	if err != nil {
+		return "", err
+	}
+	defer gr.Close() // nolint: errcheck
 
 	str, err := ioutil.ReadAll(gr)
 	if err != nil {

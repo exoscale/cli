@@ -231,7 +231,7 @@ func (exo *Client) dnsRequest(uri string, params string, method string) (json.Ra
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer response.Body.Close() // nolint: errcheck
 	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return nil, err

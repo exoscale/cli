@@ -105,7 +105,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				}
 			case reflect.Bool:
 				v := val.Bool()
-				if v == false {
+				if !v {
 					if required {
 						params.Set(name, "false")
 					}
@@ -204,7 +204,10 @@ func prepareList(prefix string, params *url.Values, slice interface{}) error {
 	value := reflect.ValueOf(slice)
 
 	for i := 0; i < value.Len(); i++ {
-		prepareValues(fmt.Sprintf("%s[%d].", prefix, i), params, value.Index(i).Interface())
+		err := prepareValues(fmt.Sprintf("%s[%d].", prefix, i), params, value.Index(i).Interface())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -62,7 +62,7 @@ func (exo *Client) parseResponse(resp *http.Response) (json.RawMessage, error) {
 		return nil, err
 	}
 
-	a, err := rawValues(b)
+	a, _ := rawValues(b)
 
 	if a == nil {
 		b, err = rawValue(b)
@@ -263,7 +263,9 @@ func (exo *Client) Payload(request Command) (string, error) {
 		return "", err
 	}
 	if hookReq, ok := request.(onBeforeHook); ok {
-		hookReq.onBeforeSend(&params)
+		if err := hookReq.onBeforeSend(&params); err != nil {
+			return "", err
+		}
 	}
 	params.Set("apikey", exo.APIKey)
 	params.Set("command", request.name())
@@ -294,12 +296,15 @@ func (exo *Client) Payload(request Command) (string, error) {
 }
 
 // Sign signs the HTTP request and return it
-func (exo *Client) Sign(query string) string {
+func (exo *Client) Sign(query string) (string, error) {
 	mac := hmac.New(sha1.New, []byte(exo.apiSecret))
-	mac.Write([]byte(strings.ToLower(query)))
-	signature := csEncode(base64.StdEncoding.EncodeToString(mac.Sum(nil)))
+	_, err := mac.Write([]byte(strings.ToLower(query)))
+	if err != nil {
+		return "", err
+	}
 
-	return fmt.Sprintf("%s&signature=%s", csQuotePlus(query), signature)
+	signature := csEncode(base64.StdEncoding.EncodeToString(mac.Sum(nil)))
+	return fmt.Sprintf("%s&signature=%s", csQuotePlus(query), signature), nil
 }
 
 // request makes a Request while being close to the metal
@@ -308,7 +313,10 @@ func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, e
 	if err != nil {
 		return nil, err
 	}
-	query := exo.Sign(payload)
+	query, err := exo.Sign(payload)
+	if err != nil {
+		return nil, err
+	}
 
 	method := "GET"
 	url := fmt.Sprintf("%s?%s", exo.Endpoint, query)
@@ -337,7 +345,7 @@ func (exo *Client) request(ctx context.Context, req Command) (json.RawMessage, e
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint: errcheck
 
 	text, err := exo.parseResponse(resp)
 	if err != nil {

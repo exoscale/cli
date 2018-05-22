@@ -17,135 +17,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-type cmd struct {
-	command egoscale.Command
-	hidden  bool
-}
-
-var methods = map[string][]cmd{
-	"network": []cmd{
-		{&egoscale.CreateNetwork{}, false},
-		{&egoscale.DeleteNetwork{}, false},
-		{&egoscale.ListNetworkOfferings{}, false},
-		{&egoscale.ListNetworks{}, false},
-		{&egoscale.RestartNetwork{}, true},
-		{&egoscale.UpdateNetwork{}, false},
-	},
-	"virtual machine": []cmd{
-		{&egoscale.AddNicToVirtualMachine{}, false},
-		{&egoscale.ChangeServiceForVirtualMachine{}, false},
-		{&egoscale.DeployVirtualMachine{}, false},
-		{&egoscale.DestroyVirtualMachine{}, false},
-		{&egoscale.ExpungeVirtualMachine{}, false},
-		{&egoscale.GetVMPassword{}, false},
-		{&egoscale.GetVirtualMachineUserData{}, false},
-		{&egoscale.ListVirtualMachines{}, false},
-		{&egoscale.MigrateVirtualMachine{}, true},
-		{&egoscale.RebootVirtualMachine{}, false},
-		{&egoscale.RecoverVirtualMachine{}, false},
-		{&egoscale.RemoveNicFromVirtualMachine{}, false},
-		{&egoscale.ResetPasswordForVirtualMachine{}, false},
-		{&egoscale.RestoreVirtualMachine{}, false},
-		{&egoscale.ScaleVirtualMachine{}, false},
-		{&egoscale.StartVirtualMachine{}, false},
-		{&egoscale.StopVirtualMachine{}, false},
-		{&egoscale.UpdateDefaultNicForVirtualMachine{}, false},
-		{&egoscale.UpdateVirtualMachine{}, false},
-	},
-	"volume": []cmd{
-		{&egoscale.ListVolumes{}, false},
-		{&egoscale.ResizeVolume{}, false},
-	},
-	"template": []cmd{
-		{&egoscale.CopyTemplate{}, true},
-		{&egoscale.CreateTemplate{}, true},
-		{&egoscale.ListTemplates{}, false},
-		{&egoscale.PrepareTemplate{}, true},
-		{&egoscale.RegisterTemplate{}, true},
-	},
-	"account": []cmd{
-		{&egoscale.EnableAccount{}, true},
-		{&egoscale.DisableAccount{}, true},
-		{&egoscale.ListAccounts{}, false},
-	},
-	"zone": []cmd{
-		{&egoscale.ListZones{}, false},
-	},
-	"snapshot": []cmd{
-		{&egoscale.CreateSnapshot{}, false},
-		{&egoscale.DeleteSnapshot{}, false},
-		{&egoscale.ListSnapshots{}, false},
-		{&egoscale.RevertSnapshot{}, false},
-	},
-	"user": []cmd{
-		{&egoscale.CreateUser{}, true},
-		//{&egoscale.DisableUser{}, true},
-		//{&egoscale.DeleteUser{}, true},
-		//{&egoscale.GetUser{}, true},
-		{&egoscale.UpdateUser{}, true},
-		{&egoscale.ListUsers{}, false},
-		{&egoscale.RegisterUserKeys{}, false},
-	},
-	"security group": []cmd{
-		{&egoscale.AuthorizeSecurityGroupEgress{}, false},
-		{&egoscale.AuthorizeSecurityGroupIngress{}, false},
-		{&egoscale.CreateSecurityGroup{}, false},
-		{&egoscale.DeleteSecurityGroup{}, false},
-		{&egoscale.ListSecurityGroups{}, false},
-		{&egoscale.RevokeSecurityGroupEgress{}, false},
-		{&egoscale.RevokeSecurityGroupIngress{}, false},
-	},
-	"ssh": []cmd{
-		{&egoscale.RegisterSSHKeyPair{}, false},
-		{&egoscale.ListSSHKeyPairs{}, false},
-		{&egoscale.CreateSSHKeyPair{}, false},
-		{&egoscale.DeleteSSHKeyPair{}, false},
-		{&egoscale.ResetSSHKeyForVirtualMachine{}, false},
-	},
-	"affinity group": []cmd{
-		{&egoscale.CreateAffinityGroup{}, false},
-		{&egoscale.DeleteAffinityGroup{}, false},
-		{&egoscale.ListAffinityGroups{}, false},
-		{&egoscale.UpdateVMAffinityGroup{}, false},
-	},
-	"vm group": []cmd{
-		{&egoscale.CreateInstanceGroup{}, false},
-		{&egoscale.ListInstanceGroups{}, false},
-	},
-	"tags": []cmd{
-		{&egoscale.CreateTags{}, false},
-		{&egoscale.DeleteTags{}, false},
-		{&egoscale.ListTags{}, false},
-	},
-	"nic": []cmd{
-		{&egoscale.ActivateIP6{}, false},
-		{&egoscale.AddIPToNic{}, false},
-		{&egoscale.ListNics{}, false},
-		{&egoscale.RemoveIPFromNic{}, false},
-	},
-	"address": []cmd{
-		{&egoscale.AssociateIPAddress{}, false},
-		{&egoscale.DisassociateIPAddress{}, false},
-		{&egoscale.ListPublicIPAddresses{}, false},
-		{&egoscale.UpdateIPAddress{}, false},
-	},
-	"async job": []cmd{
-		{&egoscale.QueryAsyncJobResult{}, false},
-	},
-	"apis": []cmd{
-		{&egoscale.ListAPIs{}, false},
-	},
-	"event": []cmd{
-		{&egoscale.ListEventTypes{}, false},
-		{&egoscale.ListEvents{}, false},
-	},
-	"offerings": []cmd{
-		{&egoscale.ListResourceDetails{}, false},
-		{&egoscale.ListResourceLimits{}, false},
-		{&egoscale.ListServiceOfferings{}, false},
-	},
-}
-
 var _client = new(egoscale.Client)
 
 func main() {
@@ -237,7 +108,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		signature := client.Sign(payload)
+		signature, err := client.Sign(payload)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		fmt.Fprint(os.Stdout, client.Endpoint)
 		fmt.Fprint(os.Stdout, "?")

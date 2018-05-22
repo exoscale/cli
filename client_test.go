@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func testClientAPIName(t *testing.T) {
+func TestClientAPIName(t *testing.T) {
 	cs := NewClient("ENDPOINT", "KEY", "SECRET")
 	req := &ListAPIs{}
 	if cs.APIName(req) != req.name() {
