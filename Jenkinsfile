@@ -22,9 +22,6 @@ node {
           }
         )
       }
-      stage('Upload') {
-        docker()
-      }
     }
   } catch (err) {
     currentBuild.result = 'FAILURE'
@@ -46,7 +43,7 @@ def lint() {
       sh 'test `gofmt -s -d -e . | tee -a /dev/fd/2 | wc -l` -eq 0'
       sh 'golint -set_exit_status'
       sh 'go tool vet .'
-      sh 'cd /go/src/github.com/exoscale/egoscale && gometalinter'
+      // sh 'cd /go/src/github.com/exoscale/egoscale && gometalinter'
     }
   }
 }
