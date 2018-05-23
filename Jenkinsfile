@@ -47,6 +47,7 @@ def gofmt() {
       // let's not gofmt the dependencies
       sh 'cd /go/src/github.com/exoscale/egoscale && dep ensure -v -vendor-only'
       sh 'cd /go/src/github.com/exoscale/egoscale/cmd/cs && dep ensure -v -vendor-only'
+      sh 'cd /go/src/github.com/exoscale/egoscale/cmd/exo && dep ensure -v -vendor-only'
     }
   }
 }
@@ -57,9 +58,11 @@ def golint() {
     image.inside("-u root --net=host -v ${env.WORKSPACE}/src:/go/src/github.com/exoscale/egoscale") {
       sh 'golint -set_exit_status github.com/exoscale/egoscale'
       sh 'golint -set_exit_status github.com/exoscale/egoscale/cmd/cs'
+      sh 'golint -set_exit_status github.com/exoscale/egoscale/cmd/exo'
       sh 'golint -set_exit_status github.com/exoscale/egoscale/generate'
       sh 'go vet github.com/exoscale/egoscale'
       sh 'go vet github.com/exoscale/egoscale/cmd/cs'
+      sh 'go vet github.com/exoscale/egoscale/cmd/exo'
       sh 'go vet github.com/exoscale/egoscale/generate'
     }
   }
@@ -80,6 +83,8 @@ def build() {
     image.inside("-u root --net=host -v ${env.WORKSPACE}/src:/go/src/github.com/exoscale/egoscale") {
       sh 'go install github.com/exoscale/egoscale/cmd/cs'
       sh 'test -e /go/bin/cs'
+      sh 'go install github.com/exoscale/egoscale/cmd/exo'
+      sh 'test -e /go/bin/exo'
     }
   }
 }

@@ -3,7 +3,6 @@ language: go
 dist: trusty
 
 go:
-- 1.8
 - 1.9
 - "1.10"
 - tip
@@ -35,10 +34,16 @@ jobs:
       cd cmd/cs
       dep ensure
       GOOS=linux go build -ldflags "-s" .
+      cd ../exo
+      dep ensure
+      GOOS=linux go build -ldflags "-s" .
   - stage: cmd-windows
     script: |
       dep ensure
       cd cmd/cs
+      dep ensure
+      GOOS=windows go build -ldflags "-s" .
+      cd ../exo
       dep ensure
       GOOS=windows go build -ldflags "-s" .
   - stage: cmd-darwin
@@ -47,3 +52,7 @@ jobs:
       cd cmd/cs
       dep ensure
       GOOS=darwin go build -ldflags "-s" .
+      cd ../exo
+      dep ensure
+      GOOS=darwin go build -ldflags "-s" .
+      
