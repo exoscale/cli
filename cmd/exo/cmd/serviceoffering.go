@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/exoscale/egoscale/cmd/exo/table"
@@ -48,6 +49,26 @@ func listServiceOffering() error {
 
 	return nil
 
+}
+
+func getServiceOfferingIDByName(cs *egoscale.Client, servOffering string) (string, error) {
+	servOReq := &egoscale.ServiceOffering{}
+
+	servOffs, err := cs.List(servOReq)
+	if err != nil {
+		return "", err
+	}
+
+	for _, servoff := range servOffs {
+		r := servoff.(*egoscale.ServiceOffering)
+		if strings.Compare(strings.ToLower(servOffering), strings.ToLower(r.Name)) == 0 {
+			return r.ID, nil
+		}
+		if strings.Compare(servOffering, r.ID) == 0 {
+			return r.ID, nil
+		}
+	}
+	return "", fmt.Errorf("Service offering not found")
 }
 
 func init() {

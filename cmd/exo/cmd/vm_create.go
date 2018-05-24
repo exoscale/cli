@@ -64,7 +64,7 @@ func vmCreateRun(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	template, err = getTemplateIDByName(cs, template)
+	template, err = getTemplateIDByName(cs, template, zone)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -294,7 +294,7 @@ func init() {
 	vmCreateCmd.Run = vmCreateRun
 	vmCreateCmd.Flags().StringP("cloud-init-file", "f", "", "Deploy instance with a cloud-init file")
 	vmCreateCmd.Flags().StringP("zone", "z", "ch-dk-2", "<zone name | id | keyword> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1)")
-	vmCreateCmd.Flags().StringP("template", "t", "Linux Ubuntu 18.04 64-bit", "<template name | id>")
+	vmCreateCmd.Flags().StringP("template", "t", "Linux Ubuntu 18.04", "<template name | id>")
 	vmCreateCmd.Flags().Int64P("disk", "d", 50, "<disk size>")
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "<ssh keys name>")
 	vmCreateCmd.Flags().StringP("security-group", "s", "", "<name | id, name | id, ...>")
@@ -303,26 +303,4 @@ func init() {
 	vmCreateCmd.Flags().BoolP("ipv6", "6", false, "enable ipv6")
 	vmCreateCmd.Flags().StringP("service-offering", "o", "Small", "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan")
 	vmCmd.AddCommand(vmCreateCmd)
-}
-
-//waiting for service offering cmd
-
-func getServiceOfferingIDByName(cs *egoscale.Client, servOffering string) (string, error) {
-	servOReq := &egoscale.ServiceOffering{}
-
-	servOffs, err := cs.List(servOReq)
-	if err != nil {
-		return "", err
-	}
-
-	for _, servoff := range servOffs {
-		r := servoff.(*egoscale.ServiceOffering)
-		if strings.Compare(strings.ToLower(servOffering), strings.ToLower(r.Name)) == 0 {
-			return r.ID, nil
-		}
-		if strings.Compare(servOffering, r.ID) == 0 {
-			return r.ID, nil
-		}
-	}
-	return "", fmt.Errorf("Service offering not found")
 }

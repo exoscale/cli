@@ -50,7 +50,7 @@ func getZoneIDByName(cs *egoscale.Client, name string) (string, error) {
 
 	for _, zone := range zones {
 		z := zone.(*egoscale.Zone)
-		if strings.Compare(name, z.ID) == 0 {
+		if name == z.ID {
 			return z.ID, nil
 		}
 		if strings.Contains(strings.ToLower(z.Name), strings.ToLower(name)) {

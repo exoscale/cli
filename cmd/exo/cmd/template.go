@@ -39,19 +39,31 @@ var templateCmd = &cobra.Command{
 	},
 }
 
-func getTemplateIDByName(cs *egoscale.Client, name string) (string, error) {
-	templates, err := cs.List(&egoscale.Template{IsFeatured: true})
+func getTemplateIDByName(cs *egoscale.Client, name, zoneID string) (string, error) {
+	templates, err := cs.List(&egoscale.Template{IsFeatured: true, ZoneID: zoneID})
 	if err != nil {
 		return "", err
 	}
 
+	keywords := []string{}
+
 	for _, template := range templates {
 		t := template.(*egoscale.Template)
-		if strings.Compare(strings.ToLower(name), strings.ToLower(t.Name)) == 0 {
+		if name == t.ID {
 			return t.ID, nil
 		}
+		if strings.Contains(strings.ToLower(t.Name), strings.ToLower(name)) {
+			keywords = append(keywords, t.ID)
+		}
 	}
-	return name, nil
+
+	if len(keywords) > 1 {
+		return "", fmt.Errorf("More than one template found")
+	} else if len(keywords) == 1 {
+		return keywords[0], nil
+	}
+
+	return "", fmt.Errorf("Template not found")
 }
 
 func listTemplates() ([]*egoscale.Template, error) {
