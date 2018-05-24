@@ -60,6 +60,12 @@ func buildClient() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+
+	envRegion := os.Getenv("CLOUDSTACK_REGION")
+	if envRegion != "" {
+		region = envRegion
+	}
+
 	envEndpoint := os.Getenv("CLOUDSTACK_ENDPOINT")
 	envKey := os.Getenv("CLOUDSTACK_KEY")
 	envSecret := os.Getenv("CLOUDSTACK_SECRET")
