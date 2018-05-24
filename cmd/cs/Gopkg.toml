@@ -1,10 +1,6 @@
 ignored = ["github.com/exoscale/egoscale"]
 
 [[constraint]]
-  name = "golang.org/x/crypto"
-  branch = "master"
-
-[[constraint]]
   name = "github.com/urfave/cli"
   version = "1.20.0"
 

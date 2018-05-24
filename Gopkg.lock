@@ -2,93 +2,14 @@
 
 
 [[projects]]
-  name = "github.com/alecthomas/chroma"
-  packages = [
-    ".",
-    "formatters",
-    "formatters/html",
-    "lexers",
-    "lexers/a",
-    "lexers/b",
-    "lexers/c",
-    "lexers/d",
-    "lexers/e",
-    "lexers/f",
-    "lexers/g",
-    "lexers/h",
-    "lexers/i",
-    "lexers/internal",
-    "lexers/j",
-    "lexers/k",
-    "lexers/l",
-    "lexers/m",
-    "lexers/n",
-    "lexers/o",
-    "lexers/p",
-    "lexers/q",
-    "lexers/r",
-    "lexers/s",
-    "lexers/t",
-    "lexers/v",
-    "lexers/w",
-    "lexers/x",
-    "lexers/y",
-    "styles"
-  ]
-  revision = "3020e2ea8c6b1a9c2336022d847c4392c3997f02"
-  version = "v0.4.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/danwakefield/fnmatch"
-  packages = ["."]
-  revision = "cbb64ac3d964b81592e64f957ad53df015803288"
-
-[[projects]]
-  name = "github.com/dlclark/regexp2"
-  packages = [
-    ".",
-    "syntax"
-  ]
-  revision = "487489b64fb796de2e55f4e8a4ad1e145f80e957"
-  version = "v1.1.6"
-
-[[projects]]
-  name = "github.com/go-ini/ini"
-  packages = ["."]
-  revision = "6529cf7c58879c08d927016dde4477f18a0634cb"
-  version = "v1.36.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/jinzhu/copier"
   packages = ["."]
   revision = "7e38e58719c33e0d44d585c4ab477a30f8cb82dd"
 
-[[projects]]
-  name = "github.com/urfave/cli"
-  packages = ["."]
-  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
-  version = "v1.20.0"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
-  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/sys"
-  packages = [
-    "unix",
-    "windows"
-  ]
-  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "aacfc299d7cc14c87ba3e02a36541435a724f167a82ab849b69962ad71677a34"
+  inputs-digest = "e79a3a936ded261522d52621d3bddf45c98f97aa6e9ca781dd8d349fed6e5b5b"
   solver-name = "gps-cdcl"
   solver-version = 1
