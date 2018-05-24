@@ -75,6 +75,12 @@ secret={{.SecretKey}}
 		outPut = os.Stdout
 	} else {
 
+		if _, err := os.Stat(configFolder); os.IsNotExist(err) {
+			if err := os.MkdirAll(configFolder, os.ModePerm); err != nil {
+				log.Fatal(err)
+			}
+		}
+
 		filepath = path.Join(configFolder, "cloudstack.ini")
 
 		_, err := os.Stat(filepath)
@@ -86,6 +92,8 @@ secret={{.SecretKey}}
 			}
 			outPut = file
 			defer file.Close()
+		} else if err == nil {
+			return "", fmt.Errorf("File %q already exist", filepath)
 		}
 	}
 
