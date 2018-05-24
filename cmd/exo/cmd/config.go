@@ -37,6 +37,24 @@ func configCmdRun(cmd *cobra.Command, args []string) {
 }
 
 func generateConfigFile(isPrint bool) (string, error) {
+
+	filepath := ""
+	if !isPrint {
+		if _, err := os.Stat(configFolder); os.IsNotExist(err) {
+			if err := os.MkdirAll(configFolder, os.ModePerm); err != nil {
+				log.Fatal(err)
+			}
+		}
+
+		filepath = path.Join(configFolder, "cloudstack.ini")
+
+		_, err := os.Stat(filepath)
+
+		if err == nil {
+			return "", fmt.Errorf("File %q already exist", filepath)
+		}
+	}
+
 	reader := bufio.NewReader(os.Stdin)
 	confFile := &configFile{}
 
@@ -69,32 +87,17 @@ secret={{.SecretKey}}
 	}
 
 	var outPut *os.File
-	filepath := ""
 
 	if isPrint {
 		outPut = os.Stdout
 	} else {
 
-		if _, err := os.Stat(configFolder); os.IsNotExist(err) {
-			if err := os.MkdirAll(configFolder, os.ModePerm); err != nil {
-				log.Fatal(err)
-			}
+		file, err := os.Create(filepath)
+		if err != nil {
+			return "", err
 		}
-
-		filepath = path.Join(configFolder, "cloudstack.ini")
-
-		_, err := os.Stat(filepath)
-
-		if os.IsNotExist(err) {
-			file, err := os.Create(filepath)
-			if err != nil {
-				return "", err
-			}
-			outPut = file
-			defer file.Close()
-		} else if err == nil {
-			return "", fmt.Errorf("File %q already exist", filepath)
-		}
+		outPut = file
+		defer file.Close()
 	}
 
 	if err = tmpl.Execute(outPut, confFile); err != nil {
