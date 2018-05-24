@@ -38,21 +38,4 @@ jobs:
       dep ensure
       cd ../..
       goreleaser --snapshot
-  - stage: cmd-linux
-    script: |
-      dep ensure
-      cd cmd/cs
-      dep ensure
-      GOOS=linux go build -ldflags "-s" .
-  - stage: cmd-windows
-    script: |
-      dep ensure
-      cd cmd/cs
-      dep ensure
-      GOOS=windows go build -ldflags "-s" .
-  - stage: cmd-darwin
-    script: |
-      dep ensure
-      cd cmd/cs
-      dep ensure
-      GOOS=darwin go build -ldflags "-s" .
+      

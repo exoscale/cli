@@ -14,3 +14,6 @@ sign:
   cmd: gpg
   args: ["-a", "-u", "ops@exoscale.ch", "--detach-sign", "${artifact}"]
   artifacts: none
+
+archive:
+  name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
