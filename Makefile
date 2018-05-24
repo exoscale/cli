@@ -14,12 +14,12 @@ $(GOPATH)/src/$(PKG):
 .PHONY: deps
 deps: $(GOPATH)/src/$(PKG)
 	(cd $(GOPATH)/src/$(PKG) && \
-		$(DEP) ensure)
+		$(DEP) ensure -v)
 
 .PHONY: deps-update
 deps-update: deps
 	(cd $(GOPATH)/src/$(PKG) && \
-		$(DEP) ensure -update)
+		$(DEP) ensure -v -update)
 
 .PHONY: clean
 clean:

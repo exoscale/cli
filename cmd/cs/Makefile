@@ -49,16 +49,14 @@ $(BIN): $(SRCS)
 .PHONY: deps
 deps: $(GOPATH)/src/$(PKG)
 	(cd $(GOPATH)/src/$(PKG) && \
-		$(DEP) ensure)
+		$(DEP) ensure -v -vendor-only)
 	(cd $(GOPATH)/src/$(PKG)/cmd/cs && \
-		$(DEP) ensure)
+		$(DEP) ensure -v)
 
 .PHONY: deps-update
 deps-update: deps
-	(cd $(GOPATH)/src/$(PKG) && \
-		$(DEP) ensure -update)
 	(cd $(GOPATH)/src/$(PKG)/cmd/cs && \
-		$(DEP) ensure -update)
+		$(DEP) ensure -v -update)
 
 .PHONY: signature
 signature: $(BIN).asc
