@@ -29,6 +29,18 @@ jobs:
       dep ensure
       go test -coverprofile=coverage.out -covermode=atomic .
       codeclimate-test-reporter < coverage.out
+  - stage: goreleaser
+    script: |
+      go get -d github.com/goreleaser/goreleaser
+      cd $GOPATH/src/github.com/goreleaser/goreleaser
+      dep ensure -vendor-only
+      make build
+      go install
+      cd $GOPATH/src/github.com/exoscale/egoscale
+      dep ensure
+      cd cmd/exo
+      dep ensure
+      goreleaser --snapshot
   - stage: cmd-linux
     script: |
       dep ensure
@@ -47,9 +59,3 @@ jobs:
       cd cmd/cs
       dep ensure
       GOOS=darwin go build -ldflags "-s" .
-  - stage: goreleaser
-    script: |
-      dep ensure
-      cd cmd/exo
-      dep ensure
-      goreleaser --snapshot
