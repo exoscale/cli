@@ -47,3 +47,9 @@ jobs:
       cd cmd/cs
       dep ensure
       GOOS=darwin go build -ldflags "-s" .
+  - stage: goreleaser
+    script: |
+      dep ensure
+      cd cmd/exo
+      dep ensure
+      goreleaser --snapshot
