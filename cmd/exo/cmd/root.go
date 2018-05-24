@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var region = "cloudstack"
+var region string
 var configFolder string
 var configFilePath = ""
 var cfgFilePath string
@@ -39,7 +39,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFilePath, "config", "", "Specify an alternate config file (default: \"~/.cloudstack.ini\")")
+	rootCmd.PersistentFlags().StringVar(&cfgFilePath, "config", "", "Specify an alternate config file (default: \"~/.cloudstack.ini\" | \"~/.exoscale/cloudstack.ini\")")
+	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "cloudstack", "config ini file section name")
 
 	cobra.OnInitialize(initConfig, buildClient)
 
