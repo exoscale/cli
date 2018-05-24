@@ -9,7 +9,7 @@ import (
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:   "delete [name]",
+	Use:   "delete <name>",
 	Short: "Delete ssh keyPair",
 }
 

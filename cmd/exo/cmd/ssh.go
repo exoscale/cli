@@ -14,8 +14,8 @@ import (
 
 // sshCmd represents the ssh command
 var sshCmd = &cobra.Command{
-	Use:   "ssh <vm name> | <id>",
-	Short: "ssh into a virtual machine instance",
+	Use:   "ssh <vm name | id>",
+	Short: "SSH into a virtual machine instance",
 }
 
 func sshCmdRun(cmd *cobra.Command, args []string) {

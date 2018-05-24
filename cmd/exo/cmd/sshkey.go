@@ -7,7 +7,7 @@ import (
 // sshkeyCmd represents the sshkey command
 var sshkeyCmd = &cobra.Command{
 	Use:   "sshkey",
-	Short: "SSH keys pairs management",
+	Short: "SSH keys pair management",
 }
 
 func init() {

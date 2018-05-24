@@ -14,7 +14,7 @@ import (
 
 // removeCmd represents the remove command
 var firewallRemoveCmd = &cobra.Command{
-	Use:   "remove [<security group name> | <id>] [<rule id> | <default rule name>]",
+	Use:   "remove <security group name | id> <rule id | default rule name>",
 	Short: "Remove a rule from a security group",
 }
 

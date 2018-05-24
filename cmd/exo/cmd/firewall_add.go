@@ -12,7 +12,7 @@ import (
 
 // firewallAddCmd represents the add command
 var firewallAddCmd = &cobra.Command{
-	Use:   "add [<security group name> | <id>] [ssh | telnet | rdp | ...]",
+	Use:   "add <security group name | id> <ssh | telnet | rdp | ...>",
 	Short: "Add rule to a security group",
 }
 

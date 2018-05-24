@@ -21,7 +21,7 @@ var templateName = "Linux Debian 9"
 // vmCreateCmd represents the create command
 var vmCreateCmd = &cobra.Command{
 	Use:   "create <vm name>",
-	Short: "Create cmd deploy a virtual machine",
+	Short: "Create and deploy a virtual machine",
 }
 
 func vmCreateRun(cmd *cobra.Command, args []string) {

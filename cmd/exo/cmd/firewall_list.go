@@ -12,8 +12,8 @@ import (
 
 // listCmd represents the list command
 var firewallListCmd = &cobra.Command{
-	Use:   "list [<security group name> | <id>]",
-	Short: "List security groups or show a security group details",
+	Use:   "list [security group name | id]",
+	Short: "List security groups or show a security group rules detail",
 }
 
 func firewallListRun(cmd *cobra.Command, args []string) {

@@ -10,7 +10,7 @@ import (
 
 // deleteCmd represents the delete command
 var firewallDeleteCmd = &cobra.Command{
-	Use:   "delete [<security group name> | <id>]",
+	Use:   "delete <security group name | id>",
 	Short: "Delete security group",
 	Run: func(cmd *cobra.Command, args []string) {
 

@@ -11,7 +11,7 @@ import (
 
 // createCmd represents the create command
 var firewallCreateCmd = &cobra.Command{
-	Use:   "create",
+	Use:   "create <name>",
 	Short: "Create security group",
 }
 

@@ -12,7 +12,7 @@ import (
 
 // createCmd represents the create command
 var sshCreateCmd = &cobra.Command{
-	Use:   "create [name]",
+	Use:   "create <name>",
 	Short: "Create ssh keyPair",
 }
 

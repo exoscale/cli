@@ -12,7 +12,7 @@ import (
 // privnetCmd represents the pn command
 var privnetCmd = &cobra.Command{
 	Use:   "privnet",
-	Short: "Pivate network management",
+	Short: "Private networks management",
 }
 
 func getNetworkIDByName(cs *egoscale.Client, name, zone string) (string, error) {

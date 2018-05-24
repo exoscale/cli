@@ -9,8 +9,8 @@ import (
 
 // deleteCmd represents the delete command
 var privnetDeleteCmd = &cobra.Command{
-	Use:   "delete [name]",
-	Short: "A brief description of your command",
+	Use:   "delete <name | id>",
+	Short: "Delete private network",
 }
 
 func privnetDeleteRun(cmd *cobra.Command, args []string) {

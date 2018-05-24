@@ -9,8 +9,8 @@ import (
 
 // firewallCmd represents the firewalling command
 var firewallCmd = &cobra.Command{
-	Use:   "firewall [name or id]",
-	Short: "Security group management",
+	Use:   "firewall",
+	Short: "Security groups management",
 }
 
 func formatRules(name string, rule *egoscale.IngressRule) []string {

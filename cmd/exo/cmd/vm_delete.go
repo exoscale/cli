@@ -11,7 +11,7 @@ import (
 // deleteCmd represents the delete command
 var vmDeleteCmd = &cobra.Command{
 	Use:   "delete <name | id>",
-	Short: "delete a virtual machine instance",
+	Short: "Delete a virtual machine instance",
 }
 
 func vmDeleteCmdRun(cmd *cobra.Command, args []string) {

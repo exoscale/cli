@@ -24,9 +24,9 @@ var cs *egoscale.Client
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "egoscale-cli",
-	Short: "A brief description of your application",
-	Long:  `A simple CLI to use CloudStack using egoscale lib`,
+	Use:   "exo",
+	Short: "A simple CLI to use CloudStack using egoscale lib",
+	//Long:  `A simple CLI to use CloudStack using egoscale lib`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

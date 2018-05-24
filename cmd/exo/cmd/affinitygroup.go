@@ -11,7 +11,7 @@ import (
 // affinitygroupCmd represents the affinitygroup command
 var affinitygroupCmd = &cobra.Command{
 	Use:   "affinitygroup",
-	Short: "Affinity group management",
+	Short: "Affinity groups management",
 }
 
 func getAffinityGroupIDByName(cs *egoscale.Client, affinityGroup string) (string, error) {

@@ -17,7 +17,7 @@ import (
 // templateCmd represents the template command
 var templateCmd = &cobra.Command{
 	Use:   "template",
-	Short: "list all available templates",
+	Short: "List all available templates",
 	Run: func(cmd *cobra.Command, args []string) {
 
 		infos, err := listTemplates()

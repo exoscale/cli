@@ -12,7 +12,7 @@ import (
 // listCmd represents the list command
 var privnetListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List private network",
+	Short: "List private networks",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {

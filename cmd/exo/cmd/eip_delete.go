@@ -10,8 +10,8 @@ import (
 
 // deleteCmd represents the delete command
 var eipDeleteCmd = &cobra.Command{
-	Use:   "delete [ip]",
-	Short: "Delete EIP by a given IP or ID",
+	Use:   "delete <ip | eip id>",
+	Short: "Delete EIP",
 }
 
 func eipDeleteRun(cmd *cobra.Command, args []string) {
