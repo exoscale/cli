@@ -59,7 +59,8 @@ func getTemplateIDByName(cs *egoscale.Client, name, zoneID string) (string, erro
 
 	if len(keywords) > 1 {
 		return "", fmt.Errorf("More than one template found")
-	} else if len(keywords) == 1 {
+	}
+	if len(keywords) == 1 {
 		return keywords[0], nil
 	}
 
