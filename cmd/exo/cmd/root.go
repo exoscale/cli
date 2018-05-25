@@ -17,7 +17,7 @@ import (
 
 var region string
 var configFolder string
-var configFilePath = ""
+var configFilePath string
 var cfgFilePath string
 
 var cs *egoscale.Client
@@ -39,8 +39,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFilePath, "config", "", "Specify an alternate config file (default: \"~/.cloudstack.ini\" | \"~/.exoscale/cloudstack.ini\")")
-	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "cloudstack", "config ini file section name")
+	rootCmd.PersistentFlags().StringVar(&cfgFilePath, "config", "", "Specify an alternate config file [env CLOUDSTACK_CONFIG]")
+	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "cloudstack", "config ini file section name [env CLOUDSTACK_REGION]")
 
 	cobra.OnInitialize(initConfig, buildClient)
 
@@ -61,9 +61,16 @@ func buildClient() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 
-	envRegion := os.Getenv("CLOUDSTACK_REGION")
-	if envRegion != "" {
-		region = envRegion
+	envs := map[string]string{
+		"CLOUDSTACK_CONFIG": "config",
+		"CLOUDSTACK_REGION": "region",
+	}
+
+	for env, flag := range envs {
+		flag := rootCmd.Flags().Lookup(flag)
+		if value := os.Getenv(env); value != "" {
+			flag.Value.Set(value)
+		}
 	}
 
 	envEndpoint := os.Getenv("CLOUDSTACK_ENDPOINT")
@@ -75,20 +82,13 @@ func initConfig() {
 		return
 	}
 
-	envConfigFile := os.Getenv("CLOUDSTACK_CONFIG")
-
-	if envConfigFile != "" {
-		configFilePath = envConfigFile
+	if cfgFilePath != "" {
+		configFilePath = cfgFilePath
 		return
 	}
 
 	usr, _ := user.Current()
 	configFolder = path.Join(usr.HomeDir, ".exoscale")
-
-	if cfgFilePath != "" {
-		configFilePath = cfgFilePath
-		return
-	}
 
 	localConfig, _ := filepath.Abs("cloudstack.ini")
 	inis := []string{
