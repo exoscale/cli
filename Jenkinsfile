@@ -55,12 +55,8 @@ def golint() {
   docker.withRegistry('https://registry.internal.exoscale.ch') {
     def image = docker.image('registry.internal.exoscale.ch/exoscale/golang:1.10')
     image.inside("-u root --net=host -v ${env.WORKSPACE}/src:/go/src/github.com/exoscale/egoscale") {
-      sh 'golint -set_exit_status github.com/exoscale/egoscale'
-      sh 'golint -set_exit_status github.com/exoscale/egoscale/cmd/cs'
-      sh 'golint -set_exit_status github.com/exoscale/egoscale/generate'
-      sh 'go vet github.com/exoscale/egoscale'
-      sh 'go vet github.com/exoscale/egoscale/cmd/cs'
-      sh 'go vet github.com/exoscale/egoscale/generate'
+      sh 'golint -set_exit_status -min_confidence 0.6 $(go list ./... | grep -v /vendor/)'
+      sh 'go vet $(go list github.com/exoscale/egoscale/... | grep -v /vendor/)'
     }
   }
 }
