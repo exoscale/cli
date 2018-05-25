@@ -166,7 +166,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				}
 			default:
 				if required {
-					return fmt.Errorf("Unsupported type %s.%s (%v)", typeof.Name(), n, val.Kind())
+					return fmt.Errorf("unsupported type %s.%s (%v)", typeof.Name(), n, val.Kind())
 				}
 			}
 		} else {
@@ -201,7 +201,7 @@ func prepareMap(prefix string, params *url.Values, m interface{}) error {
 		case reflect.String:
 			keyName = key.String()
 		default:
-			return fmt.Errorf("Only map[string]string are supported (XXX)")
+			return fmt.Errorf("only map[string]string are supported (XXX)")
 		}
 
 		val := value.MapIndex(key)
@@ -209,7 +209,7 @@ func prepareMap(prefix string, params *url.Values, m interface{}) error {
 		case reflect.String:
 			keyValue = val.String()
 		default:
-			return fmt.Errorf("Only map[string]string are supported (XXX)")
+			return fmt.Errorf("only map[string]string are supported (XXX)")
 		}
 		params.Set(fmt.Sprintf("%s[%d].%s", prefix, i, keyName), keyValue)
 	}

@@ -33,10 +33,10 @@ func (temp *Template) Get(ctx context.Context, client *Client) error {
 	if count == 0 {
 		return &ErrorResponse{
 			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("Template not found."),
+			ErrorText: fmt.Sprintf("missing Template. %#v", temp),
 		}
 	} else if count > 1 {
-		return fmt.Errorf("More than one Template was found")
+		return fmt.Errorf("more than one Template was found")
 	}
 
 	return copier.Copy(temp, templates[0])
@@ -66,7 +66,7 @@ func (temp *Template) ListRequest() (ListCommand, error) {
 func (*ListTemplates) each(resp interface{}, callback IterateItemFunc) {
 	temps, ok := resp.(*ListTemplatesResponse)
 	if !ok {
-		callback(nil, fmt.Errorf("ListTemplatesResponse expected, got %t", resp))
+		callback(nil, fmt.Errorf("wrong type. ListTemplatesResponse expected, got %T", resp))
 		return
 	}
 

@@ -15,7 +15,7 @@ func (*Volume) ResourceType() string {
 // Get fetches the given volume by ID
 func (vol *Volume) Get(ctx context.Context, client *Client) error {
 	if vol.ID == "" {
-		return fmt.Errorf("A Volume may only be get using ID")
+		return fmt.Errorf("a Volume may only be get using ID")
 	}
 
 	vols, err := client.ListWithContext(ctx, vol)
@@ -27,10 +27,10 @@ func (vol *Volume) Get(ctx context.Context, client *Client) error {
 	if count == 0 {
 		return &ErrorResponse{
 			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("Volume not found. id: %s", vol.ID),
+			ErrorText: fmt.Sprintf("missing Volume. id: %s", vol.ID),
 		}
 	} else if count > 1 {
-		return fmt.Errorf("More than one Volume was found. Query: id: %s", vol.ID)
+		return fmt.Errorf("more than one Volume was found. Query: id: %s", vol.ID)
 	}
 
 	return copier.Copy(vol, vols[0])
@@ -81,7 +81,7 @@ func (ls *ListVolumes) SetPageSize(pageSize int) {
 func (*ListVolumes) each(resp interface{}, callback IterateItemFunc) {
 	volumes, ok := resp.(*ListVolumesResponse)
 	if !ok {
-		callback(nil, fmt.Errorf("ListVolumesResponse expected, got %t", resp))
+		callback(nil, fmt.Errorf("wrong type. ListVolumesResponse expected, got %T", resp))
 		return
 	}
 

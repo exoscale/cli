@@ -11,7 +11,7 @@ import (
 // Get loads the given Affinity Group
 func (ag *AffinityGroup) Get(ctx context.Context, client *Client) error {
 	if ag.ID == "" && ag.Name == "" {
-		return fmt.Errorf("An Affinity Group may only be searched using ID or Name")
+		return fmt.Errorf("an Affinity Group may only be searched using ID or Name")
 	}
 
 	resp, err := client.RequestWithContext(ctx, &ListAffinityGroups{
@@ -28,10 +28,10 @@ func (ag *AffinityGroup) Get(ctx context.Context, client *Client) error {
 	if count == 0 {
 		return &ErrorResponse{
 			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("AffinityGroup not found id: %s, name: %s", ag.ID, ag.Name),
+			ErrorText: fmt.Sprintf("missing AffinityGroup. id: %s, name: %s", ag.ID, ag.Name),
 		}
 	} else if count > 1 {
-		return fmt.Errorf("More than one Affinity Group was found. Query; id: %s, name: %s", ag.ID, ag.Name)
+		return fmt.Errorf("more than one Affinity Group was found. Query; id: %s, name: %s", ag.ID, ag.Name)
 	}
 
 	return copier.Copy(ag, ags.AffinityGroup[0])
@@ -40,7 +40,7 @@ func (ag *AffinityGroup) Get(ctx context.Context, client *Client) error {
 // Delete removes the given Affinity Group
 func (ag *AffinityGroup) Delete(ctx context.Context, client *Client) error {
 	if ag.ID == "" && ag.Name == "" {
-		return fmt.Errorf("An Affinity Group may only be deleted using ID or Name")
+		return fmt.Errorf("an Affinity Group may only be deleted using ID or Name")
 	}
 
 	req := &DeleteAffinityGroup{

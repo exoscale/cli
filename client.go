@@ -182,7 +182,7 @@ func (client *Client) Response(request Command) interface{} {
 	case AsyncCommand:
 		return (request.(AsyncCommand)).asyncResponse()
 	default:
-		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.name()))
+		panic(fmt.Errorf("command %q is not a proper Sync or Async command", request.name()))
 	}
 }
 

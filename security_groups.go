@@ -17,11 +17,7 @@ func (*SecurityGroup) ResourceType() string {
 
 // Get loads the given Security Group
 func (sg *SecurityGroup) Get(ctx context.Context, client *Client) error {
-	if sg.ID == "" && sg.Name == "" {
-		return fmt.Errorf("A SecurityGroup may only be searched using ID or Name")
-	}
-
-	resp, err := client.List(&SecurityGroup{Name: sg.Name, ID: sg.ID})
+	resp, err := client.ListWithContext(ctx, sg)
 	if err != nil {
 		return err
 	}
@@ -31,16 +27,16 @@ func (sg *SecurityGroup) Get(ctx context.Context, client *Client) error {
 	if listSize == 0 {
 		err := &ErrorResponse{
 			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("SecurityGroup not found id: %s, name: %s", sg.ID, sg.Name),
+			ErrorText: fmt.Sprintf("missing SecurityGroup. %#v", sg),
 		}
 		return err
 	} else if listSize > 1 {
-		return fmt.Errorf("More than one SecurityGroup was found. Query: id: %s, name: %s", sg.ID, sg.Name)
+		return fmt.Errorf("more than one SecurityGroup was found. Query: id: %s, name: %s", sg.ID, sg.Name)
 	}
 
 	securGroup, ok := resp[0].(*SecurityGroup)
 	if !ok {
-		return fmt.Errorf("SecurityGroup expected, got %t", resp[0])
+		return fmt.Errorf("wrong type. SecurityGroup expected, got %T", resp[0])
 	}
 
 	return copier.Copy(sg, securGroup)
@@ -62,7 +58,7 @@ func (sg *SecurityGroup) ListRequest() (ListCommand, error) {
 // Delete deletes the given Security Group
 func (sg *SecurityGroup) Delete(ctx context.Context, client *Client) error {
 	if sg.ID == "" && sg.Name == "" {
-		return fmt.Errorf("A SecurityGroup may only be deleted using ID or Name")
+		return fmt.Errorf("a SecurityGroup may only be deleted using ID or Name")
 	}
 
 	req := &DeleteSecurityGroup{
@@ -189,7 +185,7 @@ func (lsg *ListSecurityGroups) SetPageSize(pageSize int) {
 func (*ListSecurityGroups) each(resp interface{}, callback IterateItemFunc) {
 	sgs, ok := resp.(*ListSecurityGroupsResponse)
 	if !ok {
-		callback(nil, fmt.Errorf("ListSecurityGroupsResponse expected, got %t", resp))
+		callback(nil, fmt.Errorf("wrong type. ListSecurityGroupsResponse expected, got %T", resp))
 		return
 	}
 

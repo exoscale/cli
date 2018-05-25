@@ -18,10 +18,10 @@ func (ssh *SSHKeyPair) Get(ctx context.Context, client *Client) error {
 	if count == 0 {
 		return &ErrorResponse{
 			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("SSHKeyPair not found"),
+			ErrorText: fmt.Sprintf("missing SSHKeyPair. query %#v", ssh),
 		}
 	} else if count > 1 {
-		return fmt.Errorf("More than one SSHKeyPair was found")
+		return fmt.Errorf("more than one SSHKeyPair was found")
 	}
 
 	return copier.Copy(ssh, sshs[0])
@@ -30,7 +30,7 @@ func (ssh *SSHKeyPair) Get(ctx context.Context, client *Client) error {
 // Delete removes the given SSH key, by Name
 func (ssh *SSHKeyPair) Delete(ctx context.Context, client *Client) error {
 	if ssh.Name == "" {
-		return fmt.Errorf("An SSH Key Pair may only be deleted using Name")
+		return fmt.Errorf("an SSH Key Pair may only be deleted using Name")
 	}
 
 	return client.BooleanRequestWithContext(ctx, &DeleteSSHKeyPair{
@@ -91,7 +91,7 @@ func (*ListSSHKeyPairs) response() interface{} {
 func (*ListSSHKeyPairs) each(resp interface{}, callback IterateItemFunc) {
 	sshs, ok := resp.(*ListSSHKeyPairsResponse)
 	if !ok {
-		callback(nil, fmt.Errorf("ListSSHKeyPairsResponse expected, got %t", resp))
+		callback(nil, fmt.Errorf("wrong type. ListSSHKeyPairsResponse expected, got %T", resp))
 		return
 	}
 

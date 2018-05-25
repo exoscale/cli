@@ -87,7 +87,7 @@ type ipGeneric struct {
 func (g *ipGeneric) Set(value string) error {
 	*(g.value) = net.ParseIP(value)
 	if *(g.value) == nil {
-		return fmt.Errorf("Not a valid IP address, got %s", value)
+		return fmt.Errorf("not a valid IP address, got %s", value)
 	}
 	return nil
 }
@@ -169,7 +169,7 @@ func (g *mapGeneric) Set(value string) error {
 
 	values := strings.SplitN(value, "=", 2)
 	if len(values) != 2 {
-		return fmt.Errorf("Not a valid key=value content, got %s", value)
+		return fmt.Errorf("not a valid key=value content, got %s", value)
 	}
 
 	(*m)[values[0]] = values[1]
@@ -202,7 +202,7 @@ func (g *tagGeneric) Set(value string) error {
 
 	values := strings.SplitN(value, "=", 2)
 	if len(values) != 2 {
-		return fmt.Errorf("Not a valid key=value content, got %s", value)
+		return fmt.Errorf("not a valid key=value content, got %s", value)
 	}
 
 	*m = append(*m, egoscale.ResourceTag{

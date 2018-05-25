@@ -10,7 +10,7 @@ import (
 // Get fetches the resource
 func (ipaddress *IPAddress) Get(ctx context.Context, client *Client) error {
 	if ipaddress.ID == "" && ipaddress.IPAddress == nil {
-		return fmt.Errorf("An IPAddress may only be searched using ID or IPAddress")
+		return fmt.Errorf("an IPAddress may only be searched using ID or IPAddress")
 	}
 
 	req := &ListPublicIPAddresses{
@@ -35,10 +35,10 @@ func (ipaddress *IPAddress) Get(ctx context.Context, client *Client) error {
 	if count == 0 {
 		return &ErrorResponse{
 			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("PublicIPAddress not found. id: %s, ipaddress: %s", ipaddress.ID, ipaddress.IPAddress),
+			ErrorText: fmt.Sprintf("missing PublicIPAddress. id: %s, ipaddress: %s", ipaddress.ID, ipaddress.IPAddress),
 		}
 	} else if count > 1 {
-		return fmt.Errorf("More than one PublicIPAddress was found")
+		return fmt.Errorf("more than one PublicIPAddress was found")
 	}
 
 	return copier.Copy(ipaddress, ips.PublicIPAddress[0])
@@ -47,7 +47,7 @@ func (ipaddress *IPAddress) Get(ctx context.Context, client *Client) error {
 // Delete removes the resource
 func (ipaddress *IPAddress) Delete(ctx context.Context, client *Client) error {
 	if ipaddress.ID == "" {
-		return fmt.Errorf("An IPAddress may only be deleted using ID")
+		return fmt.Errorf("an IPAddress may only be deleted using ID")
 	}
 
 	return client.BooleanRequestWithContext(ctx, &DisassociateIPAddress{
@@ -127,7 +127,7 @@ func (ls *ListPublicIPAddresses) SetPageSize(pageSize int) {
 func (*ListPublicIPAddresses) each(resp interface{}, callback IterateItemFunc) {
 	ips, ok := resp.(*ListPublicIPAddressesResponse)
 	if !ok {
-		callback(nil, fmt.Errorf("ListPublicIPAddressesResponse expected, got %t", resp))
+		callback(nil, fmt.Errorf("wrong type. ListPublicIPAddressesResponse expected, got %T", resp))
 		return
 	}
 

@@ -21,7 +21,7 @@ func (*VirtualMachine) ResourceType() string {
 // Get fills the VM
 func (vm *VirtualMachine) Get(ctx context.Context, client *Client) error {
 	if vm.ID == "" && vm.Name == "" && vm.DefaultNic() == nil {
-		return fmt.Errorf("A VirtualMachine may only be searched using ID, Name or IPAddress")
+		return fmt.Errorf("a VirtualMachine may only be searched using ID, Name or IPAddress")
 	}
 
 	vms, err := client.ListWithContext(ctx, vm)
@@ -33,10 +33,10 @@ func (vm *VirtualMachine) Get(ctx context.Context, client *Client) error {
 	if count == 0 {
 		return &ErrorResponse{
 			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("VirtualMachine not found. id: %s, name: %s", vm.ID, vm.Name),
+			ErrorText: fmt.Sprintf("missing VirtualMachine. id: %s, name: %s", vm.ID, vm.Name),
 		}
 	} else if count > 1 {
-		return fmt.Errorf("More than one VirtualMachine was found. Query: id: %s, name: %s", vm.ID, vm.Name)
+		return fmt.Errorf("more than one VirtualMachine was found. Query: id: %s, name: %s", vm.ID, vm.Name)
 	}
 
 	return copier.Copy(vm, vms[0])
@@ -142,12 +142,12 @@ func (*DeployVirtualMachine) name() string {
 func (req *DeployVirtualMachine) onBeforeSend(params *url.Values) error {
 	// Either AffinityGroupIDs or AffinityGroupNames must be set
 	if len(req.AffinityGroupIDs) > 0 && len(req.AffinityGroupNames) > 0 {
-		return fmt.Errorf("Either AffinityGroupIDs or AffinityGroupNames must be set")
+		return fmt.Errorf("either AffinityGroupIDs or AffinityGroupNames must be set")
 	}
 
 	// Either SecurityGroupIDs or SecurityGroupNames must be set
 	if len(req.SecurityGroupIDs) > 0 && len(req.SecurityGroupNames) > 0 {
-		return fmt.Errorf("Either SecurityGroupIDs or SecurityGroupNames must be set")
+		return fmt.Errorf("either SecurityGroupIDs or SecurityGroupNames must be set")
 	}
 
 	return nil
@@ -302,7 +302,7 @@ func (ls *ListVirtualMachines) SetPageSize(pageSize int) {
 func (*ListVirtualMachines) each(resp interface{}, callback IterateItemFunc) {
 	vms, ok := resp.(*ListVirtualMachinesResponse)
 	if !ok {
-		callback(nil, fmt.Errorf("ListVirtualMachinesResponse expected, got %t", resp))
+		callback(nil, fmt.Errorf("wrong type. ListVirtualMachinesResponse expected, got %T", resp))
 		return
 	}
 

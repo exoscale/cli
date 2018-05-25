@@ -19,10 +19,10 @@ func (so *ServiceOffering) Get(ctx context.Context, client *Client) error {
 	if count == 0 {
 		return &ErrorResponse{
 			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("ServiceOffering not found. %#v", so),
+			ErrorText: fmt.Sprintf("missing ServiceOffering. %#v", so),
 		}
 	} else if count > 1 {
-		return fmt.Errorf("More than one ServiceOffering was found")
+		return fmt.Errorf("more than one ServiceOffering was found")
 	}
 
 	return copier.Copy(so, resp[0].(*ServiceOffering))
@@ -64,7 +64,7 @@ func (lso *ListServiceOfferings) SetPageSize(pageSize int) {
 func (*ListServiceOfferings) each(resp interface{}, callback IterateItemFunc) {
 	sos, ok := resp.(*ListServiceOfferingsResponse)
 	if !ok {
-		callback(nil, fmt.Errorf("ListServiceOfferingsResponse expected, got %t", resp))
+		callback(nil, fmt.Errorf("wrong type. ListServiceOfferingsResponse expected, got %T", resp))
 		return
 	}
 

@@ -1,13 +1,13 @@
 package egoscale
 
 import (
-	"fmt"
+	"errors"
 )
 
 // ListRequest build a ListNics request from the given Nic
 func (nic *Nic) ListRequest() (ListCommand, error) {
 	if nic.VirtualMachineID == "" {
-		return nil, fmt.Errorf("ListNics command requires the VirtualMachineID field to be set")
+		return nil, errors.New("command ListNics requires the VirtualMachineID field to be set")
 	}
 
 	req := &ListNics{

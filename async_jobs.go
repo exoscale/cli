@@ -53,7 +53,7 @@ func (a *AsyncJobResult) Response(i interface{}) error {
 					}
 				}
 			} else {
-				return fmt.Errorf("Empty response")
+				return fmt.Errorf("empty response")
 			}
 		}
 	}

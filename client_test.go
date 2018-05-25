@@ -212,21 +212,21 @@ func TestClientGetNone(t *testing.T) {
 
 		cs := NewClient(ts.URL, "KEY", "SECRET")
 
-		for _, text := range []string{"not found", "due to invalid value"} {
+		for _, text := range []string{"missing", "due to invalid value"} {
 			err := cs.Get(thing.gettable)
 			if err == nil {
-				t.Errorf("An error was expected")
+				t.Error("an error was expected")
 				continue
 			}
 
 			e, ok := err.(*ErrorResponse)
 			if !ok {
-				t.Errorf("ErrorResponse was expected, got %t", err)
+				t.Errorf("an ErrorResponse was expected, got %T", err)
 				continue
 			}
 
 			if !strings.Contains(e.ErrorText, text) {
-				t.Errorf("Bad error test, got %q", e.ErrorText)
+				t.Errorf("bad error test, got %q", e.ErrorText)
 			}
 		}
 	}
@@ -278,11 +278,11 @@ func TestClientGetTooMany(t *testing.T) {
 		err := cs.Get(thing.gettable)
 
 		if err == nil {
-			t.Errorf("An error was expected")
+			t.Errorf("an error was expected")
 		}
 
-		if !strings.HasPrefix(err.Error(), "More than one") {
-			t.Errorf("Bad error %s", err)
+		if !strings.HasPrefix(err.Error(), "more than one") {
+			t.Errorf("bad error %s", err)
 		}
 	}
 }

@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -160,7 +161,7 @@ func main() {
 				tag := command.s.Tag(i)
 				match := re.FindStringSubmatch(tag)
 				if len(match) == 0 {
-					command.errors[f.Name()] = fmt.Errorf("Field error: no json annotation found")
+					command.errors[f.Name()] = errors.New("field error: no json annotation found")
 					continue
 				}
 				name := match[1]
@@ -266,16 +267,16 @@ func main() {
 						expected = "array"
 					}
 				default:
-					command.errors[p.Name] = fmt.Errorf("Unknown type %q <=> %q", p.Type, field.Var.Type().String())
+					command.errors[p.Name] = fmt.Errorf("unknown type %q <=> %q", p.Type, field.Var.Type().String())
 				}
 
 				if expected != "" {
-					command.errors[p.Name] = fmt.Errorf("Expected to be a %s, got %q", expected, typename)
+					command.errors[p.Name] = fmt.Errorf("expected to be a %s, got %q", expected, typename)
 				}
 			}
 
 			for name := range command.fields {
-				command.errors[name] = fmt.Errorf("Extra field found")
+				command.errors[name] = errors.New("extra field found")
 			}
 		}
 	}

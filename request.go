@@ -7,6 +7,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -26,7 +27,7 @@ func (e *ErrorResponse) Error() string {
 // Success computes the values based on the RawMessage, either string or bool
 func (e *booleanResponse) IsSuccess() (bool, error) {
 	if e.Success == nil {
-		return false, fmt.Errorf("Not a valid booleanResponse")
+		return false, errors.New("not a valid booleanResponse, Success is missing")
 	}
 
 	str := ""
@@ -73,7 +74,7 @@ func (client *Client) parseResponse(resp *http.Response, key string) (json.RawMe
 	response, ok := m[key]
 	if !ok {
 		for k := range m {
-			return nil, fmt.Errorf("Malformed JSON response, %q was expected, got %q", key, k)
+			return nil, fmt.Errorf("malformed JSON response, %q was expected, got %q", key, k)
 		}
 	}
 
@@ -147,7 +148,7 @@ func (client *Client) syncRequest(ctx context.Context, request syncCommand) (int
 				return nil, e
 			}
 			if !success {
-				err = fmt.Errorf("Not a valid booleanResponse")
+				err = errors.New("not a valid booleanResponse")
 			}
 		}
 	}
@@ -174,7 +175,7 @@ func (client *Client) BooleanRequest(req Command) error {
 		return b.Error()
 	}
 
-	panic(fmt.Errorf("The command %s is not a proper boolean response. %#v", req.name(), resp))
+	panic(fmt.Errorf("command %q is not a proper boolean response. %#v", req.name(), resp))
 }
 
 // BooleanRequestWithContext performs the given boolean command
@@ -188,7 +189,7 @@ func (client *Client) BooleanRequestWithContext(ctx context.Context, req Command
 		return b.Error()
 	}
 
-	panic(fmt.Errorf("The command %s is not a proper boolean response. %#v", req.name(), resp))
+	panic(fmt.Errorf("command %q is not a proper boolean response. %#v", req.name(), resp))
 }
 
 // Request performs the given command
@@ -202,7 +203,7 @@ func (client *Client) Request(request Command) (interface{}, error) {
 	case AsyncCommand:
 		return client.asyncRequest(ctx, request.(AsyncCommand))
 	default:
-		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.name()))
+		panic(fmt.Errorf("command %q is not a proper Sync or Async command", request.name()))
 	}
 }
 
@@ -214,7 +215,7 @@ func (client *Client) RequestWithContext(ctx context.Context, request Command) (
 	case AsyncCommand:
 		return client.asyncRequest(ctx, request.(AsyncCommand))
 	default:
-		panic(fmt.Errorf("The command %s is not a proper Sync or Async command", request.name()))
+		panic(fmt.Errorf("command %q is not a proper Sync or Async command", request.name()))
 	}
 }
 
@@ -264,7 +265,7 @@ func (client *Client) AsyncRequestWithContext(ctx context.Context, request Async
 
 		result, ok := resp.(*AsyncJobResult)
 		if !ok {
-			if !callback(nil, fmt.Errorf("AsyncJobResult expected, got %t", resp)) {
+			if !callback(nil, fmt.Errorf("wrong type. AsyncJobResult expected, got %T", resp)) {
 				return
 			}
 		}
