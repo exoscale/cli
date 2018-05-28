@@ -374,7 +374,12 @@ func (client *Client) request(ctx context.Context, req Command) (json.RawMessage
 	}
 	defer resp.Body.Close() // nolint: errcheck
 
+	// XXX: addIpToNic is kind of special
 	key := fmt.Sprintf("%sresponse", strings.ToLower(req.name()))
+	if key == "addiptonicresponse" {
+		key = "addiptovmnicresponse"
+	}
+
 	text, err := client.parseResponse(resp, key)
 	if err != nil {
 		return nil, err
