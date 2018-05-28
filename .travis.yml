@@ -3,7 +3,6 @@ language: go
 dist: trusty
 
 go:
-- 1.8
 - 1.9
 - "1.10"
 - tip
@@ -24,18 +23,13 @@ jobs:
   include:
   - stage: test
     script: |
-      dep ensure
-      go test -race .
-  - stage: coverage
-    script: |
-      dep ensure
-      go test -coverprofile=coverage.out -covermode=atomic .
+      dep ensure -v -vendor-only
+      go test -race -coverprofile=coverage.out -covermode=atomic .
       codeclimate-test-reporter < coverage.out
   - stage: goreleaser
     script: |
-      dep ensure
+      dep ensure -v -vendor-only
       cd cmd/cs
-      dep ensure
+      dep ensure -v -vendor-only
       cd ../..
-      goreleaser --snapshot
-      
+      goreleaser --snapshot --skip-sign
