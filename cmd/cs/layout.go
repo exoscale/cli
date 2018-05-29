@@ -131,4 +131,7 @@ var methods = map[string][]cmd{
 		{&egoscale.ListResourceLimits{}, false},
 		{&egoscale.ListServiceOfferings{}, false},
 	},
+	"host": {
+		{&egoscale.ListHosts{}, true},
+	},
 }

@@ -4,10 +4,6 @@ import (
 	"testing"
 )
 
-func TestServiceOfferings(t *testing.T) {
-	var _ Command = (*ListServiceOfferings)(nil)
-}
-
 func TestListServiceOfferings(t *testing.T) {
 	req := &ListServiceOfferings{}
 	if req.name() != "listServiceOfferings" {
