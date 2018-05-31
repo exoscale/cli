@@ -31,5 +31,7 @@ jobs:
       dep ensure -v -vendor-only
       cd cmd/cs
       dep ensure -v -vendor-only
+      cd ../exo
+      dep ensure -v -vendor-only
       cd ../..
       goreleaser --snapshot --skip-sign

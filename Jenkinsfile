@@ -47,6 +47,7 @@ def gofmt() {
       // let's not gofmt the dependencies
       sh 'cd /go/src/github.com/exoscale/egoscale && dep ensure -v -vendor-only'
       sh 'cd /go/src/github.com/exoscale/egoscale/cmd/cs && dep ensure -v -vendor-only'
+      sh 'cd /go/src/github.com/exoscale/egoscale/cmd/exo && dep ensure -v -vendor-only'
     }
   }
 }
@@ -76,6 +77,8 @@ def build() {
     image.inside("-u root --net=host -v ${env.WORKSPACE}/src:/go/src/github.com/exoscale/egoscale") {
       sh 'go install github.com/exoscale/egoscale/cmd/cs'
       sh 'test -e /go/bin/cs'
+      sh 'go install github.com/exoscale/egoscale/cmd/exo'
+      sh 'test -e /go/bin/exo'
     }
   }
 }

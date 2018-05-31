@@ -9,6 +9,14 @@ builds:
       - linux
     goarch:
       - amd64
+  - main: ./cmd/exo/
+    binary: exo
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
 
 sign:
   cmd: gpg

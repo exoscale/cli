@@ -67,23 +67,24 @@ func (client *Client) parseResponse(resp *http.Response, key string) (json.RawMe
 		return nil, err
 	}
 
-	if resp.StatusCode >= 400 {
-		key = "errorresponse"
-	}
-
 	response, ok := m[key]
 	if !ok {
-		for k := range m {
-			return nil, fmt.Errorf("malformed JSON response, %q was expected, got %q", key, k)
+		if resp.StatusCode >= 400 {
+			response, ok = m["errorresponse"]
+		}
+		if !ok {
+			for k := range m {
+				return nil, fmt.Errorf("malformed JSON response, %q was expected, got %q", key, k)
+			}
 		}
 	}
 
 	if resp.StatusCode >= 400 {
 		errorResponse := new(ErrorResponse)
-		if e := json.Unmarshal(response, errorResponse); e == nil && errorResponse.ErrorCode > 0 {
-			return nil, errorResponse
+		if e := json.Unmarshal(response, errorResponse); e != nil && errorResponse.ErrorCode <= 0 {
+			return nil, fmt.Errorf("%d %s", resp.StatusCode, b)
 		}
-		return nil, fmt.Errorf("%d %s", resp.StatusCode, b)
+		return nil, errorResponse
 	}
 
 	n := map[string]json.RawMessage{}
