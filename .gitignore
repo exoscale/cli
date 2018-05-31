@@ -1,3 +1,5 @@
-vendor
 .gopath
+.token
+vendor
 cloudstack.ini
+listApis.json
