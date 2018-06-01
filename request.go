@@ -57,6 +57,11 @@ func (e *booleanResponse) Error() error {
 }
 
 func (exo *Client) parseResponse(resp *http.Response) (json.RawMessage, error) {
+	contentType := resp.Header.Get("content-type")
+	if !strings.Contains(contentType, "application/json") {
+		return nil, fmt.Errorf(`body content-type response expected "application/json", got %q`, contentType)
+	}
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err

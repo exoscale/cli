@@ -498,10 +498,12 @@ func newServer(responses ...response) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if i >= len(responses) {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(500)
 			w.Write([]byte("{}"))
 			return
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(responses[i].code)
 		w.Write([]byte(responses[i].body))
 		i++
@@ -513,6 +515,7 @@ func newSleepyServer(sleep time.Duration, code int, response string) *httptest.S
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(sleep)
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(code)
 		w.Write([]byte(response))
 	})
@@ -542,9 +545,11 @@ func newGetServer(params url.Values, response string) *httptest.Server {
 		}
 
 		if len(errors) == 0 {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(200)
 			w.Write([]byte(response))
 		} else {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(400)
 			body, _ := json.Marshal(errors)
 			w.Write(body)
