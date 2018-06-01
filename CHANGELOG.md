@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.27
+------
+
+- fix: checks that the Content-Type is correctly set to `application/json`
+
 0.9.26
 ------
 
