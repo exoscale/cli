@@ -529,6 +529,29 @@ func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 	<-done
 }
 
+func TestWrongBodyResponse(t *testing.T) {
+	ts := newServer(response{200, "text/html", `
+		<html>
+		<header><title>This is title</title></header>
+		<body>
+		Hello world
+		</body>
+		</html>		
+	`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+
+	_, err := cs.Request(&ListZones{})
+	if err == nil {
+		t.Error("an error was expected but got nil error")
+	}
+
+	if err.Error() != fmt.Sprintf("body content-type response expected %q, got %q", jsonContentType, "text/html") {
+		t.Error("body content-type error response expected")
+	}
+}
+
 type response struct {
 	code        int
 	contentType string
