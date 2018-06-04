@@ -15,7 +15,7 @@ func TestListZonesAPIName(t *testing.T) {
 }
 
 func TestZoneGet(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 1,
 	"zone": [
@@ -47,7 +47,7 @@ func TestZoneGet(t *testing.T) {
 }
 
 func TestListZones(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4,
 	"zone": [
@@ -117,7 +117,7 @@ func TestListZones(t *testing.T) {
 }
 
 func TestListZonesTypeError(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listzonesresponse": []}`})
 	defer ts.Close()
 
@@ -130,7 +130,7 @@ func TestListZonesTypeError(t *testing.T) {
 }
 
 func TestListZonesPaginateError(t *testing.T) {
-	ts := newServer(response{431, `
+	ts := newServer(response{431, jsonContentType, `
 {
 	"listzonesresponse": {
 		"cserrorcode": 9999,
@@ -159,7 +159,7 @@ func TestListZonesPaginateError(t *testing.T) {
 }
 
 func TestListZonesPaginate(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4,
 	"zone": [
@@ -236,7 +236,7 @@ func TestListZonesPaginate(t *testing.T) {
 }
 
 func TestListZonesPaginateBreak(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4,
 	"zone": [
@@ -285,7 +285,7 @@ func TestListZonesPaginateBreak(t *testing.T) {
 }
 
 func TestListZonesAsyncError(t *testing.T) {
-	ts := newServer(response{431, `
+	ts := newServer(response{431, jsonContentType, `
 {
 	"listzonesresponse": {
 		"cserrorcode": 9999,
@@ -335,7 +335,7 @@ func TestListZonesAsyncError(t *testing.T) {
 }
 
 func TestListZonesAsync(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4,
 	"zone": [
@@ -427,7 +427,7 @@ func TestListZonesAsync(t *testing.T) {
 }
 
 func TestListZonesTwoPages(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4,
 	"zone": [
@@ -454,7 +454,7 @@ func TestListZonesTwoPages(t *testing.T) {
 			"zonetoken": "23a24359-121a-38af-a938-e225c97c397b"
 		}
 	]
-}}`}, response{200, `
+}}`}, response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4,
 	"zone": [
@@ -481,7 +481,7 @@ func TestListZonesTwoPages(t *testing.T) {
 			"zonetoken": "c4bdb9f2-c28d-36a3-bbc5-f91fc69527e6"
 		}
 	]
-}}`}, response{200, `
+}}`}, response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4,
 	"zones": null
@@ -503,7 +503,7 @@ func TestListZonesTwoPages(t *testing.T) {
 }
 
 func TestListZonesError(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4,
 	"zone": [
@@ -530,7 +530,7 @@ func TestListZonesError(t *testing.T) {
 			"zonetoken": "23a24359-121a-38af-a938-e225c97c397b"
 		}
 	]
-}}`}, response{400, `
+}}`}, response{400, jsonContentType, `
 {"listzonesresponse": {
 	"cserrorcode": 9999,
 	"errorcode": 431,
@@ -550,7 +550,7 @@ func TestListZonesError(t *testing.T) {
 }
 
 func TestListZonesTimeout(t *testing.T) {
-	ts := newSleepyServer(time.Second, 200, `
+	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {"listzonesresponse": {
 	"count": 4
 }}`)

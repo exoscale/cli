@@ -122,7 +122,7 @@ func TestAuthorizeSecurityGroupEgressOnBeforeSendTCP(t *testing.T) {
 }
 
 func TestGetSecurityGroup(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listsecuritygroupsresponse": {
 	"count": 1,
 	"securitygroup": [
@@ -165,7 +165,7 @@ func TestGetSecurityGroup(t *testing.T) {
 }
 
 func TestListSecurityGroups(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 		{"listsecuritygroupsresponse":{
 			"count": 2,
 			"securitygroup": [

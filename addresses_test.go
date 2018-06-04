@@ -45,7 +45,7 @@ func TestUpdateIPAddress(t *testing.T) {
 }
 
 func TestGetIPAddress(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listpublicipaddressesresponse": {
 	"count": 1,
 	"publicipaddress": [
@@ -89,7 +89,7 @@ func TestGetIPAddress(t *testing.T) {
 }
 
 func TestListIPAddress(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 		{"listpublicipaddressesresponse":{
 			"count": 1,
 			"publicipaddress": [
@@ -140,7 +140,7 @@ func TestListIPAddress(t *testing.T) {
 }
 
 func TestListIPAddressPaginate(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 		{"listpublicipaddressesresponse":{
 			"count": 1,
 			"publicipaddress": [
@@ -208,7 +208,7 @@ func TestListIPAddressPaginate(t *testing.T) {
 }
 
 func TestListIPAddressFailure(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 	{"listpublicipaddressesresponse": {
 		"count": 1,
 		"publicipaddress": {}

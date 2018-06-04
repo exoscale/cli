@@ -59,7 +59,7 @@ func TestUpdateVMOnBeforeSend(t *testing.T) {
 }
 
 func TestGetAffinityGroup(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listaffinitygroupsresponse": {
 	"affinitygroup": [
 		{

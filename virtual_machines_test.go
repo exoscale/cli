@@ -211,7 +211,7 @@ func TestDeployOnBeforeSendBothAG(t *testing.T) {
 }
 
 func TestGetVirtualMachine(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listvirtualmachinesresponse": {
 	"count": 1,
 	"virtualmachine": [
@@ -296,7 +296,7 @@ func TestGetVirtualMachine(t *testing.T) {
 }
 
 func TestGetVirtualMachinePassword(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"getvmpasswordresponse": {
 	"password": {
 		"encryptedpassword": "test"
@@ -318,7 +318,7 @@ func TestGetVirtualMachinePassword(t *testing.T) {
 }
 
 func TestListMachines(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listvirtualmachinesresponse": {
 	"count": 3,
 	"virtualmachine": [
@@ -348,7 +348,7 @@ func TestListMachines(t *testing.T) {
 }
 
 func TestListMachinesFailure(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listvirtualmachinesresponse": {
 	"count": 3,
 	"virtualmachine": {}
@@ -368,7 +368,7 @@ func TestListMachinesFailure(t *testing.T) {
 }
 
 func TestListMachinesPaginate(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listvirtualmachinesresponse": {
 	"count": 3,
 	"virtualmachine": [

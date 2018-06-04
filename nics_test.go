@@ -37,7 +37,7 @@ func TestActivateIP6(t *testing.T) {
 }
 
 func TestListNics(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listnicsresponse": {
 	"count": 1,
 	"nic": [
@@ -89,7 +89,7 @@ func TestListNicInvalid(t *testing.T) {
 }
 
 func TestListNicError(t *testing.T) {
-	ts := newServer(response{431, `
+	ts := newServer(response{431, jsonContentType, `
 {"listnicresponse": {
 	"cserrorcode": 9999,
 	"errorcode": 431,

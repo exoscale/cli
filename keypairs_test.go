@@ -45,7 +45,7 @@ func TestListSSHKeyPairsResponse(t *testing.T) {
 }
 
 func TestGetSSHKeyPair(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listsshkeypairsresponse": {
 	"count": 1,
 	"sshkeypair": [
@@ -71,7 +71,7 @@ func TestGetSSHKeyPair(t *testing.T) {
 }
 
 func TestListSSHKeyPairs(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listsshkeypairsresponse": {
 	"count": 2,
 	"sshkeypair": [
@@ -101,7 +101,7 @@ func TestListSSHKeyPairs(t *testing.T) {
 }
 
 func TestListSSHKeysFailure(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listsshkeypairsresponse": {
 	"count": 2,
 	"sshkeypair": {}
@@ -122,7 +122,7 @@ func TestListSSHKeysFailure(t *testing.T) {
 }
 
 func TestListSSHKeyPaginate(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listsshkeypairsresponse": {
 	"count": 2,
 	"sshkeypair": [
@@ -156,7 +156,7 @@ func TestListSSHKeyPaginate(t *testing.T) {
 }
 
 func TestGetSSHKeyPairNotFound(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listsshkeypairsresponse": {
 	"count": 0,
 	"sshkeypair": []

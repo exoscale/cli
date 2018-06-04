@@ -28,7 +28,7 @@ func TestResizeVolume(t *testing.T) {
 }
 
 func TestGetVolume(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listvolumesresponse": {
 	"count": 1,
 	"volume": [
@@ -81,7 +81,7 @@ func TestGetVolume(t *testing.T) {
 }
 
 func TestListVolume(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listvolumesresponse": {
 	"count": 1,
 	"volume": [
@@ -139,7 +139,7 @@ func TestListVolume(t *testing.T) {
 }
 
 func TestListVolumeFailure(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listvolumesresponse": {
 	"count": 1,
 	"volume": {}
@@ -159,7 +159,7 @@ func TestListVolumeFailure(t *testing.T) {
 }
 
 func TestListVolumePaginate(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listvolumesresponse": {
 	"count": 1,
 	"volume": [
@@ -246,7 +246,7 @@ func TestListVolumePaginate(t *testing.T) {
 }
 
 func TestListVolumeError(t *testing.T) {
-	ts := newServer(response{431, `
+	ts := newServer(response{431, jsonContentType, `
 {"listvolumeresponse": {
 	"cserrorcode": 9999,
 	"errorcode": 431,

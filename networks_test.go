@@ -69,7 +69,7 @@ func TestCreateNetworkOnBeforeSend(t *testing.T) {
 }
 
 func TestListNetwork(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listnetworksresponse": {
 	"count": 5,
 	"network": [
@@ -364,7 +364,7 @@ func TestListNetwork(t *testing.T) {
 }
 
 func TestListNetworkEmpty(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listnetworksresponse": {
 	"count": 0,
 	"network": []
@@ -385,7 +385,7 @@ func TestListNetworkEmpty(t *testing.T) {
 }
 
 func TestListNetworkFailure(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listnetworksresponse": {
 	"count": 3456,
 	"network": {}
@@ -406,7 +406,7 @@ func TestListNetworkFailure(t *testing.T) {
 }
 
 func TestListNetworkPaginate(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listnetworksresponse": {
 	"count": 2,
 	"network": [
@@ -503,7 +503,7 @@ func TestListNetworkPaginate(t *testing.T) {
 }
 
 func TestFindNetwork(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {"listnetworksresponse": {
 	"count": 1,
 	"network": [

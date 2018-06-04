@@ -14,13 +14,17 @@ import (
 	"time"
 )
 
+const (
+	jsonContentType = "application/json"
+)
+
 func TestRequest(t *testing.T) {
 	params := url.Values{}
 	params.Set("command", "listApis")
 	params.Set("apikey", "KEY")
 	params.Set("name", "dummy")
 	params.Set("response", "json")
-	ts := newGetServer(params, `
+	ts := newGetServer(params, jsonContentType, `
 {
 	"listapisresponse": {
 		"api": [{
@@ -55,7 +59,7 @@ func TestRequest(t *testing.T) {
 }
 
 func TestRequestSignatureFailure(t *testing.T) {
-	ts := newServer(response{401, `
+	ts := newServer(response{401, jsonContentType, `
 {"createsshkeypairresponse" : {
 	"uuidList":[],
 	"errorcode":401,
@@ -82,7 +86,7 @@ func TestRequestSignatureFailure(t *testing.T) {
 }
 
 func TestBooleanAsyncRequest(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {
 	"expungevirtualmachineresponse": {
 		"jobid": "1",
@@ -90,7 +94,7 @@ func TestBooleanAsyncRequest(t *testing.T) {
 		"jobstatus": 0
 	}
 }
-	`}, response{200, `
+	`}, response{200, jsonContentType, `
 {
 	"queryasyncjobresultresponse": {
 		"accountid": "1",
@@ -120,7 +124,7 @@ func TestBooleanAsyncRequest(t *testing.T) {
 }
 
 func TestBooleanAsyncRequestWithContext(t *testing.T) {
-	ts := newServer(response{200, `
+	ts := newServer(response{200, jsonContentType, `
 {
 	"expungevirtualmachineresponse": {
 		"jobid": "1",
@@ -128,7 +132,7 @@ func TestBooleanAsyncRequestWithContext(t *testing.T) {
 		"jobstatus": 0
 	}
 }
-	`}, response{200, `
+	`}, response{200, jsonContentType, `
 {
 	"queryasyncjobresultresponse": {
 		"accountid": "1",
@@ -160,7 +164,7 @@ func TestBooleanAsyncRequestWithContext(t *testing.T) {
 }
 
 func TestBooleanRequestTimeout(t *testing.T) {
-	ts := newSleepyServer(time.Second, 200, `
+	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {
 	"expungevirtualmachine": {
 		"jobid": "1",
@@ -201,14 +205,14 @@ func TestBooleanRequestTimeout(t *testing.T) {
 func TestAsyncRequestWithoutContext(t *testing.T) {
 
 	ts := newServer(
-		response{200, `{
+		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse": {
 		"jobid": "1",
 		"jobresult": {},
 		"jobstatus": 0
 	}
 }`},
-		response{200, `{
+		response{200, jsonContentType, `{
 	"queryasyncjobresultresponse": {
 		"jobid": "1",
 		"jobresult": {
@@ -260,14 +264,14 @@ func TestAsyncRequestWithoutContext(t *testing.T) {
 
 func TestAsyncRequestWithoutContextFailure(t *testing.T) {
 	ts := newServer(
-		response{200, `{
+		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse": {
 		"jobid": "1",
 		"jobresult": {},
 		"jobstatus": 0
 	}
 }`},
-		response{200, `{
+		response{200, jsonContentType, `{
 	"queryasyncjobresultresponse": {
 		"jobid": "1",
 		"jobresult": {
@@ -309,7 +313,7 @@ func TestAsyncRequestWithoutContextFailure(t *testing.T) {
 func TestAsyncRequestWithoutContextFailureNext(t *testing.T) {
 
 	ts := newServer(
-		response{200, `{
+		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse: {
 		"jobid": "1",
 		"jobresult": {},
@@ -336,7 +340,7 @@ func TestAsyncRequestWithoutContextFailureNext(t *testing.T) {
 func TestAsyncRequestWithoutContextFailureNextNext(t *testing.T) {
 
 	ts := newServer(
-		response{200, `{
+		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse": {
 		"jobid": "1",
 		"jobresult": {
@@ -345,14 +349,14 @@ func TestAsyncRequestWithoutContextFailureNextNext(t *testing.T) {
 		"jobstatus": 2
 	}
 }`},
-		response{200, `{
+		response{200, jsonContentType, `{
 	"queryasyncjobresultresponse": {
 		"jobid": "1",
 		"jobresult": {},
 		"jobstatus": 0
 	}
 }`},
-		response{200, `{
+		response{200, jsonContentType, `{
 	"queryasyncjobresultresponse": {
 		"jobid": "1",
 		"jobresult": [],
@@ -389,7 +393,7 @@ func TestAsyncRequestWithoutContextFailureNextNext(t *testing.T) {
 }
 
 func TestBooleanRequestWithContext(t *testing.T) {
-	ts := newSleepyServer(time.Second, 200, `
+	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {
 	"expungevirtualmachine": {
 		"jobid": "1",
@@ -432,7 +436,7 @@ func TestBooleanRequestWithContext(t *testing.T) {
 }
 
 func TestRequestWithContextTimeoutPost(t *testing.T) {
-	ts := newSleepyServer(time.Second, 200, `
+	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {
 	"deployvirtualmachineresponse": {
 		"jobid": "1",
@@ -484,7 +488,7 @@ func TestRequestWithContextTimeoutPost(t *testing.T) {
 }
 
 func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
-	ts := newSleepyServer(time.Second, 200, `
+	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {
 	"expungevirtualmachine": {
 		"jobid": "1",
@@ -526,8 +530,9 @@ func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 }
 
 type response struct {
-	code int
-	body string
+	code        int
+	contentType string
+	body        string
 }
 
 func newServer(responses ...response) *httptest.Server {
@@ -535,10 +540,12 @@ func newServer(responses ...response) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if i >= len(responses) {
+			w.Header().Set("Content-Type", jsonContentType)
 			w.WriteHeader(500)
 			w.Write([]byte("{}"))
 			return
 		}
+		w.Header().Set("Content-Type", responses[i].contentType)
 		w.WriteHeader(responses[i].code)
 		w.Write([]byte(responses[i].body))
 		i++
@@ -546,17 +553,18 @@ func newServer(responses ...response) *httptest.Server {
 	return httptest.NewServer(mux)
 }
 
-func newSleepyServer(sleep time.Duration, code int, response string) *httptest.Server {
+func newSleepyServer(sleep time.Duration, code int, contentType, response string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(sleep)
+		w.Header().Set("Content-Type", contentType)
 		w.WriteHeader(code)
 		w.Write([]byte(response))
 	})
 	return httptest.NewServer(mux)
 }
 
-func newGetServer(params url.Values, response string) *httptest.Server {
+func newGetServer(params url.Values, contentType, response string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		errors := make(map[string][]string)
@@ -579,9 +587,11 @@ func newGetServer(params url.Values, response string) *httptest.Server {
 		}
 
 		if len(errors) == 0 {
+			w.Header().Set("Content-Type", contentType)
 			w.WriteHeader(200)
 			w.Write([]byte(response))
 		} else {
+			w.Header().Set("Content-Type", contentType)
 			w.WriteHeader(400)
 			body, _ := json.Marshal(errors)
 			w.Write(body)
