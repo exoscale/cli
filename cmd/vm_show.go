@@ -45,13 +45,30 @@ func showVM(name string) error {
 	if err := cs.Get(temp); err != nil {
 		return err
 	}
+
+	volume := &egoscale.Volume{
+		VirtualMachineID: vm.ID,
+		Type:             "ROOT",
+	}
+
+	if err := cs.Get(volume); err != nil {
+		return err
+	}
+
 	table.Append([]string{"Instance Type", vm.ServiceOfferingName})
 
-	table.Append([]string{"Disk", fmt.Sprintf("%d GB", temp.Size>>30)})
+	table.Append([]string{"Disk", fmt.Sprintf("%d GB", volume.Size>>30)})
 
 	table.Append([]string{"Instance Hostname", vm.Name})
 
 	table.Append([]string{"Instance Display Name", vm.DisplayName})
+
+	username, ok := temp.Details["username"]
+	if !ok {
+		return fmt.Errorf("template %q: failed to get username", temp.Name)
+	}
+
+	table.Append([]string{"Instance Username", username})
 
 	table.Append([]string{"Created on", vm.Created})
 
@@ -64,6 +81,8 @@ func showVM(name string) error {
 	table.Append([]string{"Security Group", sgName})
 
 	table.Append([]string{"Instance IP", vm.IP().String()})
+
+	table.Append([]string{"ID", vm.ID})
 
 	table.Render()
 

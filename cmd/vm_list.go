@@ -28,7 +28,7 @@ func listVMs() error {
 	}
 
 	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Security Group", "IP Address", "Status", "Zone"})
+	table.SetHeader([]string{"Name", "Security Group", "IP Address", "Status", "Zone", "ID"})
 
 	for _, key := range vms {
 		vm := key.(*egoscale.VirtualMachine)
@@ -36,7 +36,7 @@ func listVMs() error {
 		sgs := getSecurityGroup(vm)
 
 		sgName := strings.Join(sgs, " - ")
-		table.Append([]string{vm.Name, sgName, vm.IP().String(), vm.State, vm.ZoneName})
+		table.Append([]string{vm.Name, sgName, vm.IP().String(), vm.State, vm.ZoneName, vm.ID})
 	}
 	table.Render()
 
