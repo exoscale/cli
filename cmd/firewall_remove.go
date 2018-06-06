@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 
@@ -14,11 +12,29 @@ import (
 
 // removeCmd represents the remove command
 var firewallRemoveCmd = &cobra.Command{
-	Use:   "remove <security group name | id> <rule id | default rule name>",
+	Use:   "remove <security group name | id> <rule id | default rule name> [flags]\n  exo firewall remove <security group name | id> [flags]",
 	Short: "Remove a rule from a security group",
 }
 
 func firewallRemoveRun(cmd *cobra.Command, args []string) {
+
+	deleteAll, err := cmd.Flags().GetBool("all")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(args) == 1 && deleteAll {
+		res, err := removeAllRules(args[0])
+
+		for _, r := range res {
+			println(r)
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	if len(args) < 2 {
 		firewallRemoveCmd.Usage()
 		return
@@ -36,19 +52,48 @@ func firewallRemoveRun(cmd *cobra.Command, args []string) {
 
 	var myCidr *net.IPNet
 	if isMyIP {
-		myCidr, err = _getMyCIDR(isIpv6)
+		myCidr, err = getMyCIDR(isIpv6)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	r, ok := defaultRules[strings.ToLower(args[1])]
-	if ok {
-		removeDefault(args[0], args[1], r, myCidr, isIpv6)
+	r, err := getDefaultRule(args[1], isIpv6)
+	if err == nil {
+		ru := &egoscale.IngressRule{
+			Cidr:      r.CidrList[0],
+			StartPort: r.StartPort,
+			EndPort:   r.EndPort,
+			Protocol:  r.Protocol,
+		}
+		removeDefault(args[0], args[1], ru, myCidr, isIpv6)
 		return
 	}
 
 	removeRule(args[0], args[1])
+}
+
+func removeAllRules(sgName string) ([]string, error) {
+	securGrp, err := getSecuGrpWithNameOrID(cs, sgName)
+	if err != nil {
+		return nil, err
+	}
+
+	res := []string{}
+
+	for _, in := range securGrp.IngressRule {
+		if err := cs.BooleanRequest(&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}); err != nil {
+			return res, err
+		}
+		res = append(res, in.RuleID)
+	}
+	for _, eg := range securGrp.EgressRule {
+		if err = cs.BooleanRequest(&egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}); err != nil {
+			return res, err
+		}
+		res = append(res, eg.RuleID)
+	}
+	return res, nil
 }
 
 func removeRule(sg, ruleID string) {
@@ -115,41 +160,10 @@ func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr *ne
 	log.Fatalf("Rule %q not foud", ruleName)
 }
 
-//Waiting to complete-firewall-rule branch merge
-func _getMyCIDR(isIpv6 bool) (*net.IPNet, error) {
-
-	var cidrMask net.IPMask
-	dnsServer := ""
-
-	if isIpv6 {
-		dnsServer = "resolver1.ipv6-sandbox.opendns.com"
-		cidrMask = net.CIDRMask(128, 128)
-	} else {
-		dnsServer = "resolver1.opendns.com"
-		cidrMask = net.CIDRMask(32, 32)
-	}
-	resolver := net.Resolver{
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			return net.Dial("udp", dnsServer+":53")
-		},
-		PreferGo: true,
-	}
-
-	ip, err := resolver.LookupIPAddr(context.Background(), "myip.opendns.com")
-	if err != nil {
-		return nil, err
-	}
-
-	if len(ip) < 1 {
-		return nil, fmt.Errorf("Invalide IP adress")
-	}
-
-	return &net.IPNet{IP: ip[0].IP, Mask: cidrMask}, nil
-}
-
 func init() {
 	firewallRemoveCmd.Run = firewallRemoveRun
 	firewallRemoveCmd.Flags().BoolP("ipv6", "6", false, "Remove rule with any IPv6 source")
 	firewallRemoveCmd.Flags().BoolP("my-ip", "m", false, "Remove rule with my IP as a source")
+	firewallRemoveCmd.Flags().BoolP("all", "", false, "Remove all rules")
 	firewallCmd.AddCommand(firewallRemoveCmd)
 }

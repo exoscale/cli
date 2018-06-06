@@ -28,6 +28,7 @@ const (
 	snmp      port = 161
 	irc       port = 194
 	https     port = 443
+	rdp       port = 3389
 	minecraft port = 25565
 )
 
