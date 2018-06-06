@@ -3,29 +3,7 @@ package egoscale
 import (
 	"context"
 	"fmt"
-
-	"github.com/jinzhu/copier"
 )
-
-// Get populates the given SSHKeyPair
-func (ssh *SSHKeyPair) Get(ctx context.Context, client *Client) error {
-	sshs, err := client.ListWithContext(ctx, ssh)
-	if err != nil {
-		return err
-	}
-
-	count := len(sshs)
-	if count == 0 {
-		return &ErrorResponse{
-			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("missing SSHKeyPair. query %#v", ssh),
-		}
-	} else if count > 1 {
-		return fmt.Errorf("more than one SSHKeyPair was found")
-	}
-
-	return copier.Copy(ssh, sshs[0])
-}
 
 // Delete removes the given SSH key, by Name
 func (ssh *SSHKeyPair) Delete(ctx context.Context, client *Client) error {

@@ -1,39 +1,12 @@
 package egoscale
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/jinzhu/copier"
 )
 
 // ResourceType returns the type of the resource
 func (*Volume) ResourceType() string {
 	return "Volume"
-}
-
-// Get fetches the given volume by ID
-func (vol *Volume) Get(ctx context.Context, client *Client) error {
-	if vol.ID == "" {
-		return fmt.Errorf("a Volume may only be get using ID")
-	}
-
-	vols, err := client.ListWithContext(ctx, vol)
-	if err != nil {
-		return err
-	}
-
-	count := len(vols)
-	if count == 0 {
-		return &ErrorResponse{
-			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("missing Volume. id: %s", vol.ID),
-		}
-	} else if count > 1 {
-		return fmt.Errorf("more than one Volume was found. Query: id: %s", vol.ID)
-	}
-
-	return copier.Copy(vol, vols[0])
 }
 
 // ListRequest builds the ListVolumes request

@@ -1,46 +1,8 @@
 package egoscale
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/jinzhu/copier"
 )
-
-// Get fetches the resource
-func (temp *Template) Get(ctx context.Context, client *Client) error {
-
-	req, err := temp.ListRequest()
-	if err != nil {
-		return err
-	}
-
-	templates := []Template{}
-	var listError error
-	client.Paginate(req, func(i interface{}, err error) bool {
-		if err != nil {
-			listError = err
-			return false
-		}
-		templates = append(templates, *i.(*Template))
-		return true
-	})
-	if listError != nil {
-		return listError
-	}
-
-	count := len(templates)
-	if count == 0 {
-		return &ErrorResponse{
-			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("missing Template. %#v", temp),
-		}
-	} else if count > 1 {
-		return fmt.Errorf("more than one Template was found")
-	}
-
-	return copier.Copy(temp, templates[0])
-}
 
 // ListRequest builds the ListTemplates request
 func (temp *Template) ListRequest() (ListCommand, error) {

@@ -3,46 +3,7 @@ package egoscale
 import (
 	"context"
 	"fmt"
-
-	"github.com/jinzhu/copier"
 )
-
-// Get fetches the resource
-func (ipaddress *IPAddress) Get(ctx context.Context, client *Client) error {
-	if ipaddress.ID == "" && ipaddress.IPAddress == nil {
-		return fmt.Errorf("an IPAddress may only be searched using ID or IPAddress")
-	}
-
-	req := &ListPublicIPAddresses{
-		ID:        ipaddress.ID,
-		IPAddress: ipaddress.IPAddress,
-		Account:   ipaddress.Account,
-		DomainID:  ipaddress.DomainID,
-		ZoneID:    ipaddress.ZoneID,
-	}
-
-	if ipaddress.IsElastic {
-		req.IsElastic = &(ipaddress.IsElastic)
-	}
-
-	resp, err := client.RequestWithContext(ctx, req)
-	if err != nil {
-		return err
-	}
-
-	ips := resp.(*ListPublicIPAddressesResponse)
-	count := len(ips.PublicIPAddress)
-	if count == 0 {
-		return &ErrorResponse{
-			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("missing PublicIPAddress. id: %s, ipaddress: %s", ipaddress.ID, ipaddress.IPAddress),
-		}
-	} else if count > 1 {
-		return fmt.Errorf("more than one PublicIPAddress was found")
-	}
-
-	return copier.Copy(ipaddress, ips.PublicIPAddress[0])
-}
 
 // Delete removes the resource
 func (ipaddress *IPAddress) Delete(ctx context.Context, client *Client) error {

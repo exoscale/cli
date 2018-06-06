@@ -212,7 +212,7 @@ func TestClientGetNone(t *testing.T) {
 
 		cs := NewClient(ts.URL, "KEY", "SECRET")
 
-		for _, text := range []string{"missing", "due to invalid value"} {
+		for _, text := range []string{"not found", "due to invalid value"} {
 			err := cs.Get(thing.gettable)
 			if err == nil {
 				t.Error("an error was expected")

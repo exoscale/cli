@@ -1,32 +1,8 @@
 package egoscale
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/jinzhu/copier"
 )
-
-// Get fetches the resource
-func (so *ServiceOffering) Get(ctx context.Context, client *Client) error {
-
-	resp, err := client.List(so)
-	if err != nil {
-		return err
-	}
-
-	count := len(resp)
-	if count == 0 {
-		return &ErrorResponse{
-			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("missing ServiceOffering. %#v", so),
-		}
-	} else if count > 1 {
-		return fmt.Errorf("more than one ServiceOffering was found")
-	}
-
-	return copier.Copy(so, resp[0].(*ServiceOffering))
-}
 
 // ListRequest builds the ListSecurityGroups request
 func (so *ServiceOffering) ListRequest() (ListCommand, error) {

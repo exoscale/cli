@@ -4,37 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-
-	"github.com/jinzhu/copier"
 )
 
-// Get loads the given Affinity Group
-func (ag *AffinityGroup) Get(ctx context.Context, client *Client) error {
-	if ag.ID == "" && ag.Name == "" {
-		return fmt.Errorf("an Affinity Group may only be searched using ID or Name")
-	}
-
-	resp, err := client.RequestWithContext(ctx, &ListAffinityGroups{
+// ListRequest builds the ListAffinityGroups request
+func (ag *AffinityGroup) ListRequest() (ListCommand, error) {
+	return &ListAffinityGroups{
 		ID:   ag.ID,
 		Name: ag.Name,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	ags := resp.(*ListAffinityGroupsResponse)
-	count := len(ags.AffinityGroup)
-	if count == 0 {
-		return &ErrorResponse{
-			ErrorCode: ParamError,
-			ErrorText: fmt.Sprintf("missing AffinityGroup. id: %s, name: %s", ag.ID, ag.Name),
-		}
-	} else if count > 1 {
-		return fmt.Errorf("more than one Affinity Group was found. Query; id: %s, name: %s", ag.ID, ag.Name)
-	}
-
-	return copier.Copy(ag, ags.AffinityGroup[0])
+	}, nil
 }
 
 // Delete removes the given Affinity Group
@@ -104,6 +81,30 @@ func (*ListAffinityGroups) response() interface{} {
 // name returns the CloudStack API command name
 func (*ListAffinityGroupTypes) name() string {
 	return "listAffinityGroupTypes"
+}
+
+// SetPage sets the current page
+func (ls *ListAffinityGroups) SetPage(page int) {
+	ls.Page = page
+}
+
+// SetPageSize sets the page size
+func (ls *ListAffinityGroups) SetPageSize(pageSize int) {
+	ls.PageSize = pageSize
+}
+
+func (*ListAffinityGroups) each(resp interface{}, callback IterateItemFunc) {
+	vms, ok := resp.(*ListAffinityGroupsResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("wrong type. ListAffinityGroupsResponse expected, got %T", resp))
+		return
+	}
+
+	for i := range vms.AffinityGroup {
+		if !callback(&vms.AffinityGroup[i], nil) {
+			break
+		}
+	}
 }
 
 func (*ListAffinityGroupTypes) response() interface{} {

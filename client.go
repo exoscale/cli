@@ -5,7 +5,10 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/jinzhu/copier"
 )
 
 // Get populates the given resource or fails
@@ -18,7 +21,36 @@ func (client *Client) Get(g Gettable) error {
 
 // GetWithContext populates the given resource or fails
 func (client *Client) GetWithContext(ctx context.Context, g Gettable) error {
-	return g.Get(ctx, client)
+	gs, err := client.ListWithContext(ctx, g)
+	if err != nil {
+		return err
+	}
+
+	count := len(gs)
+	if count != 1 {
+		req, err := g.ListRequest()
+		if err != nil {
+			return err
+		}
+		payload, err := client.Payload(req)
+		if err != nil {
+			return err
+		}
+
+		// formatting the query string nicely
+		payload = strings.Replace(payload, "&", ", ", -1)
+
+		if count == 0 {
+			return &ErrorResponse{
+				ErrorCode: ParamError,
+				ErrorText: fmt.Sprintf("not found, query: %s", payload),
+			}
+		}
+		return fmt.Errorf("more than one element found: %s", payload)
+	}
+
+	return copier.Copy(g, gs[0])
+
 }
 
 // Delete removes the given resource of fails
