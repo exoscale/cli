@@ -8,7 +8,6 @@ import (
 	"os"
 	"path"
 	"strings"
-	"unicode"
 
 	"github.com/exoscale/egoscale"
 	"github.com/exoscale/egoscale/cmd/exo/table"
@@ -150,13 +149,19 @@ func getCommaflag(p string) []string {
 		return nil
 	}
 
-	f := func(c rune) bool {
-		return !unicode.IsLetter(c) && !unicode.IsNumber(c)
+	p = strings.Trim(p, ",")
+	args := strings.Split(p, ",")
+
+	res := []string{}
+
+	for _, arg := range args {
+		if arg == "" {
+			continue
+		}
+		res = append(res, strings.TrimSpace(arg))
 	}
 
-	ps := strings.FieldsFunc(p, f)
-
-	return ps
+	return res
 }
 
 func getSecuGrpList(cs *egoscale.Client, commaParameter string) ([]string, error) {
