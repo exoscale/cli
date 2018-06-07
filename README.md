@@ -35,26 +35,27 @@ $ exo
 A simple CLI to use CloudStack using egoscale lib
 
 Usage:
-  egoscale-cli [command]
+  exo [command]
 
 Available Commands:
-  affinitygroup Affinity group management
+  affinitygroup Affinity groups management
   config        Generate config file for this cli
   eip           Elastic IPs management
-  firewall      Security group management
+  firewall      Security groups management
   help          Help about any command
-  privnet       Pivate network management
-  ssh           ssh into a virtual machine instance
-  sshkey        SSH keys pairs management
-  template      list all available templates
+  privnet       Private networks management
+  ssh           SSH into a virtual machine instance
+  sshkey        SSH keys pair management
+  template      List all available templates
   vm            Virtual machines management
   zone          List all available zones
 
 Flags:
-      --config string   Specify an alternate config file (default: "~/.cloudstack.ini")
-  -h, --help            help for egoscale-cli
+      --config string   Specify an alternate config file [env CLOUDSTACK_CONFIG]
+  -h, --help            help for exo
+  -r, --region string   config ini file section name [env CLOUDSTACK_REGION] (default "cloudstack")
 
-Use "egoscale-cli [command] --help" for more information about a command.
+Use "exo [command] --help" for more information about a command.
 $
 ```
 
