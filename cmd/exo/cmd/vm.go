@@ -38,5 +38,5 @@ func getSecurityGroup(vm *egoscale.VirtualMachine) []string {
 }
 
 func init() {
-	rootCmd.AddCommand(vmCmd)
+	RootCmd.AddCommand(vmCmd)
 }

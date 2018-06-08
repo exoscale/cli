@@ -95,6 +95,16 @@ func main() {
 		app.Commands[i].Flags = cmd.Flags
 	}
 
+	app.Commands = append(app.Commands, cli.Command{
+		Name:     "gen-doc",
+		Hidden:   true,
+		HideHelp: true,
+		Action: func(c *cli.Context) error {
+			generateDocs(app, "../../website/content/cs")
+			return nil
+		},
+	})
+
 	app.Run(os.Args)
 
 	// Picking a region

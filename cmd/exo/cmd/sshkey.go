@@ -11,5 +11,5 @@ var sshkeyCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(sshkeyCmd)
+	RootCmd.AddCommand(sshkeyCmd)
 }

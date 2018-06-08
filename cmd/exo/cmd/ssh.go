@@ -104,5 +104,5 @@ func connectSSH(cred *sshInfos) {
 func init() {
 	sshCmd.Run = sshCmdRun
 	sshCmd.Flags().BoolP("infos", "i", false, "infos show ssh connection informations")
-	rootCmd.AddCommand(sshCmd)
+	RootCmd.AddCommand(sshCmd)
 }

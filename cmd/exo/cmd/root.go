@@ -22,25 +22,25 @@ var cfgFilePath string
 
 var cs *egoscale.Client
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+// RootCmd represents the base command when called without any subcommands
+var RootCmd = &cobra.Command{
 	Use:   "exo",
 	Short: "A simple CLI to use CloudStack using egoscale lib",
 	//Long:  `A simple CLI to use CloudStack using egoscale lib`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFilePath, "config", "", "Specify an alternate config file [env CLOUDSTACK_CONFIG]")
-	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "cloudstack", "config ini file section name [env CLOUDSTACK_REGION]")
+	RootCmd.PersistentFlags().StringVar(&cfgFilePath, "config", "", "Specify an alternate config file [env CLOUDSTACK_CONFIG]")
+	RootCmd.PersistentFlags().StringVarP(&region, "region", "r", "cloudstack", "config ini file section name [env CLOUDSTACK_REGION]")
 
 	cobra.OnInitialize(initConfig, buildClient)
 
@@ -60,14 +60,13 @@ func buildClient() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
 	envs := map[string]string{
 		"CLOUDSTACK_CONFIG": "config",
 		"CLOUDSTACK_REGION": "region",
 	}
 
 	for env, flag := range envs {
-		flag := rootCmd.Flags().Lookup(flag)
+		flag := RootCmd.Flags().Lookup(flag)
 		if value := os.Getenv(env); value != "" {
 			flag.Value.Set(value)
 		}

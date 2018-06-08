@@ -59,4 +59,10 @@ Use "exo [command] --help" for more information about a command.
 $
 ```
 
+### Documentation
 
+To update the documentation, run the generator.
+
+```
+$ go run doc/main.go
+```

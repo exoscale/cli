@@ -169,5 +169,5 @@ func reSubMatchMap(r *regexp.Regexp, str string) map[string]string {
 }
 
 func init() {
-	rootCmd.AddCommand(templateCmd)
+	RootCmd.AddCommand(templateCmd)
 }

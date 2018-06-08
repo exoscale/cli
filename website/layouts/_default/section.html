@@ -1,0 +1,21 @@
+{{ define "main" }}
+  <main>
+    <hgroup class="main-header arrow-underline">
+      <h1 class="main-title-wide">{{.Title}}</h1>
+    </hgroup>
+
+      <div>
+        {{ .Content }}
+      </div>
+
+    <div class="row center-flex doc-basics">
+      <h2 class="h3 arrow-underline arrow-underline-sm">Commands</h2>
+      <ul class="article-list center-flex">
+          {{ range .Paginator.Pages }}
+            <li>{{ partial "summary.html" . }}</li>
+          {{ end }}
+          </ul>
+      {{ partial "pagination.html" . }}
+    </div>
+  </main>
+{{ end }}

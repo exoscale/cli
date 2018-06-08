@@ -1,0 +1,35 @@
+baseURL = "https://exoscale.github.io/egoscale"
+languageCode = "en"
+footnoteReturnLinkContents = "↩"
+title = "Egoscale, the Go toolbox for Exoscale"
+metadataFormat = "yaml"
+sectionPagesMenu = "main"
+
+[params]
+AuthorName = "Exoscale"
+GitHubUser = "exoscale"
+
+[blackfriday]
+angledQuotes = true
+extensions = ["hardLineBreak"]
+plainIDAnchors = true
+
+[frontmatter]
+date = ["date", "publishDate", "lastmod"]
+lastmod = [":git", "lastmod", "date", "publishDate"]
+publishDate = ["publishDate", "date"]
+expiryDate = ["expiryDate"]
+
+[menu]
+
+[[menu.main]]
+name = "exo"
+weight = 1
+identifier = "cli"
+url = "/cli/"
+
+[[menu.main]]
+name = "cs"
+weight = 2
+identifier = "cs"
+url = "/cs/"
