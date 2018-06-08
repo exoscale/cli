@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
+	"path"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -52,6 +54,14 @@ func deleteVM(name string) error {
 
 	if errorReq != nil {
 		return errorReq
+	}
+
+	folder := path.Join(configFolder, "instances", vm.ID)
+
+	if _, err := os.Stat(folder); !os.IsNotExist(err) {
+		if err := os.RemoveAll(folder); err != nil {
+			return err
+		}
 	}
 
 	println(vm.ID)
