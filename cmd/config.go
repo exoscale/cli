@@ -128,5 +128,5 @@ func init() {
 
 	configCmd.Run = configCmdRun
 	configCmd.Flags().BoolP("print", "p", false, "Print configuration")
-	rootCmd.AddCommand(configCmd)
+	RootCmd.AddCommand(configCmd)
 }

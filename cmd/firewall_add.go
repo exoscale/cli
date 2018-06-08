@@ -221,7 +221,7 @@ func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGr
 		}, nil
 	}
 
-	for d := daytime; d <= minecraft; d++ {
+	for d := Daytime; d <= Minecraft; d++ {
 		if port.String(d) == ruleName {
 			return &egoscale.AuthorizeSecurityGroupIngress{
 				Protocol:    "tcp",

@@ -36,5 +36,5 @@ func getAffinityGroupIDByName(cs *egoscale.Client, affinityGroup string) (string
 }
 
 func init() {
-	rootCmd.AddCommand(affinitygroupCmd)
+	RootCmd.AddCommand(affinitygroupCmd)
 }

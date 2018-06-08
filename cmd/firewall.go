@@ -106,5 +106,5 @@ func isAFirewallID(cs *egoscale.Client, id string) bool {
 }
 
 func init() {
-	rootCmd.AddCommand(firewallCmd)
+	RootCmd.AddCommand(firewallCmd)
 }

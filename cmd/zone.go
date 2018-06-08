@@ -69,5 +69,5 @@ func getZoneIDByName(cs *egoscale.Client, name string) (string, error) {
 }
 
 func init() {
-	rootCmd.AddCommand(zoneCmd)
+	RootCmd.AddCommand(zoneCmd)
 }

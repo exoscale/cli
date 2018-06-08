@@ -42,5 +42,5 @@ func getNetworkIDByName(cs *egoscale.Client, name, zone string) (string, error) 
 }
 
 func init() {
-	rootCmd.AddCommand(privnetCmd)
+	RootCmd.AddCommand(privnetCmd)
 }
