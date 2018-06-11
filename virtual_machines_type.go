@@ -286,7 +286,7 @@ type UpdateDefaultNicForVirtualMachine RemoveNicFromVirtualMachine
 
 // GetVirtualMachineUserData returns the user-data of the given VM
 //
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/getVirtualMachineUserData.html
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/getVirtualMachineUserData.html
 type GetVirtualMachineUserData struct {
 	VirtualMachineID string `json:"virtualmachineid" doc:"The ID of the virtual machine"`
 }

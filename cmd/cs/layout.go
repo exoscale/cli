@@ -66,8 +66,8 @@ var methods = map[string][]cmd{
 	},
 	"user": {
 		{&egoscale.CreateUser{}, true},
+		{&egoscale.DeleteUser{}, true},
 		//{&egoscale.DisableUser{}, true},
-		//{&egoscale.DeleteUser{}, true},
 		//{&egoscale.GetUser{}, true},
 		{&egoscale.UpdateUser{}, true},
 		{&egoscale.ListUsers{}, false},

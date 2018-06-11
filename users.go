@@ -31,3 +31,11 @@ func (*ListUsers) name() string {
 func (*ListUsers) response() interface{} {
 	return new(ListUsersResponse)
 }
+
+func (*DeleteUser) name() string {
+	return "deleteUser"
+}
+
+func (*DeleteUser) response() interface{} {
+	return new(booleanResponse)
+}

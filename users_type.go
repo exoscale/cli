@@ -28,14 +28,14 @@ type User struct {
 //
 // NB: only the APIKey and SecretKey will be filled
 //
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/registerUserKeys.html
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/registerUserKeys.html
 type RegisterUserKeys struct {
 	ID string `json:"id" doc:"User id"`
 }
 
 // CreateUser represents the creation of a User
 //
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createUser.html
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/root_admin/createUser.html
 type CreateUser struct {
 	Account   string `json:"account" doc:"Creates the user under the specified account. If no account is specified, the username will be used as the account name."`
 	Email     string `json:"email" doc:"email"`
@@ -50,7 +50,7 @@ type CreateUser struct {
 
 // UpdateUser represents the modification of a User
 //
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateUser.html
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/updateUser.html
 type UpdateUser struct {
 	ID            string `json:"id" doc:"User uuid"`
 	Email         string `json:"email,omitempty" doc:"email"`
@@ -84,4 +84,11 @@ type ListUsers struct {
 type ListUsersResponse struct {
 	Count int    `json:"count"`
 	User  []User `json:"user"`
+}
+
+// DeleteUser deletes a user for an account
+//
+// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/root_admin/deleteUser.html
+type DeleteUser struct {
+	ID string `json:"id" doc:"id of the user to be deleted"`
 }

@@ -35,3 +35,11 @@ func TestListUsers(t *testing.T) {
 	}
 	_ = req.response().(*ListUsersResponse)
 }
+
+func TestDeleteUser(t *testing.T) {
+	req := &DeleteUser{}
+	if req.name() != "deleteUser" {
+		t.Errorf("API call doesn't match")
+	}
+	_ = req.response().(*booleanResponse)
+}
