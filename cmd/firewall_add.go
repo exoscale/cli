@@ -222,7 +222,7 @@ func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGr
 	}
 
 	for d := Daytime; d <= Minecraft; d++ {
-		if port.String(d) == ruleName {
+		if strings.ToLower(port.String(d)) == ruleName {
 			return &egoscale.AuthorizeSecurityGroupIngress{
 				Protocol:    "tcp",
 				CidrList:    []string{cidr},
