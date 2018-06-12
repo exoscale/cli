@@ -8,7 +8,7 @@ go:
 - "1.10"
 
 env:
-  - DEP_VERSION=0.4.1 HUGO_VERSION=0.41 GORELEASER_VERSION=0.77.1
+  - DEP_VERSION=0.4.1 HUGO_VERSION=0.41 GORELEASER_VERSION=0.77.1 NFPM_VERSION=0.9.1
 
 cache: apt
 
@@ -19,6 +19,13 @@ before_install:
   - sudo dpkg -i goreleaser_amd64.deb
   - wget https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-64bit.deb
   - sudo dpkg -i hugo_${HUGO_VERSION}_Linux-64bit.deb
+  - wget https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_amd64.deb
+  - sudo dpkg -i nfpm_amd64.deb
+addons:
+  apt:
+    update: true
+    packages:
+    - rpm
 
 jobs:
   include:

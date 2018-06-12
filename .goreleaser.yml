@@ -1,20 +1,24 @@
-# .goreleaser.yml
-# Build customization
 builds:
   - main: ./cmd/cs/
     binary: cs
+    env:
+      - CGO_ENABLED=0
     goos:
       - windows
       - darwin
       - linux
+      - openbsd
     goarch:
       - amd64
   - main: ./cmd/exo/
     binary: exo
+    env:
+      - CGO_ENABLED=0
     goos:
       - windows
       - darwin
       - linux
+      - openbsd
     goarch:
       - amd64
 
@@ -24,10 +28,24 @@ sign:
   artifacts: all
 
 archive:
-  name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  format_overrides:
+    - goos: windows
+      format: zip
+  files:
+    - LICENSE
+    - CHANGELOG.md
 
 release:
   github:
     owner: exoscale
     name: egoscale
   draft: true
+
+nfpm:
+  vendor: Exoscale
+  homepage: https://www.exoscale.com/
+  description: Tools to manage (almost) everything at Exoscale from the command line.
+  license: Apache 2.0
+  formats:
+    - deb
+    - rpm
