@@ -57,6 +57,7 @@ jobs:
       go run doc/main.go
       cd ../..
       cd website
+      cp ../cmd/cs/README.md content/cs/_index.md
       hugo
       cd public
       git init

@@ -1,19 +1,16 @@
-# cs: Command-Line Interface for CloudStack
+---
+title: cs - the Exoscale companion for CloudStack
+---
 
-[![Build Status](https://travis-ci.org/exoscale/egoscale.svg?branch=master)](https://travis-ci.org/exoscale/egoscale)
-[![GoDoc](https://godoc.org/github.com/exoscale/egoscale?status.svg)](https://godoc.org/github.com/exoscale/egoscale/cmd/cs)
+# cs: Command-Line Interface for CloudStack
 
 Like the Pythonic [cs](https://pypi.python.org/pypi/cs) but in Go.
 
 ## Installation
 
-Grab it from the release section.
+Grab it from the [release section](https://github.com/exoscale/egoscale/releases).
 
-or build it yourself, it requires somes dependencies though.
-
-```console
-$ go install github.com/exoscale/egoscale/cmd/cs
-```
+or build it yourself, it requires somes dependencies though to be pulled using `dep`.
 
 ## Configuration
 

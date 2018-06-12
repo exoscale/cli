@@ -11,13 +11,15 @@
       <div class="top-jump-button"></div>
       <header class="page-header" role="banner">
         <div class="container">
-        <a class="brand" href="/egoscale">
+          <a class="brand" href="https://exoscale.com/">
             <img
                 class="logo"
                 src="https://community.exoscale.ch/static/img/logo-exoscale-white-201711.svg"
                 alt="Exoscale - European Cloud Provider">
-        </a>
-        {{ partial "menu" }}
+          </a>
+          <div class="nav-group">
+            {{ partial "menu" . }}
+          </div>
         </div>
       </header>
       <div class="container">

@@ -70,7 +70,6 @@ func generateDocs(app *cli.App, docPath string) {
 
 		buffer := bytes.Buffer{}
 		buffer.WriteString(fmt.Sprintf(frontmatter, now, base))
-		buffer.WriteString(fmt.Sprintf("# `%s`\n\n", base))
 		if command.Usage != "" {
 			buffer.WriteString(command.Usage)
 			buffer.WriteString("\n\n")
@@ -79,6 +78,9 @@ func generateDocs(app *cli.App, docPath string) {
 			buffer.WriteString(command.Description)
 			buffer.WriteString("\n\n")
 		}
+
+		buffer.WriteString("<!--more-->\n\n")
+
 		if len(command.Flags) > 0 {
 			buffer.WriteString("## Flags\n\n")
 			for _, flag := range command.Flags {

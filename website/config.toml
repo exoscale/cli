@@ -22,9 +22,16 @@ expiryDate = ["expiryDate"]
 
 [menu]
 
+
 [[menu.main]]
-name = "exo"
+name = "home"
 weight = 1
+identifier = "homepage"
+url = "/"
+
+[[menu.main]]
+name = "cli"
+weight = 2
 identifier = "cli"
 url = "/cli/"
 
@@ -33,3 +40,13 @@ name = "cs"
 weight = 2
 identifier = "cs"
 url = "/cs/"
+
+[[menu.main]]
+name = "github"
+weight = 3
+url = "https://github.com/exoscale/egoscale/"
+
+[[menu.main]]
+name = "godoc"
+weight = 3
+url = "https://godoc.org/github.com/exoscale/egoscale/"
