@@ -92,27 +92,36 @@ func (sg *SecurityGroup) RuleByID(ruleID string) (*IngressRule, *EgressRule) {
 	return nil, nil
 }
 
-// name returns the CloudStack API command name
 func (*CreateSecurityGroup) name() string {
 	return "createSecurityGroup"
+}
+
+func (*CreateSecurityGroup) description() string {
+	return "Creates a security group"
 }
 
 func (*CreateSecurityGroup) response() interface{} {
 	return new(SecurityGroup)
 }
 
-// name returns the CloudStack API command name
 func (*DeleteSecurityGroup) name() string {
 	return "deleteSecurityGroup"
+}
+
+func (*DeleteSecurityGroup) description() string {
+	return "Deletes security group"
 }
 
 func (*DeleteSecurityGroup) response() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*AuthorizeSecurityGroupIngress) name() string {
 	return "authorizeSecurityGroupIngress"
+}
+
+func (*AuthorizeSecurityGroupIngress) description() string {
+	return "Authorizes a particular ingress rule for this security group"
 }
 
 func (*AuthorizeSecurityGroupIngress) asyncResponse() interface{} {
@@ -132,9 +141,12 @@ func (req *AuthorizeSecurityGroupIngress) onBeforeSend(params *url.Values) error
 	return nil
 }
 
-// name returns the CloudStack API command name
 func (*AuthorizeSecurityGroupEgress) name() string {
 	return "authorizeSecurityGroupEgress"
+}
+
+func (*AuthorizeSecurityGroupEgress) description() string {
+	return "Authorizes a particular egress rule for this security group"
 }
 
 func (*AuthorizeSecurityGroupEgress) asyncResponse() interface{} {
@@ -145,27 +157,36 @@ func (req *AuthorizeSecurityGroupEgress) onBeforeSend(params *url.Values) error 
 	return (*AuthorizeSecurityGroupIngress)(req).onBeforeSend(params)
 }
 
-// name returns the CloudStack API command name
 func (*RevokeSecurityGroupIngress) name() string {
 	return "revokeSecurityGroupIngress"
+}
+
+func (*RevokeSecurityGroupIngress) description() string {
+	return "Deletes a particular ingress rule from this security group"
 }
 
 func (*RevokeSecurityGroupIngress) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*RevokeSecurityGroupEgress) name() string {
 	return "revokeSecurityGroupEgress"
+}
+
+func (*RevokeSecurityGroupEgress) description() string {
+	return "Deletes a particular egress rule from this security group"
 }
 
 func (*RevokeSecurityGroupEgress) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*ListSecurityGroups) name() string {
 	return "listSecurityGroups"
+}
+
+func (*ListSecurityGroups) description() string {
+	return "Lists security groups"
 }
 
 func (*ListSecurityGroups) response() interface{} {

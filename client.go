@@ -206,6 +206,11 @@ func (client *Client) APIName(request Command) string {
 	return request.name()
 }
 
+// APIDescription returns the description of the given CloudStack command
+func (client *Client) APIDescription(request Command) string {
+	return request.description()
+}
+
 // Response returns the response structure of the given command
 func (client *Client) Response(request Command) interface{} {
 	switch request.(type) {

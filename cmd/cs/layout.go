@@ -36,7 +36,7 @@ var methods = map[string][]cmd{
 		{&egoscale.ScaleVirtualMachine{}, false},
 		{&egoscale.StartVirtualMachine{}, false},
 		{&egoscale.StopVirtualMachine{}, false},
-		{&egoscale.UpdateDefaultNicForVirtualMachine{}, false},
+		{&egoscale.UpdateDefaultNicForVirtualMachine{}, true},
 		{&egoscale.UpdateVirtualMachine{}, false},
 	},
 	"volume": {

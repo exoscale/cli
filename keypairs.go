@@ -30,36 +30,48 @@ func (ssh *SSHKeyPair) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// name returns the CloudStack API command name
 func (*CreateSSHKeyPair) name() string {
 	return "createSSHKeyPair"
+}
+
+func (*CreateSSHKeyPair) description() string {
+	return "Create a new keypair and returns the private key"
 }
 
 func (*CreateSSHKeyPair) response() interface{} {
 	return new(SSHKeyPair)
 }
 
-// name returns the CloudStack API command name
 func (*DeleteSSHKeyPair) name() string {
 	return "deleteSSHKeyPair"
+}
+
+func (*DeleteSSHKeyPair) description() string {
+	return "Deletes a keypair by name"
 }
 
 func (*DeleteSSHKeyPair) response() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*RegisterSSHKeyPair) name() string {
 	return "registerSSHKeyPair"
+}
+
+func (*RegisterSSHKeyPair) description() string {
+	return "Register a public key in a keypair under a certain name"
 }
 
 func (*RegisterSSHKeyPair) response() interface{} {
 	return new(SSHKeyPair)
 }
 
-// name returns the CloudStack API command name
 func (*ListSSHKeyPairs) name() string {
 	return "listSSHKeyPairs"
+}
+
+func (*ListSSHKeyPairs) description() string {
+	return "List registered keypairs"
 }
 
 func (*ListSSHKeyPairs) response() interface{} {
@@ -90,9 +102,12 @@ func (ls *ListSSHKeyPairs) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-// name returns the CloudStack API command name
 func (*ResetSSHKeyForVirtualMachine) name() string {
 	return "resetSSHKeyForVirtualMachine"
+}
+
+func (*ResetSSHKeyForVirtualMachine) description() string {
+	return `Resets the SSH Key for virtual machine. The virtual machine must be in a "Stopped" state.`
 }
 
 func (*ResetSSHKeyForVirtualMachine) asyncResponse() interface{} {

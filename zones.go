@@ -15,9 +15,12 @@ func (zone *Zone) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// name returns the CloudStack API command name
 func (*ListZones) name() string {
 	return "listZones"
+}
+
+func (*ListZones) description() string {
+	return "Lists zones"
 }
 
 func (*ListZones) response() interface{} {

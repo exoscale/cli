@@ -34,18 +34,24 @@ func (ag *AffinityGroup) Delete(ctx context.Context, client *Client) error {
 	return client.BooleanRequestWithContext(ctx, req)
 }
 
-// name returns the CloudStack API command name
 func (*CreateAffinityGroup) name() string {
 	return "createAffinityGroup"
+}
+
+func (*CreateAffinityGroup) description() string {
+	return "Creates an affinity/anti-affinity group"
 }
 
 func (*CreateAffinityGroup) asyncResponse() interface{} {
 	return new(AffinityGroup)
 }
 
-// name returns the CloudStack API command name
 func (*UpdateVMAffinityGroup) name() string {
 	return "updateVMAffinityGroup"
+}
+
+func (*UpdateVMAffinityGroup) description() string {
+	return "Updates the affinity/anti-affinity group associations of a virtual machine. The VM has to be stopped and restarted for the new properties to take effect."
 }
 
 func (*UpdateVMAffinityGroup) asyncResponse() interface{} {
@@ -60,27 +66,36 @@ func (req *UpdateVMAffinityGroup) onBeforeSend(params *url.Values) error {
 	return nil
 }
 
-// name returns the CloudStack API command name
 func (*DeleteAffinityGroup) name() string {
 	return "deleteAffinityGroup"
+}
+
+func (*DeleteAffinityGroup) description() string {
+	return "Deletes affinity group"
 }
 
 func (*DeleteAffinityGroup) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*ListAffinityGroups) name() string {
 	return "listAffinityGroups"
+}
+
+func (*ListAffinityGroups) description() string {
+	return "Lists affinity groups"
 }
 
 func (*ListAffinityGroups) response() interface{} {
 	return new(ListAffinityGroupsResponse)
 }
 
-// name returns the CloudStack API command name
 func (*ListAffinityGroupTypes) name() string {
 	return "listAffinityGroupTypes"
+}
+
+func (*ListAffinityGroupTypes) description() string {
+	return "Lists affinity group types available"
 }
 
 // SetPage sets the current page

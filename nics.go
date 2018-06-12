@@ -19,9 +19,12 @@ func (nic *Nic) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// name returns the CloudStack API command name
 func (*ListNics) name() string {
 	return "listNics"
+}
+
+func (*ListNics) description() string {
+	return "list the vm nics  IP to NIC"
 }
 
 func (*ListNics) response() interface{} {
@@ -51,6 +54,10 @@ func (*AddIPToNic) name() string {
 	return "addIpToNic"
 }
 
+func (*AddIPToNic) description() string {
+	return "Assigns secondary IP to NIC"
+}
+
 func (*AddIPToNic) asyncResponse() interface{} {
 	return new(NicSecondaryIP)
 }
@@ -59,13 +66,20 @@ func (*RemoveIPFromNic) name() string {
 	return "removeIpFromNic"
 }
 
+func (*RemoveIPFromNic) description() string {
+	return "Removes secondary IP from the NIC."
+}
+
 func (*RemoveIPFromNic) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name: activateIp6
 func (*ActivateIP6) name() string {
 	return "activateIp6"
+}
+
+func (*ActivateIP6) description() string {
+	return "Activate the IPv6 on the VM's nic"
 }
 
 func (*ActivateIP6) asyncResponse() interface{} {

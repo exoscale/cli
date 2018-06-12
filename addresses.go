@@ -21,34 +21,48 @@ func (*IPAddress) ResourceType() string {
 	return "PublicIpAddress"
 }
 
-// name returns the CloudStack API command name
 func (*AssociateIPAddress) name() string {
 	return "associateIpAddress"
+}
+
+func (*AssociateIPAddress) description() string {
+	return "Acquires and associates a public IP to an account."
 }
 
 func (*AssociateIPAddress) asyncResponse() interface{} {
 	return new(IPAddress)
 }
 
-// name returns the CloudStack API command name
 func (*DisassociateIPAddress) name() string {
 	return "disassociateIpAddress"
 }
+
+func (*DisassociateIPAddress) description() string {
+	return "Disassociates an ip address from the account."
+}
+
 func (*DisassociateIPAddress) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*UpdateIPAddress) name() string {
 	return "updateIpAddress"
 }
+
+func (*UpdateIPAddress) description() string {
+	return "Updates an ip address"
+}
+
 func (*UpdateIPAddress) asyncResponse() interface{} {
 	return new(IPAddress)
 }
 
-// name returns the CloudStack API command name
 func (*ListPublicIPAddresses) name() string {
 	return "listPublicIpAddresses"
+}
+
+func (*ListPublicIPAddresses) description() string {
+	return "Lists all public ip addresses"
 }
 
 func (*ListPublicIPAddresses) response() interface{} {

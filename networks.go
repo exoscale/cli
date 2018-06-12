@@ -29,9 +29,12 @@ func (*Network) ResourceType() string {
 	return "Network"
 }
 
-// name returns the CloudStack API command name
 func (*CreateNetwork) name() string {
 	return "createNetwork"
+}
+
+func (*CreateNetwork) description() string {
+	return "Creates a network"
 }
 
 func (*CreateNetwork) response() interface{} {
@@ -49,36 +52,48 @@ func (req *CreateNetwork) onBeforeSend(params *url.Values) error {
 	return nil
 }
 
-// name returns the CloudStack API command name
 func (*UpdateNetwork) name() string {
 	return "updateNetwork"
+}
+
+func (*UpdateNetwork) description() string {
+	return "Updates a network"
 }
 
 func (*UpdateNetwork) asyncResponse() interface{} {
 	return new(Network)
 }
 
-// name returns the CloudStack API command name
 func (*RestartNetwork) name() string {
 	return "restartNetwork"
+}
+
+func (*RestartNetwork) description() string {
+	return "Restarts the network; includes 1) restarting network elements - virtual routers, dhcp servers 2) reapplying all public ips 3) reapplying loadBalancing/portForwarding rules"
 }
 
 func (*RestartNetwork) asyncResponse() interface{} {
 	return new(Network)
 }
 
-// name returns the CloudStack API command name
 func (*DeleteNetwork) name() string {
 	return "deleteNetwork"
+}
+
+func (*DeleteNetwork) description() string {
+	return "Deletes a network"
 }
 
 func (*DeleteNetwork) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*ListNetworks) name() string {
 	return "listNetworks"
+}
+
+func (*ListNetworks) description() string {
+	return "Lists all available networks."
 }
 
 func (*ListNetworks) response() interface{} {

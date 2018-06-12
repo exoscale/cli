@@ -23,18 +23,24 @@ func (vol *Volume) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// name returns the CloudStack API command name
 func (*ResizeVolume) name() string {
 	return "resizeVolume"
+}
+
+func (*ResizeVolume) description() string {
+	return "Resizes a volume"
 }
 
 func (*ResizeVolume) asyncResponse() interface{} {
 	return new(Volume)
 }
 
-// name returns the CloudStack API command name
 func (*ListVolumes) name() string {
 	return "listVolumes"
+}
+
+func (*ListVolumes) description() string {
+	return "Lists all volumes."
 }
 
 func (*ListVolumes) response() interface{} {

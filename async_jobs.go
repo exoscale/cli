@@ -12,18 +12,24 @@ type QueryAsyncJobResult struct {
 	JobID string `json:"jobid" doc:"the ID of the asychronous job"`
 }
 
-// name returns the CloudStack API command name
 func (*QueryAsyncJobResult) name() string {
 	return "queryAsyncJobResult"
+}
+
+func (*QueryAsyncJobResult) description() string {
+	return "Retrieves the current status of asynchronous job."
 }
 
 func (*QueryAsyncJobResult) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-// name returns the CloudStack API command name
 func (*ListAsyncJobs) name() string {
 	return "listAsyncJobs"
+}
+
+func (*ListAsyncJobs) description() string {
+	return "Lists all pending asynchronous jobs for the account."
 }
 
 func (*ListAsyncJobs) response() interface{} {
@@ -35,6 +41,7 @@ func (a *AsyncJobResult) Response(i interface{}) error {
 	if a.JobStatus == Failure {
 		return a.Error()
 	}
+
 	var err error
 	if a.JobStatus == Success {
 		m := map[string]json.RawMessage{}
@@ -48,8 +55,8 @@ func (a *AsyncJobResult) Response(i interface{}) error {
 					if k == "success" {
 						err = json.Unmarshal(*(a.JobResult), i)
 					}
-					if err := json.Unmarshal(m[k], i); err != nil {
-						return err
+					if e := json.Unmarshal(m[k], i); e != nil {
+						return e
 					}
 				}
 			} else {
@@ -57,6 +64,7 @@ func (a *AsyncJobResult) Response(i interface{}) error {
 			}
 		}
 	}
+
 	return err
 }
 

@@ -18,9 +18,12 @@ func (so *ServiceOffering) ListRequest() (ListCommand, error) {
 	return req, nil
 }
 
-// name returns the CloudStack API command name
 func (*ListServiceOfferings) name() string {
 	return "listServiceOfferings"
+}
+
+func (*ListServiceOfferings) description() string {
+	return "Lists all available service offerings."
 }
 
 func (*ListServiceOfferings) response() interface{} {

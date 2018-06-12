@@ -252,11 +252,12 @@ func buildCommands(out *egoscale.Command, methods map[string][]cmd) []cli.Comman
 		for i := range ms {
 			s := ms[i]
 			cmd := cli.Command{
-				Name:     _client.APIName(s.command),
-				Category: category,
-				HideHelp: s.hidden,
-				Hidden:   s.hidden,
-				Flags:    buildFlags(s.command),
+				Name:        _client.APIName(s.command),
+				Description: _client.APIDescription(s.command),
+				Category:    category,
+				HideHelp:    s.hidden,
+				Hidden:      s.hidden,
+				Flags:       buildFlags(s.command),
 			}
 			// report back the current command
 			cmd.Action = func(c *cli.Context) error {

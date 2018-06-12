@@ -108,9 +108,12 @@ func (vm *VirtualMachine) NicByID(nicID string) *Nic {
 	return nil
 }
 
-// name returns the CloudStack API command name
 func (*DeployVirtualMachine) name() string {
 	return "deployVirtualMachine"
+}
+
+func (*DeployVirtualMachine) description() string {
+	return "Creates and automatically starts a virtual machine based on a service offering, disk offering, and template."
 }
 
 func (req *DeployVirtualMachine) onBeforeSend(params *url.Values) error {
@@ -131,98 +134,132 @@ func (*DeployVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*StartVirtualMachine) name() string {
 	return "startVirtualMachine"
 }
+
+func (*StartVirtualMachine) description() string {
+	return "Starts a virtual machine."
+}
+
 func (*StartVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*StopVirtualMachine) name() string {
 	return "stopVirtualMachine"
+}
+
+func (*StopVirtualMachine) description() string {
+	return "Stops a virtual machine."
 }
 
 func (*StopVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*RebootVirtualMachine) name() string {
 	return "rebootVirtualMachine"
+}
+
+func (*RebootVirtualMachine) description() string {
+	return "Reboots a virtual machine."
 }
 
 func (*RebootVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*RestoreVirtualMachine) name() string {
 	return "restoreVirtualMachine"
+}
+
+func (*RestoreVirtualMachine) description() string {
+	return "Restore a VM to original template/ISO or new template/ISO"
 }
 
 func (*RestoreVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*RecoverVirtualMachine) name() string {
 	return "recoverVirtualMachine"
+}
+
+func (*RecoverVirtualMachine) description() string {
+	return "Recovers a virtual machine."
 }
 
 func (*RecoverVirtualMachine) response() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*DestroyVirtualMachine) name() string {
 	return "destroyVirtualMachine"
+}
+
+func (*DestroyVirtualMachine) description() string {
+	return "Destroys a virtual machine."
 }
 
 func (*DestroyVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*UpdateVirtualMachine) name() string {
 	return "updateVirtualMachine"
+}
+
+func (*UpdateVirtualMachine) description() string {
+	return "Updates properties of a virtual machine. The VM has to be stopped and restarted for the new properties to take effect. UpdateVirtualMachine does not first check whether the VM is stopped. Therefore, stop the VM manually before issuing this call."
 }
 
 func (*UpdateVirtualMachine) response() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*ExpungeVirtualMachine) name() string {
 	return "expungeVirtualMachine"
+}
+
+func (*ExpungeVirtualMachine) description() string {
+	return "Expunge a virtual machine. Once expunged, it cannot be recoverd."
 }
 
 func (*ExpungeVirtualMachine) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*ScaleVirtualMachine) name() string {
 	return "scaleVirtualMachine"
+}
+
+func (*ScaleVirtualMachine) description() string {
+	return "Scales the virtual machine to a new service offering."
 }
 
 func (*ScaleVirtualMachine) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
-// name returns the CloudStack API command name
 func (*ChangeServiceForVirtualMachine) name() string {
 	return "changeServiceForVirtualMachine"
+}
+
+func (*ChangeServiceForVirtualMachine) description() string {
+	return `Changes the service offering for a virtual machine. The virtual machine must be in a "Stopped" state for this command to take effect.`
 }
 
 func (*ChangeServiceForVirtualMachine) response() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*ResetPasswordForVirtualMachine) name() string {
 	return "resetPasswordForVirtualMachine"
+}
+
+func (*ResetPasswordForVirtualMachine) description() string {
+	return `Resets the password for virtual machine. The virtual machine must be in a "Stopped" state and the template must already support this feature for this command to take effect.`
 }
 
 func (*ResetPasswordForVirtualMachine) asyncResponse() interface{} {
@@ -233,6 +270,10 @@ func (*GetVirtualMachineUserData) name() string {
 	return "getVirtualMachineUserData"
 }
 
+func (*GetVirtualMachineUserData) description() string {
+	return "Returns user data associated with the VM"
+}
+
 func (*GetVirtualMachineUserData) response() interface{} {
 	return new(VirtualMachineUserData)
 }
@@ -241,22 +282,32 @@ func (*MigrateVirtualMachine) name() string {
 	return "migrateVirtualMachine"
 }
 
+func (*MigrateVirtualMachine) description() string {
+	return "Attempts Migration of a VM to a different host or Root volume of the vm to a different storage pool"
+}
+
 func (*MigrateVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*GetVMPassword) name() string {
 	return "getVMPassword"
+}
+
+func (*GetVMPassword) description() string {
+	return "Returns an encrypted password for the VM"
 }
 
 func (*GetVMPassword) response() interface{} {
 	return new(Password)
 }
 
-// name returns the CloudStack API command name
 func (*ListVirtualMachines) name() string {
 	return "listVirtualMachines"
+}
+
+func (*ListVirtualMachines) description() string {
+	return "List the virtual machines owned by the account."
 }
 
 func (*ListVirtualMachines) response() interface{} {
@@ -287,27 +338,36 @@ func (*ListVirtualMachines) each(resp interface{}, callback IterateItemFunc) {
 	}
 }
 
-// name returns the CloudStack API command name
 func (*AddNicToVirtualMachine) name() string {
 	return "addNicToVirtualMachine"
+}
+
+func (*AddNicToVirtualMachine) description() string {
+	return "Adds VM to specified network by creating a NIC"
 }
 
 func (*AddNicToVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*RemoveNicFromVirtualMachine) name() string {
 	return "removeNicFromVirtualMachine"
+}
+
+func (*RemoveNicFromVirtualMachine) description() string {
+	return "Removes VM from specified network by deleting a NIC"
 }
 
 func (*RemoveNicFromVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
-// name returns the CloudStack API command name
 func (*UpdateDefaultNicForVirtualMachine) name() string {
 	return "updateDefaultNicForVirtualMachine"
+}
+
+func (*UpdateDefaultNicForVirtualMachine) description() string {
+	return "Changes the default NIC on a VM"
 }
 
 func (*UpdateDefaultNicForVirtualMachine) asyncResponse() interface{} {
