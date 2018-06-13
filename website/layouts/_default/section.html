@@ -6,7 +6,9 @@
 
     <h3>Commands</h3>
       <ul class="article-list center-flex">
-          {{ range (.Paginator 200).Pages }}
+
+          {{ $paginator := .Paginate (where .Data.Pages "Type" "command") 200 }}
+          {{ range $paginator.Pages }}
             <li>{{ partial "summary.html" . }}</li>
           {{ end }}
           </ul>

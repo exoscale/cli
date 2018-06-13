@@ -13,6 +13,7 @@ cp README.md ../../website/content/cs/_index.md
 cd ../exo
 dep ensure -vendor-only
 go run doc/main.go
+cp README.md ../../website/content/exo/_index.md
 
 set +xe
 echo "we are now ready to run hugo"
