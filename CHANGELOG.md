@@ -5,6 +5,14 @@ Changelog
 ------
 
 - global: removal of all the `...Response` types
+- add: addition of `deleteUser`
+- add: addition of `listHosts`
+- change: refactor `Gettable` to use `ListRequest`
+
+0.9.27
+------
+
+- fix: expects body to be `application/json`
 
 0.9.26
 ------
