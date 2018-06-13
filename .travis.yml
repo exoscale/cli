@@ -30,12 +30,14 @@ addons:
 jobs:
   include:
   - stage: test
+    if: type = pr
     script: |
       dep ensure -v -vendor-only
       go test -race -coverprofile=coverage.out -covermode=atomic .
       npm i codeclimate-test-reporter
       npx codeclimate-test-reporter < coverage.out
   - stage: goreleaser
+    if: type = push
     script: |
       dep ensure -v -vendor-only
       cd cmd/cs
@@ -45,7 +47,7 @@ jobs:
       cd ../..
       goreleaser --snapshot --skip-sign
   - stage: gh-pages
-    if: branch = master
+    if: branch = master AND type = push
     script: |
       cd website
       sh prepare.sh
