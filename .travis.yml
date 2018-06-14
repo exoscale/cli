@@ -47,17 +47,8 @@ jobs:
   - stage: gh-pages
     if: branch = master
     script: |
-      dep ensure -v -vendor-only
-      cd cmd/cs
-      dep ensure -v -vendor-only
-      go build
-      ./cs gen-doc
-      cd ../exo
-      dep ensure -v -vendor-only
-      go run doc/main.go
-      cd ../..
       cd website
-      cp ../cmd/cs/README.md content/cs/_index.md
+      sh prepare.sh
       hugo
       cd public
       git init
