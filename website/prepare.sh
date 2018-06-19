@@ -13,7 +13,7 @@ dep ensure -vendor-only
 cd cmd/cs
 dep ensure -vendor-only
 go build
-./cs gen-doc
+./cs gen-doc || true
 
 cd ../exo
 dep ensure -vendor-only
