@@ -36,12 +36,6 @@ identifier = "cli"
 url = "/cli/"
 
 [[menu.main]]
-name = "cs in go"
-weight = 2
-identifier = "cs"
-url = "/cs/"
-
-[[menu.main]]
 name = "source"
 weight = 3
 url = "https://github.com/exoscale/egoscale/"
