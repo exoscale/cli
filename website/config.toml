@@ -4,6 +4,12 @@ footnoteReturnLinkContents = "↩"
 title = "Egoscale, the Go toolbox for Exoscale"
 metadataFormat = "yaml"
 sectionPagesMenu = "main"
+staticDir = ["static"]
+
+PygmentsCodeFences = true
+PygmentsStyle = "monokai"
+
+enableEmoji = true
 
 [params]
 AuthorName = "Exoscale"
@@ -24,25 +30,19 @@ expiryDate = ["expiryDate"]
 
 
 [[menu.main]]
-name = "home"
+name = "exo cli"
 weight = 1
-identifier = "homepage"
-url = "/"
-
-[[menu.main]]
-name = "cli"
-weight = 2
 identifier = "cli"
 url = "/cli/"
 
 [[menu.main]]
-name = "cs"
+name = "cs in go"
 weight = 2
 identifier = "cs"
 url = "/cs/"
 
 [[menu.main]]
-name = "github"
+name = "source"
 weight = 3
 url = "https://github.com/exoscale/egoscale/"
 

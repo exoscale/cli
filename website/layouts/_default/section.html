@@ -1,17 +1,23 @@
 {{ define "main" }}
-  <main>
-    <div>
+<section class="section">
+<div class="container">
+    <div class="content">
       {{ .Content }}
     </div>
+</div>
+</section>
 
-    <h3>Commands</h3>
-      <ul class="article-list center-flex">
-
-          {{ $paginator := .Paginate (where .Data.Pages "Type" "command") 200 }}
+<section class="section">
+<div class="container">
+    <h3 class="title">Commands</h3>
+    <ul>
+          {{ $paginator := .Paginate (where .Data.Pages "Type" "command") 20 }}
           {{ range $paginator.Pages }}
-            <li>{{ partial "summary.html" . }}</li>
+                <li>{{ partial "summary.html" . }}</li>
           {{ end }}
-          </ul>
-      {{ partial "pagination.html" . }}
-  </main>
+    </ul>
+
+    {{ partial "pagination.html" . }}
+</div>
+</section>
 {{ end }}

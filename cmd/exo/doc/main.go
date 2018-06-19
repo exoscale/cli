@@ -19,9 +19,10 @@ import (
 
 const frontmatter = `---
 date: %s
-title: %s
-slug: %s
+title: %q
+slug: %q
 url: %s
+description: %q
 type: %s
 ---
 `
@@ -43,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	filePrepender := func(filename string) string {
+	filePrepender := func(filename string, cmd *cobra.Command) string {
 		now := time.Now().Format(time.RFC3339)
 		name := filepath.Base(filename)
 		base := strings.TrimSuffix(name, path.Ext(name))
@@ -53,7 +54,7 @@ func main() {
 		if strings.Count(base, "_") > 1 {
 			typeExo = `"subcommand"`
 		}
-		return fmt.Sprintf(frontmatter, now, slug, base, url, typeExo)
+		return fmt.Sprintf(frontmatter, now, slug, base, url, cmd.Short, typeExo)
 	}
 
 	linkHandler := func(name string) string {
@@ -76,7 +77,7 @@ func main() {
 //beginning cobra/doc custom src code
 //
 
-func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender, linkHandler func(string) string, isHugo bool) error {
+func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender func(string, *cobra.Command) string, linkHandler func(string) string, isHugo bool) error {
 	for _, c := range cmd.Commands() {
 		if !c.IsAvailableCommand() || c.IsAdditionalHelpTopicCommand() {
 			continue
@@ -94,7 +95,7 @@ func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender, lin
 	}
 	defer f.Close()
 
-	if _, err := io.WriteString(f, filePrepender(filename)); err != nil {
+	if _, err := io.WriteString(f, filePrepender(filename, cmd)); err != nil {
 		return err
 	}
 	return exoGenMarkdownCustom(cmd, f, linkHandler, isHugo)
@@ -113,18 +114,17 @@ func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(stri
 	buf := new(bytes.Buffer)
 	name := cmd.CommandPath()
 
-	short := cmd.Short
-	long := cmd.Long
-
 	if !ishugo {
+		short := cmd.Short
 		buf.WriteString("## " + name + "\n\n")
+		buf.WriteString(short + "\n\n")
 	}
-	buf.WriteString(short + "\n\n")
 
 	if ishugo {
 		buf.WriteString("<!--more-->\n\n")
 	}
 
+	long := cmd.Long
 	if len(long) != 0 {
 		buf.WriteString("### Synopsis\n\n")
 		buf.WriteString(long + "\n\n")

@@ -2,7 +2,18 @@
   {{ .Title }} &ndash; {{ .Site.Title }}
 {{ end }}
 {{ define "main" }}
-  <h1>{{ .Title }}</h1>
+<section class="hero is-light is-bold">
+<div class="hero-body">
+<div class="container">
+  <h1 class="title is-1 is-spaced">{{ .Title }}</h1>
+  <p class="subtitle">{{ .Description }}</p>
+</div>
+</div>
+</section>
 
-  {{ .Content }}
+<div class="container">
+  <div class="content">
+    {{ .Content }}
+  </div>
+</div>
 {{ end }}

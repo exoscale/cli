@@ -1,48 +1,38 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>{{ block "title" . }}
-      {{ .Site.Title }}
-    {{ end }}</title>
-    <link rel="stylesheet" href="https://community.exoscale.ch/static/css/base.css">
-  </head>
-  <body id="top" class="no-js root">
-      <div class="top-jump-button"></div>
-      <header class="page-header" role="banner">
-        <div class="container">
-          <a class="brand" href="https://exoscale.com/">
-            <img
-                class="logo"
-                src="https://community.exoscale.ch/static/img/logo-exoscale-white-201711.svg"
-                alt="Exoscale - European Cloud Provider">
-          </a>
-          <div class="nav-group">
-            {{ partial "menu" . }}
-          </div>
+<meta charset="utf-8">
+<title>{{ block "title" . }}
+  {{ .Site.Title }}
+{{ end }}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
+
+
+<nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+    <div class="container">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="{{ .Site.BaseURL }}">Egoscale library</a>
         </div>
-      </header>
-      <div class="container">
-    {{ block "main" . }}
-    {{ end }}
-      </div>
-    {{ block "footer" . }}
-    {{ end }}
-    <footer class="page-footer">
-        <nav class="nav-sitemap">
-        </nav>
-        <div class="bottom-line">
-            <div class="container">
-                <div class="legal">
-                    Exoscale is a registered trademark of <span class="text-nowrap">Akenes SA</span> - <span class="text-nowrap">Reg/VAT ID</span> <span class="text-nowrap">CHE-423.524.322</span>
-                </div>
+        <div class="navbar-start navbar-menu is-active">
+            {{ partial "menu" . }}
+        </div>
+        <div class="navbar-end is-right navbar-menu">
+            <div style="margin-top:.7rem">
+                <a class="button is-primary" href="https://github.com/exoscale/egoscale/releases">
+                    <span class="icon"><i class="fas fa-download"></i></span>
+                    <span>Download</span>
+                </a>
+                <iframe src="https://ghbtns.com/github-btn.html?user=exoscale&repo=egoscale&type=star&count=true&size=large" frameborder="0" scrolling="0" width="160px" height="30px"></iframe>
             </div>
         </div>
-    </footer>
-    <script
-        src="https://code.jquery.com/jquery-3.3.1.min.js"
-        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-        crossorigin="anonymous"></script>
-    <script src="https://community.exoscale.ch/static/js/base.min.js"></script>
-  </body>
-</html>
+    </div>
+</nav>
+
+<main>
+    {{ block "main" . }}
+    {{ end }}
+</main>
+
+{{ block "footer" . }}{{ end }}
+
+{{ partial "footer" . }}
+
+<script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>

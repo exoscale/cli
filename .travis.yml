@@ -47,7 +47,7 @@ jobs:
       cd ../..
       goreleaser --snapshot --skip-sign
   - stage: gh-pages
-    if: branch = master AND type = push
+    if: (branch = bulma OR branch = master) AND type = push
     script: |
       cd website
       sh prepare.sh
