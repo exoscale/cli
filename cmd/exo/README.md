@@ -13,11 +13,11 @@ Download the [latest release](https://github.com/exoscale/egoscale/releases).
 $ go get -u github.com/golang/dep/cmd/dep
 $ go get github.com/exoscale/egoscale/...
 
-$ cd $GOPATH/src/github.com/exoscale/egoscale/egoscale/
-$ dep ensure -vendor
+$ cd $GOPATH/src/github.com/exoscale/egoscale/
+$ dep ensure
 
 $ cd cmd/exo
-$ dep ensure -vendor
+$ dep ensure
 
 $ go install
 ```
