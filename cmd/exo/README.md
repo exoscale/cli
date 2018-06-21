@@ -1,32 +1,41 @@
-# EXO CLI
+# exo cli
 
 Manage easily your Exoscale infrastructure from the exo command-line
 
 
 ## Installation
 
-Download the [latest release](https://github.com/exoscale/egoscale/releases).
+We provide many alternatives on the [releases](https://github.com/exoscale/egoscale/releases) page.
 
 ### Manual compilation
 
 ```
 $ go get -u github.com/golang/dep/cmd/dep
-$ go get github.com/exoscale/egoscale/...
+$ go get -d github.com/exoscale/egoscale/...
 
 $ cd $GOPATH/src/github.com/exoscale/egoscale/
-$ dep ensure
+$ dep ensure -vendor-only
 
 $ cd cmd/exo
-$ dep ensure
+$ dep ensure -vendor-only
 
 $ go install
 ```
 
 ## Configuration
 
-- create configuration file to connect `exo` to your Exoscale accounts.
+Create configuration file to connect `exo` to your Exoscale accounts.
 
-#### Manual
+### Automatic
+
+```shell
+$ exo config
+[+] Compute API Endpoint [https://api.exoscale.ch/compute]: ...
+[+] API Key [none]: EXO...
+[+] Secret Key [none]: ...
+```
+
+### Manual
 
 Create a config file `cloudstack.ini` or `$HOME/.cloudstack.ini` ot `$HOME/.exoscale/cloudstack.ini`.
 
@@ -38,15 +47,6 @@ Create a config file `cloudstack.ini` or `$HOME/.cloudstack.ini` ot `$HOME/.exos
 endpoint = https://api.exoscale.ch/compute
 key = EXO...
 secret = ...
-```
-
-#### Automatic
-
-```shell
-$ exo config
-[+] Compute API Endpoint [https://api.exoscale.ch/compute]: ...
-[+] API Key [none]: EXO...
-[+] Secret Key [none]: ...
 ```
 
 ## Usage
