@@ -14,57 +14,40 @@ func TestSecurityGroup(t *testing.T) {
 
 func TestAuthorizeSecurityGroupEgress(t *testing.T) {
 	req := &AuthorizeSecurityGroupEgress{}
-	if req.name() != "authorizeSecurityGroupEgress" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*SecurityGroup)
 }
 
 func TestAuthorizeSecurityGroupIngress(t *testing.T) {
 	req := &AuthorizeSecurityGroupIngress{}
-	if req.name() != "authorizeSecurityGroupIngress" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*SecurityGroup)
 }
 
 func TestCreateSecurityGroup(t *testing.T) {
 	req := &CreateSecurityGroup{}
-	if req.name() != "createSecurityGroup" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*SecurityGroup)
 }
 
 func TestDeleteSecurityGroup(t *testing.T) {
 	req := &DeleteSecurityGroup{}
-	if req.name() != "deleteSecurityGroup" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*booleanResponse)
 }
 
 func TestListSecurityGroupsApiName(t *testing.T) {
 	req := &ListSecurityGroups{}
-	if req.name() != "listSecurityGroups" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*ListSecurityGroupsResponse)
 }
 
 func TestRevokeSecurityGroupEgress(t *testing.T) {
 	req := &RevokeSecurityGroupEgress{}
-	if req.name() != "revokeSecurityGroupEgress" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestRevokeSecurityGroupIngress(t *testing.T) {
 	req := &RevokeSecurityGroupIngress{}
-	if req.name() != "revokeSecurityGroupIngress" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*booleanResponse)
 }
 

@@ -7,41 +7,29 @@ import (
 
 func TestCreateAffinityGroup(t *testing.T) {
 	req := &CreateAffinityGroup{}
-	if req.name() != "createAffinityGroup" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*AffinityGroup)
 }
 
 func TestDeleteAffinityGroup(t *testing.T) {
 	req := &DeleteAffinityGroup{}
-	if req.name() != "deleteAffinityGroup" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestListAffinityGroups(t *testing.T) {
 	req := &ListAffinityGroups{}
-	if req.name() != "listAffinityGroups" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*ListAffinityGroupsResponse)
 }
 
 func TestListAffinityGroupTypes(t *testing.T) {
 	req := &ListAffinityGroupTypes{}
-	if req.name() != "listAffinityGroupTypes" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*ListAffinityGroupTypesResponse)
 }
 
 func TestUpdateVMAffinityGroup(t *testing.T) {
 	req := &UpdateVMAffinityGroup{}
-	if req.name() != "updateVMAffinityGroup" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*VirtualMachine)
 }
 

@@ -11,7 +11,7 @@ import (
 func TestClientAPIName(t *testing.T) {
 	cs := NewClient("ENDPOINT", "KEY", "SECRET")
 	req := &ListAPIs{}
-	if cs.APIName(req) != req.name() {
+	if cs.APIName(req) != "listApis" {
 		t.Errorf("APIName is wrong")
 	}
 }

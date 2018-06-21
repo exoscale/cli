@@ -138,7 +138,7 @@ func (client *Client) asyncRequest(ctx context.Context, request AsyncCommand) (i
 }
 
 // syncRequest performs a sync request with a context
-func (client *Client) syncRequest(ctx context.Context, request syncCommand) (interface{}, error) {
+func (client *Client) syncRequest(ctx context.Context, request Command) (interface{}, error) {
 	body, err := client.request(ctx, request)
 	if err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func (client *Client) BooleanRequest(req Command) error {
 		return b.Error()
 	}
 
-	panic(fmt.Errorf("command %q is not a proper boolean response. %#v", req.name(), resp))
+	panic(fmt.Errorf("command %q is not a proper boolean response. %#v", client.APIName(req), resp))
 }
 
 // BooleanRequestWithContext performs the given boolean command
@@ -196,7 +196,7 @@ func (client *Client) BooleanRequestWithContext(ctx context.Context, req Command
 		return b.Error()
 	}
 
-	panic(fmt.Errorf("command %q is not a proper boolean response. %#v", req.name(), resp))
+	panic(fmt.Errorf("command %q is not a proper boolean response. %#v", client.APIName(req), resp))
 }
 
 // Request performs the given command
@@ -205,24 +205,20 @@ func (client *Client) Request(request Command) (interface{}, error) {
 	defer cancel()
 
 	switch request.(type) {
-	case syncCommand:
-		return client.syncRequest(ctx, request.(syncCommand))
 	case AsyncCommand:
 		return client.asyncRequest(ctx, request.(AsyncCommand))
 	default:
-		panic(fmt.Errorf("command %q is not a proper Sync or Async command", request.name()))
+		return client.syncRequest(ctx, request)
 	}
 }
 
 // RequestWithContext preforms a request with a context
 func (client *Client) RequestWithContext(ctx context.Context, request Command) (interface{}, error) {
 	switch request.(type) {
-	case syncCommand:
-		return client.syncRequest(ctx, request.(syncCommand))
 	case AsyncCommand:
 		return client.asyncRequest(ctx, request.(AsyncCommand))
 	default:
-		panic(fmt.Errorf("command %q is not a proper Sync or Async command", request.name()))
+		return client.syncRequest(ctx, request)
 	}
 }
 
@@ -302,7 +298,7 @@ func (client *Client) Payload(request Command) (string, error) {
 		}
 	}
 	params.Set("apikey", client.APIKey)
-	params.Set("command", request.name())
+	params.Set("command", client.APIName(request))
 	params.Set("response", "json")
 
 	// This code is borrowed from net/url/url.go
@@ -382,7 +378,7 @@ func (client *Client) request(ctx context.Context, req Command) (json.RawMessage
 	defer resp.Body.Close() // nolint: errcheck
 
 	// XXX: addIpToNic is kind of special
-	key := fmt.Sprintf("%sresponse", strings.ToLower(req.name()))
+	key := fmt.Sprintf("%sresponse", strings.ToLower(client.APIName(req)))
 	if key == "addiptonicresponse" {
 		key = "addiptovmnicresponse"
 	}

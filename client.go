@@ -203,23 +203,29 @@ func (client *Client) PaginateWithContext(ctx context.Context, req ListCommand, 
 
 // APIName returns the CloudStack name of the given command
 func (client *Client) APIName(request Command) string {
-	return request.name()
+	info, err := info(request)
+	if err != nil {
+		panic(err)
+	}
+	return info.Name
 }
 
 // APIDescription returns the description of the given CloudStack command
 func (client *Client) APIDescription(request Command) string {
-	return request.description()
+	info, err := info(request)
+	if err != nil {
+		panic(err)
+	}
+	return info.Description
 }
 
 // Response returns the response structure of the given command
 func (client *Client) Response(request Command) interface{} {
 	switch request.(type) {
-	case syncCommand:
-		return (request.(syncCommand)).response()
 	case AsyncCommand:
 		return (request.(AsyncCommand)).asyncResponse()
 	default:
-		panic(fmt.Errorf("command %q is not a proper Sync or Async command", request.name()))
+		return request.response()
 	}
 }
 

@@ -8,9 +8,6 @@ import (
 
 func TestListZonesAPIName(t *testing.T) {
 	req := &ListZones{}
-	if req.name() != "listZones" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*ListZonesResponse)
 }
 

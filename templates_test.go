@@ -13,57 +13,41 @@ func TestTemplateResourceType(t *testing.T) {
 
 func TestCreateTemplate(t *testing.T) {
 	req := &CreateTemplate{}
-	if req.name() != "createTemplate" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*Template)
 }
 
 func TestCopyTemplate(t *testing.T) {
 	req := &CopyTemplate{}
-	if req.name() != "copyTemplate" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*Template)
 }
 
 func TestUpdateTemplate(t *testing.T) {
 	req := &UpdateTemplate{}
-	if req.name() != "updateTemplate" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*Template)
 }
 
 func TestListTemplates(t *testing.T) {
 	req := &ListTemplates{}
-	if req.name() != "listTemplates" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*ListTemplatesResponse)
 }
 
 func TestDeleteTemplate(t *testing.T) {
 	req := &DeleteTemplate{}
-	if req.name() != "deleteTemplate" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestPrepareTemplate(t *testing.T) {
 	req := &PrepareTemplate{}
-	if req.name() != "prepareTemplate" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*Template)
 }
 
 func TestRegisterTemplate(t *testing.T) {
 	req := &RegisterTemplate{}
-	if req.name() != "registerTemplate" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*Template)
 }
 

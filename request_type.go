@@ -7,16 +7,6 @@ import (
 
 // Command represents a CloudStack request
 type Command interface {
-	// CloudStack API command name
-	name() string
-	// CloudStack API command description
-	description() string
-}
-
-// SyncCommand represents a CloudStack synchronous request
-type syncCommand interface {
-	Command
-	// Response interface to Unmarshal the JSON into
 	response() interface{}
 }
 

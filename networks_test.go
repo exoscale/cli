@@ -14,41 +14,29 @@ func TestNetwork(t *testing.T) {
 
 func TestListNetworks(t *testing.T) {
 	req := &ListNetworks{}
-	if req.name() != "listNetworks" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*ListNetworksResponse)
 }
 
 func TestCreateNetwork(t *testing.T) {
 	req := &CreateNetwork{}
-	if req.name() != "createNetwork" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*Network)
 }
 
 func TestRestartNetwork(t *testing.T) {
 	req := &RestartNetwork{}
-	if req.name() != "restartNetwork" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*Network)
 }
 
 func TestUpdateNetwork(t *testing.T) {
 	req := &UpdateNetwork{}
-	if req.name() != "updateNetwork" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*Network)
 }
 
 func TestDeleteNetwork(t *testing.T) {
 	req := &DeleteNetwork{}
-	if req.name() != "deleteNetwork" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*booleanResponse)
 }
 

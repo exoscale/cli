@@ -22,6 +22,37 @@ func csEncode(s string) string {
 	return csQuotePlus(url.QueryEscape(s))
 }
 
+// info returns the meta info of a command
+//
+// command is not a Command so it's easier to Test
+func info(command interface{}) (*CommandInfo, error) {
+	typeof := reflect.TypeOf(command)
+
+	// Going up the pointer chain to find the underlying struct
+	for typeof.Kind() == reflect.Ptr {
+		typeof = typeof.Elem()
+	}
+
+	field, ok := typeof.FieldByName("_")
+	if !ok {
+		return nil, fmt.Errorf(`missing meta ("_") field in %#v`, command)
+	}
+
+	name, nameOk := field.Tag.Lookup("name")
+	description, _ := field.Tag.Lookup("description")
+
+	if !nameOk {
+		return nil, fmt.Errorf(`missing "name" key in the tag string of %#v`, command)
+	}
+
+	info := &CommandInfo{
+		Name:        name,
+		Description: description,
+	}
+
+	return info, nil
+}
+
 // prepareValues uses a command to build a POST request
 //
 // command is not a Command so it's easier to Test
@@ -37,6 +68,10 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 
 	for i := 0; i < typeof.NumField(); i++ {
 		field := typeof.Field(i)
+		if field.Name == "_" {
+			continue
+		}
+
 		val := value.Field(i)
 		tag := field.Tag
 		if json, ok := tag.Lookup("json"); ok {

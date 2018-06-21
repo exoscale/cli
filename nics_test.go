@@ -6,33 +6,24 @@ import (
 
 func TestAddIPToNic(t *testing.T) {
 	req := &AddIPToNic{}
-	if req.name() != "addIpToNic" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*NicSecondaryIP)
 }
 
 func TestRemoveIPFromNic(t *testing.T) {
 	req := &RemoveIPFromNic{}
-	if req.name() != "removeIpFromNic" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*booleanResponse)
 }
 
 func TestListNicsAPIName(t *testing.T) {
 	req := &ListNics{}
-	if req.name() != "listNics" {
-		t.Errorf("API call doesn't match")
-	}
 	_ = req.response().(*ListNicsResponse)
 }
 
 func TestActivateIP6(t *testing.T) {
 	req := &ActivateIP6{}
-	if req.name() != "activateIp6" {
-		t.Errorf("API call doesn't match")
-	}
+	_ = req.response().(*AsyncJobResult)
 	_ = req.asyncResponse().(*Nic)
 }
 
