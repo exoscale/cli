@@ -24,15 +24,33 @@ func sshCmdRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	ipv6, err := cmd.Flags().GetBool("ipv6")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	isInfos, err := cmd.Flags().GetBool("infos")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	infos, err := getSSHInfos(args[0])
+	isConnectionSTR, err := cmd.Flags().GetBool("print")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	infos, err := getSSHInfos(args[0], ipv6)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if isConnectionSTR {
+		if err := printSSHConnectSTR(infos); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+
 	if isInfos {
 		printSSHInfos(infos)
 		return
@@ -48,10 +66,31 @@ type sshInfos struct {
 	vmID     string
 }
 
-func getSSHInfos(name string) (*sshInfos, error) {
+func getSSHInfos(name string, isIpv6 bool) (*sshInfos, error) {
 	vm, err := getVMWithNameOrID(cs, name)
 	if err != nil {
 		return nil, err
+	}
+
+	sshKeyPath := path.Join(configFolder, "instances", vm.ID, "id_rsa")
+
+	if _, err := os.Stat(sshKeyPath); os.IsNotExist(err) {
+		sshKeyPath = "Default ssh keypair not found"
+	}
+
+	nic := vm.DefaultNic()
+	if nic == nil {
+		return nil, fmt.Errorf("No default NIC on this instance")
+	}
+
+	vmIP := vm.IP()
+
+	if isIpv6 {
+		if nic.IP6Address != nil {
+			vmIP = &nic.IP6Address
+		} else {
+			return nil, fmt.Errorf("IPv6 not found on this virtual machine ID %q", vm.ID)
+		}
 	}
 
 	template := &egoscale.Template{ID: vm.TemplateID, IsFeatured: true, ZoneID: "1"}
@@ -66,13 +105,24 @@ func getSSHInfos(name string) (*sshInfos, error) {
 	}
 
 	return &sshInfos{
-		sshKeys:  path.Join(configFolder, "instances", vm.ID, "id_rsa"),
+		sshKeys:  sshKeyPath,
 		userName: tempUser,
-		ip:       vm.IP(),
+		ip:       vmIP,
 		vmName:   vm.Name,
 		vmID:     vm.ID,
 	}, nil
 
+}
+
+func printSSHConnectSTR(infos *sshInfos) error {
+
+	if _, err := os.Stat(infos.sshKeys); os.IsNotExist(err) {
+		return fmt.Errorf("Default ssh keypair not found")
+	}
+
+	fmt.Printf("ssh -i %s %s@%s\n", infos.sshKeys, infos.userName, infos.ip)
+
+	return nil
 }
 
 func printSSHInfos(infos *sshInfos) {
@@ -104,5 +154,7 @@ func connectSSH(cred *sshInfos) {
 func init() {
 	sshCmd.Run = sshCmdRun
 	sshCmd.Flags().BoolP("infos", "i", false, "infos show ssh connection informations")
+	sshCmd.Flags().BoolP("print", "p", false, "Print SSH connection command")
+	sshCmd.Flags().BoolP("ipv6", "6", false, "Using ipv6 for SSH")
 	RootCmd.AddCommand(sshCmd)
 }
