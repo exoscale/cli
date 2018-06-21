@@ -32,6 +32,9 @@ func main() {
 	var innerRegion string
 	var innerDryRun bool
 
+	// no prefix
+	log.SetFlags(0)
+
 	app := cli.NewApp()
 	app.Name = "cs"
 	app.HelpName = "cs"
@@ -107,6 +110,10 @@ func main() {
 
 	app.Run(os.Args)
 
+	if method == nil {
+		os.Exit(0)
+	}
+
 	// Picking a region
 	if region == "" {
 		if innerRegion == "" {
@@ -122,10 +129,6 @@ func main() {
 	client, _ := buildClient(region)
 	if theme != "" {
 		client.Theme = theme
-	}
-
-	if method == nil {
-		os.Exit(0)
 	}
 
 	// Show request and quit
