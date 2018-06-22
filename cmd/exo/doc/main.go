@@ -135,6 +135,16 @@ func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(stri
 
 	if cmd.Runnable() {
 		buf.WriteString(fmt.Sprintf("```\n%s\n```\n\n", cmd.UseLine()))
+	} else {
+		splitedLine := strings.Split(cmd.UseLine(), " ")
+
+		pos := (len(splitedLine) - 1)
+
+		splitedLine = insertAT(splitedLine, "[command]", pos)
+
+		line := strings.Join(splitedLine, " ")
+
+		buf.WriteString(fmt.Sprintf("```\n%s\n```\n\n", line))
 	}
 
 	if len(cmd.Example) > 0 {
@@ -219,3 +229,7 @@ func hasSeeAlso(cmd *cobra.Command) bool {
 //
 //end cobra/doc custom src code
 //
+
+func insertAT(slice []string, elem string, index int) []string {
+	return append(slice[:index], append([]string{elem}, slice[index:]...)...)
+}
