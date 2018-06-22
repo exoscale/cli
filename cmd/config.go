@@ -37,7 +37,6 @@ func configCmdRun(cmd *cobra.Command, args []string) {
 }
 
 func generateConfigFile(isPrint bool) (string, error) {
-
 	filepath := ""
 	if !isPrint {
 		if _, err := os.Stat(configFolder); os.IsNotExist(err) {
