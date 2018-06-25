@@ -440,8 +440,8 @@ func (*ScaleVirtualMachine) asyncResponse() interface{} {
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/changeServiceForVirtualMachine.html
 type ChangeServiceForVirtualMachine struct {
 	ID                string            `json:"id" doc:"The ID of the virtual machine"`
-	ServiceOfferingID string            `json:"serviceofferingid" doc:"the ID of the service offering for the virtual machine"`
-	Details           map[string]string `json:"details,omitempty" doc:"name value pairs of custom parameters for cpu,memory and cpunumber. example details[i].name=value"`
+	ServiceOfferingID string            `json:"serviceofferingid" doc:"the service offering ID to apply to the virtual machine"`
+	Details           map[string]string `json:"details,omitempty" doc:"name value pairs of custom parameters for cpu, memory and cpunumber. example details[i].name=value"`
 	_                 bool              `name:"changeServiceForVirtualMachine" description:"Changes the service offering for a virtual machine. The virtual machine must be in a \"Stopped\" state for this command to take effect."`
 }
 

@@ -162,7 +162,7 @@ type UpdateNetwork struct {
 	Name              string `json:"name,omitempty" doc:"the new name for the network"`
 	NetworkDomain     string `json:"networkdomain,omitempty" doc:"network domain"`
 	NetworkOfferingID string `json:"networkofferingid,omitempty" doc:"network offering ID"`
-	_                 bool   `name:"updateNetwork"`
+	_                 bool   `name:"updateNetwork" description:"Updates a network"`
 }
 
 func (*UpdateNetwork) response() interface{} {
@@ -179,7 +179,7 @@ func (*UpdateNetwork) asyncResponse() interface{} {
 type RestartNetwork struct {
 	ID      string `json:"id" doc:"The id of the network to restart."`
 	Cleanup *bool  `json:"cleanup,omitempty" doc:"If cleanup old network elements"`
-	_       bool   `name:"restartNetwork"`
+	_       bool   `name:"restartNetwork" description:"Restarts the network; includes 1) restarting network elements - virtual routers, dhcp servers 2) reapplying all public ips 3) reapplying loadBalancing/portForwarding rules"`
 }
 
 func (*RestartNetwork) response() interface{} {
@@ -196,7 +196,7 @@ func (*RestartNetwork) asyncResponse() interface{} {
 type DeleteNetwork struct {
 	ID     string `json:"id" doc:"the ID of the network"`
 	Forced *bool  `json:"forced,omitempty" doc:"Force delete a network. Network will be marked as 'Destroy' even when commands to shutdown and cleanup to the backend fails."`
-	_      bool   `name:"deleteNetwork"`
+	_      bool   `name:"deleteNetwork" description:"Deletes a network"`
 }
 
 func (*DeleteNetwork) response() interface{} {
@@ -231,7 +231,7 @@ type ListNetworks struct {
 	TrafficType       string        `json:"traffictype,omitempty" doc:"type of the traffic"`
 	Type              string        `json:"type,omitempty" doc:"the type of the network. Supported values are: Isolated and Shared"`
 	ZoneID            string        `json:"zoneid,omitempty" doc:"the Zone ID of the network"`
-	_                 bool          `name:"listNetworks"`
+	_                 bool          `name:"listNetworks" description:"Lists all available networks."`
 }
 
 // ListNetworksResponse represents the list of networks

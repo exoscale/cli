@@ -27,8 +27,7 @@ type APIParam struct {
 // CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listApis.html
 type ListAPIs struct {
 	Name string `json:"name,omitempty" doc:"API name"`
-
-	_ bool `name:"listApis" description:"lists all available apis on the server, provided by the Api Discovery plugin"`
+	_    bool   `name:"listApis" description:"lists all available apis on the server, provided by the Api Discovery plugin"`
 }
 
 // ListAPIsResponse represents a list of API

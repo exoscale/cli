@@ -84,7 +84,7 @@ type ListAccounts struct {
 	Page              int         `json:"page,omitempty"`
 	PageSize          int         `json:"pagesize,omitempty"`
 	State             string      `json:"state,omitempty" doc:"list accounts by state. Valid states are enabled, disabled, and locked."`
-	_                 bool        `name:"listAccouts" description:"Lists accounts and provides detailed account information for listed accounts"`
+	_                 bool        `name:"listAccounts" description:"Lists accounts and provides detailed account information for listed accounts"`
 }
 
 func (*ListAccounts) response() interface{} {
