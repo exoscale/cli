@@ -14,6 +14,7 @@ import (
 	"go/types"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -142,7 +143,7 @@ func main() {
 			// too much information
 			//fmt.Fprintf(os.Stderr, "Unknown command: %q\n", name)
 		} else {
-			command.description = a.Description
+			command.description = strings.Trim(a.Description, " ")
 			// mapping from name to field
 			command.fields = make(map[string]fieldInfo)
 			command.errors = make(map[string]error)
@@ -151,10 +152,28 @@ func main() {
 				command.sync = " (A)"
 			}
 
+			hasMeta := false
+
 			for i := 0; i < command.s.NumFields(); i++ {
 				f := command.s.Field(i)
 
 				if !f.IsField() || !f.Exported() {
+					if f.Name() != "_" {
+						continue
+					}
+
+					tag := (reflect.StructTag)(command.s.Tag(i))
+					name, nameOK := tag.Lookup("name")
+					description, descriptionOK := tag.Lookup("description")
+					if !nameOK || !descriptionOK {
+						command.errors["_"] = fmt.Errorf("meta field incomplete, wanted\n\t\t_ bool `name:%q description:%q`", a.Name, command.description)
+					} else {
+						if name != a.Name || description != a.Description {
+							command.errors["_"] = fmt.Errorf("meta field incorrect, got %q %q, wanted\n\t\t_ bool `name:%q description:%q`", name, description, a.Name, command.description)
+						}
+					}
+
+					hasMeta = true
 					continue
 				}
 
@@ -275,6 +294,10 @@ func main() {
 				}
 			}
 
+			if !hasMeta {
+				command.errors["_"] = fmt.Errorf("meta field missing, wanted\n\t\t_ bool `name:%q description:%q`", a.Name, a.Description)
+			}
+
 			for name := range command.fields {
 				command.errors[name] = errors.New("extra field found")
 			}
@@ -299,7 +322,6 @@ func main() {
 				fmt.Println(e)
 			}
 			fmt.Printf("\n%s: %s%s has %d error(s)\n", pos, c.name, c.sync, er)
-			fmt.Println(c.description)
 			os.Exit(er)
 		}
 	}
