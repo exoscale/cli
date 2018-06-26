@@ -36,6 +36,13 @@ type onBeforeHook interface {
 	onBeforeSend(params *url.Values) error
 }
 
+// CommandInfo represents the meta data related to a Command
+type CommandInfo struct {
+	Name        string
+	Description string
+	RootOnly    bool
+}
+
 // JobStatusType represents the status of a Job
 type JobStatusType int
 

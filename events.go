@@ -54,7 +54,9 @@ func (*ListEvents) response() interface{} {
 // ListEventTypes list the event types
 //
 // CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listEventTypes.html
-type ListEventTypes struct{}
+type ListEventTypes struct {
+	_ bool `name:"listEventTypes" description:"List Event Types"`
+}
 
 // ListEventTypesResponse represents a response of a list query
 type ListEventTypesResponse struct {

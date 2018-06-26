@@ -19,6 +19,9 @@ import (
 	"github.com/urfave/cli"
 )
 
+const userDocumentationURL = "http://cloudstack.apache.org/api/apidocs-4.4/user/%s.html"
+const rootDocumentationURL = "http://cloudstack.apache.org/api/apidocs-4.4/root_admin/%s.html"
+
 var _client = new(egoscale.Client)
 
 func main() {
@@ -254,9 +257,18 @@ func buildCommands(out *egoscale.Command, methods map[string][]cmd) []cli.Comman
 	for category, ms := range methods {
 		for i := range ms {
 			s := ms[i]
+
+			name := _client.APIName(s.command)
+			description := _client.APIDescription(s.command)
+
+			url := userDocumentationURL
+			if s.hidden {
+				url = rootDocumentationURL
+			}
+
 			cmd := cli.Command{
-				Name:        _client.APIName(s.command),
-				Description: _client.APIDescription(s.command),
+				Name:        name,
+				Description: fmt.Sprintf("%s <%s>", description, fmt.Sprintf(url, name)),
 				Category:    category,
 				HideHelp:    s.hidden,
 				Hidden:      s.hidden,
@@ -318,6 +330,10 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 	ty := value.Type()
 	for i := 0; i < value.NumField(); i++ {
 		field := ty.Field(i)
+
+		if field.Name == "_" {
+			continue
+		}
 
 		// XXX refactor with request.go
 		var argName string
