@@ -118,11 +118,11 @@ const (
 )
 
 // Error formats the DNSerror into a string
-func (req *DNSErrorResponse) Error() error {
+func (req *DNSErrorResponse) Error() string {
 	if req.Errors != nil {
-		return fmt.Errorf("DNS error: %s", strings.Join(req.Errors.Name, ", "))
+		return fmt.Sprintf("dns error: %s (%s)", req.Message, strings.Join(req.Errors.Name, ", "))
 	}
-	return fmt.Errorf("DNS error: %s", req.Message)
+	return fmt.Sprintf("dns error: %s", req.Message)
 }
 
 // CreateDomain creates a DNS domain
@@ -315,11 +315,11 @@ func (client *Client) dnsRequest(uri string, params string, method string) (json
 	}
 
 	if response.StatusCode >= 400 {
-		var e DNSErrorResponse
-		if err := json.Unmarshal(b, &e); err != nil {
+		e := new(DNSErrorResponse)
+		if err := json.Unmarshal(b, e); err != nil {
 			return nil, err
 		}
-		return nil, e.Error()
+		return nil, e
 	}
 
 	return b, nil
