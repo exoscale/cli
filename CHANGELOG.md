@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.28 (Unreleased)
+------
+
+- feat: addition of `GetDomains`
+- fix: `UpdateDomain` may contain more empty fields than `CreateDomain`
+
 0.9.27
 ------
 
