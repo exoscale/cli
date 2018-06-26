@@ -42,8 +42,6 @@ func (ssh *SSHKeyPair) ListRequest() (ListCommand, error) {
 }
 
 // CreateSSHKeyPair represents a new keypair to be created
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createSSHKeyPair.html
 type CreateSSHKeyPair struct {
 	Name     string `json:"name" doc:"Name of the keypair"`
 	Account  string `json:"account,omitempty" doc:"an optional account for the ssh key. Must be used with domainId."`
@@ -56,8 +54,6 @@ func (*CreateSSHKeyPair) response() interface{} {
 }
 
 // DeleteSSHKeyPair represents a new keypair to be created
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSSHKeyPair.html
 type DeleteSSHKeyPair struct {
 	Name     string `json:"name" doc:"Name of the keypair"`
 	Account  string `json:"account,omitempty" doc:"the account associated with the keypair. Must be used with the domainId parameter."`
@@ -70,8 +66,6 @@ func (*DeleteSSHKeyPair) response() interface{} {
 }
 
 // RegisterSSHKeyPair represents a new registration of a public key in a keypair
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/registerSSHKeyPair.html
 type RegisterSSHKeyPair struct {
 	Name      string `json:"name" doc:"Name of the keypair"`
 	PublicKey string `json:"publickey" doc:"Public key material of the keypair"`
@@ -85,8 +79,6 @@ func (*RegisterSSHKeyPair) response() interface{} {
 }
 
 // ListSSHKeyPairs represents a query for a list of SSH KeyPairs
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listSSHKeyPairs.html
 type ListSSHKeyPairs struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -135,8 +127,6 @@ func (*ListSSHKeyPairs) each(resp interface{}, callback IterateItemFunc) {
 }
 
 // ResetSSHKeyForVirtualMachine (Async) represents a change for the key pairs
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/resetSSHKeyForVirtualMachine.html
 type ResetSSHKeyForVirtualMachine struct {
 	ID       string `json:"id" doc:"The ID of the virtual machine"`
 	KeyPair  string `json:"keypair" doc:"name of the ssh key pair used to login to the virtual machine"`

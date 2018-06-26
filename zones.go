@@ -45,8 +45,6 @@ func (zone *Zone) ListRequest() (ListCommand, error) {
 }
 
 // ListZones represents a query for zones
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listZones.html
 type ListZones struct {
 	Available      *bool         `json:"available,omitempty" doc:"true if you want to retrieve all available Zones. False if you only want to return the Zones from which you have at least one VM. Default is false."`
 	DomainID       string        `json:"domainid,omitempty" doc:"the ID of the domain associated with the zone"`

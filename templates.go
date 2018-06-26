@@ -73,8 +73,6 @@ func (temp *Template) ListRequest() (ListCommand, error) {
 }
 
 // ListTemplates represents a template query filter
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/listTemplates.html
 type ListTemplates struct {
 	TemplateFilter string        `json:"templatefilter" doc:"possible values are \"featured\", \"self\", \"selfexecutable\",\"sharedexecutable\",\"executable\", and \"community\". * featured : templates that have been marked as featured and public. * self : templates that have been registered or created by the calling user. * selfexecutable : same as self, but only returns templates that can be used to deploy a new VM. * sharedexecutable : templates ready to be deployed that have been granted to the calling user by another user. * executable : templates that are owned by the calling user, or public templates, that can be used to deploy a VM. * community : templates that have been marked as public but not featured. * all : all templates (only usable by admins)."`
 	Account        string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
@@ -128,8 +126,6 @@ func (ls *ListTemplates) SetPageSize(pageSize int) {
 }
 
 // CreateTemplate (Async) represents a template creation
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/createTemplate.html
 type CreateTemplate struct {
 	Bits                  int               `json:"bits,omitempty" doc:"32 or 64 bit"`
 	Details               map[string]string `json:"details,omitempty" doc:"Template details in key/value pairs."`
@@ -158,8 +154,6 @@ func (*CreateTemplate) asyncResponse() interface{} {
 }
 
 // CopyTemplate (Async) represents a template copy
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/copyTemplate.html
 type CopyTemplate struct {
 	DestZoneID   string `json:"destzoneid" doc:"ID of the zone the template is being copied to."`
 	ID           string `json:"id" doc:"Template ID."`
@@ -176,8 +170,6 @@ func (*CopyTemplate) asyncResponse() interface{} {
 }
 
 // UpdateTemplate represents a template change
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateTemplate.html
 type UpdateTemplate struct {
 	Bootable              *bool             `json:"bootable,omitempty" doc:"true if image is bootable, false otherwise"`
 	Details               map[string]string `json:"details,omitempty" doc:"Details in key/value pairs."`
@@ -202,8 +194,6 @@ func (*UpdateTemplate) asyncResponse() interface{} {
 }
 
 // DeleteTemplate (Async) represents the deletion of a template
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteTemplate.html
 type DeleteTemplate struct {
 	ID     string `json:"id" doc:"the ID of the template"`
 	ZoneID string `json:"zoneid,omitempty" doc:"the ID of zone of the template"`
@@ -219,8 +209,6 @@ func (*DeleteTemplate) asyncResponse() interface{} {
 }
 
 // PrepareTemplate represents a template preparation
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/prepareTemplate.html
 type PrepareTemplate struct {
 	TemplateID string `json:"templateid" doc:"template ID of the template to be prepared in primary storage(s)."`
 	ZoneID     string `json:"zoneid" doc:"zone ID of the template to be prepared in primary storage(s)."`
@@ -236,8 +224,6 @@ func (*PrepareTemplate) asyncResponse() interface{} {
 }
 
 // RegisterTemplate represents a template registration
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/registerTemplate.html
 type RegisterTemplate struct {
 	Account               string            `json:"account,omitempty" doc:"an optional accountName. Must be used with domainId."`
 	Bits                  int               `json:"bits,omitempty" doc:"32 or 64 bits support. 64 by default"`

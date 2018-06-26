@@ -103,8 +103,6 @@ type UserSecurityGroup struct {
 }
 
 // CreateSecurityGroup represents a security group creation
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/createSecurityGroup.html
 type CreateSecurityGroup struct {
 	Name        string `json:"name" doc:"name of the security group"`
 	Account     string `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
@@ -118,8 +116,6 @@ func (*CreateSecurityGroup) response() interface{} {
 }
 
 // DeleteSecurityGroup represents a security group deletion
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSecurityGroup.html
 type DeleteSecurityGroup struct {
 	Account  string `json:"account,omitempty" doc:"the account of the security group. Must be specified with domain ID"`
 	DomainID string `json:"domainid,omitempty" doc:"the domain ID of account owning the security group"`
@@ -133,8 +129,6 @@ func (*DeleteSecurityGroup) response() interface{} {
 }
 
 // AuthorizeSecurityGroupIngress (Async) represents the ingress rule creation
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/authorizeSecurityGroupIngress.html
 type AuthorizeSecurityGroupIngress struct {
 	Account               string              `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
 	CidrList              []string            `json:"cidrlist,omitempty" doc:"the cidr list associated"`
@@ -173,8 +167,6 @@ func (req *AuthorizeSecurityGroupIngress) onBeforeSend(params *url.Values) error
 }
 
 // AuthorizeSecurityGroupEgress (Async) represents the egress rule creation
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/authorizeSecurityGroupEgress.html
 type AuthorizeSecurityGroupEgress struct {
 	Account               string              `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
 	CidrList              []string            `json:"cidrlist,omitempty" doc:"the cidr list associated"`
@@ -204,8 +196,6 @@ func (req *AuthorizeSecurityGroupEgress) onBeforeSend(params *url.Values) error 
 }
 
 // RevokeSecurityGroupIngress (Async) represents the ingress/egress rule deletion
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/revokeSecurityGroupIngress.html
 type RevokeSecurityGroupIngress struct {
 	ID string `json:"id" doc:"The ID of the ingress rule"`
 	_  bool   `name:"revokeSecurityGroupIngress" description:"Deletes a particular ingress rule from this security group"`
@@ -219,8 +209,6 @@ func (*RevokeSecurityGroupIngress) asyncResponse() interface{} {
 }
 
 // RevokeSecurityGroupEgress (Async) represents the ingress/egress rule deletion
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/revokeSecurityGroupEgress.html
 type RevokeSecurityGroupEgress struct {
 	ID string `json:"id" doc:"The ID of the egress rule"`
 	_  bool   `name:"revokeSecurityGroupEgress" description:"Deletes a particular egress rule from this security group"`
@@ -235,8 +223,6 @@ func (*RevokeSecurityGroupEgress) asyncResponse() interface{} {
 }
 
 // ListSecurityGroups represents a search for security groups
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listSecurityGroups.html
 type ListSecurityGroups struct {
 	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID          string        `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`

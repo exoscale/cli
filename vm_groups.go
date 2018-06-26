@@ -11,8 +11,6 @@ type InstanceGroup struct {
 }
 
 // CreateInstanceGroup creates a VM group
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createInstanceGroup.html
 type CreateInstanceGroup struct {
 	Name     string `json:"name" doc:"the name of the instance group"`
 	Account  string `json:"account,omitempty" doc:"the account of the instance group. The account parameter must be used with the domainId parameter."`
@@ -25,8 +23,6 @@ func (*CreateInstanceGroup) response() interface{} {
 }
 
 // UpdateInstanceGroup updates a VM group
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateInstanceGroup.html
 type UpdateInstanceGroup struct {
 	ID   string `json:"id" doc:"Instance group ID"`
 	Name string `json:"name,omitempty" doc:"new instance group name"`
@@ -38,8 +34,6 @@ func (*UpdateInstanceGroup) response() interface{} {
 }
 
 // DeleteInstanceGroup deletes a VM group
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteInstanceGroup.html
 type DeleteInstanceGroup struct {
 	ID string `json:"id" doc:"the ID of the instance group"`
 	_  bool   `name:"deleteInstanceGroup" description:"Deletes a vm group"`
@@ -50,8 +44,6 @@ func (*DeleteInstanceGroup) response() interface{} {
 }
 
 // ListInstanceGroups lists VM groups
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listInstanceGroups.html
 type ListInstanceGroups struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`

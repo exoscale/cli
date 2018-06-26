@@ -76,8 +76,6 @@ func (ipaddress *IPAddress) Delete(ctx context.Context, client *Client) error {
 }
 
 // AssociateIPAddress (Async) represents the IP creation
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/associateIpAddress.html
 type AssociateIPAddress struct {
 	Account    string `json:"account,omitempty" doc:"the account to associate with this IP address"`
 	DomainID   string `json:"domainid,omitempty" doc:"the ID of the domain to associate with this IP address"`
@@ -98,8 +96,6 @@ func (*AssociateIPAddress) asyncResponse() interface{} {
 }
 
 // DisassociateIPAddress (Async) represents the IP deletion
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/disassociateIpAddress.html
 type DisassociateIPAddress struct {
 	ID string `json:"id" doc:"the id of the public ip address to disassociate"`
 	_  bool   `name:"disassociateIpAddress" description:"Disassociates an ip address from the account."`
@@ -114,8 +110,6 @@ func (*DisassociateIPAddress) asyncResponse() interface{} {
 }
 
 // UpdateIPAddress (Async) represents the IP modification
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/updateIpAddress.html
 type UpdateIPAddress struct {
 	ID         string `json:"id" doc:"the id of the public ip address to update"`
 	CustomID   string `json:"customid,omitempty" doc:"an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only"`
@@ -132,8 +126,6 @@ func (*UpdateIPAddress) asyncResponse() interface{} {
 }
 
 // ListPublicIPAddresses represents a search for public IP addresses
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listPublicIpAddresses.html
 type ListPublicIPAddresses struct {
 	Account             string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	AllocatedOnly       *bool         `json:"allocatedonly,omitempty" doc:"limits search results to allocated public IP addresses"`

@@ -54,8 +54,6 @@ func (*Snapshot) ResourceType() string {
 }
 
 // CreateSnapshot (Async) creates an instant snapshot of a volume
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/createSnapshot.html
 type CreateSnapshot struct {
 	VolumeID  string `json:"volumeid" doc:"The ID of the disk volume"`
 	Account   string `json:"account,omitempty" doc:"The account of the snapshot. The account parameter must be used with the domainId parameter."`
@@ -75,8 +73,6 @@ func (*CreateSnapshot) asyncResponse() interface{} {
 }
 
 // ListSnapshots lists the volume snapshots
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/listSnapshots.html
 type ListSnapshots struct {
 	Account      string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID     string        `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -107,8 +103,6 @@ func (*ListSnapshots) response() interface{} {
 }
 
 // DeleteSnapshot (Async) deletes a snapshot of a disk volume
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteSnapshot.html
 type DeleteSnapshot struct {
 	ID string `json:"id" doc:"The ID of the snapshot"`
 	_  bool   `name:"deleteSnapshot" description:"Deletes a snapshot of a disk volume."`
@@ -123,8 +117,6 @@ func (*DeleteSnapshot) asyncResponse() interface{} {
 }
 
 // RevertSnapshot (Async) reverts a volume snapshot
-//
-// CloudStackAPI: http://cloudstack.apache.org/api/apidocs-4.10/apis/revertSnapshot.html
 type RevertSnapshot struct {
 	ID string `json:"id" doc:"The ID of the snapshot"`
 	_  bool   `name:"revertSnapshot" description:"revert a volume snapshot."`

@@ -30,8 +30,6 @@ func (a *AsyncJobResult) Error() error {
 }
 
 // QueryAsyncJobResult represents a query to fetch the status of async job
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/queryAsyncJobResult.html
 type QueryAsyncJobResult struct {
 	JobID string `json:"jobid" doc:"the ID of the asychronous job"`
 	_     bool   `name:"queryAsyncJobResult" description:"Retrieves the current status of asynchronous job."`
@@ -42,8 +40,6 @@ func (*QueryAsyncJobResult) response() interface{} {
 }
 
 // ListAsyncJobs list the asynchronous jobs
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listAsyncJobs.html
 type ListAsyncJobs struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`

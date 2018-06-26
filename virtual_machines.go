@@ -140,7 +140,7 @@ func (vm *VirtualMachine) NicsByType(nicType string) []Nic {
 	nics := make([]Nic, 0)
 	for _, nic := range vm.Nic {
 		if nic.Type == nicType {
-			// XXX The CloudStack API forgets to specify it
+			// XXX The API forgets to specify it
 			nic.VirtualMachineID = vm.ID
 			nics = append(nics, nic)
 		}
@@ -219,8 +219,6 @@ func (userdata *VirtualMachineUserData) Decode() (string, error) {
 // DeployVirtualMachine (Async) represents the machine creation
 //
 // Regarding the UserData field, the client is responsible to base64 (and probably gzip) it. Doing it within this library would make the integration with other tools, e.g. Terraform harder.
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/deployVirtualMachine.html
 type DeployVirtualMachine struct {
 	Account            string            `json:"account,omitempty" doc:"an optional account for the virtual machine. Must be used with domainId."`
 	AffinityGroupIDs   []string          `json:"affinitygroupids,omitempty" doc:"comma separated list of affinity groups id that are going to be applied to the virtual machine. Mutually exclusive with affinitygroupnames parameter"`
@@ -279,8 +277,6 @@ func (*DeployVirtualMachine) asyncResponse() interface{} {
 }
 
 // StartVirtualMachine (Async) represents the creation of the virtual machine
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/startVirtualMachine.html
 type StartVirtualMachine struct {
 	ID                string `json:"id" doc:"The ID of the virtual machine"`
 	DeploymentPlanner string `json:"deploymentplanner,omitempty" doc:"Deployment planner to use for vm allocation. Available to ROOT admin only"`
@@ -297,8 +293,6 @@ func (*StartVirtualMachine) asyncResponse() interface{} {
 }
 
 // StopVirtualMachine (Async) represents the stopping of the virtual machine
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/stopVirtualMachine.html
 type StopVirtualMachine struct {
 	ID     string `json:"id" doc:"The ID of the virtual machine"`
 	Forced *bool  `json:"forced,omitempty" doc:"Force stop the VM (vm is marked as Stopped even when command fails to be send to the backend).  The caller knows the VM is stopped."`
@@ -314,8 +308,6 @@ func (*StopVirtualMachine) asyncResponse() interface{} {
 }
 
 // RebootVirtualMachine (Async) represents the rebooting of the virtual machine
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/rebootVirtualMachine.html
 type RebootVirtualMachine struct {
 	ID string `json:"id" doc:"The ID of the virtual machine"`
 	_  bool   `name:"rebootVirtualMachine" description:"Reboots a virtual machine."`
@@ -330,8 +322,6 @@ func (*RebootVirtualMachine) asyncResponse() interface{} {
 }
 
 // RestoreVirtualMachine (Async) represents the restoration of the virtual machine
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/restoreVirtualMachine.html
 type RestoreVirtualMachine struct {
 	VirtualMachineID string `json:"virtualmachineid" doc:"Virtual Machine ID"`
 	TemplateID       string `json:"templateid,omitempty" doc:"an optional template Id to restore vm from the new template. This can be an ISO id in case of restore vm deployed using ISO"`
@@ -348,8 +338,6 @@ func (*RestoreVirtualMachine) asyncResponse() interface{} {
 }
 
 // RecoverVirtualMachine represents the restoration of the virtual machine
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/recoverVirtualMachine.html
 type RecoverVirtualMachine struct {
 	ID string `json:"id" doc:"The ID of the virtual machine"`
 	_  bool   `name:"recoverVirtualMachine" description:"Recovers a virtual machine."`
@@ -360,8 +348,6 @@ func (*RecoverVirtualMachine) response() interface{} {
 }
 
 // DestroyVirtualMachine (Async) represents the destruction of the virtual machine
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/destroyVirtualMachine.html
 type DestroyVirtualMachine struct {
 	ID      string `json:"id" doc:"The ID of the virtual machine"`
 	Expunge *bool  `json:"expunge,omitempty" doc:"If true is passed, the vm is expunged immediately. False by default."`
@@ -377,8 +363,6 @@ func (*DestroyVirtualMachine) asyncResponse() interface{} {
 }
 
 // UpdateVirtualMachine represents the update of the virtual machine
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/updateVirtualMachine.html
 type UpdateVirtualMachine struct {
 	ID                    string            `json:"id" doc:"The ID of the virtual machine"`
 	CustomID              string            `json:"customid,omitempty" doc:"an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only"`
@@ -399,8 +383,6 @@ func (*UpdateVirtualMachine) response() interface{} {
 }
 
 // ExpungeVirtualMachine represents the annihilation of a VM
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/expungeVirtualMachine.html
 type ExpungeVirtualMachine struct {
 	ID string `json:"id" doc:"The ID of the virtual machine"`
 	_  bool   `name:"expungeVirtualMachine" description:"Expunge a virtual machine. Once expunged, it cannot be recoverd."`
@@ -418,8 +400,6 @@ func (*ExpungeVirtualMachine) asyncResponse() interface{} {
 //
 // ChangeServiceForVirtualMachine does the same thing but returns the
 // new Virtual Machine which is more consistent with the rest of the API.
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/scaleVirtualMachine.html
 type ScaleVirtualMachine struct {
 	ID                string            `json:"id" doc:"The ID of the virtual machine"`
 	ServiceOfferingID string            `json:"serviceofferingid" doc:"the ID of the service offering for the virtual machine"`
@@ -436,8 +416,6 @@ func (*ScaleVirtualMachine) asyncResponse() interface{} {
 }
 
 // ChangeServiceForVirtualMachine changes the service offering for a virtual machine. The virtual machine must be in a "Stopped" state for this command to take effect.
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/changeServiceForVirtualMachine.html
 type ChangeServiceForVirtualMachine struct {
 	ID                string            `json:"id" doc:"The ID of the virtual machine"`
 	ServiceOfferingID string            `json:"serviceofferingid" doc:"the service offering ID to apply to the virtual machine"`
@@ -450,8 +428,6 @@ func (*ChangeServiceForVirtualMachine) response() interface{} {
 }
 
 // ResetPasswordForVirtualMachine resets the password for virtual machine. The virtual machine must be in a "Stopped" state...
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/resetPasswordForVirtualMachine.html
 type ResetPasswordForVirtualMachine struct {
 	ID string `json:"id" doc:"The ID of the virtual machine"`
 	_  bool   `name:"resetPasswordForVirtualMachine" description:"Resets the password for virtual machine. The virtual machine must be in a \"Stopped\" state and the template must already support this feature for this command to take effect."`
@@ -465,8 +441,6 @@ func (*ResetPasswordForVirtualMachine) asyncResponse() interface{} {
 }
 
 // GetVMPassword asks for an encrypted password
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/getVMPassword.html
 type GetVMPassword struct {
 	ID string `json:"id" doc:"The ID of the virtual machine"`
 	_  bool   `name:"getVMPassword" description:"Returns an encrypted password for the VM"`
@@ -477,8 +451,6 @@ func (*GetVMPassword) response() interface{} {
 }
 
 // ListVirtualMachines represents a search for a VM
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listVirtualMachine.html
 type ListVirtualMachines struct {
 	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	AffinityGroupID   string        `json:"affinitygroupid,omitempty" doc:"list vms by affinity group"`
@@ -545,8 +517,6 @@ func (*ListVirtualMachines) each(resp interface{}, callback IterateItemFunc) {
 }
 
 // AddNicToVirtualMachine (Async) adds a NIC to a VM
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/addNicToVirtualMachine.html
 type AddNicToVirtualMachine struct {
 	NetworkID        string `json:"networkid" doc:"Network ID"`
 	VirtualMachineID string `json:"virtualmachineid" doc:"Virtual Machine ID"`
@@ -563,8 +533,6 @@ func (*AddNicToVirtualMachine) asyncResponse() interface{} {
 }
 
 // RemoveNicFromVirtualMachine (Async) removes a NIC from a VM
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/removeNicFromVirtualMachine.html
 type RemoveNicFromVirtualMachine struct {
 	NicID            string `json:"nicid" doc:"NIC ID"`
 	VirtualMachineID string `json:"virtualmachineid" doc:"Virtual Machine ID"`
@@ -580,8 +548,6 @@ func (*RemoveNicFromVirtualMachine) asyncResponse() interface{} {
 }
 
 // UpdateDefaultNicForVirtualMachine (Async) adds a NIC to a VM
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateDefaultNicForVirtualMachine.html
 type UpdateDefaultNicForVirtualMachine struct {
 	NicID            string `json:"nicid" doc:"NIC ID"`
 	VirtualMachineID string `json:"virtualmachineid" doc:"Virtual Machine ID"`
@@ -596,8 +562,6 @@ func (*UpdateDefaultNicForVirtualMachine) asyncResponse() interface{} {
 }
 
 // GetVirtualMachineUserData returns the user-data of the given VM
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/getVirtualMachineUserData.html
 type GetVirtualMachineUserData struct {
 	VirtualMachineID string `json:"virtualmachineid" doc:"The ID of the virtual machine"`
 	_                bool   `name:"getVirtualMachineUserData" description:"Returns user data associated with the VM"`
@@ -610,8 +574,6 @@ func (*GetVirtualMachineUserData) response() interface{} {
 // Decode decodes the base64 / gzipped encoded user data
 
 // MigrateVirtualMachine (Async) attempts migration of a VM to a different host or Root volume of the vm to a different storage pool
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/migrateVirtualMachine.html
 type MigrateVirtualMachine struct {
 	HostID           string `json:"hostid,omitempty" doc:"Destination Host ID to migrate VM to. Required for live migrating a VM from host to host"`
 	StorageID        string `json:"storageid,omitempty" doc:"Destination storage pool ID to migrate VM volumes to. Required for migrating the root disk volume"`

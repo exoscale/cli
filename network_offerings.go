@@ -26,8 +26,6 @@ type NetworkOffering struct {
 }
 
 // ListNetworkOfferings represents a query for network offerings
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listNetworkOfferings.html
 type ListNetworkOfferings struct {
 	Availability       string    `json:"availability,omitempty" doc:"the availability of network offering. Default value is Required"`
 	DisplayText        string    `json:"displaytext,omitempty" doc:"list network offerings by display text"`
@@ -62,8 +60,6 @@ func (*ListNetworkOfferings) response() interface{} {
 }
 
 // UpdateNetworkOffering represents a modification of a network offering
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/updateNetworkOffering.html
 type UpdateNetworkOffering struct {
 	Availability     string `json:"availability,omitempty" doc:"the availability of network offering. Default value is Required for Guest Virtual network offering; Optional for Guest Direct network offering"`
 	DisplayText      string `json:"displaytext,omitempty" doc:"the display text of the network offering"`

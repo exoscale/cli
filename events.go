@@ -21,8 +21,6 @@ type EventType struct {
 }
 
 // ListEvents list the events
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listEvents.html
 type ListEvents struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -52,8 +50,6 @@ func (*ListEvents) response() interface{} {
 }
 
 // ListEventTypes list the event types
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listEventTypes.html
 type ListEventTypes struct {
 	_ bool `name:"listEventTypes" description:"List Event Types"`
 }

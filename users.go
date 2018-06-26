@@ -27,8 +27,6 @@ type User struct {
 // RegisterUserKeys registers a new set of key of the given user
 //
 // NB: only the APIKey and SecretKey will be filled
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/registerUserKeys.html
 type RegisterUserKeys struct {
 	ID string `json:"id" doc:"User id"`
 	_  bool   `name:"registerUserKeys" description:"This command allows a user to register for the developer API, returning a secret key and an API key. This request is made through the integration API port, so it is a privileged command and must be made on behalf of a user. It is up to the implementer just how the username and password are entered, and then how that translates to an integration API request. Both secret key and API key should be returned to the user"`
@@ -39,8 +37,6 @@ func (*RegisterUserKeys) response() interface{} {
 }
 
 // CreateUser represents the creation of a User
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/root_admin/createUser.html
 type CreateUser struct {
 	Account   string `json:"account" doc:"Creates the user under the specified account. If no account is specified, the username will be used as the account name."`
 	Email     string `json:"email" doc:"email"`
@@ -59,8 +55,6 @@ func (*CreateUser) response() interface{} {
 }
 
 // UpdateUser represents the modification of a User
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/updateUser.html
 type UpdateUser struct {
 	ID            string `json:"id" doc:"User uuid"`
 	Email         string `json:"email,omitempty" doc:"email"`
@@ -79,8 +73,6 @@ func (*UpdateUser) response() interface{} {
 }
 
 // ListUsers represents the search for Users
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listUsers.html
 type ListUsers struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	AccountType int64  `json:"accounttype,omitempty" doc:"List users by account type. Valid types include admin, domain-admin, read-only-admin, or user."`
@@ -107,8 +99,6 @@ func (*ListUsers) response() interface{} {
 }
 
 // DeleteUser deletes a user for an account
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/root_admin/deleteUser.html
 type DeleteUser struct {
 	ID string `json:"id" doc:"id of the user to be deleted"`
 	_  bool   `name:"deleteUser" description:"Deletes a user for an account"`

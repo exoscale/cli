@@ -106,8 +106,6 @@ type ServiceProvider struct {
 }
 
 // CreateNetwork creates a network
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createNetwork.html
 type CreateNetwork struct {
 	Account           string `json:"account,omitempty" doc:"account who will own the network"`
 	ACLID             string `json:"aclid,omitempty" doc:"Network ACL Id associated for the network"`
@@ -150,8 +148,6 @@ func (req *CreateNetwork) onBeforeSend(params *url.Values) error {
 }
 
 // UpdateNetwork (Async) updates a network
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateNetwork.html
 type UpdateNetwork struct {
 	ID                string `json:"id" doc:"the ID of the network"`
 	ChangeCidr        *bool  `json:"changecidr,omitempty" doc:"Force update even if cidr type is different"`
@@ -174,8 +170,6 @@ func (*UpdateNetwork) asyncResponse() interface{} {
 }
 
 // RestartNetwork (Async) updates a network
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/restartNetwork.html
 type RestartNetwork struct {
 	ID      string `json:"id" doc:"The id of the network to restart."`
 	Cleanup *bool  `json:"cleanup,omitempty" doc:"If cleanup old network elements"`
@@ -191,8 +185,6 @@ func (*RestartNetwork) asyncResponse() interface{} {
 }
 
 // DeleteNetwork deletes a network
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteNetwork.html
 type DeleteNetwork struct {
 	ID     string `json:"id" doc:"the ID of the network"`
 	Forced *bool  `json:"forced,omitempty" doc:"Force delete a network. Network will be marked as 'Destroy' even when commands to shutdown and cleanup to the backend fails."`
@@ -208,8 +200,6 @@ func (*DeleteNetwork) asyncResponse() interface{} {
 }
 
 // ListNetworks represents a query to a network
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listNetworks.html
 type ListNetworks struct {
 	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	ACLType           string        `json:"acltype,omitempty" doc:"list networks by ACL (access control list) type. Supported values are Account and Domain"`

@@ -54,8 +54,6 @@ type NicSecondaryIP struct {
 }
 
 // ListNics represents the NIC search
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listNics.html
 type ListNics struct {
 	ForDisplay       bool   `json:"fordisplay,omitempty" doc:"list resources by display flag; only ROOT admin is eligible to pass this parameter"`
 	Keyword          string `json:"keyword,omitempty" doc:"List by keyword"`
@@ -97,8 +95,6 @@ func (*ListNics) each(resp interface{}, callback IterateItemFunc) {
 }
 
 // AddIPToNic (Async) represents the assignation of a secondary IP
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/addIpToNic.html
 type AddIPToNic struct {
 	NicID     string `json:"nicid" doc:"the ID of the nic to which you want to assign private IP"`
 	IPAddress net.IP `json:"ipaddress,omitempty" doc:"Secondary IP Address"`
@@ -114,8 +110,6 @@ func (*AddIPToNic) asyncResponse() interface{} {
 }
 
 // RemoveIPFromNic (Async) represents a deletion request
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/removeIpFromNic.html
 type RemoveIPFromNic struct {
 	ID string `json:"id" doc:"the ID of the secondary ip address to nic"`
 	_  bool   `name:"removeIpFromNic" description:"Removes secondary IP from the NIC."`

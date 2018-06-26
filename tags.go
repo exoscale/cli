@@ -15,8 +15,6 @@ type ResourceTag struct {
 }
 
 // CreateTags (Async) creates resource tag(s)
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createTags.html
 type CreateTags struct {
 	ResourceIDs  []string      `json:"resourceids" doc:"list of resources to create the tags for"`
 	ResourceType string        `json:"resourcetype" doc:"type of the resource"`
@@ -34,8 +32,6 @@ func (*CreateTags) asyncResponse() interface{} {
 }
 
 // DeleteTags (Async) deletes the resource tag(s)
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteTags.html
 type DeleteTags struct {
 	ResourceIDs  []string      `json:"resourceids" doc:"Delete tags for resource id(s)"`
 	ResourceType string        `json:"resourcetype" doc:"Delete tag by resource type"`
@@ -52,8 +48,6 @@ func (*DeleteTags) asyncResponse() interface{} {
 }
 
 // ListTags list resource tag(s)
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listTags.html
 type ListTags struct {
 	Account      string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	Customer     string `json:"customer,omitempty" doc:"list by customer name"`

@@ -83,8 +83,6 @@ type APILimit struct {
 }
 
 // ListResourceLimits lists the resource limits
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/listResourceLimits.html
 type ListResourceLimits struct {
 	Account          string           `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID         string           `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -110,8 +108,6 @@ func (*ListResourceLimits) response() interface{} {
 }
 
 // UpdateResourceLimit updates the resource limit
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/root_admin/updateResourceLimit.html
 type UpdateResourceLimit struct {
 	Account      string       `json:"account,omitempty" doc:"Update resource for a specified account. Must be used with the domainId parameter."`
 	DomainID     string       `json:"domainid,omitempty" doc:"Update resource limits for all accounts in specified domain. If used with the account parameter, updates resource limits for a specified account in specified domain."`
@@ -130,8 +126,6 @@ func (*UpdateResourceLimit) response() interface{} {
 }
 
 // GetAPILimit gets API limit count for the caller
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/user/getApiLimit.html
 type GetAPILimit struct {
 	_ bool `name:"getApiLimit" description:"Get API limit count for the caller"`
 }

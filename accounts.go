@@ -70,8 +70,6 @@ type Account struct {
 }
 
 // ListAccounts represents a query to display the accounts
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listAccounts.html
 type ListAccounts struct {
 	AccountType       AccountType `json:"accounttype,omitempty" doc:"list accounts by account type. Valid account types are 1 (admin), 2 (domain-admin), and 0 (user)."`
 	DomainID          string      `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -98,8 +96,6 @@ type ListAccountsResponse struct {
 }
 
 // EnableAccount represents the activation of an account
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/enableAccount.html
 type EnableAccount struct {
 	Account  string `json:"account,omitempty" doc:"Enables specified account."`
 	DomainID string `json:"domainid,omitempty" doc:"Enables specified account in this domain."`
@@ -112,8 +108,6 @@ func (*EnableAccount) response() interface{} {
 }
 
 // DisableAccount (Async) represents the deactivation of an account
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/disableAccount.html
 type DisableAccount struct {
 	Lock     *bool  `json:"lock" doc:"If true, only lock the account; else disable the account"`
 	Account  string `json:"account,omitempty" doc:"Disables specified account."`

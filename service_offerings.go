@@ -59,8 +59,6 @@ func (so *ServiceOffering) ListRequest() (ListCommand, error) {
 }
 
 // ListServiceOfferings represents a query for service offerings
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listServiceOfferings.html
 type ListServiceOfferings struct {
 	DomainID         string `json:"domainid,omitempty" doc:"the ID of the domain associated with the service offering"`
 	ID               string `json:"id,omitempty" doc:"ID of the service offering"`

@@ -1,8 +1,6 @@
 package egoscale
 
 // ListResourceDetails lists the resource tag(s) (but different from listTags...)
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listResourceDetails.html
 type ListResourceDetails struct {
 	ResourceType string `json:"resourcetype" doc:"list by resource type"`
 	Account      string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`

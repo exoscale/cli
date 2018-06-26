@@ -80,8 +80,6 @@ func (vol *Volume) ListRequest() (ListCommand, error) {
 }
 
 // ResizeVolume (Async) resizes a volume
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/resizeVolume.html
 type ResizeVolume struct {
 	ID             string `json:"id" doc:"the ID of the disk volume"`
 	DiskOfferingID string `json:"diskofferingid,omitempty" doc:"new disk offering id"`
@@ -99,8 +97,6 @@ func (*ResizeVolume) asyncResponse() interface{} {
 }
 
 // ListVolumes represents a query listing volumes
-//
-// CloudStack API: https://cloudstack.apache.org/api/apidocs-4.10/apis/listVolumes.html
 type ListVolumes struct {
 	Account          string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DiskOfferingID   string        `json:"diskofferingid,omitempty" doc:"list volumes by disk offering"`

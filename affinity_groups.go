@@ -55,8 +55,6 @@ type AffinityGroupType struct {
 }
 
 // CreateAffinityGroup (Async) represents a new (anti-)affinity group
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/createAffinityGroup.html
 type CreateAffinityGroup struct {
 	Account     string `json:"account,omitempty" doc:"an account for the affinity group. Must be used with domainId."`
 	Description string `json:"description,omitempty" doc:"optional description of the affinity group"`
@@ -75,8 +73,6 @@ func (*CreateAffinityGroup) asyncResponse() interface{} {
 }
 
 // UpdateVMAffinityGroup (Async) represents a modification of a (anti-)affinity group
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/updateVMAffinityGroup.html
 type UpdateVMAffinityGroup struct {
 	ID                 string   `json:"id" doc:"The ID of the virtual machine"`
 	AffinityGroupIDs   []string `json:"affinitygroupids,omitempty" doc:"comma separated list of affinity groups id that are going to be applied to the virtual machine. Should be passed only when vm is created from a zone with Basic Network support. Mutually exclusive with securitygroupnames parameter"`
@@ -101,8 +97,6 @@ func (*UpdateVMAffinityGroup) asyncResponse() interface{} {
 }
 
 // DeleteAffinityGroup (Async) represents an (anti-)affinity group to be deleted
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/deleteAffinityGroup.html
 type DeleteAffinityGroup struct {
 	Account  string `json:"account,omitempty" doc:"the account of the affinity group. Must be specified with domain ID"`
 	DomainID string `json:"domainid,omitempty" doc:"the domain ID of account owning the affinity group"`
@@ -120,8 +114,6 @@ func (*DeleteAffinityGroup) asyncResponse() interface{} {
 }
 
 // ListAffinityGroups represents an (anti-)affinity groups search
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listAffinityGroups.html
 type ListAffinityGroups struct {
 	Account          string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID         string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -172,8 +164,6 @@ type ListAffinityGroupsResponse struct {
 }
 
 // ListAffinityGroupTypes represents an (anti-)affinity groups search
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listAffinityGroupTypes.html
 type ListAffinityGroupTypes struct {
 	Keyword  string `json:"keyword,omitempty" doc:"List by keyword"`
 	Page     int    `json:"page,omitempty"`

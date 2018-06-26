@@ -56,8 +56,6 @@ type Host struct {
 }
 
 // ListHosts lists hosts
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.4/root_admin/listHosts.html
 type ListHosts struct {
 	ClusterID     string   `json:"clusterid,omitempty" doc:"lists hosts existing in particular cluster"`
 	Details       []string `json:"details,omitempty" doc:"comma separated list of host details requested, value can be a list of [ min, all, capacity, events, stats]"`
