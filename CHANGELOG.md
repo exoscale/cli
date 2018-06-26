@@ -9,6 +9,11 @@ Changelog
 - add: addition of `listHosts`
 - change: refactor `Gettable` to use `ListRequest`
 
+0.9.29
+------
+
+- change: `DNSErrorResponse` is a proper `error`
+
 0.9.28
 ------
 
