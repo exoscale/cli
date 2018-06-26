@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.9.28 (Unreleased)
+0.9.28
 ------
 
 - feat: addition of `GetDomains`
