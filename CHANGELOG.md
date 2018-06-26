@@ -9,6 +9,12 @@ Changelog
 - add: addition of `listHosts`
 - change: refactor `Gettable` to use `ListRequest`
 
+0.9.28
+------
+
+- feat: addition of `GetDomains`
+- fix: `UpdateDomain` may contain more empty fields than `CreateDomain`
+
 0.9.27
 ------
 
