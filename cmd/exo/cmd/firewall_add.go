@@ -38,122 +38,135 @@ func firewallAddRun(cmd *cobra.Command, args []string) {
 	}
 
 	rule := &egoscale.AuthorizeSecurityGroupIngress{}
-	if len(args) > 1 {
-		rule, err = getDefaultRule(args[1], isIpv6)
-		if err != nil {
-			log.Fatal(err)
+
+	for i := 1; true; i++ {
+
+		if i >= len(args) {
+			break
 		}
-	}
 
-	rule.Description = desc
-	rule.SecurityGroupID = securityGroup.ID
-
-	isMyIP, err := cmd.Flags().GetBool("my-ip")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ip := ""
-	if isMyIP {
-		cidr, err := getMyCIDR(isIpv6)
-		if err != nil {
-			log.Fatal(err)
+		if len(args) > 1 {
+			rule, err = getDefaultRule(args[i], isIpv6)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-		ip = cidr.String()
-	}
 
-	if ip != "" {
-		rule.CidrList = []string{ip}
-	}
+		rule.Description = desc
+		rule.SecurityGroupID = securityGroup.ID
 
-	protocol, err := cmd.Flags().GetString("protocol")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if protocol != "" {
-		rule.Protocol = strings.ToLower(protocol)
-	}
-
-	cidr, err := cmd.Flags().GetString("cidr")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if cidr != "" {
-		cidrs := getCommaflag(cidr)
-
-		for _, c := range cidrs {
-			rule.CidrList = append(rule.CidrList, c)
-		}
-	}
-
-	sg, err := cmd.Flags().GetString("security-group")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if sg != "" {
-		sgs := getCommaflag(sg)
-
-		userSecurityGroups, err := getSGs(cs, sgs)
+		isMyIP, err := cmd.Flags().GetBool("my-ip")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		rule.UserSecurityGroupList = userSecurityGroups
-	}
+		ip := ""
+		if isMyIP {
+			cidr, err := getMyCIDR(isIpv6)
+			if err != nil {
+				log.Fatal(err)
+			}
+			ip = cidr.String()
+		}
 
-	icmptype, err := getUint8CustomFlag(cmd, "icmp-type")
-	if err != nil {
-		log.Fatal(err)
-	}
-	icmpcode, err := getUint8CustomFlag(cmd, "icmp-code")
-	if err != nil {
-		log.Fatal(err)
-	}
+		if ip != "" {
+			rule.CidrList = []string{ip}
+		}
 
-	if icmptype.uint8 != nil {
-		rule.IcmpType = *icmptype.uint8
-	}
-
-	if icmpcode.uint8 != nil {
-		rule.IcmpCode = *icmpcode.uint8
-	}
-
-	isEgress, err := cmd.Flags().GetBool("engress")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	port, err := cmd.Flags().GetString("port")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//Not best practis but waiting to find better solution
-	if port != "" && (rule.Protocol == "tcp" || rule.Protocol == "udp") {
-
-		ports := getCommaflag(port)
-		portsRange, err := getPortsRange(ports)
+		protocol, err := cmd.Flags().GetString("protocol")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		for _, portRange := range portsRange {
+		if protocol != "" {
+			rule.Protocol = strings.ToLower(protocol)
+		}
 
-			rule.StartPort = portRange.start
-			rule.EndPort = portRange.end
+		cidr, err := cmd.Flags().GetString("cidr")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if cidr != "" {
+			cidrs := getCommaflag(cidr)
+
+			for _, c := range cidrs {
+				rule.CidrList = append(rule.CidrList, c)
+			}
+		}
+
+		sg, err := cmd.Flags().GetString("security-group")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if sg != "" {
+			sgs := getCommaflag(sg)
+
+			userSecurityGroups, err := getSGs(cs, sgs)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			rule.UserSecurityGroupList = userSecurityGroups
+		}
+
+		icmptype, err := getUint8CustomFlag(cmd, "icmp-type")
+		if err != nil {
+			log.Fatal(err)
+		}
+		icmpcode, err := getUint8CustomFlag(cmd, "icmp-code")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if icmptype.uint8 != nil {
+			rule.IcmpType = *icmptype.uint8
+		}
+
+		if icmpcode.uint8 != nil {
+			rule.IcmpCode = *icmpcode.uint8
+		}
+
+		isEgress, err := cmd.Flags().GetBool("engress")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		port, err := cmd.Flags().GetString("port")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//Not best practis but waiting to find better solution
+		if port != "" && (rule.Protocol == "tcp" || rule.Protocol == "udp") {
+
+			ports := getCommaflag(port)
+			portsRange, err := getPortsRange(ports)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for _, portRange := range portsRange {
+
+				rule.StartPort = portRange.start
+				rule.EndPort = portRange.end
+				if err := addRule(rule, isEgress); err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+		//Not best practis but waiting to find better solution
+		if port == "" || !(rule.Protocol == "tcp" || rule.Protocol == "udp") {
 			if err := addRule(rule, isEgress); err != nil {
 				log.Fatal(err)
 			}
 		}
-	}
-	//Not best practis but waiting to find better solution
-	if port == "" || !(rule.Protocol == "tcp" || rule.Protocol == "udp") {
-		if err := addRule(rule, isEgress); err != nil {
-			log.Fatal(err)
+
+		if len(args) == 1 {
+			break
 		}
+
 	}
 
 	firewallDetails(rule.SecurityGroupID)
@@ -205,9 +218,11 @@ func getSGs(cs *egoscale.Client, sgs []string) ([]egoscale.UserSecurityGroup, er
 
 func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGroupIngress, error) {
 
+	icmpType := uint8(8)
 	cidr := defaultCidr
 	if isIpv6 {
 		cidr = defaultCidr6
+		icmpType = uint8(128)
 	}
 
 	ruleName = strings.ToLower(ruleName)
@@ -215,7 +230,7 @@ func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGr
 		return &egoscale.AuthorizeSecurityGroupIngress{
 			Protocol:    "icmp",
 			CidrList:    []string{cidr},
-			IcmpType:    8,
+			IcmpType:    icmpType,
 			IcmpCode:    0,
 			Description: "",
 		}, nil
