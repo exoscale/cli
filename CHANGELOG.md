@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.9.30
+------
+
+- fix: `VirtualMachine` `PCIDevice` representation was incomplete
+
 0.9.29
 ------
 
