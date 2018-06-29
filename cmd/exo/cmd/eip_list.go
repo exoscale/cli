@@ -11,8 +11,9 @@ import (
 
 // listCmd represents the list command
 var eipListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List elastic IP",
+	Use:     "list",
+	Short:   "List elastic IP",
+	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {

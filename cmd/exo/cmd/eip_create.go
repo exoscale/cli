@@ -11,8 +11,9 @@ import (
 
 // createCmd represents the create command
 var eipCreateCmd = &cobra.Command{
-	Use:   "create <zone name | zone id>",
-	Short: "Create EIP",
+	Use:     "create <zone name | zone id>",
+	Short:   "Create EIP",
+	Aliases: gCreateAlias,
 }
 
 func runEIPCreateCmd(cmd *cobra.Command, args []string) {

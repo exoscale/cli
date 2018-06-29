@@ -13,8 +13,9 @@ import (
 
 // showCmd represents the show command
 var vmShowCmd = &cobra.Command{
-	Use:   "show <name | id>",
-	Short: "Show virtual machine details",
+	Use:     "show <name | id>",
+	Short:   "Show virtual machine details",
+	Aliases: gShowAlias,
 }
 
 func vmShowCmdRun(cmd *cobra.Command, args []string) {

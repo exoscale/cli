@@ -13,20 +13,25 @@ import (
 	"github.com/spf13/viper"
 )
 
-var configFolder string
-var configFilePath string
+var gConfigFolder string
+var gConfigFilePath string
 
 //current Account informations
-var defaultZone = "ch-dk-2"
-var accountName string
-var currentAccount *account
+var gAccountName string
+var gCurrentAccount *account
 
-var allAccount *config
-
-var ignoreClientBuild = false
+var gAllAccount *config
 
 //egoscale client
 var cs *egoscale.Client
+
+//Aliases
+var gListAlias = []string{"ls"}
+var gRemoveAlias = []string{"rm"}
+var gDeleteAlias = []string{"del"}
+var gShowAlias = []string{"get"}
+var gCreateAlias = []string{"add"}
+var gUploadAlias = []string{"up"}
 
 type account struct {
 	Name        string
@@ -59,12 +64,14 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&configFilePath, "config", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
-	RootCmd.PersistentFlags().StringVarP(&accountName, "account", "a", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
+	RootCmd.PersistentFlags().StringVar(&gConfigFilePath, "config", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
+	RootCmd.PersistentFlags().StringVarP(&gAccountName, "account", "a", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
 
 	cobra.OnInitialize(initConfig, buildClient)
 
 }
+
+var ignoreClientBuild = false
 
 func buildClient() {
 	if ignoreClientBuild {
@@ -75,7 +82,7 @@ func buildClient() {
 		return
 	}
 
-	cs = egoscale.NewClient(currentAccount.Endpoint, currentAccount.Key, currentAccount.Secret)
+	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.Secret)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -109,11 +116,11 @@ func initConfig() {
 		log.Fatal(err)
 	}
 
-	configFolder = path.Join(usr.HomeDir, ".exoscale")
+	gConfigFolder = path.Join(usr.HomeDir, ".exoscale")
 
-	if configFilePath != "" {
+	if gConfigFilePath != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(configFilePath)
+		viper.SetConfigFile(gConfigFilePath)
 	} else {
 		// Search config in home directory with name ".cobra_test" (without extension).
 		viper.SetConfigName("exoscale")
@@ -135,24 +142,24 @@ func initConfig() {
 		log.Fatal(fmt.Errorf("couldn't read config: %s", err))
 	}
 
-	if config.DefaultAccount == "" && accountName == "" {
+	if config.DefaultAccount == "" && gAccountName == "" {
 		log.Fatalf("default account not defined")
 	}
 
-	if accountName == "" {
-		accountName = config.DefaultAccount
+	if gAccountName == "" {
+		gAccountName = config.DefaultAccount
 	}
 
-	allAccount = config
-	allAccount.DefaultAccount = accountName
+	gAllAccount = config
+	gAllAccount.DefaultAccount = gAccountName
 
 	for i, acc := range config.Accounts {
-		if acc.Name == accountName {
-			currentAccount = &config.Accounts[i]
+		if acc.Name == gAccountName {
+			gCurrentAccount = &config.Accounts[i]
 			return
 		}
 	}
-	log.Fatalf("Could't find any account with name: %q", accountName)
+	log.Fatalf("Could't find any account with name: %q", gAccountName)
 }
 
 // return a command position by fetching os.args and ignoring flags

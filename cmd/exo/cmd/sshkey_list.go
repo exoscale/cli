@@ -11,8 +11,9 @@ import (
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List available ssh keyPair",
+	Use:     "list",
+	Short:   "List available ssh keyPair",
+	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return listSSHKey()
 	},

@@ -173,9 +173,9 @@ func addAccount(filePath string, newAccounts *config) error {
 
 	accountsSize := 0
 	currentAccounts := []account{}
-	if allAccount != nil {
-		accountsSize = len(allAccount.Accounts)
-		currentAccounts = allAccount.Accounts
+	if gAllAccount != nil {
+		accountsSize = len(gAllAccount.Accounts)
+		currentAccounts = gAllAccount.Accounts
 	}
 
 	newAccountsSize := 0
@@ -228,7 +228,7 @@ func addAccount(filePath string, newAccounts *config) error {
 	}
 
 	conf.DefaultAccount = viper.Get("defaultAccount").(string)
-	allAccount = conf
+	gAllAccount = conf
 
 	return nil
 
@@ -244,7 +244,7 @@ func isCloudstackINIFileExist() (string, bool) {
 	inis := []string{
 		localConfig,
 		filepath.Join(usr.HomeDir, ".cloudstack.ini"),
-		filepath.Join(configFolder, "cloudstack.ini"),
+		filepath.Join(gConfigFolder, "cloudstack.ini"),
 		envConfigPath,
 	}
 
@@ -360,11 +360,11 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 func isAccountExist(name string) bool {
 
-	if allAccount == nil {
+	if gAllAccount == nil {
 		return false
 	}
 
-	for _, acc := range allAccount.Accounts {
+	for _, acc := range gAllAccount.Accounts {
 		if acc.Name == name {
 			return true
 		}
@@ -374,13 +374,13 @@ func isAccountExist(name string) bool {
 }
 
 func createConfigFile(fileName string) (string, error) {
-	if _, err := os.Stat(configFolder); os.IsNotExist(err) {
-		if err := os.MkdirAll(configFolder, os.ModePerm); err != nil {
+	if _, err := os.Stat(gConfigFolder); os.IsNotExist(err) {
+		if err := os.MkdirAll(gConfigFolder, os.ModePerm); err != nil {
 			return "", err
 		}
 	}
 
-	filepath := path.Join(configFolder, fileName+".toml")
+	filepath := path.Join(gConfigFolder, fileName+".toml")
 
 	if _, err := os.Stat(filepath); !os.IsNotExist(err) {
 		return "", fmt.Errorf("File %q already exist", filepath)
@@ -436,12 +436,12 @@ func checkCredentials(account *account) (*egoscale.Account, error) {
 }
 
 func listAccounts() {
-	if allAccount == nil {
+	if gAllAccount == nil {
 		return
 	}
-	for _, acc := range allAccount.Accounts {
+	for _, acc := range gAllAccount.Accounts {
 		print("- ", acc.Name)
-		if acc.Name == allAccount.DefaultAccount {
+		if acc.Name == gAllAccount.DefaultAccount {
 			print(" [Default]")
 		}
 		println("")
@@ -449,12 +449,12 @@ func listAccounts() {
 }
 
 func getAccountByName(name string) *account {
-	if allAccount == nil {
+	if gAllAccount == nil {
 		return nil
 	}
-	for i, acc := range allAccount.Accounts {
+	for i, acc := range gAllAccount.Accounts {
 		if acc.Name == name {
-			return &allAccount.Accounts[i]
+			return &gAllAccount.Accounts[i]
 		}
 	}
 	return nil

@@ -12,8 +12,9 @@ import (
 
 // createCmd represents the create command
 var sshCreateCmd = &cobra.Command{
-	Use:   "create <name>",
-	Short: "Create ssh keyPair",
+	Use:     "create <name>",
+	Short:   "Create ssh keyPair",
+	Aliases: gCreateAlias,
 }
 
 func runListCmd(cmd *cobra.Command, args []string) {

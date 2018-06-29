@@ -11,8 +11,9 @@ import (
 
 // createCmd represents the create command
 var affinitygroupCreateCmd = &cobra.Command{
-	Use:   "create <name>",
-	Short: "Create affinity group",
+	Use:     "create <name>",
+	Short:   "Create affinity group",
+	Aliases: gCreateAlias,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			cmd.Usage()

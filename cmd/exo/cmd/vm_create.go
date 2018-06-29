@@ -19,8 +19,9 @@ var templateName = "Linux Debian 9"
 
 // vmCreateCmd represents the create command
 var vmCreateCmd = &cobra.Command{
-	Use:   "create <vm name>",
-	Short: "Create and deploy a virtual machine",
+	Use:     "create <vm name>",
+	Short:   "Create and deploy a virtual machine",
+	Aliases: gCreateAlias,
 }
 
 func vmCreateRun(cmd *cobra.Command, args []string) {
@@ -278,7 +279,7 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 }
 
 func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID string) {
-	filePath := path.Join(configFolder, "instances", vmID)
+	filePath := path.Join(gConfigFolder, "instances", vmID)
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		if err := os.MkdirAll(filePath, os.ModePerm); err != nil {

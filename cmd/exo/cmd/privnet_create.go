@@ -15,8 +15,9 @@ import (
 
 // createCmd represents the create command
 var privnetCreateCmd = &cobra.Command{
-	Use:   "create <name>",
-	Short: "Create private network",
+	Use:     "create <name>",
+	Short:   "Create private network",
+	Aliases: gCreateAlias,
 }
 
 func isEmptyArgs(args ...string) bool {
