@@ -42,7 +42,9 @@ func firewallAddRun(cmd *cobra.Command, args []string) {
 	for i := 1; true; i++ {
 
 		if i >= len(args) {
-			break
+			if len(args) != 1 {
+				break
+			}
 		}
 
 		if len(args) > 1 {
