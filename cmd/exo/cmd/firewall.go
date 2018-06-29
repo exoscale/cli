@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"regexp"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -101,8 +102,17 @@ func getMyCIDR(isIpv6 bool) (*net.IPNet, error) {
 }
 
 func isAFirewallID(cs *egoscale.Client, id string) bool {
+	if !isUUID(id) {
+		return false
+	}
 	req := &egoscale.SecurityGroup{ID: id}
 	return cs.Get(req) == nil
+}
+
+// isUUID matches a UUIDv4
+func isUUID(uuid string) bool {
+	re := regexp.MustCompile(`(?i)^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`)
+	return re.MatchString(uuid)
 }
 
 func init() {
