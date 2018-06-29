@@ -22,18 +22,30 @@ func vmDeleteCmdRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if err := deleteVM(args[0]); err != nil {
+	force, err := cmd.Flags().GetBool("force")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := deleteVM(args[0], force); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func deleteVM(name string) error {
+func deleteVM(name string, force bool) error {
 	vm, err := getVMWithNameOrID(cs, name)
 	if err != nil {
 		return err
 	}
 
 	var errorReq error
+
+	if !force {
+		if !askQuestion(fmt.Sprintf("sure you want to delete %q virtual machine", vm.Name)) {
+			return nil
+		}
+
+	}
 
 	req := &egoscale.DestroyVirtualMachine{ID: vm.ID}
 	print("Destroying")
@@ -71,5 +83,8 @@ func deleteVM(name string) error {
 
 func init() {
 	vmDeleteCmd.Run = vmDeleteCmdRun
+
+	vmDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove vitual machine without prompting for confirmation")
+
 	vmCmd.AddCommand(vmDeleteCmd)
 }
