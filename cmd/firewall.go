@@ -57,14 +57,14 @@ func getSecuGrpWithNameOrID(cs *egoscale.Client, name string) (*egoscale.Securit
 	if !isAFirewallID(cs, name) {
 		securGrp := &egoscale.SecurityGroup{Name: name}
 		if err := cs.Get(securGrp); err != nil {
-			return nil, fmt.Errorf("Security group not found wrong ID or Name, got %s", name)
+			return nil, fmt.Errorf("Security group not found wrong ID or Name, got %q", name)
 		}
 		return securGrp, nil
 	}
 
 	securGrp := &egoscale.SecurityGroup{ID: name}
 	if err := cs.Get(securGrp); err != nil {
-		return nil, fmt.Errorf("Security group not found wrong ID, got %s", name)
+		return nil, fmt.Errorf("Security group not found wrong ID, got %q", name)
 	}
 	return securGrp, nil
 
