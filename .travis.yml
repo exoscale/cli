@@ -6,6 +6,7 @@ sudo: required
 go:
 - 1.9
 - "1.10"
+- tip
 
 env:
   - DEP_VERSION=0.4.1 HUGO_VERSION=0.42.1 GORELEASER_VERSION=0.77.1 NFPM_VERSION=0.9.1
