@@ -56,7 +56,7 @@ type VirtualMachine struct {
 	OsCategoryID          string            `json:"oscategoryid,omitempty" doc:"Os category ID of the virtual machine"`
 	Password              string            `json:"password,omitempty" doc:"the password (if exists) of the virtual machine"`
 	PasswordEnabled       bool              `json:"passwordenabled,omitempty" doc:"true if the password rest feature is enabled, false otherwise"`
-	PCIDevices            []string          `json:"pcidevices,omitempty" doc:"list of PCI devices"`
+	PCIDevices            []PCIDevice       `json:"pcidevices,omitempty" doc:"list of PCI devices"`
 	PodID                 string            `json:"podid,omitempty" doc:"the ID of the vm's pod"`
 	PodName               string            `json:"podname,omitempty" doc:"the name of the vm's pod"`
 	PublicIP              string            `json:"publicip,omitempty" doc:"public IP address id associated with vm via Static nat rule"`
@@ -178,6 +178,16 @@ type IPToNetwork struct {
 	IP        string `json:"ip,omitempty"`
 	Ipv6      string `json:"ipv6,omitempty"`
 	NetworkID string `json:"networkid,omitempty"`
+}
+
+// PCIDevice represents a PCI card present in the host
+type PCIDevice struct {
+	PCIVendorName     string `json:"pcivendorname,omitempty" doc:"Device vendor name of pci card"`
+	DeviceID          string `json:"deviceid,omitempty" doc:"Device model ID of pci card"`
+	RemainingCapacity int    `json:"remainingcapacity,omitempty" doc:"Remaining capacity in terms of no. of more VMs that can be deployped with this vGPU type"`
+	MaxCapacity       int    `json:"maxcapacity,omitempty" doc:"Maximum vgpu can be created with this vgpu type on the given pci group"`
+	PCIVendorID       string `json:"pcivendorid,omitempty" doc:"Device vendor ID of pci card"`
+	PCIDeviceName     string `json:"pcidevicename,omitempty" doc:"Device model name of pci card"`
 }
 
 // Password represents an encrypted password

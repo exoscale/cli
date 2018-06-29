@@ -166,7 +166,7 @@ func main() {
 					name, nameOK := tag.Lookup("name")
 					description, descriptionOK := tag.Lookup("description")
 					if !nameOK || !descriptionOK {
-						command.errors["_"] = fmt.Errorf("meta field incomplete, wanted\n\t\t_ bool `name:%q description:%q`", a.Name, command.description)
+						command.errors["_"] = fmt.Errorf("meta field incomplete, wanted\n\t_ bool `name:%q description:%q`", a.Name, command.description)
 					} else {
 						if name != a.Name || description != command.description {
 							command.errors["_"] = fmt.Errorf("meta field incorrect, got %q %q, wanted\n\t\t_ bool `name:%q description:%q`", name, description, a.Name, command.description)
@@ -294,7 +294,7 @@ func main() {
 				}
 			}
 
-			if !hasMeta {
+			if !hasMeta && *cmd == "" {
 				command.errors["_"] = fmt.Errorf("meta field missing, wanted\n\t\t_ bool `name:%q description:%q`", a.Name, a.Description)
 			}
 

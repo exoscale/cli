@@ -133,5 +133,6 @@ var methods = map[string][]cmd{
 	},
 	"host": {
 		{&egoscale.ListHosts{}, true},
+		{&egoscale.UpdateHost{}, true},
 	},
 }
