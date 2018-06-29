@@ -8,14 +8,15 @@ import (
 
 // showCmd represents the show command
 var showCmd = &cobra.Command{
-	Use:   "show <account name>",
-	Short: "Show an account details",
+	Use:     "show <account name>",
+	Short:   "Show an account details",
+	Aliases: gShowAlias,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			cmd.Usage()
 			return
 		}
-		if allAccount == nil {
+		if gAllAccount == nil {
 			log.Fatalf("No accounts defined")
 		}
 		if !isAccountExist(args[0]) {

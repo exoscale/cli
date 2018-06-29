@@ -72,7 +72,7 @@ func getSSHInfos(name string, isIpv6 bool) (*sshInfos, error) {
 		return nil, err
 	}
 
-	sshKeyPath := path.Join(configFolder, "instances", vm.ID, "id_rsa")
+	sshKeyPath := path.Join(gConfigFolder, "instances", vm.ID, "id_rsa")
 
 	if _, err := os.Stat(sshKeyPath); os.IsNotExist(err) {
 		sshKeyPath = "Default ssh keypair not found"

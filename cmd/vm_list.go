@@ -12,8 +12,9 @@ import (
 
 // listCmd represents the list command
 var vmlistCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List virtual machines instances",
+	Use:     "list",
+	Short:   "List virtual machines instances",
+	Aliases: gListAlias,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := listVMs(); err != nil {
 			log.Fatal(err)

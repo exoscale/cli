@@ -12,8 +12,9 @@ import (
 
 // uploadCmd represents the upload command
 var uploadCmd = &cobra.Command{
-	Use:   "upload <name> <path>",
-	Short: "Upload ssh keyPair from given path",
+	Use:     "upload <name> <path>",
+	Short:   "Upload ssh keyPair from given path",
+	Aliases: gUploadAlias,
 }
 
 func runUploadCmd(cmd *cobra.Command, args []string) {
