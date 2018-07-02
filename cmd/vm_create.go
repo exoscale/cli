@@ -48,6 +48,9 @@ func vmCreateRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if zone == "" {
+		zone = gCurrentAccount.DefaultZone
+	}
 
 	zone, err = getZoneIDByName(cs, zone)
 	if err != nil {
@@ -299,7 +302,7 @@ func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID string) {
 func init() {
 	vmCreateCmd.Run = vmCreateRun
 	vmCreateCmd.Flags().StringP("cloud-init-file", "f", "", "Deploy instance with a cloud-init file")
-	vmCreateCmd.Flags().StringP("zone", "z", "ch-dk-2", "<zone name | id | keyword> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1)")
+	vmCreateCmd.Flags().StringP("zone", "z", "", "<zone name | id | keyword> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1)")
 	vmCreateCmd.Flags().StringP("template", "t", "Linux Ubuntu 18.04", "<template name | id>")
 	vmCreateCmd.Flags().Int64P("disk", "d", 50, "<disk size>")
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "<ssh keys name>")

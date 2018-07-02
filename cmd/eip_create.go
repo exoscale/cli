@@ -11,17 +11,17 @@ import (
 
 // createCmd represents the create command
 var eipCreateCmd = &cobra.Command{
-	Use:     "create <zone name | zone id>",
+	Use:     "create [zone name | zone id]",
 	Short:   "Create EIP",
 	Aliases: gCreateAlias,
 }
 
 func runEIPCreateCmd(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		eipCreateCmd.Usage()
-		return
+	zone := gCurrentAccount.DefaultZone
+	if len(args) >= 1 {
+		zone = args[0]
 	}
-	associateIPAddress(args[0])
+	associateIPAddress(zone)
 }
 
 func associateIPAddress(name string) {
