@@ -8,6 +8,8 @@ builds:
       - darwin
       - linux
       - openbsd
+      - freebsd
+
     goarch:
       - amd64
   - main: ./cmd/exo/
@@ -34,6 +36,7 @@ archive:
   files:
     - LICENSE
     - CHANGELOG.md
+    - bash_completion
 
 release:
   github:
