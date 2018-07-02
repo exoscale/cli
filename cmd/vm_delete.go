@@ -28,8 +28,10 @@ func vmDeleteCmdRun(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	if err := deleteVM(args[0], force); err != nil {
-		log.Fatal(err)
+	for _, arg := range args {
+		if err := deleteVM(arg, force); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -49,7 +51,7 @@ func deleteVM(name string, force bool) error {
 	}
 
 	req := &egoscale.DestroyVirtualMachine{ID: vm.ID}
-	print("Destroying")
+	fmt.Printf("Destroying %q", vm.Name)
 	cs.AsyncRequest(req, func(jobResult *egoscale.AsyncJobResult, err error) bool {
 
 		if err != nil {
