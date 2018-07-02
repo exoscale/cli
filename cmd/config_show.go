@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -27,9 +28,11 @@ var showCmd = &cobra.Command{
 			log.Fatalf("Account %q not found", args[0])
 		}
 
+		secret := strings.Repeat("x", len(acc.Secret))
+
 		println("Name:", acc.Name)
 		println("API Key:", acc.Key)
-		println("API Secret:", acc.Secret)
+		println("API Secret:", secret)
 		println("Account:", acc.Account)
 		println("Default zone:", acc.DefaultZone)
 
