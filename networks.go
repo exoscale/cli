@@ -63,14 +63,19 @@ func (network *Network) ListRequest() (ListCommand, error) {
 	req := &ListNetworks{
 		Account:           network.Account,
 		ACLType:           network.ACLType,
-		CanUseForDeploy:   &network.CanUseForDeploy,
 		DomainID:          network.DomainID,
 		ID:                network.ID,
 		PhysicalNetworkID: network.PhysicalNetworkID,
-		RestartRequired:   &network.RestartRequired,
 		TrafficType:       network.TrafficType,
 		Type:              network.Type,
 		ZoneID:            network.ZoneID,
+	}
+
+	if network.CanUseForDeploy {
+		req.CanUseForDeploy = &network.CanUseForDeploy
+	}
+	if network.RestartRequired {
+		req.RestartRequired = &network.RestartRequired
 	}
 
 	return req, nil

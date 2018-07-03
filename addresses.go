@@ -50,15 +50,23 @@ func (ipaddress *IPAddress) ListRequest() (ListCommand, error) {
 		Account:             ipaddress.Account,
 		AssociatedNetworkID: ipaddress.AssociatedNetworkID,
 		DomainID:            ipaddress.DomainID,
-		ForDisplay:          &ipaddress.ForDisplay,
-		ForVirtualNetwork:   &ipaddress.ForVirtualNetwork,
 		ID:                  ipaddress.ID,
 		IPAddress:           ipaddress.IPAddress,
-		IsElastic:           &ipaddress.IsElastic,
-		IsSourceNat:         &ipaddress.IsSourceNat,
 		PhysicalNetworkID:   ipaddress.PhysicalNetworkID,
 		VlanID:              ipaddress.VlanID,
 		ZoneID:              ipaddress.ZoneID,
+	}
+	if ipaddress.IsElastic {
+		req.IsElastic = &ipaddress.IsElastic
+	}
+	if ipaddress.IsSourceNat {
+		req.IsSourceNat = &ipaddress.IsSourceNat
+	}
+	if ipaddress.ForDisplay {
+		req.ForDisplay = &ipaddress.ForDisplay
+	}
+	if ipaddress.ForVirtualNetwork {
+		req.ForVirtualNetwork = &ipaddress.ForVirtualNetwork
 	}
 
 	return req, nil

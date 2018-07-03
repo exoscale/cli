@@ -46,13 +46,17 @@ type ServiceOffering struct {
 
 // ListRequest builds the ListSecurityGroups request
 func (so *ServiceOffering) ListRequest() (ListCommand, error) {
+	// Restricted cannot be applied here because it really has three states
 	req := &ListServiceOfferings{
 		ID:           so.ID,
 		DomainID:     so.DomainID,
 		IsSystem:     &so.IsSystem,
 		Name:         so.Name,
-		Restricted:   &so.Restricted,
 		SystemVMType: so.SystemVMType,
+	}
+
+	if so.IsSystem {
+		req.IsSystem = &so.IsSystem
 	}
 
 	return req, nil
