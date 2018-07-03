@@ -19,8 +19,12 @@ var deleteCmd = &cobra.Command{
 }
 
 func deleteSSHKey(name string) error {
-	_, err := cs.Request(&egoscale.DeleteSSHKeyPair{Name: name})
-	return err
+	sshKey := &egoscale.DeleteSSHKeyPair{Name: name}
+	if err := cs.BooleanRequest(sshKey); err != nil {
+		return err
+	}
+	println(sshKey.Name)
+	return nil
 }
 
 func init() {

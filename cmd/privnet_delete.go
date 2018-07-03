@@ -31,8 +31,11 @@ func deletePrivnet(name string, force bool) error {
 		return err
 	}
 	addrReq.Forced = &force
-	_, err = cs.Request(addrReq)
-	return err
+	if err := cs.BooleanRequest(addrReq); err != nil {
+		return err
+	}
+	println(addrReq.ID)
+	return nil
 }
 
 func init() {
