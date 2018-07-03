@@ -12,8 +12,8 @@ import (
 
 // deleteCmd represents the delete command
 var vmDeleteCmd = &cobra.Command{
-	Use:     "delete <name | id>",
-	Short:   "Delete a virtual machine instance",
+	Use:     "delete <name | id> [name | id] ...",
+	Short:   "Delete virtual machine instance(s)",
 	Aliases: gDeleteAlias,
 }
 
