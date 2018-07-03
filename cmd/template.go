@@ -3,40 +3,19 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	"github.com/exoscale/egoscale/cmd/exo/table"
 	"github.com/spf13/cobra"
 )
 
 // templateCmd represents the template command
 var templateCmd = &cobra.Command{
 	Use:   "template",
-	Short: "List all available templates",
-	Run: func(cmd *cobra.Command, args []string) {
-
-		infos, err := listTemplates()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Operating System", "Disk", "Release Date", "ID"})
-
-		for _, v := range infos {
-			sz := strconv.FormatInt(v.Size, 10)
-			if sz == "0" {
-				sz = ""
-			}
-			table.Append([]string{v.Name, sz, v.Created, v.ID})
-		}
-		table.Render()
-	},
+	Short: "Templates informations",
 }
 
 func getTemplateIDByName(cs *egoscale.Client, name, zoneID string) (string, error) {
@@ -45,31 +24,30 @@ func getTemplateIDByName(cs *egoscale.Client, name, zoneID string) (string, erro
 		return "", err
 	}
 
-	keywords := []string{}
-
 	for _, template := range templates {
 		t := template.(*egoscale.Template)
 		if name == t.ID {
 			return t.ID, nil
 		}
-		if strings.Contains(strings.ToLower(t.Name), strings.ToLower(name)) {
-			keywords = append(keywords, t.ID)
-		}
 	}
 
-	if len(keywords) > 1 {
+	sortedTemplates, err := listTemplates(name)
+	if err != nil {
+		return "", err
+	}
+
+	if len(sortedTemplates) > 1 {
 		return "", fmt.Errorf("More than one template found")
 	}
-	if len(keywords) == 1 {
-		return keywords[0], nil
+	if len(sortedTemplates) == 1 {
+		return sortedTemplates[0].ID, nil
 	}
 
 	return "", fmt.Errorf("Template not found")
 }
 
-func listTemplates() ([]*egoscale.Template, error) {
-	template := &egoscale.Template{IsFeatured: true, ZoneID: "1"}
-	req, err := template.ListRequest()
+func listTemplates(keywords string) ([]*egoscale.Template, error) {
+	zoneID, err := getZoneIDByName(cs, gCurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +56,8 @@ func listTemplates() ([]*egoscale.Template, error) {
 
 	reLinux := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9]+(\.[0-9]+)?)`)
 	reVersion := regexp.MustCompile(`(?P<version>[0-9]+(\.[0-9]+)?)`)
+
+	req := &egoscale.ListTemplates{TemplateFilter: "featured", ZoneID: zoneID, Keyword: keywords}
 
 	cs.Paginate(req, func(i interface{}, err error) bool {
 		template := i.(*egoscale.Template)
