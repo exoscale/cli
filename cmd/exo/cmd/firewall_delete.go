@@ -25,7 +25,11 @@ func deleteFirewall(name string) error {
 		return err
 	}
 
-	return cs.Delete(&egoscale.SecurityGroup{Name: securGrp.Name, ID: securGrp.ID})
+	if err := cs.Delete(&egoscale.SecurityGroup{Name: securGrp.Name, ID: securGrp.ID}); err != nil {
+		return err
+	}
+	println(securGrp.ID)
+	return nil
 }
 
 func init() {

@@ -35,8 +35,11 @@ func deleteEip(ip string) error {
 		addrReq.ID = req.ID
 	}
 
-	_, err := cs.Request(addrReq)
-	return err
+	if err := cs.BooleanRequest(addrReq); err != nil {
+		return err
+	}
+	println(addrReq.ID)
+	return nil
 }
 
 func init() {
