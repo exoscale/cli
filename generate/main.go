@@ -76,18 +76,19 @@ func main() {
 	decoder := json.NewDecoder(sourceFile)
 	apis := new(egoscale.ListAPIsResponse)
 	if err := decoder.Decode(&apis); err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		os.Exit(1)
+		panic(err)
 	}
 
 	fset := token.NewFileSet()
 	astFiles := make([]*ast.File, 0)
 	files, err := filepath.Glob("*.go")
+	if err != nil {
+		panic(err)
+	}
 	for _, file := range files {
-		f, err := parser.ParseFile(fset, file, nil, 0)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, err.Error())
-			os.Exit(1)
+		f, er := parser.ParseFile(fset, file, nil, 0)
+		if er != nil {
+			panic(er)
 		}
 		astFiles = append(astFiles, f)
 	}
@@ -102,7 +103,10 @@ func main() {
 
 	_, err = conf.Check("egoscale", fset, astFiles, &info)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
+		_, e := fmt.Fprintf(os.Stderr, err.Error())
+		if e != nil {
+			panic(e)
+		}
 		os.Exit(1)
 	}
 
@@ -136,7 +140,10 @@ func main() {
 			name = strings.ToLower(*rtype)
 			*cmd = name
 			params = a.Response
-			fmt.Fprintf(os.Stderr, "Checking return type of %sResult, using %q\n", a.Name, *rtype)
+			_, e := fmt.Fprintf(os.Stderr, "Checking return type of %sResult, using %q\n", a.Name, *rtype)
+			if e != nil {
+				panic(e)
+			}
 		}
 
 		if command, ok := commands[name]; !ok {

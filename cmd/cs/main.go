@@ -77,6 +77,8 @@ func main() {
 		},
 	}
 
+	log.SetFlags(0)
+
 	var method egoscale.Command
 	app.Commands = buildCommands(&method, methods)
 	for i, cmd := range app.Commands {
@@ -111,7 +113,9 @@ func main() {
 		},
 	})
 
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 
 	if method == nil {
 		os.Exit(0)
@@ -138,16 +142,17 @@ func main() {
 	if debug || innerDebug {
 		payload, err := client.Payload(method)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
-			os.Exit(1)
+			log.Fatal(err)
 		}
-		fmt.Fprint(os.Stdout, client.Endpoint)
-		fmt.Fprint(os.Stdout, "\\\n?")
-		fmt.Fprintln(os.Stdout, strings.Replace(payload, "&", "\\\n&", -1))
+		if _, err = fmt.Fprintf(os.Stdout, "%s\\\n%s?", client.Endpoint, strings.Replace(payload, "&", "\\\n&", -1)); err != nil {
+			log.Fatal(err)
+		}
 
 		response := client.Response(method)
 
-		fmt.Fprintln(os.Stdout)
+		if _, err := fmt.Fprintln(os.Stdout); err != nil {
+			log.Fatal(err)
+		}
 		printResponseHelp(os.Stdout, response)
 		os.Exit(0)
 	}
@@ -162,9 +167,9 @@ func main() {
 			log.Fatal(err)
 		}
 
-		fmt.Fprint(os.Stdout, client.Endpoint)
-		fmt.Fprint(os.Stdout, "?")
-		fmt.Fprintln(os.Stdout, signature)
+		if _, err := fmt.Fprintf(os.Stdout, "%s?%s\n", client.Endpoint, signature); err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(0)
 	}
 
@@ -180,8 +185,7 @@ func main() {
 
 	resp, err := client.Request(method)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
+		log.Fatal(err)
 	}
 	out, _ := json.MarshalIndent(&resp, "", "  ")
 	printJSON(string(out), client.Theme)
@@ -541,7 +545,9 @@ func printResponseHelp(out io.Writer, response interface{}) {
 	typeof := reflect.TypeOf(response)
 
 	w := tabwriter.NewWriter(out, 0, 0, 1, ' ', tabwriter.FilterHTML)
-	fmt.Fprintln(w, "FIELD\tTYPE\tDOCUMENTATION")
+	if _, err := fmt.Fprintln(w, "FIELD\tTYPE\tDOCUMENTATION"); err != nil {
+		log.Fatal(err)
+	}
 
 	for typeof.Kind() == reflect.Ptr {
 		typeof = typeof.Elem()
@@ -565,9 +571,13 @@ func printResponseHelp(out io.Writer, response interface{}) {
 
 		if json, ok := tag.Lookup("json"); ok {
 			n, _ := egoscale.ExtractJSONTag(field.Name, json)
-			fmt.Fprintf(w, "%s\t%s\t%s\n", n, name, doc)
+			if _, err := fmt.Fprintf(w, "%s\t%s\t%s\n", n, name, doc); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
-	w.Flush()
+	if err := w.Flush(); err != nil {
+		log.Fatal(err)
+	}
 }

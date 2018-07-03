@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -15,10 +14,8 @@ var affinitygroupListCmd = &cobra.Command{
 	Use:     "list",
 	Short:   "List affinity group",
 	Aliases: gListAlias,
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := displayAffinitygroup(); err != nil {
-			log.Fatal(err)
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return displayAffinitygroup()
 	},
 }
 

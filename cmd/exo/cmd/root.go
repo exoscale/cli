@@ -96,7 +96,9 @@ func initConfig() {
 	for env, flag := range envs {
 		flag := RootCmd.Flags().Lookup(flag)
 		if value := os.Getenv(env); value != "" {
-			flag.Value.Set(value)
+			if err := flag.Value.Set(value); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 

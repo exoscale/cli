@@ -27,45 +27,38 @@ var configCmd = &cobra.Command{
 	Short: "Generate config file for this cli",
 }
 
-func configCmdRun(cmd *cobra.Command, args []string) {
+func configCmdRun(cmd *cobra.Command, args []string) error {
 
 	if viper.ConfigFileUsed() != "" {
 		println("Good day! exo is already configured with accounts:")
 		listAccounts()
-		if err := addNewAccount(false); err != nil {
-			log.Fatal(err)
-		}
-		return
+		return addNewAccount(false)
 	}
 	csPath, ok := isCloudstackINIFileExist()
 	if ok {
 		resp, ok, err := askCloudstackINIMigration(csPath)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if !ok {
-			if err := addNewAccount(true); err != nil {
-				log.Fatal(err)
-			}
-			return
+			return addNewAccount(true)
 		}
 
 		cfgPath, err := createConfigFile(exoConfigFileName)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if err := importCloudstackINI(resp, csPath, cfgPath); err != nil {
-			log.Fatal(err)
+			return err
 		}
-		addNewAccount(false)
-		return
+		return addNewAccount(false)
 	}
 	println("Hi happy Exoscalian, some configuration is required to use exo")
 	println(`
 We now need some very important informations, find them there.
 https://portal.exoscale.com/account/profile/api
 `)
-	addNewAccount(true)
+	return addNewAccount(true)
 }
 
 func addNewAccount(firstRun bool) error {
@@ -157,9 +150,9 @@ func getAccount() (*account, error) {
 
 	account.Account = accountResp.Name
 
-	cs := egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
+	csClient := egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
 
-	defaultZone, err := chooseZone(account.Name, cs)
+	defaultZone, err := chooseZone(account.Name, csClient)
 	if err != nil {
 		return nil, err
 	}
@@ -314,14 +307,14 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			}
 		}
 
-		account := account{
+		csAccount := account{
 			Name:     acc.Name(),
 			Endpoint: acc.Key("endpoint").String(),
 			Key:      acc.Key("key").String(),
 			Secret:   acc.Key("secret").String(),
 		}
 
-		accountResp, err := checkCredentials(&account)
+		accountResp, err := checkCredentials(&csAccount)
 		if err != nil {
 			fmt.Printf("Account [%s]: unable to verify user credentials\n", acc.Name())
 			if !askQuestion("Do you want to keep this account?") {
@@ -329,23 +322,23 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			}
 		}
 
-		cs := egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
+		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.Secret)
 
-		defaultZone, err := chooseZone(acc.Name(), cs)
+		defaultZone, err := chooseZone(acc.Name(), csClient)
 		if err != nil {
 			return err
 		}
 
-		account.DefaultZone = defaultZone
+		csAccount.DefaultZone = defaultZone
 
 		isDefault := false
 		if askQuestion("Make [" + acc.Name() + "] your default profile?") {
 			isDefault = true
 		}
 
-		account.Account = accountResp.Name
+		csAccount.Account = accountResp.Name
 
-		config.Accounts = append(config.Accounts, account)
+		config.Accounts = append(config.Accounts, csAccount)
 
 		if i == 1 || isDefault {
 			config.DefaultAccount = acc.Name()
@@ -353,9 +346,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 		}
 	}
 
-	addAccount(cfgPath, config)
-
-	return nil
+	return addAccount(cfgPath, config)
 }
 
 func isAccountExist(name string) bool {
@@ -419,9 +410,9 @@ func askQuestion(text string) bool {
 }
 
 func checkCredentials(account *account) (*egoscale.Account, error) {
-	cs := egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
+	csClient := egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
 
-	resp, err := cs.Request(&egoscale.ListAccounts{})
+	resp, err := csClient.Request(&egoscale.ListAccounts{})
 	if err != nil {
 		return nil, err
 	}
@@ -517,6 +508,6 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 
 func init() {
 
-	configCmd.Run = configCmdRun
+	configCmd.RunE = configCmdRun
 	RootCmd.AddCommand(configCmd)
 }

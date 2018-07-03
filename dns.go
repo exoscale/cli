@@ -186,11 +186,7 @@ func (client *Client) GetDomains() ([]DNSDomain, error) {
 // DeleteDomain delets a DNS domain
 func (client *Client) DeleteDomain(name string) error {
 	_, err := client.dnsRequest("/v1/domains/"+name, "", "DELETE")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // GetRecord returns a DNS record

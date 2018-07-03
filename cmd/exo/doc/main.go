@@ -40,7 +40,10 @@ func main() {
 	}
 
 	if *help {
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n\n%s", os.Args[0], docCmd.FlagUsages())
+		_, err := fmt.Fprintf(os.Stderr, "Usage of %s:\n\n%s", os.Args[0], docCmd.FlagUsages())
+		if err != nil {
+			log.Fatal(err)
+		}
 		os.Exit(1)
 	}
 
@@ -93,7 +96,7 @@ func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender func
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Close() // nolint: errcheck
 
 	fmt.Printf("exo: create file : %s\n", filename)
 

@@ -83,7 +83,7 @@ func generateDocs(app *cli.App, docPath string) {
 			filepath := path.Join(docPath, base+".md")
 
 			log.Printf("create file: %s", filepath)
-			if err := ioutil.WriteFile(filepath, []byte(buffer.String()), 0644); err != nil {
+			if err := ioutil.WriteFile(filepath, buffer.Bytes(), 0644); err != nil {
 				log.Fatalf("doc could not be written. %s", err)
 			}
 		}

@@ -60,13 +60,15 @@ func highlight(w io.Writer, source, style string) error {
 
 func printJSON(out, theme string) {
 	if terminal.IsTerminal(syscall.Stdout) {
-		err := highlight(os.Stdout, out, theme)
-		fmt.Fprintln(os.Stdout, "")
-		if err != nil {
+		if err := highlight(os.Stdout, out, theme); err != nil {
 			log.Fatal(err)
-			os.Exit(1)
+		}
+		if _, err := fmt.Fprintln(os.Stdout, ""); err != nil {
+			log.Fatal(err)
 		}
 	} else {
-		fmt.Fprintln(os.Stdout, out)
+		if _, err := fmt.Fprintln(os.Stdout, out); err != nil {
+			log.Fatal(err)
+		}
 	}
 }

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -16,15 +15,15 @@ import (
 var zoneCmd = &cobra.Command{
 	Use:   "zone",
 	Short: "List all available zones",
-	Run: func(cmd *cobra.Command, args []string) {
-		listZones()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return listZones()
 	},
 }
 
-func listZones() {
+func listZones() error {
 	zones, err := cs.List(&egoscale.Zone{})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	table := table.NewTable(os.Stdout)
@@ -35,6 +34,7 @@ func listZones() {
 		table.Append([]string{z.Name, z.ID})
 	}
 	table.Render()
+	return nil
 }
 
 func getZoneIDByName(cs *egoscale.Client, name string) (string, error) {

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -21,44 +20,49 @@ var eipListCmd = &cobra.Command{
 		}
 		table := table.NewTable(os.Stdout)
 		table.SetHeader([]string{"zone", "IP", "ID"})
-		listIPs(zone, table)
+		if err := listIPs(zone, table); err != nil {
+			return err
+		}
 		table.Render()
 		return nil
 	},
 }
 
-func listIPs(zone string, table *table.Table) {
+func listIPs(zone string, table *table.Table) error {
 	zReq := egoscale.IPAddress{}
 
 	if zone != "" {
 		var err error
 		zReq.ZoneID, err = getZoneIDByName(cs, zone)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		zReq.IsElastic = true
 		ips, err := cs.List(&zReq)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		for _, ipaddr := range ips {
 			ip := ipaddr.(*egoscale.IPAddress)
 			table.Append([]string{ip.ZoneName, ip.IPAddress.String(), ip.ID})
 		}
-		return
+		return nil
 	}
 
 	zones := &egoscale.Zone{}
 	zs, err := cs.List(zones)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	for _, z := range zs {
 		zID := z.(*egoscale.Zone).Name
-		listIPs(zID, table)
+		if err := listIPs(zID, table); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func init() {

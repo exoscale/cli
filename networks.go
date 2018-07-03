@@ -252,7 +252,7 @@ func (listNetwork *ListNetworks) SetPageSize(pageSize int) {
 func (*ListNetworks) each(resp interface{}, callback IterateItemFunc) {
 	networks, ok := resp.(*ListNetworksResponse)
 	if !ok {
-		callback(nil, fmt.Errorf("ListNetworksResponse expected, got %t", resp))
+		callback(nil, fmt.Errorf("type error: ListNetworksResponse expected, got %T", resp))
 		return
 	}
 

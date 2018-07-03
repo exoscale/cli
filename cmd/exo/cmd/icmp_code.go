@@ -9,6 +9,7 @@ import (
 
 type icmpCode uint16
 
+// nolint
 const (
 	//destinationUnreachable
 	netUnreachable                                                 icmpCode = 0x0300

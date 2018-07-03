@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -16,16 +15,12 @@ var vmShowCmd = &cobra.Command{
 	Use:     "show <name | id>",
 	Short:   "Show virtual machine details",
 	Aliases: gShowAlias,
-}
-
-func vmShowCmdRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		vmShowCmd.Usage()
-		return
-	}
-	if err := showVM(args[0]); err != nil {
-		log.Fatal(err)
-	}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
+		}
+		return showVM(args[0])
+	},
 }
 
 func showVM(name string) error {
@@ -91,6 +86,5 @@ func showVM(name string) error {
 }
 
 func init() {
-	vmShowCmd.Run = vmShowCmdRun
 	vmCmd.AddCommand(vmShowCmd)
 }

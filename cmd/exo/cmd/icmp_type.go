@@ -10,6 +10,7 @@ import (
 
 type icmpType uint8
 
+// nolint
 const (
 	echoReply                 icmpType = 0
 	destinationUnreachable    icmpType = 3

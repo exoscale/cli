@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"net"
 
 	"github.com/exoscale/egoscale"
@@ -13,17 +12,15 @@ var eipDeleteCmd = &cobra.Command{
 	Use:     "delete <ip | eip id>",
 	Short:   "Delete EIP",
 	Aliases: gDeleteAlias,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
+		}
+		return deleteEip(args[0])
+	},
 }
 
-func eipDeleteRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		eipDeleteCmd.Usage()
-		return
-	}
-	deleteEip(args[0])
-}
-
-func deleteEip(ip string) {
+func deleteEip(ip string) error {
 	addrReq := &egoscale.DisassociateIPAddress{}
 
 	ipAddr := net.ParseIP(ip)
@@ -33,19 +30,15 @@ func deleteEip(ip string) {
 	} else {
 		req := &egoscale.IPAddress{IPAddress: ipAddr, IsElastic: true}
 		if err := cs.Get(req); err != nil {
-			log.Fatal(err)
+			return err
 		}
 		addrReq.ID = req.ID
 	}
 
 	_, err := cs.Request(addrReq)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	return err
 }
 
 func init() {
-	eipDeleteCmd.Run = eipDeleteRun
 	eipCmd.AddCommand(eipDeleteCmd)
 }

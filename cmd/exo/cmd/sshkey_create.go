@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -15,18 +14,17 @@ var sshCreateCmd = &cobra.Command{
 	Use:     "create <name>",
 	Short:   "Create ssh keyPair",
 	Aliases: gCreateAlias,
-}
-
-func runListCmd(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		sshCreateCmd.Usage()
-		return
-	}
-	keyPair, err := createSSHKey(args[0])
-	if err != nil {
-		log.Fatal(err)
-	}
-	displayResult(keyPair)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
+		}
+		keyPair, err := createSSHKey(args[0])
+		if err != nil {
+			return err
+		}
+		displayResult(keyPair)
+		return nil
+	},
 }
 
 func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
@@ -48,10 +46,9 @@ func displayResult(sshKEYPair *egoscale.SSHKeyPair) {
 	table.Append([]string{sshKEYPair.Name, sshKEYPair.Fingerprint})
 	table.Render()
 
-	fmt.Println(sshKEYPair.PrivateKey)
+	println(sshKEYPair.PrivateKey)
 }
 
 func init() {
-	sshCreateCmd.Run = runListCmd
 	sshkeyCmd.AddCommand(sshCreateCmd)
 }
