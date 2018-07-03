@@ -14,11 +14,26 @@ func (ipaddress *IPAddress) Get(ctx context.Context, client *Client) error {
 	}
 
 	req := &ListPublicIPAddresses{
-		ID:        ipaddress.ID,
-		IPAddress: ipaddress.IPAddress,
-		Account:   ipaddress.Account,
-		DomainID:  ipaddress.DomainID,
-		ZoneID:    ipaddress.ZoneID,
+		Account:             ipaddress.Account,
+		AssociatedNetworkID: ipaddress.AssociatedNetworkID,
+		DomainID:            ipaddress.DomainID,
+		ID:                  ipaddress.ID,
+		IPAddress:           ipaddress.IPAddress,
+		PhysicalNetworkID:   ipaddress.PhysicalNetworkID,
+		VlanID:              ipaddress.VlanID,
+		ZoneID:              ipaddress.ZoneID,
+	}
+	if ipaddress.IsElastic {
+		req.IsElastic = &ipaddress.IsElastic
+	}
+	if ipaddress.IsSourceNat {
+		req.IsSourceNat = &ipaddress.IsSourceNat
+	}
+	if ipaddress.ForDisplay {
+		req.ForDisplay = &ipaddress.ForDisplay
+	}
+	if ipaddress.ForVirtualNetwork {
+		req.ForVirtualNetwork = &ipaddress.ForVirtualNetwork
 	}
 
 	if ipaddress.IsElastic {
