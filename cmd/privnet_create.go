@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"bufio"
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/exoscale/egoscale/cmd/exo/table"
@@ -31,15 +29,29 @@ var privnetCreateCmd = &cobra.Command{
 			return err
 		}
 
+		if name != "" && zone == "" {
+			zone = gCurrentAccount.DefaultZone
+		}
+
 		if name == "" && zone == "" {
+			reader := bufio.NewReader(os.Stdin)
 			if name == "" {
-				name = scanText("Name")
+				name, err = readInput(reader, "Name", "")
+				if err != nil {
+					return err
+				}
 			}
 			if desc == "" {
-				desc = scanText("Description")
+				desc, err = readInput(reader, "Description", "")
+				if err != nil {
+					return err
+				}
 			}
 			if zone == "" {
-				zone = scanText("Zone")
+				zone, err = readInput(reader, "Zone", gCurrentAccount.DefaultZone)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -58,13 +70,6 @@ func isEmptyArgs(args ...string) bool {
 		}
 	}
 	return false
-}
-
-func scanText(name string) string {
-	fmt.Printf("%s: ", name)
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	return strings.TrimSpace(scanner.Text())
 }
 
 func privnetCreate(name, desc, zone string) error {
