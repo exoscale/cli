@@ -15,137 +15,135 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var templateName = "Linux Debian 9"
-
 // vmCreateCmd represents the create command
 var vmCreateCmd = &cobra.Command{
 	Use:     "create <vm name>",
 	Short:   "Create and deploy a virtual machine",
 	Aliases: gCreateAlias,
-}
-
-func vmCreateRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		vmCreateCmd.Usage()
-		return
-	}
-
-	userDataPath, err := cmd.Flags().GetString("cloud-init-file")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	userData := ""
-
-	if userDataPath != "" {
-		userData, err = getUserData(userDataPath)
-		if err != nil {
-			log.Fatal(err)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
 		}
-	}
 
-	zone, err := cmd.Flags().GetString("zone")
-	if err != nil {
-		log.Fatal(err)
-	}
-	if zone == "" {
-		zone = gCurrentAccount.DefaultZone
-	}
+		userDataPath, err := cmd.Flags().GetString("cloud-init-file")
+		if err != nil {
+			return err
+		}
 
-	zone, err = getZoneIDByName(cs, zone)
-	if err != nil {
-		log.Fatal(err)
-	}
+		userData := ""
 
-	template, err := cmd.Flags().GetString("template")
-	if err != nil {
-		log.Fatal(err)
-	}
+		if userDataPath != "" {
+			userData, err = getUserData(userDataPath)
+			if err != nil {
+				return err
+			}
+		}
 
-	diskSize, err := cmd.Flags().GetInt64("disk")
-	if err != nil {
-		log.Fatal(err)
-	}
+		zone, err := cmd.Flags().GetString("zone")
+		if err != nil {
+			return err
+		}
 
-	template, err = getTemplateIDByName(cs, template, zone)
-	if err != nil {
-		log.Fatal(err)
-	}
+		if zone == "" {
+			zone = gCurrentAccount.DefaultZone
+		}
 
-	keypair, err := cmd.Flags().GetString("keypair")
-	if err != nil {
-		log.Fatal(err)
-	}
+		zone, err = getZoneIDByName(cs, zone)
+		if err != nil {
+			return err
+		}
 
-	sg, err := cmd.Flags().GetString("security-group")
-	if err != nil {
-		log.Fatal(err)
-	}
+		template, err := cmd.Flags().GetString("template")
+		if err != nil {
+			return err
+		}
 
-	sgs, err := getSecuGrpList(cs, sg)
-	if err != nil {
-		log.Fatal(err)
-	}
+		diskSize, err := cmd.Flags().GetInt64("disk")
+		if err != nil {
+			return err
+		}
 
-	ipv6, err := cmd.Flags().GetBool("ipv6")
-	if err != nil {
-		log.Fatal(err)
-	}
+		template, err = getTemplateIDByName(cs, template, zone)
+		if err != nil {
+			return err
+		}
 
-	privnet, err := cmd.Flags().GetString("privnet")
-	if err != nil {
-		log.Fatal(err)
-	}
+		keypair, err := cmd.Flags().GetString("keypair")
+		if err != nil {
+			return err
+		}
 
-	pvs, err := getPrivnetList(cs, privnet, zone)
-	if err != nil {
-		log.Fatal(err)
-	}
+		sg, err := cmd.Flags().GetString("security-group")
+		if err != nil {
+			return err
+		}
 
-	servOffering, err := cmd.Flags().GetString("service-offering")
-	if err != nil {
-		log.Fatal(err)
-	}
+		sgs, err := getSecuGrpList(cs, sg)
+		if err != nil {
+			return err
+		}
 
-	servOffering, err = getServiceOfferingIDByName(cs, servOffering)
-	if err != nil {
-		log.Fatal(err)
-	}
+		ipv6, err := cmd.Flags().GetBool("ipv6")
+		if err != nil {
+			return err
+		}
 
-	affinitygroup, err := cmd.Flags().GetString("anti-affinity-group")
-	if err != nil {
-		log.Fatal(err)
-	}
+		privnet, err := cmd.Flags().GetString("privnet")
+		if err != nil {
+			return err
+		}
 
-	affinitygroups, err := getAffinityGroup(cs, affinitygroup)
-	if err != nil {
-		log.Fatal(err)
-	}
+		pvs, err := getPrivnetList(cs, privnet, zone)
+		if err != nil {
+			return err
+		}
 
-	vmInfo := &egoscale.DeployVirtualMachine{
-		Name:              args[0],
-		UserData:          userData,
-		ZoneID:            zone,
-		TemplateID:        template,
-		RootDiskSize:      diskSize,
-		KeyPair:           keypair,
-		SecurityGroupIDs:  sgs,
-		IP6:               &ipv6,
-		NetworkIDs:        pvs,
-		ServiceOfferingID: servOffering,
-		AffinityGroupIDs:  affinitygroups,
-	}
+		servOffering, err := cmd.Flags().GetString("service-offering")
+		if err != nil {
+			return err
+		}
 
-	r, err := createVM(vmInfo)
-	if err != nil {
-		log.Fatal(err)
-	}
+		servOffering, err = getServiceOfferingIDByName(cs, servOffering)
+		if err != nil {
+			return err
+		}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "IP", "ID"})
+		affinitygroup, err := cmd.Flags().GetString("anti-affinity-group")
+		if err != nil {
+			return err
+		}
 
-	table.Append([]string{r.Name, r.IP().String(), r.ID})
-	table.Render()
+		affinitygroups, err := getAffinityGroup(cs, affinitygroup)
+		if err != nil {
+			return err
+		}
+
+		vmInfo := &egoscale.DeployVirtualMachine{
+			Name:              args[0],
+			UserData:          userData,
+			ZoneID:            zone,
+			TemplateID:        template,
+			RootDiskSize:      diskSize,
+			KeyPair:           keypair,
+			SecurityGroupIDs:  sgs,
+			IP6:               &ipv6,
+			NetworkIDs:        pvs,
+			ServiceOfferingID: servOffering,
+			AffinityGroupIDs:  affinitygroups,
+		}
+
+		r, err := createVM(vmInfo)
+		if err != nil {
+			return err
+		}
+
+		table := table.NewTable(os.Stdout)
+		table.SetHeader([]string{"Name", "IP", "ID"})
+
+		table.Append([]string{r.Name, r.IP().String(), r.ID})
+		table.Render()
+		return nil
+	},
 }
 
 func getCommaflag(p string) []string {
@@ -241,7 +239,7 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 			return nil, fmt.Errorf("An sshkey with name %q already exist, please create your VM with another name", sshKeyName)
 		}
 
-		defer deleteSSHKey(keyPairs.Name)
+		defer deleteSSHKey(keyPairs.Name) // nolint: errcheck
 
 		vmInfos.KeyPair = keyPairs.Name
 
@@ -300,7 +298,6 @@ func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID string) {
 }
 
 func init() {
-	vmCreateCmd.Run = vmCreateRun
 	vmCreateCmd.Flags().StringP("cloud-init-file", "f", "", "Deploy instance with a cloud-init file")
 	vmCreateCmd.Flags().StringP("zone", "z", "", "<zone name | id | keyword> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1)")
 	vmCreateCmd.Flags().StringP("template", "t", "Linux Ubuntu 18.04", "<template name | id>")

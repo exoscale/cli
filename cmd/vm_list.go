@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 	"strings"
 
@@ -15,10 +14,8 @@ var vmlistCmd = &cobra.Command{
 	Use:     "list",
 	Short:   "List virtual machines instances",
 	Aliases: gListAlias,
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := listVMs(); err != nil {
-			log.Fatal(err)
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return listVMs()
 	},
 }
 

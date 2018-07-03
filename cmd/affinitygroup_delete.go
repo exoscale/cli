@@ -10,13 +10,11 @@ var affinitygroupDeleteCmd = &cobra.Command{
 	Use:     "delete <name | id>",
 	Short:   "Delete affinity group",
 	Aliases: gDeleteAlias,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmd.Usage()
-			return
+			return cmd.Usage()
 		}
-
-		deleteAffinityGroup(args[0])
+		return deleteAffinityGroup(args[0])
 	},
 }
 

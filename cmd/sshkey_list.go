@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -23,7 +22,7 @@ func listSSHKey() error {
 	sshKey := &egoscale.SSHKeyPair{}
 	sshKeys, err := cs.List(sshKey)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	table := table.NewTable(os.Stdout)

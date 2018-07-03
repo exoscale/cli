@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -11,11 +11,12 @@ var configListCmd = &cobra.Command{
 	Use:     "list",
 	Short:   "List available accounts",
 	Aliases: gListAlias,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if gAllAccount == nil {
-			log.Fatalf("No accounts defined")
+			return fmt.Errorf("No accounts defined")
 		}
 		listAccounts()
+		return nil
 	},
 }
 

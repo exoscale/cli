@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 
@@ -16,15 +15,11 @@ import (
 var eipAssociateCmd = &cobra.Command{
 	Use:   "associate <IP address> <instance name | instance id>",
 	Short: "Associate an IP to an instance",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
-			cmd.Usage()
-			return
+			return cmd.Usage()
 		}
-
-		if err := associateIP(args[0], args[1]); err != nil {
-			log.Fatal(err)
-		}
+		return associateIP(args[0], args[1])
 	},
 }
 

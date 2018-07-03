@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -13,21 +12,19 @@ import (
 var firewallCreateCmd = &cobra.Command{
 	Use:   "create <name>",
 	Short: "Create security group",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
+		}
+		desc, err := cmd.Flags().GetString("description")
+		if err != nil {
+			return err
+		}
+		return firewallCreate(args[0], desc)
+	},
 }
 
-func firewallCreateRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		firewallCreateCmd.Usage()
-		return
-	}
-	desc, err := cmd.Flags().GetString("description")
-	if err != nil {
-		log.Fatal(err)
-	}
-	firewallCreate(args[0], desc)
-}
-
-func firewallCreate(name, desc string) {
+func firewallCreate(name, desc string) error {
 	req := &egoscale.CreateSecurityGroup{Name: name}
 
 	if desc != "" {
@@ -36,7 +33,7 @@ func firewallCreate(name, desc string) {
 
 	resp, err := cs.Request(req)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	sgResp := resp.(*egoscale.SecurityGroup)
@@ -50,10 +47,10 @@ func firewallCreate(name, desc string) {
 		table.Append([]string{sgResp.Name, sgResp.Description, sgResp.ID})
 	}
 	table.Render()
+	return nil
 }
 
 func init() {
-	firewallCreateCmd.Run = firewallCreateRun
 	firewallCreateCmd.Flags().StringP("description", "d", "", "Security group description")
 	firewallCmd.AddCommand(firewallCreateCmd)
 }

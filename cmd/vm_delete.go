@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
 
@@ -15,24 +14,26 @@ var vmDeleteCmd = &cobra.Command{
 	Use:     "delete <name | id> [name | id] ...",
 	Short:   "Delete virtual machine instance(s)",
 	Aliases: gDeleteAlias,
-}
-
-func vmDeleteCmdRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		vmDeleteCmd.Usage()
-		return
-	}
-
-	force, err := cmd.Flags().GetBool("force")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, arg := range args {
-		if err := deleteVM(arg, force); err != nil {
-			log.Fatal(err)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
 		}
-	}
+
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
+		for _, arg := range args {
+			if err := deleteVM(arg, force); err != nil {
+				_, err = fmt.Fprintf(os.Stderr, err.Error())
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	},
 }
 
 func deleteVM(name string, force bool) error {
@@ -85,9 +86,6 @@ func deleteVM(name string, force bool) error {
 }
 
 func init() {
-	vmDeleteCmd.Run = vmDeleteCmdRun
-
 	vmDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove vitual machine without prompting for confirmation")
-
 	vmCmd.AddCommand(vmDeleteCmd)
 }

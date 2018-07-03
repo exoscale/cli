@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -16,46 +15,41 @@ import (
 var sshCmd = &cobra.Command{
 	Use:   "ssh <vm name | id>",
 	Short: "SSH into a virtual machine instance",
-}
-
-func sshCmdRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		sshCmd.Usage()
-		return
-	}
-
-	ipv6, err := cmd.Flags().GetBool("ipv6")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	isInfos, err := cmd.Flags().GetBool("infos")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	isConnectionSTR, err := cmd.Flags().GetBool("print")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	infos, err := getSSHInfos(args[0], ipv6)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if isConnectionSTR {
-		if err := printSSHConnectSTR(infos); err != nil {
-			log.Fatal(err)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
 		}
-		return
-	}
 
-	if isInfos {
-		printSSHInfos(infos)
-		return
-	}
-	connectSSH(infos)
+		ipv6, err := cmd.Flags().GetBool("ipv6")
+		if err != nil {
+			return err
+		}
+
+		isInfos, err := cmd.Flags().GetBool("infos")
+		if err != nil {
+			return err
+		}
+
+		isConnectionSTR, err := cmd.Flags().GetBool("print")
+		if err != nil {
+			return err
+		}
+
+		infos, err := getSSHInfos(args[0], ipv6)
+		if err != nil {
+			return err
+		}
+
+		if isConnectionSTR {
+			return printSSHConnectSTR(infos)
+		}
+
+		if isInfos {
+			printSSHInfos(infos)
+			return nil
+		}
+		return connectSSH(infos)
+	},
 }
 
 type sshInfos struct {
@@ -131,7 +125,7 @@ func printSSHInfos(infos *sshInfos) {
 	println(" - username@IPadress:", infos.userName+"@"+infos.ip.String())
 }
 
-func connectSSH(cred *sshInfos) {
+func connectSSH(cred *sshInfos) error {
 
 	args := []string{
 		"-i",
@@ -145,14 +139,10 @@ func connectSSH(cred *sshInfos) {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
-	}
-
+	return cmd.Run()
 }
 
 func init() {
-	sshCmd.Run = sshCmdRun
 	sshCmd.Flags().BoolP("infos", "i", false, "infos show ssh connection informations")
 	sshCmd.Flags().BoolP("print", "p", false, "Print SSH connection command")
 	sshCmd.Flags().BoolP("ipv6", "6", false, "Using ipv6 for SSH")

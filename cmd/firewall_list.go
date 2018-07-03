@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -15,21 +14,19 @@ var firewallListCmd = &cobra.Command{
 	Use:     "list [security group name | id]",
 	Short:   "List security groups or show a security group rules details",
 	Aliases: gListAlias,
+	RunE: func(cmd *cobra.Command, args []string) error {
+
+		if len(args) < 1 {
+			return listSecurityGroups()
+		}
+		return firewallDetails(args[0])
+	},
 }
 
-func firewallListRun(cmd *cobra.Command, args []string) {
-
-	if len(args) < 1 {
-		listSecurityGroups()
-		return
-	}
-	firewallDetails(args[0])
-}
-
-func listSecurityGroups() {
+func listSecurityGroups() error {
 	sgs, err := cs.List(&egoscale.SecurityGroup{})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	table := table.NewTable(os.Stdout)
@@ -40,13 +37,13 @@ func listSecurityGroups() {
 		table.Append([]string{k.Name, k.Description, k.ID})
 	}
 	table.Render()
-
+	return nil
 }
 
-func firewallDetails(name string) {
+func firewallDetails(name string) error {
 	securGrp, err := getSecuGrpWithNameOrID(cs, name)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	table := table.NewTable(os.Stdout)
@@ -66,10 +63,9 @@ func firewallDetails(name string) {
 	}
 
 	table.Render()
-
+	return nil
 }
 
 func init() {
-	firewallListCmd.Run = firewallListRun
 	firewallCmd.AddCommand(firewallListCmd)
 }

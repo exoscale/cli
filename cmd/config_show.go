@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -12,20 +12,19 @@ var showCmd = &cobra.Command{
 	Use:     "show <account name>",
 	Short:   "Show an account details",
 	Aliases: gShowAlias,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmd.Usage()
-			return
+			return cmd.Usage()
 		}
 		if gAllAccount == nil {
-			log.Fatalf("No accounts defined")
+			return fmt.Errorf("No accounts defined")
 		}
 		if !isAccountExist(args[0]) {
-			log.Fatalf("Account %q doesn't exist", args[0])
+			return fmt.Errorf("Account %q doesn't exist", args[0])
 		}
 		acc := getAccountByName(args[0])
 		if acc == nil {
-			log.Fatalf("Account %q not found", args[0])
+			return fmt.Errorf("Account %q not found", args[0])
 		}
 
 		secret := strings.Repeat("x", len(acc.Secret))
@@ -35,7 +34,7 @@ var showCmd = &cobra.Command{
 		println("API Secret:", secret)
 		println("Account:", acc.Account)
 		println("Default zone:", acc.DefaultZone)
-
+		return nil
 	},
 }
 

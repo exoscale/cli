@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -16,10 +15,8 @@ import (
 var serviceofferingCmd = &cobra.Command{
 	Use:   "serviceoffering",
 	Short: "List available services offerings with details",
-	Run: func(cmd *cobra.Command, args []string) {
-		if err := listServiceOffering(); err != nil {
-			log.Fatal(err)
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return listServiceOffering()
 	},
 }
 

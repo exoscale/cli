@@ -22,14 +22,14 @@ const (
 )
 
 func formatRules(name string, rule *egoscale.IngressRule) []string {
-	source := ""
+	var source string
 	if rule.Cidr != "" {
 		source = "CIDR " + rule.Cidr
 	} else {
 		source = "SG " + rule.SecurityGroupName
 	}
 
-	ports := ""
+	var ports string
 	if rule.Protocol == "icmp" || rule.Protocol == "icmpv6" {
 		c := icmpCode((uint16(rule.IcmpType) << 8) | uint16(rule.IcmpCode))
 		t := c.icmpType()

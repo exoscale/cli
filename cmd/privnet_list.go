@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -21,13 +20,15 @@ var privnetListCmd = &cobra.Command{
 		}
 		table := table.NewTable(os.Stdout)
 		table.SetHeader([]string{"zone", "Name", "ID"})
-		listPrivnets(zone, table)
+		if err := listPrivnets(zone, table); err != nil {
+			return err
+		}
 		table.Render()
 		return nil
 	},
 }
 
-func listPrivnets(zone string, table *table.Table) {
+func listPrivnets(zone string, table *table.Table) error {
 	pnReq := &egoscale.Network{}
 
 	if zone != "" {
@@ -35,31 +36,34 @@ func listPrivnets(zone string, table *table.Table) {
 		pnReq.Type = "Isolated"
 		pnReq.ZoneID, err = getZoneIDByName(cs, zone)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		pnReq.CanUseForDeploy = true
 		pns, err := cs.List(pnReq)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		for _, pNet := range pns {
 			pn := pNet.(*egoscale.Network)
 			table.Append([]string{pn.ZoneName, pn.Name, pn.ID})
 		}
-		return
+		return nil
 	}
 
 	zones := &egoscale.Zone{}
 	zs, err := cs.List(zones)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	for _, z := range zs {
 		zID := z.(*egoscale.Zone).Name
-		listPrivnets(zID, table)
+		if err := listPrivnets(zID, table); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 func init() {

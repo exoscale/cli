@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -14,28 +13,26 @@ var eipCreateCmd = &cobra.Command{
 	Use:     "create [zone name | zone id]",
 	Short:   "Create EIP",
 	Aliases: gCreateAlias,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		zone := gCurrentAccount.DefaultZone
+		if len(args) >= 1 {
+			zone = args[0]
+		}
+		return associateIPAddress(zone)
+	},
 }
 
-func runEIPCreateCmd(cmd *cobra.Command, args []string) {
-	zone := gCurrentAccount.DefaultZone
-	if len(args) >= 1 {
-		zone = args[0]
-	}
-	associateIPAddress(zone)
-}
-
-func associateIPAddress(name string) {
+func associateIPAddress(name string) error {
 	ipReq := egoscale.AssociateIPAddress{}
-
 	var err error
 	ipReq.ZoneID, err = getZoneIDByName(cs, name)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	resp, err := cs.Request(&ipReq)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	ipResp := resp.(*egoscale.IPAddress)
@@ -46,10 +43,9 @@ func associateIPAddress(name string) {
 	table.Append([]string{ipResp.ZoneName, ipResp.IPAddress.String(), ipResp.ID})
 
 	table.Render()
-
+	return nil
 }
 
 func init() {
-	eipCreateCmd.Run = runEIPCreateCmd
 	eipCmd.AddCommand(eipCreateCmd)
 }

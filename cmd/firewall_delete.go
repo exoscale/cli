@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/exoscale/egoscale"
 
 	"github.com/spf13/cobra"
@@ -13,31 +11,23 @@ var firewallDeleteCmd = &cobra.Command{
 	Use:     "delete <security group name | id>",
 	Short:   "Delete security group",
 	Aliases: gDeleteAlias,
-	Run: func(cmd *cobra.Command, args []string) {
-
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
+		}
+		return deleteFirewall(args[0])
 	},
 }
 
-func firewallCmdRun(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
-		firewallDeleteCmd.Usage()
-		return
-	}
-	deleteFirewall(args[0])
-}
-
-func deleteFirewall(name string) {
+func deleteFirewall(name string) error {
 	securGrp, err := getSecuGrpWithNameOrID(cs, name)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	if err := cs.Delete(&egoscale.SecurityGroup{Name: securGrp.Name, ID: securGrp.ID}); err != nil {
-		log.Fatal(err)
-	}
+	return cs.Delete(&egoscale.SecurityGroup{Name: securGrp.Name, ID: securGrp.ID})
 }
 
 func init() {
-	firewallDeleteCmd.Run = firewallCmdRun
 	firewallCmd.AddCommand(firewallDeleteCmd)
 }
