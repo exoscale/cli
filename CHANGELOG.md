@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.9.31
+------
+
+- fix: `IPAddress`.`ListRequest` with boolean fields
+- fix: `Network`.`ListRequest` with boolean fields
+- fix: `ServiceOffering`.`ListRequest` with boolean fields
+
 0.9.30
 ------
 
