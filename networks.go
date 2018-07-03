@@ -116,7 +116,7 @@ type CreateNetwork struct {
 	ACLID             string `json:"aclid,omitempty" doc:"Network ACL Id associated for the network"`
 	ACLType           string `json:"acltype,omitempty" doc:"Access control type; supported values are account and domain. In 3.0 all shared networks should have aclType=Domain, and all Isolated networks - Account. Account means that only the account owner can use the network, domain - all accouns in the domain can use the network"`
 	DisplayNetwork    *bool  `json:"displaynetwork,omitempty" doc:"an optional field, whether to the display the network to the end user or not."`
-	DisplayText       string `json:"displaytext" doc:"the display text of the network"`
+	DisplayText       string `json:"displaytext,omitempty" doc:"the display text of the network"` // This field is required but might be empty
 	DomainID          string `json:"domainid,omitempty" doc:"domain ID of the account owning a network"`
 	EndIP             net.IP `json:"endip,omitempty" doc:"the ending IP address in the network IP range. If not specified, will be defaulted to startIP"`
 	EndIpv6           net.IP `json:"endipv6,omitempty" doc:"the ending IPv6 address in the IPv6 network range"`
@@ -124,7 +124,7 @@ type CreateNetwork struct {
 	IP6Cidr           string `json:"ip6cidr,omitempty" doc:"the CIDR of IPv6 network, must be at least /64"`
 	IP6Gateway        net.IP `json:"ip6gateway,omitempty" doc:"the gateway of the IPv6 network. Required for Shared networks and Isolated networks when it belongs to VPC"`
 	IsolatedPVlan     string `json:"isolatedpvlan,omitempty" doc:"the isolated private vlan for this network"`
-	Name              string `json:"name" doc:"the name of the network"`
+	Name              string `json:"name,omitempty" doc:"the name of the network"` // This field is required but might be empty
 	Netmask           net.IP `json:"netmask,omitempty" doc:"the netmask of the network. Required for Shared networks and Isolated networks when it belongs to VPC"`
 	NetworkDomain     string `json:"networkdomain,omitempty" doc:"network domain"`
 	NetworkOfferingID string `json:"networkofferingid" doc:"the network offering id"`
