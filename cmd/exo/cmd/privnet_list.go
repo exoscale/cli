@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -19,7 +20,7 @@ var privnetListCmd = &cobra.Command{
 			return err
 		}
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"zone", "Name", "ID"})
+		table.SetHeader([]string{"zone", "Name", "ID", "Associated Virtual machine"})
 		if err := listPrivnets(zone, table); err != nil {
 			return err
 		}
@@ -44,9 +45,23 @@ func listPrivnets(zone string, table *table.Table) error {
 			return err
 		}
 
-		for _, pNet := range pns {
+		var zone string
+		for i, pNet := range pns {
 			pn := pNet.(*egoscale.Network)
-			table.Append([]string{pn.ZoneName, pn.Name, pn.ID})
+			if i == 0 {
+				zone = pn.ZoneName
+			}
+
+			_, vms, err := privnetDetails(pn.ID)
+			if err != nil {
+				return err
+			}
+
+			vmNum := fmt.Sprintf("%d", len(vms))
+
+			table.Append([]string{zone, pn.Name, pn.ID, vmNum})
+
+			zone = ""
 		}
 		return nil
 	}
