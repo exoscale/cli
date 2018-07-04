@@ -32,6 +32,8 @@ var gDeleteAlias = []string{"del"}
 var gShowAlias = []string{"get"}
 var gCreateAlias = []string{"add"}
 var gUploadAlias = []string{"up"}
+var gDissociateAlias = []string{"disassociate", "dissoc"}
+var gAssociateAlias = []string{"assoc"}
 
 type account struct {
 	Name        string
