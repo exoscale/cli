@@ -186,11 +186,11 @@ func getPrivnetList(cs *egoscale.Client, commaParameter, zoneID string) ([]strin
 	sgs := getCommaflag(commaParameter)
 
 	for i, sg := range sgs {
-		s, err := getNetworkIDByName(cs, sg, zoneID)
+		s, err := getNetworkIDByName(cs, sg)
 		if err != nil {
 			return nil, err
 		}
-		sgs[i] = s
+		sgs[i] = s.ID
 	}
 
 	return sgs, nil
