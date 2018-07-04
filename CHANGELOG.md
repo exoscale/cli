@@ -1,13 +1,29 @@
 Changelog
 =========
 
-0.10.0
+0.10.0 (unreleased)
 ------
 
+- global: cloudstack documentation links are moved into cs
 - global: removal of all the `...Response` types
-- add: addition of `deleteUser`
-- add: addition of `listHosts`
+- feat: `Network` is `Listable`
+- feat: addition of `deleteUser`
+- feat: addition of `listHosts`
+- feat: addition of `updateHost`
+- feat: exo cmd (kudos to @pierre-emmanuelJ)
 - change: refactor `Gettable` to use `ListRequest`
+
+0.9.31
+------
+
+- fix: `IPAddress`.`ListRequest` with boolean fields
+- fix: `Network`.`ListRequest` with boolean fields
+- fix: `ServiceOffering`.`ListRequest` with boolean fields
+
+0.9.30
+------
+
+- fix: `VirtualMachine` `PCIDevice` representation was incomplete
 
 0.9.29
 ------
