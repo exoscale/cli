@@ -20,4 +20,4 @@ dep ensure -vendor-only
 go run doc/main.go
 
 set +xe
-echo "we are now ready to run hugo"
+echo "we are now ready to: hugo serve"

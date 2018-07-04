@@ -35,9 +35,9 @@ func writeFlag(buffer *bytes.Buffer, flag cli.Flag) {
 func generateDocs(app *cli.App, docPath string) {
 	buffer := bytes.Buffer{}
 
-	if len(app.Flags) > 0 {
+	if len(app.VisibleFlags()) > 0 {
 		buffer.WriteString("## Global Flags\n\n")
-		for _, flag := range app.Flags {
+		for _, flag := range app.VisibleFlags() {
 			writeFlag(&buffer, flag)
 		}
 	}
@@ -67,9 +67,9 @@ func generateDocs(app *cli.App, docPath string) {
 			buffer.WriteString("```\n\n")
 		}
 
-		if len(command.Flags) > 0 {
+		if len(command.VisibleFlags()) > 0 {
 			buffer.WriteString("## Flags\n\n")
-			for _, flag := range command.Flags {
+			for _, flag := range command.VisibleFlags() {
 				writeFlag(&buffer, flag)
 			}
 
