@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,6 +21,13 @@ var privnetDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+
+		if !force {
+			if !askQuestion(fmt.Sprintf("sure you want to delete %q private network", args[0])) {
+				return nil
+			}
+		}
+
 		return deletePrivnet(args[0], force)
 	},
 }
@@ -40,6 +49,6 @@ func deletePrivnet(name string, force bool) error {
 }
 
 func init() {
-	privnetDeleteCmd.Flags().BoolP("force", "f", false, "Force delete a network")
+	privnetDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove private network without prompting for confirmation")
 	privnetCmd.AddCommand(privnetDeleteCmd)
 }

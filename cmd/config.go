@@ -401,7 +401,7 @@ func askQuestion(text string) bool {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	resp, err := readInput(reader, text, "Yn")
+	resp, err := readInput(reader, text, "yN")
 	if err != nil {
 		log.Fatal(err)
 	}

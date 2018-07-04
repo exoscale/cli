@@ -21,7 +21,17 @@ var firewallRemoveCmd = &cobra.Command{
 			return err
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
 		if len(args) == 1 && deleteAll {
+			if !force {
+				if !askQuestion(fmt.Sprintf("sure you want to delete all %d firewall rules", len(args)-1)) {
+					return nil
+				}
+			}
 			res, rErr := removeAllRules(args[0])
 
 			for _, r := range res {
@@ -32,6 +42,12 @@ var firewallRemoveCmd = &cobra.Command{
 
 		if len(args) < 2 {
 			return cmd.Usage()
+		}
+
+		if !force {
+			if !askQuestion(fmt.Sprintf("sure you want to delete %q firewall rule", args[0])) {
+				return nil
+			}
 		}
 
 		isMyIP, err := cmd.Flags().GetBool("my-ip")
@@ -158,6 +174,7 @@ func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr str
 }
 
 func init() {
+	firewallRemoveCmd.Flags().BoolP("force", "f", false, "Attempt to remove firewall rule without prompting for confirmation")
 	firewallRemoveCmd.Flags().BoolP("ipv6", "6", false, "Remove rule with any IPv6 source")
 	firewallRemoveCmd.Flags().BoolP("my-ip", "m", false, "Remove rule with my IP as a source")
 	firewallRemoveCmd.Flags().BoolP("all", "", false, "Remove all rules")

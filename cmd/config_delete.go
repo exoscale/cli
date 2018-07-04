@@ -27,6 +27,17 @@ var configDeleteCmd = &cobra.Command{
 			return fmt.Errorf("Can't delete a default account")
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
+		if !force {
+			if !askQuestion(fmt.Sprintf("sure you want to delete %q account", args[0])) {
+				return nil
+			}
+		}
+
 		pos := 0
 		for i, acc := range gAllAccount.Accounts {
 			if acc.Name == args[0] {
@@ -47,5 +58,6 @@ var configDeleteCmd = &cobra.Command{
 }
 
 func init() {
+	configDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove an account without prompting for confirmation")
 	configCmd.AddCommand(configDeleteCmd)
 }

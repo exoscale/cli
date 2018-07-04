@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/exoscale/egoscale"
@@ -16,6 +17,18 @@ var eipDeleteCmd = &cobra.Command{
 		if len(args) < 1 {
 			return cmd.Usage()
 		}
+
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
+		if !force {
+			if !askQuestion(fmt.Sprintf("sure you want to delete %q EIP", args[0])) {
+				return nil
+			}
+		}
+
 		return deleteEip(args[0])
 	},
 }
@@ -43,5 +56,6 @@ func deleteEip(ip string) error {
 }
 
 func init() {
+	eipDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove EIP without prompting for confirmation")
 	eipCmd.AddCommand(eipDeleteCmd)
 }

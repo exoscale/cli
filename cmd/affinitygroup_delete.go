@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -14,6 +16,18 @@ var affinitygroupDeleteCmd = &cobra.Command{
 		if len(args) < 1 {
 			return cmd.Usage()
 		}
+
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
+		if !force {
+			if !askQuestion(fmt.Sprintf("sure you want to delete %q affinity group", args[0])) {
+				return nil
+			}
+		}
+
 		return deleteAffinityGroup(args[0])
 	},
 }
@@ -35,5 +49,6 @@ func deleteAffinityGroup(name string) error {
 }
 
 func init() {
+	affinitygroupDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove affinity group without prompting for confirmation")
 	affinitygroupCmd.AddCommand(affinitygroupDeleteCmd)
 }
