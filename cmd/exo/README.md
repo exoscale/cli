@@ -32,7 +32,6 @@ The following parameters are requested:
 - `Secret Key`
 
 You can find those in our [Exoscale Console](https://portal.exoscale.com/account/profile/api)
-Log in and navigate to:
 
 ### Automatic configuration via prompt
 
