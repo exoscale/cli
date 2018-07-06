@@ -119,7 +119,7 @@ func listTemplates(keywords string) ([]*egoscale.Template, error) {
 
 	reDate := regexp.MustCompile(`.* \((?P<date>.*)\)$`)
 
-	infos := []*egoscale.Template{}
+	templates := []*egoscale.Template{}
 	for _, k := range keys {
 		t := allOS[k]
 		m := reSubMatchMap(reDate, t.DisplayText)
@@ -132,9 +132,14 @@ func listTemplates(keywords string) ([]*egoscale.Template, error) {
 		if err != nil {
 			return nil, err
 		}
-		infos = append(infos, &egoscale.Template{Name: t.Name, Size: sz, Created: m["date"], ID: t.ID})
+		templates = append(templates, &egoscale.Template{
+			Name:    t.Name,
+			Size:    sz,
+			Created: m["date"],
+			ID:      t.ID,
+		})
 	}
-	return infos, nil
+	return templates, nil
 }
 
 func reSubMatchMap(r *regexp.Regexp, str string) map[string]string {

@@ -25,7 +25,7 @@ var sshCmd = &cobra.Command{
 			return err
 		}
 
-		isInfos, err := cmd.Flags().GetBool("infos")
+		isInfo, err := cmd.Flags().GetBool("info")
 		if err != nil {
 			return err
 		}
@@ -35,24 +35,24 @@ var sshCmd = &cobra.Command{
 			return err
 		}
 
-		infos, err := getSSHInfos(args[0], ipv6)
+		info, err := getSSHInfo(args[0], ipv6)
 		if err != nil {
 			return err
 		}
 
 		if isConnectionSTR {
-			return printSSHConnectSTR(infos)
+			return printSSHConnectSTR(info)
 		}
 
-		if isInfos {
-			printSSHInfos(infos)
+		if isInfo {
+			printSSHInfo(info)
 			return nil
 		}
-		return connectSSH(infos)
+		return connectSSH(info)
 	},
 }
 
-type sshInfos struct {
+type sshInfo struct {
 	sshKeys  string
 	userName string
 	ip       *net.IP
@@ -60,7 +60,7 @@ type sshInfos struct {
 	vmID     string
 }
 
-func getSSHInfos(name string, isIpv6 bool) (*sshInfos, error) {
+func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 	vm, err := getVMWithNameOrID(cs, name)
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func getSSHInfos(name string, isIpv6 bool) (*sshInfos, error) {
 		return nil, fmt.Errorf("User name not found in template id %q", template.ID)
 	}
 
-	return &sshInfos{
+	return &sshInfo{
 		sshKeys:  sshKeyPath,
 		userName: tempUser,
 		ip:       vmIP,
@@ -108,24 +108,25 @@ func getSSHInfos(name string, isIpv6 bool) (*sshInfos, error) {
 
 }
 
-func printSSHConnectSTR(infos *sshInfos) error {
+func printSSHConnectSTR(info *sshInfo) error {
 
-	if _, err := os.Stat(infos.sshKeys); os.IsNotExist(err) {
+	if _, err := os.Stat(info.sshKeys); os.IsNotExist(err) {
 		return fmt.Errorf("Default ssh keypair not found")
 	}
 
-	fmt.Printf("ssh -i %s %s@%s\n", infos.sshKeys, infos.userName, infos.ip)
+	fmt.Printf("ssh -i %s %s@%s\n", info.sshKeys, info.userName, info.ip)
 
 	return nil
 }
 
-func printSSHInfos(infos *sshInfos) {
-	println("Virtual machine name", infos.vmName, "with ID", infos.vmID)
-	println(" - sshkey path:", infos.sshKeys)
-	println(" - username@IPadress:", infos.userName+"@"+infos.ip.String())
+func printSSHInfo(info *sshInfo) {
+	println("Host", info.vmName)
+	println("\tHostName", info.ip.String())
+	println("\tUser", info.userName)
+	println("\tIdentityFile", info.sshKeys)
 }
 
-func connectSSH(cred *sshInfos) error {
+func connectSSH(cred *sshInfo) error {
 
 	args := []string{
 		"-i",
@@ -143,8 +144,8 @@ func connectSSH(cred *sshInfos) error {
 }
 
 func init() {
-	sshCmd.Flags().BoolP("infos", "i", false, "infos show ssh connection informations")
-	sshCmd.Flags().BoolP("print", "p", false, "Print SSH connection command")
-	sshCmd.Flags().BoolP("ipv6", "6", false, "Using ipv6 for SSH")
+	sshCmd.Flags().BoolP("info", "i", false, "Print SSH config information")
+	sshCmd.Flags().BoolP("print", "p", false, "Print SSH command")
+	sshCmd.Flags().BoolP("ipv6", "6", false, "Use IPv6 for SSH")
 	RootCmd.AddCommand(sshCmd)
 }
