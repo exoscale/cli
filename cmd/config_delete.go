@@ -17,14 +17,14 @@ var configDeleteCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 		if gAllAccount == nil {
-			return fmt.Errorf("No accounts defined")
+			return fmt.Errorf("no accounts defined")
 		}
 		if !isAccountExist(args[0]) {
-			return fmt.Errorf("Account %q doesn't exist", args[0])
+			return fmt.Errorf("account %q doesn't exist", args[0])
 		}
 
 		if args[0] == gAllAccount.DefaultAccount {
-			return fmt.Errorf("Can't delete a default account")
+			return fmt.Errorf("cannot delete the default account")
 		}
 
 		force, err := cmd.Flags().GetBool("force")
@@ -33,7 +33,7 @@ var configDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q account", args[0])) {
+			if !askQuestion(fmt.Sprintf("Do you really want to delete the config for %q?", args[0])) {
 				return nil
 			}
 		}

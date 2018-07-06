@@ -314,5 +314,5 @@ func getUint8CustomFlag(cmd *cobra.Command, name string) (uint8PtrValue, error) 
 			return *r, nil
 		}
 	}
-	return uint8PtrValue{}, fmt.Errorf("Unable to get flag %s", name)
+	return uint8PtrValue{}, fmt.Errorf("unable to get flag %q", name)
 }

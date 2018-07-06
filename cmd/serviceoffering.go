@@ -65,7 +65,7 @@ func getServiceOfferingIDByName(cs *egoscale.Client, servOffering string) (strin
 			return r.ID, nil
 		}
 	}
-	return "", fmt.Errorf("Service offering not found")
+	return "", fmt.Errorf("service offering %q was not found", servOffering)
 }
 
 func init() {

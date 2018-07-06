@@ -37,13 +37,13 @@ func getTemplateIDByName(cs *egoscale.Client, name, zoneID string) (string, erro
 	}
 
 	if len(sortedTemplates) > 1 {
-		return "", fmt.Errorf("More than one template found")
+		return "", fmt.Errorf("more than one templates found")
 	}
 	if len(sortedTemplates) == 1 {
 		return sortedTemplates[0].ID, nil
 	}
 
-	return "", fmt.Errorf("Template not found")
+	return "", fmt.Errorf("template %q not found", name)
 }
 
 func listTemplates(keywords string) ([]*egoscale.Template, error) {

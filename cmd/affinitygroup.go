@@ -14,25 +14,20 @@ var affinitygroupCmd = &cobra.Command{
 	Short: "Affinity groups management",
 }
 
-func getAffinityGroupIDByName(cs *egoscale.Client, affinityGroup string) (string, error) {
-	affReq := &egoscale.ListAffinityGroups{}
-
-	affResp, err := cs.Request(affReq)
+func getAffinityGroupIDByName(cs *egoscale.Client, name string) (string, error) {
+	affs, err := cs.List(&egoscale.AffinityGroup{})
 	if err != nil {
 		return "", err
 	}
 
-	affs := affResp.(*egoscale.ListAffinityGroupsResponse)
-
-	for _, aff := range affs.AffinityGroup {
-		if strings.ToLower(affinityGroup) == strings.ToLower(aff.Name) {
-			return aff.ID, nil
-		}
-		if affinityGroup == aff.ID {
+	n := strings.ToLower(name)
+	for _, a := range affs {
+		aff := a.(*egoscale.AffinityGroup)
+		if n == strings.ToLower(aff.Name) || n == aff.ID {
 			return aff.ID, nil
 		}
 	}
-	return "", fmt.Errorf("Affinity group not found")
+	return "", fmt.Errorf("missing Affinity Group %q", name)
 }
 
 func init() {

@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -24,7 +22,7 @@ func getVMWithNameOrID(cs *egoscale.Client, name string) (*egoscale.VirtualMachi
 	vm.ID = ""
 
 	if err := cs.Get(vm); err != nil {
-		return nil, fmt.Errorf("Unable to get Virtual Machine %q. %s", name, err)
+		return nil, err
 	}
 	return vm, nil
 }

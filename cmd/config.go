@@ -145,7 +145,7 @@ func getAccount() (*account, error) {
 
 	accountResp, err := checkCredentials(account)
 	if err != nil {
-		return nil, fmt.Errorf("Account [%s]: unable to verify user credentials", account.Name)
+		return nil, fmt.Errorf("unable to verify user credentials of %q", account.Name)
 	}
 
 	account.Account = accountResp.Name
@@ -374,7 +374,7 @@ func createConfigFile(fileName string) (string, error) {
 	filepath := path.Join(gConfigFolder, fileName+".toml")
 
 	if _, err := os.Stat(filepath); !os.IsNotExist(err) {
-		return "", fmt.Errorf("File %q already exist", filepath)
+		return "", fmt.Errorf("%q exists already", filepath)
 	}
 	return filepath, nil
 }

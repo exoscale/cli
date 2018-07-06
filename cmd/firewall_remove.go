@@ -170,7 +170,7 @@ func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr str
 		_, err = fmt.Println(in.RuleID)
 		return err
 	}
-	return fmt.Errorf("Rule %q not foud", ruleName)
+	return fmt.Errorf("missing rule %q", ruleName)
 }
 
 func init() {
