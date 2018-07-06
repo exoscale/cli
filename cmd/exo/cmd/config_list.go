@@ -13,7 +13,7 @@ var configListCmd = &cobra.Command{
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if gAllAccount == nil {
-			return fmt.Errorf("No accounts defined")
+			return fmt.Errorf("no accounts defined")
 		}
 		listAccounts()
 		return nil

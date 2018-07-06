@@ -33,7 +33,7 @@ var eipAssociateCmd = &cobra.Command{
 func associateIP(ipAddr, instance string) (string, error) {
 	ip := net.ParseIP(ipAddr)
 	if ip == nil {
-		return "", fmt.Errorf("Invalid IP address")
+		return "", fmt.Errorf("invalid IP address %q", ipAddr)
 	}
 
 	vm, err := getVMWithNameOrID(cs, instance)
@@ -44,7 +44,7 @@ func associateIP(ipAddr, instance string) (string, error) {
 	defaultNic := vm.DefaultNic()
 
 	if defaultNic == nil {
-		return "", fmt.Errorf("No default NIC on this instance")
+		return "", fmt.Errorf("the instance %q has not default NIC", vm.ID)
 	}
 
 	resp, err := cs.Request(&egoscale.AddIPToNic{NicID: defaultNic.ID, IPAddress: ip})

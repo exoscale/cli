@@ -236,9 +236,8 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 			if r.ErrorCode != egoscale.ParamError && r.CSErrorCode != egoscale.InvalidParameterValueException {
 				return nil, err
 			}
-			return nil, fmt.Errorf("An sshkey with name %q already exist, please create your VM with another name", sshKeyName)
+			return nil, fmt.Errorf("an SSH key with that name %q already exists, please choose a different name", sshKeyName)
 		}
-
 		defer deleteSSHKey(keyPairs.Name) // nolint: errcheck
 
 		vmInfos.KeyPair = keyPairs.Name

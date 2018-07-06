@@ -57,14 +57,14 @@ func getSecuGrpWithNameOrID(cs *egoscale.Client, name string) (*egoscale.Securit
 	if !isAFirewallID(cs, name) {
 		securGrp := &egoscale.SecurityGroup{Name: name}
 		if err := cs.Get(securGrp); err != nil {
-			return nil, fmt.Errorf("Security group not found wrong ID or Name, got %q", name)
+			return nil, err
 		}
 		return securGrp, nil
 	}
 
 	securGrp := &egoscale.SecurityGroup{ID: name}
 	if err := cs.Get(securGrp); err != nil {
-		return nil, fmt.Errorf("Security group not found wrong ID, got %q", name)
+		return nil, err
 	}
 	return securGrp, nil
 
@@ -95,7 +95,7 @@ func getMyCIDR(isIpv6 bool) (*net.IPNet, error) {
 	}
 
 	if len(ip) < 1 {
-		return nil, fmt.Errorf("Invalid IP address")
+		return nil, fmt.Errorf("no IP addresses were found using OpenDNS")
 	}
 
 	return &net.IPNet{IP: ip[0].IP, Mask: cidrMask}, nil

@@ -31,11 +31,11 @@ func getNetworkIDByName(cs *egoscale.Client, name string) (*egoscale.Network, er
 	}
 	switch match {
 	case 0:
-		return nil, fmt.Errorf("Unable to find this private network")
+		return nil, fmt.Errorf("unable to find the private network %q", name)
 	case 1:
 		return res, nil
 	default:
-		return nil, fmt.Errorf("Multiple private network found")
+		return nil, fmt.Errorf("multiple private networks were found for %q", name)
 
 	}
 }

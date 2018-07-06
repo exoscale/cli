@@ -59,13 +59,13 @@ func getZoneIDByName(cs *egoscale.Client, name string) (string, error) {
 	}
 
 	if len(keywords) > 1 {
-		return "", fmt.Errorf("More than one zone found")
+		return "", fmt.Errorf("more than one zones were found")
 	}
 	if len(keywords) == 1 {
 		return keywords[0], nil
 	}
 
-	return "", fmt.Errorf("Zone not found")
+	return "", fmt.Errorf("zone %q was not found", name)
 }
 
 func init() {

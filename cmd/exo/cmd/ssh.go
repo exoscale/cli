@@ -74,17 +74,16 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 
 	nic := vm.DefaultNic()
 	if nic == nil {
-		return nil, fmt.Errorf("No default NIC on this instance")
+		return nil, fmt.Errorf("this instance %q has no default NIC", vm.ID)
 	}
 
 	vmIP := vm.IP()
 
 	if isIpv6 {
-		if nic.IP6Address != nil {
-			vmIP = &nic.IP6Address
-		} else {
-			return nil, fmt.Errorf("IPv6 not found on this virtual machine ID %q", vm.ID)
+		if nic.IP6Address == nil {
+			return nil, fmt.Errorf("missing IPv6 address on the instance %q", vm.ID)
 		}
+		vmIP = &nic.IP6Address
 	}
 
 	template := &egoscale.Template{ID: vm.TemplateID, IsFeatured: true, ZoneID: "1"}
@@ -95,7 +94,7 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 
 	tempUser, ok := template.Details["username"]
 	if !ok {
-		return nil, fmt.Errorf("User name not found in template id %q", template.ID)
+		return nil, fmt.Errorf("missing username information in Template %q", template.ID)
 	}
 
 	return &sshInfo{
@@ -111,7 +110,7 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 func printSSHConnectSTR(info *sshInfo) error {
 
 	if _, err := os.Stat(info.sshKeys); os.IsNotExist(err) {
-		return fmt.Errorf("Default ssh keypair not found")
+		return fmt.Errorf("default ssh KeyPair not found %q infos.sshKeys", info.sshKeys)
 	}
 
 	fmt.Printf("ssh -i %s %s@%s\n", info.sshKeys, info.userName, info.ip)

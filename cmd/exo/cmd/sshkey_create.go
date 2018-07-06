@@ -33,11 +33,11 @@ func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
 		return nil, err
 	}
 
-	sshKEYPair, ok := resp.(*egoscale.SSHKeyPair)
+	sshKeyPair, ok := resp.(*egoscale.SSHKeyPair)
 	if !ok {
-		return nil, fmt.Errorf("Expected %q, got %t", "egoscale.CreateSSHKeyPairResponse", resp)
+		return nil, fmt.Errorf("wrong type expected %q, got %T", "egoscale.CreateSSHKeyPairResponse", resp)
 	}
-	return sshKEYPair, nil
+	return sshKeyPair, nil
 }
 
 func displayResult(sshKEYPair *egoscale.SSHKeyPair) {

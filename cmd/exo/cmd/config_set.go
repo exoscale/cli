@@ -16,11 +16,11 @@ var configSetCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 		if gAllAccount == nil {
-			return fmt.Errorf("No accounts defined")
+			return fmt.Errorf("no accounts are defined")
 		}
 
 		if !isAccountExist(args[0]) {
-			return fmt.Errorf("Account %q doesn't exist", args[0])
+			return fmt.Errorf("account %q does not exist", args[0])
 		}
 
 		viper.Set("defaultAccount", args[0])

@@ -29,7 +29,7 @@ var eipDissociateCmd = &cobra.Command{
 func dissociateIP(ipAddr, instance string) error {
 	ip := net.ParseIP(ipAddr)
 	if ip == nil {
-		return fmt.Errorf("Invalid IP address")
+		return fmt.Errorf("invalid IP address %q", ipAddr)
 	}
 
 	vm, err := getVMWithNameOrID(cs, instance)
@@ -40,7 +40,7 @@ func dissociateIP(ipAddr, instance string) error {
 	defaultNic := vm.DefaultNic()
 
 	if defaultNic == nil {
-		return fmt.Errorf("No default NIC on this instance")
+		return fmt.Errorf("the instance %q has no default NIC", vm.ID)
 	}
 
 	eipID, err := getSecondaryIP(defaultNic, ip)
@@ -63,7 +63,7 @@ func getSecondaryIP(nic *egoscale.Nic, ip net.IP) (string, error) {
 			return sIP.ID, nil
 		}
 	}
-	return "", fmt.Errorf("eip: %q not found", ip.String())
+	return "", fmt.Errorf("elastic IP %q not found", ip)
 }
 
 func init() {

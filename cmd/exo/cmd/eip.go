@@ -17,7 +17,7 @@ var eipCmd = &cobra.Command{
 func getEIPIDByIP(cs *egoscale.Client, ipAddr string) (string, error) {
 	ip := net.ParseIP(ipAddr)
 	if ip == nil {
-		return "", fmt.Errorf("Invalid IP address")
+		return "", fmt.Errorf("invalid IP address %q", ipAddr)
 	}
 	eips, err := cs.List(&egoscale.IPAddress{IsElastic: true})
 	if err != nil {
@@ -31,7 +31,7 @@ func getEIPIDByIP(cs *egoscale.Client, ipAddr string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Template not found")
+	return "", fmt.Errorf("elastic IP %q not found", ipAddr)
 }
 
 func init() {

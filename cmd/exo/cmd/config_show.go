@@ -17,17 +17,17 @@ var showCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 		if gAllAccount == nil {
-			return fmt.Errorf("No accounts defined")
+			return fmt.Errorf("no accounts are defined")
 		}
 		if !isAccountExist(args[0]) {
-			return fmt.Errorf("Account %q doesn't exist", args[0])
+			return fmt.Errorf("account %q does not exist", args[0])
 		}
 		acc := getAccountByName(args[0])
 		if acc == nil {
-			return fmt.Errorf("Account %q not found", args[0])
+			return fmt.Errorf("account %q was not found", args[0])
 		}
 
-		secret := strings.Repeat("x", len(acc.Secret))
+		secret := strings.Repeat("×", len(acc.Secret))
 
 		println("Name:", acc.Name)
 		println("API Key:", acc.Key)
