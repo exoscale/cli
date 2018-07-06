@@ -22,7 +22,7 @@ var templateListCmd = &cobra.Command{
 			keyword = strings.Join(args, " ")
 		}
 
-		infos, err := listTemplates(keyword)
+		templates, err := listTemplates(keyword)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -30,12 +30,16 @@ var templateListCmd = &cobra.Command{
 		table := table.NewTable(os.Stdout)
 		table.SetHeader([]string{"Operating System", "Disk", "Release Date", "ID"})
 
-		for _, v := range infos {
-			sz := strconv.FormatInt(v.Size, 10)
+		for _, t := range templates {
+			sz := strconv.FormatInt(t.Size, 10)
 			if sz == "0" {
 				sz = ""
 			}
-			table.Append([]string{v.Name, sz, v.Created, v.ID})
+			table.Append([]string{
+				t.Name, sz,
+				t.Created,
+				t.ID,
+			})
 		}
 		table.Render()
 	},
