@@ -16,7 +16,7 @@ import (
 var gConfigFolder string
 var gConfigFilePath string
 
-//current Account informations
+//current Account information
 var gAccountName string
 var gCurrentAccount *account
 

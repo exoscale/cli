@@ -33,7 +33,7 @@ The following parameters are requested:
 
 You can find those in our [Exoscale Console](https://portal.exoscale.com/account/profile/api)
 
-### Automatic configuration via prompt
+### Automatic configuration
 
 The CLI will guide you in the initial configuration.
 The configuration file and all assets created by any `exo` command will be saved in the `~/.exoscale/` folder.
@@ -42,8 +42,8 @@ The configuration file and all assets created by any `exo` command will be saved
 $ exo config
 Hi happy Exoscalian, some configuration is required to use exo
 
-We now need some very important informations, find them there.
-https://portal.exoscale.com/account/profile/api
+We now need some very important information, find them there.
+<https://portal.exoscale.com/account/profile/api>
 
 [+] Account name [none]: Production
 [+] API Key [none]: EXO...
@@ -56,35 +56,7 @@ Choose [Production] default zone:
 [+] Select [1]: 1
 [+] Do you wish to add another account? [Yn]: n
 ```
-If you have already a `cloudstack.ini` configuration file
 
-### Automatic configuration `cloustack.ini` migration
-
-```shell
-$ exo config
-We've found a "cloudstack.ini" configuration file with the following configurations:
-- [production] EXO...
-- [preprod] EXO...
-- [fail] EXO...INVALIDE_KEY
-[+] Do you wish to import them automagically? [All, some, none]: all
-Choose [production] default zone:
-1: ch-gva-2
-2: ch-dk-2
-3: at-vie-1
-4: de-fra-1
-[+] Select [1]: 1
-[+] Make [production] your default profile? [Yn]: y
-Choose [preprod] default zone:
-1: ch-gva-2
-2: ch-dk-2
-3: at-vie-1
-4: de-fra-1
-[+] Select [1]: 1
-[+] Make [preprod] your default profile? [Yn]: n
-Account [fail]: unable to verify user credentials
-[+] Do you want to keep this account? [Yn]: n
-[+] Do you wish to add another account? [Yn]: n
-```
 
 ## Usage
 
