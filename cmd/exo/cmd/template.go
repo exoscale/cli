@@ -15,7 +15,7 @@ import (
 // templateCmd represents the template command
 var templateCmd = &cobra.Command{
 	Use:   "template",
-	Short: "Templates informations",
+	Short: "Templates details",
 }
 
 func getTemplateIDByName(cs *egoscale.Client, name, zoneID string) (string, error) {

@@ -55,7 +55,7 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 	}
 	println("Hi happy Exoscalian, some configuration is required to use exo")
 	println(`
-We now need some very important informations, find them there.
+We now need some very important information, find them there.
 https://portal.exoscale.com/account/profile/api
 `)
 	return addNewAccount(true)
