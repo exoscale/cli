@@ -26,13 +26,20 @@ var firewallRemoveCmd = &cobra.Command{
 			return err
 		}
 
+		sgName := args[0]
+
 		if len(args) == 1 && deleteAll {
+			securGrp, errGet := getSecuGrpWithNameOrID(cs, sgName)
+			if errGet != nil {
+				return errGet
+			}
+			count := len(securGrp.IngressRule) + len(securGrp.EgressRule)
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to delete all %d firewall rules", len(args)-1)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to delete all %d firewall rule(s) from %s", count, sgName)) {
 					return nil
 				}
 			}
-			res, rErr := removeAllRules(args[0])
+			res, rErr := removeAllRules(sgName)
 
 			for _, r := range res {
 				println(r)
@@ -45,7 +52,7 @@ var firewallRemoveCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q firewall rule", args[0])) {
+			if !askQuestion(fmt.Sprintf("Are your sure you want to delete the %q firewall rule from %s", args[1], sgName)) {
 				return nil
 			}
 		}
