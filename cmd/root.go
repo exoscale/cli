@@ -58,6 +58,14 @@ var RootCmd = &cobra.Command{
 	//Long:  `A simple CLI to use CloudStack using egoscale lib`,
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version of exo",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("exo version %s\n", egoscale.Version)
+	},
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute() {
@@ -70,6 +78,7 @@ func Execute() {
 func init() {
 	RootCmd.PersistentFlags().StringVar(&gConfigFilePath, "config", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
 	RootCmd.PersistentFlags().StringVarP(&gAccountName, "account", "a", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
+	RootCmd.AddCommand(versionCmd)
 
 	cobra.OnInitialize(initConfig, buildClient)
 
