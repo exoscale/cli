@@ -1,71 +1,76 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/exoscale/egoscale/cmd/exo/table"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var firewallListCmd = &cobra.Command{
-	Use:     "list [security group name | id]",
-	Short:   "List security groups or show a security group rules details",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-
-		if len(args) < 1 {
-			return listSecurityGroups()
-		}
-		return firewallDetails(args[0])
-	},
+func init() {
+	firewallCmd.AddCommand(&cobra.Command{
+		Use:     "list [filter by name | id]*",
+		Short:   "List security groups",
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			t := table.NewTable(os.Stdout)
+			err := firewallListSecurityGroups(t, args)
+			if err == nil {
+				t.Render()
+			}
+			return err
+		},
+	})
 }
 
-func listSecurityGroups() error {
+func firewallListSecurityGroups(t *table.Table, filters []string) error {
 	sgs, err := cs.List(&egoscale.SecurityGroup{})
 	if err != nil {
 		return err
 	}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Description", "ID"})
+	data := make([][]string, 0)
 
-	for _, key := range sgs {
-		k := key.(*egoscale.SecurityGroup)
-		table.Append([]string{k.Name, k.Description, k.ID})
+	for _, s := range sgs {
+		sg := s.(*egoscale.SecurityGroup)
+
+		keep := true
+		if len(filters) > 0 {
+			keep = false
+			s := strings.ToLower(
+				fmt.Sprintf("%s#%s#%s", sg.ID, sg.Name, sg.Description))
+
+			for _, filter := range filters {
+				substr := strings.ToLower(filter)
+				if strings.Contains(s, substr) {
+					keep = true
+					break
+				}
+			}
+		}
+
+		if !keep {
+			continue
+		}
+
+		data = append(data, []string{
+			sg.Name,
+			sg.Description,
+			sg.ID,
+		})
 	}
-	table.Render()
+
+	headers := []string{"Name", "Description", "ID"}
+	if len(data) > 0 {
+		t.SetHeader(headers)
+	}
+	t.AppendBulk(data)
+	if len(data) > 10 {
+		t.SetFooter(headers)
+	}
+
 	return nil
-}
-
-func firewallDetails(name string) error {
-	securGrp, err := getSecuGrpWithNameOrID(cs, name)
-	if err != nil {
-		return err
-	}
-
-	table := table.NewTable(os.Stdout)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader([]string{"Type", "Source", "Protocol", "Port", "Description", "ID"})
-
-	heading := "INGRESS"
-	for _, in := range securGrp.IngressRule {
-		table.Append(formatRules(heading, &in))
-		heading = ""
-	}
-
-	heading = "EGRESS"
-	for _, out := range securGrp.EgressRule {
-		table.Append(formatRules(heading, (*egoscale.IngressRule)(&out)))
-		heading = ""
-	}
-
-	table.Render()
-	return nil
-}
-
-func init() {
-	firewallCmd.AddCommand(firewallListCmd)
 }

@@ -8,6 +8,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	firewallDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove security group without prompting for confirmation")
+	firewallCmd.AddCommand(firewallDeleteCmd)
+}
+
 // deleteCmd represents the delete command
 var firewallDeleteCmd = &cobra.Command{
 	Use:     "delete <security group name | id>",
@@ -23,30 +28,32 @@ var firewallDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q security group", args[0])) {
-				return nil
+		for _, arg := range args {
+			q := fmt.Sprintf("Are you sure you want to delete the security group: %q", arg)
+			if !force && !askQuestion(q) {
+				continue
 			}
+
+			output, err := firewallDelete(arg)
+			if err != nil {
+				return err
+			}
+			fmt.Println(output)
 		}
 
-		return deleteFirewall(args[0])
+		return nil
 	},
 }
 
-func deleteFirewall(name string) error {
-	securGrp, err := getSecuGrpWithNameOrID(cs, name)
+func firewallDelete(name string) (string, error) {
+	sg, err := getSecurityGroupByNameOrID(cs, name)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	if err := cs.Delete(&egoscale.SecurityGroup{Name: securGrp.Name, ID: securGrp.ID}); err != nil {
-		return err
+	if err := cs.Delete(&egoscale.SecurityGroup{Name: sg.Name, ID: sg.ID}); err != nil {
+		return "", err
 	}
-	println(securGrp.ID)
-	return nil
-}
 
-func init() {
-	firewallDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove security group without prompting for confirmation")
-	firewallCmd.AddCommand(firewallDeleteCmd)
+	return sg.ID, nil
 }

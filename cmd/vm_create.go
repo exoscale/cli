@@ -78,7 +78,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		sgs, err := getSecuGrpList(cs, sg)
+		sgs, err := getSecurityGroups(cs, sg)
 		if err != nil {
 			return err
 		}
@@ -166,12 +166,12 @@ func getCommaflag(p string) []string {
 	return res
 }
 
-func getSecuGrpList(cs *egoscale.Client, commaParameter string) ([]string, error) {
+func getSecurityGroups(cs *egoscale.Client, commaParameter string) ([]string, error) {
 
 	sgs := getCommaflag(commaParameter)
 
 	for i, sg := range sgs {
-		s, err := getSecuGrpWithNameOrID(cs, sg)
+		s, err := getSecurityGroupByNameOrID(cs, sg)
 		if err != nil {
 			return nil, err
 		}
