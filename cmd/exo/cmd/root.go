@@ -108,16 +108,34 @@ func initConfig() {
 
 	for env, flag := range envs {
 		flag := RootCmd.Flags().Lookup(flag)
-		if value := os.Getenv(env); value != "" {
+		if value, ok := os.LookupEnv(env); ok {
 			if err := flag.Value.Set(value); err != nil {
 				log.Fatal(err)
 			}
 		}
 	}
 
-	envEndpoint := os.Getenv("EXOSCALE_ENDPOINT")
-	envKey := os.Getenv("EXOSCALE_KEY")
-	envSecret := os.Getenv("EXOSCALE_SECRET")
+	// an attempt to mimic existing behaviours
+
+	envEndpoint := readFromEnv(
+		"EXOSCALE_ENDPOINT",
+		"EXOSCALE_COMPUTE_ENDPOINT",
+		"CLOUDSTACK_ENDPOINT")
+
+	envKey := readFromEnv(
+		"EXOSCALE_KEY",
+		"EXOSCALE_API_KEY",
+		"CLOUDSTACK_KEY",
+		"CLOUSTACK_API_KEY",
+	)
+
+	envSecret := readFromEnv(
+		"EXOSCALE_SECRET",
+		"EXOSCALE_API_SECRET",
+		"EXOSCALE_SECRET_KEY",
+		"CLOUDSTACK_SECRET",
+		"CLOUDSTACK_SECRET_KEY",
+	)
 
 	if envEndpoint != "" && envKey != "" && envSecret != "" {
 		cs = egoscale.NewClient(envEndpoint, envKey, envSecret)
@@ -177,9 +195,9 @@ func initConfig() {
 	log.Fatalf("Could't find any account with name: %q", gAccountName)
 }
 
-// return a command position by fetching os.args and ignoring flags
+// getCmdPosition returns a command position by fetching os.args and ignoring flags
 //
-//example: "$ exo -r preprod vm create" vm position is 1 and create is 2
+// example: "$ exo -r preprod vm create" vm position is 1 and create is 2
 //
 func getCmdPosition(cmd string) int {
 
@@ -214,4 +232,14 @@ func getCmdPosition(cmd string) int {
 	}
 
 	return count
+}
+
+// readFromEnv is a os.Getenv on steroids
+func readFromEnv(keys ...string) string {
+	for _, key := range keys {
+		if value, ok := os.LookupEnv(key); ok {
+			return value
+		}
+	}
+	return ""
 }
