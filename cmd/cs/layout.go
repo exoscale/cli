@@ -118,6 +118,7 @@ var methods = map[string][]cmd{
 	},
 	"async job": {
 		{&egoscale.QueryAsyncJobResult{}, false},
+		{&egoscale.ListAsyncJobs{}, false},
 	},
 	"apis": {
 		{&egoscale.ListAPIs{}, false},
@@ -134,5 +135,13 @@ var methods = map[string][]cmd{
 	"host": {
 		{&egoscale.ListHosts{}, true},
 		{&egoscale.UpdateHost{}, true},
+	},
+	"reversedns": {
+		{&egoscale.DeleteReverseDNSFromPublicIPAddress{}, false},
+		{&egoscale.QueryReverseDNSForPublicIPAddress{}, false},
+		{&egoscale.UpdateReverseDNSForPublicIPAddress{}, false},
+		{&egoscale.DeleteReverseDNSFromVirtualMachine{}, false},
+		{&egoscale.QueryReverseDNSForVirtualMachine{}, false},
+		{&egoscale.UpdateReverseDNSForVirtualMachine{}, false},
 	},
 }

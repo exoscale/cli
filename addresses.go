@@ -27,6 +27,7 @@ type IPAddress struct {
 	NetworkID                 string        `json:"networkid,omitempty" doc:"the ID of the Network where ip belongs to"`
 	PhysicalNetworkID         string        `json:"physicalnetworkid,omitempty" doc:"the physical network this belongs to"`
 	Purpose                   string        `json:"purpose,omitempty" doc:"purpose of the IP address. In Acton this value is not null for Ips with isSystem=true, and can have either StaticNat or LB value"`
+	ReverseDNS                []ReverseDNS  `json:"reversedns,omitempty" doc:"the list of PTR record(s) associated with the ip address"`
 	State                     string        `json:"state,omitempty" doc:"State of the ip address. Can be: Allocatin, Allocated and Releasing"`
 	Tags                      []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with ip address"`
 	VirtualMachineDisplayName string        `json:"virtualmachinedisplayname,omitempty" doc:"virtual machine display name the ip address is assigned to (not null only for static nat Ip)"`

@@ -48,7 +48,7 @@ type Volume struct {
 	StorageID                  string        `json:"storageid,omitempty" doc:"id of the primary storage hosting the disk volume; returned to admin user only"`
 	StorageType                string        `json:"storagetype,omitempty" doc:"shared or local storage"`
 	Tags                       []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with volume"`
-	TemplateDisplayText        string        `json:"templatedisplaytext,omitempty" doc:" an alternate display text of the template for the virtual machine"`
+	TemplateDisplayText        string        `json:"templatedisplaytext,omitempty" doc:"an alternate display text of the template for the virtual machine"`
 	TemplateID                 string        `json:"templateid,omitempty" doc:"the ID of the template for the virtual machine. A -1 is returned if the virtual machine was created from an ISO file."`
 	TemplateName               string        `json:"templatename,omitempty" doc:"the name of the template for the virtual machine"`
 	Type                       string        `json:"type,omitempty" doc:"type of the disk volume (ROOT or DATADISK)"`

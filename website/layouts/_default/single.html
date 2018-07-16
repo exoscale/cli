@@ -6,7 +6,7 @@
 <div class="hero-body">
 <div class="container">
   <h1 class="title is-1 is-spaced">{{ .Title }}</h1>
-  <p class="subtitle">{{ .Description }}</p>
+  <p class="subtitle">{{ .Description | markdownify }}</p>
 </div>
 </div>
 </section>

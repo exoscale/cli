@@ -16,6 +16,7 @@ import (
 // See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html
 type VirtualMachine struct {
 	Account               string            `json:"account,omitempty" doc:"the account associated with the virtual machine"`
+	AccountID             string            `json:"accountid,omitempty" doc:"the account ID associated with the virtual machine"`
 	AffinityGroup         []AffinityGroup   `json:"affinitygroup,omitempty" doc:"list of affinity groups associated with the virtual machine"`
 	ClusterID             string            `json:"clusterid,omitempty" doc:"the ID of the vm's cluster"`
 	ClusterName           string            `json:"clustername,omitempty" doc:"the name of the vm's cluster"`
@@ -54,6 +55,7 @@ type VirtualMachine struct {
 	NetworkKbsWrite       int64             `json:"networkkbswrite,omitempty" doc:"the outgoing network traffic on the host"`
 	Nic                   []Nic             `json:"nic,omitempty" doc:"the list of nics associated with vm"`
 	OsCategoryID          string            `json:"oscategoryid,omitempty" doc:"Os category ID of the virtual machine"`
+	OsCategoryName        string            `json:"oscategoryname,omitempty" doc:"Os category name of the virtual machine"`
 	Password              string            `json:"password,omitempty" doc:"the password (if exists) of the virtual machine"`
 	PasswordEnabled       bool              `json:"passwordenabled,omitempty" doc:"true if the password rest feature is enabled, false otherwise"`
 	PCIDevices            []PCIDevice       `json:"pcidevices,omitempty" doc:"list of PCI devices"`
@@ -482,10 +484,8 @@ type ListVirtualMachines struct {
 	NetworkID         string        `json:"networkid,omitempty" doc:"list by network id"`
 	Page              int           `json:"page,omitempty"`
 	PageSize          int           `json:"pagesize,omitempty"`
-	PodID             string        `json:"podid,omitempty" doc:"the pod ID"`
 	ServiceOfferindID string        `json:"serviceofferingid,omitempty" doc:"list by the service offering"`
 	State             string        `json:"state,omitempty" doc:"state of the virtual machine"`
-	StorageID         string        `json:"storageid,omitempty" doc:"the storage ID where vm's volumes belong to"`
 	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	TemplateID        string        `json:"templateid,omitempty" doc:"list vms by template"`
 	ZoneID            string        `json:"zoneid,omitempty" doc:"the availability zone ID"`

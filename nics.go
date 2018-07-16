@@ -23,6 +23,7 @@ type Nic struct {
 	Netmask          net.IP           `json:"netmask,omitempty" doc:"the netmask of the nic"`
 	NetworkID        string           `json:"networkid,omitempty" doc:"the ID of the corresponding network"`
 	NetworkName      string           `json:"networkname,omitempty" doc:"the name of the corresponding network"`
+	ReverseDNS       []ReverseDNS     `json:"reversedns,omitempty" doc:"the list of PTR record(s) associated with the virtual machine"`
 	SecondaryIP      []NicSecondaryIP `json:"secondaryip,omitempty" doc:"the Secondary ipv4 addr of nic"`
 	TrafficType      string           `json:"traffictype,omitempty" doc:"the traffic type of the nic"`
 	Type             string           `json:"type,omitempty" doc:"the type of the nic"`

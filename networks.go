@@ -11,10 +11,9 @@ import (
 // See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/networking_and_traffic.html
 type Network struct {
 	Account                     string        `json:"account,omitempty" doc:"the owner of the network"`
-	ACLID                       string        `json:"aclid,omitempty" doc:"ACL Id associated with the VPC network"`
-	ACLType                     string        `json:"acltype,omitempty" doc:"acl type - access type to the network"`
+	AccountID                   string        `json:"accountid,omitempty" doc:"the owner ID of the network"`
 	BroadcastDomainType         string        `json:"broadcastdomaintype,omitempty" doc:"Broadcast domain type of the network"`
-	BroadcastURI                string        `json:"broadcasturi,omitempty" doc:"broadcast uri of the network. This parameter is visible to ROOT admins only"`
+	BroadcastURI                string        `json:"broadcasturi,omitempty" doc:"broadcast uri of the network."`
 	CanUseForDeploy             bool          `json:"canusefordeploy,omitempty" doc:"list networks available for vm deployment"`
 	Cidr                        string        `json:"cidr,omitempty" doc:"Cloudstack managed address space, all CloudStack managed VMs get IP address from CIDR"`
 	DisplayNetwork              bool          `json:"displaynetwork,omitempty" doc:"an optional field, whether to the display the network to the end user or not."`
@@ -62,7 +61,6 @@ func (network *Network) ListRequest() (ListCommand, error) {
 	//TODO add tags support
 	req := &ListNetworks{
 		Account:           network.Account,
-		ACLType:           network.ACLType,
 		DomainID:          network.DomainID,
 		ID:                network.ID,
 		PhysicalNetworkID: network.PhysicalNetworkID,
@@ -113,8 +111,6 @@ type ServiceProvider struct {
 // CreateNetwork creates a network
 type CreateNetwork struct {
 	Account           string `json:"account,omitempty" doc:"account who will own the network"`
-	ACLID             string `json:"aclid,omitempty" doc:"Network ACL Id associated for the network"`
-	ACLType           string `json:"acltype,omitempty" doc:"Access control type; supported values are account and domain. In 3.0 all shared networks should have aclType=Domain, and all Isolated networks - Account. Account means that only the account owner can use the network, domain - all accouns in the domain can use the network"`
 	DisplayNetwork    *bool  `json:"displaynetwork,omitempty" doc:"an optional field, whether to the display the network to the end user or not."`
 	DisplayText       string `json:"displaytext,omitempty" doc:"the display text of the network"` // This field is required but might be empty
 	DomainID          string `json:"domainid,omitempty" doc:"domain ID of the account owning a network"`
@@ -134,7 +130,7 @@ type CreateNetwork struct {
 	SubdomainAccess   *bool  `json:"subdomainaccess,omitempty" doc:"Defines whether to allow subdomains to use networks dedicated to their parent domain(s). Should be used with aclType=Domain, defaulted to allow.subdomain.network.access global config if not specified"`
 	Vlan              string `json:"vlan,omitempty" doc:"the ID or VID of the network"`
 	ZoneID            string `json:"zoneid" doc:"the Zone ID for the network"`
-	_                 bool   `name:"createNetwork"`
+	_                 bool   `name:"createNetwork" description:"Creates a network"`
 }
 
 func (*CreateNetwork) response() interface{} {
@@ -207,7 +203,6 @@ func (*DeleteNetwork) asyncResponse() interface{} {
 // ListNetworks represents a query to a network
 type ListNetworks struct {
 	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
-	ACLType           string        `json:"acltype,omitempty" doc:"list networks by ACL (access control list) type. Supported values are Account and Domain"`
 	CanUseForDeploy   *bool         `json:"canusefordeploy,omitempty" doc:"list networks available for vm deployment"`
 	DisplayNetwork    *bool         `json:"displaynetwork,omitempty" doc:"list resources by display flag; only ROOT admin is eligible to pass this parameter"`
 	DomainID          string        `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
