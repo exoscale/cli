@@ -5,9 +5,16 @@ import (
 	"net"
 
 	"github.com/exoscale/egoscale"
-
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	firewallRemoveCmd.Flags().BoolP("force", "f", false, "Attempt to remove firewall rule without prompting for confirmation")
+	firewallRemoveCmd.Flags().BoolP("ipv6", "6", false, "Remove rule with any IPv6 source")
+	firewallRemoveCmd.Flags().BoolP("my-ip", "m", false, "Remove rule with my IP as a source")
+	firewallRemoveCmd.Flags().BoolP("all", "", false, "Remove all rules")
+	firewallCmd.AddCommand(firewallRemoveCmd)
+}
 
 // removeCmd represents the remove command
 var firewallRemoveCmd = &cobra.Command{
@@ -29,11 +36,11 @@ var firewallRemoveCmd = &cobra.Command{
 		sgName := args[0]
 
 		if len(args) == 1 && deleteAll {
-			securGrp, errGet := getSecuGrpWithNameOrID(cs, sgName)
+			sg, errGet := getSecurityGroupByNameOrID(cs, sgName)
 			if errGet != nil {
 				return errGet
 			}
-			count := len(securGrp.IngressRule) + len(securGrp.EgressRule)
+			count := len(sg.IngressRule) + len(sg.EgressRule)
 			if !force {
 				if !askQuestion(fmt.Sprintf("Are you sure you want to delete all %d firewall rule(s) from %s", count, sgName)) {
 					return nil
@@ -93,20 +100,20 @@ var firewallRemoveCmd = &cobra.Command{
 }
 
 func removeAllRules(sgName string) ([]string, error) {
-	securGrp, err := getSecuGrpWithNameOrID(cs, sgName)
+	sg, err := getSecurityGroupByNameOrID(cs, sgName)
 	if err != nil {
 		return nil, err
 	}
 
 	res := []string{}
 
-	for _, in := range securGrp.IngressRule {
+	for _, in := range sg.IngressRule {
 		if reqErr := cs.BooleanRequest(&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}); reqErr != nil {
 			return res, reqErr
 		}
 		res = append(res, in.RuleID)
 	}
-	for _, eg := range securGrp.EgressRule {
+	for _, eg := range sg.EgressRule {
 		if err = cs.BooleanRequest(&egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}); err != nil {
 			return res, err
 		}
@@ -115,13 +122,13 @@ func removeAllRules(sgName string) ([]string, error) {
 	return res, nil
 }
 
-func removeRule(sg, ruleID string) error {
-	securGrp, err := getSecuGrpWithNameOrID(cs, sg)
+func removeRule(name, ruleID string) error {
+	sg, err := getSecurityGroupByNameOrID(cs, name)
 	if err != nil {
 		return err
 	}
 
-	in, eg := securGrp.RuleByID(ruleID)
+	in, eg := sg.RuleByID(ruleID)
 
 	if in != nil {
 		err = cs.BooleanRequest(&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
@@ -156,12 +163,12 @@ func isDefaultRule(rule, defaultRule *egoscale.IngressRule, isIpv6 bool, myCidr 
 }
 
 func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr string, isIpv6 bool) error {
-	securGrp, err := getSecuGrpWithNameOrID(cs, sgName)
+	sg, err := getSecurityGroupByNameOrID(cs, sgName)
 	if err != nil {
 		return err
 	}
 
-	for _, in := range securGrp.IngressRule {
+	for _, in := range sg.IngressRule {
 		if isDefaultRule(&in, rule, isIpv6, "") && cidr == "" {
 			//Rule found
 		} else if isDefaultRule(&in, rule, isIpv6, cidr) {
@@ -178,12 +185,4 @@ func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr str
 		return err
 	}
 	return fmt.Errorf("missing rule %q", ruleName)
-}
-
-func init() {
-	firewallRemoveCmd.Flags().BoolP("force", "f", false, "Attempt to remove firewall rule without prompting for confirmation")
-	firewallRemoveCmd.Flags().BoolP("ipv6", "6", false, "Remove rule with any IPv6 source")
-	firewallRemoveCmd.Flags().BoolP("my-ip", "m", false, "Remove rule with my IP as a source")
-	firewallRemoveCmd.Flags().BoolP("all", "", false, "Remove all rules")
-	firewallCmd.AddCommand(firewallRemoveCmd)
 }

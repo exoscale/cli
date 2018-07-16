@@ -26,6 +26,14 @@ func (*SecurityGroup) ResourceType() string {
 	return "SecurityGroup"
 }
 
+// UserSecurityGroup converts a SecurityGroup to a UserSecurityGroup
+func (sg *SecurityGroup) UserSecurityGroup() UserSecurityGroup {
+	return UserSecurityGroup{
+		Account: sg.Account,
+		Group:   sg.Name,
+	}
+}
+
 // ListRequest builds the ListSecurityGroups request
 func (sg *SecurityGroup) ListRequest() (ListCommand, error) {
 	//TODO add tags

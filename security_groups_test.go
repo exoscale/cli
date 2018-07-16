@@ -6,9 +6,17 @@ import (
 )
 
 func TestSecurityGroup(t *testing.T) {
-	instance := &SecurityGroup{}
+	instance := &SecurityGroup{
+		Account: "Hello",
+		Name:    "world",
+	}
 	if instance.ResourceType() != "SecurityGroup" {
-		t.Errorf("ResourceType doesn't match")
+		t.Error("ResourceType doesn't match")
+	}
+
+	usg := instance.UserSecurityGroup()
+	if usg.Account != instance.Account && usg.Group != instance.Name {
+		t.Error("got bad user security group")
 	}
 }
 

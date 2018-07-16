@@ -10,16 +10,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// firewallCmd represents the firewalling command
+const (
+	defaultCidr  = "0.0.0.0/0"
+	defaultCidr6 = "::/0"
+)
+
 var firewallCmd = &cobra.Command{
 	Use:   "firewall",
 	Short: "Security groups management",
 }
 
-const (
-	defaultCidr  = "0.0.0.0/0"
-	defaultCidr6 = "::/0"
-)
+func init() {
+	RootCmd.AddCommand(firewallCmd)
+}
+
+// Utils func for the firewall family
 
 func formatRules(name string, rule *egoscale.IngressRule) []string {
 	var source string
@@ -53,7 +58,7 @@ func formatRules(name string, rule *egoscale.IngressRule) []string {
 	return []string{name, source, rule.Protocol, ports, rule.Description, rule.RuleID}
 }
 
-func getSecuGrpWithNameOrID(cs *egoscale.Client, name string) (*egoscale.SecurityGroup, error) {
+func getSecurityGroupByNameOrID(cs *egoscale.Client, name string) (*egoscale.SecurityGroup, error) {
 	if !isAFirewallID(cs, name) {
 		securGrp := &egoscale.SecurityGroup{Name: name}
 		if err := cs.Get(securGrp); err != nil {
@@ -113,8 +118,4 @@ func isAFirewallID(cs *egoscale.Client, id string) bool {
 func isUUID(uuid string) bool {
 	re := regexp.MustCompile(`(?i)^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`)
 	return re.MatchString(uuid)
-}
-
-func init() {
-	RootCmd.AddCommand(firewallCmd)
 }
