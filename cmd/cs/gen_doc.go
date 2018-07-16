@@ -26,9 +26,10 @@ func writeFlag(buffer *bytes.Buffer, flag cli.Flag) {
 	if len(doc) != 2 {
 		doc = []string{flag.GetName(), ""}
 	} else {
-		doc[1] = " - " + doc[1]
+		d := strings.Replace(doc[1], "[required]", "(**required**)", 1)
+		doc[1] = " -- " + d
 	}
-	buffer.WriteString(fmt.Sprintf("-- `%s`%s\n", doc[0], doc[1]))
+	buffer.WriteString(fmt.Sprintf("`%s`%s\n", doc[0], doc[1]))
 }
 
 // generateDocs generates markdown documentation for the commands in app
