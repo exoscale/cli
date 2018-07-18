@@ -59,7 +59,11 @@ func listTemplates(keywords string) ([]*egoscale.Template, error) {
 
 	req := &egoscale.ListTemplates{TemplateFilter: "featured", ZoneID: zoneID, Keyword: keywords}
 
-	cs.Paginate(req, func(i interface{}, err error) bool {
+	cs.PaginateWithContext(gContext, req, func(i interface{}, e error) bool {
+		if e != nil {
+			err = e
+			return false
+		}
 		template := i.(*egoscale.Template)
 		template.Size = template.Size >> 30 //Size in Gib
 		if strings.HasPrefix(template.Name, "Linux") {
@@ -70,8 +74,8 @@ func listTemplates(keywords string) ([]*egoscale.Template, error) {
 					return true
 				}
 
-				version, err := strconv.ParseFloat(m["version"], 64)
-				if err != nil {
+				version, errParse := strconv.ParseFloat(m["version"], 64)
+				if errParse != nil {
 					log.Printf("Malformed Linux version. got %q in %q", m["version"], template.Name)
 					return true
 				}
@@ -91,8 +95,8 @@ func listTemplates(keywords string) ([]*egoscale.Template, error) {
 		if strings.HasPrefix(template.Name, "Windows Server") || strings.HasPrefix(template.Name, "OpenBSD") {
 			m := reSubMatchMap(reVersion, template.DisplayText)
 			if len(m) > 0 {
-				version, err := strconv.ParseFloat(m["version"], 64)
-				if err != nil {
+				version, errParse := strconv.ParseFloat(m["version"], 64)
+				if errParse != nil {
 					log.Printf("Malformed Windows/OpenBSD version. %q", template.Name)
 					return true
 				}
@@ -109,6 +113,9 @@ func listTemplates(keywords string) ([]*egoscale.Template, error) {
 		allOS[template.Name] = template
 		return true
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	var keys []string
 	for k := range allOS {
