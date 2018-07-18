@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"os/user"
 	"path"
 	"strings"
@@ -12,6 +14,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+var gContext context.Context
 
 var gConfigFolder string
 var gConfigFilePath string
@@ -69,6 +73,24 @@ var versionCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute() {
+	// trap Ctrl+C and call cancel on the context
+	ctx, cancel := context.WithCancel(context.Background())
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	defer func() {
+		signal.Stop(c)
+		cancel()
+	}()
+	go func() {
+		select {
+		case <-c:
+			cancel()
+		case <-ctx.Done():
+		}
+	}()
+
+	gContext = ctx
+
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -81,7 +103,6 @@ func init() {
 	RootCmd.AddCommand(versionCmd)
 
 	cobra.OnInitialize(initConfig, buildClient)
-
 }
 
 var ignoreClientBuild = false
