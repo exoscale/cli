@@ -45,7 +45,7 @@ type ListEventsResponse struct {
 	Event []Event `json:"event"`
 }
 
-func (*ListEvents) response() interface{} {
+func (ListEvents) response() interface{} {
 	return new(ListEventsResponse)
 }
 
@@ -61,6 +61,6 @@ type ListEventTypesResponse struct {
 	_         bool        `name:"listEventTypes" description:"List Event Types"`
 }
 
-func (*ListEventTypes) response() interface{} {
+func (ListEventTypes) response() interface{} {
 	return new(ListEventTypesResponse)
 }

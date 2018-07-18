@@ -66,6 +66,11 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 		value = value.Elem()
 	}
 
+	// Checking for nil commands
+	if !value.IsValid() {
+		return fmt.Errorf("cannot serialize the invalid value %#v", command)
+	}
+
 	for i := 0; i < typeof.NumField(); i++ {
 		field := typeof.Field(i)
 		if field.Name == "_" {

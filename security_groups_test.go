@@ -65,7 +65,7 @@ func TestAuthorizeSecurityGroupEgressOnBeforeSendICMP(t *testing.T) {
 	}
 	params := url.Values{}
 
-	if err := req.onBeforeSend(&params); err != nil {
+	if err := req.onBeforeSend(params); err != nil {
 		t.Error(err)
 	}
 
@@ -83,7 +83,7 @@ func TestAuthorizeSecurityGroupEgressOnBeforeSendICMPv6(t *testing.T) {
 	}
 	params := url.Values{}
 
-	if err := req.onBeforeSend(&params); err != nil {
+	if err := req.onBeforeSend(params); err != nil {
 		t.Error(err)
 	}
 
@@ -103,7 +103,7 @@ func TestAuthorizeSecurityGroupEgressOnBeforeSendTCP(t *testing.T) {
 	}
 	params := url.Values{}
 
-	if err := req.onBeforeSend(&params); err != nil {
+	if err := req.onBeforeSend(params); err != nil {
 		t.Error(err)
 	}
 

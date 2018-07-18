@@ -1,10 +1,12 @@
 Changelog
 =========
 
-0.10.1
+0.10.1 (unreleased)
 ------
 
 - feat: expose `SyncRequest` and `SyncRequestWithContext`
+- feat: addition of reverse DNS calls
+- feat: addition of `SecurityGroup.UserSecurityGroup`
 
 0.10.0
 ------

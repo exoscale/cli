@@ -18,7 +18,7 @@ type CreateInstanceGroup struct {
 	_        bool   `name:"createInstanceGroup" description:"Creates a vm group"`
 }
 
-func (*CreateInstanceGroup) response() interface{} {
+func (CreateInstanceGroup) response() interface{} {
 	return new(InstanceGroup)
 }
 
@@ -29,7 +29,7 @@ type UpdateInstanceGroup struct {
 	_    bool   `name:"updateInstanceGroup" description:"Updates a vm group"`
 }
 
-func (*UpdateInstanceGroup) response() interface{} {
+func (UpdateInstanceGroup) response() interface{} {
 	return new(InstanceGroup)
 }
 
@@ -39,7 +39,7 @@ type DeleteInstanceGroup struct {
 	_  bool   `name:"deleteInstanceGroup" description:"Deletes a vm group"`
 }
 
-func (*DeleteInstanceGroup) response() interface{} {
+func (DeleteInstanceGroup) response() interface{} {
 	return new(booleanResponse)
 }
 
@@ -63,6 +63,6 @@ type ListInstanceGroupsResponse struct {
 	InstanceGroup []InstanceGroup `json:"instancegroup"`
 }
 
-func (*ListInstanceGroups) response() interface{} {
+func (ListInstanceGroups) response() interface{} {
 	return new(ListInstanceGroupsResponse)
 }

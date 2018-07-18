@@ -55,7 +55,7 @@ type ListNetworkOfferingsResponse struct {
 	NetworkOffering []NetworkOffering `json:"networkoffering"`
 }
 
-func (*ListNetworkOfferings) response() interface{} {
+func (ListNetworkOfferings) response() interface{} {
 	return new(ListNetworkOfferingsResponse)
 }
 
@@ -72,6 +72,6 @@ type UpdateNetworkOffering struct {
 	_                bool   `name:"updateNetworkOffering" description:"Updates a network offering."`
 }
 
-func (*UpdateNetworkOffering) response() interface{} {
+func (UpdateNetworkOffering) response() interface{} {
 	return new(NetworkOffering)
 }

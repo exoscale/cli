@@ -33,7 +33,7 @@ type ListCommand interface {
 // This little took helps with issue of relying on JSON serialization logic only.
 // `omitempty` may make sense in some cases but not all the time.
 type onBeforeHook interface {
-	onBeforeSend(params *url.Values) error
+	onBeforeSend(params url.Values) error
 }
 
 // CommandInfo represents the meta data related to a Command

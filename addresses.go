@@ -41,12 +41,12 @@ type IPAddress struct {
 }
 
 // ResourceType returns the type of the resource
-func (*IPAddress) ResourceType() string {
+func (IPAddress) ResourceType() string {
 	return "PublicIpAddress"
 }
 
 // ListRequest builds the ListAdresses request
-func (ipaddress *IPAddress) ListRequest() (ListCommand, error) {
+func (ipaddress IPAddress) ListRequest() (ListCommand, error) {
 	req := &ListPublicIPAddresses{
 		Account:             ipaddress.Account,
 		AssociatedNetworkID: ipaddress.AssociatedNetworkID,
@@ -74,7 +74,7 @@ func (ipaddress *IPAddress) ListRequest() (ListCommand, error) {
 }
 
 // Delete removes the resource
-func (ipaddress *IPAddress) Delete(ctx context.Context, client *Client) error {
+func (ipaddress IPAddress) Delete(ctx context.Context, client *Client) error {
 	if ipaddress.ID == "" {
 		return fmt.Errorf("an IPAddress may only be deleted using ID")
 	}
@@ -96,11 +96,11 @@ type AssociateIPAddress struct {
 	_          bool   `name:"associateIpAddress" description:"Acquires and associates a public IP to an account."`
 }
 
-func (*AssociateIPAddress) response() interface{} {
+func (AssociateIPAddress) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*AssociateIPAddress) asyncResponse() interface{} {
+func (AssociateIPAddress) asyncResponse() interface{} {
 	return new(IPAddress)
 }
 
@@ -110,11 +110,11 @@ type DisassociateIPAddress struct {
 	_  bool   `name:"disassociateIpAddress" description:"Disassociates an ip address from the account."`
 }
 
-func (*DisassociateIPAddress) response() interface{} {
+func (DisassociateIPAddress) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*DisassociateIPAddress) asyncResponse() interface{} {
+func (DisassociateIPAddress) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -126,11 +126,11 @@ type UpdateIPAddress struct {
 	_          bool   `name:"updateIpAddress" description:"Updates an ip address"`
 }
 
-func (*UpdateIPAddress) response() interface{} {
+func (UpdateIPAddress) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*UpdateIPAddress) asyncResponse() interface{} {
+func (UpdateIPAddress) asyncResponse() interface{} {
 	return new(IPAddress)
 }
 
@@ -166,7 +166,7 @@ type ListPublicIPAddressesResponse struct {
 	PublicIPAddress []IPAddress `json:"publicipaddress"`
 }
 
-func (*ListPublicIPAddresses) response() interface{} {
+func (ListPublicIPAddresses) response() interface{} {
 	return new(ListPublicIPAddressesResponse)
 }
 
@@ -180,7 +180,7 @@ func (ls *ListPublicIPAddresses) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-func (*ListPublicIPAddresses) each(resp interface{}, callback IterateItemFunc) {
+func (ListPublicIPAddresses) each(resp interface{}, callback IterateItemFunc) {
 	ips, ok := resp.(*ListPublicIPAddressesResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("wrong type. ListPublicIPAddressesResponse expected, got %T", resp))

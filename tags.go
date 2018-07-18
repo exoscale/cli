@@ -23,11 +23,11 @@ type CreateTags struct {
 	_            bool          `name:"createTags" description:"Creates resource tag(s)"`
 }
 
-func (*CreateTags) response() interface{} {
+func (CreateTags) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*CreateTags) asyncResponse() interface{} {
+func (CreateTags) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -39,11 +39,11 @@ type DeleteTags struct {
 	_            bool          `name:"deleteTags" description:"Deleting resource tag(s)"`
 }
 
-func (*DeleteTags) response() interface{} {
+func (DeleteTags) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*DeleteTags) asyncResponse() interface{} {
+func (DeleteTags) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -70,6 +70,6 @@ type ListTagsResponse struct {
 	Tag   []ResourceTag `json:"tag"`
 }
 
-func (*ListTags) response() interface{} {
+func (ListTags) response() interface{} {
 	return new(ListTagsResponse)
 }

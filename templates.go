@@ -47,12 +47,12 @@ type Template struct {
 }
 
 // ResourceType returns the type of the resource
-func (*Template) ResourceType() string {
+func (Template) ResourceType() string {
 	return "Template"
 }
 
 // ListRequest builds the ListTemplates request
-func (temp *Template) ListRequest() (ListCommand, error) {
+func (temp Template) ListRequest() (ListCommand, error) {
 	req := &ListTemplates{
 		Name:       temp.Name,
 		Account:    temp.Account,
@@ -97,11 +97,11 @@ type ListTemplatesResponse struct {
 	Template []Template `json:"template"`
 }
 
-func (*ListTemplates) response() interface{} {
+func (ListTemplates) response() interface{} {
 	return new(ListTemplatesResponse)
 }
 
-func (*ListTemplates) each(resp interface{}, callback IterateItemFunc) {
+func (ListTemplates) each(resp interface{}, callback IterateItemFunc) {
 	temps, ok := resp.(*ListTemplatesResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("wrong type. ListTemplatesResponse expected, got %T", resp))
@@ -145,11 +145,11 @@ type CreateTemplate struct {
 	_                     bool              `name:"createTemplate" description:"Creates a template of a virtual machine. The virtual machine must be in a STOPPED state. A template created from this command is automatically designated as a private template visible to the account that created it."`
 }
 
-func (*CreateTemplate) response() interface{} {
+func (CreateTemplate) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*CreateTemplate) asyncResponse() interface{} {
+func (CreateTemplate) asyncResponse() interface{} {
 	return new(Template)
 }
 
@@ -161,11 +161,11 @@ type CopyTemplate struct {
 	_            bool   `name:"copyTemplate" description:"Copies a template from one zone to another."`
 }
 
-func (*CopyTemplate) response() interface{} {
+func (CopyTemplate) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*CopyTemplate) asyncResponse() interface{} {
+func (CopyTemplate) asyncResponse() interface{} {
 	return new(Template)
 }
 
@@ -185,11 +185,11 @@ type UpdateTemplate struct {
 	_                     bool              `name:"updateTemplate" description:"Updates attributes of a template."`
 }
 
-func (*UpdateTemplate) response() interface{} {
+func (UpdateTemplate) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*UpdateTemplate) asyncResponse() interface{} {
+func (UpdateTemplate) asyncResponse() interface{} {
 	return new(Template)
 }
 
@@ -200,11 +200,11 @@ type DeleteTemplate struct {
 	_      bool   `name:"deleteTemplate" description:"Deletes a template from the system. All virtual machines using the deleted template will not be affected."`
 }
 
-func (*DeleteTemplate) response() interface{} {
+func (DeleteTemplate) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*DeleteTemplate) asyncResponse() interface{} {
+func (DeleteTemplate) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -215,11 +215,11 @@ type PrepareTemplate struct {
 	_          bool   `name:"prepareTemplate" description:"load template into primary storage"`
 }
 
-func (*PrepareTemplate) response() interface{} {
+func (PrepareTemplate) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*PrepareTemplate) asyncResponse() interface{} {
+func (PrepareTemplate) asyncResponse() interface{} {
 	return new(Template)
 }
 
@@ -250,6 +250,6 @@ type RegisterTemplate struct {
 	_                     bool              `name:"registerTemplate" description:"Registers an existing template into the CloudStack cloud."`
 }
 
-func (*RegisterTemplate) response() interface{} {
+func (RegisterTemplate) response() interface{} {
 	return new(Template)
 }

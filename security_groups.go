@@ -22,12 +22,12 @@ type SecurityGroup struct {
 }
 
 // ResourceType returns the type of the resource
-func (*SecurityGroup) ResourceType() string {
+func (SecurityGroup) ResourceType() string {
 	return "SecurityGroup"
 }
 
 // UserSecurityGroup converts a SecurityGroup to a UserSecurityGroup
-func (sg *SecurityGroup) UserSecurityGroup() UserSecurityGroup {
+func (sg SecurityGroup) UserSecurityGroup() UserSecurityGroup {
 	return UserSecurityGroup{
 		Account: sg.Account,
 		Group:   sg.Name,
@@ -35,7 +35,7 @@ func (sg *SecurityGroup) UserSecurityGroup() UserSecurityGroup {
 }
 
 // ListRequest builds the ListSecurityGroups request
-func (sg *SecurityGroup) ListRequest() (ListCommand, error) {
+func (sg SecurityGroup) ListRequest() (ListCommand, error) {
 	//TODO add tags
 	req := &ListSecurityGroups{
 		Account:           sg.Account,
@@ -48,7 +48,7 @@ func (sg *SecurityGroup) ListRequest() (ListCommand, error) {
 }
 
 // Delete deletes the given Security Group
-func (sg *SecurityGroup) Delete(ctx context.Context, client *Client) error {
+func (sg SecurityGroup) Delete(ctx context.Context, client *Client) error {
 	if sg.ID == "" && sg.Name == "" {
 		return fmt.Errorf("a SecurityGroup may only be deleted using ID or Name")
 	}
@@ -68,7 +68,7 @@ func (sg *SecurityGroup) Delete(ctx context.Context, client *Client) error {
 }
 
 // RuleByID returns IngressRule or EgressRule by a rule ID
-func (sg *SecurityGroup) RuleByID(ruleID string) (*IngressRule, *EgressRule) {
+func (sg SecurityGroup) RuleByID(ruleID string) (*IngressRule, *EgressRule) {
 	for i, in := range sg.IngressRule {
 		if ruleID == in.RuleID {
 			return &sg.IngressRule[i], nil
@@ -119,7 +119,7 @@ type CreateSecurityGroup struct {
 	_           bool   `name:"createSecurityGroup" description:"Creates a security group"`
 }
 
-func (*CreateSecurityGroup) response() interface{} {
+func (CreateSecurityGroup) response() interface{} {
 	return new(SecurityGroup)
 }
 
@@ -132,7 +132,7 @@ type DeleteSecurityGroup struct {
 	_        bool   `name:"deleteSecurityGroup" description:"Deletes security group"`
 }
 
-func (*DeleteSecurityGroup) response() interface{} {
+func (DeleteSecurityGroup) response() interface{} {
 	return new(booleanResponse)
 }
 
@@ -153,15 +153,15 @@ type AuthorizeSecurityGroupIngress struct {
 	_                     bool                `name:"authorizeSecurityGroupIngress" description:"Authorizes a particular ingress rule for this security group"`
 }
 
-func (*AuthorizeSecurityGroupIngress) response() interface{} {
+func (AuthorizeSecurityGroupIngress) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*AuthorizeSecurityGroupIngress) asyncResponse() interface{} {
+func (AuthorizeSecurityGroupIngress) asyncResponse() interface{} {
 	return new(SecurityGroup)
 }
 
-func (req *AuthorizeSecurityGroupIngress) onBeforeSend(params *url.Values) error {
+func (req AuthorizeSecurityGroupIngress) onBeforeSend(params url.Values) error {
 	// ICMP code and type may be zero but can also be omitted...
 	if strings.HasPrefix(strings.ToLower(req.Protocol), "icmp") {
 		params.Set("icmpcode", strconv.FormatInt(int64(req.IcmpCode), 10))
@@ -191,16 +191,16 @@ type AuthorizeSecurityGroupEgress struct {
 	_                     bool                `name:"authorizeSecurityGroupEgress" description:"Authorizes a particular egress rule for this security group"`
 }
 
-func (*AuthorizeSecurityGroupEgress) response() interface{} {
+func (AuthorizeSecurityGroupEgress) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*AuthorizeSecurityGroupEgress) asyncResponse() interface{} {
+func (AuthorizeSecurityGroupEgress) asyncResponse() interface{} {
 	return new(SecurityGroup)
 }
 
-func (req *AuthorizeSecurityGroupEgress) onBeforeSend(params *url.Values) error {
-	return (*AuthorizeSecurityGroupIngress)(req).onBeforeSend(params)
+func (req AuthorizeSecurityGroupEgress) onBeforeSend(params url.Values) error {
+	return (AuthorizeSecurityGroupIngress)(req).onBeforeSend(params)
 }
 
 // RevokeSecurityGroupIngress (Async) represents the ingress/egress rule deletion
@@ -209,10 +209,10 @@ type RevokeSecurityGroupIngress struct {
 	_  bool   `name:"revokeSecurityGroupIngress" description:"Deletes a particular ingress rule from this security group"`
 }
 
-func (*RevokeSecurityGroupIngress) response() interface{} {
+func (RevokeSecurityGroupIngress) response() interface{} {
 	return new(AsyncJobResult)
 }
-func (*RevokeSecurityGroupIngress) asyncResponse() interface{} {
+func (RevokeSecurityGroupIngress) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -222,11 +222,11 @@ type RevokeSecurityGroupEgress struct {
 	_  bool   `name:"revokeSecurityGroupEgress" description:"Deletes a particular egress rule from this security group"`
 }
 
-func (*RevokeSecurityGroupEgress) response() interface{} {
+func (RevokeSecurityGroupEgress) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*RevokeSecurityGroupEgress) asyncResponse() interface{} {
+func (RevokeSecurityGroupEgress) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -252,7 +252,7 @@ type ListSecurityGroupsResponse struct {
 	SecurityGroup []SecurityGroup `json:"securitygroup"`
 }
 
-func (*ListSecurityGroups) response() interface{} {
+func (ListSecurityGroups) response() interface{} {
 	return new(ListSecurityGroupsResponse)
 }
 
@@ -266,7 +266,7 @@ func (lsg *ListSecurityGroups) SetPageSize(pageSize int) {
 	lsg.PageSize = pageSize
 }
 
-func (*ListSecurityGroups) each(resp interface{}, callback IterateItemFunc) {
+func (ListSecurityGroups) each(resp interface{}, callback IterateItemFunc) {
 	sgs, ok := resp.(*ListSecurityGroupsResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("wrong type. ListSecurityGroupsResponse expected, got %T", resp))

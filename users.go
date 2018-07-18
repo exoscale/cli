@@ -32,7 +32,7 @@ type RegisterUserKeys struct {
 	_  bool   `name:"registerUserKeys" description:"This command allows a user to register for the developer API, returning a secret key and an API key. This request is made through the integration API port, so it is a privileged command and must be made on behalf of a user. It is up to the implementer just how the username and password are entered, and then how that translates to an integration API request. Both secret key and API key should be returned to the user"`
 }
 
-func (*RegisterUserKeys) response() interface{} {
+func (RegisterUserKeys) response() interface{} {
 	return new(User)
 }
 
@@ -50,7 +50,7 @@ type CreateUser struct {
 	_         bool   `name:"createUser" description:"Creates a user for an account that already exists"`
 }
 
-func (*CreateUser) response() interface{} {
+func (CreateUser) response() interface{} {
 	return new(User)
 }
 
@@ -68,7 +68,7 @@ type UpdateUser struct {
 	_             bool   `name:"updateUser" description:"Updates a user account"`
 }
 
-func (*UpdateUser) response() interface{} {
+func (UpdateUser) response() interface{} {
 	return new(User)
 }
 
@@ -94,7 +94,7 @@ type ListUsersResponse struct {
 	User  []User `json:"user"`
 }
 
-func (*ListUsers) response() interface{} {
+func (ListUsers) response() interface{} {
 	return new(ListUsersResponse)
 }
 
@@ -104,6 +104,6 @@ type DeleteUser struct {
 	_  bool   `name:"deleteUser" description:"Deletes a user for an account"`
 }
 
-func (*DeleteUser) response() interface{} {
+func (DeleteUser) response() interface{} {
 	return new(booleanResponse)
 }

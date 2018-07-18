@@ -573,7 +573,7 @@ func TestWrongBodyResponse(t *testing.T) {
 		<body>
 		Hello world
 		</body>
-		</html>		
+		</html>
 	`})
 	defer ts.Close()
 
@@ -588,6 +588,17 @@ func TestWrongBodyResponse(t *testing.T) {
 		t.Error("body content-type error response expected")
 	}
 }
+
+func TestRequestNilCommand(t *testing.T) {
+	cs := NewClient("URL", "TOKEN", "SECRET")
+
+	_, err := cs.Request((*ListZones)(nil))
+	if err == nil {
+		t.Error("an error was expected bot got nil error")
+	}
+}
+
+// helpers
 
 type response struct {
 	code        int

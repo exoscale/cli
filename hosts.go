@@ -74,7 +74,7 @@ type ListHosts struct {
 	_             bool     `name:"listHosts" description:"Lists hosts."`
 }
 
-func (*ListHosts) response() interface{} {
+func (ListHosts) response() interface{} {
 	return new(ListHostsResponse)
 }
 
@@ -94,6 +94,6 @@ type UpdateHost struct {
 	_               bool     `name:"updateHost" description:"Updates a host."`
 }
 
-func (*UpdateHost) response() interface{} {
+func (UpdateHost) response() interface{} {
 	return new(Host)
 }

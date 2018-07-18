@@ -57,7 +57,7 @@ type Network struct {
 }
 
 // ListRequest builds the ListNetworks request
-func (network *Network) ListRequest() (ListCommand, error) {
+func (network Network) ListRequest() (ListCommand, error) {
 	//TODO add tags support
 	req := &ListNetworks{
 		Account:           network.Account,
@@ -80,7 +80,7 @@ func (network *Network) ListRequest() (ListCommand, error) {
 }
 
 // ResourceType returns the type of the resource
-func (*Network) ResourceType() string {
+func (Network) ResourceType() string {
 	return "Network"
 }
 
@@ -133,11 +133,11 @@ type CreateNetwork struct {
 	_                 bool   `name:"createNetwork" description:"Creates a network"`
 }
 
-func (*CreateNetwork) response() interface{} {
+func (CreateNetwork) response() interface{} {
 	return new(Network)
 }
 
-func (req *CreateNetwork) onBeforeSend(params *url.Values) error {
+func (req CreateNetwork) onBeforeSend(params url.Values) error {
 	// Those fields are required but might be empty
 	if req.Name == "" {
 		params.Set("name", "")
@@ -162,11 +162,11 @@ type UpdateNetwork struct {
 	_                 bool   `name:"updateNetwork" description:"Updates a network"`
 }
 
-func (*UpdateNetwork) response() interface{} {
+func (UpdateNetwork) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*UpdateNetwork) asyncResponse() interface{} {
+func (UpdateNetwork) asyncResponse() interface{} {
 	return new(Network)
 }
 
@@ -177,11 +177,11 @@ type RestartNetwork struct {
 	_       bool   `name:"restartNetwork" description:"Restarts the network; includes 1) restarting network elements - virtual routers, dhcp servers 2) reapplying all public ips 3) reapplying loadBalancing/portForwarding rules"`
 }
 
-func (*RestartNetwork) response() interface{} {
+func (RestartNetwork) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*RestartNetwork) asyncResponse() interface{} {
+func (RestartNetwork) asyncResponse() interface{} {
 	return new(Network)
 }
 
@@ -192,11 +192,11 @@ type DeleteNetwork struct {
 	_      bool   `name:"deleteNetwork" description:"Deletes a network"`
 }
 
-func (*DeleteNetwork) response() interface{} {
+func (DeleteNetwork) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*DeleteNetwork) asyncResponse() interface{} {
+func (DeleteNetwork) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -230,7 +230,7 @@ type ListNetworksResponse struct {
 	Network []Network `json:"network"`
 }
 
-func (*ListNetworks) response() interface{} {
+func (ListNetworks) response() interface{} {
 	return new(ListNetworksResponse)
 }
 
@@ -244,7 +244,7 @@ func (listNetwork *ListNetworks) SetPageSize(pageSize int) {
 	listNetwork.PageSize = pageSize
 }
 
-func (*ListNetworks) each(resp interface{}, callback IterateItemFunc) {
+func (ListNetworks) each(resp interface{}, callback IterateItemFunc) {
 	networks, ok := resp.(*ListNetworksResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("type error: ListNetworksResponse expected, got %T", resp))

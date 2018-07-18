@@ -44,7 +44,7 @@ func TestCreateNetworkOnBeforeSend(t *testing.T) {
 	req := &CreateNetwork{}
 	params := url.Values{}
 
-	if err := req.onBeforeSend(&params); err != nil {
+	if err := req.onBeforeSend(params); err != nil {
 		t.Error(err)
 	}
 

@@ -125,7 +125,7 @@ func TestDeployOnBeforeSend(t *testing.T) {
 	req := &DeployVirtualMachine{
 		SecurityGroupNames: []string{"default"},
 	}
-	params := new(url.Values)
+	params := url.Values{}
 
 	if err := req.onBeforeSend(params); err != nil {
 		t.Error(err)
@@ -134,7 +134,7 @@ func TestDeployOnBeforeSend(t *testing.T) {
 
 func TestDeployOnBeforeSendNoSG(t *testing.T) {
 	req := &DeployVirtualMachine{}
-	params := new(url.Values)
+	params := url.Values{}
 
 	// CS will pick the default oiine
 	if err := req.onBeforeSend(params); err != nil {
@@ -147,7 +147,7 @@ func TestDeployOnBeforeSendBothSG(t *testing.T) {
 		SecurityGroupIDs:   []string{"1"},
 		SecurityGroupNames: []string{"foo"},
 	}
-	params := new(url.Values)
+	params := url.Values{}
 
 	if err := req.onBeforeSend(params); err == nil {
 		t.Errorf("DeployVM should only accept SG ids or names")
@@ -159,7 +159,7 @@ func TestDeployOnBeforeSendBothAG(t *testing.T) {
 		AffinityGroupIDs:   []string{"2"},
 		AffinityGroupNames: []string{"foo"},
 	}
-	params := new(url.Values)
+	params := url.Values{}
 
 	if err := req.onBeforeSend(params); err == nil {
 		t.Errorf("DeployVM should only accept SG ids or names")

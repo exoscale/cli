@@ -22,7 +22,7 @@ type AffinityGroup struct {
 }
 
 // ListRequest builds the ListAffinityGroups request
-func (ag *AffinityGroup) ListRequest() (ListCommand, error) {
+func (ag AffinityGroup) ListRequest() (ListCommand, error) {
 	return &ListAffinityGroups{
 		ID:   ag.ID,
 		Name: ag.Name,
@@ -30,7 +30,7 @@ func (ag *AffinityGroup) ListRequest() (ListCommand, error) {
 }
 
 // Delete removes the given Affinity Group
-func (ag *AffinityGroup) Delete(ctx context.Context, client *Client) error {
+func (ag AffinityGroup) Delete(ctx context.Context, client *Client) error {
 	if ag.ID == "" && ag.Name == "" {
 		return fmt.Errorf("an Affinity Group may only be deleted using ID or Name")
 	}
@@ -64,11 +64,11 @@ type CreateAffinityGroup struct {
 	_           bool   `name:"createAffinityGroup" description:"Creates an affinity/anti-affinity group"`
 }
 
-func (*CreateAffinityGroup) response() interface{} {
+func (CreateAffinityGroup) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*CreateAffinityGroup) asyncResponse() interface{} {
+func (CreateAffinityGroup) asyncResponse() interface{} {
 	return new(AffinityGroup)
 }
 
@@ -80,7 +80,7 @@ type UpdateVMAffinityGroup struct {
 	_                  bool     `name:"updateVMAffinityGroup" description:"Updates the affinity/anti-affinity group associations of a virtual machine. The VM has to be stopped and restarted for the new properties to take effect."`
 }
 
-func (req *UpdateVMAffinityGroup) onBeforeSend(params *url.Values) error {
+func (req UpdateVMAffinityGroup) onBeforeSend(params url.Values) error {
 	// Either AffinityGroupIDs or AffinityGroupNames must be set
 	if len(req.AffinityGroupIDs) == 0 && len(req.AffinityGroupNames) == 0 {
 		params.Set("affinitygroupids", "")
@@ -88,11 +88,11 @@ func (req *UpdateVMAffinityGroup) onBeforeSend(params *url.Values) error {
 	return nil
 }
 
-func (*UpdateVMAffinityGroup) response() interface{} {
+func (UpdateVMAffinityGroup) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*UpdateVMAffinityGroup) asyncResponse() interface{} {
+func (UpdateVMAffinityGroup) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
@@ -105,11 +105,11 @@ type DeleteAffinityGroup struct {
 	_        bool   `name:"deleteAffinityGroup" description:"Deletes affinity group"`
 }
 
-func (*DeleteAffinityGroup) response() interface{} {
+func (DeleteAffinityGroup) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*DeleteAffinityGroup) asyncResponse() interface{} {
+func (DeleteAffinityGroup) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -129,7 +129,7 @@ type ListAffinityGroups struct {
 	_                bool   `name:"listAffinityGroups" description:"Lists affinity groups"`
 }
 
-func (*ListAffinityGroups) response() interface{} {
+func (ListAffinityGroups) response() interface{} {
 	return new(ListAffinityGroupsResponse)
 }
 
@@ -143,7 +143,7 @@ func (ls *ListAffinityGroups) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-func (*ListAffinityGroups) each(resp interface{}, callback IterateItemFunc) {
+func (ListAffinityGroups) each(resp interface{}, callback IterateItemFunc) {
 	vms, ok := resp.(*ListAffinityGroupsResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("wrong type. ListAffinityGroupsResponse expected, got %T", resp))
@@ -171,7 +171,7 @@ type ListAffinityGroupTypes struct {
 	_        bool   `name:"listAffinityGroupTypes" description:"Lists affinity group types available"`
 }
 
-func (*ListAffinityGroupTypes) response() interface{} {
+func (ListAffinityGroupTypes) response() interface{} {
 	return new(ListAffinityGroupTypesResponse)
 }
 

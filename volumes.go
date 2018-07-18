@@ -61,12 +61,12 @@ type Volume struct {
 }
 
 // ResourceType returns the type of the resource
-func (*Volume) ResourceType() string {
+func (Volume) ResourceType() string {
 	return "Volume"
 }
 
 // ListRequest builds the ListVolumes request
-func (vol *Volume) ListRequest() (ListCommand, error) {
+func (vol Volume) ListRequest() (ListCommand, error) {
 	req := &ListVolumes{
 		Account:          vol.Account,
 		DomainID:         vol.DomainID,
@@ -88,11 +88,11 @@ type ResizeVolume struct {
 	_              bool   `name:"resizeVolume" description:"Resizes a volume"`
 }
 
-func (*ResizeVolume) response() interface{} {
+func (ResizeVolume) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*ResizeVolume) asyncResponse() interface{} {
+func (ResizeVolume) asyncResponse() interface{} {
 	return new(Volume)
 }
 
@@ -125,7 +125,7 @@ type ListVolumesResponse struct {
 	Volume []Volume `json:"volume"`
 }
 
-func (*ListVolumes) response() interface{} {
+func (ListVolumes) response() interface{} {
 	return new(ListVolumesResponse)
 }
 
@@ -139,7 +139,7 @@ func (ls *ListVolumes) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-func (*ListVolumes) each(resp interface{}, callback IterateItemFunc) {
+func (ListVolumes) each(resp interface{}, callback IterateItemFunc) {
 	volumes, ok := resp.(*ListVolumesResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("wrong type. ListVolumesResponse expected, got %T", resp))

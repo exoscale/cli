@@ -85,7 +85,7 @@ type ListAccounts struct {
 	_                 bool        `name:"listAccounts" description:"Lists accounts and provides detailed account information for listed accounts"`
 }
 
-func (*ListAccounts) response() interface{} {
+func (ListAccounts) response() interface{} {
 	return new(ListAccountsResponse)
 }
 
@@ -103,7 +103,7 @@ type EnableAccount struct {
 	_        bool   `name:"enableAccount" description:"Enables an account"`
 }
 
-func (*EnableAccount) response() interface{} {
+func (EnableAccount) response() interface{} {
 	return new(Account)
 }
 
@@ -116,10 +116,10 @@ type DisableAccount struct {
 	_        bool   `name:"disableAccount" description:"Disables an account"`
 }
 
-func (*DisableAccount) response() interface{} {
+func (DisableAccount) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*DisableAccount) asyncResponse() interface{} {
+func (DisableAccount) asyncResponse() interface{} {
 	return new(Account)
 }

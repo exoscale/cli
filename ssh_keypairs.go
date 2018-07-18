@@ -17,7 +17,7 @@ type SSHKeyPair struct {
 }
 
 // Delete removes the given SSH key, by Name
-func (ssh *SSHKeyPair) Delete(ctx context.Context, client *Client) error {
+func (ssh SSHKeyPair) Delete(ctx context.Context, client *Client) error {
 	if ssh.Name == "" {
 		return fmt.Errorf("an SSH Key Pair may only be deleted using Name")
 	}
@@ -30,7 +30,7 @@ func (ssh *SSHKeyPair) Delete(ctx context.Context, client *Client) error {
 }
 
 // ListRequest builds the ListSSHKeyPairs request
-func (ssh *SSHKeyPair) ListRequest() (ListCommand, error) {
+func (ssh SSHKeyPair) ListRequest() (ListCommand, error) {
 	req := &ListSSHKeyPairs{
 		Account:     ssh.Account,
 		DomainID:    ssh.DomainID,
@@ -49,7 +49,7 @@ type CreateSSHKeyPair struct {
 	_        bool   `name:"createSSHKeyPair" description:"Create a new keypair and returns the private key"`
 }
 
-func (*CreateSSHKeyPair) response() interface{} {
+func (CreateSSHKeyPair) response() interface{} {
 	return new(SSHKeyPair)
 }
 
@@ -61,7 +61,7 @@ type DeleteSSHKeyPair struct {
 	_        bool   `name:"deleteSSHKeyPair" description:"Deletes a keypair by name"`
 }
 
-func (*DeleteSSHKeyPair) response() interface{} {
+func (DeleteSSHKeyPair) response() interface{} {
 	return new(booleanResponse)
 }
 
@@ -74,7 +74,7 @@ type RegisterSSHKeyPair struct {
 	_         bool   `name:"registerSSHKeyPair" description:"Register a public key in a keypair under a certain name"`
 }
 
-func (*RegisterSSHKeyPair) response() interface{} {
+func (RegisterSSHKeyPair) response() interface{} {
 	return new(SSHKeyPair)
 }
 
@@ -98,7 +98,7 @@ type ListSSHKeyPairsResponse struct {
 	SSHKeyPair []SSHKeyPair `json:"sshkeypair"`
 }
 
-func (*ListSSHKeyPairs) response() interface{} {
+func (ListSSHKeyPairs) response() interface{} {
 	return new(ListSSHKeyPairsResponse)
 }
 
@@ -112,7 +112,7 @@ func (ls *ListSSHKeyPairs) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-func (*ListSSHKeyPairs) each(resp interface{}, callback IterateItemFunc) {
+func (ListSSHKeyPairs) each(resp interface{}, callback IterateItemFunc) {
 	sshs, ok := resp.(*ListSSHKeyPairsResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("wrong type. ListSSHKeyPairsResponse expected, got %T", resp))
@@ -135,10 +135,10 @@ type ResetSSHKeyForVirtualMachine struct {
 	_        bool   `name:"resetSSHKeyForVirtualMachine" description:"Resets the SSH Key for virtual machine. The virtual machine must be in a \"Stopped\" state."`
 }
 
-func (*ResetSSHKeyForVirtualMachine) response() interface{} {
+func (ResetSSHKeyForVirtualMachine) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*ResetSSHKeyForVirtualMachine) asyncResponse() interface{} {
+func (ResetSSHKeyForVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }

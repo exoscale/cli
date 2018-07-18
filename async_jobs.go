@@ -21,7 +21,7 @@ type AsyncJobResult struct {
 	JobID           string           `json:"jobid"`
 }
 
-func (a *AsyncJobResult) Error() error {
+func (a AsyncJobResult) Error() error {
 	r := new(ErrorResponse)
 	if e := json.Unmarshal(*a.JobResult, r); e != nil {
 		return e
@@ -35,7 +35,7 @@ type QueryAsyncJobResult struct {
 	_     bool   `name:"queryAsyncJobResult" description:"Retrieves the current status of asynchronous job."`
 }
 
-func (*QueryAsyncJobResult) response() interface{} {
+func (QueryAsyncJobResult) response() interface{} {
 	return new(AsyncJobResult)
 }
 
@@ -58,12 +58,12 @@ type ListAsyncJobsResponse struct {
 	AsyncJobs []AsyncJobResult `json:"asyncjobs"`
 }
 
-func (*ListAsyncJobs) response() interface{} {
+func (ListAsyncJobs) response() interface{} {
 	return new(ListAsyncJobsResponse)
 }
 
 // Result unmarshals the result of an AsyncJobResult into the given interface
-func (a *AsyncJobResult) Result(i interface{}) error {
+func (a AsyncJobResult) Result(i interface{}) error {
 	if a.JobStatus == Failure {
 		return a.Error()
 	}

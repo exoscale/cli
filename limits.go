@@ -103,7 +103,7 @@ type ListResourceLimitsResponse struct {
 	ResourceLimit []ResourceLimit `json:"resourcelimit"`
 }
 
-func (*ListResourceLimits) response() interface{} {
+func (ListResourceLimits) response() interface{} {
 	return new(ListResourceLimitsResponse)
 }
 
@@ -121,7 +121,7 @@ type UpdateResourceLimitResponse struct {
 	ResourceLimit ResourceLimit `json:"resourcelimit"`
 }
 
-func (*UpdateResourceLimit) response() interface{} {
+func (UpdateResourceLimit) response() interface{} {
 	return new(UpdateResourceLimitResponse)
 }
 
@@ -135,6 +135,6 @@ type GetAPILimitResponse struct {
 	APILimit APILimit `json:"apilimit"`
 }
 
-func (*GetAPILimit) response() interface{} {
+func (GetAPILimit) response() interface{} {
 	return new(GetAPILimitResponse)
 }

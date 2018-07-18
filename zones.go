@@ -35,7 +35,7 @@ type Zone struct {
 }
 
 // ListRequest builds the ListZones request
-func (zone *Zone) ListRequest() (ListCommand, error) {
+func (zone Zone) ListRequest() (ListCommand, error) {
 	req := &ListZones{
 		DomainID: zone.DomainID,
 		ID:       zone.ID,
@@ -65,7 +65,7 @@ type ListZonesResponse struct {
 	Zone  []Zone `json:"zone"`
 }
 
-func (*ListZones) response() interface{} {
+func (ListZones) response() interface{} {
 	return new(ListZonesResponse)
 }
 
@@ -79,7 +79,7 @@ func (ls *ListZones) SetPageSize(pageSize int) {
 	ls.PageSize = pageSize
 }
 
-func (*ListZones) each(resp interface{}, callback IterateItemFunc) {
+func (ListZones) each(resp interface{}, callback IterateItemFunc) {
 	zones, ok := resp.(*ListZonesResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("wrong type. ListZonesResponse was expected, got %T", resp))

@@ -20,12 +20,12 @@ import (
 )
 
 // Error formats a CloudStack error into a standard error
-func (e *ErrorResponse) Error() string {
+func (e ErrorResponse) Error() string {
 	return fmt.Sprintf("API error %s %d (%s %d): %s", e.ErrorCode, e.ErrorCode, e.CSErrorCode, e.CSErrorCode, e.ErrorText)
 }
 
 // Success computes the values based on the RawMessage, either string or bool
-func (e *booleanResponse) IsSuccess() (bool, error) {
+func (e booleanResponse) IsSuccess() (bool, error) {
 	if e.Success == nil {
 		return false, errors.New("not a valid booleanResponse, Success is missing")
 	}
@@ -42,7 +42,7 @@ func (e *booleanResponse) IsSuccess() (bool, error) {
 }
 
 // Error formats a CloudStack job response into a standard error
-func (e *booleanResponse) Error() error {
+func (e booleanResponse) Error() error {
 	success, err := e.IsSuccess()
 
 	if err != nil {
@@ -294,7 +294,7 @@ func (client *Client) Payload(command Command) (string, error) {
 		return "", err
 	}
 	if hookReq, ok := command.(onBeforeHook); ok {
-		if err := hookReq.onBeforeSend(&params); err != nil {
+		if err := hookReq.onBeforeSend(params); err != nil {
 			return "", err
 		}
 	}

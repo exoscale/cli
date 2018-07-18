@@ -11,6 +11,39 @@ import (
 	"github.com/jinzhu/copier"
 )
 
+// NewClientWithTimeout creates a CloudStack API client
+//
+// Timeout is set to both the HTTP client and the client itself.
+func NewClientWithTimeout(endpoint, apiKey, apiSecret string, timeout time.Duration) *Client {
+	client := &http.Client{
+		Timeout: timeout,
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: false,
+			},
+		},
+	}
+
+	cs := &Client{
+		HTTPClient:    client,
+		Endpoint:      endpoint,
+		APIKey:        apiKey,
+		apiSecret:     apiSecret,
+		PageSize:      50,
+		Timeout:       timeout,
+		RetryStrategy: MonotonicRetryStrategyFunc(2),
+	}
+
+	return cs
+}
+
+// NewClient creates a CloudStack API client with default timeout (60)
+func NewClient(endpoint, apiKey, apiSecret string) *Client {
+	timeout := 60 * time.Second
+	return NewClientWithTimeout(endpoint, apiKey, apiSecret, timeout)
+}
+
 // Get populates the given resource or fails
 func (client *Client) Get(g Gettable) error {
 	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
@@ -227,39 +260,6 @@ func (client *Client) Response(request Command) interface{} {
 	default:
 		return request.response()
 	}
-}
-
-// NewClientWithTimeout creates a CloudStack API client
-//
-// Timeout is set to both the HTTP client and the client itself.
-func NewClientWithTimeout(endpoint, apiKey, apiSecret string, timeout time.Duration) *Client {
-	client := &http.Client{
-		Timeout: timeout,
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: false,
-			},
-		},
-	}
-
-	cs := &Client{
-		HTTPClient:    client,
-		Endpoint:      endpoint,
-		APIKey:        apiKey,
-		apiSecret:     apiSecret,
-		PageSize:      50,
-		Timeout:       timeout,
-		RetryStrategy: MonotonicRetryStrategyFunc(2),
-	}
-
-	return cs
-}
-
-// NewClient creates a CloudStack API client with default timeout (60)
-func NewClient(endpoint, apiKey, apiSecret string) *Client {
-	timeout := 60 * time.Second
-	return NewClientWithTimeout(endpoint, apiKey, apiSecret, timeout)
 }
 
 // MonotonicRetryStrategyFunc returns a function that waits for n seconds for each iteration

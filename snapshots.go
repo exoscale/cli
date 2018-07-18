@@ -50,7 +50,7 @@ type Snapshot struct {
 }
 
 // ResourceType returns the type of the resource
-func (*Snapshot) ResourceType() string {
+func (Snapshot) ResourceType() string {
 	return "Snapshot"
 }
 
@@ -63,11 +63,11 @@ type CreateSnapshot struct {
 	_         bool   `name:"createSnapshot" description:"Creates an instant snapshot of a volume."`
 }
 
-func (*CreateSnapshot) response() interface{} {
+func (CreateSnapshot) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*CreateSnapshot) asyncResponse() interface{} {
+func (CreateSnapshot) asyncResponse() interface{} {
 	return new(Snapshot)
 }
 
@@ -96,7 +96,7 @@ type ListSnapshotsResponse struct {
 	Snapshot []Snapshot `json:"snapshot"`
 }
 
-func (*ListSnapshots) response() interface{} {
+func (ListSnapshots) response() interface{} {
 	return new(ListSnapshotsResponse)
 }
 
@@ -106,11 +106,11 @@ type DeleteSnapshot struct {
 	_  bool   `name:"deleteSnapshot" description:"Deletes a snapshot of a disk volume."`
 }
 
-func (*DeleteSnapshot) response() interface{} {
+func (DeleteSnapshot) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*DeleteSnapshot) asyncResponse() interface{} {
+func (DeleteSnapshot) asyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -120,10 +120,10 @@ type RevertSnapshot struct {
 	_  bool   `name:"revertSnapshot" description:"revert a volume snapshot."`
 }
 
-func (*RevertSnapshot) response() interface{} {
+func (RevertSnapshot) response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (*RevertSnapshot) asyncResponse() interface{} {
+func (RevertSnapshot) asyncResponse() interface{} {
 	return new(booleanResponse)
 }

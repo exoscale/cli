@@ -45,7 +45,7 @@ type ServiceOffering struct {
 }
 
 // ListRequest builds the ListSecurityGroups request
-func (so *ServiceOffering) ListRequest() (ListCommand, error) {
+func (so ServiceOffering) ListRequest() (ListCommand, error) {
 	// Restricted cannot be applied here because it really has three states
 	req := &ListServiceOfferings{
 		ID:           so.ID,
@@ -83,7 +83,7 @@ type ListServiceOfferingsResponse struct {
 	ServiceOffering []ServiceOffering `json:"serviceoffering"`
 }
 
-func (*ListServiceOfferings) response() interface{} {
+func (ListServiceOfferings) response() interface{} {
 	return new(ListServiceOfferingsResponse)
 }
 
@@ -97,7 +97,7 @@ func (lso *ListServiceOfferings) SetPageSize(pageSize int) {
 	lso.PageSize = pageSize
 }
 
-func (*ListServiceOfferings) each(resp interface{}, callback IterateItemFunc) {
+func (ListServiceOfferings) each(resp interface{}, callback IterateItemFunc) {
 	sos, ok := resp.(*ListServiceOfferingsResponse)
 	if !ok {
 		callback(nil, fmt.Errorf("wrong type. ListServiceOfferingsResponse expected, got %T", resp))
