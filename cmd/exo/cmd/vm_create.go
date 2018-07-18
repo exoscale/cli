@@ -248,6 +248,7 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 	var errorReq error
 	fmt.Printf("Deploying %q", vmInfos.Name)
 	cs.AsyncRequest(vmInfos, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+		fmt.Printf(".")
 
 		if err != nil {
 			errorReq = err
@@ -255,17 +256,14 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 		}
 
 		if jobResult.JobStatus == egoscale.Success {
-
-			if err := jobResult.Response(virtualMachine); err != nil {
-				errorReq = err
+			if errR := jobResult.Result(virtualMachine); errR != nil {
+				errorReq = errR
 			}
-
-			println("")
 			return false
 		}
-		fmt.Printf(".")
 		return true
 	})
+	fmt.Println("")
 
 	if errorReq != nil {
 		return nil, errorReq

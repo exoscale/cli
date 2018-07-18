@@ -1,7 +1,12 @@
 Changelog
 =========
 
-0.10.0 (unreleased)
+0.10.1
+------
+
+- feat: expose `SyncRequest` and `SyncRequestWithContext`
+
+0.10.0
 ------
 
 - global: cloudstack documentation links are moved into cs

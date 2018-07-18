@@ -13,28 +13,28 @@ env:
 
 cache: apt
 
-before_install:
-  - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
-  - chmod +x $GOPATH/bin/dep
-  - wget https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/goreleaser_amd64.deb
-  - sudo dpkg -i goreleaser_amd64.deb
-  - wget https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-64bit.deb
-  - sudo dpkg -i hugo_${HUGO_VERSION}_Linux-64bit.deb
-  - wget https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_amd64.deb
-  - sudo dpkg -i nfpm_amd64.deb
 addons:
   apt:
     update: true
     packages:
     - rpm
 
+install: |
+  curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
+  chmod +x $GOPATH/bin/dep
+  wget https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/goreleaser_amd64.deb
+  sudo dpkg -i goreleaser_amd64.deb
+  wget https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_amd64.deb
+  sudo dpkg -i nfpm_amd64.deb
+  npm i codeclimate-test-reporter
+
+script: |
+  dep ensure -v -vendor-only
+  go test -race -coverprofile=coverage.out -covermode=atomic .
+  npx codeclimate-test-reporter < coverage.out
+
 jobs:
   include:
-  - stage: test
-    if: type = pr
-    script: |
-      dep ensure -v -vendor-only
-      go test -race .
   - stage: goreleaser
     if: type = push
     script: |
@@ -49,12 +49,10 @@ jobs:
   - stage: gh-pages
     if: branch = master AND type = push
     script: |
-      dep ensure -v -vendor-only
-      go test -coverprofile=coverage.out -covermode=atomic .
-      npm i codeclimate-test-reporter
-      npx codeclimate-test-reporter < coverage.out
       cd website
       sh prepare.sh
+      wget https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-64bit.deb
+      sudo dpkg -i hugo_${HUGO_VERSION}_Linux-64bit.deb
       hugo
       cd public
       git init

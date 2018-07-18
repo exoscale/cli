@@ -202,6 +202,43 @@ func TestBooleanRequestTimeout(t *testing.T) {
 	<-done
 }
 
+func TestSyncRequestWithoutContext(t *testing.T) {
+
+	ts := newServer(
+		response{200, jsonContentType, `{
+	"deployvirtualmachineresponse": {
+		"jobid": "42",
+		"jobresult": {},
+		"jobstatus": 0
+	}
+}`},
+	)
+
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	req := &DeployVirtualMachine{
+		Name:              "test",
+		ServiceOfferingID: "71004023-bb72-4a97-b1e9-bc66dfce9470",
+		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
+		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108",
+	}
+
+	// WithContext
+	resp, err := cs.SyncRequest(req)
+	if err != nil {
+		t.Error(err)
+	}
+	result, ok := resp.(*AsyncJobResult)
+	if !ok {
+		t.Error("wrong type")
+	}
+
+	if result.JobID != "42" {
+		t.Errorf("wrong job id, expected 42, got %s", result.JobID)
+	}
+}
+
 func TestAsyncRequestWithoutContext(t *testing.T) {
 
 	ts := newServer(
@@ -249,7 +286,7 @@ func TestAsyncRequestWithoutContext(t *testing.T) {
 		}
 
 		if j.JobStatus == Success {
-			if r := j.Response(resp); r != nil {
+			if r := j.Result(resp); r != nil {
 				t.Error(r)
 			}
 			return false
@@ -301,7 +338,7 @@ func TestAsyncRequestWithoutContextFailure(t *testing.T) {
 
 		if j.JobStatus == Success {
 
-			if r := j.Response(resp); r != nil {
+			if r := j.Result(resp); r != nil {
 				return false
 			}
 			t.Errorf("Expected an error, got <nil>")
@@ -383,7 +420,7 @@ func TestAsyncRequestWithoutContextFailureNextNext(t *testing.T) {
 		if j.JobStatus == Success {
 
 			j.JobStatus = Failure
-			if r := j.Response(resp); r != nil {
+			if r := j.Result(resp); r != nil {
 				return false
 			}
 			t.Errorf("Expected an error, got <nil>")
