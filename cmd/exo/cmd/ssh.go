@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -41,7 +42,8 @@ var sshCmd = &cobra.Command{
 		}
 
 		if isConnectionSTR {
-			return printSSHConnectSTR(info)
+			printSSHConnectSTR(info)
+			return nil
 		}
 
 		if isInfo {
@@ -55,7 +57,7 @@ var sshCmd = &cobra.Command{
 type sshInfo struct {
 	sshKeys  string
 	userName string
-	ip       *net.IP
+	ip       net.IP
 	vmName   string
 	vmID     string
 }
@@ -67,10 +69,6 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 	}
 
 	sshKeyPath := path.Join(gConfigFolder, "instances", vm.ID, "id_rsa")
-
-	if _, err := os.Stat(sshKeyPath); os.IsNotExist(err) {
-		sshKeyPath = "Default ssh keypair not found"
-	}
 
 	nic := vm.DefaultNic()
 	if nic == nil {
@@ -84,6 +82,10 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 			return nil, fmt.Errorf("missing IPv6 address on the instance %q", vm.ID)
 		}
 		vmIP = &nic.IP6Address
+	}
+
+	if vmIP == nil {
+		return nil, fmt.Errorf("no valid IP address found")
 	}
 
 	template := &egoscale.Template{ID: vm.TemplateID, IsFeatured: true, ZoneID: "1"}
@@ -100,41 +102,46 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 	return &sshInfo{
 		sshKeys:  sshKeyPath,
 		userName: tempUser,
-		ip:       vmIP,
+		ip:       *vmIP,
 		vmName:   vm.Name,
 		vmID:     vm.ID,
 	}, nil
 
 }
 
-func printSSHConnectSTR(info *sshInfo) error {
+func printSSHConnectSTR(info *sshInfo) {
+	sshArgs := ""
 
-	if _, err := os.Stat(info.sshKeys); os.IsNotExist(err) {
-		return fmt.Errorf("default ssh KeyPair not found %q infos.sshKeys", info.sshKeys)
+	if _, err := os.Stat(info.sshKeys); err == nil {
+		sshArgs = fmt.Sprintf("-i %q ", info.sshKeys)
 	}
 
-	fmt.Printf("ssh -i %s %s@%s\n", info.sshKeys, info.userName, info.ip)
-
-	return nil
+	fmt.Printf("ssh %s%s@%s\n", sshArgs, info.userName, info.ip)
 }
 
 func printSSHInfo(info *sshInfo) {
-	println("Host", info.vmName)
-	println("\tHostName", info.ip.String())
-	println("\tUser", info.userName)
-	println("\tIdentityFile", info.sshKeys)
+	fmt.Println("Host", info.vmName)
+	fmt.Println("\tHostName", info.ip.String())
+	fmt.Println("\tUser", info.userName)
+	if _, err := os.Stat(info.sshKeys); err == nil {
+		fmt.Println("\tIdentityFile", info.sshKeys)
+	}
 }
 
-func connectSSH(cred *sshInfo) error {
+func connectSSH(info *sshInfo) error {
 
-	args := []string{
-		"-i",
-		cred.sshKeys,
-		cred.userName + "@" + cred.ip.String(),
+	args := make([]string, 0, 3)
+
+	if _, err := os.Stat(info.sshKeys); os.IsNotExist(err) {
+		log.Printf("Warning: Identity file %s not found or not accessible.", info.sshKeys)
+	} else {
+		args = append(args, "-i")
+		args = append(args, info.sshKeys)
 	}
 
-	cmd := exec.Command("ssh", args...)
+	args = append(args, info.userName+"@"+info.ip.String())
 
+	cmd := exec.Command("ssh", args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
