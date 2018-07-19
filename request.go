@@ -380,9 +380,11 @@ func (client *Client) request(ctx context.Context, command Command) (json.RawMes
 
 	apiName := client.APIName(command)
 	key := fmt.Sprintf("%sresponse", strings.ToLower(apiName))
-	// XXX: addIpToNic is kind of special
+	// XXX: addIpToNic, activateIp6 are kind of special
 	if key == "addiptonicresponse" {
 		key = "addiptovmnicresponse"
+	} else if key == "activateip6response" {
+		key = "activateip6nicresponse"
 	}
 
 	text, err := client.parseResponse(resp, key)
