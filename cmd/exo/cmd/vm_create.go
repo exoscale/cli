@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	"github.com/exoscale/egoscale/cmd/exo/table"
 	"github.com/exoscale/egoscale/cmd/exo/utils"
 	"github.com/spf13/cobra"
 )
@@ -137,11 +136,30 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Name", "IP", "ID"})
+		sshinfo, err := getSSHInfo(r.ID, ipv6)
+		if err != nil {
+			return err
+		}
 
-		table.Append([]string{r.Name, r.IP().String(), r.ID})
-		table.Render()
+		fmt.Printf(`The deployment of %q went well! What to do now?
+
+Connect to the machine
+
+> exo ssh %s
+`, r.Name, r.Name)
+
+		printSSHConnectSTR(sshinfo)
+
+		fmt.Printf(`
+Put the SSH configuration into ".ssh/config"
+
+> exo ssh %s --info
+`, r.Name)
+
+		printSSHInfo(sshinfo)
+
+		fmt.Println("\nTip of the day: you're the sole owner of the private key. Be cautious with it.")
+
 		return nil
 	},
 }
@@ -225,7 +243,7 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 
 	if vmInfos.KeyPair == "" {
 		isDefaultKeyPair = true
-		println("Creating sshkey")
+		fmt.Println("Creating sshkey")
 		sshKeyName, err := utils.RandStringBytes(64)
 		if err != nil {
 			return nil, err
