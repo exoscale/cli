@@ -141,24 +141,28 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf(`The deployment of %q went well! What to do now?
+		fmt.Printf(`What to do now?
 
-Connect to the machine
+1. Connect to the machine
 
 > exo ssh %s
-`, r.Name, r.Name)
+`, r.Name)
 
 		printSSHConnectSTR(sshinfo)
 
 		fmt.Printf(`
-Put the SSH configuration into ".ssh/config"
+2. Put the SSH configuration into ".ssh/config"
 
 > exo ssh %s --info
 `, r.Name)
 
 		printSSHInfo(sshinfo)
 
-		fmt.Println("\nTip of the day: you're the sole owner of the private key. Be cautious with it.")
+		fmt.Print(`
+Tip of the day:
+	you're the sole owner of the private key.
+	Be cautious with it.
+`)
 
 		return nil
 	},
@@ -264,7 +268,7 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 
 	virtualMachine := &egoscale.VirtualMachine{}
 	var errorReq error
-	fmt.Printf("Deploying %q", vmInfos.Name)
+	fmt.Printf("Deploying %q ", vmInfos.Name)
 	cs.AsyncRequest(vmInfos, func(jobResult *egoscale.AsyncJobResult, err error) bool {
 		fmt.Printf(".")
 
@@ -281,11 +285,12 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 		}
 		return true
 	})
-	fmt.Println("")
-
 	if errorReq != nil {
+		fmt.Println(" failure.")
 		return nil, errorReq
 	}
+
+	fmt.Println(" success!")
 
 	if isDefaultKeyPair {
 		saveKeyPair(keyPairs, virtualMachine.ID)
