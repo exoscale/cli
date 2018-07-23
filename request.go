@@ -289,7 +289,7 @@ func (client *Client) AsyncRequestWithContext(ctx context.Context, asyncCommand 
 // Payload builds the HTTP request from the given command
 func (client *Client) Payload(command Command) (string, error) {
 	params := url.Values{}
-	err := prepareValues("", &params, command)
+	err := prepareValues("", params, command)
 	if err != nil {
 		return "", err
 	}

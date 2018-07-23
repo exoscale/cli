@@ -32,6 +32,7 @@ func TestPrepareValues(t *testing.T) {
 		Tags        []tag             `json:"tags,omitempty"`
 		Map         map[string]string `json:"map"`
 		IP          net.IP            `json:"ip,omitempty"`
+		MAC         MACAddress        `json:"mac,omitempty"`
 	}{
 		IgnoreMe: "bar",
 		Name:     "world",
@@ -54,11 +55,12 @@ func TestPrepareValues(t *testing.T) {
 		Map: map[string]string{
 			"foo": "bar",
 		},
-		IP: net.IPv4(192, 168, 0, 11),
+		IP:  net.IPv4(192, 168, 0, 11),
+		MAC: MAC48(0x01, 0x23, 0x45, 0x67, 0x89, 0xab),
 	}
 
 	params := url.Values{}
-	err := prepareValues("", &params, profile)
+	err := prepareValues("", params, profile)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +119,12 @@ func TestPrepareValues(t *testing.T) {
 
 	v = params.Get("ip")
 	if v != "192.168.0.11" {
-		t.Errorf("expected ip to be serialized as \"192.168.0.11\", got %#v", v)
+		t.Errorf(`expected ip to be serialized as "192.168.0.11", got %q`, v)
+	}
+
+	v = params.Get("mac")
+	if v != "01:23:45:67:89:ab" {
+		t.Errorf(`expected mac to be serialized as "01:23:45:67:89:ab", got %q`, v)
 	}
 }
 
@@ -127,7 +134,7 @@ func TestPrepareValuesStringRequired(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -139,7 +146,7 @@ func TestPrepareValuesBoolRequired(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err != nil {
 		t.Fatal(nil)
 	}
@@ -154,7 +161,7 @@ func TestPrepareValuesBoolPtrRequired(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -166,7 +173,7 @@ func TestPrepareValuesIntRequired(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -178,7 +185,7 @@ func TestPrepareValuesUintRequired(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -190,7 +197,7 @@ func TestPrepareValuesBytesRequired(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -202,7 +209,7 @@ func TestPrepareValuesSliceString(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -214,7 +221,7 @@ func TestPrepareValuesIP(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -228,7 +235,7 @@ func TestPrepareValuesIPZero(t *testing.T) {
 	}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -240,7 +247,7 @@ func TestPrepareValuesMap(t *testing.T) {
 	}{}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err == nil {
 		t.Errorf("It should have failed")
 	}
@@ -266,7 +273,7 @@ func TestPrepareValuesBoolPtr(t *testing.T) {
 	}
 
 	params := url.Values{}
-	err := prepareValues("", &params, &profile)
+	err := prepareValues("", params, &profile)
 	if err != nil {
 		t.Error(err)
 	}

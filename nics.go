@@ -19,7 +19,7 @@ type Nic struct {
 	IPAddress        net.IP           `json:"ipaddress,omitempty" doc:"the ip address of the nic"`
 	IsDefault        bool             `json:"isdefault,omitempty" doc:"true if nic is default, false otherwise"`
 	IsolationURI     string           `json:"isolationuri,omitempty" doc:"the isolation uri of the nic"`
-	MacAddress       string           `json:"macaddress,omitempty" doc:"true if nic is default, false otherwise"`
+	MACAddress       MACAddress       `json:"macaddress,omitempty" doc:"true if nic is default, false otherwise"`
 	Netmask          net.IP           `json:"netmask,omitempty" doc:"the netmask of the nic"`
 	NetworkID        string           `json:"networkid,omitempty" doc:"the ID of the corresponding network"`
 	NetworkName      string           `json:"networkname,omitempty" doc:"the name of the corresponding network"`

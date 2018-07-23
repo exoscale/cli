@@ -56,7 +56,7 @@ func info(command interface{}) (*CommandInfo, error) {
 // prepareValues uses a command to build a POST request
 //
 // command is not a Command so it's easier to Test
-func prepareValues(prefix string, params *url.Values, command interface{}) error {
+func prepareValues(prefix string, params url.Values, command interface{}) error {
 	value := reflect.ValueOf(command)
 	typeof := reflect.TypeOf(command)
 
@@ -91,7 +91,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), n, val.Kind())
 					}
 				} else {
-					(*params).Set(name, strconv.FormatInt(v, 10))
+					params.Set(name, strconv.FormatInt(v, 10))
 				}
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 				v := val.Uint()
@@ -100,7 +100,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), n, val.Kind())
 					}
 				} else {
-					(*params).Set(name, strconv.FormatUint(v, 10))
+					params.Set(name, strconv.FormatUint(v, 10))
 				}
 			case reflect.Float32, reflect.Float64:
 				v := val.Float()
@@ -109,7 +109,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 						return fmt.Errorf("%s.%s (%v) is required, got 0", typeof.Name(), n, val.Kind())
 					}
 				} else {
-					(*params).Set(name, strconv.FormatFloat(v, 'f', -1, 64))
+					params.Set(name, strconv.FormatFloat(v, 'f', -1, 64))
 				}
 			case reflect.String:
 				v := val.String()
@@ -118,7 +118,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 						return fmt.Errorf("%s.%s (%v) is required, got \"\"", typeof.Name(), n, val.Kind())
 					}
 				} else {
-					(*params).Set(name, v)
+					params.Set(name, v)
 				}
 			case reflect.Bool:
 				v := val.Bool()
@@ -127,7 +127,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 						params.Set(name, "false")
 					}
 				} else {
-					(*params).Set(name, "true")
+					params.Set(name, "true")
 				}
 			case reflect.Ptr:
 				if val.IsNil() {
@@ -153,7 +153,17 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 								return fmt.Errorf("%s.%s (%v) is required, got zero IPv4 address", typeof.Name(), n, val.Kind())
 							}
 						} else {
-							(*params).Set(name, ip.String())
+							params.Set(name, ip.String())
+						}
+					case reflect.TypeOf(MAC48(0, 0, 0, 0, 0, 0)):
+						mac := val.Interface().(MACAddress)
+						s := mac.String()
+						if s == "" {
+							if required {
+								return fmt.Errorf("%s.%s (%v) is required, got empty MAC address", typeof.Name(), field.Name, val.Kind())
+							}
+						} else {
+							params.Set(name, s)
 						}
 					default:
 						if val.Len() == 0 {
@@ -162,7 +172,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 							}
 						} else {
 							v := val.Bytes()
-							(*params).Set(name, base64.StdEncoding.EncodeToString(v))
+							params.Set(name, base64.StdEncoding.EncodeToString(v))
 						}
 					}
 				case reflect.String:
@@ -178,7 +188,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 								s := val.Index(i).String()
 								elems = append(elems, s)
 							}
-							(*params).Set(name, strings.Join(elems, ","))
+							params.Set(name, strings.Join(elems, ","))
 						}
 					}
 				default:
@@ -208,6 +218,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 				if required {
 					return fmt.Errorf("unsupported type %s.%s (%v)", typeof.Name(), n, val.Kind())
 				}
+				fmt.Printf("%s\n", val.Kind())
 			}
 		} else {
 			log.Printf("[SKIP] %s.%s no json label found", typeof.Name(), field.Name)
@@ -217,7 +228,7 @@ func prepareValues(prefix string, params *url.Values, command interface{}) error
 	return nil
 }
 
-func prepareList(prefix string, params *url.Values, slice interface{}) error {
+func prepareList(prefix string, params url.Values, slice interface{}) error {
 	value := reflect.ValueOf(slice)
 
 	for i := 0; i < value.Len(); i++ {
@@ -230,7 +241,7 @@ func prepareList(prefix string, params *url.Values, slice interface{}) error {
 	return nil
 }
 
-func prepareMap(prefix string, params *url.Values, m interface{}) error {
+func prepareMap(prefix string, params url.Values, m interface{}) error {
 	value := reflect.ValueOf(m)
 
 	for i, key := range value.MapKeys() {
