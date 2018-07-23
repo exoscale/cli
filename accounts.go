@@ -1,5 +1,7 @@
 package egoscale
 
+import "fmt"
+
 // AccountType represents the type of an Account
 //
 // http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/4.8/accounts.html#accounts-users-and-domains
@@ -69,6 +71,16 @@ type Account struct {
 	VolumeTotal               int64             `json:"volumetotal,omitempty" doc:"the total volume being used by this account"`
 }
 
+// ListRequest builds the ListAccountsGroups request
+func (a Account) ListRequest() (ListCommand, error) {
+	return &ListAccounts{
+		ID:          a.ID,
+		DomainID:    a.DomainID,
+		AccountType: a.AccountType,
+		State:       a.State,
+	}, nil
+}
+
 // ListAccounts represents a query to display the accounts
 type ListAccounts struct {
 	AccountType       AccountType `json:"accounttype,omitempty" doc:"list accounts by account type. Valid account types are 1 (admin), 2 (domain-admin), and 0 (user)."`
@@ -87,6 +99,30 @@ type ListAccounts struct {
 
 func (ListAccounts) response() interface{} {
 	return new(ListAccountsResponse)
+}
+
+// SetPage sets the current page
+func (ls *ListAccounts) SetPage(page int) {
+	ls.Page = page
+}
+
+// SetPageSize sets the page size
+func (ls *ListAccounts) SetPageSize(pageSize int) {
+	ls.PageSize = pageSize
+}
+
+func (ListAccounts) each(resp interface{}, callback IterateItemFunc) {
+	vms, ok := resp.(*ListAccountsResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("wrong type. ListAccountsResponse expected, got %T", resp))
+		return
+	}
+
+	for i := range vms.Account {
+		if !callback(&vms.Account[i], nil) {
+			break
+		}
+	}
 }
 
 // ListAccountsResponse represents a list of accounts

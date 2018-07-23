@@ -1,7 +1,17 @@
 Changelog
 =========
 
-0.10.1 (unreleased)
+0.10.3 (unreleased)
+------
+
+- feat: `Account` is Listable
+
+0.10.2
+------
+
+- fix: ActivateIP6 response
+
+0.10.1
 ------
 
 - feat: expose `SyncRequest` and `SyncRequestWithContext`

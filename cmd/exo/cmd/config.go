@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	exoConfigFileName = "exoscale"
-	computeEndpoint   = "https://api.exoscale.ch/compute"
+	defaultConfigFileName  = "exoscale"
+	defaultComputeEndpoint = "https://api.exoscale.ch/compute"
 )
 
 // configCmd represents the config command
@@ -28,9 +28,8 @@ var configCmd = &cobra.Command{
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
-
 	if viper.ConfigFileUsed() != "" {
-		println("Good day! exo is already configured with accounts:")
+		fmt.Println("Good day! exo is already configured with accounts:")
 		listAccounts()
 		return addNewAccount(false)
 	}
@@ -44,7 +43,7 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 			return addNewAccount(true)
 		}
 
-		cfgPath, err := createConfigFile(exoConfigFileName)
+		cfgPath, err := createConfigFile(defaultConfigFileName)
 		if err != nil {
 			return err
 		}
@@ -53,10 +52,12 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 		}
 		return addNewAccount(false)
 	}
-	println("Hi happy Exoscalian, some configuration is required to use exo")
-	println(`
+	fmt.Print(`
+Hi happy Exoscalian, some configuration is required to use exo.
+
 We now need some very important information, find them there.
-https://portal.exoscale.com/account/profile/api
+	<https://portal.exoscale.com/account/profile/api>
+
 `)
 	return addNewAccount(true)
 }
@@ -66,7 +67,7 @@ func addNewAccount(firstRun bool) error {
 	config := &config{}
 
 	if firstRun {
-		filePath, err := createConfigFile(exoConfigFileName)
+		filePath, err := createConfigFile(defaultConfigFileName)
 		if err != nil {
 			return err
 		}
@@ -104,55 +105,83 @@ func addNewAccount(firstRun bool) error {
 func getAccount() (*account, error) {
 	reader := bufio.NewReader(os.Stdin)
 
-	account := &account{}
+	var client *egoscale.Client
 
-	name, err := readInput(reader, "Account name", "")
-	if err != nil {
-		return nil, err
+	account := &account{
+		Endpoint: defaultComputeEndpoint,
+		Key:      "",
+		Secret:   "",
 	}
 
-	for name == "" {
-		fmt.Printf("Must be not empty\n")
-		name, err = readInput(reader, "Account name", "")
+	for i := 0; ; i++ {
+		if i > 0 {
+			endpoint, err := readInput(reader, "API Endpoint", account.Endpoint)
+			if err != nil {
+				return nil, err
+			}
+			if endpoint != account.Endpoint {
+				account.Endpoint = endpoint
+			}
+		}
+
+		apiKey, err := readInput(reader, "API Key", account.Key)
 		if err != nil {
 			return nil, err
 		}
+		if apiKey != account.Key {
+			account.Key = apiKey
+		}
+
+		secret := ""
+		if account.Secret != "" && len(account.Secret) > 10 {
+			secret = account.Secret[0:7] + "..."
+		}
+		secretKey, err := readInput(reader, "Secret Key", secret)
+		if err != nil {
+			return nil, err
+		}
+		if secretKey != account.Secret && secretKey != secret {
+			account.Secret = secretKey
+		}
+
+		client = egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
+
+		fmt.Printf("Checking the credentials of %q...", account.Key)
+		acc := &egoscale.Account{}
+		err = client.GetWithContext(gContext, acc)
+		if err != nil {
+			fmt.Print(` failure.
+
+Let's start over.
+
+`)
+		} else {
+			fmt.Print(" success!\n\n")
+			account.Name = acc.Name
+			account.Account = acc.Name
+			break
+		}
 	}
 
-	for isAccountExist(name) {
+	name, err := readInput(reader, "Account name", account.Name)
+	if err != nil {
+		return nil, err
+	}
+	if name != "" {
+		account.Name = name
+	}
+
+	for isAccountExist(account.Name) {
 		fmt.Printf("Account name [%s] already exist\n", name)
-		name, err = readInput(reader, "Account name", "")
+		name, err = readInput(reader, "Account name", account.Name)
 		if err != nil {
 			return nil, err
 		}
+
+		account.Name = name
 	}
 
-	account.Name = name
-
-	account.Endpoint = computeEndpoint
-
-	apiKey, err := readInput(reader, "API Key", "")
-	if err != nil {
-		return nil, err
-	}
-	account.Key = apiKey
-
-	secretKey, err := readInput(reader, "Secret Key", "")
-	if err != nil {
-		return nil, err
-	}
-	account.Secret = secretKey
-
-	accountResp, err := checkCredentials(account)
-	if err != nil {
-		return nil, fmt.Errorf("unable to verify user credentials of %q", account.Name)
-	}
-
-	account.Account = accountResp.Name
-
-	csClient := egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
-
-	defaultZone, err := chooseZone(account.Name, csClient)
+	defaultZone, err := chooseZone(account.Name, client)
 	if err != nil {
 		return nil, err
 	}
@@ -275,15 +304,19 @@ func askCloudstackINIMigration(csFilePath string) (string, bool, error) {
 		}
 		fmt.Printf("- [%s] %s\n", acc.Name(), acc.Key("key").String())
 	}
+	fmt.Println("")
 
 	reader := bufio.NewReader(os.Stdin)
 
-	resp, err := readInput(reader, "Do you wish to import them automagically?", "All, some, none")
+	resp, err := readInput(reader, "Which one should we import?", "All, some, none")
 	if err != nil {
 		return "", false, err
 	}
 
 	resp = strings.ToLower(resp)
+	if resp == "" {
+		resp = "all"
+	}
 
 	return resp, (resp == "all" || resp == "some"), nil
 }
@@ -294,6 +327,8 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 		return err
 	}
 
+	reader := bufio.NewReader(os.Stdin)
+
 	config := &config{}
 
 	for i, acc := range cfg.Sections() {
@@ -302,7 +337,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 		}
 
 		if option == "some" {
-			if !askQuestion(fmt.Sprintf("Importing %s %s?", acc.Name(), acc.Key("key").String())) {
+			if !askQuestion(fmt.Sprintf("Do you want to import [%s] %s?", acc.Name(), acc.Key("key").String())) {
 				continue
 			}
 		}
@@ -314,17 +349,42 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			Secret:   acc.Key("secret").String(),
 		}
 
-		accountResp, err := checkCredentials(&csAccount)
-		if err != nil {
-			fmt.Printf("Account [%s]: unable to verify user credentials\n", acc.Name())
-			if !askQuestion("Do you want to keep this account?") {
-				continue
-			}
-		}
-
 		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.Secret)
 
-		defaultZone, err := chooseZone(acc.Name(), csClient)
+		fmt.Printf("Checking the credentials of %q...", csAccount.Key)
+		a := &egoscale.Account{}
+		err := csClient.GetWithContext(gContext, a)
+		if err != nil {
+			fmt.Println(" failure.")
+			if !askQuestion(fmt.Sprintf("Do you want to keep %s?", acc.Name())) {
+				continue
+			}
+		} else {
+			fmt.Println(" success!")
+			csAccount.Name = a.Name
+			csAccount.Account = a.Name
+		}
+		fmt.Println("")
+
+		name, err := readInput(reader, "Account name", csAccount.Name)
+		if err != nil {
+			return err
+		}
+		if name != "" {
+			csAccount.Name = name
+		}
+
+		for isAccountExist(csAccount.Name) {
+			fmt.Printf("Account name [%s] already exist\n", csAccount.Name)
+			name, err = readInput(reader, "Account name", csAccount.Name)
+			if err != nil {
+				return err
+			}
+
+			csAccount.Name = name
+		}
+
+		defaultZone, err := chooseZone(csAccount.Name, csClient)
 		if err != nil {
 			return err
 		}
@@ -332,11 +392,9 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 		csAccount.DefaultZone = defaultZone
 
 		isDefault := false
-		if askQuestion("Make [" + acc.Name() + "] your default profile?") {
+		if askQuestion(fmt.Sprintf("Is %q your default profile?", csAccount.Name)) {
 			isDefault = true
 		}
-
-		csAccount.Account = accountResp.Name
 
 		config.Accounts = append(config.Accounts, csAccount)
 
@@ -409,23 +467,6 @@ func askQuestion(text string) bool {
 	return (strings.ToLower(resp) == "y" || strings.ToLower(resp) == "yes")
 }
 
-func checkCredentials(account *account) (*egoscale.Account, error) {
-	csClient := egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
-
-	resp, err := csClient.Request(&egoscale.ListAccounts{})
-	if err != nil {
-		return nil, err
-	}
-
-	accountsResp := resp.(*egoscale.ListAccountsResponse)
-
-	if accountsResp.Count == 1 {
-		return &accountsResp.Account[0], nil
-	}
-
-	return nil, fmt.Errorf("more than one account found")
-}
-
 func listAccounts() {
 	if gAllAccount == nil {
 		return
@@ -435,7 +476,7 @@ func listAccounts() {
 		if acc.Name == gAllAccount.DefaultAccount {
 			print(" [Default]")
 		}
-		println("")
+		fmt.Println("")
 	}
 }
 
@@ -470,13 +511,11 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 
 	zones := map[string]string{}
 
-	// XXX if no zone is found like in preprod bug
 	if len(zonesResp) == 0 {
-		println(`No zones found: take "ch-dk-2" by default`)
-		return "ch-dk-2", nil
+		return "", fmt.Errorf("no zones were found")
 	}
 
-	fmt.Printf("Choose [%s] default zone:\n", accountName)
+	fmt.Printf("Choose %q default zone:\n", accountName)
 
 	for i, z := range zonesResp {
 		zone := z.(*egoscale.Zone)
@@ -497,7 +536,7 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 
 	defaultZone, ok := getSelectedZone(zoneNumber, zones)
 	for !ok {
-		println("Error: Invalid zone number")
+		fmt.Println("Error: Invalid zone number")
 		defaultZone, err = chooseZone(accountName, cs)
 		if err == nil {
 			break

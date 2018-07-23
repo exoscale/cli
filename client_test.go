@@ -166,6 +166,7 @@ func TestClientGetFailure(t *testing.T) {
 		&SSHKeyPair{},
 		&VirtualMachine{},
 		&IPAddress{},
+		&Account{},
 	}
 
 	for _, thing := range things {
@@ -207,6 +208,7 @@ func TestClientGetNone(t *testing.T) {
 		{"volumes", &Volume{ID: "1"}},
 		{"templates", &Template{ID: "1", IsFeatured: true}},
 		{"serviceofferings", &ServiceOffering{ID: "1"}},
+		{"accounts", &Account{}},
 	}
 
 	for _, thing := range things {
@@ -250,7 +252,8 @@ func TestClientGetTooMany(t *testing.T) {
 		"volume": [{}, {}],
 		"zone": [{}, {}],
 		"template": [{}, {}],
-		"serviceoffering": [{}, {}]
+		"serviceoffering": [{}, {}],
+		"account": [{}, {}]
 	}}`
 
 	things := []struct {
@@ -271,6 +274,7 @@ func TestClientGetTooMany(t *testing.T) {
 		{"volumes", &Volume{ID: "1"}},
 		{"templates", &Template{ID: "1", IsFeatured: true}},
 		{"serviceofferings", &ServiceOffering{ID: "1"}},
+		{"accounts", &Account{}},
 	}
 
 	for _, thing := range things {
