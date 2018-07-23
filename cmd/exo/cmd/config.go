@@ -443,16 +443,31 @@ func readInput(reader *bufio.Reader, text, def string) (string, error) {
 	} else {
 		fmt.Printf("[+] %s [%s]: ", text, def)
 	}
-	input, err := reader.ReadString('\n')
+	c := make(chan bool)
+	defer close(c)
+
+	input := ""
+	var err error
+	go func() {
+		input, err = reader.ReadString('\n')
+		c <- true
+	}()
+
+	select {
+	case <-c:
+	case <-gContext.Done():
+		err = fmt.Errorf("")
+	}
+
 	if err != nil {
 		return "", err
 	}
-	input = strings.TrimSpace(input)
 
-	if input != "" {
-		return input, nil
+	input = strings.TrimSpace(input)
+	if input == "" {
+		input = def
 	}
-	return def, nil
+	return input, nil
 }
 
 func askQuestion(text string) bool {
