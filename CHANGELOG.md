@@ -1,10 +1,12 @@
 Changelog
 =========
 
-0.10.3 (unreleased)
+0.10.3
 ------
 
 - feat: `Account` is Listable
+- feat: `MACAddress` to replace type
+- fix: Go 1.7 support
 
 0.10.2
 ------

@@ -36,6 +36,8 @@ func (mac *MACAddress) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
+
+	*mac = make(MACAddress, 6)
 	copy(*mac, hw)
 	return nil
 }

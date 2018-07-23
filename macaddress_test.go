@@ -28,7 +28,19 @@ func TestMACAddressMarshalJSON(t *testing.T) {
 	}
 }
 
-func TestMACAddresUnmarshalJSONFailure(t *testing.T) {
+func TestMACAddressUnmarshalJSON(t *testing.T) {
+	s := `{"macaddress": "01:23:45:67:89:ab"}`
+	nic := &Nic{}
+	if err := json.Unmarshal([]byte(s), nic); err != nil {
+		t.Errorf("no errors were expected, %s", err)
+	} else {
+		if nic.MACAddress == nil {
+			t.Errorf("a macaddress was expected, got %+v", nic)
+		}
+	}
+}
+
+func TestMACAddressUnmarshalJSONFailure(t *testing.T) {
 	ss := []string{
 		`{"macaddress": 123}`,
 		`{"macaddress": "123"}`,
