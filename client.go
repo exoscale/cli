@@ -235,8 +235,13 @@ func (client *Client) PaginateWithContext(ctx context.Context, req ListCommand, 
 }
 
 // APIName returns the CloudStack name of the given command
-func (client *Client) APIName(request Command) string {
-	info, err := info(request)
+func (client *Client) APIName(command Command) string {
+	// This is due to a limitation of Go<=1.7
+	if _, ok := command.(*AuthorizeSecurityGroupEgress); ok {
+		return "authorizeSecurityGroupEgress"
+	}
+
+	info, err := info(command)
 	if err != nil {
 		panic(err)
 	}
@@ -244,8 +249,8 @@ func (client *Client) APIName(request Command) string {
 }
 
 // APIDescription returns the description of the given CloudStack command
-func (client *Client) APIDescription(request Command) string {
-	info, err := info(request)
+func (client *Client) APIDescription(command Command) string {
+	info, err := info(command)
 	if err != nil {
 		panic(err)
 	}
@@ -253,12 +258,12 @@ func (client *Client) APIDescription(request Command) string {
 }
 
 // Response returns the response structure of the given command
-func (client *Client) Response(request Command) interface{} {
-	switch request.(type) {
+func (client *Client) Response(command Command) interface{} {
+	switch command.(type) {
 	case AsyncCommand:
-		return (request.(AsyncCommand)).asyncResponse()
+		return (command.(AsyncCommand)).asyncResponse()
 	default:
-		return request.response()
+		return command.response()
 	}
 }
 

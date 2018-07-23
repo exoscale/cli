@@ -89,14 +89,14 @@ type IngressRule struct {
 	Account               string              `json:"account,omitempty" doc:"account owning the security group rule"`
 	Cidr                  string              `json:"cidr,omitempty" doc:"the CIDR notation for the base IP address of the security group rule"`
 	Description           string              `json:"description,omitempty" doc:"description of the security group rule"`
-	EndPort               uint16              `json:"endport,omitempty" doc:"the ending IP of the security group rule "`
+	EndPort               uint16              `json:"endport,omitempty" doc:"the ending port of the security group rule "`
 	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"the code for the ICMP message response"`
 	IcmpType              uint8               `json:"icmptype,omitempty" doc:"the type of the ICMP message response"`
 	Protocol              string              `json:"protocol,omitempty" doc:"the protocol of the security group rule"`
 	RuleID                string              `json:"ruleid,omitempty" doc:"the id of the security group rule"`
 	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
 	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"security group name"`
-	StartPort             uint16              `json:"startport,omitempty" doc:"the starting IP of the security group rule"`
+	StartPort             uint16              `json:"startport,omitempty" doc:"the starting port of the security group rule"`
 	Tags                  []ResourceTag       `json:"tags,omitempty" doc:"the list of resource tags associated with the rule"`
 	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
 }
@@ -140,17 +140,17 @@ func (DeleteSecurityGroup) response() interface{} {
 type AuthorizeSecurityGroupIngress struct {
 	Account               string              `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
 	CidrList              []string            `json:"cidrlist,omitempty" doc:"the cidr list associated"`
-	Description           string              `json:"description,omitempty" doc:"the description of the ingress rule"`
-	DomainID              string              `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
+	Description           string              `json:"description,omitempty" doc:"the description of the ingress/egress rule"`
+	DomainID              string              `json:"domainid,omitempty" doc:"an optional domainid for the security group. If the account parameter is used, domainid must also be used."`
 	EndPort               uint16              `json:"endport,omitempty" doc:"end port for this ingress rule"`
 	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"error code for this icmp message"`
 	IcmpType              uint8               `json:"icmptype,omitempty" doc:"type of the icmp message being sent"`
 	Protocol              string              `json:"protocol,omitempty" doc:"TCP is default. UDP, ICMP, ICMPv6, AH, ESP, GRE are the other supported protocols"`
-	SecurityGroupID       string              `json:"securitygroupid,omitempty" doc:"The ID of the security group. Mutually exclusive with securityGroupName parameter"`
-	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"The name of the security group. Mutually exclusive with securityGroupId parameter"`
+	SecurityGroupID       string              `json:"securitygroupid,omitempty" doc:"The ID of the security group. Mutually exclusive with securitygroupname parameter"`
+	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"The name of the security group. Mutually exclusive with securitygroupid parameter"`
 	StartPort             uint16              `json:"startport,omitempty" doc:"start port for this ingress rule"`
 	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty" doc:"user to security group mapping"`
-	_                     bool                `name:"authorizeSecurityGroupIngress" description:"Authorizes a particular ingress rule for this security group"`
+	_                     bool                `name:"authorizeSecurityGroupIngress" description:"Authorizes a particular ingress/egress rule for this security group"`
 }
 
 func (AuthorizeSecurityGroupIngress) response() interface{} {
@@ -175,21 +175,7 @@ func (req AuthorizeSecurityGroupIngress) onBeforeSend(params url.Values) error {
 }
 
 // AuthorizeSecurityGroupEgress (Async) represents the egress rule creation
-type AuthorizeSecurityGroupEgress struct {
-	Account               string              `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
-	CidrList              []string            `json:"cidrlist,omitempty" doc:"the cidr list associated"`
-	Description           string              `json:"description,omitempty" doc:"the description of the egress rule"`
-	DomainID              string              `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
-	EndPort               uint16              `json:"endport,omitempty" doc:"end port for this egress rule"`
-	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"error code for this icmp message"`
-	IcmpType              uint8               `json:"icmptype,omitempty" doc:"type of the icmp message being sent"`
-	Protocol              string              `json:"protocol,omitempty" doc:"TCP is default. UDP, ICMP, AH, ESP, GRE are the other supported protocols"`
-	SecurityGroupID       string              `json:"securitygroupid,omitempty" doc:"The ID of the security group. Mutually exclusive with securityGroupName parameter"`
-	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"The name of the security group. Mutually exclusive with securityGroupId parameter"`
-	StartPort             uint16              `json:"startport,omitempty" doc:"start port for this egress rule"`
-	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty" doc:"user to security group mapping"`
-	_                     bool                `name:"authorizeSecurityGroupEgress" description:"Authorizes a particular egress rule for this security group"`
-}
+type AuthorizeSecurityGroupEgress AuthorizeSecurityGroupIngress
 
 func (AuthorizeSecurityGroupEgress) response() interface{} {
 	return new(AsyncJobResult)
