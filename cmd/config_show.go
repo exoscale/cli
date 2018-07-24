@@ -13,16 +13,20 @@ var showCmd = &cobra.Command{
 	Short:   "Show an account details",
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return cmd.Usage()
-		}
 		if gAllAccount == nil {
 			return fmt.Errorf("no accounts are defined")
 		}
-		if !isAccountExist(args[0]) {
+
+		account := gCurrentAccount.Name
+		if len(args) > 0 {
+			account = args[0]
+		}
+
+		if !isAccountExist(account) {
 			return fmt.Errorf("account %q does not exist", args[0])
 		}
-		acc := getAccountByName(args[0])
+
+		acc := getAccountByName(account)
 		if acc == nil {
 			return fmt.Errorf("account %q was not found", args[0])
 		}
