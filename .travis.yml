@@ -31,7 +31,6 @@ install: |
   npm i codeclimate-test-reporter
 
 script: |
-  dep ensure -v -vendor-only
   go test -race -coverprofile=coverage.out -covermode=atomic .
   npx codeclimate-test-reporter < coverage.out
 
@@ -41,7 +40,6 @@ jobs:
     go: "1.10"
     if: type = push
     script: |
-      dep ensure -v -vendor-only
       cd cmd/cs
       dep ensure -v -vendor-only
       cd ../exo

@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/jinzhu/copier"
 )
 
 // NewClientWithTimeout creates a CloudStack API client
@@ -82,8 +80,7 @@ func (client *Client) GetWithContext(ctx context.Context, g Gettable) error {
 		return fmt.Errorf("more than one element found: %s", payload)
 	}
 
-	return copier.Copy(g, gs[0])
-
+	return Copy(g, gs[0])
 }
 
 // Delete removes the given resource of fails
