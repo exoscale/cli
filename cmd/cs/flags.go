@@ -23,6 +23,9 @@ func (g *uint8Generic) Set(value string) error {
 }
 
 func (g *uint8Generic) String() string {
+	if g.value == nil {
+		return ""
+	}
 	return strconv.FormatUint(uint64(*g.value), 10)
 }
 
@@ -40,6 +43,9 @@ func (g *uint16Generic) Set(value string) error {
 }
 
 func (g *uint16Generic) String() string {
+	if g.value == nil {
+		return ""
+	}
 	return strconv.FormatUint(uint64(*g.value), 10)
 }
 
