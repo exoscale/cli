@@ -141,7 +141,8 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf(`What to do now?
+		fmt.Printf(`
+What to do now?
 
 1. Connect to the machine
 
@@ -160,7 +161,7 @@ var vmCreateCmd = &cobra.Command{
 
 		fmt.Print(`
 Tip of the day:
-	you're the sole owner of the private key.
+	You're the sole owner of the private key.
 	Be cautious with it.
 `)
 
@@ -247,7 +248,7 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 
 	if vmInfos.KeyPair == "" {
 		isDefaultKeyPair = true
-		fmt.Println("Creating sshkey")
+		fmt.Println("Creating private SSH key")
 		sshKeyName, err := utils.RandStringBytes(64)
 		if err != nil {
 			return nil, err
