@@ -161,6 +161,7 @@ func TestClientDeleteFailure(t *testing.T) {
 
 func TestClientGetFailure(t *testing.T) {
 	things := []Gettable{
+		nil,
 		&AffinityGroup{},
 		&SecurityGroup{},
 		&SSHKeyPair{},

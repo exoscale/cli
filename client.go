@@ -108,6 +108,10 @@ func (client *Client) List(g Listable) ([]interface{}, error) {
 func (client *Client) ListWithContext(ctx context.Context, g Listable) ([]interface{}, error) {
 	s := make([]interface{}, 0)
 
+	if g == nil {
+		return s, fmt.Errorf("g Listable shouldn't be nil")
+	}
+
 	req, err := g.ListRequest()
 	if err != nil {
 		return s, err
