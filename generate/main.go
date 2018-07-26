@@ -81,29 +81,29 @@ func main() {
 		panic(err)
 	}
 
-	fset := token.NewFileSet()
-	astFiles := make([]*ast.File, 0)
 	files, err := filepath.Glob("*.go")
 	if err != nil {
 		panic(err)
 	}
-	for _, file := range files {
+	fset := token.NewFileSet()
+	astFiles := make([]*ast.File, len(files))
+	for i, file := range files {
 		f, er := parser.ParseFile(fset, file, nil, 0)
 		if er != nil {
 			panic(er)
 		}
-		astFiles = append(astFiles, f)
+		astFiles[i] = f
 	}
 
-	info := types.Info{
-		Defs: make(map[*ast.Ident]types.Object),
-	}
-
-	conf := types.Config{
+	config := types.Config{
 		Importer: importer.For("source", nil),
 	}
 
-	_, err = conf.Check("egoscale", fset, astFiles, &info)
+	info := &types.Info{
+		Defs: make(map[*ast.Ident]types.Object),
+	}
+
+	_, err = config.Check("egoscale", fset, astFiles, info)
 	if err != nil {
 		_, e := fmt.Fprintf(os.Stderr, err.Error())
 		if e != nil {
