@@ -404,10 +404,12 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 		if i == setdefaultAccount || isDefault {
 			config.DefaultAccount = csAccount.Name
-			viper.Set("defaultAccount", acc.Name())
+			viper.Set("defaultAccount", csAccount.Name)
 		}
+		gAllAccount = config
 	}
 
+	gAllAccount = nil
 	return addAccount(cfgPath, config)
 }
 
