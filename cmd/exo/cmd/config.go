@@ -331,6 +331,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 	config := &config{}
 
+	setdefaultAccount := 1
 	for i, acc := range cfg.Sections() {
 		if i == 0 {
 			continue
@@ -338,6 +339,9 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 		if option == "some" {
 			if !askQuestion(fmt.Sprintf("Do you want to import [%s] %s?", acc.Name(), acc.Key("key").String())) {
+				if viper.Get("defaultAccount") == nil {
+					setdefaultAccount = i + 1
+				}
 				continue
 			}
 		}
@@ -398,8 +402,8 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 		config.Accounts = append(config.Accounts, csAccount)
 
-		if i == 1 || isDefault {
-			config.DefaultAccount = acc.Name()
+		if i == setdefaultAccount || isDefault {
+			config.DefaultAccount = csAccount.Name
 			viper.Set("defaultAccount", acc.Name())
 		}
 	}
