@@ -205,7 +205,7 @@ func getPortsRange(ports []string) ([]portRange, error) {
 		portsRange[i].end = uint16(p1)
 
 		if len(pRange) == 2 {
-			p2, err := strconv.ParseUint(pRange[0], 10, 16)
+			p2, err := strconv.ParseUint(pRange[1], 10, 16)
 			if err != nil {
 				return nil, err
 			}
