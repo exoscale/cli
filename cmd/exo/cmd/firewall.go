@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-const (
-	defaultCidr  = "0.0.0.0/0"
-	defaultCidr6 = "::/0"
-)
+var defaultCIDR = egoscale.ForceParseCIDR("0.0.0.0/0")
+var defaultCIDR6 = egoscale.ForceParseCIDR("::/0")
 
 var firewallCmd = &cobra.Command{
 	Use:   "firewall",
@@ -28,10 +27,14 @@ func init() {
 
 func formatRules(name string, rule *egoscale.IngressRule) []string {
 	var source string
-	if rule.Cidr != "" {
-		source = "CIDR " + rule.Cidr
+	if rule.CIDR != nil {
+		source = fmt.Sprintf("CIDR %s", rule.CIDR)
 	} else {
-		source = "SG " + rule.SecurityGroupName
+		ss := make([]string, len(rule.UserSecurityGroupList))
+		for i, usg := range rule.UserSecurityGroupList {
+			ss[i] = usg.String()
+		}
+		source = fmt.Sprintf("SG %s", strings.Join(ss, ","))
 	}
 
 	var ports string
@@ -75,18 +78,16 @@ func getSecurityGroupByNameOrID(cs *egoscale.Client, name string) (*egoscale.Sec
 
 }
 
-func getMyCIDR(isIpv6 bool) (*net.IPNet, error) {
+func getMyCIDR(isIpv6 bool) (*egoscale.CIDR, error) {
 
-	var cidrMask net.IPMask
-	dnsServer := ""
+	cidrMask := 32
+	dnsServer := "resolver1.opendns.com"
 
 	if isIpv6 {
 		dnsServer = "resolver2.ipv6-sandbox.opendns.com"
-		cidrMask = net.CIDRMask(128, 128)
-	} else {
-		dnsServer = "resolver1.opendns.com"
-		cidrMask = net.CIDRMask(32, 32)
+		cidrMask = 128
 	}
+
 	resolver := net.Resolver{
 		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
 			return net.Dial("udp", dnsServer+":53")
@@ -94,16 +95,16 @@ func getMyCIDR(isIpv6 bool) (*net.IPNet, error) {
 		PreferGo: true,
 	}
 
-	ip, err := resolver.LookupIPAddr(context.Background(), "myip.opendns.com")
+	ips, err := resolver.LookupIPAddr(context.Background(), "myip.opendns.com")
 	if err != nil {
 		return nil, err
 	}
 
-	if len(ip) < 1 {
+	if len(ips) < 1 {
 		return nil, fmt.Errorf("no IP addresses were found using OpenDNS")
 	}
 
-	return &net.IPNet{IP: ip[0].IP, Mask: cidrMask}, nil
+	return egoscale.ParseCIDR(fmt.Sprintf("%s/%d", ips[0].IP, cidrMask))
 }
 
 func isAFirewallID(cs *egoscale.Client, id string) bool {

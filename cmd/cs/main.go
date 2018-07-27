@@ -495,6 +495,14 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 							value: addr.(*[]egoscale.ResourceTag),
 						},
 					})
+				case reflect.TypeOf(egoscale.CIDR{}):
+					flags = append(flags, cli.GenericFlag{
+						Name:  argName,
+						Usage: description,
+						Value: &cidrListGeneric{
+							value: addr.(*[]egoscale.CIDR),
+						},
+					})
 				default:
 					//log.Printf("[SKIP] Slice of %s is not supported!", field.Name)
 				}
@@ -514,13 +522,21 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 				log.Printf("[SKIP] Type map for %s is not supported!", field.Name)
 			}
 		case reflect.Ptr:
-			switch field.Type.Elem().Kind() {
-			case reflect.Bool:
+			switch field.Type.Elem() {
+			case reflect.TypeOf(true):
 				flags = append(flags, cli.GenericFlag{
 					Name:  argName,
 					Usage: description,
 					Value: &boolPtrGeneric{
 						value: addr.(**bool),
+					},
+				})
+			case reflect.TypeOf(egoscale.CIDR{}):
+				flags = append(flags, cli.GenericFlag{
+					Name:  argName,
+					Usage: description,
+					Value: &cidrGeneric{
+						value: addr.(**egoscale.CIDR),
 					},
 				})
 			default:

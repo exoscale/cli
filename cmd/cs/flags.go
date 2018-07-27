@@ -106,6 +106,62 @@ func (g *ipGeneric) String() string {
 	return (*(g.value)).String()
 }
 
+type cidrGeneric struct {
+	value **egoscale.CIDR
+}
+
+func (g *cidrGeneric) Set(value string) error {
+	cidr, err := egoscale.ParseCIDR(value)
+	if err != nil {
+		return fmt.Errorf("not a valid CIDR, got %s", value)
+	}
+	*(g.value) = cidr
+	return nil
+}
+
+func (g *cidrGeneric) String() string {
+	if g.value != nil && *(g.value) != nil {
+		return (*(g.value)).String()
+	}
+	return ""
+}
+
+type cidrListGeneric struct {
+	value *[]egoscale.CIDR
+}
+
+func (g *cidrListGeneric) Set(value string) error {
+	m := g.value
+	if *m == nil {
+		n := make([]egoscale.CIDR, 0)
+		*m = n
+	}
+
+	values := strings.Split(value, ",")
+
+	for _, value := range values {
+		cidr, err := egoscale.ParseCIDR(value)
+		if err != nil {
+			return err
+		}
+		*m = append(*m, *cidr)
+	}
+	return nil
+}
+
+func (g *cidrListGeneric) String() string {
+	m := g.value
+	if m == nil || *m == nil {
+		return ""
+	}
+	vs := make([]string, 0, len(*m))
+	for _, v := range *m {
+		vs = append(vs, v.String())
+	}
+
+	return strings.Join(vs, ",")
+}
+
 type accountTypeGeneric struct {
 	value *egoscale.AccountType
 }
