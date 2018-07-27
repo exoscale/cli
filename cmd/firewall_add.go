@@ -116,7 +116,7 @@ var firewallAddCmd = &cobra.Command{
 
 			rule := &egoscale.AuthorizeSecurityGroupIngress{}
 
-			if len(args) != 0 {
+			if len(args) > 1 {
 				rule, err = getDefaultRule(args[i], isIpv6)
 				if err != nil {
 					return err
@@ -178,6 +178,10 @@ var firewallAddCmd = &cobra.Command{
 				if err := addRule(rule, isEgress); err != nil {
 					return err
 				}
+			}
+
+			if len(args) == 1 {
+				break
 			}
 		}
 
