@@ -79,7 +79,7 @@ var firewallAddCmd = &cobra.Command{
 			return err
 		}
 
-		cidr, err := cmd.Flags().GetString("cidr")
+		cidrList, err := cmd.Flags().GetString("cidr")
 		if err != nil {
 			return err
 		}
@@ -99,14 +99,14 @@ var firewallAddCmd = &cobra.Command{
 			return err
 		}
 
-		ip := ""
+		var ip *egoscale.CIDR
 		if isMyIP {
 			cidr, cirdErr := getMyCIDR(isIpv6)
 			if cirdErr != nil {
 				return cirdErr
 			}
 
-			ip = cidr.String()
+			ip = cidr
 		}
 
 		for i := 1; true; i++ {
@@ -130,11 +130,18 @@ var firewallAddCmd = &cobra.Command{
 				rule.Protocol = strings.ToLower(protocol)
 			}
 
-			if ip != "" {
-				rule.CidrList = []string{ip}
-			} else if cidr != "" {
-				cidrs := getCommaflag(cidr)
-				rule.CidrList = append(rule.CidrList, cidrs...)
+			if ip != nil {
+				rule.CIDRList = append(rule.CIDRList, *ip)
+			}
+			if cidrList != "" {
+				cidrs := getCommaflag(cidrList)
+				for _, cidr := range cidrs {
+					c, errCidr := egoscale.ParseCIDR(cidr)
+					if errCidr != nil {
+						return errCidr
+					}
+					rule.CIDRList = append(rule.CIDRList, *c)
+				}
 			}
 
 			if sg != "" {
@@ -231,9 +238,9 @@ func getUserSecurityGroups(cs *egoscale.Client, names []string) ([]egoscale.User
 func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGroupIngress, error) {
 
 	icmpType := uint8(8)
-	cidr := defaultCidr
+	cidr := defaultCIDR
 	if isIpv6 {
-		cidr = defaultCidr6
+		cidr = defaultCIDR6
 		icmpType = uint8(128)
 	}
 
@@ -241,7 +248,7 @@ func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGr
 	if ruleName == "ping" {
 		return &egoscale.AuthorizeSecurityGroupIngress{
 			Protocol:    "icmp",
-			CidrList:    []string{cidr},
+			CIDRList:    []egoscale.CIDR{*cidr},
 			IcmpType:    icmpType,
 			IcmpCode:    0,
 			Description: "",
@@ -252,7 +259,7 @@ func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGr
 		if strings.ToLower(port.String(d)) == ruleName {
 			return &egoscale.AuthorizeSecurityGroupIngress{
 				Protocol:    "tcp",
-				CidrList:    []string{cidr},
+				CIDRList:    []egoscale.CIDR{*cidr},
 				StartPort:   uint16(d),
 				EndPort:     uint16(d),
 				Description: fmt.Sprintf(""),

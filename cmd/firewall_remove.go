@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"net"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -74,25 +73,24 @@ var firewallRemoveCmd = &cobra.Command{
 			return err
 		}
 
-		var myCidr string
-		var cidr *net.IPNet
+		var cidr *egoscale.CIDR
 		if isMyIP {
-			cidr, err = getMyCIDR(isIpv6)
-			if err != nil {
-				return err
+			c, errGet := getMyCIDR(isIpv6)
+			if errGet != nil {
+				return errGet
 			}
-			myCidr = cidr.String()
+			cidr = c
 		}
 
 		r, err := getDefaultRule(args[1], isIpv6)
 		if err == nil {
 			ru := &egoscale.IngressRule{
-				Cidr:      r.CidrList[0],
+				CIDR:      &r.CIDRList[0],
 				StartPort: r.StartPort,
 				EndPort:   r.EndPort,
 				Protocol:  r.Protocol,
 			}
-			return removeDefault(args[0], args[1], ru, myCidr, isIpv6)
+			return removeDefault(args[0], args[1], ru, cidr, isIpv6)
 		}
 
 		return removeRule(args[0], args[1])
@@ -146,43 +144,41 @@ func removeRule(name, ruleID string) error {
 	return err
 }
 
-func isDefaultRule(rule, defaultRule *egoscale.IngressRule, isIpv6 bool, myCidr string) bool {
-	cidr := "0.0.0.0/0"
+func isDefaultRule(rule, defaultRule *egoscale.IngressRule, isIpv6 bool, myCidr *egoscale.CIDR) bool {
+	cidr := defaultCIDR
 	if isIpv6 {
-		cidr = "::/0"
+		cidr = defaultCIDR6
 	}
 
-	if myCidr != "" {
+	if myCidr != nil {
 		cidr = myCidr
 	}
 
 	return (rule.StartPort == defaultRule.StartPort &&
 		rule.EndPort == defaultRule.EndPort &&
-		rule.Cidr == cidr &&
+		rule.CIDR == cidr &&
 		rule.Protocol == defaultRule.Protocol)
 }
 
-func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr string, isIpv6 bool) error {
+func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr *egoscale.CIDR, isIpv6 bool) error {
 	sg, err := getSecurityGroupByNameOrID(cs, sgName)
 	if err != nil {
 		return err
 	}
 
 	for _, in := range sg.IngressRule {
-		if isDefaultRule(&in, rule, isIpv6, "") && cidr == "" {
-			//Rule found
-		} else if isDefaultRule(&in, rule, isIpv6, cidr) {
-			//Rule found
-		} else {
-			//Rule not found
+		if !isDefaultRule(&in, rule, isIpv6, cidr) {
+			// Rule not found
 			continue
 		}
+
 		err := cs.BooleanRequest(&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
 		if err != nil {
 			return err
 		}
-		_, err = fmt.Println(in.RuleID)
-		return err
+
+		fmt.Println(in.RuleID)
+		return nil
 	}
 	return fmt.Errorf("missing rule %q", ruleName)
 }
