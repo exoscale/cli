@@ -1,11 +1,17 @@
 Changelog
 =========
 
+0.10.4
+------
+
+- feat: `CIDR` to replace string string
+- fix: prevent panic on nil
+
 0.10.3
 ------
 
 - feat: `Account` is Listable
-- feat: `MACAddress` to replace type
+- feat: `MACAddress` to replace string type
 - fix: Go 1.7 support
 
 0.10.2
