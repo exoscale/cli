@@ -10,7 +10,7 @@ ignored = ["github.com/exoscale/egoscale"]
 
 [[constraint]]
   name = "github.com/go-ini/ini"
-  version = "1.37.0"
+  version = "1.38.1"
 
 [prune]
   non-go = true
