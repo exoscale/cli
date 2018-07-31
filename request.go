@@ -57,12 +57,6 @@ func (e booleanResponse) Error() error {
 }
 
 func (client *Client) parseResponse(resp *http.Response, key string) (json.RawMessage, error) {
-	contentType := resp.Header.Get("content-type")
-
-	if !strings.Contains(contentType, "application/json") {
-		return nil, fmt.Errorf("body content-type response expected \"application/json\", got %q", contentType)
-	}
-
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -304,7 +298,7 @@ func (client *Client) Payload(command Command) (string, error) {
 
 	// This code is borrowed from net/url/url.go
 	// The way it's encoded by net/url doesn't match
-	// how CloudStack works.
+	// how CloudStack work.
 	var buf bytes.Buffer
 	keys := make([]string, 0, len(params))
 	for k := range params {
@@ -354,7 +348,7 @@ func (client *Client) request(ctx context.Context, command Command) (json.RawMes
 
 	var body io.Reader
 	// respect Internet Explorer limit of 2048
-	if len(url) > 1<<11 {
+	if len(url) > 2048 {
 		url = client.Endpoint
 		method = "POST"
 		body = strings.NewReader(query)
@@ -377,6 +371,12 @@ func (client *Client) request(ctx context.Context, command Command) (json.RawMes
 		return nil, err
 	}
 	defer resp.Body.Close() // nolint: errcheck
+
+	contentType := resp.Header.Get("content-type")
+
+	if !strings.Contains(contentType, "application/json") {
+		return nil, fmt.Errorf(`body content-type response expected "application/json", got %q`, contentType)
+	}
 
 	apiName := client.APIName(command)
 	key := fmt.Sprintf("%sresponse", strings.ToLower(apiName))

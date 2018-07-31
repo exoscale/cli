@@ -553,7 +553,8 @@ func TestListZonesTimeout(t *testing.T) {
 }}`)
 	defer ts.Close()
 
-	cs := NewClientWithTimeout(ts.URL, "KEY", "SECRET", time.Millisecond)
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+	cs.HTTPClient.Timeout = time.Millisecond
 
 	zone := new(Zone)
 	_, err := cs.List(zone)

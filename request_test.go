@@ -179,7 +179,8 @@ func TestBooleanRequestTimeout(t *testing.T) {
 	done := make(chan bool)
 
 	go func() {
-		cs := NewClientWithTimeout(ts.URL, "TOKEN", "SECRET", time.Millisecond)
+		cs := NewClient(ts.URL, "TOKEN", "SECRET")
+		cs.HTTPClient.Timeout = time.Millisecond
 
 		req := &ExpungeVirtualMachine{
 			ID: "123",
@@ -544,7 +545,9 @@ func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 	done := make(chan bool)
 
 	go func() {
-		cs := NewClientWithTimeout(ts.URL, "TOKEN", "SECRET", time.Millisecond)
+		cs := NewClient(ts.URL, "TOKEN", "SECRET")
+		cs.HTTPClient.Timeout = time.Millisecond
+
 		req := &ExpungeVirtualMachine{
 			ID: "123",
 		}

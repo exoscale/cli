@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.10.5 (unreleased)
+------
+
+- feat: `Client.Logger` to plug in any `*log.Logger`
+- feat: `Client.TraceOn`/`ClientTraceOff` to toggle the HTTP tracing
+
 0.10.4
 ------
 
