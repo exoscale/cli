@@ -18,58 +18,65 @@ var templateCmd = &cobra.Command{
 	Short: "Templates details",
 }
 
-func getTemplateIDByName(cs *egoscale.Client, name, zoneID string) (string, error) {
-	templates, err := cs.List(&egoscale.Template{IsFeatured: true, ZoneID: zoneID})
-	if err != nil {
-		return "", err
+func getTemplateByName(zoneID, name string) (*egoscale.Template, error) {
+	// Find by name, then by ID
+	template := &egoscale.Template{
+		IsFeatured: true,
+		ZoneID:     zoneID,
+		Name:       name,
 	}
 
-	for _, template := range templates {
-		t := template.(*egoscale.Template)
-		if name == t.ID {
-			return t.ID, nil
-		}
+	if err := cs.GetWithContext(gContext, template); err == nil {
+		return template, err
 	}
 
-	sortedTemplates, err := listTemplates(name)
-	if err != nil {
-		return "", err
+	template.Name = ""
+	template.ID = name
+	if err := cs.GetWithContext(gContext, template); err == nil {
+		return template, err
 	}
 
-	if len(sortedTemplates) > 1 {
-		return "", fmt.Errorf("more than one templates found")
-	}
-	if len(sortedTemplates) == 1 {
-		return sortedTemplates[0].ID, nil
-	}
-
-	return "", fmt.Errorf("template %q not found", name)
-}
-
-func listTemplates(keywords string) ([]*egoscale.Template, error) {
-	zoneID, err := getZoneIDByName(cs, gCurrentAccount.DefaultZone)
+	// attempts a fuzzy search
+	sortedTemplates, err := findTemplates(zoneID, name)
 	if err != nil {
 		return nil, err
 	}
 
+	if len(sortedTemplates) > 1 {
+		return nil, fmt.Errorf("more than one templates found")
+	}
+	if len(sortedTemplates) == 0 {
+		return nil, fmt.Errorf("template %q not found", name)
+	}
+
+	return &sortedTemplates[0], nil
+}
+
+func findTemplates(zoneID string, filters ...string) ([]egoscale.Template, error) {
 	allOS := make(map[string]*egoscale.Template)
 
 	reLinux := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9]+(\.[0-9]+)?)`)
 	reVersion := regexp.MustCompile(`(?P<version>[0-9]+(\.[0-9]+)?)`)
 
-	req := &egoscale.ListTemplates{TemplateFilter: "featured", ZoneID: zoneID, Keyword: keywords}
+	req := &egoscale.ListTemplates{
+		TemplateFilter: "featured",
+		ZoneID:         zoneID,
+		Keyword:        strings.Join(filters, " "),
+	}
 
+	var err error
 	cs.PaginateWithContext(gContext, req, func(i interface{}, e error) bool {
 		if e != nil {
 			err = e
 			return false
 		}
 		template := i.(*egoscale.Template)
-		template.Size = template.Size >> 30 //Size in Gib
+		size := template.Size >> 30 // Size in GiB
+
 		if strings.HasPrefix(template.Name, "Linux") {
 			m := reSubMatchMap(reLinux, template.DisplayText)
 			if len(m) > 0 {
-				if template.Size > 10 {
+				if size > 10 {
 					// Skipping big, legacy images
 					return true
 				}
@@ -100,7 +107,7 @@ func listTemplates(keywords string) ([]*egoscale.Template, error) {
 					log.Printf("Malformed Windows/OpenBSD version. %q", template.Name)
 					return true
 				}
-				key := fmt.Sprintf("%s %.5f %5d", template.Name[:7], 10000-version, template.Size)
+				key := fmt.Sprintf("%s %.5f %5d", template.Name[:7], 10000-version, size)
 				allOS[key] = template
 				return true
 			}
@@ -126,25 +133,16 @@ func listTemplates(keywords string) ([]*egoscale.Template, error) {
 
 	reDate := regexp.MustCompile(`.* \((?P<date>.*)\)$`)
 
-	templates := []*egoscale.Template{}
-	for _, k := range keys {
+	templates := make([]egoscale.Template, len(keys))
+	for i, k := range keys {
 		t := allOS[k]
 		m := reSubMatchMap(reDate, t.DisplayText)
-		size := fmt.Sprintf("%d", t.Size)
-		if strings.HasPrefix(t.DisplayText, "Linux") {
-			size = "0"
+		if m["date"] != "" {
+			t.Created = m["date"]
+		} else if len(t.Created) > 10 {
+			t.Created = t.Created[0:10]
 		}
-
-		sz, err := strconv.ParseInt(size, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-		templates = append(templates, &egoscale.Template{
-			Name:    t.Name,
-			Size:    sz,
-			Created: m["date"],
-			ID:      t.ID,
-		})
+		templates[i] = *t
 	}
 	return templates, nil
 }

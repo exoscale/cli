@@ -34,7 +34,7 @@ func listIPs(zone string, table *table.Table) error {
 
 	if zone != "" {
 		var err error
-		zReq.ZoneID, err = getZoneIDByName(cs, zone)
+		zReq.ZoneID, err = getZoneIDByName(zone)
 		if err != nil {
 			return err
 		}

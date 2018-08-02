@@ -74,7 +74,7 @@ func isEmptyArgs(args ...string) bool {
 
 func privnetCreate(name, desc, zone string) error {
 	var err error
-	zone, err = getZoneIDByName(cs, zone)
+	zone, err = getZoneIDByName(zone)
 	if err != nil {
 		return err
 	}

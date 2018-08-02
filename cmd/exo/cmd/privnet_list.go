@@ -35,7 +35,7 @@ func listPrivnets(zone string, table *table.Table) error {
 	if zone != "" {
 		var err error
 		pnReq.Type = "Isolated"
-		pnReq.ZoneID, err = getZoneIDByName(cs, zone)
+		pnReq.ZoneID, err = getZoneIDByName(zone)
 		if err != nil {
 			return err
 		}
