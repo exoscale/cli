@@ -37,8 +37,7 @@ func listZones() error {
 	return nil
 }
 
-func getZoneIDByName(cs *egoscale.Client, name string) (string, error) {
-
+func getZoneIDByName(name string) (string, error) {
 	zoneReq := egoscale.Zone{}
 
 	zones, err := cs.List(&zoneReq)

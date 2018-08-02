@@ -47,12 +47,12 @@ var vmCreateCmd = &cobra.Command{
 			zone = gCurrentAccount.DefaultZone
 		}
 
-		zone, err = getZoneIDByName(cs, zone)
+		zone, err = getZoneIDByName(zone)
 		if err != nil {
 			return err
 		}
 
-		template, err := cmd.Flags().GetString("template")
+		templateName, err := cmd.Flags().GetString("template")
 		if err != nil {
 			return err
 		}
@@ -62,7 +62,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		template, err = getTemplateIDByName(cs, template, zone)
+		template, err := getTemplateByName(zone, templateName)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ var vmCreateCmd = &cobra.Command{
 			Name:              args[0],
 			UserData:          userData,
 			ZoneID:            zone,
-			TemplateID:        template,
+			TemplateID:        template.ID,
 			RootDiskSize:      diskSize,
 			KeyPair:           keypair,
 			SecurityGroupIDs:  sgs,
