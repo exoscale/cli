@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.10.5 (unreleased)
+0.10.5
 ------
 
 - feat: `Client.Logger` to plug in any `*log.Logger`
