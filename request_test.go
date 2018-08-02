@@ -123,6 +123,46 @@ func TestBooleanAsyncRequest(t *testing.T) {
 	}
 }
 
+func TestBooleanAsyncRequestFailure(t *testing.T) {
+	ts := newServer(response{200, jsonContentType, `
+{
+	"expungevirtualmachineresponse": {
+		"jobid": "1",
+		"jobresult": {},
+		"jobstatus": 0
+	}
+}
+	`}, response{200, jsonContentType, `
+{
+	"queryasyncjobresultresponse": {
+		"accountid": "1",
+		"cmd": "expunge",
+		"created": "2018-04-03T22:40:04+0200",
+		"jobid": "1",
+		"jobprocstatus": 0,
+		"jobresult": {
+			"errorcode": 531,
+			"errortext": "fail",
+			"cserrorcode": 9999
+		},
+		"jobresultcode": 0,
+		"jobresulttype": "object",
+		"jobstatus": 2,
+		"userid": "1"
+	}
+}
+	`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "TOKEN", "SECRET")
+	req := &ExpungeVirtualMachine{
+		ID: "123",
+	}
+	if err := cs.BooleanRequest(req); err == nil {
+		t.Error("An error was expected")
+	}
+}
+
 func TestBooleanAsyncRequestWithContext(t *testing.T) {
 	ts := newServer(response{200, jsonContentType, `
 {

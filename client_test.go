@@ -1,7 +1,6 @@
 package egoscale
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"strings"
@@ -96,7 +95,7 @@ func TestClientAsyncDelete(t *testing.T) {
 {"%sresponse": {
 	"jobid": "1",
 	"jobresult": {
-		"success": "true"
+		"success": true
 	},
 	"jobstatus": 1
 }}`
@@ -295,73 +294,5 @@ func TestClientGetTooMany(t *testing.T) {
 		if !strings.HasPrefix(err.Error(), "more than one") {
 			t.Errorf("bad error %s", err)
 		}
-	}
-}
-
-func TestBooleanResponse(t *testing.T) {
-	body := `{"success": true, "displaytext": "yay!"}`
-	response := new(booleanResponse)
-
-	err := json.Unmarshal([]byte(body), response)
-
-	if err != nil {
-		t.Fatalf("This shouldn't break")
-	}
-
-	success, _ := response.IsSuccess()
-	if !success {
-		t.Errorf("A success was expected")
-	}
-
-	if response.DisplayText != "yay!" {
-		t.Errorf("DisplayText doesn't match %q", response.DisplayText)
-	}
-}
-
-func TestBooleanResponseString(t *testing.T) {
-	body := `{"success": "true"}`
-	response := new(booleanResponse)
-
-	err := json.Unmarshal([]byte(body), response)
-
-	if err != nil {
-		t.Fatalf("This shouldn't break")
-	}
-
-	success, _ := response.IsSuccess()
-	if !success {
-		t.Errorf("A success was expected")
-	}
-}
-
-func TestBooleanResponseEmpty(t *testing.T) {
-	body := `{}`
-	response := new(booleanResponse)
-
-	err := json.Unmarshal([]byte(body), response)
-
-	if err != nil {
-		t.Fatalf("This shouldn't break")
-	}
-
-	err = response.Error()
-	if err == nil {
-		t.Errorf("The booleanResponse is not a valid one")
-	}
-}
-
-func TestBooleanResponseInvalid(t *testing.T) {
-	body := `{"success": 42}`
-	response := new(booleanResponse)
-
-	err := json.Unmarshal([]byte(body), response)
-
-	if err != nil {
-		t.Fatalf("This shouldn't break")
-	}
-
-	err = response.Error()
-	if err == nil {
-		t.Errorf("An error was expected")
 	}
 }

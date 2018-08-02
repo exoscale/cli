@@ -32,7 +32,7 @@ func TestCIDRUnmarshalJSONFailure(t *testing.T) {
 	ss := []string{
 		`{"ip6cidr": 123}`,
 		`{"ip6cidr": "123"}`,
-		`{"ip6cidr": "192.168.0.1/24"}`,
+		`{"ip6cidr": "192.168.0.1/33"}`,
 	}
 	nic := &Nic{}
 	for _, s := range ss {

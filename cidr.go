@@ -32,14 +32,10 @@ func (cidr CIDR) MarshalJSON() ([]byte, error) {
 
 // ParseCIDR parses a CIDR from a string
 func ParseCIDR(s string) (*CIDR, error) {
-	ip, net, err := net.ParseCIDR(s)
+	_, net, err := net.ParseCIDR(s)
 	if err != nil {
 		return nil, err
 	}
-	if net == nil || !ip.Equal(net.IP) {
-		return nil, fmt.Errorf("missmatch between CIDR address %q and network number %q", net.IP, ip)
-	}
-
 	return &CIDR{net}, nil
 }
 
