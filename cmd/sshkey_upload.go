@@ -11,8 +11,8 @@ import (
 
 // uploadCmd represents the upload command
 var uploadCmd = &cobra.Command{
-	Use:     "upload <name> <path>",
-	Short:   "Upload ssh keyPair from given path",
+	Use:     "upload <name> <public key file>",
+	Short:   "Upload SSH key pair from given public key",
 	Aliases: gUploadAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -28,7 +28,11 @@ func uploadSSHKey(name, publicKeyPath string) error {
 		return err
 	}
 
-	resp, err := cs.Request(&egoscale.RegisterSSHKeyPair{Name: name, PublicKey: string(pbk)})
+	resp, err := cs.RequestWithContext(gContext, &egoscale.RegisterSSHKeyPair{
+		Name:      name,
+		PublicKey: string(pbk),
+	})
+
 	if err != nil {
 		return err
 	}

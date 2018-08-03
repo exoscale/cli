@@ -10,7 +10,7 @@ import (
 // deleteCmd represents the delete command
 var sshkeyDeleteCmd = &cobra.Command{
 	Use:     "delete <name>",
-	Short:   "Delete ssh keyPair",
+	Short:   "Delete SSH key pair",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -23,7 +23,7 @@ var sshkeyDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q ssh keyPair", args[0])) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %q SSH key pair", args[0])) {
 				return nil
 			}
 		}
@@ -32,14 +32,15 @@ var sshkeyDeleteCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		println(res)
+
+		fmt.Println(res)
 		return nil
 	},
 }
 
 func deleteSSHKey(name string) (string, error) {
 	sshKey := &egoscale.DeleteSSHKeyPair{Name: name}
-	if err := cs.BooleanRequest(sshKey); err != nil {
+	if err := cs.BooleanRequestWithContext(gContext, sshKey); err != nil {
 		return "", err
 	}
 
@@ -47,6 +48,6 @@ func deleteSSHKey(name string) (string, error) {
 }
 
 func init() {
-	sshkeyDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove ssh keyPair without prompting for confirmation")
+	sshkeyDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove SSH key pair without prompting for confirmation")
 	sshkeyCmd.AddCommand(sshkeyDeleteCmd)
 }
