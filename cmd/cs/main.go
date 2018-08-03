@@ -113,7 +113,14 @@ func main() {
 		},
 	})
 
-	if err := app.Run(os.Args); err != nil {
+	args := os.Args
+	for i := 2; i < len(args); i++ {
+		if !strings.HasPrefix(args[i], "-") && !strings.HasPrefix(args[i], "--") && strings.Contains(args[i], "=") {
+			args[i] = "--" + args[i]
+		}
+	}
+
+	if err := app.Run(args); err != nil {
 		log.Fatal(err)
 	}
 
@@ -280,6 +287,9 @@ func buildCommands(out *egoscale.Command, methods map[string][]cmd) []cli.Comman
 			}
 			// report back the current command
 			cmd.Action = func(c *cli.Context) error {
+				if len(c.Args()) > 0 {
+					return fmt.Errorf("unexpected extra arguments found: %s", strings.Join(c.Args(), " "))
+				}
 				*out = s.command
 				return nil
 			}
