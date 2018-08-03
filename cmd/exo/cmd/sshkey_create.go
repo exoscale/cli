@@ -9,10 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
+// sshCreateCmd represents the create command
 var sshCreateCmd = &cobra.Command{
 	Use:     "create <name>",
-	Short:   "Create ssh keyPair",
+	Short:   "Create SSH key pair",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -28,7 +28,9 @@ var sshCreateCmd = &cobra.Command{
 }
 
 func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
-	resp, err := cs.Request(&egoscale.CreateSSHKeyPair{Name: name})
+	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateSSHKeyPair{
+		Name: name,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -37,16 +39,17 @@ func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
 	if !ok {
 		return nil, fmt.Errorf("wrong type expected %q, got %T", "egoscale.CreateSSHKeyPairResponse", resp)
 	}
+
 	return sshKeyPair, nil
 }
 
-func displayResult(sshKEYPair *egoscale.SSHKeyPair) {
+func displayResult(sshKeyPair *egoscale.SSHKeyPair) {
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{"Name", "Fingerprint"})
-	table.Append([]string{sshKEYPair.Name, sshKEYPair.Fingerprint})
+	table.Append([]string{sshKeyPair.Name, sshKeyPair.Fingerprint})
 	table.Render()
 
-	println(sshKEYPair.PrivateKey)
+	fmt.Println(sshKeyPair.PrivateKey)
 }
 
 func init() {
