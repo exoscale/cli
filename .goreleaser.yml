@@ -47,6 +47,7 @@ release:
 nfpm:
   vendor: Exoscale
   homepage: https://www.exoscale.com/
+  maintainer: Exoscale Support <support@exoscale.com>
   description: Tools to manage (almost) everything at Exoscale from the command line.
   license: Apache 2.0
   formats:
