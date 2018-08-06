@@ -37,7 +37,7 @@ var vmDeleteCmd = &cobra.Command{
 }
 
 func deleteVM(name string, force bool) error {
-	vm, err := getVMWithNameOrID(cs, name)
+	vm, err := getVMWithNameOrID(name)
 	if err != nil {
 		return err
 	}

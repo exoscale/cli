@@ -63,7 +63,7 @@ type sshInfo struct {
 }
 
 func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
-	vm, err := getVMWithNameOrID(cs, name)
+	vm, err := getVMWithNameOrID(name)
 	if err != nil {
 		return nil, err
 	}

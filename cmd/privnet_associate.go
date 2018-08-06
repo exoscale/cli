@@ -32,7 +32,7 @@ var privnetAssociateCmd = &cobra.Command{
 }
 
 func associatePrivNet(privnet *egoscale.Network, vmName string) (string, error) {
-	vm, err := getVMWithNameOrID(cs, vmName)
+	vm, err := getVMWithNameOrID(vmName)
 	if err != nil {
 		return "", err
 	}
