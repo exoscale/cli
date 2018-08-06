@@ -73,13 +73,8 @@ type UpdateDNSRecordResponse struct {
 
 // DNSErrorResponse represents an error in the API
 type DNSErrorResponse struct {
-	Message string    `json:"message,omitempty"`
-	Errors  *DNSError `json:"errors"`
-}
-
-// DNSError represents an error
-type DNSError struct {
-	Name []string `json:"name"`
+	Message string              `json:"message,omitempty"`
+	Errors  map[string][]string `json:"errors"`
 }
 
 // Record represent record type
@@ -119,8 +114,14 @@ const (
 
 // Error formats the DNSerror into a string
 func (req *DNSErrorResponse) Error() string {
-	if req.Errors != nil {
-		return fmt.Sprintf("dns error: %s (%s)", req.Message, strings.Join(req.Errors.Name, ", "))
+	if len(req.Errors) > 0 {
+		errs := []string{}
+		for name, ss := range req.Errors {
+			if len(ss) > 0 {
+				errs = append(errs, fmt.Sprintf("%s: %s", name, strings.Join(ss, ", ")))
+			}
+		}
+		return fmt.Sprintf("dns error: %s (%s)", req.Message, strings.Join(errs, "; "))
 	}
 	return fmt.Sprintf("dns error: %s", req.Message)
 }
