@@ -9,10 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// stopCmd represents the stop command
-var vmStopCmd = &cobra.Command{
-	Use:   "stop <vm name> [vm name] ...",
-	Short: "Stop virtual machine instance",
+// startCmd represents the start command
+var vmStartCmd = &cobra.Command{
+	Use:   "start <vm name> [vm name] ...",
+	Short: "Start virtual machine",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()
@@ -20,8 +20,8 @@ var vmStopCmd = &cobra.Command{
 
 		errs := []error{}
 		for _, v := range args {
-			if err := stopVirtualMachine(v); err != nil {
-				errs = append(errs, fmt.Errorf("could not stop %q: %s", v, err))
+			if err := startVirtualMachine(v); err != nil {
+				errs = append(errs, fmt.Errorf("could not start %q: %s", v, err))
 			}
 		}
 
@@ -42,21 +42,21 @@ var vmStopCmd = &cobra.Command{
 	},
 }
 
-// stopVirtualMachine stop a virtual machine instance
-func stopVirtualMachine(vmName string) error {
+// startVirtualMachine start a virtual machine instance Async
+func startVirtualMachine(vmName string) error {
 	vm, err := getVMWithNameOrID(vmName)
 	if err != nil {
 		return err
 	}
 
-	state := (string)(egoscale.VirtualMachineRunning)
+	state := (string)(egoscale.VirtualMachineStopped)
 	if vm.State != state {
-		return fmt.Errorf("%q is not in a %s state, got %s", vmName, state, vm.State)
+		return fmt.Errorf("%q is not in a %s state, got: %s", vmName, state, vm.State)
 	}
 
-	fmt.Printf("Stopping %q ", vm.Name)
+	fmt.Printf("Starting %q ", vm.Name)
 	var errorReq error
-	cs.AsyncRequestWithContext(gContext, &egoscale.StopVirtualMachine{ID: vm.ID}, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+	cs.AsyncRequestWithContext(gContext, &egoscale.StartVirtualMachine{ID: vm.ID}, func(jobResult *egoscale.AsyncJobResult, err error) bool {
 
 		fmt.Print(".")
 
@@ -81,5 +81,5 @@ func stopVirtualMachine(vmName string) error {
 }
 
 func init() {
-	vmCmd.AddCommand(vmStopCmd)
+	vmCmd.AddCommand(vmStartCmd)
 }
