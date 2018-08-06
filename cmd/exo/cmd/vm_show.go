@@ -32,6 +32,8 @@ func showVM(name string) error {
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{vm.Name})
 
+	table.Append([]string{"State", vm.State})
+
 	table.Append([]string{"OS Template", vm.TemplateName})
 
 	table.Append([]string{"Region", vm.ZoneName})
