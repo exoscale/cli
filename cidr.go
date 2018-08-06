@@ -39,8 +39,8 @@ func ParseCIDR(s string) (*CIDR, error) {
 	return &CIDR{net}, nil
 }
 
-// ForceParseCIDR forces parseCIDR or panics
-func ForceParseCIDR(s string) *CIDR {
+// MustParseCIDR forces parseCIDR or panics
+func MustParseCIDR(s string) *CIDR {
 	cidr, err := ParseCIDR(s)
 	if err != nil {
 		panic(err)

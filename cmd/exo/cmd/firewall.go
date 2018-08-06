@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var defaultCIDR = egoscale.ForceParseCIDR("0.0.0.0/0")
-var defaultCIDR6 = egoscale.ForceParseCIDR("::/0")
+var defaultCIDR = egoscale.MustParseCIDR("0.0.0.0/0")
+var defaultCIDR6 = egoscale.MustParseCIDR("::/0")
 
 var firewallCmd = &cobra.Command{
 	Use:   "firewall",

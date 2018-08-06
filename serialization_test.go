@@ -58,10 +58,10 @@ func TestPrepareValues(t *testing.T) {
 			"foo": "bar",
 		},
 		IP:   net.IPv4(192, 168, 0, 11),
-		CIDR: ForceParseCIDR("192.168.0.0/32"),
+		CIDR: MustParseCIDR("192.168.0.0/32"),
 		CIDRList: []CIDR{
-			*ForceParseCIDR("192.168.0.0/32"),
-			*ForceParseCIDR("::/0"),
+			*MustParseCIDR("192.168.0.0/32"),
+			*MustParseCIDR("::/0"),
 		},
 		MAC: MAC48(0x01, 0x23, 0x45, 0x67, 0x89, 0xab),
 	}

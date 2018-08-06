@@ -5,17 +5,17 @@ import (
 	"testing"
 )
 
-func TestCIDRForceParse(t *testing.T) {
+func TestCIDRMustParse(t *testing.T) {
 	defer func() {
 		recover()
 	}()
-	ForceParseCIDR("foo")
+	MustParseCIDR("foo")
 	t.Error("invalid cidr should panic")
 }
 
 func TestCIDRMarshalJSON(t *testing.T) {
 	nic := &Nic{
-		IP6CIDR: ForceParseCIDR("::/0"),
+		IP6CIDR: MustParseCIDR("::/0"),
 	}
 	j, err := json.Marshal(nic)
 	if err != nil {

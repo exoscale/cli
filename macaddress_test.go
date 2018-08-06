@@ -5,11 +5,11 @@ import (
 	"testing"
 )
 
-func TestMACAddressForceParse(t *testing.T) {
+func TestMACAddressMustParse(t *testing.T) {
 	defer func() {
 		recover()
 	}()
-	ForceParseMAC("foo")
+	MustParseMAC("foo")
 	t.Error("invalid mac should panic")
 }
 
