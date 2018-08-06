@@ -48,24 +48,24 @@ func listServiceOffering() error {
 
 }
 
-func getServiceOfferingIDByName(cs *egoscale.Client, servOffering string) (string, error) {
+func getServiceOfferingByName(cs *egoscale.Client, servOffering string) (*egoscale.ServiceOffering, error) {
 	servOReq := &egoscale.ServiceOffering{}
 
 	servOffs, err := cs.List(servOReq)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	for _, servoff := range servOffs {
 		r := servoff.(*egoscale.ServiceOffering)
 		if strings.Compare(strings.ToLower(servOffering), strings.ToLower(r.Name)) == 0 {
-			return r.ID, nil
+			return r, nil
 		}
 		if strings.Compare(servOffering, r.ID) == 0 {
-			return r.ID, nil
+			return r, nil
 		}
 	}
-	return "", fmt.Errorf("service offering %q was not found", servOffering)
+	return nil, fmt.Errorf("service offering %q was not found", servOffering)
 }
 
 func init() {

@@ -97,12 +97,12 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		servOffering, err := cmd.Flags().GetString("service-offering")
+		so, err := cmd.Flags().GetString("service-offering")
 		if err != nil {
 			return err
 		}
 
-		servOffering, err = getServiceOfferingIDByName(cs, servOffering)
+		servOffering, err := getServiceOfferingByName(cs, so)
 		if err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ var vmCreateCmd = &cobra.Command{
 			SecurityGroupIDs:  sgs,
 			IP6:               &ipv6,
 			NetworkIDs:        pvs,
-			ServiceOfferingID: servOffering,
+			ServiceOfferingID: servOffering.ID,
 			AffinityGroupIDs:  affinitygroups,
 		}
 
