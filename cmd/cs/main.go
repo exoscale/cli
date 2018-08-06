@@ -395,21 +395,11 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 				Destination: addr.(*int),
 			})
 		case reflect.Int64:
-			if argName == "resourcetype" {
-				flags = append(flags, cli.GenericFlag{
-					Name:  argName,
-					Usage: description,
-					Value: &resourceTypeGeneric{
-						value: addr.(*egoscale.ResourceType),
-					},
-				})
-			} else {
-				flags = append(flags, cli.Int64Flag{
-					Name:        argName,
-					Usage:       description,
-					Destination: addr.(*int64),
-				})
-			}
+			flags = append(flags, cli.Int64Flag{
+				Name:        argName,
+				Usage:       description,
+				Destination: addr.(*int64),
+			})
 		case reflect.Uint:
 			flags = append(flags, cli.UintFlag{
 				Name:        argName,
@@ -433,9 +423,13 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 				Name:  argName,
 				Usage: description,
 			}
-			if argName == "accounttype" {
-				flag.Value = &accountTypeGeneric{
-					value: addr.(*egoscale.AccountType),
+			typeName := field.Type.Name()
+			if typeName != "int16" {
+				flag.Value = &intTypeGeneric{
+					addr:    addr,
+					base:    10,
+					bitSize: 16,
+					typ:     field.Type,
 				}
 			} else {
 				flag.Value = &int16Generic{
@@ -460,15 +454,16 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 				},
 			})
 		case reflect.String:
-			if argName == "resourcetypename" {
+			typeName := field.Type.Name()
+			if typeName != "string" {
 				flags = append(flags, cli.GenericFlag{
 					Name:  argName,
 					Usage: description,
-					Value: &resourceTypeNameGeneric{
-						value: addr.(*egoscale.ResourceTypeName),
+					Value: &stringerTypeGeneric{
+						addr: addr,
+						typ:  field.Type,
 					},
 				})
-
 			} else {
 				flags = append(flags, cli.StringFlag{
 					Name:        argName,

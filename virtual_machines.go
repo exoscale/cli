@@ -11,6 +11,32 @@ import (
 	"net/url"
 )
 
+// VirtualMachineState holds the state of the instance
+type VirtualMachineState string
+
+const (
+	// VirtualMachineStarting VM is being started. At this state, you should find host id filled which means it's being started on that host
+	VirtualMachineStarting VirtualMachineState = "Starting"
+	// VirtualMachineRunning VM is running. host id has the host that it is running on
+	VirtualMachineRunning VirtualMachineState = "Running"
+	// VirtualMachineStopping VM is being stopped. host id has the host that it is being stopped on
+	VirtualMachineStopping VirtualMachineState = "Stopping"
+	// VirtualMachineStopped VM is stopped. host id should be null
+	VirtualMachineStopped VirtualMachineState = "Stopped"
+	// VirtualMachineDestroyed VM is marked for destroy
+	VirtualMachineDestroyed VirtualMachineState = "Destroyed"
+	// VirtualMachineExpunging "VM is being expunged
+	VirtualMachineExpunging VirtualMachineState = "Expunging"
+	// VirtualMachineMigrating VM is being migrated. host id holds to from host
+	VirtualMachineMigrating VirtualMachineState = "Migrating"
+	// VirtualMachineError VM is in error
+	VirtualMachineError VirtualMachineState = "Error"
+	// VirtualMachineUnknown VM state is unknown
+	VirtualMachineUnknown VirtualMachineState = "Unknown"
+	// VirtualMachineShutdowned VM is shutdowned from inside
+	VirtualMachineShutdowned VirtualMachineState = "Shutdowned"
+)
+
 // VirtualMachine represents a virtual machine
 //
 // See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html

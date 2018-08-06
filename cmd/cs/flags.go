@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -162,60 +163,68 @@ func (g *cidrListGeneric) String() string {
 	return strings.Join(vs, ",")
 }
 
-type accountTypeGeneric struct {
-	value *egoscale.AccountType
+type intTypeGeneric struct {
+	addr    interface{}
+	value   int64
+	base    int
+	bitSize int
+	typ     reflect.Type
 }
 
-func (g *accountTypeGeneric) Set(value string) error {
-	v, err := strconv.ParseUint(value, 10, 16)
-	if err == nil {
-		*g.value = egoscale.AccountType(v)
+func (g *intTypeGeneric) Set(value string) error {
+	v, err := strconv.ParseInt(value, g.base, g.bitSize)
+	if err != nil {
+		return err
 	}
 
-	return err
-}
-
-func (g *accountTypeGeneric) String() string {
-	if g.value != nil {
-		return (*g.value).String()
+	tv := reflect.ValueOf(g.addr)
+	var fv reflect.Value
+	switch g.bitSize {
+	case 8:
+		val := (int8)(v)
+		fv = reflect.ValueOf(&val)
+	case 16:
+		val := (int16)(v)
+		fv = reflect.ValueOf(&val)
+	case 32:
+		val := (int)(v)
+		fv = reflect.ValueOf(&val)
+	case 64:
+		fv = reflect.ValueOf(&v)
 	}
-	return ""
-}
+	tv.Elem().Set(fv.Convert(reflect.PtrTo(g.typ)).Elem())
 
-type resourceTypeGeneric struct {
-	value *egoscale.ResourceType
-}
+	g.value = v
 
-func (g *resourceTypeGeneric) Set(value string) error {
-	v, err := strconv.ParseInt(value, 10, 64)
-	if err == nil {
-		*g.value = egoscale.ResourceType(v)
-	}
-
-	return err
-}
-
-func (g *resourceTypeGeneric) String() string {
-	if g.value != nil {
-		return (*g.value).String()
-	}
-	return ""
-}
-
-type resourceTypeNameGeneric struct {
-	value *egoscale.ResourceTypeName
-}
-
-func (g *resourceTypeNameGeneric) Set(value string) error {
-	*g.value = egoscale.ResourceTypeName(value)
 	return nil
 }
 
-func (g *resourceTypeNameGeneric) String() string {
-	if g.value != nil {
-		return (string)(*g.value)
+func (g *intTypeGeneric) String() string {
+	if g.addr != nil {
+		return strconv.FormatInt(g.value, g.base)
 	}
 	return ""
+}
+
+type stringerTypeGeneric struct {
+	addr  interface{}
+	value string
+	typ   reflect.Type
+}
+
+func (g *stringerTypeGeneric) Set(value string) error {
+	tv := reflect.ValueOf(g.addr)
+	fv := reflect.ValueOf(&value)
+
+	tv.Elem().Set(fv.Convert(reflect.PtrTo(g.typ)).Elem())
+
+	g.value = value
+
+	return nil
+}
+
+func (g *stringerTypeGeneric) String() string {
+	return g.value
 }
 
 type mapGeneric struct {
