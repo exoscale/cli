@@ -24,7 +24,7 @@ var vmShowCmd = &cobra.Command{
 }
 
 func showVM(name string) error {
-	vm, err := getVMWithNameOrID(cs, name)
+	vm, err := getVMWithNameOrID(name)
 	if err != nil {
 		return err
 	}

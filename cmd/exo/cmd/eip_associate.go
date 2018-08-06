@@ -36,7 +36,7 @@ func associateIP(ipAddr, instance string) (string, error) {
 		return "", fmt.Errorf("invalid IP address %q", ipAddr)
 	}
 
-	vm, err := getVMWithNameOrID(cs, instance)
+	vm, err := getVMWithNameOrID(instance)
 	if err != nil {
 		return "", err
 	}
