@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.10.6 (unreleased)
+------
+
+- feat: `listOSCategories` and `OSCategory` type
+- fix: better `DNSErrorResponse`
+- fix: `ListResourceLimits` type
+
 0.10.5
 ------
 
