@@ -361,11 +361,10 @@ func (client *Client) request(ctx context.Context, command Command) (json.RawMes
 
 	apiName := client.APIName(command)
 	key := fmt.Sprintf("%sresponse", strings.ToLower(apiName))
-	// XXX: addIpToNic, activateIp6 are kind of special
-	if key == "addiptonicresponse" {
-		key = "addiptovmnicresponse"
-	} else if key == "activateip6response" {
-		key = "activateip6nicresponse"
+	// XXX: addIpToNic, activateIp6, restorevmresponse are kind of special
+	value, ok := responseKeys[key]
+	if ok {
+		key = value
 	}
 
 	text, err := client.parseResponse(resp, key)
@@ -374,4 +373,11 @@ func (client *Client) request(ctx context.Context, command Command) (json.RawMes
 	}
 
 	return text, nil
+}
+
+// XXX: addIpToNic, activateIp6, restorevmresponse are kind of special
+var responseKeys = map[string]string{
+	"addiptonicresponse":            "addiptovmnicresponse",
+	"activateip6response":           "activateip6nicresponse",
+	"restorevirtualmachineresponse": "restorevmresponse",
 }
