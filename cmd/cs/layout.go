@@ -49,6 +49,7 @@ var methods = map[string][]cmd{
 		{&egoscale.ListTemplates{}, false},
 		{&egoscale.PrepareTemplate{}, true},
 		{&egoscale.RegisterTemplate{}, true},
+		{&egoscale.ListOSCategories{}, true},
 	},
 	"account": {
 		{&egoscale.EnableAccount{}, true},

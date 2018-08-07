@@ -253,3 +253,29 @@ type RegisterTemplate struct {
 func (RegisterTemplate) response() interface{} {
 	return new(Template)
 }
+
+// OSCategory represents an OS category
+type OSCategory struct {
+	ID   string `json:"id,omitempty" doc:"the ID of the OS category"`
+	Name string `json:"name,omitempty" doc:"the name of the OS category"`
+}
+
+// ListOSCategories lists the OS categories
+type ListOSCategories struct {
+	ID       string `json:"id,omitempty" doc:"list Os category by id"`
+	Keyword  string `json:"keyword,omitempty" doc:"List by keyword"`
+	Name     string `json:"name,omitempty" doc:"list os category by name"`
+	Page     int    `json:"page,omitempty"`
+	PageSize int    `json:"pagesize,omitempty"`
+	_        bool   `name:"listOsCategories" description:"Lists all supported OS categories for this cloud."`
+}
+
+// ListOSCategoriesResponse represents a list of OS categories
+type ListOSCategoriesResponse struct {
+	Count      int          `json:"count"`
+	OSCategory []OSCategory `json:"oscategory"`
+}
+
+func (ListOSCategories) response() interface{} {
+	return new(ListOSCategoriesResponse)
+}

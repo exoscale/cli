@@ -51,6 +51,11 @@ func TestRegisterTemplate(t *testing.T) {
 	_ = req.response().(*Template)
 }
 
+func TestListOSCategories(t *testing.T) {
+	req := &ListOSCategories{}
+	_ = req.response().(*ListOSCategoriesResponse)
+}
+
 func TestTemplate(t *testing.T) {
 	instance := &Template{}
 	if instance.ResourceType() != "Template" {
