@@ -27,7 +27,7 @@ func init() {
 }
 
 func firewallListSecurityGroups(t *table.Table, filters []string) error {
-	sgs, err := cs.List(&egoscale.SecurityGroup{})
+	sgs, err := cs.ListWithContext(gContext, &egoscale.SecurityGroup{})
 	if err != nil {
 		return err
 	}
