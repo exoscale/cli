@@ -47,6 +47,8 @@ const (
 	IRC port = 194
 	// HTTPS protocol port number
 	HTTPS port = 443
+	// Docker protocol port number
+	Docker port = 2376
 	// RDP protocol port number
 	RDP port = 3389
 	// Minecraft protocol port number
