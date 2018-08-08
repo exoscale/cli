@@ -39,7 +39,7 @@ func listIPs(zone string, table *table.Table) error {
 			return err
 		}
 		zReq.IsElastic = true
-		ips, err := cs.List(&zReq)
+		ips, err := cs.ListWithContext(gContext, &zReq)
 		if err != nil {
 			return err
 		}
@@ -65,7 +65,7 @@ func listIPs(zone string, table *table.Table) error {
 	}
 
 	zones := &egoscale.Zone{}
-	zs, err := cs.List(zones)
+	zs, err := cs.ListWithContext(gContext, zones)
 	if err != nil {
 		return err
 	}

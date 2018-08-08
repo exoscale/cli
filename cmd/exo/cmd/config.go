@@ -525,7 +525,7 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	zonesResp, err := cs.List(&egoscale.Zone{})
+	zonesResp, err := cs.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return "", err
 	}

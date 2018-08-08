@@ -47,7 +47,7 @@ func privnetDetails(privnetName string) (*egoscale.Network, []egoscale.VirtualMa
 		return nil, nil, err
 	}
 
-	vms, err := cs.List(&egoscale.VirtualMachine{ZoneID: network.ZoneID})
+	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: network.ZoneID})
 	if err != nil {
 		return nil, nil, err
 	}

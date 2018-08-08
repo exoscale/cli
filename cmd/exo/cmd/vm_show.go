@@ -40,7 +40,7 @@ func showVM(name string) error {
 
 	temp := &egoscale.Template{IsFeatured: true, ID: vm.TemplateID, ZoneID: "1"}
 
-	if err := cs.Get(temp); err != nil {
+	if err := cs.GetWithContext(gContext, temp); err != nil {
 		return err
 	}
 
@@ -49,7 +49,7 @@ func showVM(name string) error {
 		Type:             "ROOT",
 	}
 
-	if err := cs.Get(volume); err != nil {
+	if err := cs.GetWithContext(gContext, volume); err != nil {
 		return err
 	}
 

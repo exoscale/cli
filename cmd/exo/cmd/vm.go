@@ -13,14 +13,14 @@ var vmCmd = &cobra.Command{
 
 func getVMWithNameOrID(name string) (*egoscale.VirtualMachine, error) {
 	vm := &egoscale.VirtualMachine{ID: name}
-	if err := cs.Get(vm); err == nil {
+	if err := cs.GetWithContext(gContext, vm); err == nil {
 		return vm, err
 	}
 
 	vm.Name = name
 	vm.ID = ""
 
-	if err := cs.Get(vm); err != nil {
+	if err := cs.GetWithContext(gContext, vm); err != nil {
 		return nil, err
 	}
 	return vm, nil

@@ -21,7 +21,7 @@ var serviceofferingCmd = &cobra.Command{
 }
 
 func listServiceOffering() error {
-	serviceOffering, err := cs.List(&egoscale.ServiceOffering{})
+	serviceOffering, err := cs.ListWithContext(gContext, &egoscale.ServiceOffering{})
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func listServiceOffering() error {
 func getServiceOfferingByName(cs *egoscale.Client, servOffering string) (*egoscale.ServiceOffering, error) {
 	servOReq := &egoscale.ServiceOffering{}
 
-	servOffs, err := cs.List(servOReq)
+	servOffs, err := cs.ListWithContext(gContext, servOReq)
 	if err != nil {
 		return nil, err
 	}

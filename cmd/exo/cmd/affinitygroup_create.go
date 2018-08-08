@@ -28,7 +28,7 @@ var affinitygroupCreateCmd = &cobra.Command{
 }
 
 func createAffinityGroup(name, desc string) error {
-	resp, err := cs.Request(&egoscale.CreateAffinityGroup{Name: name, Description: desc, Type: "host anti-affinity"})
+	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{Name: name, Description: desc, Type: "host anti-affinity"})
 	if err != nil {
 		return err
 	}

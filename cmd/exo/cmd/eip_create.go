@@ -30,7 +30,7 @@ func associateIPAddress(name string) error {
 		return err
 	}
 
-	resp, err := cs.Request(&ipReq)
+	resp, err := cs.RequestWithContext(gContext, &ipReq)
 	if err != nil {
 		return err
 	}

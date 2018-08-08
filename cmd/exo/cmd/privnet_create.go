@@ -79,7 +79,7 @@ func privnetCreate(name, desc, zone string) error {
 		return err
 	}
 
-	resp, err := cs.Request(&egoscale.ListNetworkOfferings{ZoneID: zone, Name: "PrivNet"})
+	resp, err := cs.RequestWithContext(gContext, &egoscale.ListNetworkOfferings{ZoneID: zone, Name: "PrivNet"})
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func privnetCreate(name, desc, zone string) error {
 		offNetID = s.NetworkOffering[0].ID
 	}
 
-	creatResp, err := cs.Request(&egoscale.CreateNetwork{DisplayText: desc, Name: name, NetworkOfferingID: offNetID, ZoneID: zone})
+	creatResp, err := cs.RequestWithContext(gContext, &egoscale.CreateNetwork{DisplayText: desc, Name: name, NetworkOfferingID: offNetID, ZoneID: zone})
 	if err != nil {
 		return err
 	}

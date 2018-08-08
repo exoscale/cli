@@ -76,7 +76,7 @@ func resizeVirtualMachine(vmName string, diskValue int64, force bool) error {
 		Type:             "ROOT",
 	}
 
-	if err := cs.Get(volume); err != nil {
+	if err := cs.GetWithContext(gContext, volume); err != nil {
 		return err
 	}
 

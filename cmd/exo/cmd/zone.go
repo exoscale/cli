@@ -21,7 +21,7 @@ var zoneCmd = &cobra.Command{
 }
 
 func listZones() error {
-	zones, err := cs.List(&egoscale.Zone{})
+	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func listZones() error {
 func getZoneIDByName(name string) (string, error) {
 	zoneReq := egoscale.Zone{}
 
-	zones, err := cs.List(&zoneReq)
+	zones, err := cs.ListWithContext(gContext, &zoneReq)
 	if err != nil {
 		return "", err
 	}

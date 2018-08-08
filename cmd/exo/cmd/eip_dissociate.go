@@ -50,7 +50,7 @@ func dissociateIP(ipAddr, instance string) error {
 
 	req := &egoscale.RemoveIPFromNic{ID: eipID}
 
-	if err := cs.BooleanRequest(req); err != nil {
+	if err := cs.BooleanRequestWithContext(gContext, req); err != nil {
 		return err
 	}
 	println(req.ID)

@@ -31,7 +31,7 @@ func firewallCreate(name, desc string) error {
 		req.Description = desc
 	}
 
-	resp, err := cs.Request(req)
+	resp, err := cs.RequestWithContext(gContext, req)
 	if err != nil {
 		return err
 	}

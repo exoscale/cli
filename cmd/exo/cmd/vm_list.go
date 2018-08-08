@@ -20,7 +20,7 @@ var vmlistCmd = &cobra.Command{
 }
 
 func listVMs() error {
-	vms, err := cs.List(&egoscale.VirtualMachine{})
+	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{})
 	if err != nil {
 		return err
 	}

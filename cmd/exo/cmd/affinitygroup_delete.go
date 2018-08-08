@@ -38,7 +38,7 @@ func deleteAffinityGroup(name string) error {
 		return err
 	}
 
-	_, err = cs.Request(&egoscale.DeleteAffinityGroup{ID: id})
+	_, err = cs.RequestWithContext(gContext, &egoscale.DeleteAffinityGroup{ID: id})
 	if err != nil {
 		return err
 	}
