@@ -40,7 +40,7 @@ func listPrivnets(zone string, table *table.Table) error {
 			return err
 		}
 		pnReq.CanUseForDeploy = true
-		pns, err := cs.List(pnReq)
+		pns, err := cs.ListWithContext(gContext, pnReq)
 		if err != nil {
 			return err
 		}
@@ -67,7 +67,7 @@ func listPrivnets(zone string, table *table.Table) error {
 	}
 
 	zones := &egoscale.Zone{}
-	zs, err := cs.List(zones)
+	zs, err := cs.ListWithContext(gContext, zones)
 	if err != nil {
 		return err
 	}

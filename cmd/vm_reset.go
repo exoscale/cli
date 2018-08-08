@@ -70,7 +70,7 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, force bool) err
 		Type:             "ROOT",
 	}
 
-	if err := cs.Get(volume); err != nil {
+	if err := cs.GetWithContext(gContext, volume); err != nil {
 		return err
 	}
 
@@ -78,7 +78,7 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, force bool) err
 
 	temp := &egoscale.Template{IsFeatured: true, ID: vm.TemplateID, ZoneID: vm.ZoneID}
 
-	if err := cs.Get(temp); err != nil {
+	if err := cs.GetWithContext(gContext, temp); err != nil {
 		return err
 	}
 

@@ -15,7 +15,7 @@ var affinitygroupCmd = &cobra.Command{
 }
 
 func getAffinityGroupIDByName(cs *egoscale.Client, name string) (string, error) {
-	affs, err := cs.List(&egoscale.AffinityGroup{})
+	affs, err := cs.ListWithContext(gContext, &egoscale.AffinityGroup{})
 	if err != nil {
 		return "", err
 	}

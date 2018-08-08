@@ -273,9 +273,9 @@ func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGr
 func addRule(rule *egoscale.AuthorizeSecurityGroupIngress, isEgress bool) error {
 	var err error
 	if isEgress {
-		_, err = cs.Request((*egoscale.AuthorizeSecurityGroupEgress)(rule))
+		_, err = cs.RequestWithContext(gContext, (*egoscale.AuthorizeSecurityGroupEgress)(rule))
 	} else {
-		_, err = cs.Request(rule)
+		_, err = cs.RequestWithContext(gContext, rule)
 	}
 
 	return err

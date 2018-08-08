@@ -42,13 +42,13 @@ func deleteEip(ip string) error {
 		addrReq.ID = ip
 	} else {
 		req := &egoscale.IPAddress{IPAddress: ipAddr, IsElastic: true}
-		if err := cs.Get(req); err != nil {
+		if err := cs.GetWithContext(gContext, req); err != nil {
 			return err
 		}
 		addrReq.ID = req.ID
 	}
 
-	if err := cs.BooleanRequest(addrReq); err != nil {
+	if err := cs.BooleanRequestWithContext(gContext, addrReq); err != nil {
 		return err
 	}
 	println(addrReq.ID)

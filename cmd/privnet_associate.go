@@ -37,7 +37,7 @@ func associatePrivNet(privnet *egoscale.Network, vmName string) (string, error) 
 		return "", err
 	}
 
-	_, err = cs.Request(&egoscale.AddNicToVirtualMachine{NetworkID: privnet.ID, VirtualMachineID: vm.ID})
+	_, err = cs.RequestWithContext(gContext, &egoscale.AddNicToVirtualMachine{NetworkID: privnet.ID, VirtualMachineID: vm.ID})
 	if err != nil {
 		return "", err
 	}

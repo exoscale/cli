@@ -15,7 +15,7 @@ var privnetCmd = &cobra.Command{
 }
 
 func getNetworkIDByName(cs *egoscale.Client, name string) (*egoscale.Network, error) {
-	nets, err := cs.List(&egoscale.Network{Type: "Isolated", CanUseForDeploy: true})
+	nets, err := cs.ListWithContext(gContext, &egoscale.Network{Type: "Isolated", CanUseForDeploy: true})
 	if err != nil {
 		log.Fatal(err)
 	}

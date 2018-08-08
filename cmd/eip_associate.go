@@ -47,7 +47,7 @@ func associateIP(ipAddr, instance string) (string, error) {
 		return "", fmt.Errorf("the instance %q has not default NIC", vm.ID)
 	}
 
-	resp, err := cs.Request(&egoscale.AddIPToNic{NicID: defaultNic.ID, IPAddress: ip})
+	resp, err := cs.RequestWithContext(gContext, &egoscale.AddIPToNic{NicID: defaultNic.ID, IPAddress: ip})
 	if err != nil {
 		return "", err
 	}

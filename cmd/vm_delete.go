@@ -53,7 +53,7 @@ func deleteVM(name string, force bool) error {
 
 	req := &egoscale.DestroyVirtualMachine{ID: vm.ID}
 	fmt.Printf("Destroying %q ", vm.Name)
-	cs.AsyncRequest(req, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+	cs.AsyncRequestWithContext(gContext, req, func(jobResult *egoscale.AsyncJobResult, err error) bool {
 		fmt.Printf(".")
 
 		if err != nil {

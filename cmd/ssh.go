@@ -90,7 +90,7 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 
 	template := &egoscale.Template{ID: vm.TemplateID, IsFeatured: true, ZoneID: "1"}
 
-	if err := cs.Get(template); err != nil {
+	if err := cs.GetWithContext(gContext, template); err != nil {
 		return nil, err
 	}
 

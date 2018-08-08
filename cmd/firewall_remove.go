@@ -106,13 +106,13 @@ func removeAllRules(sgName string) ([]string, error) {
 	res := []string{}
 
 	for _, in := range sg.IngressRule {
-		if reqErr := cs.BooleanRequest(&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}); reqErr != nil {
+		if reqErr := cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}); reqErr != nil {
 			return res, reqErr
 		}
 		res = append(res, in.RuleID)
 	}
 	for _, eg := range sg.EgressRule {
-		if err = cs.BooleanRequest(&egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}); err != nil {
+		if err = cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}); err != nil {
 			return res, err
 		}
 		res = append(res, eg.RuleID)
@@ -129,9 +129,9 @@ func removeRule(name, ruleID string) error {
 	in, eg := sg.RuleByID(ruleID)
 
 	if in != nil {
-		err = cs.BooleanRequest(&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
+		err = cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
 	} else if eg != nil {
-		err = cs.BooleanRequest(&egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID})
+		err = cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID})
 	} else {
 		err = fmt.Errorf("rule with id %q is not ingress or egress rule", ruleID)
 	}
@@ -172,7 +172,7 @@ func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr *eg
 			continue
 		}
 
-		err := cs.BooleanRequest(&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
+		err := cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
 		if err != nil {
 			return err
 		}

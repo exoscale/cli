@@ -64,14 +64,14 @@ func formatRules(name string, rule *egoscale.IngressRule) []string {
 func getSecurityGroupByNameOrID(cs *egoscale.Client, name string) (*egoscale.SecurityGroup, error) {
 	if !isAFirewallID(cs, name) {
 		securGrp := &egoscale.SecurityGroup{Name: name}
-		if err := cs.Get(securGrp); err != nil {
+		if err := cs.GetWithContext(gContext, securGrp); err != nil {
 			return nil, err
 		}
 		return securGrp, nil
 	}
 
 	securGrp := &egoscale.SecurityGroup{ID: name}
-	if err := cs.Get(securGrp); err != nil {
+	if err := cs.GetWithContext(gContext, securGrp); err != nil {
 		return nil, err
 	}
 	return securGrp, nil
@@ -112,7 +112,7 @@ func isAFirewallID(cs *egoscale.Client, id string) bool {
 		return false
 	}
 	req := &egoscale.SecurityGroup{ID: id}
-	return cs.Get(req) == nil
+	return cs.GetWithContext(gContext, req) == nil
 }
 
 // isUUID matches a UUIDv4

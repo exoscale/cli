@@ -20,7 +20,7 @@ var affinitygroupListCmd = &cobra.Command{
 }
 
 func displayAffinitygroup() error {
-	resp, err := cs.Request(&egoscale.ListAffinityGroups{})
+	resp, err := cs.RequestWithContext(gContext, &egoscale.ListAffinityGroups{})
 	if err != nil {
 		return nil
 	}

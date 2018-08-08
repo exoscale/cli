@@ -19,7 +19,7 @@ func getEIPIDByIP(cs *egoscale.Client, ipAddr string) (string, error) {
 	if ip == nil {
 		return "", fmt.Errorf("invalid IP address %q", ipAddr)
 	}
-	eips, err := cs.List(&egoscale.IPAddress{IsElastic: true})
+	eips, err := cs.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
 	if err != nil {
 		return "", err
 	}

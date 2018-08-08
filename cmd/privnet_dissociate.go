@@ -44,7 +44,7 @@ func dissociatePrivNet(privnet *egoscale.Network, vmName string) (string, error)
 		return "", err
 	}
 
-	_, err = cs.Request(&egoscale.RemoveNicFromVirtualMachine{NicID: nic.ID, VirtualMachineID: vm.ID})
+	_, err = cs.RequestWithContext(gContext, &egoscale.RemoveNicFromVirtualMachine{NicID: nic.ID, VirtualMachineID: vm.ID})
 	if err != nil {
 		return "", err
 	}
