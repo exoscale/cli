@@ -42,8 +42,6 @@ func deleteVM(name string, force bool) error {
 		return err
 	}
 
-	var errorReq error
-
 	if !force {
 		if !askQuestion(fmt.Sprintf("sure you want to delete %q virtual machine", vm.Name)) {
 			return nil
@@ -51,27 +49,9 @@ func deleteVM(name string, force bool) error {
 
 	}
 
-	req := &egoscale.DestroyVirtualMachine{ID: vm.ID}
-	fmt.Printf("Destroying %q ", vm.Name)
-	cs.AsyncRequestWithContext(gContext, req, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-		fmt.Printf(".")
-
-		if err != nil {
-			errorReq = err
-			return false
-		}
-
-		if jobResult.JobStatus == egoscale.Success {
-			return false
-		}
-		return true
-	})
-
-	if errorReq != nil {
-		fmt.Println(" failure.")
-		return errorReq
+	if _, err := asyncRequest(&egoscale.DestroyVirtualMachine{ID: vm.ID}, fmt.Sprintf("Destroying %q ", vm.Name)); err != nil {
+		return err
 	}
-	fmt.Println(" success!")
 
 	folder := path.Join(gConfigFolder, "instances", vm.ID)
 

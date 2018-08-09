@@ -65,30 +65,8 @@ func scaleVirtualMachine(vmName, serviceofferingID string) error {
 		return fmt.Errorf("this operation is not permitted if your VM is not stopped")
 	}
 
-	fmt.Printf("Scaling %q ", vm.Name)
-	var errorReq error
-	cs.AsyncRequestWithContext(gContext, &egoscale.ScaleVirtualMachine{ID: vm.ID, ServiceOfferingID: serviceofferingID}, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-
-		fmt.Print(".")
-
-		if err != nil {
-			errorReq = err
-			return false
-		}
-
-		if jobResult.JobStatus == egoscale.Success {
-			fmt.Println(" success.")
-			return false
-		}
-
-		return true
-	})
-
-	if errorReq != nil {
-		fmt.Println(" failure!")
-	}
-
-	return errorReq
+	_, err = asyncRequest(&egoscale.ScaleVirtualMachine{ID: vm.ID, ServiceOfferingID: serviceofferingID}, fmt.Sprintf("Scaling %q ", vm.Name))
+	return err
 }
 
 func init() {
