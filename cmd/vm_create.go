@@ -267,31 +267,12 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 
 	}
 
-	virtualMachine := &egoscale.VirtualMachine{}
-	var errorReq error
-	fmt.Printf("Deploying %q ", vmInfos.Name)
-	cs.AsyncRequestWithContext(gContext, vmInfos, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-		fmt.Printf(".")
-
-		if err != nil {
-			errorReq = err
-			return false
-		}
-
-		if jobResult.JobStatus == egoscale.Success {
-			if errR := jobResult.Result(virtualMachine); errR != nil {
-				errorReq = errR
-			}
-			return false
-		}
-		return true
-	})
-	if errorReq != nil {
-		fmt.Println(" failure.")
-		return nil, errorReq
+	resp, err := asyncRequest(vmInfos, fmt.Sprintf("Deploying %q ", vmInfos.Name))
+	if err != nil {
+		return nil, err
 	}
 
-	fmt.Println(" success!")
+	virtualMachine := resp.(*egoscale.VirtualMachine)
 
 	if isDefaultKeyPair {
 		saveKeyPair(keyPairs, virtualMachine.ID)
