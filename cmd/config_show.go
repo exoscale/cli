@@ -38,6 +38,9 @@ var showCmd = &cobra.Command{
 		println("API Secret:", secret)
 		println("Account:", acc.Account)
 		println("Default zone:", acc.DefaultZone)
+		if acc.DefaultTemplate != "" {
+			println("Default template:", acc.DefaultTemplate)
+		}
 		return nil
 	},
 }

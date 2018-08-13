@@ -57,6 +57,10 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
+		if templateName == "" {
+			templateName = gCurrentAccount.DefaultTemplate
+		}
+
 		diskSize, err := cmd.Flags().GetInt64("disk")
 		if err != nil {
 			return err
@@ -302,7 +306,7 @@ func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID string) {
 func init() {
 	vmCreateCmd.Flags().StringP("cloud-init-file", "f", "", "Deploy instance with a cloud-init file")
 	vmCreateCmd.Flags().StringP("zone", "z", "", "<zone name | id | keyword> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1)")
-	vmCreateCmd.Flags().StringP("template", "t", "Linux Ubuntu 18.04", "<template name | id>")
+	vmCreateCmd.Flags().StringP("template", "t", "", fmt.Sprintf("<template name | id> (default: %s)", defaultTemplate))
 	vmCreateCmd.Flags().Int64P("disk", "d", 50, "<disk size>")
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "<ssh keys name>")
 	vmCreateCmd.Flags().StringP("security-group", "s", "", "<name | id, name | id, ...>")
