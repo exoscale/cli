@@ -108,8 +108,8 @@
 [[projects]]
   name = "github.com/spf13/viper"
   packages = ["."]
-  revision = "b5e8006cbee93ec955a89ab31e0e3ce3204f3736"
-  version = "v1.0.2"
+  revision = "907c19d40d9a6c9bb55f040ff4ae45271a4754b9"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -148,6 +148,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "464aaae29566689113ec5b0895de8f4048966e4b1be39f9eebd6370765fc27dc"
+  inputs-digest = "3b594d25b1fc6df6e8a311dcd2a53dd25dad8e450a34063591e4b55c275fcef5"
   solver-name = "gps-cdcl"
   solver-version = 1
