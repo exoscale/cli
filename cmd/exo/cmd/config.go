@@ -19,6 +19,7 @@ import (
 const (
 	defaultConfigFileName  = "exoscale"
 	defaultComputeEndpoint = "https://api.exoscale.ch/compute"
+	defaultTemplate        = "Linux Ubuntu 18.04 LTS 64-bit"
 )
 
 // configCmd represents the config command
@@ -219,6 +220,7 @@ func addAccount(filePath string, newAccounts *config) error {
 		accounts[i]["key"] = acc.Key
 		accounts[i]["secret"] = acc.Secret
 		accounts[i]["defaultZone"] = acc.DefaultZone
+		accounts[i]["defaultTemplate"] = acc.DefaultTemplate
 		accounts[i]["account"] = acc.Account
 
 		conf.Accounts = append(conf.Accounts, acc)
@@ -235,6 +237,7 @@ func addAccount(filePath string, newAccounts *config) error {
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
+			accounts[accountsSize+i]["defaultTemplate"] = acc.DefaultTemplate
 			accounts[accountsSize+i]["account"] = acc.Account
 			conf.Accounts = append(conf.Accounts, acc)
 		}
