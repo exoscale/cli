@@ -1,6 +1,7 @@
 package egoscale
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -53,4 +54,9 @@ func MustParseCIDR(s string) *CIDR {
 	}
 
 	return cidr
+}
+
+// Equal compare two CIDR
+func (cidr CIDR) Equal(c CIDR) bool {
+	return (cidr.IPNet.IP.Equal(c.IPNet.IP) && bytes.Equal(cidr.IPNet.Mask, c.IPNet.Mask))
 }

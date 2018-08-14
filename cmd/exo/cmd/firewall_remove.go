@@ -35,30 +35,23 @@ var firewallRemoveCmd = &cobra.Command{
 			return err
 		}
 
-		sgName := args[0]
+		sg, errGet := getSecurityGroupByNameOrID(args[0])
+		if errGet != nil {
+			return errGet
+		}
 
 		if len(args) == 1 && deleteAll {
-			sg, errGet := getSecurityGroupByNameOrID(sgName)
-			if errGet != nil {
-				return errGet
-			}
 			count := len(sg.IngressRule) + len(sg.EgressRule)
 			if !force {
-				if !askQuestion(fmt.Sprintf("Are you sure you want to delete all %d firewall rule(s) from %s", count, sgName)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to delete all %d firewall rule(s) from %s", count, sg.Name)) {
 					return nil
 				}
 			}
-			return removeAllRules(sgName)
+			return removeAllRules(sg)
 		}
 
 		if len(args) < 2 {
 			return cmd.Usage()
-		}
-
-		if !force {
-			if !askQuestion(fmt.Sprintf("Are your sure you want to delete the %q firewall rule from %s", args[1], sgName)) {
-				return nil
-			}
 		}
 
 		isMyIP, err := cmd.Flags().GetBool("my-ip")
@@ -80,34 +73,57 @@ var firewallRemoveCmd = &cobra.Command{
 			cidr = c
 		}
 
-		r, err := getDefaultRule(args[1], isIpv6)
-		if err == nil {
-			ru := &egoscale.IngressRule{
-				CIDR:      &r.CIDRList[0],
-				StartPort: r.StartPort,
-				EndPort:   r.EndPort,
-				Protocol:  r.Protocol,
+		tasks := make([]task, 0, len(args[1:]))
+
+		for _, arg := range args[1:] {
+
+			var ruleID *egoscale.UUID
+
+			if !force {
+				if !askQuestion(fmt.Sprintf("Are your sure you want to delete the %q firewall rule from %s", arg, sg.Name)) {
+					continue
+				}
 			}
-			return removeDefault(args[0], args[1], ru, cidr, isIpv6)
+
+			r, err := getDefaultRule(arg, isIpv6)
+			if err == nil {
+				ru := &egoscale.IngressRule{
+					CIDR:      &r.CIDRList[0],
+					StartPort: r.StartPort,
+					EndPort:   r.EndPort,
+					Protocol:  r.Protocol,
+				}
+				ruleID, err = prepareDefaultRemove(sg, arg, ru, cidr, isIpv6)
+				if err != nil {
+					return err
+				}
+				tasks = append(tasks, task{egoscale.RevokeSecurityGroupIngress{ID: ruleID}, fmt.Sprintf("Remove %q rule", arg)})
+				continue
+			}
+			err = removeRule(sg, arg, &tasks)
+			if err != nil {
+				return err
+			}
+		}
+		_, errs := asyncTasks(tasks)
+
+		if len(errs) > 0 {
+			return errs[0]
 		}
 
-		return removeRule(args[0], args[1])
+		return nil
 	},
 }
 
-func removeAllRules(sgName string) error {
-	sg, err := getSecurityGroupByNameOrID(sgName)
-	if err != nil {
-		return err
-	}
+func removeAllRules(sg *egoscale.SecurityGroup) error {
 
 	tasks := []task{}
 
 	for _, in := range sg.IngressRule {
-		tasks = append(tasks, task{&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}, fmt.Sprintf("Remove %q", in.RuleID)})
+		tasks = append(tasks, task{&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}, fmt.Sprintf("Remove %q rule", in.RuleID)})
 	}
 	for _, eg := range sg.EgressRule {
-		tasks = append(tasks, task{&egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}, fmt.Sprintf("Remove %q", eg.RuleID)})
+		tasks = append(tasks, task{&egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}, fmt.Sprintf("Remove %q rule", eg.RuleID)})
 	}
 
 	_, errs := asyncTasks(tasks)
@@ -118,12 +134,7 @@ func removeAllRules(sgName string) error {
 	return nil
 }
 
-func removeRule(name, ruleID string) error {
-	sg, err := getSecurityGroupByNameOrID(name)
-	if err != nil {
-		return err
-	}
-
+func removeRule(sg *egoscale.SecurityGroup, ruleID string, tasks *[]task) error {
 	id, err := egoscale.ParseUUID(ruleID)
 	if err != nil {
 		return err
@@ -131,20 +142,17 @@ func removeRule(name, ruleID string) error {
 
 	in, eg := sg.RuleByID(*id)
 
+	var msg string
 	if in != nil {
-		err = cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
+		msg = fmt.Sprintf("Remove %q", in.RuleID)
+		*tasks = append(*tasks, task{egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}, msg})
 	} else if eg != nil {
-		err = cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID})
+		msg = fmt.Sprintf("Remove %q", eg.RuleID)
+		*tasks = append(*tasks, task{egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}, msg})
 	} else {
-		err = fmt.Errorf("rule with id %q is not ingress or egress rule", ruleID)
+		return fmt.Errorf("rule with id %q doesn't exist", ruleID)
 	}
-
-	if err != nil {
-		return err
-	}
-
-	_, err = fmt.Println(ruleID)
-	return err
+	return nil
 }
 
 func isDefaultRule(rule, defaultRule *egoscale.IngressRule, isIpv6 bool, myCidr *egoscale.CIDR) bool {
@@ -159,29 +167,17 @@ func isDefaultRule(rule, defaultRule *egoscale.IngressRule, isIpv6 bool, myCidr 
 
 	return (rule.StartPort == defaultRule.StartPort &&
 		rule.EndPort == defaultRule.EndPort &&
-		rule.CIDR == cidr &&
+		rule.CIDR.Equal(*cidr) &&
 		rule.Protocol == defaultRule.Protocol)
 }
 
-func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr *egoscale.CIDR, isIpv6 bool) error {
-	sg, err := getSecurityGroupByNameOrID(sgName)
-	if err != nil {
-		return err
-	}
-
+func prepareDefaultRemove(sg *egoscale.SecurityGroup, ruleName string, rule *egoscale.IngressRule, cidr *egoscale.CIDR, isIpv6 bool) (*egoscale.UUID, error) {
 	for _, in := range sg.IngressRule {
 		if !isDefaultRule(&in, rule, isIpv6, cidr) {
 			// Rule not found
 			continue
 		}
-
-		err := cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(in.RuleID)
-		return nil
+		return in.RuleID, nil
 	}
-	return fmt.Errorf("missing rule %q", ruleName)
+	return nil, fmt.Errorf("missing rule %q", ruleName)
 }
