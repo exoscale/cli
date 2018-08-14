@@ -21,6 +21,9 @@ var firewallRemoveCmd = &cobra.Command{
 	Short:   "Remove a rule from a security group",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
+		}
 
 		deleteAll, err := cmd.Flags().GetBool("all")
 		if err != nil {
