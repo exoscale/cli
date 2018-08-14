@@ -31,7 +31,7 @@ func (a AsyncJobResult) Error() error {
 
 // QueryAsyncJobResult represents a query to fetch the status of async job
 type QueryAsyncJobResult struct {
-	JobID *UUID `json:"jobid" doc:"the ID of the asychronous job"`
+	JobID *UUID `json:"jobid" doc:"the ID of the asynchronous job"`
 	_     bool  `name:"queryAsyncJobResult" description:"Retrieves the current status of asynchronous job."`
 }
 

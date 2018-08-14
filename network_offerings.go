@@ -45,7 +45,7 @@ type ListNetworkOfferings struct {
 	SupportedServices  []Service `json:"supportedservices,omitempty" doc:"list network offerings supporting certain services"`
 	Tags               string    `json:"tags,omitempty" doc:"list network offerings by tags"`
 	TrafficType        string    `json:"traffictype,omitempty" doc:"list by traffic type"`
-	ZoneID             *UUID     `json:"zoneid,omitempty" doc:"list netowrk offerings available for network creation in specific zone"`
+	ZoneID             *UUID     `json:"zoneid,omitempty" doc:"list network offerings available for network creation in specific zone"`
 	_                  bool      `name:"listNetworkOfferings" description:"Lists all available network offerings."`
 }
 

@@ -328,9 +328,13 @@ func main() {
 				var b strings.Builder
 				for i, e := range es {
 					if i > 0 {
-						fmt.Fprintln(&b, "")
+						if _, err := fmt.Fprintln(&b, ""); err != nil {
+							panic(e)
+						}
 					}
-					fmt.Fprintf(&b, "%s: %s", k, e.Error())
+					if _, err := fmt.Fprintf(&b, "%s: %s", k, e.Error()); err != nil {
+						panic(err)
+					}
 				}
 				errs = append(errs, b.String())
 			}

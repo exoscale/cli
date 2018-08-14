@@ -26,8 +26,8 @@ func getTemplateByName(zoneID *egoscale.UUID, name string) (*egoscale.Template, 
 		ZoneID:     zoneID,
 	}
 
-	id, err := egoscale.ParseUUID(name)
-	if err != nil {
+	id, errUUID := egoscale.ParseUUID(name)
+	if errUUID != nil {
 		template.Name = name
 	} else {
 		template.ID = id

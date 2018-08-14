@@ -72,7 +72,7 @@ func main() {
 }
 
 //
-// this folowing source code is from cobra/doc https://github.com/spf13/cobra/tree/master/doc
+// this following source code is from cobra/doc https://github.com/spf13/cobra/tree/master/doc
 // we made that to be able to custom it for our need
 //
 

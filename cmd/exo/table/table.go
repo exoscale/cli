@@ -12,7 +12,7 @@ type Table struct {
 	*tablewriter.Table
 }
 
-// NewTable instanciate New tableWriter
+// NewTable instantiate New tableWriter
 func NewTable(fd *os.File) *Table {
 
 	t := &Table{tablewriter.NewWriter(fd)}

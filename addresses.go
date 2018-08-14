@@ -35,7 +35,7 @@ type IPAddress struct {
 	VirtualMachineName        string        `json:"virtualmachinename,omitempty" doc:"virtual machine name the ip address is assigned to (not null only for static nat Ip)"`
 	VlanID                    *UUID         `json:"vlanid,omitempty" doc:"the ID of the VLAN associated with the IP address. This parameter is visible to ROOT admins only"`
 	VlanName                  string        `json:"vlanname,omitempty" doc:"the VLAN associated with the IP address"`
-	VMIPAddress               net.IP        `json:"vmipaddress,omitempty" doc:"virutal machine (dnat) ip address (not null only for static nat Ip)"`
+	VMIPAddress               net.IP        `json:"vmipaddress,omitempty" doc:"virtual machine (dnat) ip address (not null only for static nat Ip)"`
 	ZoneID                    *UUID         `json:"zoneid,omitempty" doc:"the ID of the zone the public IP address belongs to"`
 	ZoneName                  string        `json:"zonename,omitempty" doc:"the name of the zone the public IP address belongs to"`
 }
