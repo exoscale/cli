@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/VividCortex/ewma"
+  packages = ["."]
+  revision = "b24eb346a94c3ba12c1da1e564dbac1b498a77ce"
+  version = "v1.1.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/fatih/camelcase"
   packages = ["."]
@@ -47,6 +53,12 @@
   packages = ["."]
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
   version = "v1.8.0"
+
+[[projects]]
+  name = "github.com/mattn/go-isatty"
+  packages = ["."]
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
 
 [[projects]]
   name = "github.com/mattn/go-runewidth"
@@ -110,6 +122,17 @@
   packages = ["."]
   revision = "907c19d40d9a6c9bb55f040ff4ae45271a4754b9"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/vbauerster/mpb"
+  packages = [
+    ".",
+    "cwriter",
+    "decor",
+    "internal"
+  ]
+  revision = "3674fd1f0789dbb003aa91a7b06138df0ef83c0f"
+  version = "v3.3.1"
 
 [[projects]]
   branch = "master"

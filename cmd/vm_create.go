@@ -16,7 +16,7 @@ import (
 
 // vmCreateCmd represents the create command
 var vmCreateCmd = &cobra.Command{
-	Use:     "create <vm name>",
+	Use:     "create <vm name>+",
 	Short:   "Create and deploy a virtual machine",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -121,26 +121,38 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		vmInfo := &egoscale.DeployVirtualMachine{
-			Name:              args[0],
-			UserData:          userData,
-			ZoneID:            zone,
-			TemplateID:        template.ID,
-			RootDiskSize:      diskSize,
-			KeyPair:           keypair,
-			SecurityGroupIDs:  sgs,
-			IP6:               &ipv6,
-			NetworkIDs:        pvs,
-			ServiceOfferingID: servOffering.ID,
-			AffinityGroupIDs:  affinitygroups,
+		tasks := make([]egoscale.DeployVirtualMachine, len(args))
+
+		for i, name := range args {
+
+			vmInfo := &egoscale.DeployVirtualMachine{
+				Name:              name,
+				UserData:          userData,
+				ZoneID:            zone,
+				TemplateID:        template.ID,
+				RootDiskSize:      diskSize,
+				KeyPair:           keypair,
+				SecurityGroupIDs:  sgs,
+				IP6:               &ipv6,
+				NetworkIDs:        pvs,
+				ServiceOfferingID: servOffering.ID,
+				AffinityGroupIDs:  affinitygroups,
+			}
+
+			tasks[i] = *vmInfo
+
 		}
 
-		r, err := createVM(vmInfo)
-		if err != nil {
-			return err
+		r, errs := createVM(tasks)
+		if len(errs) > 0 {
+			return errs[0]
 		}
 
-		sshinfo, err := getSSHInfo(r.ID.String(), ipv6)
+		if len(r) > 1 {
+			return nil
+		}
+
+		sshinfo, err := getSSHInfo(r[0].ID.String(), ipv6)
 		if err != nil {
 			return err
 		}
@@ -151,7 +163,7 @@ What to do now?
 1. Connect to the machine
 
 > exo ssh %s
-`, r.Name)
+`, r[0].Name)
 
 		printSSHConnectSTR(sshinfo)
 
@@ -159,7 +171,7 @@ What to do now?
 2. Put the SSH configuration into ".ssh/config"
 
 > exo ssh %s --info
-`, r.Name)
+`, r[0].Name)
 
 		printSSHInfo(sshinfo)
 
@@ -253,43 +265,56 @@ func getUserData(userDataPath string) (string, error) {
 	return base64.StdEncoding.EncodeToString(buff), nil
 }
 
-func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine, error) {
+func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachine, []error) {
 	isDefaultKeyPair := false
 	var keyPairs *egoscale.SSHKeyPair
 
-	if vmInfos.KeyPair == "" {
+	var keypairs string
+	if deploys[0].KeyPair == "" {
 		isDefaultKeyPair = true
 		fmt.Println("Creating private SSH key")
 		sshKeyName, err := utils.RandStringBytes(64)
 		if err != nil {
-			return nil, err
+			return nil, []error{err}
 		}
 		keyPairs, err = createSSHKey(sshKeyName)
 		if err != nil {
 			r := err.(*egoscale.ErrorResponse)
 			if r.ErrorCode != egoscale.ParamError && r.CSErrorCode != egoscale.InvalidParameterValueException {
-				return nil, err
+				return nil, []error{err}
 			}
-			return nil, fmt.Errorf("an SSH key with that name %q already exists, please choose a different name", sshKeyName)
+			return nil, []error{fmt.Errorf("an SSH key with that name %q already exists, please choose a different name", sshKeyName)}
 		}
 		defer deleteSSHKey(keyPairs.Name) // nolint: errcheck
 
-		vmInfos.KeyPair = keyPairs.Name
+		keypairs = keyPairs.Name
 
 	}
 
-	resp, err := asyncRequest(vmInfos, fmt.Sprintf("Deploying %q ", vmInfos.Name))
-	if err != nil {
-		return nil, err
+	tasks := make([]task, len(deploys))
+
+	for i, req := range deploys {
+		tasks[i].string = fmt.Sprintf("Deploying %q", req.Name)
+		if keypairs != "" {
+			req.KeyPair = keypairs
+		}
+		tasks[i].AsyncCommand = req
 	}
 
-	virtualMachine := resp.(*egoscale.VirtualMachine)
+	resps, errors := asyncTasks(tasks)
+	if len(errors) > 0 {
+		return nil, errors
+	}
 
+	vmResp := make([]egoscale.VirtualMachine, len(resps))
 	if isDefaultKeyPair {
-		saveKeyPair(keyPairs, *virtualMachine.ID)
+		for i, vm := range resps {
+			v := vm.(*egoscale.VirtualMachine)
+			vmResp[i] = *v
+			saveKeyPair(keyPairs, *v.ID)
+		}
 	}
-
-	return virtualMachine, nil
+	return vmResp, nil
 }
 
 func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
