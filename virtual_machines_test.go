@@ -144,7 +144,7 @@ func TestDeployOnBeforeSendNoSG(t *testing.T) {
 
 func TestDeployOnBeforeSendBothSG(t *testing.T) {
 	req := &DeployVirtualMachine{
-		SecurityGroupIDs:   []string{"1"},
+		SecurityGroupIDs:   []UUID{*MustParseUUID("f2b4e439-2b23-441c-ba66-0e25cdfe1b2b")},
 		SecurityGroupNames: []string{"foo"},
 	}
 	params := url.Values{}
@@ -156,7 +156,7 @@ func TestDeployOnBeforeSendBothSG(t *testing.T) {
 
 func TestDeployOnBeforeSendBothAG(t *testing.T) {
 	req := &DeployVirtualMachine{
-		AffinityGroupIDs:   []string{"2"},
+		AffinityGroupIDs:   []UUID{*MustParseUUID("f2b4e439-2b23-441c-ba66-0e25cdfe1b2b")},
 		AffinityGroupNames: []string{"foo"},
 	}
 	params := url.Values{}
@@ -240,7 +240,7 @@ func TestGetVirtualMachine(t *testing.T) {
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
 	vm := &VirtualMachine{
-		ID: "69069d5e-1591-4214-937e-4c8cba63fcfb",
+		ID: MustParseUUID("69069d5e-1591-4214-937e-4c8cba63fcfb"),
 	}
 	if err := cs.Get(vm); err != nil {
 		t.Error(err)
@@ -262,7 +262,7 @@ func TestGetVirtualMachinePassword(t *testing.T) {
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
 	req := &GetVMPassword{
-		ID: "test",
+		ID: MustParseUUID("69069d5e-1591-4214-937e-4c8cba63fcfb"),
 	}
 	resp, err := cs.Request(req)
 	if err != nil {
@@ -347,9 +347,11 @@ func TestListMachinesPaginate(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	id := MustParseUUID("84752707-a1d6-4e93-8207-bafeda83fe15")
 	cs.Paginate(req, func(i interface{}, err error) bool {
-		if i.(*VirtualMachine).ID != "84752707-a1d6-4e93-8207-bafeda83fe15" {
-			t.Errorf("Expected id '84752707-a1d6-4e93-8207-bafeda83fe15', got %v", i.(*VirtualMachine).ID)
+		if !i.(*VirtualMachine).ID.Equal(*id) {
+			t.Errorf("Expected id %q, got %q", id, i.(*VirtualMachine).ID)
 		}
 		return false
 	})
@@ -358,34 +360,35 @@ func TestListMachinesPaginate(t *testing.T) {
 
 func TestNicHelpers(t *testing.T) {
 	vm := &VirtualMachine{
+		ID: MustParseUUID("25ce0763-f34d-435a-8b84-08466908355a"),
 		Nic: []Nic{
 			{
-				ID:           "2b50e232-b6d3-491c-92ce-12b24c6123e5",
+				ID:           MustParseUUID("e3b9c165-f3c3-4672-be54-08bfa6bac6fe"),
 				IsDefault:    true,
 				MACAddress:   MustParseMAC("06:aa:14:00:00:18"),
 				IPAddress:    net.ParseIP("192.168.0.10"),
 				Gateway:      net.ParseIP("192.168.0.1"),
 				Netmask:      net.ParseIP("255.255.255.0"),
-				NetworkID:    "d48bfccc-c11f-438f-8177-9cf6a40dc4d8",
+				NetworkID:    MustParseUUID("d48bfccc-c11f-438f-8177-9cf6a40dc4d8"),
 				NetworkName:  "defaultGuestNetwork",
 				BroadcastURI: "vlan://untagged",
 				TrafficType:  "Guest",
 				Type:         "Shared",
 			}, {
 				BroadcastURI: "vxlan://001",
-				ID:           "10b8ffc8-62b3-4b87-82d0-fb7f31bc99b6",
+				ID:           MustParseUUID("10b8ffc8-62b3-4b87-82d0-fb7f31bc99b6"),
 				IsDefault:    false,
 				MACAddress:   MustParseMAC("0a:7b:5e:00:25:fa"),
-				NetworkID:    "5f1033fe-2abd-4dda-80b6-c946e21a78ec",
+				NetworkID:    MustParseUUID("5f1033fe-2abd-4dda-80b6-c946e21a78ec"),
 				NetworkName:  "privNetForBasicZone1",
 				TrafficType:  "Guest",
 				Type:         "Isolated",
 			}, {
 				BroadcastURI: "vxlan://002",
-				ID:           "10b8ffc8-62b3-4b87-82d0-fb7f31bc99b7",
+				ID:           MustParseUUID("10b8ffc8-62b3-4b87-82d0-fb7f31bc99b7"),
 				IsDefault:    false,
 				MACAddress:   MustParseMAC("0a:7b:5e:00:25:ff"),
-				NetworkID:    "5f1033fe-2abd-4dda-80b6-c946e21a72ec",
+				NetworkID:    MustParseUUID("5f1033fe-2abd-4dda-80b6-c946e21a72ec"),
 				NetworkName:  "privNetForBasicZone2",
 				TrafficType:  "Guest",
 				Type:         "Isolated",
@@ -403,8 +406,8 @@ func TestNicHelpers(t *testing.T) {
 		t.Errorf("IP Address doesn't match")
 	}
 
-	nic1 := vm.NicByID("2b50e232-b6d3-491c-92ce-12b24c6123e5")
-	if nic.ID != nic1.ID {
+	nic1 := vm.NicByID(*MustParseUUID("e3b9c165-f3c3-4672-be54-08bfa6bac6fe"))
+	if nic1.ID != nil && !nic.ID.Equal(*nic1.ID) {
 		t.Errorf("NicByID does not match %#v %#v", nic, nic1)
 	}
 
@@ -420,11 +423,11 @@ func TestNicHelpers(t *testing.T) {
 		t.Errorf("Dummy nics count does not match")
 	}
 
-	if vm.NicByNetworkID("5f1033fe-2abd-4dda-80b6-c946e21a78ec") == nil {
+	if vm.NicByNetworkID(*MustParseUUID("5f1033fe-2abd-4dda-80b6-c946e21a78ec")) == nil {
 		t.Errorf("NetworkID nic wasn't found")
 	}
 
-	if vm.NicByNetworkID("5f1033fe-2abd-4dda-80b6-c946e21a78ed") != nil {
+	if vm.NicByNetworkID(*MustParseUUID("5f1033fe-2abd-4dda-80b6-c946e21a78ed")) != nil {
 		t.Errorf("NetworkID nic was found??")
 	}
 }

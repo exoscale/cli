@@ -59,7 +59,7 @@ func firewallListSecurityGroups(t *table.Table, filters []string) error {
 		data = append(data, []string{
 			sg.Name,
 			sg.Description,
-			sg.ID,
+			sg.ID.String(),
 		})
 	}
 

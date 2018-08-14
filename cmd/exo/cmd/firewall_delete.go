@@ -45,14 +45,15 @@ var firewallDeleteCmd = &cobra.Command{
 	},
 }
 
-func firewallDelete(name string) (string, error) {
-	sg, err := getSecurityGroupByNameOrID(cs, name)
+func firewallDelete(name string) (*egoscale.UUID, error) {
+	sg, err := getSecurityGroupByNameOrID(name)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	if err := cs.Delete(&egoscale.SecurityGroup{Name: sg.Name, ID: sg.ID}); err != nil {
-		return "", err
+	req := &egoscale.SecurityGroup{ID: sg.ID}
+	if err := cs.Delete(req); err != nil {
+		return nil, err
 	}
 
 	return sg.ID, nil

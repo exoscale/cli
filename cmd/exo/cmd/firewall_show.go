@@ -32,7 +32,7 @@ var firewallShow = &cobra.Command{
 }
 
 func firewallListRules(t *table.Table, name string) error {
-	sg, err := getSecurityGroupByNameOrID(cs, name)
+	sg, err := getSecurityGroupByNameOrID(name)
 	if err != nil {
 		return err
 	}

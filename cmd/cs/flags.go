@@ -163,6 +163,26 @@ func (g *cidrListGeneric) String() string {
 	return strings.Join(vs, ",")
 }
 
+type uuidGeneric struct {
+	value **egoscale.UUID
+}
+
+func (g *uuidGeneric) Set(value string) error {
+	uuid, err := egoscale.ParseUUID(value)
+	if err != nil {
+		return fmt.Errorf("not a valid UUID, got %s", value)
+	}
+	*(g.value) = uuid
+	return nil
+}
+
+func (g *uuidGeneric) String() string {
+	if g.value != nil && *(g.value) != nil {
+		return (*(g.value)).String()
+	}
+	return ""
+}
+
 type intTypeGeneric struct {
 	addr    interface{}
 	value   int64

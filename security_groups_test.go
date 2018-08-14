@@ -144,7 +144,7 @@ func TestGetSecurityGroup(t *testing.T) {
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
 	sg := &SecurityGroup{
-		ID: "4bfe1073-a6d4-48bd-8f24-2ab586674092",
+		ID: MustParseUUID("4bfe1073-a6d4-48bd-8f24-2ab586674092"),
 	}
 	if err := cs.Get(sg); err != nil {
 		t.Error(err)
@@ -233,18 +233,18 @@ func TestListSecurityGroups(t *testing.T) {
 
 	sg := sgs[0].(*SecurityGroup)
 
-	if sg.ID != "55c3b385-0a9b-4970-a5d9-ad1e7f13157d" {
+	if !sg.ID.Equal(*MustParseUUID("55c3b385-0a9b-4970-a5d9-ad1e7f13157d")) {
 		t.Errorf("Wrong security group")
 	}
 
-	ig, _ := sg.RuleByID("f2ab2e27-65a1-40b8-b8c2-9252dc75b5b3")
+	ig, _ := sg.RuleByID(*MustParseUUID("f2ab2e27-65a1-40b8-b8c2-9252dc75b5b3"))
 	if ig == nil {
 		t.Errorf("ingress rule not found")
 	}
 
 	sg = sgs[1].(*SecurityGroup)
 
-	_, eg := sg.RuleByID("4aa47b2c-9d1f-4856-9893-286fb8befa76")
+	_, eg := sg.RuleByID(*MustParseUUID("4aa47b2c-9d1f-4856-9893-286fb8befa76"))
 	if eg == nil {
 		t.Errorf("egress rule not found")
 	}

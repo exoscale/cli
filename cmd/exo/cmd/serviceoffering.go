@@ -3,11 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/exoscale/egoscale/cmd/exo/table"
-
 	"github.com/spf13/cobra"
 )
 
@@ -48,24 +46,21 @@ func listServiceOffering() error {
 
 }
 
-func getServiceOfferingByName(cs *egoscale.Client, servOffering string) (*egoscale.ServiceOffering, error) {
-	servOReq := &egoscale.ServiceOffering{}
+func getServiceOfferingByName(name string) (*egoscale.ServiceOffering, error) {
+	so := &egoscale.ServiceOffering{}
 
-	servOffs, err := cs.ListWithContext(gContext, servOReq)
+	id, err := egoscale.ParseUUID(name)
 	if err != nil {
+		so.Name = name
+	} else {
+		so.ID = id
+	}
+
+	if err := cs.GetWithContext(gContext, so); err != nil {
 		return nil, err
 	}
 
-	for _, servoff := range servOffs {
-		r := servoff.(*egoscale.ServiceOffering)
-		if strings.Compare(strings.ToLower(servOffering), strings.ToLower(r.Name)) == 0 {
-			return r, nil
-		}
-		if strings.Compare(servOffering, r.ID) == 0 {
-			return r, nil
-		}
-	}
-	return nil, fmt.Errorf("service offering %q was not found", servOffering)
+	return so, nil
 }
 
 func init() {

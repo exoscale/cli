@@ -48,7 +48,7 @@ var apiTypes = map[string]string{
 	"map":     "map[string]string",
 	"list":    "[]struct{}",
 	"set":     "[]struct{}",
-	"uuid":    "string",
+	"uuid":    "*UUID",
 	"boolean": "*bool",
 	"date":    "string",
 }
@@ -68,7 +68,7 @@ type command struct {
 	s           *types.Struct
 	position    token.Pos
 	fields      map[string]fieldInfo
-	errors      map[string]error
+	errors      map[string][]error
 }
 
 func main() {
@@ -155,7 +155,7 @@ func main() {
 			command.description = strings.Trim(a.Description, " ")
 			// mapping from name to field
 			command.fields = make(map[string]fieldInfo)
-			command.errors = make(map[string]error)
+			command.errors = make(map[string][]error)
 
 			if a.IsAsync {
 				command.sync = " (A)"
@@ -175,10 +175,10 @@ func main() {
 					name, nameOK := tag.Lookup("name")
 					description, descriptionOK := tag.Lookup("description")
 					if !nameOK || !descriptionOK {
-						command.errors["_"] = fmt.Errorf("meta field incomplete, wanted\n\t_ bool `name:%q description:%q`", a.Name, command.description)
+						command.errors["_"] = append(command.errors["_"], fmt.Errorf("meta field incomplete, wanted\n\t_ bool `name:%q description:%q`", a.Name, command.description))
 					} else {
 						if name != a.Name || description != command.description {
-							command.errors["_"] = fmt.Errorf("meta field incorrect, got %q %q, wanted\n\t_ bool `name:%q description:%q`", name, description, a.Name, command.description)
+							command.errors["_"] = append(command.errors["_"], fmt.Errorf("meta field incorrect, got %q %q, wanted\n\t_ bool `name:%q description:%q`", name, description, a.Name, command.description))
 						}
 					}
 
@@ -189,7 +189,8 @@ func main() {
 				tag := command.s.Tag(i)
 				match := re.FindStringSubmatch(tag)
 				if len(match) == 0 {
-					command.errors[f.Name()] = errors.New("field error: no json annotation found")
+					n := f.Name()
+					command.errors[n] = append(command.errors[n], errors.New("field error: no json annotation found"))
 					continue
 				}
 				name := match[1]
@@ -209,6 +210,7 @@ func main() {
 			}
 
 			for _, p := range params {
+				n := p.Name
 				index := sort.SearchStrings(ignoredFields, p.Name)
 				ignored := index < len(ignoredFields) && ignoredFields[index] == p.Name
 				if ignored {
@@ -233,7 +235,7 @@ func main() {
 						apiType = p.Type
 					}
 
-					command.errors[p.Name] = fmt.Errorf("missing field:\n\t%s %s `json:\"%s%s\"%s`", strings.Title(p.Name), apiType, p.Name, omit, doc)
+					command.errors[n] = append(command.errors[n], fmt.Errorf("missing field:\n\t%s %s `json:\"%s%s\"%s`", strings.Title(p.Name), apiType, p.Name, omit, doc))
 					continue
 				}
 				delete(command.fields, p.Name)
@@ -242,14 +244,14 @@ func main() {
 
 				if field.Doc != description {
 					if field.Doc == "" {
-						command.errors[p.Name] = fmt.Errorf("missing doc:\n\t\t`doc:%q`", description)
+						command.errors[n] = append(command.errors[n], fmt.Errorf("missing doc:\n\t\t`doc:%q`", description))
 					} else {
-						command.errors[p.Name] = fmt.Errorf("wrong doc want %q got %q", description, field.Doc)
+						command.errors[n] = append(command.errors[n], fmt.Errorf("wrong doc want %q got %q", description, field.Doc))
 					}
 				}
 
 				if p.Required == field.OmitEmpty {
-					command.errors[p.Name] = fmt.Errorf("wrong omitempty, want `json:\"%s%s\"`", p.Name, omit)
+					command.errors[n] = append(command.errors[n], fmt.Errorf("wrong omitempty, want `json:\"%s%s\"`", p.Name, omit))
 					continue
 				}
 
@@ -265,10 +267,6 @@ func main() {
 					if typename != "int" && typename != "uint16" && typename != "uint8" {
 						expected = "int"
 					}
-					// skip enums
-					if typename == "egoscale.ResourceType" {
-						expected = ""
-					}
 				case "long":
 					if typename != "int64" && typename != "uint64" {
 						expected = "int64"
@@ -278,12 +276,15 @@ func main() {
 						expected = "bool"
 					}
 				case "string":
-				case "uuid":
 				case "date":
 				case "tzdate":
 				case "imageformat":
 					if typename != "string" {
 						expected = "string"
+					}
+				case "uuid":
+					if typename != "*egoscale.UUID" {
+						expected = "*UUID"
 					}
 				case "list":
 					if !strings.HasPrefix(typename, "[]") {
@@ -295,20 +296,20 @@ func main() {
 						expected = "array"
 					}
 				default:
-					command.errors[p.Name] = fmt.Errorf("unknown type %q <=> %q", p.Type, field.Var.Type().String())
+					command.errors[n] = append(command.errors[n], fmt.Errorf("unknown type %q <=> %q", p.Type, field.Var.Type().String()))
 				}
 
 				if expected != "" {
-					command.errors[p.Name] = fmt.Errorf("expected to be a %s, got %q", expected, typename)
+					command.errors[n] = append(command.errors[n], fmt.Errorf("expected to be a %s, got %q", expected, typename))
 				}
 			}
 
 			if !hasMeta && *rtype == "" {
-				command.errors["_"] = fmt.Errorf("meta field missing, wanted\n\t\t_ bool `name:%q description:%q`", a.Name, a.Description)
+				command.errors["_"] = append(command.errors["_"], fmt.Errorf("meta field missing, wanted\n\t\t_ bool `name:%q description:%q`", a.Name, a.Description))
 			}
 
 			for name := range command.fields {
-				command.errors[name] = errors.New("extra field found")
+				command.errors[name] = append(command.errors[name], errors.New("extra field found"))
 			}
 		}
 	}
@@ -323,8 +324,15 @@ func main() {
 			}
 		} else if strings.ToLower(*cmd) == name {
 			errs := make([]string, 0, len(c.errors))
-			for k, e := range c.errors {
-				errs = append(errs, fmt.Sprintf("%s: %s", k, e.Error()))
+			for k, es := range c.errors {
+				var b strings.Builder
+				for i, e := range es {
+					if i > 0 {
+						fmt.Fprintln(&b, "")
+					}
+					fmt.Fprintf(&b, "%s: %s", k, e.Error())
+				}
+				errs = append(errs, b.String())
 			}
 			sort.Strings(errs)
 			for _, e := range errs {

@@ -63,7 +63,7 @@ func TestClientSyncDelete(t *testing.T) {
 		name      string
 		deletable Deletable
 	}{
-		{"securitygroup", &SecurityGroup{ID: "test"}},
+		{"securitygroup", &SecurityGroup{ID: MustParseUUID("09ae3132-3a35-458c-9607-e3c77dd0465b")}},
 		{"securitygroup", &SecurityGroup{Name: "test"}},
 		{"sshkeypair", &SSHKeyPair{Name: "test"}},
 	}
@@ -93,7 +93,7 @@ func TestClientSyncDelete(t *testing.T) {
 func TestClientAsyncDelete(t *testing.T) {
 	body := `
 {"%sresponse": {
-	"jobid": "1",
+	"jobid": "01ed7adc-8b81-4e33-a0f2-4f55a3b880cd",
 	"jobresult": {
 		"success": true
 	},
@@ -101,7 +101,7 @@ func TestClientAsyncDelete(t *testing.T) {
 }}`
 	bodyError := `
 {"%sresponse": {
-	"jobid": "1",
+	"jobid": "01ed7adc-8b81-4e33-a0f2-4f55a3b880cd",
 	"jobresult": {
 		"success": false,
 		"displaytext": "herp derp",
@@ -109,14 +109,15 @@ func TestClientAsyncDelete(t *testing.T) {
 	"jobstatus": 2
 }}`
 
+	id := MustParseUUID("96816f59-9986-499c-91c5-f47bd1122c4b")
 	things := []struct {
 		name      string
 		deletable Deletable
 	}{
-		{"deleteaffinitygroup", &AffinityGroup{ID: "affinity group id"}},
+		{"deleteaffinitygroup", &AffinityGroup{ID: id}},
 		{"deleteaffinitygroup", &AffinityGroup{Name: "affinity group name"}},
-		{"disassociateipaddress", &IPAddress{ID: "ip address id"}},
-		{"destroyvirtualmachine", &VirtualMachine{ID: "virtual machine id"}},
+		{"disassociateipaddress", &IPAddress{ID: id}},
+		{"destroyvirtualmachine", &VirtualMachine{ID: id}},
 	}
 
 	for _, thing := range things {
@@ -189,25 +190,25 @@ func TestClientGetNone(t *testing.T) {
 		"errortext": "Unable to execute API command due to invalid value.",
 		"uuidList": []
 	}}`
-
+	id := MustParseUUID("4557261a-c4b9-45a3-91b3-e48ef55857ed")
 	things := []struct {
 		name     string
 		gettable Gettable
 	}{
-		{"zones", &Zone{ID: "1"}},
+		{"zones", &Zone{ID: id}},
 		{"zones", &Zone{Name: "test zone"}},
-		{"publicipaddresses", &IPAddress{ID: "1"}},
+		{"publicipaddresses", &IPAddress{ID: id}},
 		{"publicipaddresses", &IPAddress{IPAddress: net.ParseIP("127.0.0.1")}},
 		{"sshkeypairs", &SSHKeyPair{Name: "1"}},
 		{"sshkeypairs", &SSHKeyPair{Fingerprint: "test ssh keypair"}},
-		{"affinitygroups", &AffinityGroup{ID: "1"}},
+		{"affinitygroups", &AffinityGroup{ID: id}},
 		{"affinitygroups", &AffinityGroup{Name: "test affinity group"}},
-		{"securitygroups", &SecurityGroup{ID: "1"}},
+		{"securitygroups", &SecurityGroup{ID: id}},
 		{"securitygroups", &SecurityGroup{Name: "test affinity group"}},
-		{"virtualmachines", &VirtualMachine{ID: "1"}},
-		{"volumes", &Volume{ID: "1"}},
-		{"templates", &Template{ID: "1", IsFeatured: true}},
-		{"serviceofferings", &ServiceOffering{ID: "1"}},
+		{"virtualmachines", &VirtualMachine{ID: id}},
+		{"volumes", &Volume{ID: id}},
+		{"templates", &Template{ID: id, IsFeatured: true}},
+		{"serviceofferings", &ServiceOffering{ID: id}},
 		{"accounts", &Account{}},
 	}
 
@@ -256,24 +257,25 @@ func TestClientGetTooMany(t *testing.T) {
 		"account": [{}, {}]
 	}}`
 
+	id := MustParseUUID("4557261a-c4b9-45a3-91b3-e48ef55857ed")
 	things := []struct {
 		name     string
 		gettable Gettable
 	}{
-		{"zones", &Zone{ID: "1"}},
+		{"zones", &Zone{ID: id}},
 		{"zones", &Zone{Name: "test zone"}},
-		{"publicipaddresses", &IPAddress{ID: "1"}},
+		{"publicipaddresses", &IPAddress{ID: id}},
 		{"publicipaddresses", &IPAddress{IPAddress: net.ParseIP("127.0.0.1")}},
 		{"sshkeypairs", &SSHKeyPair{Name: "1"}},
 		{"sshkeypairs", &SSHKeyPair{Fingerprint: "test ssh keypair"}},
-		{"affinitygroups", &AffinityGroup{ID: "1"}},
+		{"affinitygroups", &AffinityGroup{ID: id}},
 		{"affinitygroups", &AffinityGroup{Name: "test affinity group"}},
-		{"securitygroups", &SecurityGroup{ID: "1"}},
+		{"securitygroups", &SecurityGroup{ID: id}},
 		{"securitygroups", &SecurityGroup{Name: "test affinity group"}},
-		{"virtualmachines", &VirtualMachine{ID: "1"}},
-		{"volumes", &Volume{ID: "1"}},
-		{"templates", &Template{ID: "1", IsFeatured: true}},
-		{"serviceofferings", &ServiceOffering{ID: "1"}},
+		{"virtualmachines", &VirtualMachine{ID: id}},
+		{"volumes", &Volume{ID: id}},
+		{"templates", &Template{ID: id, IsFeatured: true}},
+		{"serviceofferings", &ServiceOffering{ID: id}},
 		{"accounts", &Account{}},
 	}
 

@@ -25,14 +25,14 @@ var vmScaleCmd = &cobra.Command{
 			return err
 		}
 
-		serviceoffering, err := getServiceOfferingByName(cs, so)
+		serviceoffering, err := getServiceOfferingByName(so)
 		if err != nil {
 			return err
 		}
 
 		errs := []error{}
 		for _, v := range args {
-			if err := scaleVirtualMachine(v, serviceoffering.ID); err != nil {
+			if err := scaleVirtualMachine(v, *serviceoffering.ID); err != nil {
 				errs = append(errs, fmt.Errorf("could not scale %q: %s", v, err))
 			}
 		}
@@ -55,7 +55,7 @@ var vmScaleCmd = &cobra.Command{
 }
 
 // scaleVirtualMachine scale a virtual machine instance Async with context
-func scaleVirtualMachine(vmName, serviceofferingID string) error {
+func scaleVirtualMachine(vmName string, serviceofferingID egoscale.UUID) error {
 	vm, err := getVMWithNameOrID(vmName)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func scaleVirtualMachine(vmName, serviceofferingID string) error {
 		return fmt.Errorf("this operation is not permitted if your VM is not stopped")
 	}
 
-	_, err = asyncRequest(&egoscale.ScaleVirtualMachine{ID: vm.ID, ServiceOfferingID: serviceofferingID}, fmt.Sprintf("Scaling %q ", vm.Name))
+	_, err = asyncRequest(&egoscale.ScaleVirtualMachine{ID: vm.ID, ServiceOfferingID: &serviceofferingID}, fmt.Sprintf("Scaling %q ", vm.Name))
 	return err
 }
 

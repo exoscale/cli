@@ -35,7 +35,7 @@ var firewallRemoveCmd = &cobra.Command{
 		sgName := args[0]
 
 		if len(args) == 1 && deleteAll {
-			sg, errGet := getSecurityGroupByNameOrID(cs, sgName)
+			sg, errGet := getSecurityGroupByNameOrID(sgName)
 			if errGet != nil {
 				return errGet
 			}
@@ -98,7 +98,7 @@ var firewallRemoveCmd = &cobra.Command{
 }
 
 func removeAllRules(sgName string) ([]string, error) {
-	sg, err := getSecurityGroupByNameOrID(cs, sgName)
+	sg, err := getSecurityGroupByNameOrID(sgName)
 	if err != nil {
 		return nil, err
 	}
@@ -109,24 +109,29 @@ func removeAllRules(sgName string) ([]string, error) {
 		if reqErr := cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}); reqErr != nil {
 			return res, reqErr
 		}
-		res = append(res, in.RuleID)
+		res = append(res, in.RuleID.String())
 	}
 	for _, eg := range sg.EgressRule {
 		if err = cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}); err != nil {
 			return res, err
 		}
-		res = append(res, eg.RuleID)
+		res = append(res, eg.RuleID.String())
 	}
 	return res, nil
 }
 
 func removeRule(name, ruleID string) error {
-	sg, err := getSecurityGroupByNameOrID(cs, name)
+	sg, err := getSecurityGroupByNameOrID(name)
 	if err != nil {
 		return err
 	}
 
-	in, eg := sg.RuleByID(ruleID)
+	id, err := egoscale.ParseUUID(ruleID)
+	if err != nil {
+		return err
+	}
+
+	in, eg := sg.RuleByID(*id)
 
 	if in != nil {
 		err = cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupIngress{ID: in.RuleID})
@@ -161,7 +166,7 @@ func isDefaultRule(rule, defaultRule *egoscale.IngressRule, isIpv6 bool, myCidr 
 }
 
 func removeDefault(sgName, ruleName string, rule *egoscale.IngressRule, cidr *egoscale.CIDR, isIpv6 bool) error {
-	sg, err := getSecurityGroupByNameOrID(cs, sgName)
+	sg, err := getSecurityGroupByNameOrID(sgName)
 	if err != nil {
 		return err
 	}

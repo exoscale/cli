@@ -41,10 +41,10 @@ func firewallCreate(name, desc string) error {
 	table := table.NewTable(os.Stdout)
 	if desc == "" {
 		table.SetHeader([]string{"Name", "ID"})
-		table.Append([]string{sgResp.Name, sgResp.ID})
+		table.Append([]string{sgResp.Name, sgResp.ID.String()})
 	} else {
 		table.SetHeader([]string{"Name", "Description", "ID"})
-		table.Append([]string{sgResp.Name, sgResp.Description, sgResp.ID})
+		table.Append([]string{sgResp.Name, sgResp.Description, sgResp.ID.String()})
 	}
 	table.Render()
 	return nil

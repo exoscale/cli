@@ -57,13 +57,13 @@ func dissociateIP(ipAddr, instance string) error {
 	return nil
 }
 
-func getSecondaryIP(nic *egoscale.Nic, ip net.IP) (string, error) {
+func getSecondaryIP(nic *egoscale.Nic, ip net.IP) (*egoscale.UUID, error) {
 	for _, sIP := range nic.SecondaryIP {
 		if sIP.IPAddress.Equal(ip) {
 			return sIP.ID, nil
 		}
 	}
-	return "", fmt.Errorf("elastic IP %q not found", ip)
+	return nil, fmt.Errorf("elastic IP %q not found", ip)
 }
 
 func init() {

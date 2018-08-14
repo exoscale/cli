@@ -40,7 +40,7 @@ func associateIPAddress(name string) error {
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{"Zone", "IP", "ID"})
 
-	table.Append([]string{ipResp.ZoneName, ipResp.IPAddress.String(), ipResp.ID})
+	table.Append([]string{ipResp.ZoneName, ipResp.IPAddress.String(), ipResp.ID.String()})
 
 	table.Render()
 	return nil

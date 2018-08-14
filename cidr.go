@@ -8,7 +8,7 @@ import (
 
 // CIDR represents a nicely JSON serializable net.IPNet
 type CIDR struct {
-	*net.IPNet
+	net.IPNet
 }
 
 // UnmarshalJSON unmarshals the raw JSON into the MAC address
@@ -21,13 +21,19 @@ func (cidr *CIDR) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	cidr.IPNet = c.IPNet
+	*cidr = CIDR{c.IPNet}
+
 	return nil
 }
 
 // MarshalJSON converts the CIDR to a string representation
 func (cidr CIDR) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%q", cidr.IPNet)), nil
+	return []byte(fmt.Sprintf("%q", cidr)), nil
+}
+
+// String returns the string representation of a CIDR
+func (cidr CIDR) String() string {
+	return cidr.IPNet.String()
 }
 
 // ParseCIDR parses a CIDR from a string
@@ -36,7 +42,7 @@ func ParseCIDR(s string) (*CIDR, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &CIDR{net}, nil
+	return &CIDR{*net}, nil
 }
 
 // MustParseCIDR forces parseCIDR or panics

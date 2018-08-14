@@ -38,7 +38,7 @@ func showVM(name string) error {
 
 	table.Append([]string{"Region", vm.ZoneName})
 
-	temp := &egoscale.Template{IsFeatured: true, ID: vm.TemplateID, ZoneID: "1"}
+	temp := &egoscale.Template{IsFeatured: true, ID: vm.TemplateID, ZoneID: vm.ZoneID}
 
 	if err := cs.GetWithContext(gContext, temp); err != nil {
 		return err
@@ -80,7 +80,7 @@ func showVM(name string) error {
 
 	table.Append([]string{"Instance IP", vm.IP().String()})
 
-	table.Append([]string{"ID", vm.ID})
+	table.Append([]string{"ID", vm.ID.String()})
 
 	table.Render()
 

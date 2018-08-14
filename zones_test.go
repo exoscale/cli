@@ -141,7 +141,7 @@ func TestListZonesPaginateError(t *testing.T) {
 	cs := NewClient(ts.URL, "KEY", "SECRET")
 
 	zone := &Zone{
-		ID: "1747ef5e-5451-41fd-9f1a-58913bae9701",
+		ID: MustParseUUID("1747ef5e-5451-41fd-9f1a-58913bae9701"),
 	}
 
 	req, _ := zone.ListRequest()
@@ -220,8 +220,8 @@ func TestListZonesPaginate(t *testing.T) {
 			return false
 		}
 		z := i.(*Zone)
-		if z.ID == "" {
-			t.Errorf("Zone ID not set")
+		if z.Name == "" {
+			t.Errorf("Zone Name not set")
 		}
 		counter++
 		return true
@@ -274,8 +274,8 @@ func TestListZonesPaginateBreak(t *testing.T) {
 			return false
 		}
 		z := i.(*Zone)
-		if z.ID == "" {
-			t.Errorf("Zone ID not set")
+		if z.Name == "" {
+			t.Errorf("Zone Name not set")
 		}
 		return false
 	})
@@ -297,7 +297,7 @@ func TestListZonesAsyncError(t *testing.T) {
 	cs := NewClient(ts.URL, "KEY", "SECRET")
 
 	zone := &Zone{
-		ID: "1747ef5e-5451-41fd-9f1a-58913bae9701",
+		ID: MustParseUUID("1747ef5e-5451-41fd-9f1a-58913bae9701"),
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -399,8 +399,8 @@ func TestListZonesAsync(t *testing.T) {
 		case z, ok := <-outChan:
 			if ok {
 				zone := z.(*Zone)
-				if zone.ID == "" {
-					t.Errorf("Zone has no ID")
+				if zone.Name == "" {
+					t.Errorf("Zone Name is empty")
 				}
 				counter++
 			} else {

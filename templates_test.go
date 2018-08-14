@@ -98,8 +98,8 @@ func TestTemplateGet(t *testing.T) {
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
-	zoneID := "1128bd56-b4d9-4ac6-a7b9-c715b187ce11"
-	id := "78c2cbe6-8e11-4722-b01f-bf06f4e28108"
+	zoneID := MustParseUUID("1128bd56-b4d9-4ac6-a7b9-c715b187ce11")
+	id := MustParseUUID("78c2cbe6-8e11-4722-b01f-bf06f4e28108")
 	template := &Template{IsFeatured: true,
 		ZoneID: zoneID,
 		ID:     id,
@@ -155,8 +155,8 @@ func TestListTemplate(t *testing.T) {
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
-	zoneID := "4da1b188-dcd6-4ff5-b7fd-bde984055548"
-	id := "a8a4b773-32ce-4d1c-a19b-21da055ec5c6"
+	zoneID := MustParseUUID("4da1b188-dcd6-4ff5-b7fd-bde984055548")
+	id := MustParseUUID("a8a4b773-32ce-4d1c-a19b-21da055ec5c6")
 	template := &Template{IsFeatured: true,
 		ZoneID: zoneID,
 		ID:     id,
@@ -173,7 +173,7 @@ func TestListTemplate(t *testing.T) {
 
 	temp := temps[0].(*Template)
 
-	if temp.ZoneID != zoneID && temp.ID != id {
+	if !temp.ZoneID.Equal(*zoneID) || !temp.ID.Equal(*id) {
 		t.Errorf("Wrong result")
 	}
 }
@@ -226,7 +226,7 @@ func TestListTemplatesPaginate(t *testing.T) {
 				"domainid": "4a8857b8-7235-4e31-a7ef-b8b44d180850",
 				"format": "QCOW2",
 				"hypervisor": "KVM",
-				"id": "testesteteteteteet",
+				"id": "4a8857b9-7235-4e31-a7ef-b8b44d180850",
 				"isdynamicallyscalable": false,
 				"isextractable": false,
 				"isfeatured": true,
@@ -249,7 +249,7 @@ func TestListTemplatesPaginate(t *testing.T) {
 	defer ts.Close()
 
 	cs := NewClient(ts.URL, "KEY", "SECRET")
-	id := "a8a4b773-32ce-4d1c-a19b-21da055ec5c6"
+	id := MustParseUUID("a8a4b773-32ce-4d1c-a19b-21da055ec5c6")
 	template := &Template{IsFeatured: true}
 
 	req, err := template.ListRequest()
@@ -262,7 +262,7 @@ func TestListTemplatesPaginate(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if i.(*Template).ID != id {
+		if !id.Equal(*i.(*Template).ID) {
 			t.Errorf("Expected id '%s' but got %s", id, i.(*Template).ID)
 		}
 		return false

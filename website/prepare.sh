@@ -7,7 +7,10 @@ cp ../cmd/exo/README.md content/cli/_index.md
 mkdir -p static
 cp ../gopher.png static
 
-cd ../cmd/cs
+cd ../
+dep ensure -vendor-only
+
+cd cmd/cs
 dep ensure -vendor-only
 go build
 ./cs gen-doc

@@ -89,7 +89,7 @@ func TestBooleanAsyncRequest(t *testing.T) {
 	ts := newServer(response{200, jsonContentType, `
 {
 	"expungevirtualmachineresponse": {
-		"jobid": "1",
+		"jobid": "01ed7adc-8b81-4e33-a0f2-4f55a3b880cd",
 		"jobresult": {},
 		"jobstatus": 0
 	}
@@ -97,10 +97,10 @@ func TestBooleanAsyncRequest(t *testing.T) {
 	`}, response{200, jsonContentType, `
 {
 	"queryasyncjobresultresponse": {
-		"accountid": "1",
+		"accountid": "7bd023bf-d55c-4b27-9918-680f03efc26c",
 		"cmd": "expunge",
 		"created": "2018-04-03T22:40:04+0200",
-		"jobid": "1",
+		"jobid": "01ed7adc-8b81-4e33-a0f2-4f55a3b880cd",
 		"jobprocstatus": 0,
 		"jobresult": {
 			"success": true
@@ -108,7 +108,7 @@ func TestBooleanAsyncRequest(t *testing.T) {
 		"jobresultcode": 0,
 		"jobresulttype": "object",
 		"jobstatus": 1,
-		"userid": "1"
+		"userid": "87cf2ef9-0d1b-4763-96d8-c33676371f29"
 	}
 }
 	`})
@@ -116,7 +116,7 @@ func TestBooleanAsyncRequest(t *testing.T) {
 
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	req := &ExpungeVirtualMachine{
-		ID: "123",
+		ID: MustParseUUID("925207d3-beea-4c56-8594-ef351b526dd3"),
 	}
 	if err := cs.BooleanRequest(req); err != nil {
 		t.Error(err)
@@ -127,7 +127,7 @@ func TestBooleanAsyncRequestFailure(t *testing.T) {
 	ts := newServer(response{200, jsonContentType, `
 {
 	"expungevirtualmachineresponse": {
-		"jobid": "1",
+		"jobid": "7bd023bf-d55c-4b27-9918-680f03efc26c",
 		"jobresult": {},
 		"jobstatus": 0
 	}
@@ -135,10 +135,10 @@ func TestBooleanAsyncRequestFailure(t *testing.T) {
 	`}, response{200, jsonContentType, `
 {
 	"queryasyncjobresultresponse": {
-		"accountid": "1",
+		"accountid": "7bd023bf-d55c-4b27-9918-680f03efc26c",
 		"cmd": "expunge",
 		"created": "2018-04-03T22:40:04+0200",
-		"jobid": "1",
+		"jobid": "87cf2ef9-0d1b-4763-96d8-c33676371f29",
 		"jobprocstatus": 0,
 		"jobresult": {
 			"errorcode": 531,
@@ -148,7 +148,7 @@ func TestBooleanAsyncRequestFailure(t *testing.T) {
 		"jobresultcode": 0,
 		"jobresulttype": "object",
 		"jobstatus": 2,
-		"userid": "1"
+		"userid": "a0d421e9-8d99-4896-b22c-ea77abaebf06"
 	}
 }
 	`})
@@ -156,7 +156,7 @@ func TestBooleanAsyncRequestFailure(t *testing.T) {
 
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	req := &ExpungeVirtualMachine{
-		ID: "123",
+		ID: MustParseUUID("925207d3-beea-4c56-8594-ef351b526dd3"),
 	}
 	if err := cs.BooleanRequest(req); err == nil {
 		t.Error("An error was expected")
@@ -167,7 +167,7 @@ func TestBooleanAsyncRequestWithContext(t *testing.T) {
 	ts := newServer(response{200, jsonContentType, `
 {
 	"expungevirtualmachineresponse": {
-		"jobid": "1",
+		"jobid": "a0d421e9-8d99-4896-b22c-ea77abaebf06",
 		"jobresult": {},
 		"jobstatus": 0
 	}
@@ -175,10 +175,10 @@ func TestBooleanAsyncRequestWithContext(t *testing.T) {
 	`}, response{200, jsonContentType, `
 {
 	"queryasyncjobresultresponse": {
-		"accountid": "1",
+		"accountid": "a0d421e9-8d99-4896-b22c-ea77abaebf06",
 		"cmd": "expunge",
 		"created": "2018-04-03T22:40:04+0200",
-		"jobid": "1",
+		"jobid": "7bd023bf-d55c-4b27-9918-680f03efc26c",
 		"jobprocstatus": 0,
 		"jobresult": {
 			"success": true
@@ -186,7 +186,7 @@ func TestBooleanAsyncRequestWithContext(t *testing.T) {
 		"jobresultcode": 0,
 		"jobresulttype": "object",
 		"jobstatus": 1,
-		"userid": "1"
+		"userid": "87cf2ef9-0d1b-4763-96d8-c33676371f29"
 	}
 }
 	`})
@@ -194,7 +194,7 @@ func TestBooleanAsyncRequestWithContext(t *testing.T) {
 
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	req := &ExpungeVirtualMachine{
-		ID: "123",
+		ID: MustParseUUID("925207d3-beea-4c56-8594-ef351b526dd3"),
 	}
 
 	// WithContext
@@ -207,7 +207,7 @@ func TestBooleanRequestTimeout(t *testing.T) {
 	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {
 	"expungevirtualmachine": {
-		"jobid": "1",
+		"jobid": "87cf2ef9-0d1b-4763-96d8-c33676371f29",
 		"jobresult": {
 			"success": false
 		},
@@ -223,7 +223,7 @@ func TestBooleanRequestTimeout(t *testing.T) {
 		cs.HTTPClient.Timeout = time.Millisecond
 
 		req := &ExpungeVirtualMachine{
-			ID: "123",
+			ID: MustParseUUID("925207d3-beea-4c56-8594-ef351b526dd3"),
 		}
 		err := cs.BooleanRequest(req)
 
@@ -248,7 +248,7 @@ func TestSyncRequestWithoutContext(t *testing.T) {
 	ts := newServer(
 		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse": {
-		"jobid": "42",
+		"jobid": "6c4077e3-4ec2-4e6d-9806-4ab1a30138ba",
 		"jobresult": {},
 		"jobstatus": 0
 	}
@@ -260,9 +260,9 @@ func TestSyncRequestWithoutContext(t *testing.T) {
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	req := &DeployVirtualMachine{
 		Name:              "test",
-		ServiceOfferingID: "71004023-bb72-4a97-b1e9-bc66dfce9470",
-		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
-		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108",
+		ServiceOfferingID: MustParseUUID("71004023-bb72-4a97-b1e9-bc66dfce9470"),
+		ZoneID:            MustParseUUID("1128bd56-b4d9-4ac6-a7b9-c715b187ce11"),
+		TemplateID:        MustParseUUID("78c2cbe6-8e11-4722-b01f-bf06f4e28108"),
 	}
 
 	// WithContext
@@ -275,8 +275,9 @@ func TestSyncRequestWithoutContext(t *testing.T) {
 		t.Error("wrong type")
 	}
 
-	if result.JobID != "42" {
-		t.Errorf("wrong job id, expected 42, got %s", result.JobID)
+	id := MustParseUUID("6c4077e3-4ec2-4e6d-9806-4ab1a30138ba")
+	if !result.JobID.Equal(*id) {
+		t.Errorf("wrong job id, expected %s, got %s", id, result.JobID)
 	}
 }
 
@@ -285,14 +286,14 @@ func TestAsyncRequestWithoutContext(t *testing.T) {
 	ts := newServer(
 		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse": {
-		"jobid": "1",
+		"jobid": "56bb40d1-4c65-4608-803b-2fdfcb21fa3b",
 		"jobresult": {},
 		"jobstatus": 0
 	}
 }`},
 		response{200, jsonContentType, `{
 	"queryasyncjobresultresponse": {
-		"jobid": "1",
+		"jobid": "01ed7adc-8b81-4e33-a0f2-4f55a3b880cd",
 		"jobresult": {
 			"virtualmachine": {
 				"id": "f344b886-2a8b-4d2c-9662-1f18e5cdde6f",
@@ -312,9 +313,9 @@ func TestAsyncRequestWithoutContext(t *testing.T) {
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	req := &DeployVirtualMachine{
 		Name:              "test",
-		ServiceOfferingID: "71004023-bb72-4a97-b1e9-bc66dfce9470",
-		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
-		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108",
+		ServiceOfferingID: MustParseUUID("71004023-bb72-4a97-b1e9-bc66dfce9470"),
+		ZoneID:            MustParseUUID("1128bd56-b4d9-4ac6-a7b9-c715b187ce11"),
+		TemplateID:        MustParseUUID("78c2cbe6-8e11-4722-b01f-bf06f4e28108"),
 	}
 
 	resp := &VirtualMachine{}
@@ -335,8 +336,9 @@ func TestAsyncRequestWithoutContext(t *testing.T) {
 		return true
 	})
 
-	if resp.ServiceOfferingID != "71004023-bb72-4a97-b1e9-bc66dfce9470" {
-		t.Errorf("Expected ServiceOfferingID %q, got %q", "71004023-bb72-4a97-b1e9-bc66dfce9470", resp.ServiceOfferingID)
+	id := MustParseUUID("71004023-bb72-4a97-b1e9-bc66dfce9470")
+	if !resp.ServiceOfferingID.Equal(*id) {
+		t.Errorf("Expected ServiceOfferingID %q, got %q", id, resp.ServiceOfferingID)
 	}
 }
 
@@ -344,14 +346,14 @@ func TestAsyncRequestWithoutContextFailure(t *testing.T) {
 	ts := newServer(
 		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse": {
-		"jobid": "1",
+		"jobid": "0a1be26b-415b-4c17-87b6-ffb06c507f8b",
 		"jobresult": {},
 		"jobstatus": 0
 	}
 }`},
 		response{200, jsonContentType, `{
 	"queryasyncjobresultresponse": {
-		"jobid": "1",
+		"jobid": "be805478-3c23-460f-a712-11cc8df6da48",
 		"jobresult": {
 			"virtualmachine": []
 		},
@@ -365,9 +367,10 @@ func TestAsyncRequestWithoutContextFailure(t *testing.T) {
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	req := &DeployVirtualMachine{
 		Name:              "test",
-		ServiceOfferingID: "71004023-bb72-4a97-b1e9-bc66dfce9470",
-		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
-		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108"}
+		ServiceOfferingID: MustParseUUID("71004023-bb72-4a97-b1e9-bc66dfce9470"),
+		ZoneID:            MustParseUUID("1128bd56-b4d9-4ac6-a7b9-c715b187ce11"),
+		TemplateID:        MustParseUUID("78c2cbe6-8e11-4722-b01f-bf06f4e28108"),
+	}
 
 	resp := &VirtualMachine{}
 
@@ -393,7 +396,7 @@ func TestAsyncRequestWithoutContextFailureNext(t *testing.T) {
 	ts := newServer(
 		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse: {
-		"jobid": "1",
+		"jobid": "c3f8457b-a10b-4935-a837-68fb53b29008",
 		"jobresult": {},
 		"jobstatus": 0
 	}
@@ -405,9 +408,9 @@ func TestAsyncRequestWithoutContextFailureNext(t *testing.T) {
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	req := &DeployVirtualMachine{
 		Name:              "test",
-		ServiceOfferingID: "71004023-bb72-4a97-b1e9-bc66dfce9470",
-		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
-		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108",
+		ServiceOfferingID: MustParseUUID("71004023-bb72-4a97-b1e9-bc66dfce9470"),
+		ZoneID:            MustParseUUID("1128bd56-b4d9-4ac6-a7b9-c715b187ce11"),
+		TemplateID:        MustParseUUID("78c2cbe6-8e11-4722-b01f-bf06f4e28108"),
 	}
 
 	cs.AsyncRequest(req, func(j *AsyncJobResult, err error) bool {
@@ -420,7 +423,7 @@ func TestAsyncRequestWithoutContextFailureNextNext(t *testing.T) {
 	ts := newServer(
 		response{200, jsonContentType, `{
 	"deployvirtualmachineresponse": {
-		"jobid": "1",
+		"jobid": "8933fb8c-ff24-4ca4-b7d1-ba2154e9f2c4",
 		"jobresult": {
 			"virtualmachine": {}
 		},
@@ -429,14 +432,14 @@ func TestAsyncRequestWithoutContextFailureNextNext(t *testing.T) {
 }`},
 		response{200, jsonContentType, `{
 	"queryasyncjobresultresponse": {
-		"jobid": "1",
+		"jobid": "d05893e0-815b-4396-9189-5b5d8380b380",
 		"jobresult": {},
 		"jobstatus": 0
 	}
 }`},
 		response{200, jsonContentType, `{
 	"queryasyncjobresultresponse": {
-		"jobid": "1",
+		"jobid": "92c82b1d-b57e-4338-94bb-1ffe2130993b",
 		"jobresult": [],
 		"jobstatus": 1
 	}
@@ -447,9 +450,10 @@ func TestAsyncRequestWithoutContextFailureNextNext(t *testing.T) {
 	cs := NewClient(ts.URL, "TOKEN", "SECRET")
 	req := &DeployVirtualMachine{
 		Name:              "test",
-		ServiceOfferingID: "71004023-bb72-4a97-b1e9-bc66dfce9470",
-		ZoneID:            "1128bd56-b4d9-4ac6-a7b9-c715b187ce11",
-		TemplateID:        "78c2cbe6-8e11-4722-b01f-bf06f4e28108"}
+		ServiceOfferingID: MustParseUUID("71004023-bb72-4a97-b1e9-bc66dfce9470"),
+		ZoneID:            MustParseUUID("1128bd56-b4d9-4ac6-a7b9-c715b187ce11"),
+		TemplateID:        MustParseUUID("78c2cbe6-8e11-4722-b01f-bf06f4e28108"),
+	}
 
 	resp := &VirtualMachine{}
 
@@ -474,7 +478,7 @@ func TestBooleanRequestWithContext(t *testing.T) {
 	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {
 	"expungevirtualmachine": {
-		"jobid": "1",
+		"jobid": "01ed7adc-8b81-4e33-a0f2-4f55a3b880cd",
 		"jobresult": {
 			"success": false
 		},
@@ -492,7 +496,7 @@ func TestBooleanRequestWithContext(t *testing.T) {
 	go func() {
 		cs := NewClient(ts.URL, "TOKEN", "SECRET")
 		req := &ExpungeVirtualMachine{
-			ID: "123",
+			ID: MustParseUUID("925207d3-beea-4c56-8594-ef351b526dd3"),
 		}
 
 		err := cs.BooleanRequestWithContext(ctx, req)
@@ -517,7 +521,7 @@ func TestRequestWithContextTimeoutPost(t *testing.T) {
 	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {
 	"deployvirtualmachineresponse": {
-		"jobid": "1",
+		"jobid": "01ed7adc-8b81-4e33-a0f2-4f55a3b880cd",
 		"jobresult": {
 			"success": false
 		},
@@ -541,10 +545,10 @@ func TestRequestWithContextTimeoutPost(t *testing.T) {
 	go func() {
 		cs := NewClient(ts.URL, "TOKEN", "SECRET")
 		req := &DeployVirtualMachine{
-			ServiceOfferingID: "test",
-			TemplateID:        "test",
+			ServiceOfferingID: MustParseUUID("925207d3-beea-4c56-8594-ef351b526dd3"),
+			TemplateID:        MustParseUUID("d2fcd819-7f6e-462d-b8c0-bfae83e4d273"),
 			UserData:          base64.StdEncoding.EncodeToString(userData),
-			ZoneID:            "test",
+			ZoneID:            MustParseUUID("68f0e13a-2ba8-4f8f-81c0-bd78491d81ea"),
 		}
 
 		_, err := cs.RequestWithContext(ctx, req)
@@ -569,7 +573,7 @@ func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 	ts := newSleepyServer(time.Second, 200, jsonContentType, `
 {
 	"expungevirtualmachine": {
-		"jobid": "1",
+		"jobid": "01ed7adc-8b81-4e33-a0f2-4f55a3b880cd",
 		"jobresult": {
 			"success": false
 		},
@@ -589,7 +593,7 @@ func TestBooleanRequestWithContextAndTimeout(t *testing.T) {
 		cs.HTTPClient.Timeout = time.Millisecond
 
 		req := &ExpungeVirtualMachine{
-			ID: "123",
+			ID: MustParseUUID("925207d3-beea-4c56-8594-ef351b526dd3"),
 		}
 		err := cs.BooleanRequestWithContext(ctx, req)
 

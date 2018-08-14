@@ -227,7 +227,7 @@ func (client *Client) AsyncRequestWithContext(ctx context.Context, asyncCommand 
 	}
 
 	// Successful response
-	if jobResult.JobID == "" || jobResult.JobStatus != Pending {
+	if jobResult.JobID == nil || jobResult.JobStatus != Pending {
 		callback(jobResult, nil)
 		// without a JobID, the next requests will only fail
 		return

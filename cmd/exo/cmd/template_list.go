@@ -45,7 +45,7 @@ func listTemplates(t *table.Table, filters []string) error {
 		if sz == "10" && strings.HasPrefix(template.Name, "Linux") {
 			sz = ""
 		}
-		t.Append([]string{template.Name, sz, template.Created, template.ID})
+		t.Append([]string{template.Name, sz, template.Created, template.ID.String()})
 	}
 
 	return nil

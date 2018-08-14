@@ -34,7 +34,7 @@ func listVMs() error {
 		sgs := getSecurityGroup(vm)
 
 		sgName := strings.Join(sgs, " - ")
-		table.Append([]string{vm.Name, sgName, vm.IP().String(), vm.State, vm.ZoneName, vm.ID})
+		table.Append([]string{vm.Name, sgName, vm.IP().String(), vm.State, vm.ZoneName, vm.ID.String()})
 	}
 	table.Render()
 

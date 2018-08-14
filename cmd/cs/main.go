@@ -544,6 +544,14 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 						value: addr.(**egoscale.CIDR),
 					},
 				})
+			case reflect.TypeOf(egoscale.UUID{}):
+				flags = append(flags, cli.GenericFlag{
+					Name:  argName,
+					Usage: description,
+					Value: &uuidGeneric{
+						value: addr.(**egoscale.UUID),
+					},
+				})
 			default:
 				log.Printf("[SKIP] Ptr type of %s is not supported!", field.Name)
 			}
