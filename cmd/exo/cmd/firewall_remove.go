@@ -45,12 +45,7 @@ var firewallRemoveCmd = &cobra.Command{
 					return nil
 				}
 			}
-			res, rErr := removeAllRules(sgName)
-
-			for _, r := range res {
-				println(r)
-			}
-			return rErr
+			return removeAllRules(sgName)
 		}
 
 		if len(args) < 2 {
@@ -97,27 +92,27 @@ var firewallRemoveCmd = &cobra.Command{
 	},
 }
 
-func removeAllRules(sgName string) ([]string, error) {
+func removeAllRules(sgName string) error {
 	sg, err := getSecurityGroupByNameOrID(sgName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	res := []string{}
+	tasks := []task{}
 
 	for _, in := range sg.IngressRule {
-		if reqErr := cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}); reqErr != nil {
-			return res, reqErr
-		}
-		res = append(res, in.RuleID.String())
+		tasks = append(tasks, task{&egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}, fmt.Sprintf("Remove %q", in.RuleID)})
 	}
 	for _, eg := range sg.EgressRule {
-		if err = cs.BooleanRequestWithContext(gContext, &egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}); err != nil {
-			return res, err
-		}
-		res = append(res, eg.RuleID.String())
+		tasks = append(tasks, task{&egoscale.RevokeSecurityGroupEgress{ID: eg.RuleID}, fmt.Sprintf("Remove %q", eg.RuleID)})
 	}
-	return res, nil
+
+	_, errs := asyncTasks(tasks)
+
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
 }
 
 func removeRule(name, ruleID string) error {

@@ -11,7 +11,7 @@ import (
 
 // deleteCmd represents the delete command
 var vmDeleteCmd = &cobra.Command{
-	Use:     "delete <name | id> [name | id] ...",
+	Use:     "delete <name | id>+",
 	Short:   "Delete virtual machine instance(s)",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -24,46 +24,53 @@ var vmDeleteCmd = &cobra.Command{
 			return err
 		}
 
+		tasks := []task{}
+
 		for _, arg := range args {
-			if err := deleteVM(arg, force); err != nil {
-				_, err = fmt.Fprintf(os.Stderr, err.Error())
-				if err != nil {
+			vm, err := getVMWithNameOrID(arg)
+			if err != nil {
+				return err
+			}
+
+			tsk, err := prepareDeleteVM(vm, force)
+			if err != nil {
+				return err
+			}
+
+			if tsk != nil {
+				tasks = append(tasks, task{tsk, fmt.Sprintf("Destroying %q ", vm.Name)})
+			}
+		}
+
+		resps, errs := asyncTasks(tasks)
+		if len(errs) > 0 {
+			return errs[0]
+		}
+
+		for _, r := range resps {
+			resp := r.(*egoscale.VirtualMachine)
+
+			folder := path.Join(gConfigFolder, "instances", resp.ID.String())
+
+			if _, err := os.Stat(folder); !os.IsNotExist(err) {
+				if err := os.RemoveAll(folder); err != nil {
 					return err
 				}
 			}
 		}
+
 		return nil
 	},
 }
 
-func deleteVM(name string, force bool) error {
-	vm, err := getVMWithNameOrID(name)
-	if err != nil {
-		return err
-	}
-
+func prepareDeleteVM(vm *egoscale.VirtualMachine, force bool) (*egoscale.DestroyVirtualMachine, error) {
 	if !force {
 		if !askQuestion(fmt.Sprintf("sure you want to delete %q virtual machine", vm.Name)) {
-			return nil
-		}
-
-	}
-
-	if _, err := asyncRequest(&egoscale.DestroyVirtualMachine{ID: vm.ID}, fmt.Sprintf("Destroying %q ", vm.Name)); err != nil {
-		return err
-	}
-
-	folder := path.Join(gConfigFolder, "instances", vm.ID.String())
-
-	if _, err := os.Stat(folder); !os.IsNotExist(err) {
-		if err := os.RemoveAll(folder); err != nil {
-			return err
+			return nil, nil
 		}
 	}
 
-	fmt.Println(vm.ID)
-
-	return nil
+	return &egoscale.DestroyVirtualMachine{ID: vm.ID}, nil
 }
 
 func init() {
