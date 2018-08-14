@@ -17,8 +17,8 @@ func getNetworkByName(name string) (*egoscale.Network, error) {
 		CanUseForDeploy: true,
 	}
 
-	id, err := egoscale.ParseUUID(name)
-	if err != nil {
+	id, errUUID := egoscale.ParseUUID(name)
+	if errUUID != nil {
 		net.Name = name
 	} else {
 		net.ID = id
@@ -28,7 +28,7 @@ func getNetworkByName(name string) (*egoscale.Network, error) {
 		return nil, err
 	}
 
-	return net, err
+	return net, nil
 }
 
 func init() {
