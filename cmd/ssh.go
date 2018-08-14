@@ -59,7 +59,7 @@ type sshInfo struct {
 	userName string
 	ip       net.IP
 	vmName   string
-	vmID     string
+	vmID     *egoscale.UUID
 }
 
 func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
@@ -68,7 +68,7 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 		return nil, err
 	}
 
-	sshKeyPath := path.Join(gConfigFolder, "instances", vm.ID, "id_rsa")
+	sshKeyPath := path.Join(gConfigFolder, "instances", vm.ID.String(), "id_rsa")
 
 	nic := vm.DefaultNic()
 	if nic == nil {
@@ -88,7 +88,11 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 		return nil, fmt.Errorf("no valid IP address found")
 	}
 
-	template := &egoscale.Template{ID: vm.TemplateID, IsFeatured: true, ZoneID: "1"}
+	template := &egoscale.Template{
+		ID:         vm.TemplateID,
+		IsFeatured: true,
+		ZoneID:     vm.ZoneID,
+	}
 
 	if err := cs.GetWithContext(gContext, template); err != nil {
 		return nil, err

@@ -17,7 +17,16 @@ var eipShowCmd = &cobra.Command{
 		if len(args) < 1 {
 			return cmd.Usage()
 		}
-		ip, vms, err := eipDetails(args[0])
+
+		id, err := egoscale.ParseUUID(args[0])
+		if err != nil {
+			id, err = getEIPIDByIP(args[0])
+			if err != nil {
+				return err
+			}
+		}
+
+		ip, vms, err := eipDetails(id)
 		if err != nil {
 			return err
 		}
@@ -29,7 +38,7 @@ var eipShowCmd = &cobra.Command{
 		ipaddr := ip.IPAddress.String()
 		if len(vms) > 0 {
 			for _, vm := range vms {
-				table.Append([]string{zone, ipaddr, vm.Name, vm.ID})
+				table.Append([]string{zone, ipaddr, vm.Name, vm.ID.String()})
 				zone = ""
 				ipaddr = ""
 			}
@@ -41,16 +50,9 @@ var eipShowCmd = &cobra.Command{
 	},
 }
 
-func eipDetails(eip string) (*egoscale.IPAddress, []egoscale.VirtualMachine, error) {
+func eipDetails(eip *egoscale.UUID) (*egoscale.IPAddress, []egoscale.VirtualMachine, error) {
 
 	var eipID = eip
-	if !isUUID(eip) {
-		var err error
-		eipID, err = getEIPIDByIP(cs, eip)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
 
 	addr := &egoscale.IPAddress{ID: eipID, IsElastic: true}
 	if err := cs.GetWithContext(gContext, addr); err != nil {

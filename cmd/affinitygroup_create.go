@@ -37,7 +37,7 @@ func createAffinityGroup(name, desc string) error {
 
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{"Name", "Description", "ID"})
-	table.Append([]string{affinityGroup.Name, affinityGroup.Description, affinityGroup.ID})
+	table.Append([]string{affinityGroup.Name, affinityGroup.Description, affinityGroup.ID.String()})
 	table.Render()
 	return nil
 }

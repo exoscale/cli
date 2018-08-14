@@ -38,16 +38,16 @@ var vmCreateCmd = &cobra.Command{
 			}
 		}
 
-		zone, err := cmd.Flags().GetString("zone")
+		zoneName, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
 		}
 
-		if zone == "" {
-			zone = gCurrentAccount.DefaultZone
+		if zoneName == "" {
+			zoneName = gCurrentAccount.DefaultZone
 		}
 
-		zone, err = getZoneIDByName(zone)
+		zone, err := getZoneIDByName(zoneName)
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		pvs, err := getPrivnetList(cs, privnet, zone)
+		pvs, err := getPrivnetList(privnet, zoneName)
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		servOffering, err := getServiceOfferingByName(cs, so)
+		servOffering, err := getServiceOfferingByName(so)
 		if err != nil {
 			return err
 		}
@@ -140,7 +140,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		sshinfo, err := getSSHInfo(r.ID, ipv6)
+		sshinfo, err := getSSHInfo(r.ID.String(), ipv6)
 		if err != nil {
 			return err
 		}
@@ -193,48 +193,55 @@ func getCommaflag(p string) []string {
 	return res
 }
 
-func getSecurityGroups(cs *egoscale.Client, commaParameter string) ([]string, error) {
+func getSecurityGroups(cs *egoscale.Client, commaParameter string) ([]egoscale.UUID, error) {
 
 	sgs := getCommaflag(commaParameter)
+	ids := make([]egoscale.UUID, len(sgs))
 
 	for i, sg := range sgs {
-		s, err := getSecurityGroupByNameOrID(cs, sg)
+		s, err := getSecurityGroupByNameOrID(sg)
 		if err != nil {
 			return nil, err
 		}
-		sgs[i] = s.ID
+
+		ids[i] = *s.ID
 	}
 
-	return sgs, nil
+	return ids, nil
 }
 
-func getPrivnetList(cs *egoscale.Client, commaParameter, zoneID string) ([]string, error) {
+func getPrivnetList(commaParameter, zoneID string) ([]egoscale.UUID, error) {
 
 	sgs := getCommaflag(commaParameter)
+	ids := make([]egoscale.UUID, len(sgs))
 
 	for i, sg := range sgs {
-		s, err := getNetworkIDByName(cs, sg)
+		n, err := getNetworkByName(sg)
 		if err != nil {
 			return nil, err
 		}
-		sgs[i] = s.ID
+
+		ids[i] = *n.ID
 	}
 
-	return sgs, nil
+	return ids, nil
 }
 
-func getAffinityGroup(cs *egoscale.Client, commaParameter string) ([]string, error) {
+func getAffinityGroup(cs *egoscale.Client, commaParameter string) ([]egoscale.UUID, error) {
 	affs := getCommaflag(commaParameter)
+	ids := make([]egoscale.UUID, len(affs))
 
 	for i, aff := range affs {
-		s, err := getAffinityGroupIDByName(cs, aff)
+		s, err := getAffinityGroupByName(aff)
+
 		if err != nil {
 			return nil, err
 		}
-		affs[i] = s
+
+		ids[i] = *s.ID
 	}
 
-	return affs, nil
+	return ids, nil
 }
 
 func getUserData(userDataPath string) (string, error) {
@@ -279,14 +286,14 @@ func createVM(vmInfos *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine,
 	virtualMachine := resp.(*egoscale.VirtualMachine)
 
 	if isDefaultKeyPair {
-		saveKeyPair(keyPairs, virtualMachine.ID)
+		saveKeyPair(keyPairs, *virtualMachine.ID)
 	}
 
 	return virtualMachine, nil
 }
 
-func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID string) {
-	filePath := path.Join(gConfigFolder, "instances", vmID)
+func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
+	filePath := path.Join(gConfigFolder, "instances", vmID.String())
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		if err := os.MkdirAll(filePath, os.ModePerm); err != nil {

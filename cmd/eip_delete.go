@@ -39,7 +39,11 @@ func deleteEip(ip string) error {
 	ipAddr := net.ParseIP(ip)
 
 	if ipAddr == nil {
-		addrReq.ID = ip
+		id, err := egoscale.ParseUUID(ip)
+		if err != nil {
+			return fmt.Errorf("delete the eip by ID or IP address, gotb %q", ip)
+		}
+		addrReq.ID = id
 	} else {
 		req := &egoscale.IPAddress{IPAddress: ipAddr, IsElastic: true}
 		if err := cs.GetWithContext(gContext, req); err != nil {

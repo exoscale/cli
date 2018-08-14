@@ -52,14 +52,14 @@ func listPrivnets(zone string, table *table.Table) error {
 				zone = pn.ZoneName
 			}
 
-			_, vms, err := privnetDetails(pn.ID)
+			vms, err := privnetDetails(pn)
 			if err != nil {
 				return err
 			}
 
 			vmNum := fmt.Sprintf("%d", len(vms))
 
-			table.Append([]string{zone, pn.Name, pn.ID, vmNum})
+			table.Append([]string{zone, pn.Name, pn.ID.String(), vmNum})
 
 			zone = ""
 		}

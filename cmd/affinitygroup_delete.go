@@ -33,17 +33,17 @@ var affinitygroupDeleteCmd = &cobra.Command{
 }
 
 func deleteAffinityGroup(name string) error {
-	id, err := getAffinityGroupIDByName(cs, name)
+	aff, err := getAffinityGroupByName(name)
 	if err != nil {
 		return err
 	}
 
-	_, err = cs.RequestWithContext(gContext, &egoscale.DeleteAffinityGroup{ID: id})
+	_, err = cs.Request(&egoscale.DeleteAffinityGroup{ID: aff.ID})
 	if err != nil {
 		return err
 	}
 
-	println(id)
+	fmt.Println(aff.ID)
 
 	return nil
 }

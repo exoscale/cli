@@ -58,7 +58,7 @@ func listIPs(zone string, table *table.Table) error {
 
 			nbVM := fmt.Sprintf("%d", len(vms))
 
-			table.Append([]string{zone, ip.IPAddress.String(), ip.ID, nbVM})
+			table.Append([]string{zone, ip.IPAddress.String(), ip.ID.String(), nbVM})
 			zone = ""
 		}
 		return nil

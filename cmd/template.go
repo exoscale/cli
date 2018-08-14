@@ -18,20 +18,21 @@ var templateCmd = &cobra.Command{
 	Short: "Templates details",
 }
 
-func getTemplateByName(zoneID, name string) (*egoscale.Template, error) {
+func getTemplateByName(zoneID *egoscale.UUID, name string) (*egoscale.Template, error) {
+
 	// Find by name, then by ID
 	template := &egoscale.Template{
 		IsFeatured: true,
 		ZoneID:     zoneID,
-		Name:       name,
 	}
 
-	if err := cs.GetWithContext(gContext, template); err == nil {
-		return template, err
+	id, err := egoscale.ParseUUID(name)
+	if err != nil {
+		template.Name = name
+	} else {
+		template.ID = id
 	}
 
-	template.Name = ""
-	template.ID = name
 	if err := cs.GetWithContext(gContext, template); err == nil {
 		return template, err
 	}
@@ -52,7 +53,7 @@ func getTemplateByName(zoneID, name string) (*egoscale.Template, error) {
 	return &sortedTemplates[0], nil
 }
 
-func findTemplates(zoneID string, filters ...string) ([]egoscale.Template, error) {
+func findTemplates(zoneID *egoscale.UUID, filters ...string) ([]egoscale.Template, error) {
 	allOS := make(map[string]*egoscale.Template)
 
 	reLinux := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9]+(\.[0-9]+)?)`)

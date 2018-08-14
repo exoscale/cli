@@ -72,9 +72,8 @@ func isEmptyArgs(args ...string) bool {
 	return false
 }
 
-func privnetCreate(name, desc, zone string) error {
-	var err error
-	zone, err = getZoneIDByName(zone)
+func privnetCreate(name, desc, zoneName string) error {
+	zone, err := getZoneIDByName(zoneName)
 	if err != nil {
 		return err
 	}
@@ -86,22 +85,25 @@ func privnetCreate(name, desc, zone string) error {
 
 	s := resp.(*egoscale.ListNetworkOfferingsResponse)
 
-	offNetID := ""
-
+	req := &egoscale.CreateNetwork{
+		DisplayText: desc,
+		Name:        name,
+		ZoneID:      zone,
+	}
 	if len(s.NetworkOffering) > 0 {
-		offNetID = s.NetworkOffering[0].ID
+		req.NetworkOfferingID = s.NetworkOffering[0].ID
 	}
 
-	creatResp, err := cs.RequestWithContext(gContext, &egoscale.CreateNetwork{DisplayText: desc, Name: name, NetworkOfferingID: offNetID, ZoneID: zone})
+	resp, err = cs.RequestWithContext(gContext, req)
 	if err != nil {
 		return err
 	}
 
-	newNet := creatResp.(*egoscale.Network)
+	newNet := resp.(*egoscale.Network)
 
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{"Name", "Description", "ID"})
-	table.Append([]string{newNet.Name, newNet.DisplayText, newNet.ID})
+	table.Append([]string{newNet.Name, newNet.DisplayText, newNet.ID.String()})
 	table.Render()
 	return nil
 }

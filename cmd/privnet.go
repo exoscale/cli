@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -14,30 +11,24 @@ var privnetCmd = &cobra.Command{
 	Short: "Private networks management",
 }
 
-func getNetworkIDByName(cs *egoscale.Client, name string) (*egoscale.Network, error) {
-	nets, err := cs.ListWithContext(gContext, &egoscale.Network{Type: "Isolated", CanUseForDeploy: true})
+func getNetworkByName(name string) (*egoscale.Network, error) {
+	net := &egoscale.Network{
+		Type:            "Isolated",
+		CanUseForDeploy: true,
+	}
+
+	id, err := egoscale.ParseUUID(name)
 	if err != nil {
-		log.Fatal(err)
+		net.Name = name
+	} else {
+		net.ID = id
 	}
 
-	var res *egoscale.Network
-	match := 0
-	for _, net := range nets {
-		n := net.(*egoscale.Network)
-		if name == n.Name || name == n.ID {
-			res = n
-			match++
-		}
+	if err := cs.GetWithContext(gContext, net); err != nil {
+		return nil, err
 	}
-	switch match {
-	case 0:
-		return nil, fmt.Errorf("unable to find the private network %q", name)
-	case 1:
-		return res, nil
-	default:
-		return nil, fmt.Errorf("multiple private networks were found for %q", name)
 
-	}
+	return net, err
 }
 
 func init() {

@@ -35,7 +35,7 @@ var privnetDeleteCmd = &cobra.Command{
 func deletePrivnet(name string, force bool) error {
 	addrReq := &egoscale.DeleteNetwork{}
 	var err error
-	network, err := getNetworkIDByName(cs, name)
+	network, err := getNetworkByName(name)
 	if err != nil {
 		return err
 	}

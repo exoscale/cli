@@ -17,7 +17,7 @@ var dissociateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		network, err := getNetworkIDByName(cs, args[0])
+		network, err := getNetworkByName(args[0])
 		if err != nil {
 			return err
 		}
@@ -27,39 +27,29 @@ var dissociateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			println(resp)
+			fmt.Println(resp)
 		}
 		return nil
 	},
 }
 
-func dissociatePrivNet(privnet *egoscale.Network, vmName string) (string, error) {
+func dissociatePrivNet(privnet *egoscale.Network, vmName string) (*egoscale.UUID, error) {
 	vm, err := getVMWithNameOrID(vmName)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	nic, err := containNetID(privnet, vm.Nic)
-	if err != nil {
-		return "", err
+	nic := vm.NicByNetworkID(*privnet.ID)
+	if nic == nil {
+		return nil, fmt.Errorf("no nics found for network %q", privnet.ID)
 	}
 
 	_, err = cs.RequestWithContext(gContext, &egoscale.RemoveNicFromVirtualMachine{NicID: nic.ID, VirtualMachineID: vm.ID})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	return nic.ID, nil
-}
-
-func containNetID(network *egoscale.Network, vmNics []egoscale.Nic) (egoscale.Nic, error) {
-
-	for _, nic := range vmNics {
-		if nic.NetworkID == network.ID {
-			return nic, nil
-		}
-	}
-	return egoscale.Nic{}, fmt.Errorf("NIC not found")
 }
 
 func init() {

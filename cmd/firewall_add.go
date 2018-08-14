@@ -44,7 +44,7 @@ var firewallAddCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		securityGroup, err := getSecurityGroupByNameOrID(cs, args[0])
+		securityGroup, err := getSecurityGroupByNameOrID(args[0])
 		if err != nil {
 			return err
 		}
@@ -147,7 +147,7 @@ var firewallAddCmd = &cobra.Command{
 			if sg != "" {
 				sgs := getCommaflag(sg)
 
-				userSecurityGroups, sgErr := getUserSecurityGroups(cs, sgs)
+				userSecurityGroups, sgErr := getUserSecurityGroups(sgs)
 				if sgErr != nil {
 					return sgErr
 				}
@@ -192,7 +192,7 @@ var firewallAddCmd = &cobra.Command{
 			}
 		}
 
-		return firewallShow.RunE(cmd, []string{securityGroup.ID})
+		return firewallShow.RunE(cmd, []string{securityGroup.ID.String()})
 	},
 }
 
@@ -222,10 +222,10 @@ func getPortsRange(ports []string) ([]portRange, error) {
 	return portsRange, nil
 }
 
-func getUserSecurityGroups(cs *egoscale.Client, names []string) ([]egoscale.UserSecurityGroup, error) {
+func getUserSecurityGroups(names []string) ([]egoscale.UserSecurityGroup, error) {
 	us := make([]egoscale.UserSecurityGroup, 0, len(names))
 	for _, sg := range names {
-		s, err := getSecurityGroupByNameOrID(cs, sg)
+		s, err := getSecurityGroupByNameOrID(sg)
 		if err != nil {
 			return nil, err
 		}

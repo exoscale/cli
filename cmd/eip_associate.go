@@ -30,26 +30,26 @@ var eipAssociateCmd = &cobra.Command{
 	},
 }
 
-func associateIP(ipAddr, instance string) (string, error) {
+func associateIP(ipAddr, instance string) (*egoscale.UUID, error) {
 	ip := net.ParseIP(ipAddr)
 	if ip == nil {
-		return "", fmt.Errorf("invalid IP address %q", ipAddr)
+		return nil, fmt.Errorf("invalid IP address %q", ipAddr)
 	}
 
 	vm, err := getVMWithNameOrID(instance)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	defaultNic := vm.DefaultNic()
 
 	if defaultNic == nil {
-		return "", fmt.Errorf("the instance %q has not default NIC", vm.ID)
+		return nil, fmt.Errorf("the instance %q has not default NIC", vm.ID)
 	}
 
 	resp, err := cs.RequestWithContext(gContext, &egoscale.AddIPToNic{NicID: defaultNic.ID, IPAddress: ip})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	result := resp.(*egoscale.NicSecondaryIP)

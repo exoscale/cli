@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"regexp"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -58,23 +57,24 @@ func formatRules(name string, rule *egoscale.IngressRule) []string {
 		ports = fmt.Sprintf("%d-%d", rule.StartPort, rule.EndPort)
 	}
 
-	return []string{name, source, rule.Protocol, ports, rule.Description, rule.RuleID}
+	return []string{name, source, rule.Protocol, ports, rule.Description, rule.RuleID.String()}
 }
 
-func getSecurityGroupByNameOrID(cs *egoscale.Client, name string) (*egoscale.SecurityGroup, error) {
-	if !isAFirewallID(cs, name) {
-		securGrp := &egoscale.SecurityGroup{Name: name}
-		if err := cs.GetWithContext(gContext, securGrp); err != nil {
-			return nil, err
-		}
-		return securGrp, nil
+func getSecurityGroupByNameOrID(name string) (*egoscale.SecurityGroup, error) {
+	sg := &egoscale.SecurityGroup{}
+
+	id, err := egoscale.ParseUUID(name)
+
+	if err != nil {
+		sg.Name = name
+	} else {
+		sg.ID = id
 	}
 
-	securGrp := &egoscale.SecurityGroup{ID: name}
-	if err := cs.GetWithContext(gContext, securGrp); err != nil {
+	if err := cs.GetWithContext(gContext, sg); err != nil {
 		return nil, err
 	}
-	return securGrp, nil
+	return sg, nil
 
 }
 
@@ -105,18 +105,4 @@ func getMyCIDR(isIpv6 bool) (*egoscale.CIDR, error) {
 	}
 
 	return egoscale.ParseCIDR(fmt.Sprintf("%s/%d", ips[0].IP, cidrMask))
-}
-
-func isAFirewallID(cs *egoscale.Client, id string) bool {
-	if !isUUID(id) {
-		return false
-	}
-	req := &egoscale.SecurityGroup{ID: id}
-	return cs.GetWithContext(gContext, req) == nil
-}
-
-// isUUID matches a UUIDv4
-func isUUID(uuid string) bool {
-	re := regexp.MustCompile(`(?i)^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`)
-	return re.MatchString(uuid)
 }

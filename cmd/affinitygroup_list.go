@@ -31,7 +31,7 @@ func displayAffinitygroup() error {
 	table.SetHeader([]string{"Name", "Description", "ID"})
 
 	for _, affinitygroup := range affinityGroups {
-		table.Append([]string{affinitygroup.Name, affinitygroup.Description, affinitygroup.ID})
+		table.Append([]string{affinitygroup.Name, affinitygroup.Description, affinitygroup.ID.String()})
 	}
 
 	table.Render()

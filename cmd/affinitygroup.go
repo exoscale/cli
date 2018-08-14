@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -14,20 +13,25 @@ var affinitygroupCmd = &cobra.Command{
 	Short: "Affinity groups management",
 }
 
-func getAffinityGroupIDByName(cs *egoscale.Client, name string) (string, error) {
-	affs, err := cs.ListWithContext(gContext, &egoscale.AffinityGroup{})
+func getAffinityGroupByName(name string) (*egoscale.AffinityGroup, error) {
+	aff := &egoscale.AffinityGroup{}
+
+	id, err := egoscale.ParseUUID(name)
 	if err != nil {
-		return "", err
+		aff.ID = id
+	} else {
+		aff.Name = name
 	}
 
-	n := strings.ToLower(name)
-	for _, a := range affs {
-		aff := a.(*egoscale.AffinityGroup)
-		if n == strings.ToLower(aff.Name) || n == aff.ID {
-			return aff.ID, nil
+	if err := cs.GetWithContext(gContext, aff); err != nil {
+		if e, ok := err.(*egoscale.ErrorResponse); ok && e.ErrorCode == egoscale.ParamError {
+			return nil, fmt.Errorf("missing Affinity Group %q", name)
 		}
+
+		return nil, err
 	}
-	return "", fmt.Errorf("missing Affinity Group %q", name)
+
+	return aff, nil
 }
 
 func init() {
