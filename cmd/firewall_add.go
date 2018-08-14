@@ -184,7 +184,10 @@ var firewallAddCmd = &cobra.Command{
 
 			// Not best practice but waiting to find better solution
 			if port == "" || !(rule.Protocol == "tcp" || rule.Protocol == "udp") {
-				msg := fmt.Sprintf("Add rule for  %q", securityGroup.Name)
+				msg := fmt.Sprintf("Add rule for %q", securityGroup.Name)
+				if len(args) > 1 {
+					msg = fmt.Sprintf("Add %q rule for %q", args[i], securityGroup.Name)
+				}
 				tasks = append(tasks, newFirewallRuleTask(*rule, msg, isEgress))
 			}
 
