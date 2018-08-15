@@ -41,9 +41,9 @@ func getZoneIDByName(name string) (*egoscale.UUID, error) {
 
 	id, err := egoscale.ParseUUID(name)
 	if err != nil {
-		zone.ID = id
-	} else {
 		zone.Name = name
+	} else {
+		zone.ID = id
 	}
 
 	if err := cs.GetWithContext(gContext, &zone); err != nil {
