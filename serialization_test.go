@@ -143,7 +143,7 @@ func TestPrepareValues(t *testing.T) {
 	}
 
 	v = params.Get("uuids")
-	if strings.Contains(v, "5361a11b-615c-42bf-9bdb-e2c3790ada14,") {
+	if !strings.Contains(v, "5361a11b-615c-42bf-9bdb-e2c3790ada14,") {
 		t.Errorf(`expected uuids to contains "5361a11b-615c-42bf-9bdb-e2c3790ada14", got %q`, v)
 	}
 
