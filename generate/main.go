@@ -139,13 +139,16 @@ func main() {
 		params := a.Params
 
 		if strings.ToLower(*cmd) == name && *rtype != "" {
-			name = strings.ToLower(*rtype)
-			*cmd = name
-			params = a.Response
-			_, e := fmt.Fprintf(os.Stderr, "Checking return type of %sResult, using %q\n", a.Name, *rtype)
-			if e != nil {
-				panic(e)
-			}
+			panic(fmt.Errorf("checking return type is temporary disabled"))
+			/*
+				name = strings.ToLower(*rtype)
+				*cmd = name
+				params = a.Response
+				_, e := fmt.Fprintf(os.Stderr, "Checking return type of %sResult, using %q\n", a.Name, *rtype)
+				if e != nil {
+					panic(e)
+				}
+			*/
 		}
 
 		if command, ok := commands[name]; !ok {
