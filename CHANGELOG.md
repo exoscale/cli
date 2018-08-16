@@ -1,12 +1,15 @@
 Changelog
 =========
 
-0.10.6 (unreleased)
+0.11.0
 ------
 
 - feat: `listOSCategories` and `OSCategory` type
+- feat: `listApis` supports recursive response structures
+- feat: `GetRecordsWithFilters` to list records with name or record_type filters
 - fix: better `DNSErrorResponse`
 - fix: `ListResourceLimits` type
+- change: use UUID everywhere
 
 0.10.5
 ------
