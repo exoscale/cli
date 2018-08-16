@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	defaultConfigFileName  = "exoscale"
-	defaultComputeEndpoint = "https://api.exoscale.ch/compute"
-	defaultTemplate        = "Linux Ubuntu 18.04 LTS 64-bit"
+	defaultConfigFileName = "exoscale"
+	defaultEndpoint       = "https://api.exoscale.ch/compute"
+	defaultTemplate       = "Linux Ubuntu 18.04 LTS 64-bit"
 )
 
 // configCmd represents the config command
@@ -109,7 +109,7 @@ func getAccount() (*account, error) {
 	var client *egoscale.Client
 
 	account := &account{
-		Endpoint: defaultComputeEndpoint,
+		Endpoint: defaultEndpoint,
 		Key:      "",
 		Secret:   "",
 	}
@@ -188,6 +188,7 @@ Let's start over.
 	}
 
 	account.DefaultZone = defaultZone
+	account.DNSEndpoint = strings.Replace(account.Endpoint, "/compute", "/dns", 1)
 
 	return account, nil
 }
@@ -216,7 +217,8 @@ func addAccount(filePath string, newAccounts *config) error {
 		accounts[i] = map[string]string{}
 
 		accounts[i]["name"] = acc.Name
-		accounts[i]["endpoint"] = acc.Endpoint
+		accounts[i]["computeEndpoint"] = acc.Endpoint
+		accounts[i]["dnsEndpoint"] = acc.DNSEndpoint
 		accounts[i]["key"] = acc.Key
 		accounts[i]["secret"] = acc.Secret
 		accounts[i]["defaultZone"] = acc.DefaultZone
@@ -233,7 +235,8 @@ func addAccount(filePath string, newAccounts *config) error {
 			accounts[accountsSize+i] = map[string]string{}
 
 			accounts[accountsSize+i]["name"] = acc.Name
-			accounts[accountsSize+i]["endpoint"] = acc.Endpoint
+			accounts[accountsSize+i]["computeEndpoint"] = acc.Endpoint
+			accounts[accountsSize+i]["dnsEndpoint"] = acc.DNSEndpoint
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
