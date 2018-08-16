@@ -28,6 +28,7 @@ var gAllAccount *config
 
 //egoscale client
 var cs *egoscale.Client
+var csDNS *egoscale.Client
 
 //Aliases
 var gListAlias = []string{"ls"}
@@ -43,6 +44,7 @@ type account struct {
 	Name            string
 	Account         string
 	Endpoint        string
+	DNSEndpoint     string
 	Key             string
 	Secret          string
 	DefaultZone     string
@@ -99,8 +101,8 @@ func Execute() {
 }
 
 func init() {
-	RootCmd.PersistentFlags().StringVar(&gConfigFilePath, "config", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
-	RootCmd.PersistentFlags().StringVarP(&gAccountName, "account", "a", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
+	RootCmd.PersistentFlags().StringVarP(&gConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
+	RootCmd.PersistentFlags().StringVarP(&gAccountName, "account", "A", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
 	RootCmd.AddCommand(versionCmd)
 
 	cobra.OnInitialize(initConfig, buildClient)
@@ -116,6 +118,8 @@ func buildClient() {
 	if cs != nil {
 		return
 	}
+
+	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint, gCurrentAccount.Key, gCurrentAccount.Secret)
 
 	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.Secret)
 }
@@ -211,20 +215,27 @@ func initConfig() {
 	for i, acc := range config.Accounts {
 		if acc.Name == gAccountName {
 			gCurrentAccount = &config.Accounts[i]
+			break
 		}
 	}
 
 	if gCurrentAccount == nil {
-		log.Fatalf("Could't find any account with name: %q", gAccountName)
+		log.Fatalf("could't find any account with name: %q", gAccountName)
 	}
 
 	if gCurrentAccount.Endpoint == "" {
-		gCurrentAccount.Endpoint = defaultComputeEndpoint
+		gCurrentAccount.Endpoint = defaultEndpoint
 	}
 
+	if gCurrentAccount.DNSEndpoint == "" {
+		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/compute", "/dns", 1)
+	}
 	if gCurrentAccount.DefaultTemplate == "" {
 		gCurrentAccount.DefaultTemplate = defaultTemplate
 	}
+
+	gCurrentAccount.Endpoint = strings.TrimRight(gCurrentAccount.Endpoint, "/")
+	gCurrentAccount.DNSEndpoint = strings.TrimRight(gCurrentAccount.DNSEndpoint, "/")
 }
 
 // getCmdPosition returns a command position by fetching os.args and ignoring flags

@@ -15,7 +15,7 @@ func init() {
 
 var firewallShow = &cobra.Command{
 	Use:     "show <security group name | id>",
-	Short:   "show a security group rules details",
+	Short:   "Show a security group rules details",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

@@ -151,7 +151,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		if _, err = fmt.Fprintf(os.Stdout, "%s\\\n%s?", client.Endpoint, strings.Replace(payload, "&", "\\\n&", -1)); err != nil {
+		if _, err = fmt.Fprintf(os.Stdout, "%s\\\n?%s", client.Endpoint, strings.Replace(payload, "&", "\\\n&", -1)); err != nil {
 			log.Fatal(err)
 		}
 

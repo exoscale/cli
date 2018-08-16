@@ -343,7 +343,7 @@ func init() {
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "<ssh keys name>")
 	vmCreateCmd.Flags().StringP("security-group", "s", "", "<name | id, name | id, ...>")
 	vmCreateCmd.Flags().StringP("privnet", "p", "", "<name | id, name | id, ...>")
-	vmCreateCmd.Flags().StringP("anti-affinity-group", "A", "", "<name | id, name | id, ...>")
+	vmCreateCmd.Flags().StringP("anti-affinity-group", "a", "", "<name | id, name | id, ...>")
 	vmCreateCmd.Flags().BoolP("ipv6", "6", false, "enable ipv6")
 	vmCreateCmd.Flags().StringP("service-offering", "o", "Small", "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan")
 	vmCmd.AddCommand(vmCreateCmd)
