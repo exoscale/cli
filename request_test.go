@@ -18,6 +18,51 @@ const (
 	jsonContentType = "application/json"
 )
 
+func TestJobStatusTypeString(t *testing.T) {
+	if Failure != JobStatusType(2) {
+		t.Error("bad enum value", (int)(Failure), 2)
+	}
+
+	if Failure.String() != "Failure" {
+		t.Error("mismatch", Failure, "Failure")
+	}
+	s := JobStatusType(45)
+
+	if !strings.Contains(s.String(), "45") {
+		t.Error("bad state", s.String())
+	}
+}
+
+func TestErrorCodeString(t *testing.T) {
+	if ParamError != ErrorCode(431) {
+		t.Error("bad enum value", (int)(ParamError), 431)
+	}
+
+	if ParamError.String() != "ParamError" {
+		t.Error("mismatch", ParamError, "ParamError")
+	}
+	s := ErrorCode(45)
+
+	if !strings.Contains(s.String(), "45") {
+		t.Error("bad state", s.String())
+	}
+}
+
+func TestCSErrorCodeString(t *testing.T) {
+	if CloudException != CSErrorCode(4275) {
+		t.Error("bad enum value", (int)(CloudException), 4275)
+	}
+
+	if CloudException.String() != "CloudException" {
+		t.Error("mismatch", CloudException, "CloudException")
+	}
+	s := CSErrorCode(45)
+
+	if !strings.Contains(s.String(), "45") {
+		t.Error("bad state", s.String())
+	}
+}
+
 func TestRequest(t *testing.T) {
 	params := url.Values{}
 	params.Set("command", "listApis")

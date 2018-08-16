@@ -23,7 +23,7 @@ const (
 	Destroying
 	// Destroyed ... (TODO)
 	Destroyed
-	// Error ... (TODO)
+	// Error is a state where the user can't see the snapshot while the snapshot may still exist on the storage
 	Error
 )
 
