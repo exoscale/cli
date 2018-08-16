@@ -32,7 +32,14 @@ func (e booleanResponse) Error() error {
 	return nil
 }
 
-func (client *Client) parseResponse(resp *http.Response, key string) (json.RawMessage, error) {
+// XXX: addIpToNic, activateIp6, restorevmresponse are kind of special
+var responseKeys = map[string]string{
+	"addiptonicresponse":            "addiptovmnicresponse",
+	"activateip6response":           "activateip6nicresponse",
+	"restorevirtualmachineresponse": "restorevmresponse",
+}
+
+func (client *Client) parseResponse(resp *http.Response, apiName string) (json.RawMessage, error) {
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -43,14 +50,26 @@ func (client *Client) parseResponse(resp *http.Response, key string) (json.RawMe
 		return nil, err
 	}
 
+	key := fmt.Sprintf("%sresponse", strings.ToLower(apiName))
 	response, ok := m[key]
 	if !ok {
 		if resp.StatusCode >= 400 {
 			response, ok = m["errorresponse"]
 		}
+
 		if !ok {
-			for k := range m {
-				return nil, fmt.Errorf("malformed JSON response, %q was expected, got %q", key, k)
+			// try again with the special keys
+			value, ok := responseKeys[key]
+			if ok {
+				key = value
+			}
+
+			response, ok = m[key]
+
+			if !ok {
+				for k := range m {
+					return nil, fmt.Errorf("malformed JSON response, %q was expected, got %q", key, k)
+				}
 			}
 		}
 	}
@@ -359,25 +378,10 @@ func (client *Client) request(ctx context.Context, command Command) (json.RawMes
 		return nil, fmt.Errorf(`body content-type response expected "application/json", got %q`, contentType)
 	}
 
-	apiName := client.APIName(command)
-	key := fmt.Sprintf("%sresponse", strings.ToLower(apiName))
-	// XXX: addIpToNic, activateIp6, restorevmresponse are kind of special
-	value, ok := responseKeys[key]
-	if ok {
-		key = value
-	}
-
-	text, err := client.parseResponse(resp, key)
+	text, err := client.parseResponse(resp, client.APIName(command))
 	if err != nil {
 		return nil, err
 	}
 
 	return text, nil
-}
-
-// XXX: addIpToNic, activateIp6, restorevmresponse are kind of special
-var responseKeys = map[string]string{
-	"addiptonicresponse":            "addiptovmnicresponse",
-	"activateip6response":           "activateip6nicresponse",
-	"restorevirtualmachineresponse": "restorevmresponse",
 }
