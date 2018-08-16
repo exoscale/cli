@@ -508,6 +508,14 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 							value: addr.(*[]egoscale.CIDR),
 						},
 					})
+				case reflect.TypeOf(egoscale.UUID{}):
+					flags = append(flags, cli.GenericFlag{
+						Name:  argName,
+						Usage: description,
+						Value: &uuidListGeneric{
+							value: addr.(*[]egoscale.UUID),
+						},
+					})
 				default:
 					//log.Printf("[SKIP] Slice of %s is not supported!", field.Name)
 				}

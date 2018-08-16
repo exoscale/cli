@@ -183,6 +183,42 @@ func (g *uuidGeneric) String() string {
 	return ""
 }
 
+type uuidListGeneric struct {
+	value *[]egoscale.UUID
+}
+
+func (g *uuidListGeneric) Set(value string) error {
+	m := g.value
+	if *m == nil {
+		n := make([]egoscale.UUID, 0)
+		*m = n
+	}
+
+	values := strings.Split(value, ",")
+
+	for _, value := range values {
+		uuid, err := egoscale.ParseUUID(value)
+		if err != nil {
+			return err
+		}
+		*m = append(*m, *uuid)
+	}
+	return nil
+}
+
+func (g *uuidListGeneric) String() string {
+	m := g.value
+	if m == nil || *m == nil {
+		return ""
+	}
+	vs := make([]string, 0, len(*m))
+	for _, v := range *m {
+		vs = append(vs, v.String())
+	}
+
+	return strings.Join(vs, ",")
+}
+
 type intTypeGeneric struct {
 	addr    interface{}
 	value   int64
@@ -291,15 +327,19 @@ func (g *tagGeneric) Set(value string) error {
 		*m = n
 	}
 
-	values := strings.SplitN(value, "=", 2)
-	if len(values) != 2 {
-		return fmt.Errorf("not a valid key=value content, got %s", value)
+	keypairs := strings.Split(value, ",")
+	for _, kv := range keypairs {
+		values := strings.SplitN(kv, ":", 2)
+		if len(values) != 2 {
+			return fmt.Errorf("not a valid key:value content, got %s", kv)
+		}
+
+		*m = append(*m, egoscale.ResourceTag{
+			Key:   values[0],
+			Value: values[1],
+		})
 	}
 
-	*m = append(*m, egoscale.ResourceTag{
-		Key:   values[0],
-		Value: values[1],
-	})
 	return nil
 }
 
