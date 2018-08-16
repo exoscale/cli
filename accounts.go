@@ -12,9 +12,9 @@ const (
 	// UserAccount represents a User
 	UserAccount AccountType = 0
 	// AdminAccount represents an Admin
-	AdminAccount
+	AdminAccount AccountType = 1
 	// DomainAdminAccount represents a Domain Admin
-	DomainAdminAccount
+	DomainAdminAccount AccountType = 2
 )
 
 // Account provides the detailed account information
