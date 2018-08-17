@@ -132,7 +132,7 @@ func prepareValues(prefix string, params url.Values, command interface{}) error 
 			case reflect.Ptr:
 				if val.IsNil() {
 					if required {
-						return fmt.Errorf("%s.%s (%v) is required, got tempty ptr", typeof.Name(), n, val.Kind())
+						return fmt.Errorf("%s.%s (%v) is required, got empty ptr", typeof.Name(), n, val.Kind())
 					}
 				} else {
 					switch field.Type.Elem().Kind() {
