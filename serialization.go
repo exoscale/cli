@@ -13,8 +13,6 @@ import (
 
 func csQuotePlus(s string) string {
 	s = strings.Replace(s, "+", "%20", -1)
-	s = strings.Replace(s, "%5B", "[", -1)
-	s = strings.Replace(s, "%5D", "]", -1)
 	return s
 }
 

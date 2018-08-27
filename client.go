@@ -117,12 +117,13 @@ func (client *Client) GetWithContext(ctx context.Context, g Gettable) error {
 		if err != nil {
 			return err
 		}
-		payload, err := client.Payload(req)
+		params, err := client.Payload(req)
 		if err != nil {
 			return err
 		}
 
 		// formatting the query string nicely
+		payload := params.Encode()
 		payload = strings.Replace(payload, "&", ", ", -1)
 
 		if count == 0 {
