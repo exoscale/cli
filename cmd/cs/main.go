@@ -151,7 +151,8 @@ func main() {
 				log.Fatal(err)
 			}
 		} else {
-			fmt.Printf("%s\\\n?%s\n", client.Endpoint, strings.Replace(payload, "&", "\\\n&", -1))
+			qs := payload.Encode()
+			fmt.Printf("%s\\\n?%s\n", client.Endpoint, strings.Replace(qs, "&", "\\\n&", -1))
 		}
 
 		apiName := client.APIName(method)
@@ -180,7 +181,9 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if _, err := fmt.Fprintf(os.Stdout, "%s?%s\n", client.Endpoint, signature); err != nil {
+		payload.Add("signature", signature)
+
+		if _, err := fmt.Fprintf(os.Stdout, "%s?%s\n", client.Endpoint, payload.Encode()); err != nil {
 			log.Fatal(err)
 		}
 		os.Exit(0)
