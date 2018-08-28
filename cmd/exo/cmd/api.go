@@ -84,7 +84,8 @@ func buildCommands(methods []category) {
 					if err != nil {
 						log.Fatal(err)
 					}
-					if _, err = fmt.Fprintf(os.Stdout, "%s\\\n?%s", cs.Endpoint, strings.Replace(payload, "&", "\\\n&", -1)); err != nil {
+					qs := payload.Encode()
+					if _, err = fmt.Fprintf(os.Stdout, "%s\\\n?%s", cs.Endpoint, strings.Replace(qs, "&", "\\\n&", -1)); err != nil {
 						log.Fatal(err)
 					}
 
