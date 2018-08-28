@@ -111,14 +111,7 @@ func main() {
 		},
 	})
 
-	args := os.Args
-	for i := 2; i < len(args); i++ {
-		if !strings.HasPrefix(args[i], "-") && !strings.HasPrefix(args[i], "--") && strings.Contains(args[i], "=") {
-			args[i] = "--" + args[i]
-		}
-	}
-
-	if err := app.Run(args); err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 
@@ -523,6 +516,14 @@ func buildFlags(method egoscale.Command) []cli.Flag {
 						Usage: description,
 						Value: &uuidListGeneric{
 							value: addr.(*[]egoscale.UUID),
+						},
+					})
+				case reflect.TypeOf(egoscale.UserSecurityGroup{}):
+					flags = append(flags, cli.GenericFlag{
+						Name:  argName,
+						Usage: description,
+						Value: &userSecurityGroupListGeneric{
+							value: addr.(*[]egoscale.UserSecurityGroup),
 						},
 					})
 				default:

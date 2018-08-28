@@ -219,6 +219,46 @@ func (g *uuidListGeneric) String() string {
 	return strings.Join(vs, ",")
 }
 
+type userSecurityGroupListGeneric struct {
+	value *[]egoscale.UserSecurityGroup
+}
+
+func (g *userSecurityGroupListGeneric) Set(value string) error {
+	m := g.value
+	if *m == nil {
+		n := make([]egoscale.UserSecurityGroup, 0)
+		*m = n
+	}
+
+	keypairs := strings.Split(value, ",")
+	for _, kv := range keypairs {
+		values := strings.SplitN(kv, "=", 2)
+		if len(values) != 2 {
+			return fmt.Errorf("not a valid account=group content, got %s", kv)
+		}
+
+		*m = append(*m, egoscale.UserSecurityGroup{
+			Account: values[0],
+			Group:   values[1],
+		})
+	}
+
+	return nil
+}
+
+func (g *userSecurityGroupListGeneric) String() string {
+	m := g.value
+	if m == nil || *m == nil {
+		return ""
+	}
+	vs := make([]string, 0, len(*m))
+	for _, v := range *m {
+		vs = append(vs, fmt.Sprintf("%s=%s", v.Account, v.Group))
+	}
+
+	return strings.Join(vs, ",")
+}
+
 type intTypeGeneric struct {
 	addr    interface{}
 	value   int64
@@ -329,9 +369,9 @@ func (g *tagGeneric) Set(value string) error {
 
 	keypairs := strings.Split(value, ",")
 	for _, kv := range keypairs {
-		values := strings.SplitN(kv, ":", 2)
+		values := strings.SplitN(kv, "=", 2)
 		if len(values) != 2 {
-			return fmt.Errorf("not a valid key:value content, got %s", kv)
+			return fmt.Errorf("not a valid tagname=value content, got %s", kv)
 		}
 
 		*m = append(*m, egoscale.ResourceTag{
