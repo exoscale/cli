@@ -8,6 +8,59 @@
   version = "v1.1.1"
 
 [[projects]]
+  name = "github.com/alecthomas/chroma"
+  packages = [
+    ".",
+    "formatters",
+    "formatters/html",
+    "lexers",
+    "lexers/a",
+    "lexers/b",
+    "lexers/c",
+    "lexers/circular",
+    "lexers/d",
+    "lexers/e",
+    "lexers/f",
+    "lexers/g",
+    "lexers/h",
+    "lexers/i",
+    "lexers/internal",
+    "lexers/j",
+    "lexers/k",
+    "lexers/l",
+    "lexers/m",
+    "lexers/n",
+    "lexers/o",
+    "lexers/p",
+    "lexers/q",
+    "lexers/r",
+    "lexers/s",
+    "lexers/t",
+    "lexers/v",
+    "lexers/w",
+    "lexers/x",
+    "lexers/y",
+    "styles"
+  ]
+  revision = "5d7fef2ae60b501bbf28d476c3f273b8017d8261"
+  version = "v0.5.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/danwakefield/fnmatch"
+  packages = ["."]
+  revision = "cbb64ac3d964b81592e64f957ad53df015803288"
+
+[[projects]]
+  name = "github.com/dlclark/regexp2"
+  packages = [
+    ".",
+    "syntax"
+  ]
+  revision = "487489b64fb796de2e55f4e8a4ad1e145f80e957"
+  version = "v1.1.6"
+
+[[projects]]
   branch = "master"
   name = "github.com/fatih/camelcase"
   packages = ["."]
@@ -171,6 +224,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3b594d25b1fc6df6e8a311dcd2a53dd25dad8e450a34063591e4b55c275fcef5"
+  inputs-digest = "681451d3705079be3910aba8bee5536c2785014188454e216802b79656c7d18b"
   solver-name = "gps-cdcl"
   solver-version = 1
