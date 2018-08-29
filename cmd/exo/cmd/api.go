@@ -105,7 +105,9 @@ func buildCommands(methods []category) {
 						log.Fatal(err)
 					}
 
-					if _, err := fmt.Fprintf(os.Stdout, "%s?%s\n", cs.Endpoint, signature); err != nil {
+					payload.Add("signature", signature)
+
+					if _, err := fmt.Fprintf(os.Stdout, "%s?%s\n", cs.Endpoint, payload.Encode()); err != nil {
 						log.Fatal(err)
 					}
 					os.Exit(0)
