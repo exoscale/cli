@@ -241,6 +241,59 @@ func TestClientGetNone(t *testing.T) {
 	}
 }
 
+func TestClientGetZero(t *testing.T) {
+	body := `
+	{"list%sresponse": {
+		"%s": []
+	}}`
+
+	id := MustParseUUID("4557261a-c4b9-45a3-91b3-e48ef55857ed")
+	things := []struct {
+		name     string
+		gettable Gettable
+	}{
+		{"zone", &Zone{ID: id}},
+		{"zone", &Zone{Name: "test zone"}},
+		{"publicipaddress", &IPAddress{ID: id}},
+		{"publicipaddress", &IPAddress{IPAddress: net.ParseIP("127.0.0.1")}},
+		{"sshkeypair", &SSHKeyPair{Name: "1"}},
+		{"sshkeypair", &SSHKeyPair{Fingerprint: "test ssh keypair"}},
+		{"affinitygroup", &AffinityGroup{ID: id}},
+		{"affinitygroup", &AffinityGroup{Name: "test affinity group"}},
+		{"securitygroup", &SecurityGroup{ID: id}},
+		{"securitygroup", &SecurityGroup{Name: "test affinity group"}},
+		{"virtualmachine", &VirtualMachine{ID: id}},
+		{"volume", &Volume{ID: id}},
+		{"template", &Template{ID: id, IsFeatured: true}},
+		{"serviceoffering", &ServiceOffering{ID: id}},
+		{"account", &Account{}},
+	}
+
+	for _, thing := range things {
+		plural := thing.name
+		if strings.HasSuffix(plural, "s") {
+			plural += "es"
+		} else {
+			plural += "s"
+		}
+		resp := response{200, jsonContentType, fmt.Sprintf(body, plural, thing.name)}
+		ts := newServer(resp)
+		defer ts.Close()
+
+		cs := NewClient(ts.URL, "KEY", "SECRET")
+
+		// fake 431
+		err := cs.Get(thing.gettable)
+
+		if err == nil {
+			t.Errorf("an error was expected")
+		}
+
+		if !strings.HasPrefix(err.Error(), "API error ParamError 431") {
+			t.Errorf("bad error %q", err)
+		}
+	}
+}
 func TestClientGetTooMany(t *testing.T) {
 	body := `
 	{"list%sresponse": {

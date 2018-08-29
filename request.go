@@ -87,7 +87,8 @@ func (client *Client) parseResponse(resp *http.Response, apiName string) (json.R
 		return nil, err
 	}
 
-	if len(n) > 1 {
+	// list response may contain only one key
+	if len(n) > 1 || strings.HasPrefix(key, "list") {
 		return response, nil
 	}
 
