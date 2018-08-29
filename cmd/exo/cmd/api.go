@@ -240,6 +240,8 @@ func buildFlags(method egoscale.Command, cmd *cobra.Command) {
 					cmd.Flags().VarP(&cidrListGeneric{addr.(*[]egoscale.CIDR)}, argName, "", description)
 				case reflect.TypeOf(egoscale.UUID{}):
 					cmd.Flags().VarP(&uuidListGeneric{addr.(*[]egoscale.UUID)}, argName, "", description)
+				case reflect.TypeOf(egoscale.UserSecurityGroup{}):
+					cmd.Flags().VarP(&userSecurityGroupListGeneric{addr.(*[]egoscale.UserSecurityGroup)}, argName, "", description)
 				default:
 					//log.Printf("[SKIP] Slice of %s is not supported!", field.Name)
 				}
