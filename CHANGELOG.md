@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.11.2
+------
+
+- fix: empty list responses
+
 0.11.1
 ------
 
