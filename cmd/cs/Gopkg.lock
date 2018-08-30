@@ -2,6 +2,7 @@
 
 
 [[projects]]
+  digest = "1:6a9f309d96f68caf3c0f00ba046de79355bf7cc1322f28d877c9e6fb436d11d4"
   name = "github.com/alecthomas/chroma"
   packages = [
     ".",
@@ -33,56 +34,77 @@
     "lexers/w",
     "lexers/x",
     "lexers/y",
-    "styles"
+    "styles",
   ]
+  pruneopts = "NUT"
   revision = "3020e2ea8c6b1a9c2336022d847c4392c3997f02"
   version = "v0.4.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:b82a20a024bc968d222cdc5f57769ab79502bb77f85384376734193c833bc295"
   name = "github.com/danwakefield/fnmatch"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "cbb64ac3d964b81592e64f957ad53df015803288"
 
 [[projects]]
+  digest = "1:e32db9fddc5e745860ca0f4176670d2cf839d3afa06b09ad595b8a99be8b5cb6"
   name = "github.com/dlclark/regexp2"
   packages = [
     ".",
-    "syntax"
+    "syntax",
   ]
+  pruneopts = "NUT"
   revision = "487489b64fb796de2e55f4e8a4ad1e145f80e957"
   version = "v1.1.6"
 
 [[projects]]
+  digest = "1:f59266de09e138237bf9df9deb57b9ebbdb1e33b8399bb739c3745e7d3d2787b"
   name = "github.com/go-ini/ini"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
   version = "v1.38.1"
 
 [[projects]]
+  digest = "1:5dba68a1600a235630e208cb7196b24e58fcbb77bb7a6bec08fcd23f081b0a58"
   name = "github.com/urfave/cli"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
+  pruneopts = "NUT"
   revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
 
 [[projects]]
   branch = "master"
+  digest = "1:a801d3c417117b67a96353daad340b250619780b75c29b652ea13697c946553e"
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
+  pruneopts = "NUT"
   revision = "e072cadbbdc8dd3d3ffa82b8b4b9304c261d9311"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4f54b6e670205c90ffed085ca3611d74f3eff116d4afd103598a72722118224c"
+  input-imports = [
+    "github.com/alecthomas/chroma",
+    "github.com/alecthomas/chroma/formatters",
+    "github.com/alecthomas/chroma/lexers",
+    "github.com/alecthomas/chroma/styles",
+    "github.com/go-ini/ini",
+    "github.com/urfave/cli",
+    "golang.org/x/crypto/ssh/terminal",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
