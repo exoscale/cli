@@ -196,7 +196,8 @@ var firewallAddCmd = &cobra.Command{
 			}
 		}
 
-		_, errs := asyncTasks(tasks)
+		resps := asyncTasks(tasks)
+		errs := filterErrors(resps)
 		if len(errs) > 0 {
 			return errs[0]
 		}

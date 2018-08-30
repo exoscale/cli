@@ -301,7 +301,8 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 		tasks[i].AsyncCommand = req
 	}
 
-	resps, errors := asyncTasks(tasks)
+	resps := asyncTasks(tasks)
+	errors := filterErrors(resps)
 	if len(errors) > 0 {
 		return nil, errors
 	}
@@ -309,7 +310,7 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 	vmResp := make([]egoscale.VirtualMachine, len(resps))
 	if isDefaultKeyPair {
 		for i, vm := range resps {
-			v := vm.(*egoscale.VirtualMachine)
+			v := vm.resp.(*egoscale.VirtualMachine)
 			vmResp[i] = *v
 			saveKeyPair(keyPairs, *v.ID)
 		}
