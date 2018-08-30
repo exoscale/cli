@@ -25,13 +25,14 @@ var vmDeleteCmd = &cobra.Command{
 		}
 
 		tasks := []task{}
+		vms := make([]egoscale.VirtualMachine, len(args))
 
-		for _, arg := range args {
+		for i, arg := range args {
 			vm, err := getVMWithNameOrID(arg)
 			if err != nil {
 				return err
 			}
-
+			vms[i] = *vm
 			tsk, err := prepareDeleteVM(vm, force)
 			if err != nil {
 				return err
@@ -42,15 +43,18 @@ var vmDeleteCmd = &cobra.Command{
 			}
 		}
 
-		resps, errs := asyncTasks(tasks)
-		if len(errs) > 0 {
-			return errs[0]
+		resps := asyncTasks(tasks)
+		errors := filterErrors(resps)
+		if len(errors) > 0 {
+			for _, err := range errors {
+				fmt.Fprintln(os.Stderr, err) // nolint: errcheck
+			}
+			return nil
 		}
 
-		for _, r := range resps {
-			resp := r.(*egoscale.VirtualMachine)
-
-			folder := path.Join(gConfigFolder, "instances", resp.ID.String())
+		for i := range resps {
+			vm := vms[i]
+			folder := path.Join(gConfigFolder, "instances", vm.ID.String())
 
 			if _, err := os.Stat(folder); !os.IsNotExist(err) {
 				if err := os.RemoveAll(folder); err != nil {
