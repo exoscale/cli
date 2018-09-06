@@ -21,6 +21,14 @@ func TestClientAPIName(t *testing.T) {
 	}
 }
 
+func TestClientAPIDescription(t *testing.T) {
+	cs := NewClient("ENDPOINT", "KEY", "SECRET")
+	req := &ListAPIs{}
+	desc := cs.APIDescription(req)
+	if desc != "lists all available apis on the server" {
+		t.Errorf("APIDescription of listApis is wrong, got %q", desc)
+	}
+}
 func TestClientResponse(t *testing.T) {
 	cs := NewClient("ENDPOINT", "KEY", "SECRET")
 
@@ -294,6 +302,7 @@ func TestClientGetZero(t *testing.T) {
 		}
 	}
 }
+
 func TestClientGetTooMany(t *testing.T) {
 	body := `
 	{"list%sresponse": {
@@ -350,4 +359,18 @@ func TestClientGetTooMany(t *testing.T) {
 			t.Errorf("bad error %s", err)
 		}
 	}
+}
+
+func TestClientTrace(t *testing.T) {
+	ts := newServer(response{200, jsonContentType, `{"listzones":{ "count": 0, "zone": []}}`})
+	defer ts.Close()
+
+	cs := NewClient(ts.URL, "KEY", "SECRET")
+
+	// XXX test something... this only increases the coverage
+	cs.TraceOn()
+
+	cs.Request(&ListZones{})
+
+	cs.TraceOff()
 }

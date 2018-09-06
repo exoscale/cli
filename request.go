@@ -119,7 +119,7 @@ func (client *Client) asyncRequest(ctx context.Context, asyncCommand AsyncComman
 				err = e
 				return false
 			}
-			if j.JobStatus == Success {
+			if j.JobStatus != Pending {
 				if r := j.Result(resp); r != nil {
 					err = r
 				}
@@ -269,14 +269,8 @@ func (client *Client) AsyncRequestWithContext(ctx context.Context, asyncCommand 
 			}
 		}
 
-		if result.JobStatus == Failure {
-			if !callback(nil, result.Error()) {
-				return
-			}
-		} else {
-			if !callback(result, nil) {
-				return
-			}
+		if !callback(result, nil) {
+			return
 		}
 	}
 }
