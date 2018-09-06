@@ -59,10 +59,9 @@ type config struct {
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:           "exo",
-	Short:         "A simple CLI to use CloudStack using egoscale lib",
+	Short:         "Manage easily your Exoscale infrastructure",
 	SilenceUsage:  true,
 	SilenceErrors: true,
-	//Long:  `A simple CLI to use CloudStack using egoscale lib`,
 }
 
 var versionCmd = &cobra.Command{
