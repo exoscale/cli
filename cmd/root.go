@@ -45,6 +45,7 @@ type account struct {
 	Account         string
 	Endpoint        string
 	DNSEndpoint     string
+	SosEndpoint     string
 	Key             string
 	Secret          string
 	DefaultZone     string
@@ -119,7 +120,6 @@ func buildClient() {
 	}
 
 	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint, gCurrentAccount.Key, gCurrentAccount.Secret)
-
 	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.Secret)
 }
 
@@ -233,8 +233,13 @@ func initConfig() {
 		gCurrentAccount.DefaultTemplate = defaultTemplate
 	}
 
+	if gCurrentAccount.SosEndpoint == "" {
+		gCurrentAccount.SosEndpoint = defaultSosEndpoint
+	}
+
 	gCurrentAccount.Endpoint = strings.TrimRight(gCurrentAccount.Endpoint, "/")
 	gCurrentAccount.DNSEndpoint = strings.TrimRight(gCurrentAccount.DNSEndpoint, "/")
+	gCurrentAccount.SosEndpoint = strings.TrimRight(gCurrentAccount.SosEndpoint, "/")
 }
 
 // getCmdPosition returns a command position by fetching os.args and ignoring flags

@@ -20,6 +20,14 @@ ignored = ["github.com/exoscale/egoscale"]
   name = "github.com/vbauerster/mpb"
   version = "3.3.1"
 
+[[constraint]]
+  branch = "master"
+  name = "github.com/minio/minio-go"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/dustin/go-humanize"
+
 [prune]
   go-tests = true
   unused-packages = true

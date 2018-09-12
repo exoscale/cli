@@ -47,3 +47,15 @@ func (t *Table) Render() {
 		t.Table.Render()
 	}
 }
+
+// RemoveFrame remove all border and separator
+func (t *Table) RemoveFrame() {
+	t.SetBorder(false)
+	t.SetColumnSeparator("")
+	tablewriter.PadLeft("", "", 0)
+}
+
+// AppendArgs append all args in a line using table.Append()
+func (t *Table) AppendArgs(s ...string) {
+	t.Append(s)
+}
