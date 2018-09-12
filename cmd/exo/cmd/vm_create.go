@@ -293,12 +293,12 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 
 	tasks := make([]task, len(deploys))
 
-	for i, req := range deploys {
-		tasks[i].string = fmt.Sprintf("Deploying %q", req.Name)
+	for i := range deploys {
+		tasks[i].string = fmt.Sprintf("Deploying %q", deploys[i].Name)
 		if keypairs != "" {
-			req.KeyPair = keypairs
+			deploys[i].KeyPair = keypairs
 		}
-		tasks[i].AsyncCommand = req
+		tasks[i].AsyncCommand = deploys[i]
 	}
 
 	resps := asyncTasks(tasks)
