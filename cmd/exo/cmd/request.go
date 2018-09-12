@@ -57,13 +57,6 @@ func asyncTasks(tasks []task) []taskResponse {
 				// decor.DSyncWidth bit enables column width synchronization
 				decor.Percentage(decor.WCSyncSpace),
 			),
-			mpb.AppendDecorators(
-				// replace ETA decorator with "done" message, OnComplete event
-				decor.OnComplete(
-					// ETA decorator with ewma age of 60
-					decor.EwmaETA(decor.ET_STYLE_GO, 60), "done",
-				),
-			),
 		)
 
 		taskSem := make(chan int, parallelTask)
