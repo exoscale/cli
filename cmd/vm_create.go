@@ -153,7 +153,7 @@ var vmCreateCmd = &cobra.Command{
 		}
 
 		if r[0].ID == nil {
-			return fmt.Errorf("Virtual machine ID is (nil)")
+			return fmt.Errorf("virtual machine ID is (nil)")
 		}
 		sshinfo, err := getSSHInfo(r[0].ID.String(), ipv6)
 		if err != nil {
