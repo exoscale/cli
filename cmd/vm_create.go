@@ -152,6 +152,9 @@ var vmCreateCmd = &cobra.Command{
 			return nil
 		}
 
+		if r[0].ID == nil {
+			return fmt.Errorf("Virtual machine ID is (nil)")
+		}
 		sshinfo, err := getSSHInfo(r[0].ID.String(), ipv6)
 		if err != nil {
 			return err
@@ -269,7 +272,7 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 	isDefaultKeyPair := false
 	var keyPairs *egoscale.SSHKeyPair
 
-	var keypairs string
+	var keypairsName string
 	if deploys[0].KeyPair == "" {
 		isDefaultKeyPair = true
 		fmt.Println("Creating private SSH key")
@@ -287,7 +290,7 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 		}
 		defer deleteSSHKey(keyPairs.Name) // nolint: errcheck
 
-		keypairs = keyPairs.Name
+		keypairsName = keyPairs.Name
 
 	}
 
@@ -295,8 +298,8 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 
 	for i := range deploys {
 		tasks[i].string = fmt.Sprintf("Deploying %q", deploys[i].Name)
-		if keypairs != "" {
-			deploys[i].KeyPair = keypairs
+		if keypairsName != "" {
+			deploys[i].KeyPair = keypairsName
 		}
 		tasks[i].AsyncCommand = deploys[i]
 	}
@@ -308,10 +311,11 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 	}
 
 	vmResp := make([]egoscale.VirtualMachine, len(resps))
-	if isDefaultKeyPair {
-		for i, vm := range resps {
-			v := vm.resp.(*egoscale.VirtualMachine)
-			vmResp[i] = *v
+
+	for i, vm := range resps {
+		v := vm.resp.(*egoscale.VirtualMachine)
+		vmResp[i] = *v
+		if isDefaultKeyPair {
 			saveKeyPair(keyPairs, *v.ID)
 		}
 	}

@@ -113,7 +113,7 @@ func execTask(task task, id int, c chan taskStatus, resp *taskResponse, sem chan
 				errorReq = errR
 				return false
 			}
-			resp.resp = response
+			(*resp).resp = response
 			c <- taskStatus{id, egoscale.Success}
 			return false
 		}
@@ -124,7 +124,7 @@ func execTask(task task, id int, c chan taskStatus, resp *taskResponse, sem chan
 
 	if errorReq != nil {
 		c <- taskStatus{id, egoscale.Failure}
-		resp.error = fmt.Errorf("failure %s: %s", task.string, errorReq)
+		(*resp).error = fmt.Errorf("failure %s: %s", task.string, errorReq)
 	}
 
 	<-sem
