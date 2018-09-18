@@ -1,2 +1,3 @@
-exo
-vendor
+dist
+go.sum
+ops.asc

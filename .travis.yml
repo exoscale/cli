@@ -1,0 +1,20 @@
+language: go
+
+matrix:
+  include:
+    - go: "1.10.x"
+      script:
+        - go test -v ./...
+        - goreleaser --snapshot --skip-sign
+    - go: "1.11.x"
+      script: go test -v -mod=vendor ./...
+
+
+env:
+  - GO111MODULE=on
+
+before_install:
+  - curl -sL https://git.io/goreleaser | head -n -2 | bash
+  - tar -xf /tmp/goreleaser.tar.gz -C $GOPATH/bin
+
+install: true
