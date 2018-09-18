@@ -9,8 +9,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/exoscale/egoscale"
 	"github.com/exoscale/cli/utils"
+	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 

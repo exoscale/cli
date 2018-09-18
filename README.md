@@ -1,5 +1,8 @@
 # exo cli
 
+[![Build Status](https://travis-ci.org/exoscale/cli.svg?branch=master)](https://travis-ci.org/exoscale/cli)
+[![Go Report Card](https://goreportcard.com/badge/github.com/exoscale/cli)](https://goreportcard.com/report/github.com/exoscale/cli)
+
 Manage easily your Exoscale infrastructure from the exo command-line
 
 
