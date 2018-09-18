@@ -69,7 +69,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of exo",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("exo version %s\n", egoscale.Version)
+		fmt.Printf("exo v%s (egoscale v%s)\n", Version, egoscale.Version)
 	},
 }
 
