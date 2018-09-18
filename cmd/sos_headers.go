@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/exoscale/egoscale/cmd/exo/table"
+	"github.com/exoscale/cli/table"
 	minio "github.com/minio/minio-go"
 	"github.com/spf13/cobra"
 )

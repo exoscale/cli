@@ -1,0 +1,84 @@
+# github.com/VividCortex/ewma v1.1.1
+github.com/VividCortex/ewma
+# github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
+github.com/dustin/go-humanize
+# github.com/exoscale/egoscale v0.11.4
+github.com/exoscale/egoscale
+# github.com/fatih/camelcase v1.0.0
+github.com/fatih/camelcase
+# github.com/fsnotify/fsnotify v1.4.7
+github.com/fsnotify/fsnotify
+# github.com/go-ini/ini v1.38.2
+github.com/go-ini/ini
+# github.com/hashicorp/hcl v1.0.0
+github.com/hashicorp/hcl
+github.com/hashicorp/hcl/hcl/printer
+github.com/hashicorp/hcl/hcl/ast
+github.com/hashicorp/hcl/hcl/parser
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/hcl/scanner
+github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/json/scanner
+github.com/hashicorp/hcl/json/token
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/magiconair/properties v1.8.0
+github.com/magiconair/properties
+# github.com/mattn/go-isatty v0.0.4
+github.com/mattn/go-isatty
+# github.com/mattn/go-runewidth v0.0.3
+github.com/mattn/go-runewidth
+# github.com/minio/minio-go v6.0.6+incompatible
+github.com/minio/minio-go
+github.com/minio/minio-go/pkg/credentials
+github.com/minio/minio-go/pkg/encrypt
+github.com/minio/minio-go/pkg/s3signer
+github.com/minio/minio-go/pkg/s3utils
+github.com/minio/minio-go/pkg/set
+# github.com/mitchellh/go-homedir v1.0.0
+github.com/mitchellh/go-homedir
+# github.com/mitchellh/mapstructure v1.0.0
+github.com/mitchellh/mapstructure
+# github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
+github.com/olekukonko/tablewriter
+# github.com/pelletier/go-toml v1.2.0
+github.com/pelletier/go-toml
+# github.com/satori/go.uuid v1.2.0
+github.com/satori/go.uuid
+# github.com/spf13/afero v1.1.2
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/cast v1.2.0
+github.com/spf13/cast
+# github.com/spf13/cobra v0.0.3
+github.com/spf13/cobra
+# github.com/spf13/jwalterweatherman v1.0.0
+github.com/spf13/jwalterweatherman
+# github.com/spf13/pflag v1.0.2
+github.com/spf13/pflag
+# github.com/spf13/viper v1.2.0
+github.com/spf13/viper
+# github.com/vbauerster/mpb v3.3.2+incompatible
+github.com/vbauerster/mpb
+github.com/vbauerster/mpb/decor
+github.com/vbauerster/mpb/cwriter
+github.com/vbauerster/mpb/internal
+# golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b
+golang.org/x/crypto/ssh/terminal
+golang.org/x/crypto/argon2
+golang.org/x/crypto/blake2b
+# golang.org/x/net v0.0.0-20180911220305-26e67e76b6c3
+golang.org/x/net/http/httpguts
+golang.org/x/net/idna
+# golang.org/x/sys v0.0.0-20180906133057-8cf3aee42992
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+golang.org/x/sys/cpu
+# golang.org/x/text v0.3.0
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+golang.org/x/text/secure/bidirule
+golang.org/x/text/unicode/bidi
+# gopkg.in/yaml.v2 v2.2.1
+gopkg.in/yaml.v2

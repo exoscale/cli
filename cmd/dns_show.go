@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/exoscale/egoscale/cmd/exo/table"
+	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 

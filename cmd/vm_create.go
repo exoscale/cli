@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	"github.com/exoscale/egoscale/cmd/exo/utils"
+	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 )
 

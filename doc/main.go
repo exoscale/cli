@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/egoscale/cmd/exo/cmd"
+	"github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
