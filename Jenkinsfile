@@ -22,7 +22,7 @@ node {
           "go test": {
             test()
           },
-          "go install": {
+          "go build": {
             build()
           }
         )
@@ -76,8 +76,8 @@ def build() {
   docker.withRegistry('https://registry.internal.exoscale.ch') {
     def image = docker.image('registry.internal.exoscale.ch/exoscale/golang:1.11')
     image.inside("-u root --net=host") {
-      sh "go install -mod=vendor -o cli"
-      sh "test -e /go/bin/cli"
+      sh "go build -mod vendor -o exo"
+      sh "test -e exo"
     }
   }
 }
