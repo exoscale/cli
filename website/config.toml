@@ -1,0 +1,27 @@
+baseURL = "https://exoscale.github.io/cli"
+languageCode = "en"
+footnoteReturnLinkContents = "↩"
+title = "exo - the Exoscale command-line tool"
+metadataFormat = "yaml"
+sectionPagesMenu = "main"
+staticDir = ["static"]
+
+PygmentsCodeFences = true
+PygmentsStyle = "monokai"
+
+enableEmoji = true
+
+[params]
+AuthorName = "Exoscale"
+GitHubUser = "exoscale"
+
+[blackfriday]
+angledQuotes = true
+extensions = ["hardLineBreak"]
+plainIDAnchors = true
+
+[frontmatter]
+date = ["date", "publishDate", "lastmod"]
+lastmod = [":git", "lastmod", "date", "publishDate"]
+publishDate = ["publishDate", "date"]
+expiryDate = ["expiryDate"]
