@@ -10,12 +10,12 @@ node {
       stage('SCM') {
         checkout scm
       }
-      "gofmt": {
-        gofmt()
-      },
       updateGithubCommitStatus('PENDING', "${env.WORKSPACE}/src")
       stage('Build') {
         parallel (
+          "gofmt": {
+            gofmt()
+          },
           "go lint": {
             golint(repo)
           },
@@ -50,6 +50,7 @@ def gofmt() {
   }
 }
 
+// gometalinter has trouble working on go 1.11
 def golint(repo) {
   docker.withRegistry('https://registry.internal.exoscale.ch') {
     def image = docker.image('registry.internal.exoscale.ch/exoscale/golang:1.10')
