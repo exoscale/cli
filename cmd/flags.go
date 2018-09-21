@@ -10,6 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// nilValue is returned by a flag when the value is not set
+const nilValue = "nil"
+
 type uint8PtrValue struct {
 	*uint8
 }
@@ -30,7 +33,7 @@ func (v *uint8PtrValue) Type() string {
 
 func (v *uint8PtrValue) String() string {
 	if v.uint8 == nil {
-		return "nil"
+		return nilValue
 	}
 	return strconv.FormatUint(uint64(*v.uint8), 10)
 }
@@ -65,7 +68,7 @@ func (v *int64PtrValue) Type() string {
 
 func (v *int64PtrValue) String() string {
 	if v.int64 == nil {
-		return "nil"
+		return nilValue
 	}
 	return strconv.FormatInt(*v.int64, 10)
 }
@@ -104,7 +107,7 @@ func (v *uuid) Type() string {
 
 func (v *uuid) String() string {
 	if v.UUID == nil || *(v.UUID) == nil {
-		return "nil"
+		return nilValue
 	}
 
 	return (*(v.UUID)).String()
@@ -131,7 +134,7 @@ func (v *cidr) Type() string {
 
 func (v *cidr) String() string {
 	if v.CIDR == nil || *(v.CIDR) == nil {
-		return "nil"
+		return nilValue
 	}
 
 	return (*(v.CIDR)).String()
@@ -163,7 +166,7 @@ func (v *boolFlag) Type() string {
 
 func (v *boolFlag) String() string {
 	if v.bool == nil || *(v.bool) == nil {
-		return "nil"
+		return nilValue
 	}
 
 	if *(*(v.bool)) {
