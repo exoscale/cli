@@ -156,17 +156,17 @@ func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 			return false
 		}
 
-		if jobResult.JobStatus == egoscale.Success {
-			if errR := jobResult.Result(response); errR != nil {
-				errorReq = errR
-				return false
-			}
+		if jobResult.JobStatus == egoscale.Pending {
+			return true
+		}
 
-			fmt.Println(" success.")
+		if errR := jobResult.Result(response); errR != nil {
+			errorReq = errR
 			return false
 		}
 
-		return true
+		fmt.Println(" success.")
+		return false
 	})
 
 	if errorReq != nil {

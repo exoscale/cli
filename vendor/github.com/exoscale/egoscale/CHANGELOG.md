@@ -1,6 +1,28 @@
 Changelog
 =========
 
+0.11.6
+------
+
+- fix: `Network.ListRequest` accepts a `Name` argument
+- change: `SecurityGroup` and the rules aren't `Taggable` anymore
+
+0.11.5
+------
+
+- feat: addition of `updateVmNicIp`
+- fix: `UpdateVMAffinityGroup` expected response
+
+0.11.4
+------
+
+*no changes in the core library*
+
+0.11.3
+------
+
+*no changes in the core library*
+
 0.11.2
 ------
 

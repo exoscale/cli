@@ -37,6 +37,7 @@ var responseKeys = map[string]string{
 	"addiptonicresponse":            "addiptovmnicresponse",
 	"activateip6response":           "activateip6nicresponse",
 	"restorevirtualmachineresponse": "restorevmresponse",
+	"updatevmaffinitygroupresponse": "updatevirtualmachineresponse",
 }
 
 func (client *Client) parseResponse(resp *http.Response, apiName string) (json.RawMessage, error) {

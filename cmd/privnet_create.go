@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"net"
 	"os"
 
 	"github.com/exoscale/cli/table"
@@ -16,11 +17,23 @@ var privnetCreateCmd = &cobra.Command{
 	Short:   "Create private network",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name, err := cmd.Flags().GetString("name")
+		if len(args) != 1 {
+			return cmd.Usage()
+		}
+		name := args[0]
+		desc, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
 		}
-		desc, err := cmd.Flags().GetString("description")
+		startip, err := cmd.Flags().GetString("startip")
+		if err != nil {
+			return err
+		}
+		endip, err := cmd.Flags().GetString("endip")
+		if err != nil {
+			return err
+		}
+		netmask, err := cmd.Flags().GetString("netmask")
 		if err != nil {
 			return err
 		}
@@ -29,18 +42,12 @@ var privnetCreateCmd = &cobra.Command{
 			return err
 		}
 
-		if name != "" && zone == "" {
+		if zone == "" {
 			zone = gCurrentAccount.DefaultZone
 		}
 
-		if name == "" && zone == "" {
+		if zone == "" {
 			reader := bufio.NewReader(os.Stdin)
-			if name == "" {
-				name, err = readInput(reader, "Name", "")
-				if err != nil {
-					return err
-				}
-			}
 			if desc == "" {
 				desc, err = readInput(reader, "Description", "")
 				if err != nil {
@@ -59,7 +66,7 @@ var privnetCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		return privnetCreate(name, desc, zone)
+		return privnetCreate(name, desc, zone, startip, endip, netmask)
 	},
 }
 
@@ -72,7 +79,7 @@ func isEmptyArgs(args ...string) bool {
 	return false
 }
 
-func privnetCreate(name, desc, zoneName string) error {
+func privnetCreate(name, desc, zoneName, startIPAddr, endIPAddr, netmask string) error {
 	zone, err := getZoneIDByName(zoneName)
 	if err != nil {
 		return err
@@ -83,12 +90,19 @@ func privnetCreate(name, desc, zoneName string) error {
 		return err
 	}
 
+	startIP := net.ParseIP(startIPAddr)
+	endIP := net.ParseIP(endIPAddr)
+	netmaskIP := net.ParseIP(netmask)
+
 	s := resp.(*egoscale.ListNetworkOfferingsResponse)
 
 	req := &egoscale.CreateNetwork{
 		DisplayText: desc,
 		Name:        name,
 		ZoneID:      zone,
+		StartIP:     startIP,
+		EndIP:       endIP,
+		Netmask:     netmaskIP,
 	}
 	if len(s.NetworkOffering) > 0 {
 		req.NetworkOfferingID = s.NetworkOffering[0].ID
@@ -102,15 +116,23 @@ func privnetCreate(name, desc, zoneName string) error {
 	newNet := resp.(*egoscale.Network)
 
 	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Description", "ID"})
-	table.Append([]string{newNet.Name, newNet.DisplayText, newNet.ID.String()})
+	table.SetHeader([]string{"Name", "Description", "ID", "DHCP"})
+
+	table.Append([]string{
+		newNet.Name,
+		newNet.DisplayText,
+		newNet.ID.String(),
+		dhcpRange(startIP, endIP, netmaskIP),
+	})
 	table.Render()
 	return nil
 }
 
 func init() {
-	privnetCreateCmd.Flags().StringP("name", "n", "", "Private network name")
 	privnetCreateCmd.Flags().StringP("description", "d", "", "Private network description")
+	privnetCreateCmd.Flags().StringP("startip", "s", "", "the beginning IP address in the network IP range. Required for managed networks.")
+	privnetCreateCmd.Flags().StringP("endip", "e", "", "the ending IP address in the network IP range. Required for managed networks.")
+	privnetCreateCmd.Flags().StringP("netmask", "n", "", "the netmask of the network. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("zone", "z", "", "Assign private network to a zone")
 	privnetCmd.AddCommand(privnetCreateCmd)
 }
