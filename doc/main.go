@@ -33,7 +33,7 @@ func main() {
 	var flagError pflag.ErrorHandling
 	docCmd := pflag.NewFlagSet("", flagError)
 	var isHugo = docCmd.BoolP("is-hugo", "", true, "set false if you dont want to generate fot hugo (https://gohugo.io/)")
-	var filesDir = docCmd.StringP("doc-path", "", "../../website/content/cli", "Path directory where you want generate doc files")
+	var filesDir = docCmd.StringP("doc-path", "", "./website/content", "Path directory where you want generate doc files")
 	var help = docCmd.BoolP("help", "h", false, "Help about any command")
 
 	if err := docCmd.Parse(os.Args); err != nil {
@@ -52,7 +52,7 @@ func main() {
 		now := time.Now().Format(time.RFC3339)
 		name := filepath.Base(filename)
 		base := strings.TrimSuffix(name, path.Ext(name))
-		url := fmt.Sprintf("/cli/%s/", strings.ToLower(base))
+		url := fmt.Sprintf("/%s/", strings.ToLower(base))
 		slug := strings.Replace(base, "_", " ", -1)
 		typeExo := `"command"`
 		if strings.Count(base, "_") > 1 {
@@ -63,7 +63,7 @@ func main() {
 
 	linkHandler := func(name string) string {
 		base := strings.TrimSuffix(name, path.Ext(name))
-		return fmt.Sprintf("/egoscale/cli/%s/", strings.ToLower(base))
+		return fmt.Sprintf("/cli/%s/", strings.ToLower(base))
 	}
 
 	if err := exoGenMarkdownTreeCustom(cmd.RootCmd, *filesDir, filePrepender, linkHandler, *isHugo); err != nil {

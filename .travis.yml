@@ -7,7 +7,8 @@ matrix:
         - go test -v ./...
         - goreleaser --snapshot --skip-sign
     - go: "1.11.x"
-      script: go test -v -mod=vendor ./...
+      script:
+        - go test -v -mod=vendor ./...
 
 cache: apt
 
@@ -18,10 +19,22 @@ addons:
       - rpm
 
 env:
-  - GO111MODULE=on
+  - GO111MODULE=on HUGO_VERSION=0.47.1
 
 before_install:
   - curl -sL https://git.io/goreleaser | head -n -2 | bash
   - tar -xf /tmp/goreleaser.tar.gz -C $GOPATH/bin
 
 install: true
+
+jobs:
+  include:
+    - stage: gh-pages
+      go: "1.11"
+      if: type = push
+      script: |
+        cd website
+        sh prepare.sh
+        wget https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-64bit.deb
+        sudo dpkg -i hugo_${HUGO_VERSION}_Linux-64bit.deb
+        hugo
