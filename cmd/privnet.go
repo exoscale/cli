@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"net"
+
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -33,4 +36,14 @@ func getNetworkByName(name string) (*egoscale.Network, error) {
 
 func init() {
 	RootCmd.AddCommand(privnetCmd)
+}
+
+// dhcpRange returns the string representation for a DHCP
+func dhcpRange(startIP, endIP, netmask net.IP) string {
+	if startIP != nil && endIP != nil && netmask != nil {
+		mask := net.IPMask(netmask.To4())
+		prefixSize, _ := mask.Size()
+		return fmt.Sprintf("%s-%s /%d", startIP.String(), endIP.String(), prefixSize)
+	}
+	return "n/a"
 }

@@ -14,7 +14,7 @@ We provide many alternatives on the [releases](https://github.com/exoscale/cli/r
 ```
 $ git clone https://github.com/exoscale/cli
 $ cd cli
-$ go build -o exo
+$ go build -mod vendor -o exo
 ```
 
 ## Configuration

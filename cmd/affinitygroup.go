@@ -17,7 +17,7 @@ func getAffinityGroupByName(name string) (*egoscale.AffinityGroup, error) {
 	aff := &egoscale.AffinityGroup{}
 
 	id, err := egoscale.ParseUUID(name)
-	if err != nil {
+	if err == nil {
 		aff.ID = id
 	} else {
 		aff.Name = name

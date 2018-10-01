@@ -3,7 +3,7 @@ module github.com/exoscale/cli
 require (
 	github.com/VividCortex/ewma v1.1.1 // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
-	github.com/exoscale/egoscale v0.11.4
+	github.com/exoscale/egoscale v0.11.6
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.38.2
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
