@@ -15,23 +15,24 @@ addons:
 env:
   - GO111MODULE=on HUGO_VERSION=0.49
 
-before_install:
-  - curl -sL https://git.io/goreleaser | head -n -2 | bash
-  - tar -xf /tmp/goreleaser.tar.gz -C $GOPATH/bin
-
-install: true
-
 jobs:
   include:
     - stage: test
       go: "1.10.x"
       script:
         - go test -v ./...
-        - goreleaser --snapshot --skip-sign
+        - go build
     - stage: test
       go: "1.11.x"
       script:
         - go test -v -mod=vendor ./...
+        - go build -mod=vendor
+    - stage: goreleaser
+      go: "1.11.x"
+      script:
+        - curl -sL https://git.io/goreleaser | head -n -2 | bash
+        - tar -xf /tmp/goreleaser.tar.gz -C $GOPATH/bin
+        - goreleaser --snapshot --skip-sign
     - stage: gh-pages
       go: "1.11.x"
       if: branch = master AND type = push
