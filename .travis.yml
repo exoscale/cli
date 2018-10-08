@@ -1,14 +1,8 @@
 language: go
 
-matrix:
-  include:
-    - go: "1.10.x"
-      script:
-        - go test -v ./...
-        - goreleaser --snapshot --skip-sign
-    - go: "1.11.x"
-      script:
-        - go test -v -mod=vendor ./...
+go:
+  - "1.10.x"
+  - "1.11.x"
 
 cache: apt
 
@@ -29,8 +23,17 @@ install: true
 
 jobs:
   include:
+    - stage: test
+      go: "1.10.x"
+      script:
+        - go test -v ./...
+        - goreleaser --snapshot --skip-sign
+    - stage: test
+      go: "1.11.x"
+      script:
+        - go test -v -mod=vendor ./...
     - stage: gh-pages
-      go: "1.11"
+      go: "1.11.x"
       if: branch = master AND type = push
       script: |
         cd website
