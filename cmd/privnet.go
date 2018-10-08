@@ -34,6 +34,26 @@ func getNetworkByName(name string) (*egoscale.Network, error) {
 	return net, nil
 }
 
+func getNetworkByNameAndZone(name string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
+	net := &egoscale.Network{
+		ZoneID:          zoneID,
+		Type:            "Isolated",
+		CanUseForDeploy: true,
+	}
+
+	id, errUUID := egoscale.ParseUUID(name)
+	if errUUID != nil {
+		net.Name = name
+	} else {
+		net.ID = id
+	}
+
+	if err := cs.GetWithContext(gContext, net); err != nil {
+		return nil, err
+	}
+
+	return net, nil
+}
 func init() {
 	RootCmd.AddCommand(privnetCmd)
 }

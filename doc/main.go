@@ -156,7 +156,7 @@ func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(stri
 		buf.WriteString(fmt.Sprintf("```\n%s\n```\n\n", cmd.Example))
 	}
 
-	if err := printOptions(buf, cmd, name); err != nil {
+	if err := printOptions(buf, cmd); err != nil {
 		return err
 	}
 	if hasSeeAlso(cmd) {
@@ -197,7 +197,7 @@ func writeFlag(buffer *bytes.Buffer, flag *pflag.Flag) {
 	buffer.WriteString(fmt.Sprintf("`--%s` - %s\n", flag.Name, html.EscapeString(usage)))
 }
 
-func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {
+func printOptions(buf *bytes.Buffer, cmd *cobra.Command) error {
 	flags := cmd.NonInheritedFlags()
 	if flags.HasAvailableFlags() {
 		buf.WriteString("### Options\n\n")

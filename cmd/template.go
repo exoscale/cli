@@ -125,7 +125,7 @@ func findTemplates(zoneID *egoscale.UUID, filters ...string) ([]egoscale.Templat
 		return nil, err
 	}
 
-	var keys []string
+	keys := make([]string, 0, len(allOS))
 	for k := range allOS {
 		keys = append(keys, k)
 	}

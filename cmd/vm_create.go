@@ -81,7 +81,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		sgs, err := getSecurityGroups(cs, sg)
+		sgs, err := getSecurityGroups(sg)
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		pvs, err := getPrivnetList(privnet, zoneName)
+		pvs, err := getPrivnetList(privnet, zone)
 		if err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		affinitygroups, err := getAffinityGroup(cs, affinitygroup)
+		affinitygroups, err := getAffinityGroup(affinitygroup)
 		if err != nil {
 			return err
 		}
@@ -208,7 +208,7 @@ func getCommaflag(p string) []string {
 	return res
 }
 
-func getSecurityGroups(cs *egoscale.Client, commaParameter string) ([]egoscale.UUID, error) {
+func getSecurityGroups(commaParameter string) ([]egoscale.UUID, error) {
 
 	sgs := getCommaflag(commaParameter)
 	ids := make([]egoscale.UUID, len(sgs))
@@ -225,13 +225,13 @@ func getSecurityGroups(cs *egoscale.Client, commaParameter string) ([]egoscale.U
 	return ids, nil
 }
 
-func getPrivnetList(commaParameter, zoneID string) ([]egoscale.UUID, error) {
+func getPrivnetList(commaParameter string, zoneID *egoscale.UUID) ([]egoscale.UUID, error) {
 
 	sgs := getCommaflag(commaParameter)
 	ids := make([]egoscale.UUID, len(sgs))
 
 	for i, sg := range sgs {
-		n, err := getNetworkByName(sg)
+		n, err := getNetworkByNameAndZone(sg, zoneID)
 		if err != nil {
 			return nil, err
 		}
@@ -242,7 +242,7 @@ func getPrivnetList(commaParameter, zoneID string) ([]egoscale.UUID, error) {
 	return ids, nil
 }
 
-func getAffinityGroup(cs *egoscale.Client, commaParameter string) ([]egoscale.UUID, error) {
+func getAffinityGroup(commaParameter string) ([]egoscale.UUID, error) {
 	affs := getCommaflag(commaParameter)
 	ids := make([]egoscale.UUID, len(affs))
 
