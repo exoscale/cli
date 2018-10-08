@@ -17,13 +17,11 @@ env:
 
 jobs:
   include:
-    - stage: test
-      go: "1.10.x"
+    - go: "1.10.x"
       script:
         - go test -v ./...
         - go build
-    - stage: test
-      go: "1.11.x"
+    - go: "1.11.x"
       script:
         - go test -v -mod=vendor ./...
         - go build -mod=vendor
