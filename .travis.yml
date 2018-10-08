@@ -43,5 +43,5 @@ jobs:
         git config user.name "TravisCI"
         git config user.email "travis@travis-ci.org"
         git add .
-        git commit - m "Deployed to GitHub pages"
+        git commit -m "Deployed to GitHub pages"
         git push -f -q "https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG}" master:gh-pages
