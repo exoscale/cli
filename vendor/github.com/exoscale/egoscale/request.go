@@ -68,9 +68,7 @@ func (client *Client) parseResponse(resp *http.Response, apiName string) (json.R
 			response, ok = m[key]
 
 			if !ok {
-				for k := range m {
-					return nil, fmt.Errorf("malformed JSON response, %q was expected, got %q", key, k)
-				}
+				return nil, fmt.Errorf("malformed JSON response %d, %q was expected.\n%s", resp.StatusCode, key, b)
 			}
 		}
 	}
@@ -291,6 +289,11 @@ func (client *Client) Payload(command Command) (url.Values, error) {
 	params.Set("apikey", client.APIKey)
 	params.Set("command", client.APIName(command))
 	params.Set("response", "json")
+
+	if params.Get("expires") == "" && client.Expiration >= 0 {
+		params.Set("signatureversion", "3")
+		params.Set("expires", time.Now().Add(client.Expiration).Local().Format("2006-01-02T15:04:05-0700"))
+	}
 
 	return params, nil
 }

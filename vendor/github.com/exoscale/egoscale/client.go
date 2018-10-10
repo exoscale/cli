@@ -52,6 +52,8 @@ type Client struct {
 	PageSize int
 	// Timeout represents the default timeout for the async requests
 	Timeout time.Duration
+	// Expiration representation how long a signed payload may be used
+	Expiration time.Duration
 	// RetryStrategy represents the waiting strategy for polling the async requests
 	RetryStrategy RetryStrategyFunc
 	// Logger contains any log, plug your own
@@ -72,6 +74,7 @@ type WaitAsyncJobResultFunc func(*AsyncJobResult, error) bool
 // Timeout is set to both the HTTP client and the client itself.
 func NewClient(endpoint, apiKey, apiSecret string) *Client {
 	timeout := 60 * time.Second
+	expiration := 10 * time.Minute
 
 	httpClient := &http.Client{
 		Transport: http.DefaultTransport,
@@ -84,6 +87,7 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 		apiSecret:     apiSecret,
 		PageSize:      50,
 		Timeout:       timeout,
+		Expiration:    expiration,
 		RetryStrategy: MonotonicRetryStrategyFunc(2),
 		Logger:        log.New(ioutil.Discard, "", 0),
 	}

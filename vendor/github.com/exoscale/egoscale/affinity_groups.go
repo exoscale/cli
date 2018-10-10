@@ -56,9 +56,9 @@ type AffinityGroupType struct {
 
 // CreateAffinityGroup (Async) represents a new (anti-)affinity group
 type CreateAffinityGroup struct {
-	Account     string `json:"account,omitempty" doc:"an account for the affinity group. Must be used with domainId."`
+	Account     string `json:"account,omitempty" doc:"an account for the affinity group. Must be used with domainid."`
 	Description string `json:"description,omitempty" doc:"optional description of the affinity group"`
-	DomainID    *UUID  `json:"domainid,omitempty" doc:"domainId of the account owning the affinity group"`
+	DomainID    *UUID  `json:"domainid,omitempty" doc:"domainid of the account owning the affinity group"`
 	Name        string `json:"name" doc:"name of the affinity group"`
 	Type        string `json:"type" doc:"Type of the affinity group from the available affinity/anti-affinity group types"`
 	_           bool   `name:"createAffinityGroup" description:"Creates an affinity/anti-affinity group"`
@@ -115,10 +115,10 @@ func (DeleteAffinityGroup) asyncResponse() interface{} {
 
 // ListAffinityGroups represents an (anti-)affinity groups search
 type ListAffinityGroups struct {
-	Account          string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	Account          string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
 	DomainID         *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	ID               *UUID  `json:"id,omitempty" doc:"list the affinity group by the ID provided"`
-	IsRecursive      *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	IsRecursive      *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	Keyword          string `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll          *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Name             string `json:"name,omitempty" doc:"lists affinity groups by name"`

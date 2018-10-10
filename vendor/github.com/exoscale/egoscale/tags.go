@@ -49,10 +49,10 @@ func (DeleteTags) asyncResponse() interface{} {
 
 // ListTags list resource tag(s)
 type ListTags struct {
-	Account      string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	Account      string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
 	Customer     string `json:"customer,omitempty" doc:"list by customer name"`
 	DomainID     *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
-	IsRecursive  *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	IsRecursive  *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	Key          string `json:"key,omitempty" doc:"list by key"`
 	Keyword      string `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll      *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`

@@ -110,9 +110,9 @@ func (usg UserSecurityGroup) String() string {
 // CreateSecurityGroup represents a security group creation
 type CreateSecurityGroup struct {
 	Name        string `json:"name" doc:"name of the security group"`
-	Account     string `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
+	Account     string `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainid."`
 	Description string `json:"description,omitempty" doc:"the description of the security group"`
-	DomainID    *UUID  `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
+	DomainID    *UUID  `json:"domainid,omitempty" doc:"an optional domainid for the security group. If the account parameter is used, domainid must also be used."`
 	_           bool   `name:"createSecurityGroup" description:"Creates a security group"`
 }
 
@@ -135,7 +135,7 @@ func (DeleteSecurityGroup) response() interface{} {
 
 // AuthorizeSecurityGroupIngress (Async) represents the ingress rule creation
 type AuthorizeSecurityGroupIngress struct {
-	Account               string              `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
+	Account               string              `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainid."`
 	CIDRList              []CIDR              `json:"cidrlist,omitempty" doc:"the cidr list associated"`
 	Description           string              `json:"description,omitempty" doc:"the description of the ingress/egress rule"`
 	DomainID              *UUID               `json:"domainid,omitempty" doc:"an optional domainid for the security group. If the account parameter is used, domainid must also be used."`
@@ -215,10 +215,10 @@ func (RevokeSecurityGroupEgress) asyncResponse() interface{} {
 
 // ListSecurityGroups represents a search for security groups
 type ListSecurityGroups struct {
-	Account           string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	Account           string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
 	DomainID          *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	ID                *UUID  `json:"id,omitempty" doc:"list the security group by the id provided"`
-	IsRecursive       *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	IsRecursive       *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	Keyword           string `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll           *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Page              int    `json:"page,omitempty"`
