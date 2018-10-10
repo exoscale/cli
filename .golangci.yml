@@ -5,8 +5,9 @@ linters-settings:
 linters:
   enable:
     - goconst
+    - gofmt
     - golint
     - megacheck
     - misspell
-    - unparam
     - prealloc
+    - unparam
