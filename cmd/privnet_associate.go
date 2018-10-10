@@ -6,8 +6,8 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/exoscale/egoscale"
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
