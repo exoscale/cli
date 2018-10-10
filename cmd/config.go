@@ -218,7 +218,7 @@ func addAccount(filePath string, newAccounts *config) error {
 		accounts[i] = map[string]string{}
 
 		accounts[i]["name"] = acc.Name
-		accounts[i]["computeEndpoint"] = acc.Endpoint
+		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["key"] = acc.Key
 		accounts[i]["secret"] = acc.Secret
 		accounts[i]["defaultZone"] = acc.DefaultZone
@@ -235,7 +235,7 @@ func addAccount(filePath string, newAccounts *config) error {
 			accounts[accountsSize+i] = map[string]string{}
 
 			accounts[accountsSize+i]["name"] = acc.Name
-			accounts[accountsSize+i]["computeEndpoint"] = acc.Endpoint
+			accounts[accountsSize+i]["endpoint"] = acc.Endpoint
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
@@ -445,6 +445,13 @@ func createConfigFile(fileName string) (string, error) {
 	if _, err := os.Stat(filepath); !os.IsNotExist(err) {
 		return "", fmt.Errorf("%q exists already", filepath)
 	}
+
+	fp, err := os.OpenFile(filepath, os.O_RDONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return "", err
+	}
+	defer fp.Close() // nolint: errcheck
+
 	return filepath, nil
 }
 

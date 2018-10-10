@@ -44,6 +44,7 @@ type account struct {
 	Name            string
 	Account         string
 	Endpoint        string
+	ComputeEndpoint string // legacy config.
 	DNSEndpoint     string
 	SosEndpoint     string
 	Key             string
@@ -223,7 +224,11 @@ func initConfig() {
 	}
 
 	if gCurrentAccount.Endpoint == "" {
-		gCurrentAccount.Endpoint = defaultEndpoint
+		if gCurrentAccount.ComputeEndpoint != "" {
+			gCurrentAccount.Endpoint = gCurrentAccount.ComputeEndpoint
+		} else {
+			gCurrentAccount.Endpoint = defaultEndpoint
+		}
 	}
 
 	if gCurrentAccount.DNSEndpoint == "" {

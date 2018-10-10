@@ -108,13 +108,10 @@ func execTask(task task, id int, c chan taskStatus, resp *taskResponse, sem chan
 			return false
 		}
 
-		if jobResult.JobStatus == egoscale.Success {
+		if jobResult.JobStatus != egoscale.Pending {
 			if errR := jobResult.Result(response); errR != nil {
 				errorReq = errR
-				return false
 			}
-			(*resp).resp = response
-			c <- taskStatus{id, egoscale.Success}
 			return false
 		}
 
@@ -122,7 +119,10 @@ func execTask(task task, id int, c chan taskStatus, resp *taskResponse, sem chan
 		return true
 	})
 
-	if errorReq != nil {
+	if errorReq == nil {
+		(*resp).resp = response
+		c <- taskStatus{id, egoscale.Success}
+	} else {
 		c <- taskStatus{id, egoscale.Failure}
 		(*resp).error = fmt.Errorf("failure %s: %s", task.string, errorReq)
 	}

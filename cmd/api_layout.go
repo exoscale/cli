@@ -57,6 +57,7 @@ var methods = []category{
 			{&egoscale.DeleteReverseDNSFromVirtualMachine{}, "deleteReverseDNSFromVM", nil},
 			{&egoscale.QueryReverseDNSForVirtualMachine{}, "queryReverseDNSForVM", nil},
 			{&egoscale.UpdateReverseDNSForVirtualMachine{}, "updateReverseDNSForVM", nil},
+			{&egoscale.UpdateVMNicIP{}, "updateVMNicIP", nil},
 		},
 	},
 	{
