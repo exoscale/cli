@@ -13,9 +13,6 @@ node {
       updateGithubCommitStatus('PENDING', "${env.WORKSPACE}/src")
       stage('Build') {
         parallel (
-          "gofmt": {
-            gofmt()
-          },
           "go lint": {
             golint(repo)
           },
@@ -37,16 +34,6 @@ node {
     }
     updateGithubCommitStatus(currentBuild.result, "${env.WORKSPACE}/src")
     cleanWs cleanWhenFailure: false
-  }
-}
-
-def gofmt() {
-  docker.withRegistry('https://registry.internal.exoscale.ch') {
-    def image = docker.image('registry.internal.exoscale.ch/exoscale/golang:1.11')
-    image.pull()
-    image.inside("-u root --net=host") {
-      sh 'test $(gofmt -s -d -e $(find -iname "*.go" | grep -v "/vendor/") | tee -a /dev/fd/2 | wc -l) -eq 0'
-    }
   }
 }
 
