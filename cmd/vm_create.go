@@ -76,6 +76,10 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
+		if keypair == "" && gCurrentAccount.DefaultSSHKey != "" {
+			keypair = gCurrentAccount.DefaultSSHKey
+		}
+
 		sg, err := cmd.Flags().GetString("security-group")
 		if err != nil {
 			return err

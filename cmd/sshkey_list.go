@@ -27,17 +27,14 @@ var listCmd = &cobra.Command{
 }
 
 func listSSHKey(t *table.Table, filters []string) error {
-	sshKey := &egoscale.SSHKeyPair{}
-	sshKeys, err := cs.ListWithContext(gContext, sshKey)
+	sshKeys, err := getSSHKeys(cs)
 	if err != nil {
 		return err
 	}
 
 	data := make([][]string, 0)
 
-	for _, key := range sshKeys {
-		k := key.(*egoscale.SSHKeyPair)
-
+	for _, k := range sshKeys {
 		keep := true
 		if len(filters) > 0 {
 			keep = false
@@ -71,6 +68,22 @@ func listSSHKey(t *table.Table, filters []string) error {
 	t.AppendBulk(data)
 
 	return nil
+}
+
+func getSSHKeys(cs *egoscale.Client) ([]egoscale.SSHKeyPair, error) {
+	sshKeys, err := cs.ListWithContext(gContext, &egoscale.SSHKeyPair{})
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]egoscale.SSHKeyPair, 0, len(sshKeys))
+
+	for _, key := range sshKeys {
+		k := key.(*egoscale.SSHKeyPair)
+		res = append(res, *k)
+	}
+
+	return res, nil
 }
 
 func init() {
