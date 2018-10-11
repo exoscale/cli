@@ -8,7 +8,6 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -190,14 +189,6 @@ Let's start over.
 	}
 
 	account.DefaultZone = defaultZone
-
-	defaultSSHKey, err := chooseSSHKey(account.Name, client)
-	if err != nil {
-		return nil, err
-	}
-
-	account.DefaultSSHKey = defaultSSHKey
-
 	account.DNSEndpoint = strings.Replace(account.Endpoint, "/compute", "/dns", 1)
 
 	return account, nil
@@ -408,15 +399,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 		if err != nil {
 			return err
 		}
-
 		csAccount.DefaultZone = defaultZone
-
-		defaultSSHKey, err := chooseSSHKey(csAccount.Name, csClient)
-		if err != nil {
-			return err
-		}
-
-		csAccount.DefaultSSHKey = defaultSSHKey
 
 		isDefault := false
 		if askQuestion(fmt.Sprintf("Is %q your default profile?", csAccount.Name)) {
@@ -587,57 +570,6 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 		}
 	}
 	return defaultZone, nil
-}
-
-func chooseSSHKey(accountName string, cs *egoscale.Client) (string, error) {
-
-	reader := bufio.NewReader(os.Stdin)
-
-	sshKeys, err := getSSHKeys(cs)
-	if err != nil {
-		return "", err
-	}
-
-	if len(sshKeys) == 0 {
-		return "", nil
-	}
-
-	fmt.Printf("Choose %q default sshkey pair:\n", accountName)
-
-	for i, sshkey := range sshKeys {
-		fmt.Printf("%d: %s\n", i+1, sshkey.Name)
-	}
-
-	sshkeyIndex, err := readInput(reader, "Select", "none")
-	if err != nil {
-		return "", err
-	}
-
-	if sshkeyIndex == "none" {
-		return "", nil
-	}
-
-	defaultKeyPair, ok := getSelectedKeyPair(sshkeyIndex, sshKeys)
-	for !ok {
-		fmt.Println("Error: Invalid sshkey pair number")
-		defaultKeyPair, err = chooseSSHKey(accountName, cs)
-		if err == nil {
-			break
-		}
-	}
-	return defaultKeyPair, nil
-}
-
-func getSelectedKeyPair(index string, sshKeys []egoscale.SSHKeyPair) (string, bool) {
-	i, err := strconv.ParseInt(index, 10, 64)
-	if err != nil {
-		return "", false
-	}
-	if i <= 0 || i > int64(len(sshKeys)) {
-		return "", false
-	}
-
-	return sshKeys[i-1].Name, true
 }
 
 func init() {
