@@ -350,6 +350,6 @@ func init() {
 	vmCreateCmd.Flags().StringP("privnet", "p", "", "<name | id, name | id, ...>")
 	vmCreateCmd.Flags().StringP("anti-affinity-group", "a", "", "<name | id, name | id, ...>")
 	vmCreateCmd.Flags().BoolP("ipv6", "6", false, "enable ipv6")
-	vmCreateCmd.Flags().StringP("service-offering", "o", "Small", "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan")
+	vmCreateCmd.Flags().StringP("service-offering", "o", "Small", "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
 	vmCmd.AddCommand(vmCreateCmd)
 }
