@@ -76,11 +76,11 @@ func getSSHKeys(cs *egoscale.Client) ([]egoscale.SSHKeyPair, error) {
 		return nil, err
 	}
 
-	res := make([]egoscale.SSHKeyPair, 0, len(sshKeys))
+	res := make([]egoscale.SSHKeyPair, len(sshKeys))
 
-	for _, key := range sshKeys {
+	for i, key := range sshKeys {
 		k := key.(*egoscale.SSHKeyPair)
-		res = append(res, *k)
+		res[i] = *k
 	}
 
 	return res, nil

@@ -76,7 +76,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		if keypair == "" && gCurrentAccount.DefaultSSHKey != "" {
+		if keypair == "" {
 			keypair = gCurrentAccount.DefaultSSHKey
 		}
 
