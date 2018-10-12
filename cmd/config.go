@@ -12,6 +12,7 @@ import (
 
 	"github.com/exoscale/egoscale"
 	"github.com/go-ini/ini"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -535,48 +536,37 @@ func getSelectedZone(number string, zones map[string]string) (string, bool) {
 }
 
 func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
-
-	reader := bufio.NewReader(os.Stdin)
-
 	zonesResp, err := cs.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return "", err
 	}
 
-	zones := map[string]string{}
-
 	if len(zonesResp) == 0 {
 		return "", fmt.Errorf("no zones were found")
 	}
 
-	fmt.Printf("Choose %q default zone:\n", accountName)
+	zones := make([]string, len(zonesResp))
 
 	for i, z := range zonesResp {
 		zone := z.(*egoscale.Zone)
-
 		zName := strings.ToLower(zone.Name)
-
-		n := fmt.Sprintf("%d", i+1)
-
-		zones[n] = zName
-
-		fmt.Printf("%d: %s\n", i+1, zName)
+		zones[i] = zName
 	}
 
-	zoneNumber, err := readInput(reader, "Select", "1")
+	prompt := promptui.Select{
+		Label: fmt.Sprintf("Choose %q default zone", accountName),
+		Items: zones,
+	}
+
+	_, result, err := prompt.Run()
+
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Prompt failed %v", err)
 	}
 
-	defaultZone, ok := getSelectedZone(zoneNumber, zones)
-	for !ok {
-		fmt.Println("Error: Invalid zone number")
-		defaultZone, err = chooseZone(accountName, cs)
-		if err == nil {
-			break
-		}
-	}
-	return defaultZone, nil
+	fmt.Printf("You choose %q\n", result)
+
+	return result, nil
 }
 
 func init() {

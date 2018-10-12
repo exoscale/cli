@@ -5,6 +5,7 @@ replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.39.0
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/VividCortex/ewma v1.1.1 // indirect
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 	github.com/exoscale/egoscale v0.12.2
 	github.com/fatih/camelcase v1.0.0
