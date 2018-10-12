@@ -67,17 +67,23 @@ var RootCmd = &cobra.Command{
 	SilenceErrors: true,
 }
 
+var gVersion string
+var gCommit string
+
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of exo",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("exo v%s (egoscale v%s)\n", Version, egoscale.Version)
+		fmt.Printf("exo %s %s (egoscale %s)\n", gVersion, gCommit, egoscale.Version)
 	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the RootCmd.
-func Execute() {
+func Execute(version, commit string) {
+	gVersion = version
+	gCommit = commit
+
 	// trap Ctrl+C and call cancel on the context
 	ctx, cancel := context.WithCancel(context.Background())
 	c := make(chan os.Signal, 1)
