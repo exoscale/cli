@@ -222,6 +222,7 @@ func addAccount(filePath string, newAccounts *config) error {
 		accounts[i]["key"] = acc.Key
 		accounts[i]["secret"] = acc.Secret
 		accounts[i]["defaultZone"] = acc.DefaultZone
+		accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
 		accounts[i]["defaultTemplate"] = defaultTemplate
 		accounts[i]["account"] = acc.Account
 
@@ -239,6 +240,7 @@ func addAccount(filePath string, newAccounts *config) error {
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
+			accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
 			accounts[accountsSize+i]["defaultTemplate"] = defaultTemplate
 			accounts[accountsSize+i]["account"] = acc.Account
 			conf.Accounts = append(conf.Accounts, acc)
@@ -397,7 +399,6 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 		if err != nil {
 			return err
 		}
-
 		csAccount.DefaultZone = defaultZone
 
 		isDefault := false

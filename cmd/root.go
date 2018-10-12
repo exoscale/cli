@@ -49,6 +49,7 @@ type account struct {
 	Key             string
 	Secret          string
 	DefaultZone     string
+	DefaultSSHKey   string
 	DefaultTemplate string
 }
 
