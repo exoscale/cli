@@ -46,7 +46,7 @@ var configSetCmd = &cobra.Command{
 			_, result, err = prompt.Run()
 
 			if err != nil {
-				return fmt.Errorf("Prompt failed %v", err)
+				return fmt.Errorf("prompt failed %v", err)
 			}
 
 			if fmt.Sprintf("%s [Default]", gAllAccount.DefaultAccount) == result {
