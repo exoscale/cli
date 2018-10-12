@@ -154,7 +154,9 @@ var methods = []category{
 		"VM group management",
 		[]cmd{
 			{&egoscale.CreateInstanceGroup{}, "create", gCreateAlias},
+			{&egoscale.DeleteInstanceGroup{}, "delete", gDeleteAlias},
 			{&egoscale.ListInstanceGroups{}, "list", gListAlias},
+			{&egoscale.UpdateInstanceGroup{}, "update", nil},
 		},
 	},
 	{
