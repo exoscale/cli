@@ -136,7 +136,7 @@ func (UpdateIPAddress) asyncResponse() interface{} {
 
 // ListPublicIPAddresses represents a search for public IP addresses
 type ListPublicIPAddresses struct {
-	Account             string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	Account             string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
 	AllocatedOnly       *bool         `json:"allocatedonly,omitempty" doc:"limits search results to allocated public IP addresses"`
 	AssociatedNetworkID *UUID         `json:"associatednetworkid,omitempty" doc:"lists all public IP addresses associated to the network specified"`
 	DomainID            *UUID         `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -146,7 +146,7 @@ type ListPublicIPAddresses struct {
 	ID                  *UUID         `json:"id,omitempty" doc:"lists ip address by id"`
 	IPAddress           net.IP        `json:"ipaddress,omitempty" doc:"lists the specified IP address"`
 	IsElastic           *bool         `json:"iselastic,omitempty" doc:"list only elastic ip addresses"`
-	IsRecursive         *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	IsRecursive         *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	IsSourceNat         *bool         `json:"issourcenat,omitempty" doc:"list only source nat ip addresses"`
 	IsStaticNat         *bool         `json:"isstaticnat,omitempty" doc:"list only static nat ip addresses"`
 	Keyword             string        `json:"keyword,omitempty" doc:"List by keyword"`

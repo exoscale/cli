@@ -62,7 +62,7 @@ type ListNics struct {
 	NicID            *UUID  `json:"nicid,omitempty" doc:"the ID of the nic to to list IPs"`
 	Page             int    `json:"page,omitempty"`
 	PageSize         int    `json:"pagesize,omitempty"`
-	VirtualMachineID *UUID  `json:"virtualmachineid" doc:"the ID of the vm"`
+	VirtualMachineID *UUID  `json:"virtualmachineid,omitempty" doc:"the ID of the vm"`
 	_                bool   `name:"listNics" description:"list the vm nics  IP to NIC"`
 }
 

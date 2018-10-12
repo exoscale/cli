@@ -3,28 +3,27 @@ package egoscale
 // SnapshotState represents the Snapshot.State enum
 //
 // See: https://github.com/apache/cloudstack/blob/master/api/src/main/java/com/cloud/storage/Snapshot.java
-type SnapshotState int
+type SnapshotState string
 
-//go:generate stringer -type SnapshotState
 const (
 	// Allocated ... (TODO)
-	Allocated SnapshotState = iota
+	Allocated SnapshotState = "Allocated"
 	// Creating ... (TODO)
-	Creating
+	Creating SnapshotState = "Creating"
 	// CreatedOnPrimary ... (TODO)
-	CreatedOnPrimary
+	CreatedOnPrimary SnapshotState = "CreatedOnPrimary"
 	// BackingUp ... (TODO)
-	BackingUp
+	BackingUp SnapshotState = "BackingUp"
 	// BackedUp ... (TODO)
-	BackedUp
+	BackedUp SnapshotState = "BackedUp"
 	// Copying ... (TODO)
-	Copying
+	Copying SnapshotState = "Copying"
 	// Destroying ... (TODO)
-	Destroying
+	Destroying SnapshotState = "Destroying"
 	// Destroyed ... (TODO)
-	Destroyed
+	Destroyed SnapshotState = "Destroyed"
 	// Error is a state where the user can't see the snapshot while the snapshot may still exist on the storage
-	Error
+	Error SnapshotState = "Error"
 )
 
 // Snapshot represents a volume snapshot
@@ -41,7 +40,7 @@ type Snapshot struct {
 	Revertable   *bool         `json:"revertable,omitempty" doc:"indicates whether the underlying storage supports reverting the volume to this snapshot"`
 	Size         int64         `json:"size,omitempty" doc:"the size of original volume"`
 	SnapshotType string        `json:"snapshottype,omitempty" doc:"the type of the snapshot"`
-	State        SnapshotState `json:"state,omitempty" doc:"the state of the snapshot. BackedUp means that snapshot is ready to be used; Creating - the snapshot is being allocated on the primary storage; BackingUp - the snapshot is being backed up on secondary storage"`
+	State        string        `json:"state,omitempty" doc:"the state of the snapshot. BackedUp means that snapshot is ready to be used; Creating - the snapshot is being allocated on the primary storage; BackingUp - the snapshot is being backed up on secondary storage"`
 	Tags         []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with snapshot"`
 	VolumeID     *UUID         `json:"volumeid,omitempty" doc:"ID of the disk volume"`
 	VolumeName   string        `json:"volumename,omitempty" doc:"name of the disk volume"`
@@ -57,7 +56,7 @@ func (Snapshot) ResourceType() string {
 // CreateSnapshot (Async) creates an instant snapshot of a volume
 type CreateSnapshot struct {
 	VolumeID  *UUID  `json:"volumeid" doc:"The ID of the disk volume"`
-	Account   string `json:"account,omitempty" doc:"The account of the snapshot. The account parameter must be used with the domainId parameter."`
+	Account   string `json:"account,omitempty" doc:"The account of the snapshot. The account parameter must be used with the domainid parameter."`
 	DomainID  *UUID  `json:"domainid,omitempty" doc:"The domain ID of the snapshot. If used with the account parameter, specifies a domain for the account associated with the disk volume."`
 	QuiesceVM *bool  `json:"quiescevm,omitempty" doc:"quiesce vm if true"`
 	_         bool   `name:"createSnapshot" description:"Creates an instant snapshot of a volume."`
@@ -73,11 +72,11 @@ func (CreateSnapshot) asyncResponse() interface{} {
 
 // ListSnapshots lists the volume snapshots
 type ListSnapshots struct {
-	Account      string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	Account      string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
 	DomainID     *UUID         `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	ID           *UUID         `json:"id,omitempty" doc:"lists snapshot by snapshot ID"`
 	IntervalType string        `json:"intervaltype,omitempty" doc:"valid values are HOURLY, DAILY, WEEKLY, and MONTHLY."`
-	IsRecursive  *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	IsRecursive  *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	Keyword      string        `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll      *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Name         string        `json:"name,omitempty" doc:"lists snapshot by snapshot name"`

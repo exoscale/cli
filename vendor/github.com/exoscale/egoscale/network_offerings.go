@@ -1,5 +1,7 @@
 package egoscale
 
+import "fmt"
+
 // NetworkOffering corresponds to the Compute Offerings
 type NetworkOffering struct {
 	Availability             string            `json:"availability,omitempty" doc:"availability of the network offering"`
@@ -23,6 +25,21 @@ type NetworkOffering struct {
 	SupportsStrechedL2Subnet bool              `json:"supportsstrechedl2subnet,omitempty" doc:"true if network offering supports network that span multiple zones"`
 	Tags                     string            `json:"tags,omitempty" doc:"the tags for the network offering"`
 	TrafficType              string            `json:"traffictype,omitempty" doc:"the traffic type for the network offering, supported types are Public, Management, Control, Guest, Vlan or Storage."`
+}
+
+// ListRequest builds the ListNetworkOfferings request
+//
+// This doesn't take into account the IsDefault flag as the default value is true.
+func (no NetworkOffering) ListRequest() (ListCommand, error) {
+	req := &ListNetworkOfferings{
+		Availability: no.Availability,
+		ID:           no.ID,
+		Name:         no.Name,
+		State:        no.State,
+		TrafficType:  no.TrafficType,
+	}
+
+	return req, nil
 }
 
 // ListNetworkOfferings represents a query for network offerings
@@ -57,6 +74,30 @@ type ListNetworkOfferingsResponse struct {
 
 func (ListNetworkOfferings) response() interface{} {
 	return new(ListNetworkOfferingsResponse)
+}
+
+// SetPage sets the current page
+func (ls *ListNetworkOfferings) SetPage(page int) {
+	ls.Page = page
+}
+
+// SetPageSize sets the page size
+func (ls *ListNetworkOfferings) SetPageSize(pageSize int) {
+	ls.PageSize = pageSize
+}
+
+func (ListNetworkOfferings) each(resp interface{}, callback IterateItemFunc) {
+	nos, ok := resp.(*ListNetworkOfferingsResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("wrong type, ListNetworkOfferingsResponse expected, got %T", resp))
+		return
+	}
+
+	for i := range nos.NetworkOffering {
+		if !callback(&nos.NetworkOffering[i], nil) {
+			break
+		}
+	}
 }
 
 // UpdateNetworkOffering represents a modification of a network offering

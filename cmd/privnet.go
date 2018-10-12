@@ -67,3 +67,12 @@ func dhcpRange(startIP, endIP, netmask net.IP) string {
 	}
 	return "n/a"
 }
+
+// dhcpRange returns the string representation for a DHCP
+func nicIP(nic *egoscale.Nic) string {
+	ip := nic.IPAddress
+	if ip != nil {
+		return ip.String()
+	}
+	return "n/a"
+}

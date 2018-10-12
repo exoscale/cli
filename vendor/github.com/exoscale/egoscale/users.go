@@ -74,11 +74,11 @@ func (UpdateUser) response() interface{} {
 
 // ListUsers represents the search for Users
 type ListUsers struct {
-	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
 	AccountType int64  `json:"accounttype,omitempty" doc:"List users by account type. Valid types include admin, domain-admin, read-only-admin, or user."`
 	DomainID    *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	ID          *UUID  `json:"id,omitempty" doc:"List user by ID."`
-	IsRecursive bool   `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	IsRecursive bool   `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	Keyword     string `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll     bool   `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Page        int    `json:"page,omitempty"`

@@ -159,7 +159,7 @@ func prepareValues(prefix string, params url.Values, command interface{}) error 
 					switch field.Type {
 					case reflect.TypeOf(net.IPv4zero):
 						ip := (net.IP)(val.Bytes())
-						if ip == nil || ip.Equal(net.IPv4zero) {
+						if ip == nil || ip.Equal(net.IP{}) {
 							if required {
 								return fmt.Errorf("%s.%s (%v) is required, got zero IPv4 address", typeof.Name(), n, val.Kind())
 							}

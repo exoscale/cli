@@ -98,13 +98,13 @@ func (ResizeVolume) asyncResponse() interface{} {
 
 // ListVolumes represents a query listing volumes
 type ListVolumes struct {
-	Account          string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	Account          string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
 	DiskOfferingID   *UUID         `json:"diskofferingid,omitempty" doc:"list volumes by disk offering"`
 	DisplayVolume    *bool         `json:"displayvolume,omitempty" doc:"list resources by display flag; only ROOT admin is eligible to pass this parameter"`
 	DomainID         *UUID         `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	HostID           *UUID         `json:"hostid,omitempty" doc:"list volumes on specified host"`
 	ID               *UUID         `json:"id,omitempty" doc:"the ID of the disk volume"`
-	IsRecursive      *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	IsRecursive      *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	Keyword          string        `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll          *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Name             string        `json:"name,omitempty" doc:"the name of the disk volume"`

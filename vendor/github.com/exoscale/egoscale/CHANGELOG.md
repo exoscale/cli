@@ -1,6 +1,21 @@
 Changelog
 =========
 
+0.12.1
+------
+
+- fix: `UpdateVMNicIP` is async
+
+0.12.0
+------
+
+- feat: new VM state `Moving`
+- feat: `UpdateNetwork` with `startip`, `endip`, `netmask`
+- feat: `NetworkOffering` is `Listable`
+- feat: when it fails parsing the body, it shows it
+- fix: `Snapshot.State` is a string, rather than an scalar
+- change: signature are now using the v3 version with expires by default
+
 0.11.6
 ------
 
@@ -10,7 +25,7 @@ Changelog
 0.11.5
 ------
 
-- feat: addition of `updateVmNicIp`
+- feat: addition of `UpdateVMNicIP`
 - fix: `UpdateVMAffinityGroup` expected response
 
 0.11.4

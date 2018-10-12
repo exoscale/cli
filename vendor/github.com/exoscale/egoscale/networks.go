@@ -153,16 +153,19 @@ func (req CreateNetwork) onBeforeSend(params url.Values) error {
 
 // UpdateNetwork (Async) updates a network
 type UpdateNetwork struct {
-	ID                *UUID  `json:"id" doc:"the ID of the network"`
+	_                 bool   `name:"updateNetwork" description:"Updates a network"`
 	ChangeCIDR        *bool  `json:"changecidr,omitempty" doc:"Force update even if cidr type is different"`
 	CustomID          *UUID  `json:"customid,omitempty" doc:"an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only"`
 	DisplayNetwork    *bool  `json:"displaynetwork,omitempty" doc:"an optional field, whether to the display the network to the end user or not."`
 	DisplayText       string `json:"displaytext,omitempty" doc:"the new display text for the network"`
+	EndIP             net.IP `json:"endip,omitempty" doc:"the ending IP address in the network IP range. Required for managed networks."`
 	GuestVMCIDR       *CIDR  `json:"guestvmcidr,omitempty" doc:"CIDR for Guest VMs,Cloudstack allocates IPs to Guest VMs only from this CIDR"`
+	ID                *UUID  `json:"id" doc:"the ID of the network"`
 	Name              string `json:"name,omitempty" doc:"the new name for the network"`
+	Netmask           net.IP `json:"netmask,omitempty" doc:"the netmask of the network. Required for managed networks."`
 	NetworkDomain     string `json:"networkdomain,omitempty" doc:"network domain"`
 	NetworkOfferingID *UUID  `json:"networkofferingid,omitempty" doc:"network offering ID"`
-	_                 bool   `name:"updateNetwork" description:"Updates a network"`
+	StartIP           net.IP `json:"startip,omitempty" doc:"the beginning IP address in the network IP range. Required for managed networks."`
 }
 
 func (UpdateNetwork) response() interface{} {
@@ -205,12 +208,12 @@ func (DeleteNetwork) asyncResponse() interface{} {
 
 // ListNetworks represents a query to a network
 type ListNetworks struct {
-	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
 	CanUseForDeploy   *bool         `json:"canusefordeploy,omitempty" doc:"list networks available for vm deployment"`
 	DisplayNetwork    *bool         `json:"displaynetwork,omitempty" doc:"list resources by display flag; only ROOT admin is eligible to pass this parameter"`
 	DomainID          *UUID         `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	ID                *UUID         `json:"id,omitempty" doc:"list networks by id"`
-	IsRecursive       *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	IsRecursive       *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	IsSystem          *bool         `json:"issystem,omitempty" doc:"true if network is system, false otherwise"`
 	Keyword           string        `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll           *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
