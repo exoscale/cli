@@ -527,14 +527,6 @@ func getAccountByName(name string) *account {
 	return nil
 }
 
-func getSelectedZone(number string, zones map[string]string) (string, bool) {
-	zName, ok := zones[number]
-	if !ok {
-		return "", false
-	}
-	return zName, true
-}
-
 func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 	zonesResp, err := cs.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
@@ -561,7 +553,7 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 	_, result, err := prompt.Run()
 
 	if err != nil {
-		return "", fmt.Errorf("Prompt failed %v", err)
+		return "", fmt.Errorf("prompt failed %v", err)
 	}
 
 	fmt.Printf("You choose %q\n", result)
