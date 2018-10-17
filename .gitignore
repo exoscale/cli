@@ -1,3 +1,4 @@
 dist
+Dockerfile.goreleaser
 go.sum
 ops.asc
