@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"text/tabwriter"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -13,7 +15,7 @@ var privnetShowCmd = &cobra.Command{
 	Use:   "show <privnet name | id>",
 	Short: "Show a private network details",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
+		if len(args) != 1 {
 			return cmd.Usage()
 		}
 
@@ -27,21 +29,32 @@ var privnetShowCmd = &cobra.Command{
 			return err
 		}
 
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
+		dhcp := dhcpRange(network.StartIP, network.EndIP, network.Netmask)
+
+		fmt.Fprintf(w, "Network:\t%s\n", network.Name)            // nolint: errcheck
+		fmt.Fprintf(w, "Description:\t%s\n", network.DisplayText) // nolint: errcheck
+		fmt.Fprintf(w, "Zone:\t%s\n", network.ZoneName)           // nolint: errcheck
+		fmt.Fprintf(w, "IP Range:\t%s\n", dhcp)                   // nolint: errcheck
+		fmt.Fprintf(w, "# Instances:\t%d\n", len(vms))            // nolint: errcheck
+		w.Flush()                                                 // nolint: errcheck
+
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Zone", "Name", "Virtual Machine", "Virtual Machine ID"})
-		zone := network.ZoneName
-		name := network.Name
+		table.SetHeader([]string{"ID", "Name", "Public IP", "Internal IP"})
+
 		if len(vms) > 0 {
 			for _, vm := range vms {
-				table.Append([]string{zone, name, vm.Name, vm.ID.String()})
-				zone = ""
-				name = ""
-			}
-		} else {
-			table.Append([]string{zone, network.Name, "", ""})
-		}
-		table.Render()
 
+				privateNic := vm.NicByNetworkID(*network.ID)
+				table.Append([]string{
+					vm.ID.String(),
+					vm.Name,
+					vm.IP().String(),
+					nicIP(privateNic),
+				})
+			}
+			table.Render()
+		}
 		return nil
 	},
 }
