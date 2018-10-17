@@ -215,10 +215,10 @@ type IPToNetwork struct {
 // PCIDevice represents a PCI card present in the host
 type PCIDevice struct {
 	PCIVendorName     string `json:"pcivendorname,omitempty" doc:"Device vendor name of pci card"`
-	DeviceID          *UUID  `json:"deviceid,omitempty" doc:"Device model ID of pci card"`
+	DeviceID          string `json:"deviceid,omitempty" doc:"Device model ID of pci card"`
 	RemainingCapacity int    `json:"remainingcapacity,omitempty" doc:"Remaining capacity in terms of no. of more VMs that can be deployped with this vGPU type"`
 	MaxCapacity       int    `json:"maxcapacity,omitempty" doc:"Maximum vgpu can be created with this vgpu type on the given pci group"`
-	PCIVendorID       *UUID  `json:"pcivendorid,omitempty" doc:"Device vendor ID of pci card"`
+	PCIVendorID       string `json:"pcivendorid,omitempty" doc:"Device vendor ID of pci card"`
 	PCIDeviceName     string `json:"pcidevicename,omitempty" doc:"Device model name of pci card"`
 }
 

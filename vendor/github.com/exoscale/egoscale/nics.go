@@ -1,7 +1,6 @@
 package egoscale
 
 import (
-	"errors"
 	"net"
 )
 
@@ -32,10 +31,6 @@ type Nic struct {
 
 // ListRequest build a ListNics request from the given Nic
 func (nic Nic) ListRequest() (ListCommand, error) {
-	if nic.VirtualMachineID == nil {
-		return nil, errors.New("command ListNics requires the VirtualMachineID field to be set")
-	}
-
 	req := &ListNics{
 		VirtualMachineID: nic.VirtualMachineID,
 		NicID:            nic.ID,
