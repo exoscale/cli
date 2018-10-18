@@ -1,11 +1,13 @@
 module github.com/exoscale/cli
 
+replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.39.0
+
 require (
 	github.com/VividCortex/ewma v1.1.1 // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 	github.com/exoscale/egoscale v0.12.2
 	github.com/fatih/camelcase v1.0.0
-	github.com/go-ini/ini v1.38.3 // indirect
+	github.com/go-ini/ini v1.39.0
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-runewidth v0.0.3 // indirect
@@ -19,5 +21,4 @@ require (
 	github.com/vbauerster/mpb v3.3.2+incompatible
 	golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b
 	golang.org/x/net v0.0.0-20180911220305-26e67e76b6c3 // indirect
-	gopkg.in/ini.v1 v1.39.0
 )
