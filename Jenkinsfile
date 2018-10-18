@@ -42,7 +42,6 @@ def golint(repo) {
     def image = docker.image('registry.internal.exoscale.ch/exoscale/golang:1.11')
     image.pull()
     image.inside("-u root --net=host -v ${env.WORKSPACE}/src:/go/src/github.com/${repo}") {
-      sh "go vet `go list github.com/${repo}/... | grep -v /vendor/`"
       sh "cd /go/src/github.com/${repo} && golangci-lint run ./..."
     }
   }
