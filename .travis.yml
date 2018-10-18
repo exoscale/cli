@@ -15,9 +15,6 @@ addons:
 env:
   - GO111MODULE=on HUGO_VERSION=0.49.2 GOLANGCI_LINT_VERSION=1.10.2
 
-install:
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v${GOLANGCI_LINT_VERSION}
-
 jobs:
   include:
     - go: "1.10.x"
@@ -26,6 +23,7 @@ jobs:
         - go build
     - go: "1.11.x"
       script:
+        - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v${GOLANGCI_LINT_VERSION}
         - GO111MODULE=off golangci-lint run ./...
         - go test -v -mod=vendor ./...
         - go build -mod=vendor
