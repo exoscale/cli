@@ -546,7 +546,7 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 	}
 
 	prompt := promptui.Select{
-		Label: fmt.Sprintf("Choose %q default zone", accountName),
+		Label: fmt.Sprintf("Choose the default zone for %q", accountName),
 		Items: zones,
 	}
 
@@ -556,7 +556,7 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 		return "", fmt.Errorf("prompt failed %v", err)
 	}
 
-	fmt.Printf("You choose %q\n", result)
+	fmt.Printf("You chose %q\n", result)
 
 	return result, nil
 }
