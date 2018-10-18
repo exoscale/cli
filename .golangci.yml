@@ -11,3 +11,4 @@ linters:
     - misspell
     - prealloc
     - unparam
+    - typecheck
