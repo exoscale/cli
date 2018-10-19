@@ -1,7 +1,7 @@
 version := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null | echo 'latest')
 
-.PHONY: exo
-exo: Dockerfile
+.PHONY: cli
+cli: Dockerfile
 	docker build -f $^ \
 		-t exoscale/${@}:${version} \
 		--build-arg VERSION="${version}" \
