@@ -1,3 +1,4 @@
+.git
 dist
 Dockerfile.goreleaser
 go.sum
