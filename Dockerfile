@@ -3,22 +3,36 @@ FROM golang:1.11-stretch as builder
 ADD . /src
 WORKDIR /src
 
+ARG VERSION
 ARG VCS_REF
-ARG BUILD_DATE
 
 ENV CGO_ENABLED=1
 RUN go build -mod vendor -o exo \
-        -ldflags "-s -w -X main.version=${BUILD_DATE} -X main.commit=${VCS_REF}"
+        -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${VCS_REF}"
+
+FROM ubuntu:bionic
+
+ARG VERSION
+ARG VCS_REF
+ARG BUILD_DATE
 
 LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.label-schema.vcs-ref=${VCS_REF} \
+      org.label-schema.version=${VERSION} \
       org.label-schema.name="Exo" \
       org.label-schema.vendor="Exoscale" \
       org.label-schema.description="Exoscale CLI" \
       org.label-schema.url="https://github.com/exoscale/cli" \
       org.label-schema.schema-version="1.0"
 
+RUN set -xe \
+ && apt-get update -q \
+ && apt-get upgrade -q -y \
+ && apt-get install -q -y \
+        ca-certificates \
+ && apt-get autoremove -y \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
-FROM ubuntu:bionic
 COPY --from=builder /src/exo /
 ENTRYPOINT ["/exo"]
