@@ -48,6 +48,9 @@ var showCmd = &cobra.Command{
 			fmt.Fprintf(w, "Endpoint:\t%s\n", acc.Endpoint)        // nolint: errcheck
 			fmt.Fprintf(w, "DNS Endpoint:\t%s\n", acc.DNSEndpoint) // nolint: errcheck
 		}
+		if acc.SosEndpoint != defaultSosEndpoint {
+			fmt.Fprintf(w, "SOS Endpoint:\t%s\n", acc.SosEndpoint) // nolint: errcheck
+		}
 		return w.Flush()
 	},
 }
