@@ -176,10 +176,20 @@ func displayBucket(minioClient *minio.Client, isRecursive, isRaw bool) error {
 					return err
 				}
 				///
+				if isRaw {
+					fmt.Printf("%s/\n", bucket.Name)
+				} else {
+					fmt.Fprintf(table, "%s\t%s\t%s\t%s/\n", // nolint: errcheck
+						fmt.Sprintf("[%s]", bucket.CreationDate.Format(printDate)),
+						fmt.Sprintf("[%s]", zoneName),
+						fmt.Sprintf("%6s ", humanize.IBytes(uint64(0))),
+						bucket.Name) // nolint: errcheck
+				}
 				listRecursively(minioClient, bucket.Name, "", zoneName, true, isRaw, table)
 				continue
 			}
 			if isRaw {
+				fmt.Printf("%s/\n", bucket.Name)
 				continue
 			}
 			fmt.Fprintf(table, "%s\t%s\t%s\t%s/\n", // nolint: errcheck
