@@ -195,7 +195,7 @@ func initConfig() {
 		viper.AddConfigPath(".")
 	}
 
-	if err := viper.ReadInConfig(); err != nil && getCmdPosition("config") == 1 {
+	if err := viper.ReadInConfig(); err != nil && (getCmdPosition("config") == 1 || getCmdPosition("version") == 1) {
 		ignoreClientBuild = true
 		return
 	}
