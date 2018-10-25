@@ -35,7 +35,7 @@ var sosListCmd = &cobra.Command{
 			return err
 		}
 
-		isRaw, err := cmd.Flags().GetBool("raw")
+		isRaw, err := cmd.Flags().GetBool("short")
 		if err != nil {
 			return err
 		}
