@@ -114,7 +114,7 @@ var sosListCmd = &cobra.Command{
 			key = strings.TrimLeft(key[len(prefix):], "/")
 
 			if isRaw {
-				fmt.Println(key)
+				fmt.Fprintf(table, "%s\n", key) // nolint: errcheck
 				continue
 			}
 
@@ -140,7 +140,7 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 		lastModified := message.LastModified.Format(printDate)
 		if displayBucket {
 			if isRaw {
-				fmt.Printf("%s/%s\n", bucketName, message.Key)
+				fmt.Fprintf(table, "%s/%s\n", bucketName, message.Key) // nolint: errcheck
 				continue
 			}
 			fmt.Fprintf(table, "%s\t%s\t%s\t%s\n", fmt.Sprintf("[%s]", lastModified), // nolint: errcheck
@@ -149,7 +149,7 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 				fmt.Sprintf("%s/%s", bucketName, message.Key)) // nolint: errcheck
 		} else {
 			if isRaw {
-				fmt.Printf("%s\n", message.Key)
+				fmt.Fprintf(table, "%s\n", message.Key) // nolint: errcheck
 				continue
 			}
 			fmt.Fprintf(table, "%s\t%s\t%s\n", fmt.Sprintf("[%s]", lastModified), // nolint: errcheck
@@ -177,7 +177,7 @@ func displayBucket(minioClient *minio.Client, isRecursive, isRaw bool) error {
 				}
 				///
 				if isRaw {
-					fmt.Printf("%s/\n", bucket.Name)
+					fmt.Fprintf(table, "%s/\n", bucket.Name) // nolint: errcheck
 				} else {
 					fmt.Fprintf(table, "%s\t%s\t%s\t%s/\n", // nolint: errcheck
 						fmt.Sprintf("[%s]", bucket.CreationDate.Format(printDate)),
@@ -189,7 +189,7 @@ func displayBucket(minioClient *minio.Client, isRecursive, isRaw bool) error {
 				continue
 			}
 			if isRaw {
-				fmt.Printf("%s/\n", bucket.Name)
+				fmt.Fprintf(table, "%s/\n", bucket.Name) // nolint: errcheck
 				continue
 			}
 			fmt.Fprintf(table, "%s\t%s\t%s\t%s/\n", // nolint: errcheck
@@ -245,5 +245,5 @@ func splitPath(s string) []string {
 func init() {
 	sosCmd.AddCommand(sosListCmd)
 	sosListCmd.Flags().BoolP("recursive", "r", false, "List recursively")
-	sosListCmd.Flags().BoolP("raw", "l", false, "List without long format")
+	sosListCmd.Flags().BoolP("raw", "R", false, "List without long format")
 }
