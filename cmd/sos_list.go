@@ -224,5 +224,5 @@ func splitPath(s string) []string {
 func init() {
 	sosCmd.AddCommand(sosListCmd)
 	sosListCmd.Flags().BoolP("recursive", "r", false, "List recursively")
-	sosListCmd.Flags().BoolP("raw", "R", false, "List without long format")
+	sosListCmd.Flags().BoolP("short", "S", false, "List in short format")
 }
