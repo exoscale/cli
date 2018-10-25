@@ -118,10 +118,7 @@ var sosListCmd = &cobra.Command{
 				continue
 			}
 
-			fmt.Fprintf(table, "%s\t%s\t%s\n", // nolint: errcheck
-				fmt.Sprintf("[%s]", lastModified),
-				fmt.Sprintf("%6s ", humanize.IBytes(uint64(message.Size))),
-				key) // nolint: errcheck
+			fmt.Fprintln(table, fmt.Sprintf("[%s]\t%6s \t%s", lastModified, humanize.IBytes(uint64(message.Size)), key)) // nolint: errcheck
 		}
 
 		return table.Flush()
@@ -143,18 +140,15 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 				fmt.Fprintf(table, "%s/%s\n", bucketName, message.Key) // nolint: errcheck
 				continue
 			}
-			fmt.Fprintf(table, "%s\t%s\t%s\t%s\n", fmt.Sprintf("[%s]", lastModified), // nolint: errcheck
-				fmt.Sprintf("[%s]", zone),
-				fmt.Sprintf("%6s ", humanize.IBytes(uint64(message.Size))),
-				fmt.Sprintf("%s/%s", bucketName, message.Key)) // nolint: errcheck
+			fmt.Fprintln(table,
+				fmt.Sprintf("[%s]\t[%s]\t%6s \t%s/%s",
+					lastModified, zone, humanize.IBytes(uint64(message.Size)), bucketName, message.Key)) // nolint: errcheck
 		} else {
 			if isRaw {
 				fmt.Fprintln(table, message.Key) // nolint: errcheck
 				continue
 			}
-			fmt.Fprintf(table, "%s\t%s\t%s\n", fmt.Sprintf("[%s]", lastModified), // nolint: errcheck
-				fmt.Sprintf("%6s ", humanize.IBytes(uint64(message.Size))),
-				message.Key) // nolint: errcheck
+			fmt.Fprintln(table, fmt.Sprintf("[%s]\t%6s \t%s", lastModified, humanize.IBytes(uint64(message.Size)), message.Key)) // nolint: errcheck
 		}
 	}
 }
@@ -169,34 +163,19 @@ func displayBucket(minioClient *minio.Client, isRecursive, isRaw bool) error {
 
 	for zoneName, buckets := range allBuckets {
 		for _, bucket := range buckets {
+			if isRaw {
+				fmt.Fprintf(table, "%s/\n", bucket.Name) // nolint: errcheck
+			} else {
+				fmt.Fprintln(table,
+					fmt.Sprintf("[%s]\t[%s]\t%6s \t%s/", bucket.CreationDate.Format(printDate), zoneName, humanize.IBytes(uint64(0)), bucket.Name)) // nolint: errcheck
+			}
 			if isRecursive {
-				///XXX Waiting for pithos 301 redirect
 				minioClient, err = newMinioClient(zoneName)
 				if err != nil {
 					return err
 				}
-				///
-				if isRaw {
-					fmt.Fprintf(table, "%s/\n", bucket.Name) // nolint: errcheck
-				} else {
-					fmt.Fprintf(table, "%s\t%s\t%s\t%s/\n", // nolint: errcheck
-						fmt.Sprintf("[%s]", bucket.CreationDate.Format(printDate)),
-						fmt.Sprintf("[%s]", zoneName),
-						fmt.Sprintf("%6s ", humanize.IBytes(uint64(0))),
-						bucket.Name) // nolint: errcheck
-				}
 				listRecursively(minioClient, bucket.Name, "", zoneName, true, isRaw, table)
-				continue
 			}
-			if isRaw {
-				fmt.Fprintf(table, "%s/\n", bucket.Name) // nolint: errcheck
-				continue
-			}
-			fmt.Fprintf(table, "%s\t%s\t%s\t%s/\n", // nolint: errcheck
-				fmt.Sprintf("[%s]", bucket.CreationDate.Format(printDate)),
-				fmt.Sprintf("[%s]", zoneName),
-				fmt.Sprintf("%6s ", humanize.IBytes(uint64(0))),
-				bucket.Name) // nolint: errcheck
 		}
 	}
 	return table.Flush()
