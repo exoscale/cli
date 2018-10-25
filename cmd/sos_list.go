@@ -114,7 +114,7 @@ var sosListCmd = &cobra.Command{
 			key = strings.TrimLeft(key[len(prefix):], "/")
 
 			if isRaw {
-				fmt.Fprintf(table, "%s\n", key) // nolint: errcheck
+				fmt.Fprintln(table, key) // nolint: errcheck
 				continue
 			}
 
@@ -149,7 +149,7 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 				fmt.Sprintf("%s/%s", bucketName, message.Key)) // nolint: errcheck
 		} else {
 			if isRaw {
-				fmt.Fprintf(table, "%s\n", message.Key) // nolint: errcheck
+				fmt.Fprintln(table, message.Key) // nolint: errcheck
 				continue
 			}
 			fmt.Fprintf(table, "%s\t%s\t%s\n", fmt.Sprintf("[%s]", lastModified), // nolint: errcheck
