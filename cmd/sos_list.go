@@ -118,7 +118,7 @@ var sosListCmd = &cobra.Command{
 				continue
 			}
 
-			fmt.Fprintln(table, fmt.Sprintf("[%s]\t%6s \t%s", lastModified, humanize.IBytes(uint64(message.Size)), key)) // nolint: errcheck
+			fmt.Fprintf(table, "[%s]\t%6s \t%s\n", lastModified, humanize.IBytes(uint64(message.Size)), key) // nolint: errcheck
 		}
 
 		return table.Flush()
@@ -140,15 +140,15 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 				fmt.Fprintf(table, "%s/%s\n", bucketName, message.Key) // nolint: errcheck
 				continue
 			}
-			fmt.Fprintln(table,
-				fmt.Sprintf("[%s]\t[%s]\t%6s \t%s/%s",
-					lastModified, zone, humanize.IBytes(uint64(message.Size)), bucketName, message.Key)) // nolint: errcheck
+			fmt.Fprintf(table,
+				"[%s]\t[%s]\t%6s \t%s/%s\n", lastModified, zone, humanize.IBytes(uint64(message.Size)), bucketName, message.Key) // nolint: errcheck
 		} else {
 			if isRaw {
 				fmt.Fprintln(table, message.Key) // nolint: errcheck
 				continue
 			}
-			fmt.Fprintln(table, fmt.Sprintf("[%s]\t%6s \t%s", lastModified, humanize.IBytes(uint64(message.Size)), message.Key)) // nolint: errcheck
+			fmt.Fprintf(table,
+				"[%s]\t%6s \t%s\n", lastModified, humanize.IBytes(uint64(message.Size)), message.Key) // nolint: errcheck
 		}
 	}
 }
@@ -166,8 +166,8 @@ func displayBucket(minioClient *minio.Client, isRecursive, isRaw bool) error {
 			if isRaw {
 				fmt.Fprintf(table, "%s/\n", bucket.Name) // nolint: errcheck
 			} else {
-				fmt.Fprintln(table,
-					fmt.Sprintf("[%s]\t[%s]\t%6s \t%s/", bucket.CreationDate.Format(printDate), zoneName, humanize.IBytes(uint64(0)), bucket.Name)) // nolint: errcheck
+				fmt.Fprintf(table,
+					"[%s]\t[%s]\t%6s \t%s/\n", bucket.CreationDate.Format(printDate), zoneName, humanize.IBytes(uint64(0)), bucket.Name) // nolint: errcheck
 			}
 			if isRecursive {
 				minioClient, err = newMinioClient(zoneName)
