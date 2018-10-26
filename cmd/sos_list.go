@@ -72,7 +72,7 @@ var sosListCmd = &cobra.Command{
 		}
 		///
 
-		table := tabwriter.NewWriter(os.Stdout, 0, 0, 0, ' ', tabwriter.TabIndent)
+		table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 
 		if isRecursive {
 			listRecursively(minioClient, bucketName, prefix, "", false, isShort, table)
