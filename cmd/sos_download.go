@@ -78,18 +78,31 @@ var downloadCmd = &cobra.Command{
 			return err
 		}
 
-		opts := minio.GetObjectOptions{}
-		// Initialize get object request headers to set the
-		// appropriate range offsets to read from.
-		if st.Size() > 0 {
-			opts.SetRange(st.Size(), 0)
-		}
-
-		object, err := minioClient.GetObjectWithContext(gContext, bucketName, objectName, opts)
+		object, err := minioClient.GetObjectWithContext(gContext, bucketName, objectName, minio.GetObjectOptions{})
 		if err != nil {
 			return err
 		}
 		defer object.Close() //nolint: errcheck
+
+		// XXXXX I have to do that because this feature of minio-go doesn't working:
+		// THAT:
+		_, err = object.Seek(st.Size(), 0)
+		if err != nil {
+			return err
+		}
+		// INSTEAD OF:
+		/*
+			opts := minio.GetObjectOptions{}
+
+			// Initialize get object request headers to set the
+			// appropriate range offsets to read from.
+			if st.Size() > 0 {
+				opts.SetRange(st.Size(), 0)
+			}
+
+			object, err := minioClient.GetObjectWithContext(gContext, bucketName, objectName, opts)
+		*/
+		// XXXXXX
 
 		progress := mpb.New(
 			mpb.WithContext(gContext),
@@ -99,7 +112,7 @@ var downloadCmd = &cobra.Command{
 			mpb.WithRefreshRate(180*time.Millisecond),
 		)
 
-		bar := progress.AddBar(objectStat.Size,
+		bar := progress.AddBar(objectStat.Size-st.Size(),
 			mpb.PrependDecorators(
 				// simple name decorator
 				decor.Name(objectName, decor.WC{W: len(objectName) + 1, C: decor.DidentRight}),
@@ -114,7 +127,7 @@ var downloadCmd = &cobra.Command{
 		reader := bar.ProxyReader(object)
 
 		// Write to the part file.
-		if _, err = io.CopyN(filePart, reader, objectStat.Size); err != nil {
+		if _, err = io.CopyN(filePart, reader, objectStat.Size-st.Size()); err != nil {
 			return err
 		}
 
