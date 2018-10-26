@@ -136,15 +136,17 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 
 		lastModified := message.LastModified.Format(printDate)
 		var bucket string
+		var zoneFormat string
 		if displayBucket {
 			bucket = fmt.Sprintf("%s/", bucketName)
+			zoneFormat = fmt.Sprintf("[%s]\t", zone)
 		}
 		if isShort {
 			fmt.Fprintf(table, "%s%s\n", bucket, message.Key) // nolint: errcheck
 			continue
 		}
 		fmt.Fprintf(table,
-			"[%s]\t[%s]\t%6s \t%s%s\n", lastModified, zone, humanize.IBytes(uint64(message.Size)), bucket, message.Key) // nolint: errcheck
+			"[%s]\t%s%6s \t%s%s\n", lastModified, zoneFormat, humanize.IBytes(uint64(message.Size)), bucket, message.Key) // nolint: errcheck
 	}
 }
 
