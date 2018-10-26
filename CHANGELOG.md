@@ -1,3 +1,11 @@
+1.0.2
+-----
+
+- fix version command do not require any config file
+- change the account selection flag to `--use-account`
+- exo config is nicer
+- exo sos ls has a short mode omitting any meta information
+
 1.0.1
 -----
 
