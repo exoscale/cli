@@ -1,4 +1,4 @@
-version := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null | echo 'latest')
+version := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null || echo 'latest')
 
 .PHONY: cli
 cli: Dockerfile
