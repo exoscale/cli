@@ -30,24 +30,26 @@ var sosListCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		isRec, err := cmd.Flags().GetBool("recursive")
+		isRecursive, err := cmd.Flags().GetBool("recursive")
+		if err != nil {
+			return err
+		}
+
+		isShort, err := cmd.Flags().GetBool("short")
 		if err != nil {
 			return err
 		}
 
 		if len(args) == 0 {
-			return displayBucket(minioClient, isRec)
+			return displayBucket(minioClient, isRecursive, isShort)
 		}
 
 		path := filepath.ToSlash(args[0])
 		path = strings.Trim(path, "/")
 		p := splitPath(args[0])
 
-		if len(p) == 0 {
-			return displayBucket(minioClient, isRec)
-		}
-		if p[0] == "" {
-			return displayBucket(minioClient, isRec)
+		if len(p) == 0 || p[0] == "" {
+			return displayBucket(minioClient, isRecursive, isShort)
 		}
 
 		var prefix string
@@ -70,10 +72,10 @@ var sosListCmd = &cobra.Command{
 		}
 		///
 
-		table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
+		table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 
-		if isRec {
-			listRecursively(minioClient, bucketName, prefix, "", false, table)
+		if isRecursive {
+			listRecursively(minioClient, bucketName, prefix, "", false, isShort, table)
 			return table.Flush()
 		}
 
@@ -111,17 +113,19 @@ var sosListCmd = &cobra.Command{
 			key := filepath.ToSlash(message.Key)
 			key = strings.TrimLeft(key[len(prefix):], "/")
 
-			fmt.Fprintf(table, "%s\t%s\t%s\n", // nolint: errcheck
-				fmt.Sprintf("[%s]", lastModified),
-				fmt.Sprintf("%6s ", humanize.IBytes(uint64(message.Size))),
-				key) // nolint: errcheck
+			if isShort {
+				fmt.Fprintln(table, key) // nolint: errcheck
+				continue
+			}
+
+			fmt.Fprintf(table, "[%s]\t%6s \t%s\n", lastModified, humanize.IBytes(uint64(message.Size)), key) // nolint: errcheck
 		}
 
 		return table.Flush()
 	},
 }
 
-func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBucket bool, table io.Writer) {
+func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBucket, isShort bool, table io.Writer) {
 
 	for message := range c.ListObjectsV2(bucketName, prefix, true, gContext.Done()) {
 		sPrefix := splitPath(prefix)
@@ -131,44 +135,44 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 		}
 
 		lastModified := message.LastModified.Format(printDate)
+		var bucket string
+		var zoneFormat string
 		if displayBucket {
-			fmt.Fprintf(table, "%s\t%s\t%s\t%s\n", fmt.Sprintf("[%s]", lastModified), // nolint: errcheck
-				fmt.Sprintf("[%s]", zone),
-				fmt.Sprintf("%6s ", humanize.IBytes(uint64(message.Size))),
-				fmt.Sprintf("%s/%s", bucketName, message.Key)) // nolint: errcheck
-		} else {
-			fmt.Fprintf(table, "%s\t%s\t%s\n", fmt.Sprintf("[%s]", lastModified), // nolint: errcheck
-				fmt.Sprintf("%6s ", humanize.IBytes(uint64(message.Size))),
-				fmt.Sprintf("%s/%s", bucketName, message.Key)) // nolint: errcheck
+			bucket = fmt.Sprintf("%s/", bucketName)
+			zoneFormat = fmt.Sprintf("[%s]\t", zone)
 		}
+		if isShort {
+			fmt.Fprintf(table, "%s%s\n", bucket, message.Key) // nolint: errcheck
+			continue
+		}
+		fmt.Fprintf(table,
+			"[%s]\t%s%6s \t%s%s\n", lastModified, zoneFormat, humanize.IBytes(uint64(message.Size)), bucket, message.Key) // nolint: errcheck
 	}
 }
 
-func displayBucket(minioClient *minio.Client, isRecursive bool) error {
+func displayBucket(minioClient *minio.Client, isRecursive, isShort bool) error {
 	allBuckets, err := listBucket(minioClient)
 	if err != nil {
 		return err
 	}
 
-	table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
+	table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 
 	for zoneName, buckets := range allBuckets {
 		for _, bucket := range buckets {
+			if isShort {
+				fmt.Fprintf(table, "%s/\n", bucket.Name) // nolint: errcheck
+			} else {
+				fmt.Fprintf(table,
+					"[%s]\t[%s]\t%6s \t%s/\n", bucket.CreationDate.Format(printDate), zoneName, humanize.IBytes(uint64(0)), bucket.Name) // nolint: errcheck
+			}
 			if isRecursive {
-				///XXX Waiting for pithos 301 redirect
 				minioClient, err = newMinioClient(zoneName)
 				if err != nil {
 					return err
 				}
-				///
-				listRecursively(minioClient, bucket.Name, "", zoneName, true, table)
-				continue
+				listRecursively(minioClient, bucket.Name, "", zoneName, true, isShort, table)
 			}
-			fmt.Fprintf(table, "%s\t%s\t%s\t%s/\n", // nolint: errcheck
-				fmt.Sprintf("[%s]", bucket.CreationDate.Format(printDate)),
-				fmt.Sprintf("[%s]", zoneName),
-				fmt.Sprintf("%6s ", humanize.IBytes(uint64(0))),
-				bucket.Name) // nolint: errcheck
 		}
 	}
 	return table.Flush()
@@ -217,4 +221,5 @@ func splitPath(s string) []string {
 func init() {
 	sosCmd.AddCommand(sosListCmd)
 	sosListCmd.Flags().BoolP("recursive", "r", false, "List recursively")
+	sosListCmd.Flags().BoolP("short", "S", false, "List in short format")
 }
