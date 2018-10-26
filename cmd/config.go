@@ -27,13 +27,32 @@ const (
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Generate config file for this cli",
+	Short: "Manage config for exo cli",
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
 	if viper.ConfigFileUsed() != "" {
 		fmt.Println("Good day! exo is already configured with accounts:")
-		listAccounts()
+		accounts := listAccounts()
+		prompt := promptui.Select{
+			Label: "Select an account",
+			Items: accounts,
+		}
+
+		_, result, err := prompt.Run()
+
+		if err != nil {
+			return fmt.Errorf("prompt failed %v", err)
+		}
+
+		if fmt.Sprintf("%s [Default]", gAllAccount.DefaultAccount) != result {
+			viper.Set("defaultAccount", result)
+			if err := addAccount(viper.ConfigFileUsed(), nil); err != nil {
+				return err
+			}
+			fmt.Println("Default profile set to", result)
+		}
+
 		return addNewAccount(false)
 	}
 	csPath, ok := isCloudstackINIFileExist()
@@ -502,17 +521,18 @@ func askQuestion(text string) bool {
 	return (strings.ToLower(resp) == "y" || strings.ToLower(resp) == "yes")
 }
 
-func listAccounts() {
+func listAccounts() []string {
 	if gAllAccount == nil {
-		return
+		return nil
 	}
-	for _, acc := range gAllAccount.Accounts {
-		print("- ", acc.Name)
+	res := make([]string, len(gAllAccount.Accounts))
+	for i, acc := range gAllAccount.Accounts {
+		res[i] = acc.Name
 		if acc.Name == gAllAccount.DefaultAccount {
-			print(" [Default]")
+			res[i] = fmt.Sprintf("%s [Default]", res[i])
 		}
-		fmt.Println("")
 	}
+	return res
 }
 
 func getAccountByName(name string) *account {
