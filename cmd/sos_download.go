@@ -1,10 +1,17 @@
 package cmd
 
 import (
+	"fmt"
+	"io"
 	"log"
+	"math/rand"
+	"os"
+	"time"
 
 	minio "github.com/minio/minio-go"
 	"github.com/spf13/cobra"
+	"github.com/vbauerster/mpb"
+	"github.com/vbauerster/mpb/decor"
 )
 
 // downloadCmd represents the download command
@@ -15,6 +22,10 @@ var downloadCmd = &cobra.Command{
 		if len(args) < 3 {
 			return cmd.Usage()
 		}
+
+		bucketName := args[0]
+		objectName := args[1]
+		localFilePath := args[2]
 
 		minioClient, err := newMinioClient(sosZone)
 		if err != nil {
@@ -31,9 +42,110 @@ var downloadCmd = &cobra.Command{
 			return err
 		}
 
-		if err = minioClient.FGetObjectWithContext(gContext, args[0], args[1], args[2], minio.GetObjectOptions{}); err != nil {
+		// Verify if destination already exists.
+		st, err := os.Stat(localFilePath)
+		if err == nil {
+			// If the destination exists and is a directory.
+			if st.IsDir() {
+				return fmt.Errorf("file path is a directory")
+			}
+		}
+
+		// Proceed if file does not exist. return for all other errors.
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return err
+			}
+		}
+
+		// Gather md5sum.
+		objectStat, err := minioClient.StatObject(bucketName, objectName, minio.StatObjectOptions{})
+		if err != nil {
 			return err
 		}
+
+		// Write to a temporary file "fileName.part.minio" before saving.
+		filePartPath := localFilePath + objectStat.ETag + ".part.minio"
+
+		// If exists, open in append mode. If not create it as a part file.
+		filePart, err := os.OpenFile(filePartPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			return err
+		}
+
+		// Issue Stat to get the current offset.
+		st, err = filePart.Stat()
+		if err != nil {
+			return err
+		}
+
+		opts := minio.GetObjectOptions{}
+		// Initialize get object request headers to set the
+		// appropriate range offsets to read from.
+		if st.Size() > 0 {
+			opts.SetRange(st.Size(), 0)
+		}
+
+		object, err := minioClient.GetObjectWithContext(gContext, bucketName, objectName, opts)
+		if err != nil {
+			return err
+		}
+		defer object.Close() //nolint: errcheck
+
+		progress := mpb.New(
+			mpb.WithContext(gContext),
+			// override default (80) width
+			mpb.WithWidth(64),
+			// override default 120ms refresh rate
+			mpb.WithRefreshRate(180*time.Millisecond),
+		)
+
+		bar := progress.AddBar(objectStat.Size,
+			mpb.PrependDecorators(
+				// simple name decorator
+				decor.Name(objectName, decor.WC{W: len(objectName) + 1, C: decor.DidentRight}),
+				// decor.DSyncWidth bit enables column width synchronization
+				decor.Percentage(decor.WCSyncSpace),
+			),
+			mpb.AppendDecorators(
+				decor.AverageETA(decor.ET_STYLE_GO),
+			),
+		)
+
+		buf := make([]byte, 1024)
+		max := 100 * time.Millisecond
+		bar.IncrBy(int(st.Size()))
+		for {
+			start := time.Now()
+			time.Sleep(time.Duration(rand.Intn(10)+1) * max / 10)
+			n, err := object.Read(buf)
+			if err != nil && err != io.EOF {
+				return err
+			}
+
+			_, writeErr := filePart.Write(buf[:n])
+			if writeErr != nil {
+				return writeErr
+			}
+
+			bar.IncrBy(int(n), time.Since(start))
+
+			if err == io.EOF {
+				break
+			}
+		}
+
+		// Close the file before rename, this is specifically needed for Windows users.
+		if err = filePart.Close(); err != nil {
+			return err
+		}
+
+		// Safely completed. Now commit by renaming to actual filename.
+		if err = os.Rename(filePartPath, localFilePath); err != nil {
+			return err
+		}
+
+		progress.Wait()
 
 		log.Printf("Successfully downloaded %s into %q\n", args[1], args[2])
 		return nil
