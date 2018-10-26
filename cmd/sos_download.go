@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"os"
 	"time"
 
@@ -112,27 +111,11 @@ var downloadCmd = &cobra.Command{
 			),
 		)
 
-		buf := make([]byte, 1024)
-		max := 100 * time.Millisecond
-		bar.IncrBy(int(st.Size()))
-		for {
-			start := time.Now()
-			time.Sleep(time.Duration(rand.Intn(10)+1) * max / 10)
-			n, err := object.Read(buf)
-			if err != nil && err != io.EOF {
-				return err
-			}
+		reader := bar.ProxyReader(object)
 
-			_, writeErr := filePart.Write(buf[:n])
-			if writeErr != nil {
-				return writeErr
-			}
-
-			bar.IncrBy(int(n), time.Since(start))
-
-			if err == io.EOF {
-				break
-			}
+		// Write to the part file.
+		if _, err = io.CopyN(filePart, reader, objectStat.Size); err != nil {
+			return err
 		}
 
 		// Close the file before rename, this is specifically needed for Windows users.
