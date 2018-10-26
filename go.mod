@@ -13,6 +13,10 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
+	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
+	github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a // indirect
+	github.com/manifoldco/promptui v0.3.1
+	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/minio/minio-go v6.0.6+incompatible
