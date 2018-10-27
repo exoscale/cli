@@ -112,7 +112,7 @@ var downloadCmd = &cobra.Command{
 			mpb.WithRefreshRate(180*time.Millisecond),
 		)
 
-		bar := progress.AddBar(objectStat.Size-st.Size(),
+		bar := progress.AddBar(objectStat.Size,
 			mpb.PrependDecorators(
 				// simple name decorator
 				decor.Name(objectName, decor.WC{W: len(objectName) + 1, C: decor.DidentRight}),
@@ -123,6 +123,8 @@ var downloadCmd = &cobra.Command{
 				decor.AverageETA(decor.ET_STYLE_GO),
 			),
 		)
+
+		bar.IncrBy(int(st.Size()))
 
 		reader := bar.ProxyReader(object)
 
