@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path"
 	"time"
 
 	minio "github.com/minio/minio-go"
@@ -46,7 +47,13 @@ var downloadCmd = &cobra.Command{
 		if err == nil {
 			// If the destination exists and is a directory.
 			if st.IsDir() {
-				return fmt.Errorf("file path is a directory")
+				localFilePath = path.Join(localFilePath, objectName)
+				_, err = os.Stat(localFilePath)
+				if err == nil {
+					return fmt.Errorf("file %q: already exists", localFilePath)
+				}
+			} else {
+				return fmt.Errorf("file %q: already exists", localFilePath)
 			}
 		}
 
@@ -145,7 +152,7 @@ var downloadCmd = &cobra.Command{
 
 		progress.Wait()
 
-		log.Printf("Successfully downloaded %s into %q\n", args[1], args[2])
+		log.Printf("Successfully downloaded %q into %q\n", objectName, localFilePath)
 		return nil
 	},
 }
