@@ -40,3 +40,16 @@ nfpm:
   formats:
     - deb
     - rpm
+
+brew:
+  name: "exo"
+  github:
+    owner: exoscale
+    name: homebrew-exo
+
+  folder: Formula
+  homepage: "https://exoscale.github.io/cli/"
+  description: Manage (almost) everything at Exoscale from the command line.
+  dependencies:
+      - go
+
