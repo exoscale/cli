@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	statusURL         = "https://exoscalestatus.com/api.json"
+	statusURL         = "https://exoscalestatus.com"
+	jsonStatusURL     = "https://exoscalestatus.com/api.json"
 	statusContentPage = "application/json"
 )
 
@@ -22,7 +23,7 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Exoscale status",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		r, err := http.Get(statusURL)
+		r, err := http.Get(jsonStatusURL)
 		if err != nil {
 			return err
 		}
@@ -37,6 +38,8 @@ var statusCmd = &cobra.Command{
 		if err := json.NewDecoder(r.Body).Decode(response); err != nil {
 			return err
 		}
+
+		fmt.Printf("Exoscale Detailed Status\n - %s\n", statusURL)
 
 		tableWriter := table.NewTable(os.Stdout)
 		tableWriter.SetHeader([]string{"Detailed Status", "State"})
@@ -53,12 +56,14 @@ var statusCmd = &cobra.Command{
 		}
 		tableWriter.Render()
 
-		tableWriter = table.NewTable(os.Stdout)
-		tableWriter.SetHeader([]string{"Upcoming Maintenances", "Description", "Date"})
-		for _, event := range response.UpcomingMaintenances {
-			tableWriter.Append([]string{event.Title, event.Description, event.Date.String()})
-		}
-		tableWriter.Render()
+		/*
+			tableWriter = table.NewTable(os.Stdout)
+			tableWriter.SetHeader([]string{"Upcoming Maintenances", "Description", "Date"})
+			for _, event := range response.UpcomingMaintenances {
+				tableWriter.Append([]string{event.Title, event.Description, event.Date.String()})
+			}
+			tableWriter.Render()
+		*/
 
 		return nil
 	},
