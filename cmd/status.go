@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/exoscale/cli/table"
 
@@ -38,20 +39,25 @@ var statusCmd = &cobra.Command{
 		}
 
 		tableWriter := table.NewTable(os.Stdout)
-
 		tableWriter.SetHeader([]string{"Detailed Status", "State"})
-
 		tableWriter.Append([]string{"Compute", response.Status.Compute.State})
 		tableWriter.Append([]string{"Compute API", response.Status.ComputeAPI.State})
 		tableWriter.Append([]string{"DNS", response.Status.DNS.State})
 		tableWriter.Append([]string{"Object Storage", response.Status.ObjectStorage.State})
-
 		tableWriter.Render()
 
 		tableWriter = table.NewTable(os.Stdout)
+		tableWriter.SetHeader([]string{"Current Events", "State", "Description", "Updated", "Created"})
+		for _, event := range response.Incidents {
+			tableWriter.Append([]string{event.Title, event.Status, event.Message, event.Updated.String(), event.Created.String()})
+		}
+		tableWriter.Render()
 
-		tableWriter.SetHeader([]string{"Current Events", "Upcoming Maintenances"})
-
+		tableWriter = table.NewTable(os.Stdout)
+		tableWriter.SetHeader([]string{"Upcoming Maintenances", "Description", "Date"})
+		for _, event := range response.UpcomingMaintenances {
+			tableWriter.Append([]string{event.Title, event.Description, event.Date.String()})
+		}
 		tableWriter.Render()
 
 		return nil
@@ -60,10 +66,20 @@ var statusCmd = &cobra.Command{
 
 //ExoscaleStatus represent exoscale statsus
 type ExoscaleStatus struct {
-	URL                  string        `json:"url"`
-	Incidents            []interface{} `json:"incidents"`
-	UpcomingMaintenances []interface{} `json:"upcoming_maintenances"`
-	Status               struct {
+	URL       string `json:"url"`
+	Incidents []struct {
+		Message string    `json:"message"`
+		Status  string    `json:"status"`
+		Updated time.Time `json:"updated"`
+		Title   string    `json:"title"`
+		Created time.Time `json:"created"`
+	} `json:"incidents"`
+	UpcomingMaintenances []struct {
+		Description string    `json:"description"`
+		Title       string    `json:"title"`
+		Date        time.Time `json:"date"`
+	} `json:"upcoming_maintenances"`
+	Status struct {
 		Compute struct {
 			State string `json:"state"`
 		} `json:"Compute"`
