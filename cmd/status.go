@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+
+	"github.com/exoscale/cli/table"
 
 	"github.com/spf13/cobra"
 )
@@ -34,7 +37,22 @@ var statusCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("%#v\n", response)
+		tableWriter := table.NewTable(os.Stdout)
+
+		tableWriter.SetHeader([]string{"Detailed Status", "State"})
+
+		tableWriter.Append([]string{"Compute", response.Status.Compute.State})
+		tableWriter.Append([]string{"Compute API", response.Status.ComputeAPI.State})
+		tableWriter.Append([]string{"DNS", response.Status.DNS.State})
+		tableWriter.Append([]string{"Object Storage", response.Status.ObjectStorage.State})
+
+		tableWriter.Render()
+
+		tableWriter = table.NewTable(os.Stdout)
+
+		tableWriter.SetHeader([]string{"Current Events", "Upcoming Maintenances"})
+
+		tableWriter.Render()
 
 		return nil
 	},
