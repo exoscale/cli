@@ -31,12 +31,12 @@ var vmUpdateIPCmd = &cobra.Command{
 			return fmt.Errorf("the virtual machine %s is not associated to the network %s", vm.DisplayName, network.Name)
 		}
 
-		newVm, err := updateNicIP(nic.ID, args[2])
+		newVM, err := updateNicIP(nic.ID, args[2])
 		if err != nil {
 			return err
 		}
 
-		return showVMWithNics(newVm)
+		return showVMWithNics(newVM)
 	},
 }
 
