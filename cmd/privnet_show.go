@@ -50,7 +50,7 @@ var privnetShowCmd = &cobra.Command{
 					vm.ID.String(),
 					vm.Name,
 					vm.IP().String(),
-					nicIP(privateNic),
+					nicIP(*privateNic),
 				})
 			}
 			table.Render()

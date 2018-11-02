@@ -47,7 +47,7 @@ var privnetAssociateCmd = &cobra.Command{
 					}
 					table.Append([]string{
 						vm.DisplayName,
-						nicIP(nic)})
+						nicIP(*nic)})
 					i = i + 1
 					continue
 				}
@@ -58,7 +58,7 @@ var privnetAssociateCmd = &cobra.Command{
 			}
 			table.Append([]string{
 				vm.DisplayName,
-				nicIP(nic)})
+				nicIP(*nic)})
 		}
 		w.Flush() // nolint: errcheck
 		table.Render()
