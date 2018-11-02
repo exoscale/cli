@@ -116,6 +116,66 @@ func init() {
 	}
 }
 
+// dnsCAACmd represents the URL command
+var dnsCAACmd = &cobra.Command{
+	Use:   "CAA <domain name>",
+	Short: "Add CAA record type to a domain",
+	Long: `A Certification Authority Authorization (CAA) record is used to specify which certificate
+authorities (CAs) are allowed to issue certificates for a domain.
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
+		}
+
+		name, err := cmd.Flags().GetString("name")
+		if err != nil {
+			return err
+		}
+		flag, err := cmd.Flags().GetUint8("flag")
+		if err != nil {
+			return err
+		}
+		tag, err := cmd.Flags().GetStringSlice("tag")
+		if err != nil {
+			return err
+		}
+		if len(tag) != 2 {
+			return fmt.Errorf("flag error: tag must be contain <key><value>")
+		}
+		ttl, err := cmd.Flags().GetInt("ttl")
+		if err != nil {
+			return err
+		}
+
+		domain, err := csDNS.GetDomain(args[0])
+		if err != nil {
+			return err
+		}
+
+		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+			DomainID:   domain.ID,
+			TTL:        ttl,
+			RecordType: "CAA",
+			Name:       name,
+			Content:    fmt.Sprintf("%d %s %s", flag, tag[0], tag[1]),
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Record %q was created successfully to %q\n", cmd.Name(), args[0])
+		return nil
+	},
+}
+
+func init() {
+	dnsAddCmd.AddCommand(dnsCAACmd)
+	dnsCAACmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
+	dnsCAACmd.Flags().Uint8P("flag", "f", 0, "An unsigned integer between 0-255.")
+	dnsCAACmd.Flags().StringSliceP("tag", "", []string{}, "CAA tag <key><value>, available tags: (issue | issuewild | iodef)")
+	dnsCAACmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+}
+
 // ALIASCmd represents the ALIAS command
 var dnsALIASCmd = &cobra.Command{
 	Use:   "ALIAS <domain name>",
