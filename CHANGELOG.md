@@ -15,6 +15,7 @@
 -----
 
 - feature sos listings `--short`
+- feature privnet `--cidrmask` as an alternative to `--netmask`
 - fix change the account selection flag to `--use-account`
 - fix version command do not require any config file
 
