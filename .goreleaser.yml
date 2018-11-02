@@ -18,6 +18,9 @@ sign:
   args: ["-u", "ops@exoscale.ch", "--detach-sign", "${artifact}"]
   artifacts: all
 
+git:
+  short_hash: true
+
 archive:
   format_overrides:
     - goos: windows
