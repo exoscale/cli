@@ -61,17 +61,17 @@ func updateNicIP(nicID *egoscale.UUID, newIP string) (*egoscale.VirtualMachine, 
 
 func showVMWithNics(vm *egoscale.VirtualMachine) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
-	fmt.Fprintf(w, "\nInstance ID\t%s\n", vm.ID) // nolint: errcheck
-	fmt.Fprintf(w, "Name\t%s\n", vm.DisplayName) // nolint: errcheck
+	fmt.Fprintf(w, "\nInstance ID:\t%s\n", vm.ID) // nolint: errcheck
+	fmt.Fprintf(w, "Name:\t%s\n", vm.DisplayName) // nolint: errcheck
 	if vm.DisplayName != vm.Name {
-		fmt.Fprintf(w, "Hostname\t%s\n", vm.Name) // nolint: errcheck
+		fmt.Fprintf(w, "Hostname:\t%s\n", vm.Name) // nolint: errcheck
 	}
 
-	fmt.Fprintf(w, "Network Interfaces\n") // nolint: errcheck
+	fmt.Fprintf(w, "Network Interfaces:\n") // nolint: errcheck
 	defaultNic := vm.DefaultNic()
 	if defaultNic != nil {
-		fmt.Fprintf(w, "-\tNetwork\tPublic\n")                           // nolint: errcheck
-		fmt.Fprintf(w, " \tPublic\t%s\n", defaultNic.IPAddress.String()) // nolint: errcheck
+		fmt.Fprintf(w, "-\tNetwork:\tPublic\n")                               // nolint: errcheck
+		fmt.Fprintf(w, " \tIP Address:\t%s\n", defaultNic.IPAddress.String()) // nolint: errcheck
 	}
 	for _, nic := range vm.Nic {
 		if nic.IsDefault {
@@ -86,12 +86,12 @@ func showVMWithNics(vm *egoscale.VirtualMachine) error {
 				networkName = network.ID.String()
 			}
 
-			fmt.Fprintf(w, "-\tNetwork\t%s\n", networkName)
+			fmt.Fprintf(w, "-\tNetwork:\t%s\n", networkName)
 			if network.Name == "" {
-				fmt.Fprintf(w, " \tID\t%s\n", network.ID.String())
+				fmt.Fprintf(w, " \tID:\t%s\n", network.ID.String())
 			}
 
-			fmt.Fprintf(w, " \tIP\t%s\n", nicIP(nic))
+			fmt.Fprintf(w, " \tIP Address:\t%s\n", nicIP(nic))
 		}
 	}
 
@@ -100,5 +100,5 @@ func showVMWithNics(vm *egoscale.VirtualMachine) error {
 }
 
 func init() {
-	vmCmd.AddCommand(vmUpdateNicIPCmd)
+	vmCmd.AddCommand(vmUpdateIPCmd)
 }
