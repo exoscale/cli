@@ -141,7 +141,7 @@ authorities (CAs) are allowed to issue certificates for a domain.
 			return err
 		}
 		if len(tag) != 2 {
-			return fmt.Errorf("flag error: tag must be contain <key><value>")
+			return fmt.Errorf("flag error: tag must contain <key><value>")
 		}
 		ttl, err := cmd.Flags().GetInt("ttl")
 		if err != nil {
@@ -158,7 +158,7 @@ authorities (CAs) are allowed to issue certificates for a domain.
 			TTL:        ttl,
 			RecordType: "CAA",
 			Name:       name,
-			Content:    fmt.Sprintf("%d %s %s", flag, tag[0], tag[1]),
+			Content:    fmt.Sprintf("%d %s %q", flag, tag[0], tag[1]),
 		})
 		if err != nil {
 			return err
@@ -172,7 +172,7 @@ func init() {
 	dnsAddCmd.AddCommand(dnsCAACmd)
 	dnsCAACmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
 	dnsCAACmd.Flags().Uint8P("flag", "f", 0, "An unsigned integer between 0-255.")
-	dnsCAACmd.Flags().StringSliceP("tag", "", []string{}, "CAA tag <key><value>, available tags: (issue | issuewild | iodef)")
+	dnsCAACmd.Flags().StringSliceP("tag", "", []string{}, "CAA tag \"<key>,<value>\", available tags: (issue | issuewild | iodef)")
 	dnsCAACmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
 }
 
