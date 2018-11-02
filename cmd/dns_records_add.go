@@ -173,7 +173,7 @@ func init() {
 	dnsCAACmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
 	dnsCAACmd.Flags().Uint8P("flag", "f", 0, "An unsigned integer between 0-255.")
 	dnsCAACmd.Flags().StringSliceP("tag", "", []string{}, "CAA tag \"<key>,<value>\", available tags: (issue | issuewild | iodef)")
-	dnsCAACmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsCAACmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 }
 
 // ALIASCmd represents the ALIAS command
