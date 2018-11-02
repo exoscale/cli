@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -44,12 +45,16 @@ var privnetUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		cidrmask, err := cmd.Flags().GetInt("cidrmask")
+		cidrmask, err := cmd.Flags().GetString("cidrmask")
 		if err != nil {
 			return err
 		}
-		if netmask == "" && cidrmask != 0 {
-			ipmask := net.CIDRMask(cidrmask, 32)
+		if netmask == "" && cidrmask != "" {
+			c, err := strconv.ParseInt(cidrmask, 10, 32)
+			if err != nil {
+				return err
+			}
+			ipmask := net.CIDRMask(int(c), 32)
 			netmask = (net.IP)(ipmask).String()
 		}
 		return privnetUpdate(id, name, desc, startip, endip, netmask)
@@ -99,6 +104,6 @@ func init() {
 	privnetUpdateCmd.Flags().StringP("startip", "s", "", "the beginning IP address in the network IP range. Required for managed networks.")
 	privnetUpdateCmd.Flags().StringP("endip", "e", "", "the ending IP address in the network IP range. Required for managed networks.")
 	privnetUpdateCmd.Flags().StringP("netmask", "m", "", "the netmask of the network.  Required for managed networks")
-	privnetUpdateCmd.Flags().IntP("cidrmask", "c", 0, "the cidrmask of the network. Required for managed networks.")
+	privnetUpdateCmd.Flags().StringP("cidrmask", "c", "", "the cidrmask of the network. Required for managed networks.")
 	privnetCmd.AddCommand(privnetUpdateCmd)
 }
