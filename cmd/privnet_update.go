@@ -99,6 +99,6 @@ func init() {
 	privnetUpdateCmd.Flags().StringP("startip", "s", "", "the beginning IP address in the network IP range. Required for managed networks.")
 	privnetUpdateCmd.Flags().StringP("endip", "e", "", "the ending IP address in the network IP range. Required for managed networks.")
 	privnetUpdateCmd.Flags().StringP("netmask", "m", "", "the netmask of the network.  Required for managed networks")
-	privnetCreateCmd.Flags().IntP("cidrmask", "c", 0, "the cidrmask of the network. Required for managed networks.")
+	privnetUpdateCmd.Flags().IntP("cidrmask", "c", 0, "the cidrmask of the network. Required for managed networks.")
 	privnetCmd.AddCommand(privnetUpdateCmd)
 }
