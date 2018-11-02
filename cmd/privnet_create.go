@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"net"
 	"os"
+	"strconv"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -37,12 +38,16 @@ var privnetCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		cidrmask, err := cmd.Flags().GetInt("cidrmask")
+		cidrmask, err := cmd.Flags().GetString("cidrmask")
 		if err != nil {
 			return err
 		}
-		if netmask == "" && cidrmask != 0 {
-			ipmask := net.CIDRMask(cidrmask, 32)
+		if netmask == "" && cidrmask != "" {
+			c, err := strconv.ParseInt(cidrmask, 10, 32)
+			if err != nil {
+				return err
+			}
+			ipmask := net.CIDRMask(int(c), 32)
 			netmask = (net.IP)(ipmask).String()
 		}
 
@@ -142,7 +147,7 @@ func init() {
 	privnetCreateCmd.Flags().StringP("startip", "s", "", "the beginning IP address in the network IP range. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("endip", "e", "", "the ending IP address in the network IP range. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("netmask", "n", "", "the netmask of the network. Required for managed networks.")
-	privnetCreateCmd.Flags().IntP("cidrmask", "c", 0, "the cidrmask of the network. Required for managed networks.")
+	privnetCreateCmd.Flags().StringP("cidrmask", "c", "", "the cidrmask of the network. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("zone", "z", "", "Assign private network to a zone")
 	privnetCmd.AddCommand(privnetCreateCmd)
 }
