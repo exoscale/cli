@@ -37,6 +37,15 @@ var privnetCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		cidrmask, err := cmd.Flags().GetInt("cidrmask")
+		if err != nil {
+			return err
+		}
+		if netmask == "" && cidrmask != 0 {
+			ipmask := net.CIDRMask(cidrmask, 32)
+			netmask = (net.IP)(ipmask).String()
+		}
+
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
@@ -133,6 +142,7 @@ func init() {
 	privnetCreateCmd.Flags().StringP("startip", "s", "", "the beginning IP address in the network IP range. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("endip", "e", "", "the ending IP address in the network IP range. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("netmask", "n", "", "the netmask of the network. Required for managed networks.")
+	privnetCreateCmd.Flags().IntP("cidrmask", "c", 0, "the cidrmask of the network. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("zone", "z", "", "Assign private network to a zone")
 	privnetCmd.AddCommand(privnetCreateCmd)
 }
