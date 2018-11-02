@@ -1,6 +1,7 @@
 1.0.2
 -----
 
+- Add CAA record (#44)
 - fix version command do not require any config file
 - change the account selection flag to `--use-account`
 - exo config is nicer
