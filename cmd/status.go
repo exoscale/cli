@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"text/tabwriter"
 	"time"
-
-	"github.com/exoscale/cli/table"
 
 	"github.com/spf13/cobra"
 )
 
 const (
 	statusURL         = "https://exoscalestatus.com"
-	jsonStatusURL     = "https://exoscalestatus.com/api.json"
+	jsonStatusURL     = statusURL + "/api.json"
 	statusContentPage = "application/json"
+	twitterURL        = "https://twitter.com/exoscalestatus"
 )
 
 // statusCmd represents the status command
@@ -23,54 +23,67 @@ var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Exoscale status",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		r, err := http.Get(jsonStatusURL)
+		status, err := fetchRunStatus(jsonStatusURL)
 		if err != nil {
 			return err
 		}
-		defer r.Body.Close()
 
-		contentType := r.Header.Get("content-type")
-		if contentType != statusContentPage {
-			return fmt.Errorf("status page content type expected %q, but got %q", statusContentPage, contentType)
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.FilterHTML)
+
+		fmt.Printf("Exoscale Status\n\t%s\n\n", statusURL)
+
+		for k, service := range status.Status {
+			fmt.Fprintf(w, "%s\t%s\n", k, service.State) // nolint: errcheck
 		}
+		fmt.Fprintln(w) // nolint: errcheck
 
-		response := &ExoscaleStatus{}
-		if err := json.NewDecoder(r.Body).Decode(response); err != nil {
-			return err
-		}
+		if len(status.Incidents) > 0 {
+			fmt.Println("Incidents")
 
-		fmt.Printf("Exoscale Detailed Status\n - %s\n", statusURL)
-
-		tableWriter := table.NewTable(os.Stdout)
-		tableWriter.SetHeader([]string{"Detailed Status", "State"})
-		tableWriter.Append([]string{"Compute", response.Status.Compute.State})
-		tableWriter.Append([]string{"Compute API", response.Status.ComputeAPI.State})
-		tableWriter.Append([]string{"DNS", response.Status.DNS.State})
-		tableWriter.Append([]string{"Object Storage", response.Status.ObjectStorage.State})
-		tableWriter.Render()
-
-		tableWriter = table.NewTable(os.Stdout)
-		tableWriter.SetHeader([]string{"Current Events", "State", "Description", "Updated", "Created"})
-		for _, event := range response.Incidents {
-			tableWriter.Append([]string{event.Title, event.Status, event.Message, event.Updated.String(), event.Created.String()})
-		}
-		tableWriter.Render()
-
-		/*
-			tableWriter = table.NewTable(os.Stdout)
-			tableWriter.SetHeader([]string{"Upcoming Maintenances", "Description", "Date"})
-			for _, event := range response.UpcomingMaintenances {
-				tableWriter.Append([]string{event.Title, event.Description, event.Date.String()})
+			for _, event := range status.Incidents {
+				fmt.Fprintf(w, "%s\t%s\t%s\n", event.Title, event.Status, event.Message) // nolint: errcheck
+				fmt.Fprintf(w, "\t%s\t%s\n\n", event.Updated, event.Created)             // nolint: errcheck
 			}
-			tableWriter.Render()
-		*/
 
+			fmt.Fprintln(w) // nolint: errcheck
+
+			w.Flush()
+			return fmt.Errorf("%d incidents, %s", len(status.Incidents), twitterURL)
+		}
+
+		w.Flush()
 		return nil
 	},
 }
 
-//ExoscaleStatus represent exoscale statsus
-type ExoscaleStatus struct {
+func fetchRunStatus(url string) (*RunStatus, error) {
+	// XXX need gContext
+	r, err := http.Get(jsonStatusURL)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Body.Close()
+
+	contentType := r.Header.Get("content-type")
+	if contentType != statusContentPage {
+		return nil, fmt.Errorf("status page content type expected %q, but got %q", statusContentPage, contentType)
+	}
+
+	response := &RunStatus{}
+	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
+// ServiceStatus represents the state of a service
+type ServiceStatus struct {
+	State string `json:"state"`
+}
+
+// RunStatus represents a runstatus struct
+type RunStatus struct {
 	URL       string `json:"url"`
 	Incidents []struct {
 		Message string    `json:"message"`
@@ -84,20 +97,7 @@ type ExoscaleStatus struct {
 		Title       string    `json:"title"`
 		Date        time.Time `json:"date"`
 	} `json:"upcoming_maintenances"`
-	Status struct {
-		Compute struct {
-			State string `json:"state"`
-		} `json:"Compute"`
-		ComputeAPI struct {
-			State string `json:"state"`
-		} `json:"Compute API"`
-		DNS struct {
-			State string `json:"state"`
-		} `json:"DNS"`
-		ObjectStorage struct {
-			State string `json:"state"`
-		} `json:"Object Storage"`
-	} `json:"status"`
+	Status map[string]ServiceStatus `json:"status"`
 }
 
 func init() {
