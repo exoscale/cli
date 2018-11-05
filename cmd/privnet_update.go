@@ -20,56 +20,81 @@ var privnetUpdateCmd = &cobra.Command{
 		if len(args) != 1 {
 			return cmd.Usage()
 		}
+
 		network, err := getNetworkByName(args[0])
 		if err != nil {
 			return err
 		}
+
 		id := network.ID.String()
+
 		name, err := cmd.Flags().GetString("name")
 		if err != nil {
 			return err
 		}
+
 		desc, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
 		}
-		startip, err := cmd.Flags().GetString("startip")
+
+		sip, err := cmd.Flags().GetString("startip")
 		if err != nil {
 			return err
 		}
-		endip, err := cmd.Flags().GetString("endip")
+		startip := net.ParseIP(sip)
+
+		eip, err := cmd.Flags().GetString("endip")
 		if err != nil {
 			return err
 		}
-		netmask, err := cmd.Flags().GetString("netmask")
+		endip := net.ParseIP(eip)
+
+		nmask, err := cmd.Flags().GetString("netmask")
 		if err != nil {
 			return err
 		}
+
 		cidrmask, err := cmd.Flags().GetString("cidrmask")
 		if err != nil {
 			return err
 		}
-		if netmask == "" && cidrmask != "" {
-			c, err := strconv.ParseInt(cidrmask, 10, 32)
-			if err != nil {
-				return err
-			}
-			ipmask := net.CIDRMask(int(c), 32)
-			netmask = (net.IP)(ipmask).String()
+
+		if nmask != "" && cidrmask != "" {
+			return fmt.Errorf("netmask %q and cidrmask %q are mutually exclusive", nmask, cidrmask)
 		}
-		return privnetUpdate(id, name, desc, startip, endip, netmask)
+
+		netmask := net.ParseIP(nmask)
+		if netmask == nil {
+			if cidrmask != "" {
+				c, err := strconv.ParseInt(cidrmask, 10, 32)
+				if err != nil {
+					return err
+				}
+
+				ipmask := net.CIDRMask(int(c), 32)
+				netmask = (net.IP)(ipmask)
+			}
+		}
+
+		newNet, err := privnetUpdate(id, name, desc, startip, endip, netmask)
+		if err != nil {
+			return err
+		}
+
+		return privnetShow(*newNet)
 	},
 }
 
-func privnetUpdate(id, name, desc, startIPAddr, endIPAddr, netmask string) error {
+func privnetUpdate(id, name, desc string, startIP, endIP, netmask net.IP) (*egoscale.Network, error) {
 	uuid, err := egoscale.ParseUUID(id)
 	if err != nil {
-		return fmt.Errorf("update the network by ID, got %q", id)
+		return nil, fmt.Errorf("update the network by ID, got %q", id)
 	}
 
-	startIP := net.ParseIP(startIPAddr)
-	endIP := net.ParseIP(endIPAddr)
-	netmaskIP := net.ParseIP(netmask)
+	if startIP != nil && endIP != nil && netmask == nil {
+		netmask = net.IPv4(255, 255, 255, 0)
+	}
 
 	req := &egoscale.UpdateNetwork{
 		ID:          uuid,
@@ -77,23 +102,25 @@ func privnetUpdate(id, name, desc, startIPAddr, endIPAddr, netmask string) error
 		Name:        name,
 		StartIP:     startIP,
 		EndIP:       endIP,
-		Netmask:     netmaskIP,
+		Netmask:     netmask,
 	}
 
 	resp, err := asyncRequest(req, fmt.Sprintf("Updating the network %q ", id))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	newNet := resp.(*egoscale.Network)
+	return resp.(*egoscale.Network), nil
+}
 
+func privnetShow(network egoscale.Network) error {
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{"Name", "Description", "ID", "DHCP"})
 	table.Append([]string{
-		newNet.Name,
-		newNet.DisplayText,
-		newNet.ID.String(),
-		dhcpRange(newNet.StartIP, newNet.EndIP, newNet.Netmask)})
+		network.Name,
+		network.DisplayText,
+		network.ID.String(),
+		dhcpRange(network)})
 	table.Render()
 	return nil
 }
@@ -103,7 +130,7 @@ func init() {
 	privnetUpdateCmd.Flags().StringP("description", "d", "", "Private network description")
 	privnetUpdateCmd.Flags().StringP("startip", "s", "", "the beginning IP address in the network IP range. Required for managed networks.")
 	privnetUpdateCmd.Flags().StringP("endip", "e", "", "the ending IP address in the network IP range. Required for managed networks.")
-	privnetUpdateCmd.Flags().StringP("netmask", "m", "", "the netmask of the network.  Required for managed networks")
-	privnetUpdateCmd.Flags().StringP("cidrmask", "c", "", "the cidrmask of the network. Required for managed networks.")
+	privnetUpdateCmd.Flags().StringP("netmask", "m", "", "the netmask of the network. E.g. 255.255.255.0")
+	privnetUpdateCmd.Flags().StringP("cidrmask", "c", "", "the cidrmask of the network. E.g 32")
 	privnetCmd.AddCommand(privnetUpdateCmd)
 }

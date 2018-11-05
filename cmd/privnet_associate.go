@@ -26,7 +26,7 @@ var privnetAssociateCmd = &cobra.Command{
 			return err
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
-		dhcp := dhcpRange(network.StartIP, network.EndIP, network.Netmask)
+		dhcp := dhcpRange(*network)
 
 		fmt.Fprintf(w, "Network:\t%s\n", network.Name)            // nolint: errcheck
 		fmt.Fprintf(w, "Description:\t%s\n", network.DisplayText) // nolint: errcheck

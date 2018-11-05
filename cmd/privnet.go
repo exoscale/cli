@@ -59,11 +59,11 @@ func init() {
 }
 
 // dhcpRange returns the string representation for a DHCP
-func dhcpRange(startIP, endIP, netmask net.IP) string {
-	if startIP != nil && endIP != nil && netmask != nil {
-		mask := net.IPMask(netmask.To4())
-		prefixSize, _ := mask.Size()
-		return fmt.Sprintf("%s-%s /%d", startIP.String(), endIP.String(), prefixSize)
+func dhcpRange(network egoscale.Network) string {
+	if network.StartIP != nil && network.EndIP != nil && network.Netmask != nil {
+		mask := (net.IPMask)(network.Netmask.To4())
+		ones, _ := mask.Size()
+		return fmt.Sprintf("%s-%s /%d", network.StartIP, network.EndIP, ones)
 	}
 	return "n/a"
 }
