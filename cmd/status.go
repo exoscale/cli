@@ -47,7 +47,7 @@ var statusCmd = &cobra.Command{
 				suffix,
 				status.Incidents[0].Title);
 			fmt.Println(msg)
-			fmt.Printf("Updates available at %s\n", twitterUrl)
+			fmt.Printf("Updates available at %s\n", twitterURL)
 			return fmt.Errorf(msg)
 		}
 
