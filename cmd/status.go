@@ -45,7 +45,7 @@ var statusCmd = &cobra.Command{
 			msg := fmt.Sprintf("%d ongoing Incident%s (last: %s)",
 				len(status.Incidents),
 				suffix,
-				status.Incidents[0].Title);
+				status.Incidents[0].Title)
 			fmt.Println(msg)
 			fmt.Printf("Updates available at %s\n", twitterURL)
 			return fmt.Errorf(msg)
