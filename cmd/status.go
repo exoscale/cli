@@ -36,22 +36,21 @@ var statusCmd = &cobra.Command{
 			fmt.Fprintf(w, "%s\t%s\n", k, service.State) // nolint: errcheck
 		}
 		fmt.Fprintln(w) // nolint: errcheck
-
+		w.Flush()
 		if len(status.Incidents) > 0 {
-			fmt.Println("Incidents")
-
-			for _, event := range status.Incidents {
-				fmt.Fprintf(w, "%s\t%s\t%s\n", event.Title, event.Status, event.Message) // nolint: errcheck
-				fmt.Fprintf(w, "\t%s\t%s\n\n", event.Updated, event.Created)             // nolint: errcheck
+			suffix := ""
+			if len(status.Incidents) > 1 {
+				suffix = "s"
 			}
-
-			fmt.Fprintln(w) // nolint: errcheck
-
-			w.Flush()
-			return fmt.Errorf("%d incidents, %s", len(status.Incidents), twitterURL)
+			msg := fmt.Sprintf("%d ongoing Incident%s (last: %s)",
+				len(status.Incidents),
+				suffix,
+				status.Incidents[0].Title)
+			fmt.Println(msg)
+			fmt.Printf("Updates available at %s\n", twitterURL)
+			return fmt.Errorf(msg)
 		}
 
-		w.Flush()
 		return nil
 	},
 }
