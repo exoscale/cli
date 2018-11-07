@@ -36,20 +36,20 @@ var statusCmd = &cobra.Command{
 			fmt.Fprintf(w, "%s\t%s\n", k, service.State) // nolint: errcheck
 		}
 		fmt.Fprintln(w) // nolint: errcheck
-
+		w.Flush()
 		if len(status.Incidents) > 0 {
 			suffix := ""
 			if len(status.Incidents) > 1 {
 				suffix = "s"
 			}
-			fmt.Printf("%d ongoing Incident%s (last: %s)\n",
+			msg := fmt.Sprintf("%d ongoing Incident%s (last: %s)",
 				len(status.Incidents),
 				suffix,
 				status.Incidents[0].Title);
-			fmt.Printf("Full updates available at %s\n", twitterURL)
+			fmt.Println(msg)
+			return fmt.Errorf(msg)
 		}
 
-		w.Flush()
 		return nil
 	},
 }
