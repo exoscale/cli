@@ -57,7 +57,7 @@ var statusCmd = &cobra.Command{
 
 func fetchRunStatus(url string) (*RunStatus, error) {
 	// XXX need gContext
-	r, err := http.Get(jsonStatusURL)
+	r, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
