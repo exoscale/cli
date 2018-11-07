@@ -195,7 +195,9 @@ func initConfig() {
 		viper.AddConfigPath(".")
 	}
 
-	if err := viper.ReadInConfig(); err != nil && (getCmdPosition("config") == 1 || getCmdPosition("version") == 1) {
+	nonCredentialCmd := []string{"config", "version", "status"}
+
+	if err := viper.ReadInConfig(); err != nil && isNonCredentialCmd(nonCredentialCmd...) {
 		ignoreClientBuild = true
 		return
 	}
@@ -252,6 +254,15 @@ func initConfig() {
 	gCurrentAccount.Endpoint = strings.TrimRight(gCurrentAccount.Endpoint, "/")
 	gCurrentAccount.DNSEndpoint = strings.TrimRight(gCurrentAccount.DNSEndpoint, "/")
 	gCurrentAccount.SosEndpoint = strings.TrimRight(gCurrentAccount.SosEndpoint, "/")
+}
+
+func isNonCredentialCmd(cmds ...string) bool {
+	for _, cmd := range cmds {
+		if getCmdPosition(cmd) == 1 {
+			return true
+		}
+	}
+	return false
 }
 
 // getCmdPosition returns a command position by fetching os.args and ignoring flags
