@@ -15,13 +15,14 @@ addons:
 env:
   - GO111MODULE=on HUGO_VERSION=0.49.2 GOLANGCI_LINT_VERSION=1.10.2
 
+script:
+  - '[ "$(echo "$TRAVIS_GO_VERSION" | perl -pe "s/\\.[x\\d]+$//")" = "1.10" ] && go test -v ./... || go test -mod vendor -v ./...'
+  - '[ "$(echo "$TRAVIS_GO_VERSION" | perl -pe "s/\\.[x\\d]+$//")" = "1.10" ] && go install || go build -mod=vendor'
+
 jobs:
   include:
-    - go: "1.10.x"
-      script:
-        - go test -v ./...
-        - go build
-    - go: "1.11.x"
+    - stage: golangci-lint
+      go: "1.11.x"
       script:
         - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v${GOLANGCI_LINT_VERSION}
         - GO111MODULE=off golangci-lint run ./...
