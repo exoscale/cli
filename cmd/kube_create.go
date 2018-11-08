@@ -107,7 +107,7 @@ var kubeCreateCmd = &cobra.Command{
 
 		template, _ := getTemplateByName(zone, defaultTemplate)
 
-		r, errs := createVM([]egoscale.DeployVirtualMachine{egoscale.DeployVirtualMachine{
+		r, errs := createVM([]egoscale.DeployVirtualMachine{{
 			Name:              clusterName,
 			ZoneID:            zone,
 			ServiceOfferingID: size.ID,

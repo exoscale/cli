@@ -33,7 +33,7 @@ var kubeDeleteCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("Destroying cluster instance... ", vm.Name)
+		fmt.Printf("Destroying cluster instance... ")
 
 		if err := vm.Delete(context.TODO(), cs); err != nil {
 			fmt.Println("failed")
