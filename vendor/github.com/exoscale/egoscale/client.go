@@ -164,16 +164,24 @@ func (client *Client) List(g Listable) ([]interface{}, error) {
 }
 
 // ListWithContext lists the given resources (and paginate till the end)
-func (client *Client) ListWithContext(ctx context.Context, g Listable) ([]interface{}, error) {
-	s := make([]interface{}, 0)
+func (client *Client) ListWithContext(ctx context.Context, g Listable) (s []interface{}, err error) {
+	s = make([]interface{}, 0)
 
-	if g == nil || reflect.ValueOf(g).IsNil() {
-		return s, fmt.Errorf("g Listable shouldn't be nil, got %#v", g)
-	}
+	defer func() {
+		if e := recover(); e != nil {
+			if g == nil || reflect.ValueOf(g).IsNil() {
+				err = fmt.Errorf("g Listable shouldn't be nil, got %#v", g)
+				return
+			}
 
-	req, err := g.ListRequest()
-	if err != nil {
-		return s, err
+			panic(e)
+		}
+	}()
+
+	req, e := g.ListRequest()
+	if e != nil {
+		err = e
+		return
 	}
 
 	client.PaginateWithContext(ctx, req, func(item interface{}, e error) bool {
@@ -185,7 +193,7 @@ func (client *Client) ListWithContext(ctx context.Context, g Listable) ([]interf
 		return false
 	})
 
-	return s, err
+	return
 }
 
 // AsyncListWithContext lists the given resources (and paginate till the end)

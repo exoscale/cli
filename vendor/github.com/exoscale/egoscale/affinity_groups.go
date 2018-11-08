@@ -13,8 +13,6 @@ import (
 type AffinityGroup struct {
 	Account           string   `json:"account,omitempty" doc:"the account owning the affinity group"`
 	Description       string   `json:"description,omitempty" doc:"the description of the affinity group"`
-	Domain            string   `json:"domain,omitempty" doc:"the domain name of the affinity group"`
-	DomainID          *UUID    `json:"domainid,omitempty" doc:"the domain ID of the affinity group"`
 	ID                *UUID    `json:"id,omitempty" doc:"the ID of the affinity group"`
 	Name              string   `json:"name,omitempty" doc:"the name of the affinity group"`
 	Type              string   `json:"type,omitempty" doc:"the type of the affinity group"`
@@ -35,10 +33,7 @@ func (ag AffinityGroup) Delete(ctx context.Context, client *Client) error {
 		return fmt.Errorf("an Affinity Group may only be deleted using ID or Name")
 	}
 
-	req := &DeleteAffinityGroup{
-		Account:  ag.Account,
-		DomainID: ag.DomainID,
-	}
+	req := &DeleteAffinityGroup{}
 
 	if ag.ID != nil {
 		req.ID = ag.ID
@@ -56,10 +51,8 @@ type AffinityGroupType struct {
 
 // CreateAffinityGroup (Async) represents a new (anti-)affinity group
 type CreateAffinityGroup struct {
-	Account     string `json:"account,omitempty" doc:"an account for the affinity group. Must be used with domainid."`
-	Description string `json:"description,omitempty" doc:"optional description of the affinity group"`
-	DomainID    *UUID  `json:"domainid,omitempty" doc:"domainid of the account owning the affinity group"`
-	Name        string `json:"name" doc:"name of the affinity group"`
+	Description string `json:"description,omitempty" doc:"Optional description of the affinity group"`
+	Name        string `json:"name" doc:"Name of the affinity group"`
 	Type        string `json:"type" doc:"Type of the affinity group from the available affinity/anti-affinity group types"`
 	_           bool   `name:"createAffinityGroup" description:"Creates an affinity/anti-affinity group"`
 }
@@ -98,11 +91,9 @@ func (UpdateVMAffinityGroup) asyncResponse() interface{} {
 
 // DeleteAffinityGroup (Async) represents an (anti-)affinity group to be deleted
 type DeleteAffinityGroup struct {
-	Account  string `json:"account,omitempty" doc:"the account of the affinity group. Must be specified with domain ID"`
-	DomainID *UUID  `json:"domainid,omitempty" doc:"the domain ID of account owning the affinity group"`
-	ID       *UUID  `json:"id,omitempty" doc:"The ID of the affinity group. Mutually exclusive with name parameter"`
-	Name     string `json:"name,omitempty" doc:"The name of the affinity group. Mutually exclusive with ID parameter"`
-	_        bool   `name:"deleteAffinityGroup" description:"Deletes affinity group"`
+	ID   *UUID  `json:"id,omitempty" doc:"The ID of the affinity group. Mutually exclusive with name parameter"`
+	Name string `json:"name,omitempty" doc:"The name of the affinity group. Mutually exclusive with ID parameter"`
+	_    bool   `name:"deleteAffinityGroup" description:"Deletes affinity group"`
 }
 
 func (DeleteAffinityGroup) response() interface{} {
@@ -115,17 +106,13 @@ func (DeleteAffinityGroup) asyncResponse() interface{} {
 
 // ListAffinityGroups represents an (anti-)affinity groups search
 type ListAffinityGroups struct {
-	Account          string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
-	DomainID         *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
-	ID               *UUID  `json:"id,omitempty" doc:"list the affinity group by the ID provided"`
-	IsRecursive      *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
+	ID               *UUID  `json:"id,omitempty" doc:"List the affinity group by the ID provided"`
 	Keyword          string `json:"keyword,omitempty" doc:"List by keyword"`
-	ListAll          *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
-	Name             string `json:"name,omitempty" doc:"lists affinity groups by name"`
+	Name             string `json:"name,omitempty" doc:"Lists affinity groups by name"`
 	Page             int    `json:"page,omitempty"`
 	PageSize         int    `json:"pagesize,omitempty"`
-	Type             string `json:"type,omitempty" doc:"lists affinity groups by type"`
-	VirtualMachineID *UUID  `json:"virtualmachineid,omitempty" doc:"lists affinity groups by virtual machine ID"`
+	Type             string `json:"type,omitempty" doc:"Lists affinity groups by type"`
+	VirtualMachineID *UUID  `json:"virtualmachineid,omitempty" doc:"Lists affinity groups by virtual machine ID"`
 	_                bool   `name:"listAffinityGroups" description:"Lists affinity groups"`
 }
 

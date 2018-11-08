@@ -4,7 +4,7 @@ github.com/VividCortex/ewma
 github.com/chzyer/readline
 # github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.12.2
+# github.com/exoscale/egoscale v0.12.3-0.20181108110446-a56a46e0c97a
 github.com/exoscale/egoscale
 # github.com/fatih/camelcase v1.0.0
 github.com/fatih/camelcase

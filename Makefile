@@ -17,6 +17,7 @@ docker: Dockerfile
 		--build-arg VERSION="${version}" \
 		--build-arg VCS_REF="$(shell git rev-parse HEAD)" \
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%m:%SZ")" \
+		.
 
 clean:
 	go clean

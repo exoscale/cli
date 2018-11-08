@@ -427,13 +427,15 @@ func (g *userSecurityGroupListGeneric) Set(value string) error {
 	}
 	keypairs := strings.Split(value, ",")
 	for _, kv := range keypairs {
+		// Backward compatibility for account=group semantic
 		values := strings.SplitN(kv, "=", 2)
-		if len(values) != 2 {
-			return fmt.Errorf("not a valid account=group content, got %s", kv)
+
+		if len(values) == 2 {
+			values[0] = values[1]
 		}
+
 		*m = append(*m, egoscale.UserSecurityGroup{
-			Account: values[0],
-			Group:   values[1],
+			Group: values[0],
 		})
 	}
 	return nil
@@ -450,7 +452,7 @@ func (g *userSecurityGroupListGeneric) String() string {
 	}
 	vs := make([]string, 0, len(*m))
 	for _, v := range *m {
-		vs = append(vs, fmt.Sprintf("%s=%s", v.Account, v.Group))
+		vs = append(vs, v.Group)
 	}
 	return strings.Join(vs, ",")
 }
