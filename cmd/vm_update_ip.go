@@ -13,7 +13,7 @@ var vmUpdateIPCmd = &cobra.Command{
 	Use:   "updateip <vm name|id> <network name|id> [flags]",
 	Short: "Update the static DHCP lease of an instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 3 {
+		if len(args) != 2 {
 			return cmd.Usage()
 		}
 		vmName := args[0]
@@ -45,7 +45,7 @@ var vmUpdateIPCmd = &cobra.Command{
 		}
 
 		req := &egoscale.UpdateVMNicIP{
-			IPAddress: ipAddress.IP,
+			IPAddress: ipAddress.Value(),
 			NicID:     nic.ID,
 		}
 

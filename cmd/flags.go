@@ -119,7 +119,7 @@ func (v *uuid) String() string {
 
 //ip flag
 type ipValue struct {
-	IP net.IP
+	IP *net.IP
 }
 
 func (v *ipValue) Set(val string) error {
@@ -132,9 +132,17 @@ func (v *ipValue) Set(val string) error {
 		return fmt.Errorf("no a valid IP address: got %q", val)
 	}
 
-	copy(v.IP, ip)
+	v.IP = &ip
 
 	return nil
+}
+
+func (v *ipValue) Value() net.IP {
+	if v.IP == nil {
+		return net.IP{}
+	}
+
+	return *v.IP
 }
 
 func (v *ipValue) Type() string {
@@ -142,7 +150,10 @@ func (v *ipValue) Type() string {
 }
 
 func (v *ipValue) String() string {
-	return v.IP.String()
+	if v.IP == nil || *v.IP == nil {
+		return nilValue
+	}
+	return (*v.IP).String()
 }
 
 // getIPValue finds the value of a command by name

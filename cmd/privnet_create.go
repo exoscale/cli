@@ -68,7 +68,7 @@ var privnetCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		newNet, err := privnetCreate(name, desc, zone, startIP.IP, endIP.IP, netmask.IP)
+		newNet, err := privnetCreate(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value())
 
 		return privnetShow(*newNet)
 	},
