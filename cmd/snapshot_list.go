@@ -21,7 +21,7 @@ var snapshotListCmd = &cobra.Command{
 		table := table.NewTable(os.Stdout)
 
 		if len(args) == 0 {
-			table.SetHeader([]string{"State", "Create On", "Size", "ID"})
+			table.SetHeader([]string{"State", "Create On", "Size", "Name", "ID"})
 			res, err := cs.ListWithContext(gContext, egoscale.Snapshot{})
 			if err != nil {
 				return err
@@ -29,7 +29,7 @@ var snapshotListCmd = &cobra.Command{
 
 			for _, s := range res {
 				snapshot := s.(*egoscale.Snapshot)
-				table.Append([]string{snapshot.State, snapshot.Created, fmt.Sprintf("%v", humanize.IBytes(uint64(snapshot.Size))), snapshot.ID.String()})
+				table.Append([]string{snapshot.State, snapshot.Created, fmt.Sprintf("%v", humanize.IBytes(uint64(snapshot.Size))), snapshot.Name, snapshot.ID.String()})
 			}
 
 			table.Render()
@@ -37,7 +37,7 @@ var snapshotListCmd = &cobra.Command{
 			return nil
 		}
 
-		table.SetHeader([]string{"VM", "State", "Create On", "Size", "ID"})
+		table.SetHeader([]string{"VM", "State", "Create On", "Size", "name", "ID"})
 
 		for _, arg := range args {
 			vm, err := getVMWithNameOrID(arg)
@@ -62,7 +62,7 @@ var snapshotListCmd = &cobra.Command{
 			for _, s := range snapshots {
 				snapshot := s.(*egoscale.Snapshot)
 
-				table.Append([]string{vm.Name, snapshot.State, snapshot.Created, fmt.Sprintf("%v", humanize.IBytes(uint64(snapshot.Size))), snapshot.ID.String()})
+				table.Append([]string{vm.Name, snapshot.State, snapshot.Created, fmt.Sprintf("%v", humanize.IBytes(uint64(snapshot.Size))), snapshot.Name, snapshot.ID.String()})
 				vm.Name = ""
 			}
 
