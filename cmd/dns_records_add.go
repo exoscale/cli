@@ -56,7 +56,7 @@ func init() {
 	dnsAddCmd.AddCommand(dnsACmd)
 	dnsACmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
 	dnsACmd.Flags().StringP("address", "a", "", "Example: 127.0.0.1")
-	dnsACmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsACmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsACmd.MarkFlagRequired("address"); err != nil {
 		log.Fatal(err)
@@ -109,11 +109,73 @@ func init() {
 	dnsAddCmd.AddCommand(dnsAAAACmd)
 	dnsAAAACmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
 	dnsAAAACmd.Flags().StringP("address", "a", "", "Example: 2001:0db8:85a3:0000:0000:EA75:1337:BEEF")
-	dnsAAAACmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsAAAACmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsAAAACmd.MarkFlagRequired("address"); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// dnsCAACmd represents the URL command
+var dnsCAACmd = &cobra.Command{
+	Use:   "CAA <domain name>",
+	Short: "Add CAA record type to a domain",
+	Long: `A Certification Authority Authorization (CAA) record is used to specify which certificate
+authorities (CAs) are allowed to issue certificates for a domain.
+
+What is a flag? <https://tools.ietf.org/html/rfc6844#section-3>
+	`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) < 1 {
+			return cmd.Usage()
+		}
+
+		name, err := cmd.Flags().GetString("name")
+		if err != nil {
+			return err
+		}
+		flag, err := cmd.Flags().GetUint8("flag")
+		if err != nil {
+			return err
+		}
+		tag, err := cmd.Flags().GetStringSlice("tag")
+		if err != nil {
+			return err
+		}
+		if len(tag) != 2 {
+			return fmt.Errorf("flag error: tag must contain <key>,<value>")
+		}
+		ttl, err := cmd.Flags().GetInt("ttl")
+		if err != nil {
+			return err
+		}
+
+		domain, err := csDNS.GetDomain(args[0])
+		if err != nil {
+			return err
+		}
+
+		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+			DomainID:   domain.ID,
+			TTL:        ttl,
+			RecordType: "CAA",
+			Name:       name,
+			Content:    fmt.Sprintf("%d %s %q", flag, tag[0], tag[1]),
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Record %q was created successfully to %q\n", cmd.Name(), args[0])
+		return nil
+	},
+}
+
+func init() {
+	dnsAddCmd.AddCommand(dnsCAACmd)
+	dnsCAACmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
+	dnsCAACmd.Flags().Uint8P("flag", "f", 0, "An unsigned integer between 0-255.")
+	dnsCAACmd.Flags().StringSliceP("tag", "", []string{}, `CAA tag "<key>,<value>", available tags: (issue | issuewild | iodef)`)
+	dnsCAACmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 }
 
 // ALIASCmd represents the ALIAS command
@@ -166,7 +228,7 @@ func init() {
 	dnsAddCmd.AddCommand(dnsALIASCmd)
 	dnsALIASCmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
 	dnsALIASCmd.Flags().StringP("alias", "a", "", "Alias for: Example: some-other-site.com")
-	dnsALIASCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsALIASCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsALIASCmd.MarkFlagRequired("alias"); err != nil {
 		log.Fatal(err)
@@ -220,7 +282,7 @@ func init() {
 	dnsAddCmd.AddCommand(dnsCNAMECmd)
 	dnsCNAMECmd.Flags().StringP("name", "n", "", "You may use the * wildcard here.")
 	dnsCNAMECmd.Flags().StringP("alias", "a", "", "Alias for: Example: some-other-site.com")
-	dnsCNAMECmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsCNAMECmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsCNAMECmd.MarkFlagRequired("alias"); err != nil {
 		log.Fatal(err)
@@ -282,7 +344,7 @@ func init() {
 	dnsHINFOCmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
 	dnsHINFOCmd.Flags().StringP("cpu", "c", "", "Example: IBM-PC/AT")
 	dnsHINFOCmd.Flags().StringP("os", "o", "", "The operating system of the machine, example: Linux")
-	dnsHINFOCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsHINFOCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsHINFOCmd.MarkFlagRequired("cpu"); err != nil {
 		log.Fatal(err)
@@ -346,7 +408,7 @@ func init() {
 	dnsMXCmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>")
 	dnsMXCmd.Flags().StringP("mail-server-host", "m", "", "Example: mail-server.example.com")
 	dnsMXCmd.Flags().IntP("priority", "p", 0, "Common values are for example 1, 5 or 10")
-	dnsMXCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsMXCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsMXCmd.MarkFlagRequired("mail-server-host"); err != nil {
 		log.Fatal(err)
@@ -464,7 +526,7 @@ func init() {
 	dnsNAPTRCmd.Flags().BoolP("u", "", false, "Flag indicates the next record is the output of the regular expression as a URI.")
 	dnsNAPTRCmd.Flags().BoolP("p", "", false, "Flag indicates that processing should continue in a protocol-specific fashion.")
 
-	dnsNAPTRCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsNAPTRCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsNAPTRCmd.MarkFlagRequired("order"); err != nil {
 		log.Fatal(err)
@@ -531,7 +593,7 @@ func init() {
 	dnsAddCmd.AddCommand(dnsNSCmd)
 	dnsNSCmd.Flags().StringP("name", "n", "", "You may use the * wildcard here.")
 	dnsNSCmd.Flags().StringP("name-server", "s", "", "Example: 'ns1.example.com'")
-	dnsNSCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsNSCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 	if err := dnsNSCmd.MarkFlagRequired("name"); err != nil {
 		log.Fatal(err)
 	}
@@ -588,7 +650,7 @@ func init() {
 	dnsAddCmd.AddCommand(dnsPOOLCmd)
 	dnsPOOLCmd.Flags().StringP("name", "n", "", "You may use the * wildcard here.")
 	dnsPOOLCmd.Flags().StringP("alias", "a", "", "Alias for: Example: 'some-other-site.com'")
-	dnsPOOLCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsPOOLCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsPOOLCmd.MarkFlagRequired("name"); err != nil {
 		log.Fatal(err)
@@ -676,7 +738,7 @@ func init() {
 	dnsSRVCmd.Flags().IntP("weight", "w", 0, "A relative weight for 'SRV' records with the same priority.")
 	dnsSRVCmd.Flags().StringP("port", "P", "", "The 'TCP' or 'UDP' port on which the service is found.")
 	dnsSRVCmd.Flags().StringP("target", "", "", "The canonical hostname of the machine providing the service.")
-	dnsSRVCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsSRVCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsSRVCmd.MarkFlagRequired("symbolic-name"); err != nil {
 		log.Fatal(err)
@@ -755,7 +817,7 @@ func init() {
 	dnsSSHFPCmd.Flags().IntP("algorithm", "a", 0, "RSA(1) | DSA(2) | ECDSA(3) | ED25519(4)")
 	dnsSSHFPCmd.Flags().IntP("fingerprint-type", "", 0, "SHA1(1) | SHA256(2)")
 	dnsSSHFPCmd.Flags().StringP("fingerprint", "f", "", "Fingerprint")
-	dnsSSHFPCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsSSHFPCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsSSHFPCmd.MarkFlagRequired("algorithm"); err != nil {
 		log.Fatal(err)
@@ -813,7 +875,7 @@ func init() {
 	dnsAddCmd.AddCommand(dnsTXTCmd)
 	dnsTXTCmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
 	dnsTXTCmd.Flags().StringP("content", "c", "", "Content record")
-	dnsTXTCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsTXTCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsTXTCmd.MarkFlagRequired("content"); err != nil {
 		log.Fatal(err)
@@ -867,7 +929,7 @@ func init() {
 	dnsAddCmd.AddCommand(dnsURLCmd)
 	dnsURLCmd.Flags().StringP("name", "n", "", "Leave this blank to create a record for <domain name>, You may use the '*' wildcard here.")
 	dnsURLCmd.Flags().StringP("destination-url", "d", "", "Example: https://www.example.com")
-	dnsURLCmd.Flags().IntP("ttl", "t", 3600, "The time in second to leave (refresh rate) of the record.")
+	dnsURLCmd.Flags().IntP("ttl", "t", 3600, "The time in seconds to live (refresh rate) of the record.")
 
 	if err := dnsURLCmd.MarkFlagRequired("destination-url"); err != nil {
 		log.Fatal(err)

@@ -10,6 +10,7 @@
 -----
 
 - feature sos listings `--short`
+- feature dns CAA record
 - fix change the account selection flag to `--use-account`
 - fix version command do not require any config file
 
