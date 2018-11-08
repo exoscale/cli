@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net"
 	"reflect"
 	"strconv"
 	"strings"
@@ -38,15 +39,18 @@ func (v *uint8PtrValue) String() string {
 	return strconv.FormatUint(uint64(*v.uint8), 10)
 }
 
-func getUint8CustomFlag(cmd *cobra.Command, name string) (uint8PtrValue, error) {
+// XXX use reflect to factor those out.
+//     e.g. getCustomFlag(cmd *cobra.Command, name string, out interface{}) error {}
+
+func getUint8CustomFlag(cmd *cobra.Command, name string) (*uint8PtrValue, error) {
 	it := cmd.Flags().Lookup(name)
 	if it != nil {
 		r := it.Value.(*uint8PtrValue)
 		if r != nil {
-			return *r, nil
+			return r, nil
 		}
 	}
-	return uint8PtrValue{}, fmt.Errorf("unable to get flag %q", name)
+	return nil, fmt.Errorf("unable to get flag %q", name)
 }
 
 type int64PtrValue struct {
@@ -111,6 +115,46 @@ func (v *uuid) String() string {
 	}
 
 	return (*(v.UUID)).String()
+}
+
+//ip flag
+type ipValue struct {
+	IP net.IP
+}
+
+func (v *ipValue) Set(val string) error {
+	if val == "" {
+		return nil
+	}
+
+	ip := net.ParseIP(val)
+	if ip == nil {
+		return fmt.Errorf("no a valid IP address: got %q", val)
+	}
+
+	copy(v.IP, ip)
+
+	return nil
+}
+
+func (v *ipValue) Type() string {
+	return "IP"
+}
+
+func (v *ipValue) String() string {
+	return v.IP.String()
+}
+
+// getIPValue finds the value of a command by name
+func getIPValue(cmd *cobra.Command, name string) (*ipValue, error) {
+	it := cmd.Flags().Lookup(name)
+	if it != nil {
+		r := it.Value.(*ipValue)
+		if r != nil {
+			return r, nil
+		}
+	}
+	return nil, fmt.Errorf("unable to get flag %q", name)
 }
 
 //cidr flag
