@@ -10,8 +10,9 @@ import (
 
 // createCmd represents the create command
 var snapshotCreateCmd = &cobra.Command{
-	Use:   "create <vm name | vm id>",
-	Short: "Create a snapshot of an instance volume",
+	Use:     "create <vm name | vm id>",
+	Short:   "Create a snapshot of an instance volume",
+	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()

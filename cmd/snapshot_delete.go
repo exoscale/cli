@@ -9,8 +9,9 @@ import (
 
 // deleteCmd represents the delete command
 var snapshotDeleteCmd = &cobra.Command{
-	Use:   "delete <name | id>+",
-	Short: "Delete a snapshot",
+	Use:     "delete <name | id>+",
+	Short:   "Delete a snapshot",
+	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()
