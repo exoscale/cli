@@ -29,5 +29,5 @@ func getSnapshotWithNameOrID(name string) (*egoscale.Snapshot, error) {
 }
 
 func init() {
-	RootCmd.AddCommand(snapshotCmd)
+	vmCmd.AddCommand(snapshotCmd)
 }
