@@ -11,7 +11,7 @@ import (
 // createCmd represents the create command
 var snapshotCreateCmd = &cobra.Command{
 	Use:   "create <vm name | vm id>",
-	Short: "A brief description of your command",
+	Short: "Create a snapshot of an instance volume",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()

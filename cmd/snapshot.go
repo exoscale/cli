@@ -8,7 +8,7 @@ import (
 // snapshotCmd represents the snapshot command
 var snapshotCmd = &cobra.Command{
 	Use:   "snapshot",
-	Short: "Snapshots allow you to save the volume of your machine in its current state",
+	Short: "Snapshots allow you to save the volume of your machine in it's current state",
 }
 
 func getSnapshotWithNameOrID(name string) (*egoscale.Snapshot, error) {

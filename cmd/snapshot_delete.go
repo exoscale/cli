@@ -10,7 +10,7 @@ import (
 // deleteCmd represents the delete command
 var snapshotDeleteCmd = &cobra.Command{
 	Use:   "delete <name | id>+",
-	Short: "A brief description of your command",
+	Short: "Delete a snapshot",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()
