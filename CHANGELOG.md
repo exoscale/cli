@@ -1,3 +1,8 @@
+1.0.4
+-----
+
+- feature dns CAA record
+
 1.0.3
 -----
 
@@ -10,7 +15,6 @@
 -----
 
 - feature sos listings `--short`
-- feature dns CAA record
 - fix change the account selection flag to `--use-account`
 - fix version command do not require any config file
 
