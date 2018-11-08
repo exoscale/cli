@@ -22,7 +22,7 @@ var snapshotRevertCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			task := task{egoscale.RevertSnapshot{ID: snapshot.ID}, fmt.Sprintf("Revert snapshot %q", snapshot.Name)}
+			task := task{egoscale.RevertSnapshot{ID: snapshot.ID}, fmt.Sprintf("Reverting snapshot %q", snapshot.Name)}
 			tasks = append(tasks, task)
 		}
 
