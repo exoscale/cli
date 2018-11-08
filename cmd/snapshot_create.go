@@ -10,7 +10,7 @@ import (
 
 // createCmd represents the create command
 var snapshotCreateCmd = &cobra.Command{
-	Use:   "create <vm name | vm ID>",
+	Use:   "create <vm name | vm id>",
 	Short: "A brief description of your command",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -38,7 +38,7 @@ var snapshotCreateCmd = &cobra.Command{
 
 		result := res.(*egoscale.Snapshot)
 
-		log.Printf("Snapshot %q of %q successfully created", result.ID, vm.Name)
+		log.Printf("Snapshot %q of %q successfully created", result.Name, vm.Name)
 
 		return nil
 	},
