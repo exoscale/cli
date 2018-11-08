@@ -1,19 +1,19 @@
 1.0.2
 -----
 
-- Add CAA record (#44)
+- feature new API call updateVmNicIp call
+- feature sos download has a progress bar
+- feature sos listings `--short`
+- feature dns CAA record
+- fix change the account selection flag to `--use-account`
 - fix version command do not require any config file
-- change the account selection flag to `--use-account`
-- exo config is nicer
-- exo sos ls has a short mode omitting any meta information
 
 1.0.1
 -----
 
-- bump egoscale to v0.12.2 (#28)
-- backport changes from egoscale (#27)
+- feature bump egoscale to v0.12.2
 
 1.0.0
 -----
 
-- Initial release
+- initial release

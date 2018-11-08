@@ -25,9 +25,10 @@ var dnsShowCmd = &cobra.Command{
 
 		var types []string
 		if len(args) > 1 {
+			types = make([]string, len(args)-1)
 			copy(types, args[1:])
 		} else {
-			types = append(types, "")
+			types = []string{""}
 		}
 
 		name, err := cmd.Flags().GetString("name")
