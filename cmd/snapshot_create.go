@@ -32,7 +32,7 @@ var snapshotCreateCmd = &cobra.Command{
 			return err
 		}
 
-		res, err := asyncRequest(&egoscale.CreateSnapshot{VolumeID: volume.ID}, fmt.Sprintf("Create Snapshot of %q", vm.Name))
+		res, err := asyncRequest(&egoscale.CreateSnapshot{VolumeID: volume.ID}, fmt.Sprintf("Creating snapshot of %q", vm.Name))
 		if err != nil {
 			return err
 		}
