@@ -51,7 +51,6 @@ type NicSecondaryIP struct {
 
 // ListNics represents the NIC search
 type ListNics struct {
-	ForDisplay       bool   `json:"fordisplay,omitempty" doc:"list resources by display flag; only ROOT admin is eligible to pass this parameter"`
 	Keyword          string `json:"keyword,omitempty" doc:"List by keyword"`
 	NetworkID        *UUID  `json:"networkid,omitempty" doc:"list nic of the specific vm's network"`
 	NicID            *UUID  `json:"nicid,omitempty" doc:"the ID of the nic to to list IPs"`

@@ -8,12 +8,10 @@ import (
 
 // IPAddress represents an IP Address
 type IPAddress struct {
-	Account                   string        `json:"account,omitempty" doc:"the account the public IP address is associated with"`
 	Allocated                 string        `json:"allocated,omitempty" doc:"date the public IP address was acquired"`
 	Associated                string        `json:"associated,omitempty" doc:"date the public IP address was associated"`
 	AssociatedNetworkID       *UUID         `json:"associatednetworkid,omitempty" doc:"the ID of the Network associated with the IP address"`
 	AssociatedNetworkName     string        `json:"associatednetworkname,omitempty" doc:"the name of the Network associated with the IP address"`
-	ForDisplay                bool          `json:"fordisplay,omitempty" doc:"is public ip for display to the regular user"`
 	ForVirtualNetwork         bool          `json:"forvirtualnetwork,omitempty" doc:"the virtual network for the IP address"`
 	ID                        *UUID         `json:"id,omitempty" doc:"public IP address id"`
 	IPAddress                 net.IP        `json:"ipaddress,omitempty" doc:"public IP address"`
@@ -59,9 +57,6 @@ func (ipaddress IPAddress) ListRequest() (ListCommand, error) {
 	if ipaddress.IsSourceNat {
 		req.IsSourceNat = &ipaddress.IsSourceNat
 	}
-	if ipaddress.ForDisplay {
-		req.ForDisplay = &ipaddress.ForDisplay
-	}
 	if ipaddress.ForVirtualNetwork {
 		req.ForVirtualNetwork = &ipaddress.ForVirtualNetwork
 	}
@@ -82,7 +77,6 @@ func (ipaddress IPAddress) Delete(ctx context.Context, client *Client) error {
 
 // AssociateIPAddress (Async) represents the IP creation
 type AssociateIPAddress struct {
-	ForDisplay *bool `json:"fordisplay,omitempty" doc:"an optional field, whether to the display the ip to the end user or not"`
 	IsPortable *bool `json:"isportable,omitempty" doc:"should be set to true if public IP is required to be transferable across zones, if not specified defaults to false"`
 	NetworkdID *UUID `json:"networkid,omitempty" doc:"The network this ip address should be associated to."`
 	ZoneID     *UUID `json:"zoneid,omitempty" doc:"the ID of the availability zone you want to acquire an public IP address from"`
@@ -113,10 +107,9 @@ func (DisassociateIPAddress) asyncResponse() interface{} {
 
 // UpdateIPAddress (Async) represents the IP modification
 type UpdateIPAddress struct {
-	ID         *UUID `json:"id" doc:"the id of the public ip address to update"`
-	CustomID   *UUID `json:"customid,omitempty" doc:"an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only"`
-	ForDisplay *bool `json:"fordisplay,omitempty" doc:"an optional field, whether to the display the ip to the end user or not"`
-	_          bool  `name:"updateIpAddress" description:"Updates an ip address"`
+	ID       *UUID `json:"id" doc:"the id of the public ip address to update"`
+	CustomID *UUID `json:"customid,omitempty" doc:"an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only"`
+	_        bool  `name:"updateIpAddress" description:"Updates an ip address"`
 }
 
 func (UpdateIPAddress) response() interface{} {
@@ -131,7 +124,6 @@ func (UpdateIPAddress) asyncResponse() interface{} {
 type ListPublicIPAddresses struct {
 	AllocatedOnly       *bool         `json:"allocatedonly,omitempty" doc:"limits search results to allocated public IP addresses"`
 	AssociatedNetworkID *UUID         `json:"associatednetworkid,omitempty" doc:"lists all public IP addresses associated to the network specified"`
-	ForDisplay          *bool         `json:"fordisplay,omitempty" doc:"list resources by display flag; only ROOT admin is eligible to pass this parameter"`
 	ForLoadBalancing    *bool         `json:"forloadbalancing,omitempty" doc:"list only ips used for load balancing"`
 	ForVirtualNetwork   *bool         `json:"forvirtualnetwork,omitempty" doc:"the virtual network for the IP address"`
 	ID                  *UUID         `json:"id,omitempty" doc:"lists ip address by id"`

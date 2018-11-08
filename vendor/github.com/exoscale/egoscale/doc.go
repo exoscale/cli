@@ -1,12 +1,12 @@
 /*
 
-Package egoscale is a mapping for with the CloudStack API (http://cloudstack.apache.org/api.html) from Go. It has been designed against the Exoscale (https://www.exoscale.com/) infrastructure but should fit other CloudStack services.
+Package egoscale is a mapping for the Exoscale API (https://community.exoscale.com/api/compute/).
 
 Requests and Responses
 
 To build a request, construct the adequate struct. This library expects a pointer for efficiency reasons only. The response is a struct corresponding to the data at stake. E.g. DeployVirtualMachine gives a VirtualMachine, as a pointer as well to avoid big copies.
 
-Then everything within the struct is not a pointer. Find below some examples of how egoscale may be used to interact with a CloudStack endpoint, especially Exoscale itself. If anything feels odd or unclear, please let us know: https://github.com/exoscale/egoscale/issues
+Then everything within the struct is not a pointer. Find below some examples of how egoscale may be used. If anything feels odd or unclear, please let us know: https://github.com/exoscale/egoscale/issues
 
 	req := &egoscale.DeployVirtualMachine{
 		Size:              10,
@@ -103,7 +103,7 @@ Security Groups provide a way to isolate traffic to VMs. Rules are added via the
 	resp, err = cs.Request(&egoscale.AuthorizeSecurityGroupIngress{
 		Description:     "SSH traffic",
 		SecurityGroupID: securityGroup.ID,
-		CidrList:        []string{"0.0.0.0/0"},
+		CidrList:        []CIDR{*egoscale.MustParseCIDR("0.0.0.0/0")},
 		Protocol:        "tcp",
 		StartPort:       22,
 		EndPort:         22,
@@ -142,7 +142,7 @@ See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/sta
 
 Zones
 
-A Zone corresponds to a Data Center. You may list them. Zone implements the Listable interface, which let you perform a list in two different ways. The first exposes the underlying CloudStack request while the second one hide them and you only manipulate the structs of your interest.
+A Zone corresponds to a Data Center. You may list them. Zone implements the Listable interface, which let you perform a list in two different ways. The first exposes the underlying request while the second one hide them and you only manipulate the structs of your interest.
 
 	// Using ListZones request
 	req := &egoscale.ListZones{}

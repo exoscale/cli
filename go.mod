@@ -7,7 +7,7 @@ require (
 	github.com/VividCortex/ewma v1.1.1 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
-	github.com/exoscale/egoscale v0.12.3-0.20181108110446-a56a46e0c97a
+	github.com/exoscale/egoscale v0.12.3
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.39.0
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect

@@ -99,7 +99,6 @@ type ListVolumes struct {
 	Name             string        `json:"name,omitempty" doc:"The name of the disk volume"`
 	Page             int           `json:"page,omitempty"`
 	PageSize         int           `json:"pagesize,omitempty"`
-	StorageID        *UUID         `json:"storageid,omitempty" doc:"The ID of the storage pool, available to ROOT admin only"`
 	Tags             []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
 	Type             string        `json:"type,omitempty" doc:"The type of disk volume"`
 	VirtualMachineID *UUID         `json:"virtualmachineid,omitempty" doc:"The ID of the virtual machine"`

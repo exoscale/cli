@@ -2,23 +2,22 @@ package egoscale
 
 // User represents a User
 type User struct {
-	APIKey      string `json:"apikey,omitempty" doc:"the api key of the user"`
-	Account     string `json:"account,omitempty" doc:"the account name of the user"`
-	AccountID   *UUID  `json:"accountid,omitempty" doc:"the account ID of the user"`
-	AccountType int16  `json:"accounttype,omitempty" doc:"the account type of the user"`
-	Created     string `json:"created,omitempty" doc:"the date and time the user account was created"`
-	Email       string `json:"email,omitempty" doc:"the user email address"`
-	FirstName   string `json:"firstname,omitempty" doc:"the user firstname"`
-	ID          *UUID  `json:"id,omitempty" doc:"the user ID"`
-	IsDefault   bool   `json:"isdefault,omitempty" doc:"true if user is default, false otherwise"`
-	LastName    string `json:"lastname,omitempty" doc:"the user lastname"`
-	RoleID      *UUID  `json:"roleid,omitempty" doc:"the ID of the role"`
-	RoleName    string `json:"rolename,omitempty" doc:"the name of the role"`
-	RoleType    string `json:"roletype,omitempty" doc:"the type of the role"`
-	SecretKey   string `json:"secretkey,omitempty" doc:"the secret key of the user"`
-	State       string `json:"state,omitempty" doc:"the user state"`
-	Timezone    string `json:"timezone,omitempty" doc:"the timezone user was created in"`
-	UserName    string `json:"username,omitempty" doc:"the user name"`
+	APIKey    string `json:"apikey,omitempty" doc:"the api key of the user"`
+	Account   string `json:"account,omitempty" doc:"the account name of the user"`
+	AccountID *UUID  `json:"accountid,omitempty" doc:"the account ID of the user"`
+	Created   string `json:"created,omitempty" doc:"the date and time the user account was created"`
+	Email     string `json:"email,omitempty" doc:"the user email address"`
+	FirstName string `json:"firstname,omitempty" doc:"the user firstname"`
+	ID        *UUID  `json:"id,omitempty" doc:"the user ID"`
+	IsDefault bool   `json:"isdefault,omitempty" doc:"true if user is default, false otherwise"`
+	LastName  string `json:"lastname,omitempty" doc:"the user lastname"`
+	RoleID    *UUID  `json:"roleid,omitempty" doc:"the ID of the role"`
+	RoleName  string `json:"rolename,omitempty" doc:"the name of the role"`
+	RoleType  string `json:"roletype,omitempty" doc:"the type of the role"`
+	SecretKey string `json:"secretkey,omitempty" doc:"the secret key of the user"`
+	State     string `json:"state,omitempty" doc:"the user state"`
+	Timezone  string `json:"timezone,omitempty" doc:"the timezone user was created in"`
+	UserName  string `json:"username,omitempty" doc:"the user name"`
 }
 
 // RegisterUserKeys registers a new set of key of the given user
@@ -33,51 +32,15 @@ func (RegisterUserKeys) response() interface{} {
 	return new(User)
 }
 
-// CreateUser represents the creation of a User
-type CreateUser struct {
-	Account   string `json:"account" doc:"Creates the user under the specified account. If no account is specified, the username will be used as the account name."`
-	Email     string `json:"email" doc:"email"`
-	FirstName string `json:"firstname" doc:"firstname"`
-	LastName  string `json:"lastname" doc:"lastname"`
-	Password  string `json:"password" doc:"Clear text password (Default hashed to SHA256SALT). If you wish to use any other hashing algorithm, you would need to write a custom authentication adapter See Docs section."`
-	UserName  string `json:"username" doc:"Unique username."`
-	Timezone  string `json:"timezone,omitempty" doc:"Specifies a timezone for this command. For more information on the timezone parameter, see Time Zone Format."`
-	UserID    *UUID  `json:"userid,omitempty" doc:"User UUID, required for adding account from external provisioning system"`
-	_         bool   `name:"createUser" description:"Creates a user for an account that already exists"`
-}
-
-func (CreateUser) response() interface{} {
-	return new(User)
-}
-
-// UpdateUser represents the modification of a User
-type UpdateUser struct {
-	ID            *UUID  `json:"id" doc:"User uuid"`
-	Email         string `json:"email,omitempty" doc:"email"`
-	FirstName     string `json:"firstname,omitempty" doc:"first name"`
-	LastName      string `json:"lastname,omitempty" doc:"last name"`
-	Password      string `json:"password,omitempty" doc:"Clear text password (default hashed to SHA256SALT). If you wish to use any other hashing algorithm, you would need to write a custom authentication adapter"`
-	Timezone      string `json:"timezone,omitempty" doc:"Specifies a timezone for this command. For more information on the timezone parameter, see Time Zone Format."`
-	UserAPIKey    string `json:"userapikey,omitempty" doc:"The API key for the user. Must be specified with userSecretKey"`
-	UserName      string `json:"username,omitempty" doc:"Unique username"`
-	UserSecretKey string `json:"usersecretkey,omitempty" doc:"The secret key for the user. Must be specified with userApiKey"`
-	_             bool   `name:"updateUser" description:"Updates a user account"`
-}
-
-func (UpdateUser) response() interface{} {
-	return new(User)
-}
-
 // ListUsers represents the search for Users
 type ListUsers struct {
-	AccountType AccountType `json:"accounttype,omitempty" doc:"List users by account type. Valid types include admin, read-only-admin, or user."`
-	ID          *UUID       `json:"id,omitempty" doc:"List user by ID."`
-	Keyword     string      `json:"keyword,omitempty" doc:"List by keyword"`
-	Page        int         `json:"page,omitempty"`
-	PageSize    int         `json:"pagesize,omitempty"`
-	State       string      `json:"state,omitempty" doc:"List users by state of the user account."`
-	Username    string      `json:"username,omitempty" doc:"List user by the username"`
-	_           bool        `name:"listUsers" description:"Lists user accounts"`
+	ID       *UUID  `json:"id,omitempty" doc:"List user by ID."`
+	Keyword  string `json:"keyword,omitempty" doc:"List by keyword"`
+	Page     int    `json:"page,omitempty"`
+	PageSize int    `json:"pagesize,omitempty"`
+	State    string `json:"state,omitempty" doc:"List users by state of the user account."`
+	Username string `json:"username,omitempty" doc:"List user by the username"`
+	_        bool   `name:"listUsers" description:"Lists user accounts"`
 }
 
 // ListUsersResponse represents a list of users
@@ -88,14 +51,4 @@ type ListUsersResponse struct {
 
 func (ListUsers) response() interface{} {
 	return new(ListUsersResponse)
-}
-
-// DeleteUser deletes a user for an account
-type DeleteUser struct {
-	ID *UUID `json:"id" doc:"id of the user to be deleted"`
-	_  bool  `name:"deleteUser" description:"Deletes a user for an account"`
-}
-
-func (DeleteUser) response() interface{} {
-	return new(booleanResponse)
 }

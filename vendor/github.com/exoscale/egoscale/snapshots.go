@@ -1,5 +1,7 @@
 package egoscale
 
+import "fmt"
+
 // SnapshotState represents the Snapshot.State enum
 //
 // See: https://github.com/apache/cloudstack/blob/master/api/src/main/java/com/cloud/storage/Snapshot.java
@@ -66,6 +68,17 @@ func (CreateSnapshot) asyncResponse() interface{} {
 	return new(Snapshot)
 }
 
+// ListRequest builds the ListSnapshot request
+func (ss Snapshot) ListRequest() (ListCommand, error) {
+	// Restricted cannot be applied here because it really has three states
+	req := &ListSnapshots{
+		ID:   ss.ID,
+		Name: ss.Name,
+	}
+
+	return req, nil
+}
+
 // ListSnapshots lists the volume snapshots
 type ListSnapshots struct {
 	ID           *UUID         `json:"id,omitempty" doc:"lists snapshot by snapshot ID"`
@@ -89,6 +102,30 @@ type ListSnapshotsResponse struct {
 
 func (ListSnapshots) response() interface{} {
 	return new(ListSnapshotsResponse)
+}
+
+// SetPage sets the current page
+func (lss *ListSnapshots) SetPage(page int) {
+	lss.Page = page
+}
+
+// SetPageSize sets the page size
+func (lss *ListSnapshots) SetPageSize(pageSize int) {
+	lss.PageSize = pageSize
+}
+
+func (ListSnapshots) each(resp interface{}, callback IterateItemFunc) {
+	sss, ok := resp.(*ListSnapshotsResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("wrong type. ListSnapshotsResponse expected, got %T", resp))
+		return
+	}
+
+	for i := range sss.Snapshot {
+		if !callback(&sss.Snapshot[i], nil) {
+			break
+		}
+	}
 }
 
 // DeleteSnapshot (Async) deletes a snapshot of a disk volume
