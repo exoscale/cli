@@ -5,6 +5,7 @@ replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.39.0
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/VividCortex/ewma v1.1.1 // indirect
+	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
@@ -33,7 +34,7 @@ require (
 	github.com/spf13/viper v1.2.0
 	github.com/stretchr/testify v1.2.2 // indirect
 	github.com/vbauerster/mpb v3.3.2+incompatible
-	golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b
+	golang.org/x/crypto v0.0.0-20181009213950-7c1a557ab941
 	golang.org/x/net v0.0.0-20180911220305-26e67e76b6c3 // indirect
 	gopkg.in/ini.v1 v1.39.0 // indirect
 )

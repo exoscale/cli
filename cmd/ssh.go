@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"path"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -68,7 +67,7 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 		return nil, err
 	}
 
-	sshKeyPath := path.Join(gConfigFolder, "instances", vm.ID.String(), "id_rsa")
+	sshKeyPath := getKeyPairPath(vm.ID.String())
 
 	nic := vm.DefaultNic()
 	if nic == nil {
