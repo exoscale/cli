@@ -21,7 +21,7 @@ var snapshotListCmd = &cobra.Command{
 		table := table.NewTable(os.Stdout)
 
 		if len(args) == 0 {
-			table.SetHeader([]string{"State", "Create On", "Size", "ID"})
+			table.SetHeader([]string{"State", "Created On", "Size", "ID"})
 			res, err := cs.ListWithContext(gContext, egoscale.Snapshot{})
 			if err != nil {
 				return err
