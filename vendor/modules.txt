@@ -6,7 +6,7 @@ github.com/chzyer/readline
 github.com/cpuguy83/go-md2man/md2man
 # github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.12.3
+# github.com/exoscale/egoscale v0.12.4-0.20181109132349-739c81134e4f
 github.com/exoscale/egoscale
 # github.com/fatih/camelcase v1.0.0
 github.com/fatih/camelcase

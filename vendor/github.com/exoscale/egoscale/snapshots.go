@@ -77,6 +77,7 @@ func (ss Snapshot) ListRequest() (ListCommand, error) {
 		VolumeID:     ss.VolumeID,
 		SnapshotType: ss.SnapshotType,
 		ZoneID:       ss.ZoneID,
+		// TODO: tags
 	}
 
 	return req, nil

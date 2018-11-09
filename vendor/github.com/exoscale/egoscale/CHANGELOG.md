@@ -4,13 +4,9 @@ Changelog
 0.12.3
 ------
 
-<<<<<<< HEAD
 - change: replace dep by Go modules
 - change: remove domainid,domain,regionid,listall,isrecursive,... fields
 - remove: `MigrateVirtualMachine`, `CreateUser`, `EnableAccount`, and other admin calls
-=======
-- replace dep by Go modules
->>>>>>> f1dfdfa... Implem delete snapshot
 
 0.12.2
 ------
