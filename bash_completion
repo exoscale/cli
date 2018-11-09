@@ -1,0 +1,7999 @@
+# bash completion for exo                                  -*- shell-script -*-
+
+__exo_debug()
+{
+    if [[ -n ${BASH_COMP_DEBUG_FILE} ]]; then
+        echo "$*" >> "${BASH_COMP_DEBUG_FILE}"
+    fi
+}
+
+# Homebrew on Macs have version 1.3 of bash-completion which doesn't include
+# _init_completion. This is a very minimal version of that function.
+__exo_init_completion()
+{
+    COMPREPLY=()
+    _get_comp_words_by_ref "$@" cur prev words cword
+}
+
+__exo_index_of_word()
+{
+    local w word=$1
+    shift
+    index=0
+    for w in "$@"; do
+        [[ $w = "$word" ]] && return
+        index=$((index+1))
+    done
+    index=-1
+}
+
+__exo_contains_word()
+{
+    local w word=$1; shift
+    for w in "$@"; do
+        [[ $w = "$word" ]] && return
+    done
+    return 1
+}
+
+__exo_handle_reply()
+{
+    __exo_debug "${FUNCNAME[0]}"
+    case $cur in
+        -*)
+            if [[ $(type -t compopt) = "builtin" ]]; then
+                compopt -o nospace
+            fi
+            local allflags
+            if [ ${#must_have_one_flag[@]} -ne 0 ]; then
+                allflags=("${must_have_one_flag[@]}")
+            else
+                allflags=("${flags[*]} ${two_word_flags[*]}")
+            fi
+            COMPREPLY=( $(compgen -W "${allflags[*]}" -- "$cur") )
+            if [[ $(type -t compopt) = "builtin" ]]; then
+                [[ "${COMPREPLY[0]}" == *= ]] || compopt +o nospace
+            fi
+
+            # complete after --flag=abc
+            if [[ $cur == *=* ]]; then
+                if [[ $(type -t compopt) = "builtin" ]]; then
+                    compopt +o nospace
+                fi
+
+                local index flag
+                flag="${cur%=*}"
+                __exo_index_of_word "${flag}" "${flags_with_completion[@]}"
+                COMPREPLY=()
+                if [[ ${index} -ge 0 ]]; then
+                    PREFIX=""
+                    cur="${cur#*=}"
+                    ${flags_completion[${index}]}
+                    if [ -n "${ZSH_VERSION}" ]; then
+                        # zsh completion needs --flag= prefix
+                        eval "COMPREPLY=( \"\${COMPREPLY[@]/#/${flag}=}\" )"
+                    fi
+                fi
+            fi
+            return 0;
+            ;;
+    esac
+
+    # check if we are handling a flag with special work handling
+    local index
+    __exo_index_of_word "${prev}" "${flags_with_completion[@]}"
+    if [[ ${index} -ge 0 ]]; then
+        ${flags_completion[${index}]}
+        return
+    fi
+
+    # we are parsing a flag and don't have a special handler, no completion
+    if [[ ${cur} != "${words[cword]}" ]]; then
+        return
+    fi
+
+    local completions
+    completions=("${commands[@]}")
+    if [[ ${#must_have_one_noun[@]} -ne 0 ]]; then
+        completions=("${must_have_one_noun[@]}")
+    fi
+    if [[ ${#must_have_one_flag[@]} -ne 0 ]]; then
+        completions+=("${must_have_one_flag[@]}")
+    fi
+    COMPREPLY=( $(compgen -W "${completions[*]}" -- "$cur") )
+
+    if [[ ${#COMPREPLY[@]} -eq 0 && ${#noun_aliases[@]} -gt 0 && ${#must_have_one_noun[@]} -ne 0 ]]; then
+        COMPREPLY=( $(compgen -W "${noun_aliases[*]}" -- "$cur") )
+    fi
+
+    if [[ ${#COMPREPLY[@]} -eq 0 ]]; then
+        declare -F __custom_func >/dev/null && __custom_func
+    fi
+
+    # available in bash-completion >= 2, not always present on macOS
+    if declare -F __ltrim_colon_completions >/dev/null; then
+        __ltrim_colon_completions "$cur"
+    fi
+
+    # If there is only 1 completion and it is a flag with an = it will be completed
+    # but we don't want a space after the =
+    if [[ "${#COMPREPLY[@]}" -eq "1" ]] && [[ $(type -t compopt) = "builtin" ]] && [[ "${COMPREPLY[0]}" == --*= ]]; then
+       compopt -o nospace
+    fi
+}
+
+# The arguments should be in the form "ext1|ext2|extn"
+__exo_handle_filename_extension_flag()
+{
+    local ext="$1"
+    _filedir "@(${ext})"
+}
+
+__exo_handle_subdirs_in_dir_flag()
+{
+    local dir="$1"
+    pushd "${dir}" >/dev/null 2>&1 && _filedir -d && popd >/dev/null 2>&1
+}
+
+__exo_handle_flag()
+{
+    __exo_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    # if a command required a flag, and we found it, unset must_have_one_flag()
+    local flagname=${words[c]}
+    local flagvalue
+    # if the word contained an =
+    if [[ ${words[c]} == *"="* ]]; then
+        flagvalue=${flagname#*=} # take in as flagvalue after the =
+        flagname=${flagname%=*} # strip everything after the =
+        flagname="${flagname}=" # but put the = back
+    fi
+    __exo_debug "${FUNCNAME[0]}: looking for ${flagname}"
+    if __exo_contains_word "${flagname}" "${must_have_one_flag[@]}"; then
+        must_have_one_flag=()
+    fi
+
+    # if you set a flag which only applies to this command, don't show subcommands
+    if __exo_contains_word "${flagname}" "${local_nonpersistent_flags[@]}"; then
+      commands=()
+    fi
+
+    # keep flag value with flagname as flaghash
+    # flaghash variable is an associative array which is only supported in bash > 3.
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        if [ -n "${flagvalue}" ] ; then
+            flaghash[${flagname}]=${flagvalue}
+        elif [ -n "${words[ $((c+1)) ]}" ] ; then
+            flaghash[${flagname}]=${words[ $((c+1)) ]}
+        else
+            flaghash[${flagname}]="true" # pad "true" for bool flag
+        fi
+    fi
+
+    # skip the argument to a two word flag
+    if __exo_contains_word "${words[c]}" "${two_word_flags[@]}"; then
+        c=$((c+1))
+        # if we are looking for a flags value, don't show commands
+        if [[ $c -eq $cword ]]; then
+            commands=()
+        fi
+    fi
+
+    c=$((c+1))
+
+}
+
+__exo_handle_noun()
+{
+    __exo_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    if __exo_contains_word "${words[c]}" "${must_have_one_noun[@]}"; then
+        must_have_one_noun=()
+    elif __exo_contains_word "${words[c]}" "${noun_aliases[@]}"; then
+        must_have_one_noun=()
+    fi
+
+    nouns+=("${words[c]}")
+    c=$((c+1))
+}
+
+__exo_handle_command()
+{
+    __exo_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+
+    local next_command
+    if [[ -n ${last_command} ]]; then
+        next_command="_${last_command}_${words[c]//:/__}"
+    else
+        if [[ $c -eq 0 ]]; then
+            next_command="_exo_root_command"
+        else
+            next_command="_${words[c]//:/__}"
+        fi
+    fi
+    c=$((c+1))
+    __exo_debug "${FUNCNAME[0]}: looking for ${next_command}"
+    declare -F "$next_command" >/dev/null && $next_command
+}
+
+__exo_handle_word()
+{
+    if [[ $c -ge $cword ]]; then
+        __exo_handle_reply
+        return
+    fi
+    __exo_debug "${FUNCNAME[0]}: c is $c words[c] is ${words[c]}"
+    if [[ "${words[c]}" == -* ]]; then
+        __exo_handle_flag
+    elif __exo_contains_word "${words[c]}" "${commands[@]}"; then
+        __exo_handle_command
+    elif [[ $c -eq 0 ]]; then
+        __exo_handle_command
+    elif __exo_contains_word "${words[c]}" "${command_aliases[@]}"; then
+        # aliashash variable is an associative array which is only supported in bash > 3.
+        if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+            words[c]=${aliashash[${words[c]}]}
+            __exo_handle_command
+        else
+            __exo_handle_noun
+        fi
+    else
+        __exo_handle_noun
+    fi
+    __exo_handle_word
+}
+
+_exo_affinitygroup_create()
+{
+    last_command="exo_affinitygroup_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--description=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_affinitygroup_delete()
+{
+    last_command="exo_affinitygroup_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_affinitygroup_list()
+{
+    last_command="exo_affinitygroup_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_affinitygroup()
+{
+    last_command="exo_affinitygroup"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_account_list()
+{
+    last_command="exo_api_account_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--accounttype=")
+    local_nonpersistent_flags+=("--accounttype=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--iscleanuprequired=")
+    local_nonpersistent_flags+=("--iscleanuprequired=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--state=")
+    local_nonpersistent_flags+=("--state=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_account()
+{
+    last_command="exo_api_account"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listAccounts")
+        aliashash["listAccounts"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_address_associate()
+{
+    last_command="exo_api_address_associate"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--fordisplay=")
+    local_nonpersistent_flags+=("--fordisplay=")
+    flags+=("--isportable=")
+    local_nonpersistent_flags+=("--isportable=")
+    flags+=("--networkid=")
+    local_nonpersistent_flags+=("--networkid=")
+    flags+=("--regionid=")
+    local_nonpersistent_flags+=("--regionid=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_address_deleteReverseDNSFromAddress()
+{
+    last_command="exo_api_address_deleteReverseDNSFromAddress"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_address_disassociate()
+{
+    last_command="exo_api_address_disassociate"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_address_list()
+{
+    last_command="exo_api_address_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--allocatedonly=")
+    local_nonpersistent_flags+=("--allocatedonly=")
+    flags+=("--associatednetworkid=")
+    local_nonpersistent_flags+=("--associatednetworkid=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--fordisplay=")
+    local_nonpersistent_flags+=("--fordisplay=")
+    flags+=("--forloadbalancing=")
+    local_nonpersistent_flags+=("--forloadbalancing=")
+    flags+=("--forvirtualnetwork=")
+    local_nonpersistent_flags+=("--forvirtualnetwork=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--ipaddress=")
+    local_nonpersistent_flags+=("--ipaddress=")
+    flags+=("--iselastic=")
+    local_nonpersistent_flags+=("--iselastic=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--issourcenat=")
+    local_nonpersistent_flags+=("--issourcenat=")
+    flags+=("--isstaticnat=")
+    local_nonpersistent_flags+=("--isstaticnat=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--physicalnetworkid=")
+    local_nonpersistent_flags+=("--physicalnetworkid=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--vlanid=")
+    local_nonpersistent_flags+=("--vlanid=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_address_queryReverseDNSForAddress()
+{
+    last_command="exo_api_address_queryReverseDNSForAddress"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_address_update()
+{
+    last_command="exo_api_address_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--customid=")
+    local_nonpersistent_flags+=("--customid=")
+    flags+=("--fordisplay=")
+    local_nonpersistent_flags+=("--fordisplay=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_address_updateReverseDNSForAddress()
+{
+    last_command="exo_api_address_updateReverseDNSForAddress"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--domainname=")
+    local_nonpersistent_flags+=("--domainname=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_address()
+{
+    last_command="exo_api_address"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("associate")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("assoc")
+        aliashash["assoc"]="associate"
+        command_aliases+=("associateIpAddress")
+        aliashash["associateIpAddress"]="associate"
+    fi
+    commands+=("deleteReverseDNSFromAddress")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("deleteReverseDnsFromPublicIpAddress")
+        aliashash["deleteReverseDnsFromPublicIpAddress"]="deleteReverseDNSFromAddress"
+    fi
+    commands+=("disassociate")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("disassociate")
+        aliashash["disassociate"]="disassociate"
+        command_aliases+=("disassociateIpAddress")
+        aliashash["disassociateIpAddress"]="disassociate"
+        command_aliases+=("dissoc")
+        aliashash["dissoc"]="disassociate"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listPublicIpAddresses")
+        aliashash["listPublicIpAddresses"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("queryReverseDNSForAddress")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("queryReverseDnsForPublicIpAddress")
+        aliashash["queryReverseDnsForPublicIpAddress"]="queryReverseDNSForAddress"
+    fi
+    commands+=("update")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("updateIpAddress")
+        aliashash["updateIpAddress"]="update"
+    fi
+    commands+=("updateReverseDNSForAddress")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("updateReverseDnsForPublicIpAddress")
+        aliashash["updateReverseDnsForPublicIpAddress"]="updateReverseDNSForAddress"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_affinity-group_create()
+{
+    last_command="exo_api_affinity-group_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--description=")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--type=")
+    local_nonpersistent_flags+=("--type=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_affinity-group_delete()
+{
+    last_command="exo_api_affinity-group_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_affinity-group_list()
+{
+    last_command="exo_api_affinity-group_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--type=")
+    local_nonpersistent_flags+=("--type=")
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_affinity-group()
+{
+    last_command="exo_api_affinity-group"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("createAffinityGroup")
+        aliashash["createAffinityGroup"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+        command_aliases+=("deleteAffinityGroup")
+        aliashash["deleteAffinityGroup"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listAffinityGroups")
+        aliashash["listAffinityGroups"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_api_list()
+{
+    last_command="exo_api_api_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_api()
+{
+    last_command="exo_api_api"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listApis")
+        aliashash["listApis"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_async-job_listAsyncJobs()
+{
+    last_command="exo_api_async-job_listAsyncJobs"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--startdate=")
+    local_nonpersistent_flags+=("--startdate=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_async-job_queryAsyncJobResult()
+{
+    last_command="exo_api_async-job_queryAsyncJobResult"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--jobid=")
+    local_nonpersistent_flags+=("--jobid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_async-job()
+{
+    last_command="exo_api_async-job"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("listAsyncJobs")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listAsyncJobs")
+        aliashash["listAsyncJobs"]="listAsyncJobs"
+    fi
+    commands+=("queryAsyncJobResult")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("queryAsyncJobResult")
+        aliashash["queryAsyncJobResult"]="queryAsyncJobResult"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_event_list()
+{
+    last_command="exo_api_event_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--duration=")
+    local_nonpersistent_flags+=("--duration=")
+    flags+=("--enddate=")
+    local_nonpersistent_flags+=("--enddate=")
+    flags+=("--entrytime=")
+    local_nonpersistent_flags+=("--entrytime=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--level=")
+    local_nonpersistent_flags+=("--level=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--startdate=")
+    local_nonpersistent_flags+=("--startdate=")
+    flags+=("--type=")
+    local_nonpersistent_flags+=("--type=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_event_listType()
+{
+    last_command="exo_api_event_listType"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_event()
+{
+    last_command="exo_api_event"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listEvents")
+        aliashash["listEvents"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("listType")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listEventTypes")
+        aliashash["listEventTypes"]="listType"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_network_create()
+{
+    last_command="exo_api_network_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--displaynetwork=")
+    local_nonpersistent_flags+=("--displaynetwork=")
+    flags+=("--displaytext=")
+    local_nonpersistent_flags+=("--displaytext=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--endip=")
+    local_nonpersistent_flags+=("--endip=")
+    flags+=("--endipv6=")
+    local_nonpersistent_flags+=("--endipv6=")
+    flags+=("--gateway=")
+    local_nonpersistent_flags+=("--gateway=")
+    flags+=("--ip6cidr=")
+    local_nonpersistent_flags+=("--ip6cidr=")
+    flags+=("--ip6gateway=")
+    local_nonpersistent_flags+=("--ip6gateway=")
+    flags+=("--isolatedpvlan=")
+    local_nonpersistent_flags+=("--isolatedpvlan=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--netmask=")
+    local_nonpersistent_flags+=("--netmask=")
+    flags+=("--networkdomain=")
+    local_nonpersistent_flags+=("--networkdomain=")
+    flags+=("--networkofferingid=")
+    local_nonpersistent_flags+=("--networkofferingid=")
+    flags+=("--physicalnetworkid=")
+    local_nonpersistent_flags+=("--physicalnetworkid=")
+    flags+=("--startip=")
+    local_nonpersistent_flags+=("--startip=")
+    flags+=("--startipv6=")
+    local_nonpersistent_flags+=("--startipv6=")
+    flags+=("--subdomainaccess=")
+    local_nonpersistent_flags+=("--subdomainaccess=")
+    flags+=("--vlan=")
+    local_nonpersistent_flags+=("--vlan=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_network_delete()
+{
+    last_command="exo_api_network_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--forced=")
+    local_nonpersistent_flags+=("--forced=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_network_list()
+{
+    last_command="exo_api_network_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--canusefordeploy=")
+    local_nonpersistent_flags+=("--canusefordeploy=")
+    flags+=("--displaynetwork=")
+    local_nonpersistent_flags+=("--displaynetwork=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--issystem=")
+    local_nonpersistent_flags+=("--issystem=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--physicalnetworkid=")
+    local_nonpersistent_flags+=("--physicalnetworkid=")
+    flags+=("--restartrequired=")
+    local_nonpersistent_flags+=("--restartrequired=")
+    flags+=("--specifyipranges=")
+    local_nonpersistent_flags+=("--specifyipranges=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--traffictype=")
+    local_nonpersistent_flags+=("--traffictype=")
+    flags+=("--type=")
+    local_nonpersistent_flags+=("--type=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_network_listNetworkOfferings()
+{
+    last_command="exo_api_network_listNetworkOfferings"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--availability=")
+    local_nonpersistent_flags+=("--availability=")
+    flags+=("--displaytext=")
+    local_nonpersistent_flags+=("--displaytext=")
+    flags+=("--guestiptype=")
+    local_nonpersistent_flags+=("--guestiptype=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isdefault=")
+    local_nonpersistent_flags+=("--isdefault=")
+    flags+=("--istagged=")
+    local_nonpersistent_flags+=("--istagged=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--networkid=")
+    local_nonpersistent_flags+=("--networkid=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--sourcenatsupported=")
+    local_nonpersistent_flags+=("--sourcenatsupported=")
+    flags+=("--specifyipranges=")
+    local_nonpersistent_flags+=("--specifyipranges=")
+    flags+=("--specifyvlan=")
+    local_nonpersistent_flags+=("--specifyvlan=")
+    flags+=("--state=")
+    local_nonpersistent_flags+=("--state=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--traffictype=")
+    local_nonpersistent_flags+=("--traffictype=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_network_update()
+{
+    last_command="exo_api_network_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--changecidr=")
+    local_nonpersistent_flags+=("--changecidr=")
+    flags+=("--customid=")
+    local_nonpersistent_flags+=("--customid=")
+    flags+=("--displaynetwork=")
+    local_nonpersistent_flags+=("--displaynetwork=")
+    flags+=("--displaytext=")
+    local_nonpersistent_flags+=("--displaytext=")
+    flags+=("--endip=")
+    local_nonpersistent_flags+=("--endip=")
+    flags+=("--guestvmcidr=")
+    local_nonpersistent_flags+=("--guestvmcidr=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--netmask=")
+    local_nonpersistent_flags+=("--netmask=")
+    flags+=("--networkdomain=")
+    local_nonpersistent_flags+=("--networkdomain=")
+    flags+=("--networkofferingid=")
+    local_nonpersistent_flags+=("--networkofferingid=")
+    flags+=("--startip=")
+    local_nonpersistent_flags+=("--startip=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_network()
+{
+    last_command="exo_api_network"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("createNetwork")
+        aliashash["createNetwork"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+        command_aliases+=("deleteNetwork")
+        aliashash["deleteNetwork"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listNetworks")
+        aliashash["listNetworks"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("listNetworkOfferings")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listNetworkOfferings")
+        aliashash["listNetworkOfferings"]="listNetworkOfferings"
+    fi
+    commands+=("update")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("updateNetwork")
+        aliashash["updateNetwork"]="update"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_nic_activateIp6()
+{
+    last_command="exo_api_nic_activateIp6"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--nicid=")
+    local_nonpersistent_flags+=("--nicid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_nic_addIpToNic()
+{
+    last_command="exo_api_nic_addIpToNic"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--nicid=")
+    local_nonpersistent_flags+=("--nicid=")
+    flags+=("--ipaddress=")
+    local_nonpersistent_flags+=("--ipaddress=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_nic_list()
+{
+    last_command="exo_api_nic_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--fordisplay")
+    local_nonpersistent_flags+=("--fordisplay")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--networkid=")
+    local_nonpersistent_flags+=("--networkid=")
+    flags+=("--nicid=")
+    local_nonpersistent_flags+=("--nicid=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_nic_removeIpFromNic()
+{
+    last_command="exo_api_nic_removeIpFromNic"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_nic()
+{
+    last_command="exo_api_nic"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("activateIp6")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("activateIp6")
+        aliashash["activateIp6"]="activateIp6"
+    fi
+    commands+=("addIpToNic")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("addIpToNic")
+        aliashash["addIpToNic"]="addIpToNic"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listNics")
+        aliashash["listNics"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("removeIpFromNic")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("removeIpFromNic")
+        aliashash["removeIpFromNic"]="removeIpFromNic"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_offering_list()
+{
+    last_command="exo_api_offering_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--issystem=")
+    local_nonpersistent_flags+=("--issystem=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--restricted=")
+    local_nonpersistent_flags+=("--restricted=")
+    flags+=("--systemvmtype=")
+    local_nonpersistent_flags+=("--systemvmtype=")
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_offering_listDetails()
+{
+    last_command="exo_api_offering_listDetails"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--resourcetype=")
+    local_nonpersistent_flags+=("--resourcetype=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--fordisplay")
+    local_nonpersistent_flags+=("--fordisplay")
+    flags+=("--key=")
+    local_nonpersistent_flags+=("--key=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall")
+    local_nonpersistent_flags+=("--listall")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--resourceid=")
+    local_nonpersistent_flags+=("--resourceid=")
+    flags+=("--value=")
+    local_nonpersistent_flags+=("--value=")
+    flags+=("--isrecursive")
+    local_nonpersistent_flags+=("--isrecursive")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_offering_listLimits()
+{
+    last_command="exo_api_offering_listLimits"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--resourcetype=")
+    local_nonpersistent_flags+=("--resourcetype=")
+    flags+=("--resourcetypename=")
+    local_nonpersistent_flags+=("--resourcetypename=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_offering()
+{
+    last_command="exo_api_offering"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listServiceOfferings")
+        aliashash["listServiceOfferings"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("listDetails")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listResourceDetails")
+        aliashash["listResourceDetails"]="listDetails"
+    fi
+    commands+=("listLimits")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listResourceLimits")
+        aliashash["listResourceLimits"]="listLimits"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_security-group_authorizeEgress()
+{
+    last_command="exo_api_security-group_authorizeEgress"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--cidrlist=")
+    local_nonpersistent_flags+=("--cidrlist=")
+    flags+=("--description=")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--endport=")
+    local_nonpersistent_flags+=("--endport=")
+    flags+=("--icmpcode=")
+    local_nonpersistent_flags+=("--icmpcode=")
+    flags+=("--icmptype=")
+    local_nonpersistent_flags+=("--icmptype=")
+    flags+=("--protocol=")
+    local_nonpersistent_flags+=("--protocol=")
+    flags+=("--securitygroupid=")
+    local_nonpersistent_flags+=("--securitygroupid=")
+    flags+=("--securitygroupname=")
+    local_nonpersistent_flags+=("--securitygroupname=")
+    flags+=("--startport=")
+    local_nonpersistent_flags+=("--startport=")
+    flags+=("--usersecuritygrouplist=")
+    local_nonpersistent_flags+=("--usersecuritygrouplist=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_security-group_authorizeIngress()
+{
+    last_command="exo_api_security-group_authorizeIngress"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--cidrlist=")
+    local_nonpersistent_flags+=("--cidrlist=")
+    flags+=("--description=")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--endport=")
+    local_nonpersistent_flags+=("--endport=")
+    flags+=("--icmpcode=")
+    local_nonpersistent_flags+=("--icmpcode=")
+    flags+=("--icmptype=")
+    local_nonpersistent_flags+=("--icmptype=")
+    flags+=("--protocol=")
+    local_nonpersistent_flags+=("--protocol=")
+    flags+=("--securitygroupid=")
+    local_nonpersistent_flags+=("--securitygroupid=")
+    flags+=("--securitygroupname=")
+    local_nonpersistent_flags+=("--securitygroupname=")
+    flags+=("--startport=")
+    local_nonpersistent_flags+=("--startport=")
+    flags+=("--usersecuritygrouplist=")
+    local_nonpersistent_flags+=("--usersecuritygrouplist=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_security-group_create()
+{
+    last_command="exo_api_security-group_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--description=")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_security-group_delete()
+{
+    last_command="exo_api_security-group_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_security-group_list()
+{
+    last_command="exo_api_security-group_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--securitygroupname=")
+    local_nonpersistent_flags+=("--securitygroupname=")
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_security-group_revokeEgress()
+{
+    last_command="exo_api_security-group_revokeEgress"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_security-group_revokeIngress()
+{
+    last_command="exo_api_security-group_revokeIngress"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_security-group()
+{
+    last_command="exo_api_security-group"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("authorizeEgress")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("authorizeSecurityGroupEgress")
+        aliashash["authorizeSecurityGroupEgress"]="authorizeEgress"
+    fi
+    commands+=("authorizeIngress")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("authorizeSecurityGroupIngress")
+        aliashash["authorizeSecurityGroupIngress"]="authorizeIngress"
+    fi
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("createSecurityGroup")
+        aliashash["createSecurityGroup"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+        command_aliases+=("deleteSecurityGroup")
+        aliashash["deleteSecurityGroup"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listSecurityGroups")
+        aliashash["listSecurityGroups"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("revokeEgress")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("revokeSecurityGroupEgress")
+        aliashash["revokeSecurityGroupEgress"]="revokeEgress"
+    fi
+    commands+=("revokeIngress")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("revokeSecurityGroupIngress")
+        aliashash["revokeSecurityGroupIngress"]="revokeIngress"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_snapshot_create()
+{
+    last_command="exo_api_snapshot_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--volumeid=")
+    local_nonpersistent_flags+=("--volumeid=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--quiescevm=")
+    local_nonpersistent_flags+=("--quiescevm=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_snapshot_delete()
+{
+    last_command="exo_api_snapshot_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_snapshot_list()
+{
+    last_command="exo_api_snapshot_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--intervaltype=")
+    local_nonpersistent_flags+=("--intervaltype=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--snapshottype=")
+    local_nonpersistent_flags+=("--snapshottype=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--volumeid=")
+    local_nonpersistent_flags+=("--volumeid=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_snapshot_revert()
+{
+    last_command="exo_api_snapshot_revert"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_snapshot()
+{
+    last_command="exo_api_snapshot"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("createSnapshot")
+        aliashash["createSnapshot"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+        command_aliases+=("deleteSnapshot")
+        aliashash["deleteSnapshot"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listSnapshots")
+        aliashash["listSnapshots"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("revert")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("revertSnapshot")
+        aliashash["revertSnapshot"]="revert"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_ssh_create()
+{
+    last_command="exo_api_ssh_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_ssh_delete()
+{
+    last_command="exo_api_ssh_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_ssh_list()
+{
+    last_command="exo_api_ssh_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--fingerprint=")
+    local_nonpersistent_flags+=("--fingerprint=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_ssh_register()
+{
+    last_command="exo_api_ssh_register"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--publickey=")
+    local_nonpersistent_flags+=("--publickey=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_ssh_reset()
+{
+    last_command="exo_api_ssh_reset"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--keypair=")
+    local_nonpersistent_flags+=("--keypair=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_ssh()
+{
+    last_command="exo_api_ssh"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("createSSHKeyPair")
+        aliashash["createSSHKeyPair"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+        command_aliases+=("deleteSSHKeyPair")
+        aliashash["deleteSSHKeyPair"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listSSHKeyPairs")
+        aliashash["listSSHKeyPairs"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("register")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("registerSSHKeyPair")
+        aliashash["registerSSHKeyPair"]="register"
+    fi
+    commands+=("reset")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("resetSSHKeyForVirtualMachine")
+        aliashash["resetSSHKeyForVirtualMachine"]="reset"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_tag_create()
+{
+    last_command="exo_api_tag_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--resourceids=")
+    local_nonpersistent_flags+=("--resourceids=")
+    flags+=("--resourcetype=")
+    local_nonpersistent_flags+=("--resourcetype=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--customer=")
+    local_nonpersistent_flags+=("--customer=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_tag_delete()
+{
+    last_command="exo_api_tag_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--resourceids=")
+    local_nonpersistent_flags+=("--resourceids=")
+    flags+=("--resourcetype=")
+    local_nonpersistent_flags+=("--resourcetype=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_tag_list()
+{
+    last_command="exo_api_tag_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--customer=")
+    local_nonpersistent_flags+=("--customer=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--key=")
+    local_nonpersistent_flags+=("--key=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--resourceid=")
+    local_nonpersistent_flags+=("--resourceid=")
+    flags+=("--resourcetype=")
+    local_nonpersistent_flags+=("--resourcetype=")
+    flags+=("--value=")
+    local_nonpersistent_flags+=("--value=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_tag()
+{
+    last_command="exo_api_tag"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("createTags")
+        aliashash["createTags"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+        command_aliases+=("deleteTags")
+        aliashash["deleteTags"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listTags")
+        aliashash["listTags"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_template_list()
+{
+    last_command="exo_api_template_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--templatefilter=")
+    local_nonpersistent_flags+=("--templatefilter=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--hypervisor=")
+    local_nonpersistent_flags+=("--hypervisor=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--showremoved=")
+    local_nonpersistent_flags+=("--showremoved=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_template()
+{
+    last_command="exo_api_template"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listTemplates")
+        aliashash["listTemplates"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_user_list()
+{
+    last_command="exo_api_user_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--accounttype=")
+    local_nonpersistent_flags+=("--accounttype=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive")
+    local_nonpersistent_flags+=("--isrecursive")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall")
+    local_nonpersistent_flags+=("--listall")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--state=")
+    local_nonpersistent_flags+=("--state=")
+    flags+=("--username=")
+    local_nonpersistent_flags+=("--username=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_user_registerUserKeys()
+{
+    last_command="exo_api_user_registerUserKeys"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_user()
+{
+    last_command="exo_api_user"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listUsers")
+        aliashash["listUsers"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("registerUserKeys")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("registerUserKeys")
+        aliashash["registerUserKeys"]="registerUserKeys"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_addNic()
+{
+    last_command="exo_api_vm_addNic"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--networkid=")
+    local_nonpersistent_flags+=("--networkid=")
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--ipaddress=")
+    local_nonpersistent_flags+=("--ipaddress=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_changeService()
+{
+    last_command="exo_api_vm_changeService"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--serviceofferingid=")
+    local_nonpersistent_flags+=("--serviceofferingid=")
+    flags+=("--details=")
+    local_nonpersistent_flags+=("--details=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_deleteReverseDNSFromVM()
+{
+    last_command="exo_api_vm_deleteReverseDNSFromVM"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_deploy()
+{
+    last_command="exo_api_vm_deploy"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--affinitygroupids=")
+    local_nonpersistent_flags+=("--affinitygroupids=")
+    flags+=("--affinitygroupnames=")
+    local_nonpersistent_flags+=("--affinitygroupnames=")
+    flags+=("--customid=")
+    local_nonpersistent_flags+=("--customid=")
+    flags+=("--deploymentplanner=")
+    local_nonpersistent_flags+=("--deploymentplanner=")
+    flags+=("--details=")
+    local_nonpersistent_flags+=("--details=")
+    flags+=("--diskofferingid=")
+    local_nonpersistent_flags+=("--diskofferingid=")
+    flags+=("--displayname=")
+    local_nonpersistent_flags+=("--displayname=")
+    flags+=("--displayvm=")
+    local_nonpersistent_flags+=("--displayvm=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--group=")
+    local_nonpersistent_flags+=("--group=")
+    flags+=("--hostid=")
+    local_nonpersistent_flags+=("--hostid=")
+    flags+=("--hypervisor=")
+    local_nonpersistent_flags+=("--hypervisor=")
+    flags+=("--ip4=")
+    local_nonpersistent_flags+=("--ip4=")
+    flags+=("--ip6=")
+    local_nonpersistent_flags+=("--ip6=")
+    flags+=("--ip6address=")
+    local_nonpersistent_flags+=("--ip6address=")
+    flags+=("--ipaddress=")
+    local_nonpersistent_flags+=("--ipaddress=")
+    flags+=("--keyboard=")
+    local_nonpersistent_flags+=("--keyboard=")
+    flags+=("--keypair=")
+    local_nonpersistent_flags+=("--keypair=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--networkids=")
+    local_nonpersistent_flags+=("--networkids=")
+    flags+=("--rootdisksize=")
+    local_nonpersistent_flags+=("--rootdisksize=")
+    flags+=("--securitygroupids=")
+    local_nonpersistent_flags+=("--securitygroupids=")
+    flags+=("--securitygroupnames=")
+    local_nonpersistent_flags+=("--securitygroupnames=")
+    flags+=("--serviceofferingid=")
+    local_nonpersistent_flags+=("--serviceofferingid=")
+    flags+=("--size=")
+    local_nonpersistent_flags+=("--size=")
+    flags+=("--startvm=")
+    local_nonpersistent_flags+=("--startvm=")
+    flags+=("--templateid=")
+    local_nonpersistent_flags+=("--templateid=")
+    flags+=("--userdata=")
+    local_nonpersistent_flags+=("--userdata=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_destroy()
+{
+    last_command="exo_api_vm_destroy"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--expunge=")
+    local_nonpersistent_flags+=("--expunge=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_expunge()
+{
+    last_command="exo_api_vm_expunge"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_getPassword()
+{
+    last_command="exo_api_vm_getPassword"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_getUserData()
+{
+    last_command="exo_api_vm_getUserData"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_list()
+{
+    last_command="exo_api_vm_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--affinitygroupid=")
+    local_nonpersistent_flags+=("--affinitygroupid=")
+    flags+=("--details=")
+    local_nonpersistent_flags+=("--details=")
+    flags+=("--displayvm=")
+    local_nonpersistent_flags+=("--displayvm=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--forvirtualnetwork=")
+    local_nonpersistent_flags+=("--forvirtualnetwork=")
+    flags+=("--groupid=")
+    local_nonpersistent_flags+=("--groupid=")
+    flags+=("--hostid=")
+    local_nonpersistent_flags+=("--hostid=")
+    flags+=("--hypervisor=")
+    local_nonpersistent_flags+=("--hypervisor=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--ids=")
+    local_nonpersistent_flags+=("--ids=")
+    flags+=("--ipaddress=")
+    local_nonpersistent_flags+=("--ipaddress=")
+    flags+=("--isoid=")
+    local_nonpersistent_flags+=("--isoid=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--networkid=")
+    local_nonpersistent_flags+=("--networkid=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--serviceofferingid=")
+    local_nonpersistent_flags+=("--serviceofferingid=")
+    flags+=("--state=")
+    local_nonpersistent_flags+=("--state=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--templateid=")
+    local_nonpersistent_flags+=("--templateid=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_migrateVirtualMachine()
+{
+    last_command="exo_api_vm_migrateVirtualMachine"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--hostid=")
+    local_nonpersistent_flags+=("--hostid=")
+    flags+=("--storageid=")
+    local_nonpersistent_flags+=("--storageid=")
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_queryReverseDNSForVM()
+{
+    last_command="exo_api_vm_queryReverseDNSForVM"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_reboot()
+{
+    last_command="exo_api_vm_reboot"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_recover()
+{
+    last_command="exo_api_vm_recover"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_removeNic()
+{
+    last_command="exo_api_vm_removeNic"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--nicid=")
+    local_nonpersistent_flags+=("--nicid=")
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_resetPassword()
+{
+    last_command="exo_api_vm_resetPassword"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_restore()
+{
+    last_command="exo_api_vm_restore"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--templateid=")
+    local_nonpersistent_flags+=("--templateid=")
+    flags+=("--rootdisksize=")
+    local_nonpersistent_flags+=("--rootdisksize=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_scale()
+{
+    last_command="exo_api_vm_scale"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--serviceofferingid=")
+    local_nonpersistent_flags+=("--serviceofferingid=")
+    flags+=("--details=")
+    local_nonpersistent_flags+=("--details=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_start()
+{
+    last_command="exo_api_vm_start"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--deploymentplanner=")
+    local_nonpersistent_flags+=("--deploymentplanner=")
+    flags+=("--hostid=")
+    local_nonpersistent_flags+=("--hostid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_stop()
+{
+    last_command="exo_api_vm_stop"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--forced=")
+    local_nonpersistent_flags+=("--forced=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_update()
+{
+    last_command="exo_api_vm_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--customid=")
+    local_nonpersistent_flags+=("--customid=")
+    flags+=("--details=")
+    local_nonpersistent_flags+=("--details=")
+    flags+=("--displayname=")
+    local_nonpersistent_flags+=("--displayname=")
+    flags+=("--displayvm=")
+    local_nonpersistent_flags+=("--displayvm=")
+    flags+=("--group=")
+    local_nonpersistent_flags+=("--group=")
+    flags+=("--haenable=")
+    local_nonpersistent_flags+=("--haenable=")
+    flags+=("--isdynamicallyscalable=")
+    local_nonpersistent_flags+=("--isdynamicallyscalable=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--securitygroupids=")
+    local_nonpersistent_flags+=("--securitygroupids=")
+    flags+=("--userdata=")
+    local_nonpersistent_flags+=("--userdata=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_updateReverseDNSForVM()
+{
+    last_command="exo_api_vm_updateReverseDNSForVM"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--domainname=")
+    local_nonpersistent_flags+=("--domainname=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_updateVMAffinityGroup()
+{
+    last_command="exo_api_vm_updateVMAffinityGroup"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--affinitygroupids=")
+    local_nonpersistent_flags+=("--affinitygroupids=")
+    flags+=("--affinitygroupnames=")
+    local_nonpersistent_flags+=("--affinitygroupnames=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm_updateVMNicIP()
+{
+    last_command="exo_api_vm_updateVMNicIP"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--ipaddress=")
+    local_nonpersistent_flags+=("--ipaddress=")
+    flags+=("--nicid=")
+    local_nonpersistent_flags+=("--nicid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm()
+{
+    last_command="exo_api_vm"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("addNic")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("addNicToVirtualMachine")
+        aliashash["addNicToVirtualMachine"]="addNic"
+    fi
+    commands+=("changeService")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("changeServiceForVirtualMachine")
+        aliashash["changeServiceForVirtualMachine"]="changeService"
+    fi
+    commands+=("deleteReverseDNSFromVM")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("deleteReverseDnsFromVirtualMachine")
+        aliashash["deleteReverseDnsFromVirtualMachine"]="deleteReverseDNSFromVM"
+    fi
+    commands+=("deploy")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("deployVirtualMachine")
+        aliashash["deployVirtualMachine"]="deploy"
+    fi
+    commands+=("destroy")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("destroyVirtualMachine")
+        aliashash["destroyVirtualMachine"]="destroy"
+    fi
+    commands+=("expunge")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("expungeVirtualMachine")
+        aliashash["expungeVirtualMachine"]="expunge"
+    fi
+    commands+=("getPassword")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("getVMPassword")
+        aliashash["getVMPassword"]="getPassword"
+    fi
+    commands+=("getUserData")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("getVirtualMachineUserData")
+        aliashash["getVirtualMachineUserData"]="getUserData"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listVirtualMachines")
+        aliashash["listVirtualMachines"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("migrateVirtualMachine")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("migrateVirtualMachine")
+        aliashash["migrateVirtualMachine"]="migrateVirtualMachine"
+    fi
+    commands+=("queryReverseDNSForVM")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("queryReverseDnsForVirtualMachine")
+        aliashash["queryReverseDnsForVirtualMachine"]="queryReverseDNSForVM"
+    fi
+    commands+=("reboot")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("rebootVirtualMachine")
+        aliashash["rebootVirtualMachine"]="reboot"
+    fi
+    commands+=("recover")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("recoverVirtualMachine")
+        aliashash["recoverVirtualMachine"]="recover"
+    fi
+    commands+=("removeNic")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("removeNicFromVirtualMachine")
+        aliashash["removeNicFromVirtualMachine"]="removeNic"
+    fi
+    commands+=("resetPassword")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("resetPasswordForVirtualMachine")
+        aliashash["resetPasswordForVirtualMachine"]="resetPassword"
+    fi
+    commands+=("restore")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("restoreVirtualMachine")
+        aliashash["restoreVirtualMachine"]="restore"
+    fi
+    commands+=("scale")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("scaleVirtualMachine")
+        aliashash["scaleVirtualMachine"]="scale"
+    fi
+    commands+=("start")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("startVirtualMachine")
+        aliashash["startVirtualMachine"]="start"
+    fi
+    commands+=("stop")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("stopVirtualMachine")
+        aliashash["stopVirtualMachine"]="stop"
+    fi
+    commands+=("update")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("updateVirtualMachine")
+        aliashash["updateVirtualMachine"]="update"
+    fi
+    commands+=("updateReverseDNSForVM")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("updateReverseDnsForVirtualMachine")
+        aliashash["updateReverseDnsForVirtualMachine"]="updateReverseDNSForVM"
+    fi
+    commands+=("updateVMAffinityGroup")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("updateVMAffinityGroup")
+        aliashash["updateVMAffinityGroup"]="updateVMAffinityGroup"
+    fi
+    commands+=("updateVMNicIP")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("updateVmNicIp")
+        aliashash["updateVmNicIp"]="updateVMNicIP"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm-group_create()
+{
+    last_command="exo_api_vm-group_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm-group_delete()
+{
+    last_command="exo_api_vm-group_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm-group_list()
+{
+    last_command="exo_api_vm-group_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm-group_update()
+{
+    last_command="exo_api_vm-group_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_vm-group()
+{
+    last_command="exo_api_vm-group"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+        command_aliases+=("createInstanceGroup")
+        aliashash["createInstanceGroup"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+        command_aliases+=("deleteInstanceGroup")
+        aliashash["deleteInstanceGroup"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listInstanceGroups")
+        aliashash["listInstanceGroups"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("update")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("updateInstanceGroup")
+        aliashash["updateInstanceGroup"]="update"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_volume_list()
+{
+    last_command="exo_api_volume_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--account=")
+    local_nonpersistent_flags+=("--account=")
+    flags+=("--diskofferingid=")
+    local_nonpersistent_flags+=("--diskofferingid=")
+    flags+=("--displayvolume=")
+    local_nonpersistent_flags+=("--displayvolume=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--hostid=")
+    local_nonpersistent_flags+=("--hostid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--isrecursive=")
+    local_nonpersistent_flags+=("--isrecursive=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--listall=")
+    local_nonpersistent_flags+=("--listall=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--podid=")
+    local_nonpersistent_flags+=("--podid=")
+    flags+=("--storageid=")
+    local_nonpersistent_flags+=("--storageid=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--type=")
+    local_nonpersistent_flags+=("--type=")
+    flags+=("--virtualmachineid=")
+    local_nonpersistent_flags+=("--virtualmachineid=")
+    flags+=("--zoneid=")
+    local_nonpersistent_flags+=("--zoneid=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_volume_resize()
+{
+    last_command="exo_api_volume_resize"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--diskofferingid=")
+    local_nonpersistent_flags+=("--diskofferingid=")
+    flags+=("--shrinkok=")
+    local_nonpersistent_flags+=("--shrinkok=")
+    flags+=("--size=")
+    local_nonpersistent_flags+=("--size=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_volume()
+{
+    last_command="exo_api_volume"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listVolumes")
+        aliashash["listVolumes"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("resize")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("resizeVolume")
+        aliashash["resizeVolume"]="resize"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_zone_list()
+{
+    last_command="exo_api_zone_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--available=")
+    local_nonpersistent_flags+=("--available=")
+    flags+=("--domainid=")
+    local_nonpersistent_flags+=("--domainid=")
+    flags+=("--id=")
+    local_nonpersistent_flags+=("--id=")
+    flags+=("--keyword=")
+    local_nonpersistent_flags+=("--keyword=")
+    flags+=("--name=")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--page=")
+    local_nonpersistent_flags+=("--page=")
+    flags+=("--pagesize=")
+    local_nonpersistent_flags+=("--pagesize=")
+    flags+=("--showcapacities=")
+    local_nonpersistent_flags+=("--showcapacities=")
+    flags+=("--tags=")
+    local_nonpersistent_flags+=("--tags=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api_zone()
+{
+    last_command="exo_api_zone"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("listZones")
+        aliashash["listZones"]="list"
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_api()
+{
+    last_command="exo_api"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("account")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("acc")
+        aliashash["acc"]="account"
+    fi
+    commands+=("address")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("addr")
+        aliashash["addr"]="address"
+    fi
+    commands+=("affinity-group")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ag")
+        aliashash["ag"]="affinity-group"
+    fi
+    commands+=("api")
+    commands+=("async-job")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("aj")
+        aliashash["aj"]="async-job"
+    fi
+    commands+=("event")
+    commands+=("network")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("net")
+        aliashash["net"]="network"
+    fi
+    commands+=("nic")
+    commands+=("offering")
+    commands+=("security-group")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("sg")
+        aliashash["sg"]="security-group"
+    fi
+    commands+=("snapshot")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("snap")
+        aliashash["snap"]="snapshot"
+    fi
+    commands+=("ssh")
+    commands+=("tag")
+    commands+=("template")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("temp")
+        aliashash["temp"]="template"
+    fi
+    commands+=("user")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("usr")
+        aliashash["usr"]="user"
+    fi
+    commands+=("vm")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("virtual-machine")
+        aliashash["virtual-machine"]="vm"
+    fi
+    commands+=("vm-group")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("vg")
+        aliashash["vg"]="vm-group"
+    fi
+    commands+=("volume")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("vol")
+        aliashash["vol"]="volume"
+    fi
+    commands+=("zone")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--debug")
+    flags+=("-d")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_config_delete()
+{
+    last_command="exo_config_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_config_list()
+{
+    last_command="exo_config_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_config_set()
+{
+    last_command="exo_config_set"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_config_show()
+{
+    last_command="exo_config_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_config()
+{
+    last_command="exo_config"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("set")
+    commands+=("show")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("get")
+        aliashash["get"]="show"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_A()
+{
+    last_command="exo_dns_add_A"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--address=")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--address=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--address=")
+    must_have_one_flag+=("-a")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_AAAA()
+{
+    last_command="exo_dns_add_AAAA"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--address=")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--address=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--address=")
+    must_have_one_flag+=("-a")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_ALIAS()
+{
+    last_command="exo_dns_add_ALIAS"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--alias=")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--alias=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--alias=")
+    must_have_one_flag+=("-a")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_CAA()
+{
+    last_command="exo_dns_add_CAA"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--flag=")
+    two_word_flags+=("-f")
+    local_nonpersistent_flags+=("--flag=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--tag=")
+    local_nonpersistent_flags+=("--tag=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_CNAME()
+{
+    last_command="exo_dns_add_CNAME"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--alias=")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--alias=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--alias=")
+    must_have_one_flag+=("-a")
+    must_have_one_flag+=("--name=")
+    must_have_one_flag+=("-n")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_HINFO()
+{
+    last_command="exo_dns_add_HINFO"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cpu=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--cpu=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--os=")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--os=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--cpu=")
+    must_have_one_flag+=("-c")
+    must_have_one_flag+=("--os=")
+    must_have_one_flag+=("-o")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_MX()
+{
+    last_command="exo_dns_add_MX"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--mail-server-host=")
+    two_word_flags+=("-m")
+    local_nonpersistent_flags+=("--mail-server-host=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--mail-server-host=")
+    must_have_one_flag+=("-m")
+    must_have_one_flag+=("--priority=")
+    must_have_one_flag+=("-p")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_NAPTR()
+{
+    last_command="exo_dns_add_NAPTR"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--a")
+    local_nonpersistent_flags+=("--a")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--order=")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--order=")
+    flags+=("--p")
+    local_nonpersistent_flags+=("--p")
+    flags+=("--preference=")
+    local_nonpersistent_flags+=("--preference=")
+    flags+=("--regex=")
+    local_nonpersistent_flags+=("--regex=")
+    flags+=("--replacement=")
+    local_nonpersistent_flags+=("--replacement=")
+    flags+=("--s")
+    local_nonpersistent_flags+=("--s")
+    flags+=("--service=")
+    local_nonpersistent_flags+=("--service=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--u")
+    local_nonpersistent_flags+=("--u")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--order=")
+    must_have_one_flag+=("-o")
+    must_have_one_flag+=("--preference=")
+    must_have_one_flag+=("--regex=")
+    must_have_one_flag+=("--replacement=")
+    must_have_one_flag+=("--service=")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_NS()
+{
+    last_command="exo_dns_add_NS"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--name-server=")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--name-server=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--name=")
+    must_have_one_flag+=("-n")
+    must_have_one_flag+=("--name-server=")
+    must_have_one_flag+=("-s")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_POOL()
+{
+    last_command="exo_dns_add_POOL"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--alias=")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--alias=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--alias=")
+    must_have_one_flag+=("-a")
+    must_have_one_flag+=("--name=")
+    must_have_one_flag+=("-n")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_SRV()
+{
+    last_command="exo_dns_add_SRV"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--port=")
+    two_word_flags+=("-P")
+    local_nonpersistent_flags+=("--port=")
+    flags+=("--priority=")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--protocol=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--protocol=")
+    flags+=("--symbolic-name=")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--symbolic-name=")
+    flags+=("--target=")
+    local_nonpersistent_flags+=("--target=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--weight=")
+    two_word_flags+=("-w")
+    local_nonpersistent_flags+=("--weight=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--port=")
+    must_have_one_flag+=("-P")
+    must_have_one_flag+=("--priority=")
+    must_have_one_flag+=("--protocol=")
+    must_have_one_flag+=("-p")
+    must_have_one_flag+=("--symbolic-name=")
+    must_have_one_flag+=("-s")
+    must_have_one_flag+=("--target=")
+    must_have_one_flag+=("--weight=")
+    must_have_one_flag+=("-w")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_SSHFP()
+{
+    last_command="exo_dns_add_SSHFP"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--algorithm=")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--algorithm=")
+    flags+=("--fingerprint=")
+    two_word_flags+=("-f")
+    local_nonpersistent_flags+=("--fingerprint=")
+    flags+=("--fingerprint-type=")
+    local_nonpersistent_flags+=("--fingerprint-type=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--algorithm=")
+    must_have_one_flag+=("-a")
+    must_have_one_flag+=("--fingerprint-type=")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_TXT()
+{
+    last_command="exo_dns_add_TXT"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--content=")
+    must_have_one_flag+=("-c")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add_URL()
+{
+    last_command="exo_dns_add_URL"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--destination-url=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--destination-url=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--destination-url=")
+    must_have_one_flag+=("-d")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_add()
+{
+    last_command="exo_dns_add"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("A")
+    commands+=("AAAA")
+    commands+=("ALIAS")
+    commands+=("CAA")
+    commands+=("CNAME")
+    commands+=("HINFO")
+    commands+=("MX")
+    commands+=("NAPTR")
+    commands+=("NS")
+    commands+=("POOL")
+    commands+=("SRV")
+    commands+=("SSHFP")
+    commands+=("TXT")
+    commands+=("URL")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_create()
+{
+    last_command="exo_dns_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_delete()
+{
+    last_command="exo_dns_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_list()
+{
+    last_command="exo_dns_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_remove()
+{
+    last_command="exo_dns_remove"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_show()
+{
+    last_command="exo_dns_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_A()
+{
+    last_command="exo_dns_update_A"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_AAAA()
+{
+    last_command="exo_dns_update_AAAA"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_ALIAS()
+{
+    last_command="exo_dns_update_ALIAS"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_CNAME()
+{
+    last_command="exo_dns_update_CNAME"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_HINFO()
+{
+    last_command="exo_dns_update_HINFO"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_MX()
+{
+    last_command="exo_dns_update_MX"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_NAPTR()
+{
+    last_command="exo_dns_update_NAPTR"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_NS()
+{
+    last_command="exo_dns_update_NS"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_POOL()
+{
+    last_command="exo_dns_update_POOL"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_SPF()
+{
+    last_command="exo_dns_update_SPF"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_SRV()
+{
+    last_command="exo_dns_update_SRV"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_SSHFP()
+{
+    last_command="exo_dns_update_SSHFP"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_TXT()
+{
+    last_command="exo_dns_update_TXT"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update_URL()
+{
+    last_command="exo_dns_update_URL"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--content=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--priority=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--priority=")
+    flags+=("--ttl=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--ttl=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns_update()
+{
+    last_command="exo_dns_update"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("A")
+    commands+=("AAAA")
+    commands+=("ALIAS")
+    commands+=("CNAME")
+    commands+=("HINFO")
+    commands+=("MX")
+    commands+=("NAPTR")
+    commands+=("NS")
+    commands+=("POOL")
+    commands+=("SPF")
+    commands+=("SRV")
+    commands+=("SSHFP")
+    commands+=("TXT")
+    commands+=("URL")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_dns()
+{
+    last_command="exo_dns"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add")
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("remove")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("rm")
+        aliashash["rm"]="remove"
+    fi
+    commands+=("show")
+    commands+=("update")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_eip_associate()
+{
+    last_command="exo_eip_associate"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_eip_create()
+{
+    last_command="exo_eip_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_eip_delete()
+{
+    last_command="exo_eip_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_eip_dissociate()
+{
+    last_command="exo_eip_dissociate"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_eip_list()
+{
+    last_command="exo_eip_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--zone=")
+    two_word_flags+=("-z")
+    local_nonpersistent_flags+=("--zone=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_eip_show()
+{
+    last_command="exo_eip_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_eip()
+{
+    last_command="exo_eip"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("associate")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("assoc")
+        aliashash["assoc"]="associate"
+    fi
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("dissociate")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("disassociate")
+        aliashash["disassociate"]="dissociate"
+        command_aliases+=("dissoc")
+        aliashash["dissoc"]="dissociate"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("show")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("get")
+        aliashash["get"]="show"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_firewall_add()
+{
+    last_command="exo_firewall_add"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cidr=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--cidr=")
+    flags+=("--description=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--egress")
+    flags+=("-e")
+    local_nonpersistent_flags+=("--egress")
+    flags+=("--icmp-code=")
+    local_nonpersistent_flags+=("--icmp-code=")
+    flags+=("--icmp-type=")
+    local_nonpersistent_flags+=("--icmp-type=")
+    flags+=("--ipv6")
+    flags+=("-6")
+    local_nonpersistent_flags+=("--ipv6")
+    flags+=("--my-ip")
+    local_nonpersistent_flags+=("--my-ip")
+    flags+=("--port=")
+    two_word_flags+=("-P")
+    local_nonpersistent_flags+=("--port=")
+    flags+=("--protocol=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--protocol=")
+    flags+=("--security-group=")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--security-group=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_firewall_create()
+{
+    last_command="exo_firewall_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--description=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_firewall_delete()
+{
+    last_command="exo_firewall_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_firewall_list()
+{
+    last_command="exo_firewall_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_firewall_remove()
+{
+    last_command="exo_firewall_remove"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--all")
+    local_nonpersistent_flags+=("--all")
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--ipv6")
+    flags+=("-6")
+    local_nonpersistent_flags+=("--ipv6")
+    flags+=("--my-ip")
+    flags+=("-m")
+    local_nonpersistent_flags+=("--my-ip")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_firewall_show()
+{
+    last_command="exo_firewall_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_firewall()
+{
+    last_command="exo_firewall"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add")
+    commands+=("create")
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("remove")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("rm")
+        aliashash["rm"]="remove"
+    fi
+    commands+=("show")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="show"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_privnet_associate()
+{
+    last_command="exo_privnet_associate"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_privnet_create()
+{
+    last_command="exo_privnet_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cidrmask=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--cidrmask=")
+    flags+=("--description=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--endip=")
+    two_word_flags+=("-e")
+    local_nonpersistent_flags+=("--endip=")
+    flags+=("--netmask=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--netmask=")
+    flags+=("--startip=")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--startip=")
+    flags+=("--zone=")
+    two_word_flags+=("-z")
+    local_nonpersistent_flags+=("--zone=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_privnet_delete()
+{
+    last_command="exo_privnet_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_privnet_dissociate()
+{
+    last_command="exo_privnet_dissociate"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_privnet_list()
+{
+    last_command="exo_privnet_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--zone=")
+    two_word_flags+=("-z")
+    local_nonpersistent_flags+=("--zone=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_privnet_show()
+{
+    last_command="exo_privnet_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_privnet_update()
+{
+    last_command="exo_privnet_update"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cidrmask=")
+    two_word_flags+=("-c")
+    local_nonpersistent_flags+=("--cidrmask=")
+    flags+=("--description=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--description=")
+    flags+=("--endip=")
+    two_word_flags+=("-e")
+    local_nonpersistent_flags+=("--endip=")
+    flags+=("--name=")
+    two_word_flags+=("-n")
+    local_nonpersistent_flags+=("--name=")
+    flags+=("--netmask=")
+    two_word_flags+=("-m")
+    local_nonpersistent_flags+=("--netmask=")
+    flags+=("--startip=")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--startip=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_privnet()
+{
+    last_command="exo_privnet"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("associate")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("assoc")
+        aliashash["assoc"]="associate"
+    fi
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("dissociate")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("disassociate")
+        aliashash["disassociate"]="dissociate"
+        command_aliases+=("dissoc")
+        aliashash["dissoc"]="dissociate"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("show")
+    commands+=("update")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_acl_add()
+{
+    last_command="exo_sos_acl_add"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--private")
+    flags+=("-p")
+    local_nonpersistent_flags+=("--private")
+    flags+=("--public-read")
+    flags+=("-r")
+    local_nonpersistent_flags+=("--public-read")
+    flags+=("--public-read-write")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--public-read-write")
+    flags+=("--authenticated-read")
+    local_nonpersistent_flags+=("--authenticated-read")
+    flags+=("--bucket-owner-read")
+    local_nonpersistent_flags+=("--bucket-owner-read")
+    flags+=("--bucket-owner-full-control")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--bucket-owner-full-control")
+    flags+=("--read=")
+    local_nonpersistent_flags+=("--read=")
+    flags+=("--write=")
+    local_nonpersistent_flags+=("--write=")
+    flags+=("--read-acp=")
+    local_nonpersistent_flags+=("--read-acp=")
+    flags+=("--write-acp=")
+    local_nonpersistent_flags+=("--write-acp=")
+    flags+=("--full-control=")
+    local_nonpersistent_flags+=("--full-control=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_acl_list()
+{
+    last_command="exo_sos_acl_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_acl_remove()
+{
+    last_command="exo_sos_acl_remove"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--read")
+    flags+=("-r")
+    local_nonpersistent_flags+=("--read")
+    flags+=("--write")
+    flags+=("-w")
+    local_nonpersistent_flags+=("--write")
+    flags+=("--read-acp")
+    local_nonpersistent_flags+=("--read-acp")
+    flags+=("--write-acp")
+    local_nonpersistent_flags+=("--write-acp")
+    flags+=("--full-control")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--full-control")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_acl()
+{
+    last_command="exo_sos_acl"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add")
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("remove")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("rm")
+        aliashash["rm"]="remove"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_create()
+{
+    last_command="exo_sos_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--zone=")
+    two_word_flags+=("-z")
+    local_nonpersistent_flags+=("--zone=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_delete()
+{
+    last_command="exo_sos_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_download()
+{
+    last_command="exo_sos_download"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_header_add()
+{
+    last_command="exo_sos_header_add"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--content-type=")
+    local_nonpersistent_flags+=("--content-type=")
+    flags+=("--cache-control=")
+    local_nonpersistent_flags+=("--cache-control=")
+    flags+=("--content-encoding=")
+    local_nonpersistent_flags+=("--content-encoding=")
+    flags+=("--content-disposition=")
+    local_nonpersistent_flags+=("--content-disposition=")
+    flags+=("--content-language=")
+    local_nonpersistent_flags+=("--content-language=")
+    flags+=("--expires=")
+    local_nonpersistent_flags+=("--expires=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_header_list()
+{
+    last_command="exo_sos_header_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_header_remove()
+{
+    last_command="exo_sos_header_remove"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--cache-control")
+    local_nonpersistent_flags+=("--cache-control")
+    flags+=("--content-encoding")
+    local_nonpersistent_flags+=("--content-encoding")
+    flags+=("--content-disposition")
+    local_nonpersistent_flags+=("--content-disposition")
+    flags+=("--content-language")
+    local_nonpersistent_flags+=("--content-language")
+    flags+=("--expires")
+    local_nonpersistent_flags+=("--expires")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_header()
+{
+    last_command="exo_sos_header"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add")
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("remove")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("rm")
+        aliashash["rm"]="remove"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_list()
+{
+    last_command="exo_sos_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--recursive")
+    flags+=("-r")
+    local_nonpersistent_flags+=("--recursive")
+    flags+=("--short")
+    flags+=("-S")
+    local_nonpersistent_flags+=("--short")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_metadata_add()
+{
+    last_command="exo_sos_metadata_add"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_metadata_list()
+{
+    last_command="exo_sos_metadata_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_metadata_remove()
+{
+    last_command="exo_sos_metadata_remove"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_metadata()
+{
+    last_command="exo_sos_metadata"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("add")
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("remove")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("rm")
+        aliashash["rm"]="remove"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_remove()
+{
+    last_command="exo_sos_remove"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--recursive")
+    flags+=("-r")
+    local_nonpersistent_flags+=("--recursive")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos_upload()
+{
+    last_command="exo_sos_upload"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sos()
+{
+    last_command="exo_sos"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("acl")
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("download")
+    commands+=("header")
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("metadata")
+    commands+=("remove")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("rm")
+        aliashash["rm"]="remove"
+    fi
+    commands+=("upload")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("up")
+        aliashash["up"]="upload"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_ssh()
+{
+    last_command="exo_ssh"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--info")
+    flags+=("-i")
+    local_nonpersistent_flags+=("--info")
+    flags+=("--ipv6")
+    flags+=("-6")
+    local_nonpersistent_flags+=("--ipv6")
+    flags+=("--print")
+    flags+=("-p")
+    local_nonpersistent_flags+=("--print")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sshkey_create()
+{
+    last_command="exo_sshkey_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sshkey_delete()
+{
+    last_command="exo_sshkey_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sshkey_list()
+{
+    last_command="exo_sshkey_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sshkey_upload()
+{
+    last_command="exo_sshkey_upload"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_sshkey()
+{
+    last_command="exo_sshkey"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("upload")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("up")
+        aliashash["up"]="upload"
+    fi
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_status()
+{
+    last_command="exo_status"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_version()
+{
+    last_command="exo_version"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_create()
+{
+    last_command="exo_vm_create"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--anti-affinity-group=")
+    two_word_flags+=("-a")
+    local_nonpersistent_flags+=("--anti-affinity-group=")
+    flags+=("--cloud-init-file=")
+    two_word_flags+=("-f")
+    local_nonpersistent_flags+=("--cloud-init-file=")
+    flags+=("--disk=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--disk=")
+    flags+=("--ipv6")
+    flags+=("-6")
+    local_nonpersistent_flags+=("--ipv6")
+    flags+=("--keypair=")
+    two_word_flags+=("-k")
+    local_nonpersistent_flags+=("--keypair=")
+    flags+=("--privnet=")
+    two_word_flags+=("-p")
+    local_nonpersistent_flags+=("--privnet=")
+    flags+=("--security-group=")
+    two_word_flags+=("-s")
+    local_nonpersistent_flags+=("--security-group=")
+    flags+=("--service-offering=")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--service-offering=")
+    flags+=("--template=")
+    two_word_flags+=("-t")
+    local_nonpersistent_flags+=("--template=")
+    flags+=("--zone=")
+    two_word_flags+=("-z")
+    local_nonpersistent_flags+=("--zone=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_delete()
+{
+    last_command="exo_vm_delete"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_list()
+{
+    last_command="exo_vm_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_reboot()
+{
+    last_command="exo_vm_reboot"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_reset()
+{
+    last_command="exo_vm_reset"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--disk=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--disk=")
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_resize()
+{
+    last_command="exo_vm_resize"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--disk=")
+    two_word_flags+=("-d")
+    local_nonpersistent_flags+=("--disk=")
+    flags+=("--force")
+    flags+=("-f")
+    local_nonpersistent_flags+=("--force")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--disk=")
+    must_have_one_flag+=("-d")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_scale()
+{
+    last_command="exo_vm_scale"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--service-offering=")
+    two_word_flags+=("-o")
+    local_nonpersistent_flags+=("--service-offering=")
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_flag+=("--service-offering=")
+    must_have_one_flag+=("-o")
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_serviceoffering()
+{
+    last_command="exo_vm_serviceoffering"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_show()
+{
+    last_command="exo_vm_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_start()
+{
+    last_command="exo_vm_start"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_stop()
+{
+    last_command="exo_vm_stop"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_template_list()
+{
+    last_command="exo_vm_template_list"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_template_show()
+{
+    last_command="exo_vm_template_show"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_template()
+{
+    last_command="exo_vm_template"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("show")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm_updateip()
+{
+    last_command="exo_vm_updateip"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_vm()
+{
+    last_command="exo_vm"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("create")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("add")
+        aliashash["add"]="create"
+    fi
+    commands+=("delete")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("del")
+        aliashash["del"]="delete"
+    fi
+    commands+=("list")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("ls")
+        aliashash["ls"]="list"
+    fi
+    commands+=("reboot")
+    commands+=("reset")
+    commands+=("resize")
+    commands+=("scale")
+    commands+=("serviceoffering")
+    commands+=("show")
+    if [[ -z "${BASH_VERSION}" || "${BASH_VERSINFO[0]}" -gt 3 ]]; then
+        command_aliases+=("get")
+        aliashash["get"]="show"
+    fi
+    commands+=("start")
+    commands+=("stop")
+    commands+=("template")
+    commands+=("updateip")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_zone()
+{
+    last_command="exo_zone"
+
+    command_aliases=()
+
+    commands=()
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+_exo_root_command()
+{
+    last_command="exo"
+
+    command_aliases=()
+
+    commands=()
+    commands+=("affinitygroup")
+    commands+=("api")
+    commands+=("config")
+    commands+=("dns")
+    commands+=("eip")
+    commands+=("firewall")
+    commands+=("privnet")
+    commands+=("sos")
+    commands+=("ssh")
+    commands+=("sshkey")
+    commands+=("status")
+    commands+=("version")
+    commands+=("vm")
+    commands+=("zone")
+
+    flags=()
+    two_word_flags=()
+    local_nonpersistent_flags=()
+    flags_with_completion=()
+    flags_completion=()
+
+    flags+=("--config=")
+    two_word_flags+=("-C")
+    flags+=("--use-account=")
+    two_word_flags+=("-A")
+
+    must_have_one_flag=()
+    must_have_one_noun=()
+    noun_aliases=()
+}
+
+__start_exo()
+{
+    local cur prev words cword
+    declare -A flaghash 2>/dev/null || :
+    declare -A aliashash 2>/dev/null || :
+    if declare -F _init_completion >/dev/null 2>&1; then
+        _init_completion -s || return
+    else
+        __exo_init_completion -n "=" || return
+    fi
+
+    local c=0
+    local flags=()
+    local two_word_flags=()
+    local local_nonpersistent_flags=()
+    local flags_with_completion=()
+    local flags_completion=()
+    local commands=("exo")
+    local must_have_one_flag=()
+    local must_have_one_noun=()
+    local last_command
+    local nouns=()
+
+    __exo_handle_word
+}
+
+if [[ $(type -t compopt) = "builtin" ]]; then
+    complete -o default -F __start_exo exo
+else
+    complete -o default -o nospace -F __start_exo exo
+fi
+
+# ex: ts=4 sw=4 et filetype=sh
