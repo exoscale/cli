@@ -14,7 +14,7 @@ import (
 
 // updateCmd represents the update command
 var privnetUpdateCmd = &cobra.Command{
-	Use:   "update <name | id>",
+	Use:   "update <name | id> [flags]",
 	Short: "Update a private network",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -38,19 +38,17 @@ var privnetUpdateCmd = &cobra.Command{
 			return err
 		}
 
-		sip, err := cmd.Flags().GetString("startip")
+		startIP, err := getIPValue(cmd, "startip")
 		if err != nil {
 			return err
 		}
-		startip := net.ParseIP(sip)
 
-		eip, err := cmd.Flags().GetString("endip")
+		endIP, err := getIPValue(cmd, "endip")
 		if err != nil {
 			return err
 		}
-		endip := net.ParseIP(eip)
 
-		nmask, err := cmd.Flags().GetString("netmask")
+		netmask, err := getIPValue(cmd, "netmask")
 		if err != nil {
 			return err
 		}
@@ -60,24 +58,22 @@ var privnetUpdateCmd = &cobra.Command{
 			return err
 		}
 
-		if nmask != "" && cidrmask != "" {
-			return fmt.Errorf("netmask %q and cidrmask %q are mutually exclusive", nmask, cidrmask)
+		if netmask.Value() != nil && cidrmask != "" {
+			return fmt.Errorf("netmask %q and cidrmask %q are mutually exclusive", netmask, cidrmask)
 		}
 
-		netmask := net.ParseIP(nmask)
-		if netmask == nil {
-			if cidrmask != "" {
-				c, err := strconv.ParseInt(cidrmask, 10, 32)
-				if err != nil {
-					return err
-				}
 
-				ipmask := net.CIDRMask(int(c), 32)
-				netmask = (net.IP)(ipmask)
+		if cidrmask != "" {
+			c, err := strconv.ParseInt(cidrmask, 10, 32)
+			if err != nil {
+				return err
 			}
+
+			ipmask := net.CIDRMask(int(c), 32)
+			*netmask.IP = (*net.IP)(&ipmask)
 		}
 
-		newNet, err := privnetUpdate(id, name, desc, startip, endip, netmask)
+		newNet, err := privnetUpdate(id, name, desc, startIP.Value(), endIP.Value(), netmask.Value())
 		if err != nil {
 			return err
 		}
@@ -85,6 +81,7 @@ var privnetUpdateCmd = &cobra.Command{
 		return privnetShow(*newNet)
 	},
 }
+
 
 func privnetUpdate(id, name, desc string, startIP, endIP, netmask net.IP) (*egoscale.Network, error) {
 	uuid, err := egoscale.ParseUUID(id)
@@ -128,9 +125,15 @@ func privnetShow(network egoscale.Network) error {
 func init() {
 	privnetUpdateCmd.Flags().StringP("name", "n", "", "Private network name")
 	privnetUpdateCmd.Flags().StringP("description", "d", "", "Private network description")
-	privnetUpdateCmd.Flags().StringP("startip", "s", "", "the beginning IP address in the network IP range. Required for managed networks.")
-	privnetUpdateCmd.Flags().StringP("endip", "e", "", "the ending IP address in the network IP range. Required for managed networks.")
-	privnetUpdateCmd.Flags().StringP("netmask", "m", "", "the netmask of the network. E.g. 255.255.255.0")
 	privnetUpdateCmd.Flags().StringP("cidrmask", "c", "", "the cidrmask of the network. E.g 32")
+
+	startIP := new(ipValue)
+	endIP := new(ipValue)
+	netmask := new(ipValue)
+
+	privnetUpdateCmd.Flags().VarP(startIP, "startip", "s", "the beginning IP address in the network IP range.")
+	privnetUpdateCmd.Flags().VarP(endIP, "endip", "e", "the ending IP address in the network IP range.")
+	privnetUpdateCmd.Flags().VarP(netmask, "netmask", "n", "the netmask of the network.")
+
 	privnetCmd.AddCommand(privnetUpdateCmd)
 }
