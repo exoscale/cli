@@ -34,8 +34,7 @@ jobs:
         - go run -mod vendor doc/main.go --man-page
         - go run -mod vendor completion/main.go
         - git diff > tmpfile.diff
-        - FILESIZE=$(stat -c%s tmpfile.diff)
-        - if [ $FILESIZE != "0" ]; then; exit 1; fi
+        - FILESIZE=$(stat -c%s tmpfile.diff) && if [ $FILESIZE != "0" ]; then; exit 1; fi
     - stage: goreleaser
       go: "1.11.x"
       script:
