@@ -25,6 +25,7 @@ archive:
   files:
     - LICENSE
     - bash_completion
+    - manpage/*
 
 release:
   github:
