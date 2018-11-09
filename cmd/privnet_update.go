@@ -58,7 +58,7 @@ var privnetUpdateCmd = &cobra.Command{
 			return err
 		}
 
-		if netmask.Value() != nil && cidrmask != "" {
+		if netmask.IP != nil && cidrmask != "" {
 			return fmt.Errorf("netmask %q and cidrmask %q are mutually exclusive", netmask, cidrmask)
 		}
 

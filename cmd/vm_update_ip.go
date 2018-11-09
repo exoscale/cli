@@ -39,9 +39,9 @@ var vmUpdateIPCmd = &cobra.Command{
 
 		var msg string
 		if ipAddress.IP != nil {
-			msg = fmt.Sprintf("setting the static lease to %q, %q: %q", vmName, netName, ipAddress.IP.String())
+			msg = fmt.Sprintf("setting the static lease to %q, network %q: s", vmName, netName, ipAddress.IP.String())
 		} else {
-			msg = fmt.Sprintf("removing the static lease from %q, %q", vmName, netName)
+			msg = fmt.Sprintf("removing the static lease from %q, network %q", vmName, netName)
 		}
 
 		req := &egoscale.UpdateVMNicIP{
