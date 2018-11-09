@@ -64,7 +64,7 @@ func listPrivnets(zone string, table *table.Table) error {
 				pn.Name,
 				pn.ID.String(),
 				vmNum,
-				dhcpRange(pn.StartIP, pn.EndIP, pn.Netmask),
+				dhcpRange(*pn),
 			})
 
 			zone = ""

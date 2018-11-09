@@ -2,6 +2,7 @@
 -----
 
 - feature dns CAA record
+- feature privnet `--cidrmask` as an alternative to `--netmask`
 
 1.0.3
 -----
