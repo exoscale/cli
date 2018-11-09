@@ -5,7 +5,7 @@
 
 .SH NAME
 .PP
-exo\-api\-security\-group\-authorizeIngress \- Authorizes a particular ingress/egress rule for this security group
+exo\-api\-security\-group\-authorizeIngress \- Authorize a particular ingress/egress rule for this security group
 
 
 .SH SYNOPSIS
@@ -15,15 +15,11 @@ exo\-api\-security\-group\-authorizeIngress \- Authorizes a particular ingress/e
 
 .SH DESCRIPTION
 .PP
-Authorizes a particular ingress/egress rule for this security group 
+Authorize a particular ingress/egress rule for this security group 
 \[la]http://cloudstack.apache.org/api/apidocs-4.4/user/authorizeSecurityGroupIngress.html\[ra]
 
 
 .SH OPTIONS
-.PP
-\fB\-\-account\fP=""
-    an optional account for the security group. Must be used with domainid.
-
 .PP
 \fB\-\-cidrlist\fP=
     the cidr list associated
@@ -33,12 +29,8 @@ Authorizes a particular ingress/egress rule for this security group
     the description of the ingress/egress rule
 
 .PP
-\fB\-\-domainid\fP=nil
-    an optional domainid for the security group. If the account parameter is used, domainid must also be used.
-
-.PP
 \fB\-\-endport\fP=0
-    end port for this ingress rule
+    end port for this ingress/egress rule
 
 .PP
 \fB\-\-icmpcode\fP=0
@@ -50,7 +42,7 @@ Authorizes a particular ingress/egress rule for this security group
 
 .PP
 \fB\-\-protocol\fP=""
-    TCP is default. UDP, ICMP, ICMPv6, AH, ESP, GRE are the other supported protocols
+    TCP is default. UDP, ICMP, ICMPv6, AH, ESP, GRE, IPIP are the other supported protocols
 
 .PP
 \fB\-\-securitygroupid\fP=nil
@@ -62,7 +54,7 @@ Authorizes a particular ingress/egress rule for this security group
 
 .PP
 \fB\-\-startport\fP=0
-    start port for this ingress rule
+    start port for this ingress/egress rule
 
 .PP
 \fB\-\-usersecuritygrouplist\fP=

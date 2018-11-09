@@ -21,36 +21,20 @@ Lists accounts and provides detailed account information for listed accounts
 
 .SH OPTIONS
 .PP
-\fB\-\-accounttype\fP=0
-    list accounts by account type. Valid account types are 1 (admin), 2 (domain\-admin), and 0 (user).
-
-.PP
-\fB\-\-domainid\fP=nil
-    list only resources belonging to the domain specified
-
-.PP
 \fB\-\-id\fP=nil
-    list account by account ID
+    List account by account ID
 
 .PP
 \fB\-\-iscleanuprequired\fP=nil
     list accounts by cleanuprequired attribute (values are true or false)
 
 .PP
-\fB\-\-isrecursive\fP=nil
-    defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves.
-
-.PP
 \fB\-\-keyword\fP=""
     List by keyword
 
 .PP
-\fB\-\-listall\fP=nil
-    If set to false, list only resources belonging to the command's caller; if set to true \- list resources that the caller is authorized to see. Default value is false
-
-.PP
 \fB\-\-name\fP=""
-    list account by account name
+    List account by account name
 
 .PP
 \fB\-\-page\fP=0
@@ -60,7 +44,7 @@ Lists accounts and provides detailed account information for listed accounts
 
 .PP
 \fB\-\-state\fP=""
-    list accounts by state. Valid states are enabled, disabled, and locked.
+    List accounts by state. Valid states are enabled, disabled, and locked.
 
 .PP
 \fB\-h\fP, \fB\-\-help\fP[=false]

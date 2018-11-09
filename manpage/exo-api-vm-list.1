@@ -21,10 +21,6 @@ List the virtual machines owned by the account.
 
 .SH OPTIONS
 .PP
-\fB\-\-account\fP=""
-    list resources by account. Must be used with the domainid parameter.
-
-.PP
 \fB\-\-affinitygroupid\fP=nil
     list vms by affinity group
 
@@ -33,28 +29,12 @@ List the virtual machines owned by the account.
     comma separated list of host details requested, value can be a list of [all, group, nics, stats, secgrp, tmpl, servoff, diskoff, iso, volume, min, affgrp]. If no parameter is passed in, the details will be defaulted to all
 
 .PP
-\fB\-\-displayvm\fP=nil
-    list resources by display flag; only ROOT admin is eligible to pass this parameter
-
-.PP
-\fB\-\-domainid\fP=nil
-    list only resources belonging to the domain specified
-
-.PP
 \fB\-\-forvirtualnetwork\fP=nil
     list by network type; true if need to list vms using Virtual Network, false otherwise
 
 .PP
 \fB\-\-groupid\fP=nil
     the group ID
-
-.PP
-\fB\-\-hostid\fP=nil
-    the host ID
-
-.PP
-\fB\-\-hypervisor\fP=""
-    the target hypervisor for the template
 
 .PP
 \fB\-\-id\fP=nil
@@ -73,16 +53,8 @@ List the virtual machines owned by the account.
     list vms by iso
 
 .PP
-\fB\-\-isrecursive\fP=nil
-    defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves.
-
-.PP
 \fB\-\-keyword\fP=""
     List by keyword
-
-.PP
-\fB\-\-listall\fP=nil
-    If set to false, list only resources belonging to the command's caller; if set to true \- list resources that the caller is authorized to see. Default value is false
 
 .PP
 \fB\-\-name\fP=""

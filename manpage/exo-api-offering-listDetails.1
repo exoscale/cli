@@ -25,14 +25,6 @@ List resource detail(s)
     [required] list by resource type
 
 .PP
-\fB\-\-account\fP=""
-    list resources by account. Must be used with the domainid parameter.
-
-.PP
-\fB\-\-domainid\fP=nil
-    list only resources belonging to the domain specified
-
-.PP
 \fB\-\-fordisplay\fP[=false]
     if set to true, only details marked with display=true, are returned. False by default
 
@@ -43,10 +35,6 @@ List resource detail(s)
 .PP
 \fB\-\-keyword\fP=""
     List by keyword
-
-.PP
-\fB\-\-listall\fP[=false]
-    If set to false, list only resources belonging to the command's caller; if set to true \- list resources that the caller is authorized to see. Default value is false
 
 .PP
 \fB\-\-page\fP=0
@@ -61,10 +49,6 @@ List resource detail(s)
 .PP
 \fB\-\-value\fP=""
     list by key, value. Needs to be passed only along with key
-
-.PP
-\fB\-\-isrecursive\fP[=false]
-    defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves.
 
 .PP
 \fB\-h\fP, \fB\-\-help\fP[=false]

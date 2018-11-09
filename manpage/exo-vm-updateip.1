@@ -10,7 +10,7 @@ exo\-vm\-updateip \- Update the static DHCP lease of an instance
 
 .SH SYNOPSIS
 .PP
-\fBexo vm updateip <vm name|id> <network name|id> <ip address> [flags]\fP
+\fBexo vm updateip <vm name|id> <network name|id> [flags]\fP
 
 
 .SH DESCRIPTION
@@ -22,6 +22,10 @@ Update the static DHCP lease of an instance
 .PP
 \fB\-h\fP, \fB\-\-help\fP[=false]
     help for updateip
+
+.PP
+\fB\-i\fP, \fB\-\-ip\fP=nil
+    the static IP address lease, no values unsets it.
 
 
 .SH OPTIONS INHERITED FROM PARENT COMMANDS

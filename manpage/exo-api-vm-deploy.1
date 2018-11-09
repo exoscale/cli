@@ -21,24 +21,12 @@ Creates and automatically starts a virtual machine based on a service offering, 
 
 .SH OPTIONS
 .PP
-\fB\-\-account\fP=""
-    an optional account for the virtual machine. Must be used with domainid.
-
-.PP
 \fB\-\-affinitygroupids\fP=
     comma separated list of affinity groups id that are going to be applied to the virtual machine. Mutually exclusive with affinitygroupnames parameter
 
 .PP
 \fB\-\-affinitygroupnames\fP=[]
     comma separated list of affinity groups names that are going to be applied to the virtual machine.Mutually exclusive with affinitygroupids parameter
-
-.PP
-\fB\-\-customid\fP=nil
-    an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only
-
-.PP
-\fB\-\-deploymentplanner\fP=""
-    Deployment planner to use for vm allocation. Available to ROOT admin only
 
 .PP
 \fB\-\-details\fP=
@@ -53,24 +41,8 @@ Creates and automatically starts a virtual machine based on a service offering, 
     an optional user generated name for the virtual machine
 
 .PP
-\fB\-\-displayvm\fP=nil
-    an optional field, whether to the display the vm to the end user or not.
-
-.PP
-\fB\-\-domainid\fP=nil
-    an optional domainid for the virtual machine. If the account parameter is used, domainid must also be used.
-
-.PP
 \fB\-\-group\fP=""
     an optional group for the virtual machine
-
-.PP
-\fB\-\-hostid\fP=nil
-    destination Host ID to deploy the VM to \- parameter available for root admin only
-
-.PP
-\fB\-\-hypervisor\fP=""
-    the hypervisor on which to deploy the virtual machine
 
 .PP
 \fB\-\-ip4\fP=nil

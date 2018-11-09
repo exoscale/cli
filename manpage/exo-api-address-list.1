@@ -21,24 +21,12 @@ Lists all public ip addresses
 
 .SH OPTIONS
 .PP
-\fB\-\-account\fP=""
-    list resources by account. Must be used with the domainid parameter.
-
-.PP
 \fB\-\-allocatedonly\fP=nil
     limits search results to allocated public IP addresses
 
 .PP
 \fB\-\-associatednetworkid\fP=nil
     lists all public IP addresses associated to the network specified
-
-.PP
-\fB\-\-domainid\fP=nil
-    list only resources belonging to the domain specified
-
-.PP
-\fB\-\-fordisplay\fP=nil
-    list resources by display flag; only ROOT admin is eligible to pass this parameter
 
 .PP
 \fB\-\-forloadbalancing\fP=nil
@@ -61,10 +49,6 @@ Lists all public ip addresses
     list only elastic ip addresses
 
 .PP
-\fB\-\-isrecursive\fP=nil
-    defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves.
-
-.PP
 \fB\-\-issourcenat\fP=nil
     list only source nat ip addresses
 
@@ -75,10 +59,6 @@ Lists all public ip addresses
 .PP
 \fB\-\-keyword\fP=""
     List by keyword
-
-.PP
-\fB\-\-listall\fP=nil
-    If set to false, list only resources belonging to the command's caller; if set to true \- list resources that the caller is authorized to see. Default value is false
 
 .PP
 \fB\-\-page\fP=0
