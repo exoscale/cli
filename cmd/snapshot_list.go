@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	humanize "github.com/dustin/go-humanize"
 	"github.com/exoscale/egoscale"
@@ -21,15 +22,24 @@ var snapshotListCmd = &cobra.Command{
 		table := table.NewTable(os.Stdout)
 
 		if len(args) == 0 {
-			table.SetHeader([]string{"State", "Created On", "Size", "ID"})
+			table.SetHeader([]string{"VM", "State", "Created On", "Size", "ID"})
 			res, err := cs.ListWithContext(gContext, egoscale.Snapshot{})
 			if err != nil {
 				return err
 			}
 
+			var vmNameTmp string
 			for _, s := range res {
 				snapshot := s.(*egoscale.Snapshot)
-				table.Append([]string{snapshot.State, snapshot.Created, fmt.Sprintf("%v", humanize.IBytes(uint64(snapshot.Size))), snapshot.ID.String()})
+				names := strings.SplitN(snapshot.Name, "_"+snapshot.VolumeName+"_", 2)
+				vmName := names[0]
+				if vmName == vmNameTmp {
+					vmName = ""
+				}
+				table.Append([]string{vmName, snapshot.State, snapshot.Created, fmt.Sprintf("%v", humanize.IBytes(uint64(snapshot.Size))), snapshot.ID.String()})
+				if vmName != "" {
+					vmNameTmp = vmName
+				}
 			}
 
 			table.Render()
