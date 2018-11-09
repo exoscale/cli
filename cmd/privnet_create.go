@@ -36,6 +36,9 @@ var privnetCreateCmd = &cobra.Command{
 		}
 
 		netmask, err := getIPValue(cmd, "netmask")
+		if err != nil {
+			return err
+		}
 
 		cidrmask, err := cmd.Flags().GetString("cidrmask")
 		if err != nil {
@@ -52,7 +55,7 @@ var privnetCreateCmd = &cobra.Command{
 				return err
 			}
 			ipmask := net.CIDRMask(int(c), 32)
-			*netmask.IP = (*net.IP)(&ipmask)
+			netmask.IP = (*net.IP)(&ipmask)
 		}
 
 		zone, err := cmd.Flags().GetString("zone")
@@ -69,6 +72,9 @@ var privnetCreateCmd = &cobra.Command{
 		}
 
 		newNet, err := privnetCreate(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value())
+		if err != nil {
+			return err
+		}
 
 		return privnetShow(*newNet)
 	},

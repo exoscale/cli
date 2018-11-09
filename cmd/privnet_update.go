@@ -62,7 +62,6 @@ var privnetUpdateCmd = &cobra.Command{
 			return fmt.Errorf("netmask %q and cidrmask %q are mutually exclusive", netmask, cidrmask)
 		}
 
-
 		if cidrmask != "" {
 			c, err := strconv.ParseInt(cidrmask, 10, 32)
 			if err != nil {
@@ -70,7 +69,7 @@ var privnetUpdateCmd = &cobra.Command{
 			}
 
 			ipmask := net.CIDRMask(int(c), 32)
-			*netmask.IP = (*net.IP)(&ipmask)
+			netmask.IP = (*net.IP)(&ipmask)
 		}
 
 		newNet, err := privnetUpdate(id, name, desc, startIP.Value(), endIP.Value(), netmask.Value())
@@ -81,7 +80,6 @@ var privnetUpdateCmd = &cobra.Command{
 		return privnetShow(*newNet)
 	},
 }
-
 
 func privnetUpdate(id, name, desc string, startIP, endIP, netmask net.IP) (*egoscale.Network, error) {
 	uuid, err := egoscale.ParseUUID(id)
