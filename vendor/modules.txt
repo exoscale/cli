@@ -2,6 +2,8 @@
 github.com/VividCortex/ewma
 # github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 github.com/chzyer/readline
+# github.com/cpuguy83/go-md2man v1.0.8
+github.com/cpuguy83/go-md2man/md2man
 # github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 github.com/dustin/go-humanize
 # github.com/exoscale/egoscale v0.12.3
@@ -57,8 +59,12 @@ github.com/mitchellh/mapstructure
 github.com/olekukonko/tablewriter
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
+# github.com/russross/blackfriday v2.0.0+incompatible
+github.com/russross/blackfriday
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
+# github.com/shurcooL/sanitized_anchor_name v0.0.0-20170918181015-86672fcb3f95
+github.com/shurcooL/sanitized_anchor_name
 # github.com/spf13/afero v1.1.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
@@ -66,6 +72,7 @@ github.com/spf13/afero/mem
 github.com/spf13/cast
 # github.com/spf13/cobra v0.0.3
 github.com/spf13/cobra
+github.com/spf13/cobra/doc
 # github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.2
