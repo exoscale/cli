@@ -31,7 +31,7 @@ jobs:
     - stage: goreleaser
       go: "1.11.x"
       script:
-        - go run doc/main.go --man-page
+        - go run -mod vendor doc/main.go --man-page
         - cd manpage && gzip * && cd ..
         - curl -sL https://git.io/goreleaser | head -n -2 | bash
         - tar -xf /tmp/goreleaser.tar.gz -C $GOPATH/bin
