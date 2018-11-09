@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -35,7 +34,7 @@ var kubeDeleteCmd = &cobra.Command{
 
 		fmt.Printf("Destroying cluster instance... ")
 
-		if err := vm.Delete(context.TODO(), cs); err != nil {
+		if err := vm.Delete(gContext, cs); err != nil {
 			fmt.Println("failed")
 			return err
 		}

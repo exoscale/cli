@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -177,7 +176,7 @@ func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
 		if r, ok := err.(*egoscale.ErrorResponse); ok {
 			// Looks like the SG doesn't exist, try to create it
 			if r.ErrorCode == egoscale.ParamError {
-				resp, err := cs.RequestWithContext(context.TODO(), &egoscale.CreateSecurityGroup{
+				resp, err := cs.RequestWithContext(gContext, &egoscale.CreateSecurityGroup{
 					Name:        kubeSecurityGroup,
 					Description: "Created by exo CLI",
 				})
@@ -207,7 +206,7 @@ func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
 				}
 
 				for _, rule := range sgRules {
-					if _, err = cs.RequestWithContext(context.TODO(), rule); err != nil {
+					if _, err = cs.RequestWithContext(gContext, rule); err != nil {
 						return nil, err
 					}
 				}
