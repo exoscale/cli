@@ -24,6 +24,7 @@ archive:
       format: zip
   files:
     - LICENSE
+    - bash_completion
 
 release:
   github:
@@ -45,9 +46,11 @@ nfpm:
     deb:
       files:
         "./manpage/exo*.gz": "/usr/share/man/man1"
+        "./bash_completion": "/etc/bash_completion.d/exo"
     rpm:
       files:
         "./manpage/exo*.gz": "/usr/share/man/man1"
+        "./bash_completion": "/etc/bash_completion.d/exo"
 
 brew:
   name: "exo"

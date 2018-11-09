@@ -4,3 +4,4 @@ Dockerfile.goreleaser
 go.sum
 ops.asc
 exo
+.DS_Store
