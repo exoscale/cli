@@ -44,7 +44,7 @@ func deletePrivnet(name string, force bool) error {
 	if err := cs.BooleanRequestWithContext(gContext, addrReq); err != nil {
 		return err
 	}
-	println(addrReq.ID)
+	fmt.Println(addrReq.ID.String())
 	return nil
 }
 

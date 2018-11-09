@@ -7,7 +7,7 @@ require (
 	github.com/VividCortex/ewma v1.1.1 // indirect
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
-	github.com/exoscale/egoscale v0.12.2
+	github.com/exoscale/egoscale v0.12.3
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.39.0
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
@@ -23,7 +23,6 @@ require (
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect
 	github.com/smartystreets/goconvey v0.0.0-20180222194500-ef6db91d284a // indirect
 	github.com/spf13/cobra v0.0.3

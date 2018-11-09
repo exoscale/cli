@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net"
 	"reflect"
 	"strconv"
 	"strings"
@@ -38,15 +39,18 @@ func (v *uint8PtrValue) String() string {
 	return strconv.FormatUint(uint64(*v.uint8), 10)
 }
 
-func getUint8CustomFlag(cmd *cobra.Command, name string) (uint8PtrValue, error) {
+// XXX use reflect to factor those out.
+//     e.g. getCustomFlag(cmd *cobra.Command, name string, out interface{}) error {}
+
+func getUint8CustomFlag(cmd *cobra.Command, name string) (*uint8PtrValue, error) {
 	it := cmd.Flags().Lookup(name)
 	if it != nil {
 		r := it.Value.(*uint8PtrValue)
 		if r != nil {
-			return *r, nil
+			return r, nil
 		}
 	}
-	return uint8PtrValue{}, fmt.Errorf("unable to get flag %q", name)
+	return nil, fmt.Errorf("unable to get flag %q", name)
 }
 
 type int64PtrValue struct {
@@ -111,6 +115,57 @@ func (v *uuid) String() string {
 	}
 
 	return (*(v.UUID)).String()
+}
+
+//ip flag
+type ipValue struct {
+	IP *net.IP
+}
+
+func (v *ipValue) Set(val string) error {
+	if val == "" {
+		return nil
+	}
+
+	ip := net.ParseIP(val)
+	if ip == nil {
+		return fmt.Errorf("no a valid IP address: got %q", val)
+	}
+
+	v.IP = &ip
+
+	return nil
+}
+
+func (v *ipValue) Value() net.IP {
+	if v.IP == nil {
+		return net.IP{}
+	}
+
+	return *v.IP
+}
+
+func (v *ipValue) Type() string {
+	return "IP"
+}
+
+func (v *ipValue) String() string {
+	if v.IP == nil || *v.IP == nil {
+		return nilValue
+	}
+	return (*v.IP).String()
+}
+
+// getIPValue finds the value of a command by name
+func getIPValue(cmd *cobra.Command, name string) (*ipValue, error) {
+	it := cmd.Flags().Lookup(name)
+	if it != nil {
+		r := it.Value.(*ipValue)
+		if r != nil {
+			return r, nil
+		}
+	}
+	return nil, fmt.Errorf("unable to get flag %q", name)
 }
 
 //cidr flag
@@ -427,13 +482,15 @@ func (g *userSecurityGroupListGeneric) Set(value string) error {
 	}
 	keypairs := strings.Split(value, ",")
 	for _, kv := range keypairs {
+		// Backward compatibility for account=group semantic
 		values := strings.SplitN(kv, "=", 2)
-		if len(values) != 2 {
-			return fmt.Errorf("not a valid account=group content, got %s", kv)
+
+		if len(values) == 2 {
+			values[0] = values[1]
 		}
+
 		*m = append(*m, egoscale.UserSecurityGroup{
-			Account: values[0],
-			Group:   values[1],
+			Group: values[0],
 		})
 	}
 	return nil
@@ -450,7 +507,7 @@ func (g *userSecurityGroupListGeneric) String() string {
 	}
 	vs := make([]string, 0, len(*m))
 	for _, v := range *m {
-		vs = append(vs, fmt.Sprintf("%s=%s", v.Account, v.Group))
+		vs = append(vs, v.Group)
 	}
 	return strings.Join(vs, ",")
 }

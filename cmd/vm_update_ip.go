@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"net"
 	"os"
 	"text/tabwriter"
 
@@ -12,17 +10,20 @@ import (
 )
 
 var vmUpdateIPCmd = &cobra.Command{
-	Use:   "updateip <vm name|id> <network name|id> <ip address>",
+	Use:   "updateip <vm name|id> <network name|id> [flags]",
 	Short: "Update the static DHCP lease of an instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 3 {
+		if len(args) != 2 {
 			return cmd.Usage()
 		}
-		vm, err := getVMWithNameOrID(args[0])
+		vmName := args[0]
+		netName := args[1]
+
+		vm, err := getVMWithNameOrID(vmName)
 		if err != nil {
 			return err
 		}
-		network, err := getNetworkByName(args[1])
+		network, err := getNetworkByName(netName)
 		if err != nil {
 			return err
 		}
@@ -31,32 +32,30 @@ var vmUpdateIPCmd = &cobra.Command{
 			return fmt.Errorf("the virtual machine %s is not associated to the network %s", vm.DisplayName, network.Name)
 		}
 
-		newVM, err := updateNicIP(nic.ID, args[2])
+		ipAddress, err := getIPValue(cmd, "ip")
 		if err != nil {
 			return err
 		}
 
-		return showVMWithNics(newVM)
+		var msg string
+		if ipAddress.IP != nil {
+			msg = fmt.Sprintf("setting the static lease to %q, network %q: %s", vmName, netName, ipAddress.IP.String())
+		} else {
+			msg = fmt.Sprintf("removing the static lease from %q, network %q", vmName, netName)
+		}
+
+		req := &egoscale.UpdateVMNicIP{
+			IPAddress: ipAddress.Value(),
+			NicID:     nic.ID,
+		}
+
+		resp, err := asyncRequest(req, msg)
+		if err != nil {
+			return err
+		}
+
+		return showVMWithNics(resp.(*egoscale.VirtualMachine))
 	},
-}
-
-func updateNicIP(nicID *egoscale.UUID, newIP string) (*egoscale.VirtualMachine, error) {
-	IP := net.ParseIP(newIP)
-	if IP == nil {
-		return nil, errors.New("invalid IP address")
-	}
-
-	req := &egoscale.UpdateVMNicIP{
-		IPAddress: IP,
-		NicID:     nicID,
-	}
-
-	resp, err := asyncRequest(req, fmt.Sprintf("updating the static lease of NIC %q", nicID))
-	if err != nil {
-		return nil, err
-	}
-
-	return resp.(*egoscale.VirtualMachine), nil
 }
 
 func showVMWithNics(vm *egoscale.VirtualMachine) error {
@@ -100,5 +99,9 @@ func showVMWithNics(vm *egoscale.VirtualMachine) error {
 }
 
 func init() {
+	ipAddress := new(ipValue)
+
+	vmUpdateIPCmd.Flags().VarP(ipAddress, "ip", "i", "the static IP address lease, no values unsets it.")
+
 	vmCmd.AddCommand(vmUpdateIPCmd)
 }

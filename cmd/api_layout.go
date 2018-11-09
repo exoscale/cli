@@ -43,7 +43,6 @@ var methods = []category{
 			{&egoscale.GetVMPassword{}, "getPassword", nil},
 			{&egoscale.GetVirtualMachineUserData{}, "getUserData", nil},
 			{&egoscale.ListVirtualMachines{}, "list", gListAlias},
-			{&egoscale.MigrateVirtualMachine{}, "", nil},
 			{&egoscale.RebootVirtualMachine{}, "reboot", nil},
 			{&egoscale.RecoverVirtualMachine{}, "recover", nil},
 			{&egoscale.RemoveNicFromVirtualMachine{}, "removeNic", nil},

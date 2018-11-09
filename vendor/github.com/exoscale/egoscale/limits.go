@@ -65,11 +65,10 @@ const (
 // ResourceLimit represents the limit on a particular resource
 type ResourceLimit struct {
 	Account          string       `json:"account,omitempty" doc:"the account of the resource limit"`
-	Domain           string       `json:"domain,omitempty" doc:"the domain name of the resource limit"`
-	DomainID         *UUID        `json:"domainid,omitempty" doc:"the domain ID of the resource limit"`
+	AccountID        *UUID        `json:"accountid,omitempty" doc:"the account ID of the resource limit"`
 	Max              int64        `json:"max,omitempty" doc:"the maximum number of the resource. A -1 means the resource currently has no limit."`
 	ResourceType     ResourceType `json:"resourcetype,omitempty" doc:"resource type. Values include 0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11. See the resourceType parameter for more information on these values."`
-	ResourceTypeName string       `json:"resourcetypename,omitempty" doc:"resource type name. Values include user_vm, public_ip, volume, snapshot, template, project, network, vpc, cpu, memory, primary_storage, secondary_storage."`
+	ResourceTypeName string       `json:"resourcetypename,omitempty" doc:"resource type name. Values include user_vm, public_ip, volume, snapshot, template, network, cpu, memory, primary_storage, secondary_storage."`
 }
 
 // APILimit represents the limit count
@@ -83,17 +82,14 @@ type APILimit struct {
 
 // ListResourceLimits lists the resource limits
 type ListResourceLimits struct {
-	Account          string       `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
-	DomainID         string       `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	ID               int64        `json:"id,omitempty" doc:"Lists resource limits by ID."`
-	IsRecursive      *bool        `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	Keyword          string       `json:"keyword,omitempty" doc:"List by keyword"`
-	ListAll          *bool        `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Page             int          `json:"page,omitempty"`
 	PageSize         int          `json:"pagesize,omitempty"`
-	ResourceType     ResourceType `json:"resourcetype,omitempty" doc:"Type of resource. Values are 0, 1, 2, 3, 4, 6, 7, 8, 9, 10 and 11. 0 - Instance. Number of instances a user can create. 1 - IP. Number of public IP addresses an account can own. 2 - Volume. Number of disk volumes an account can own. 3 - Snapshot. Number of snapshots an account can own. 4 - Template. Number of templates an account can register/create. 5 - Project. Number of projects an account can own. 6 - Network. Number of networks an account can own. 7 - VPC. Number of VPC an account can own. 8 - CPU. Number of CPU an account can allocate for his resources. 9 - Memory. Amount of RAM an account can allocate for his resources. 10 - PrimaryStorage. Total primary storage space (in GiB) a user can use. 11 - SecondaryStorage. Total secondary storage space (in GiB) a user can use. 12 - Elastic IP. Number of public elastic IP addresses an account can own. 13 - SMTP. If the account is allowed SMTP outbound traffic."`
-	ResourceTypeName string       `json:"resourcetypename,omitempty" doc:"Type of resource (wins over resourceType if both are provided). Values are: user_vm - Instance. Number of instances a user can create. public_ip - IP. Number of public IP addresses an account can own. volume - Volume. Number of disk volumes an account can own. snapshot - Snapshot. Number of snapshots an account can own. template - Template. Number of templates an account can register/create. project - Project. Number of projects an account can own. network - Network. Number of networks an account can own. vpc - VPC. Number of VPC an account can own. cpu - CPU. Number of CPU an account can allocate for his resources. memory - Memory. Amount of RAM an account can allocate for his resources. primary_storage - PrimaryStorage. Total primary storage space (in GiB) a user can use. secondary_storage - SecondaryStorage. Total secondary storage space (in GiB) a user can use. public_elastic_ip - IP. Number of public elastic IP addresses an account can own. smtp - SG. If the account is allowed SMTP outbound traffic."`
-	_                bool         `name:"listResourceLimits" description:"Lists resource limits."`
+	ResourceType     ResourceType `json:"resourcetype,omitempty" doc:"Type of resource. Values are 0, 1, 2, 3, 4, 6, 8, 9, 10, 11, 12, and 13. 0 - Instance. Number of instances a user can create. 1 - IP. Number of public IP addresses an account can own. 2 - Volume. Number of disk volumes an account can own. 3 - Snapshot. Number of snapshots an account can own. 4 - Template. Number of templates an account can register/create. 6 - Network. Number of networks an account can own. 8 - CPU. Number of CPU an account can allocate for his resources. 9 - Memory. Amount of RAM an account can allocate for his resources. 10 - PrimaryStorage. Total primary storage space (in GiB) a user can use. 11 - SecondaryStorage. Total secondary storage space (in GiB) a user can use. 12 - Elastic IP. Number of public elastic IP addresses an account can own. 13 - SMTP. If the account is allowed SMTP outbound traffic."`
+	ResourceTypeName string       `json:"resourcetypename,omitempty" doc:"Type of resource (wins over resourceType if both are provided). Values are: user_vm - Instance. Number of instances a user can create. public_ip - IP. Number of public IP addresses an account can own. volume - Volume. Number of disk volumes an account can own. snapshot - Snapshot. Number of snapshots an account can own. template - Template. Number of templates an account can register/create. network - Network. Number of networks an account can own. cpu - CPU. Number of CPU an account can allocate for his resources. memory - Memory. Amount of RAM an account can allocate for his resources. primary_storage - PrimaryStorage. Total primary storage space (in GiB) a user can use. secondary_storage - SecondaryStorage. Total secondary storage space (in GiB) a user can use. public_elastic_ip - IP. Number of public elastic IP addresses an account can own. smtp - SG. If the account is allowed SMTP outbound traffic."`
+
+	_ bool `name:"listResourceLimits" description:"Lists resource limits."`
 }
 
 // ListResourceLimitsResponse represents a list of resource limits
@@ -109,7 +105,6 @@ func (ListResourceLimits) response() interface{} {
 // UpdateResourceLimit updates the resource limit
 type UpdateResourceLimit struct {
 	Account      string       `json:"account,omitempty" doc:"Update resource for a specified account. Must be used with the domainid parameter."`
-	DomainID     string       `json:"domainid,omitempty" doc:"Update resource limits for all accounts in specified domain. If used with the account parameter, updates resource limits for a specified account in specified domain."`
 	Max          int64        `json:"max,omitempty" doc:"Maximum resource limit."`
 	ResourceType ResourceType `json:"resourcetype" doc:"Type of resource to update. Values are 0, 1, 2, 3, 4, 6, 7, 8, 9, 10 and 11. 0 - Instance. Number of instances a user can create. 1 - IP. Number of public IP addresses a user can own. 2 - Volume. Number of disk volumes a user can create. 3 - Snapshot. Number of snapshots a user can create. 4 - Template. Number of templates that a user can register/create. 6 - Network. Number of guest network a user can create. 7 - VPC. Number of VPC a user can create. 8 - CPU. Total number of CPU cores a user can use. 9 - Memory. Total Memory (in MB) a user can use. 10 - PrimaryStorage. Total primary storage space (in GiB) a user can use. 11 - SecondaryStorage. Total secondary storage space (in GiB) a user can use."`
 	_            bool         `name:"updateResourceLimit" description:"Updates resource limits for an account or domain."`

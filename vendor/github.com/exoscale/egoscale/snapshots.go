@@ -1,5 +1,7 @@
 package egoscale
 
+import "fmt"
+
 // SnapshotState represents the Snapshot.State enum
 //
 // See: https://github.com/apache/cloudstack/blob/master/api/src/main/java/com/cloud/storage/Snapshot.java
@@ -31,8 +33,6 @@ type Snapshot struct {
 	Account      string        `json:"account,omitempty" doc:"the account associated with the snapshot"`
 	AccountID    *UUID         `json:"accountid,omitempty" doc:"the account ID associated with the snapshot"`
 	Created      string        `json:"created,omitempty" doc:"the date the snapshot was created"`
-	Domain       string        `json:"domain,omitempty" doc:"the domain name of the snapshot's account"`
-	DomainID     *UUID         `json:"domainid,omitempty" doc:"the domain ID of the snapshot's account"`
 	ID           *UUID         `json:"id,omitempty" doc:"ID of the snapshot"`
 	IntervalType string        `json:"intervaltype,omitempty" doc:"valid types are hourly, daily, weekly, monthy, template, and none."`
 	Name         string        `json:"name,omitempty" doc:"name of the snapshot"`
@@ -55,11 +55,9 @@ func (Snapshot) ResourceType() string {
 
 // CreateSnapshot (Async) creates an instant snapshot of a volume
 type CreateSnapshot struct {
-	VolumeID  *UUID  `json:"volumeid" doc:"The ID of the disk volume"`
-	Account   string `json:"account,omitempty" doc:"The account of the snapshot. The account parameter must be used with the domainid parameter."`
-	DomainID  *UUID  `json:"domainid,omitempty" doc:"The domain ID of the snapshot. If used with the account parameter, specifies a domain for the account associated with the disk volume."`
-	QuiesceVM *bool  `json:"quiescevm,omitempty" doc:"quiesce vm if true"`
-	_         bool   `name:"createSnapshot" description:"Creates an instant snapshot of a volume."`
+	VolumeID  *UUID `json:"volumeid" doc:"The ID of the disk volume"`
+	QuiesceVM *bool `json:"quiescevm,omitempty" doc:"quiesce vm if true"`
+	_         bool  `name:"createSnapshot" description:"Creates an instant snapshot of a volume."`
 }
 
 func (CreateSnapshot) response() interface{} {
@@ -70,15 +68,22 @@ func (CreateSnapshot) asyncResponse() interface{} {
 	return new(Snapshot)
 }
 
+// ListRequest builds the ListSnapshot request
+func (ss Snapshot) ListRequest() (ListCommand, error) {
+	// Restricted cannot be applied here because it really has three states
+	req := &ListSnapshots{
+		ID:   ss.ID,
+		Name: ss.Name,
+	}
+
+	return req, nil
+}
+
 // ListSnapshots lists the volume snapshots
 type ListSnapshots struct {
-	Account      string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
-	DomainID     *UUID         `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	ID           *UUID         `json:"id,omitempty" doc:"lists snapshot by snapshot ID"`
 	IntervalType string        `json:"intervaltype,omitempty" doc:"valid values are HOURLY, DAILY, WEEKLY, and MONTHLY."`
-	IsRecursive  *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
 	Keyword      string        `json:"keyword,omitempty" doc:"List by keyword"`
-	ListAll      *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Name         string        `json:"name,omitempty" doc:"lists snapshot by snapshot name"`
 	Page         int           `json:"page,omitempty"`
 	PageSize     int           `json:"pagesize,omitempty"`
@@ -97,6 +102,30 @@ type ListSnapshotsResponse struct {
 
 func (ListSnapshots) response() interface{} {
 	return new(ListSnapshotsResponse)
+}
+
+// SetPage sets the current page
+func (lss *ListSnapshots) SetPage(page int) {
+	lss.Page = page
+}
+
+// SetPageSize sets the page size
+func (lss *ListSnapshots) SetPageSize(pageSize int) {
+	lss.PageSize = pageSize
+}
+
+func (ListSnapshots) each(resp interface{}, callback IterateItemFunc) {
+	sss, ok := resp.(*ListSnapshotsResponse)
+	if !ok {
+		callback(nil, fmt.Errorf("wrong type. ListSnapshotsResponse expected, got %T", resp))
+		return
+	}
+
+	for i := range sss.Snapshot {
+		if !callback(&sss.Snapshot[i], nil) {
+			break
+		}
+	}
 }
 
 // DeleteSnapshot (Async) deletes a snapshot of a disk volume

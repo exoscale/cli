@@ -19,23 +19,23 @@ var privnetCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 		name := args[0]
+
 		desc, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
 		}
-		sip, err := cmd.Flags().GetString("startip")
+
+		startIP, err := getIPValue(cmd, "startip")
 		if err != nil {
 			return err
 		}
-		startip := net.ParseIP(sip)
 
-		eip, err := cmd.Flags().GetString("endip")
+		endIP, err := getIPValue(cmd, "endip")
 		if err != nil {
 			return err
 		}
-		endip := net.ParseIP(eip)
 
-		nmask, err := cmd.Flags().GetString("netmask")
+		netmask, err := getIPValue(cmd, "netmask")
 		if err != nil {
 			return err
 		}
@@ -45,18 +45,17 @@ var privnetCreateCmd = &cobra.Command{
 			return err
 		}
 
-		if nmask != "" && cidrmask != "" {
-			return fmt.Errorf("netmask %q and cidrmask %q are mutually exclusive", nmask, cidrmask)
+		if netmask.IP != nil && cidrmask != "" {
+			return fmt.Errorf("netmask %q and cidrmask %q are mutually exclusive", netmask, cidrmask)
 		}
 
-		netmask := net.ParseIP(nmask)
-		if netmask == nil && cidrmask != "" {
+		if cidrmask != "" {
 			c, err := strconv.ParseInt(cidrmask, 10, 32)
 			if err != nil {
 				return err
 			}
 			ipmask := net.CIDRMask(int(c), 32)
-			netmask = (net.IP)(ipmask)
+			netmask.IP = (*net.IP)(&ipmask)
 		}
 
 		zone, err := cmd.Flags().GetString("zone")
@@ -72,7 +71,7 @@ var privnetCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		newNet, err := privnetCreate(name, desc, zone, startip, endip, netmask)
+		newNet, err := privnetCreate(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value())
 		if err != nil {
 			return err
 		}
@@ -92,6 +91,7 @@ func isEmptyArgs(args ...string) bool {
 
 func privnetCreate(name, desc, zoneName string, startIP, endIP, netmask net.IP) (*egoscale.Network, error) {
 	zoneID, err := getZoneIDByName(zoneName)
+
 	if err != nil {
 		return nil, err
 	}
@@ -138,10 +138,16 @@ func privnetCreate(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 
 func init() {
 	privnetCreateCmd.Flags().StringP("description", "d", "", "Private network description")
-	privnetCreateCmd.Flags().StringP("startip", "s", "", "the beginning IP address in the network IP range. Required for managed networks.")
-	privnetCreateCmd.Flags().StringP("endip", "e", "", "the ending IP address in the network IP range. Required for managed networks.")
-	privnetCreateCmd.Flags().StringP("netmask", "n", "", "the netmask of the network. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("cidrmask", "c", "", "the cidrmask of the network. Required for managed networks.")
 	privnetCreateCmd.Flags().StringP("zone", "z", "", "Assign private network to a zone")
+
+	startIP := new(ipValue)
+	endIP := new(ipValue)
+	netmask := new(ipValue)
+
+	privnetCreateCmd.Flags().VarP(startIP, "startip", "s", "the beginning IP address in the network IP range. Required for managed networks.")
+	privnetCreateCmd.Flags().VarP(endIP, "endip", "e", "the ending IP address in the network IP range. Required for managed networks.")
+	privnetCreateCmd.Flags().VarP(netmask, "netmask", "m", "the netmask of the network. Required for managed networks.")
+
 	privnetCmd.AddCommand(privnetCreateCmd)
 }

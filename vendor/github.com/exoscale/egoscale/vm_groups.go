@@ -2,20 +2,16 @@ package egoscale
 
 // InstanceGroup represents a group of VM
 type InstanceGroup struct {
-	Account  string `json:"account,omitempty" doc:"the account owning the instance group"`
-	Created  string `json:"created,omitempty" doc:"time and date the instance group was created"`
-	Domain   string `json:"domain,omitempty" doc:"the domain name of the instance group"`
-	DomainID *UUID  `json:"domainid,omitempty" doc:"the domain ID of the instance group"`
-	ID       *UUID  `json:"id,omitempty" doc:"the id of the instance group"`
-	Name     string `json:"name,omitempty" doc:"the name of the instance group"`
+	Account string `json:"account,omitempty" doc:"the account owning the instance group"`
+	Created string `json:"created,omitempty" doc:"time and date the instance group was created"`
+	ID      *UUID  `json:"id,omitempty" doc:"the id of the instance group"`
+	Name    string `json:"name,omitempty" doc:"the name of the instance group"`
 }
 
 // CreateInstanceGroup creates a VM group
 type CreateInstanceGroup struct {
-	Name     string `json:"name" doc:"the name of the instance group"`
-	Account  string `json:"account,omitempty" doc:"the account of the instance group. The account parameter must be used with the domainid parameter."`
-	DomainID *UUID  `json:"domainid,omitempty" doc:"the domain ID of account owning the instance group"`
-	_        bool   `name:"createInstanceGroup" description:"Creates a vm group"`
+	Name string `json:"name" doc:"the name of the instance group"`
+	_    bool   `name:"createInstanceGroup" description:"Creates a vm group"`
 }
 
 func (CreateInstanceGroup) response() interface{} {
@@ -45,16 +41,12 @@ func (DeleteInstanceGroup) response() interface{} {
 
 // ListInstanceGroups lists VM groups
 type ListInstanceGroups struct {
-	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainid parameter."`
-	DomainID    *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
-	ID          *UUID  `json:"id,omitempty" doc:"list instance groups by ID"`
-	IsRecursive *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainid till leaves."`
-	Keyword     string `json:"keyword,omitempty" doc:"List by keyword"`
-	ListAll     *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
-	Name        string `json:"name,omitempty" doc:"list instance groups by name"`
-	Page        int    `json:"page,omitempty"`
-	PageSize    int    `json:"pagesize,omitempty"`
-	_           bool   `name:"listInstanceGroups" description:"Lists vm groups"`
+	ID       *UUID  `json:"id,omitempty" doc:"list instance groups by ID"`
+	Keyword  string `json:"keyword,omitempty" doc:"List by keyword"`
+	Name     string `json:"name,omitempty" doc:"list instance groups by name"`
+	Page     int    `json:"page,omitempty"`
+	PageSize int    `json:"pagesize,omitempty"`
+	_        bool   `name:"listInstanceGroups" description:"Lists vm groups"`
 }
 
 // ListInstanceGroupsResponse represents a list of instance groups

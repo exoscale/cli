@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.12.3
+------
+
+- change: replace dep by Go modules
+- change: remove domainid,domain,regionid,listall,isrecursive,... fields
+- remove: `MigrateVirtualMachine`, `CreateUser`, `EnableAccount`, and other admin calls
+
 0.12.2
 ------
 
