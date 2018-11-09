@@ -17,9 +17,18 @@ var snapshotDeleteCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
 		tasks := make([]task, 0, len(args))
 
 		for _, arg := range args {
+			q := fmt.Sprintf("Are you sure you want to delete the snapshot: %q", arg)
+			if !force && !askQuestion(q) {
+				continue
+			}
 			volume, err := getSnapshotWithNameOrID(arg)
 			if err != nil {
 				return err
@@ -40,4 +49,5 @@ var snapshotDeleteCmd = &cobra.Command{
 
 func init() {
 	snapshotCmd.AddCommand(snapshotDeleteCmd)
+	snapshotDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove snapshot without prompting for confirmation")
 }
