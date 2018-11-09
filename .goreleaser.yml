@@ -41,6 +41,14 @@ nfpm:
     - deb
     - rpm
 
+  overrides:
+    deb:
+      files:
+        "./manpage/exo*.gz": "/usr/share/man/man1"
+    rpm:
+      files:
+        "./manpage/exo*.gz": "/usr/share/man/man1"
+
 brew:
   name: "exo"
   github:
