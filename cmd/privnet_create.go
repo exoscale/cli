@@ -147,7 +147,7 @@ func init() {
 
 	privnetCreateCmd.Flags().VarP(startIP, "startip", "s", "the beginning IP address in the network IP range. Required for managed networks.")
 	privnetCreateCmd.Flags().VarP(endIP, "endip", "e", "the ending IP address in the network IP range. Required for managed networks.")
-	privnetCreateCmd.Flags().VarP(netmask, "netmask", "n", "the netmask of the network. Required for managed networks.")
+	privnetCreateCmd.Flags().VarP(netmask, "netmask", "m", "the netmask of the network. Required for managed networks.")
 
 	privnetCmd.AddCommand(privnetCreateCmd)
 }
