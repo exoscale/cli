@@ -28,14 +28,6 @@ jobs:
         - GO111MODULE=off golangci-lint run ./...
         - go test -v -mod=vendor ./...
         - go build -mod=vendor
-    - stage: doc
-      go: "1.11.x"
-      script:
-        - git checkout .
-        - go run -mod vendor doc/main.go --man-page
-        - go run -mod vendor completion/main.go
-        - git diff > tmpfile.diff
-        - \[ $(stat -c%s tmpfile.diff) == "0" \]
     - stage: goreleaser
       go: "1.11.x"
       script:

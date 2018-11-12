@@ -1,4 +1,7 @@
 .git
 dist
-go.sum
 exo
+manpage
+
+bash_completion
+go.sum

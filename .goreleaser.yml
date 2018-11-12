@@ -13,6 +13,9 @@ builds:
     goarch:
       - amd64
 
+    hooks:
+      pre: make manpage bash_completion
+
 sign:
   cmd: gpg
   args: ["-u", "ops@exoscale.ch", "--detach-sign", "${artifact}"]

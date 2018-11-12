@@ -1,17 +1,23 @@
 version := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null || echo 'latest')
 
-all: exo
+GO_FILES = $(shell find . -type f -name '*.go')
 
-exo:
+.PHONY: all
+all: clean exo
+
+exo: $(GO_FILES)
 	go build -mod=vendor -o $@
 
-lint:
+.PHONY: lint
+lint: $(GO_FILES)
 	golangci-lint run ./...
 
-test:
+.PHONY: test
+test: $(GO_FILES)
 	go test -v -mod=vendor ./...
 
-docker: Dockerfile
+.PHONY: docker
+docker: Dockerfile $(GO_FILES)
 	docker build -f $^ \
 		-t exoscale/cli:${version} \
 		--build-arg VERSION="${version}" \
@@ -19,8 +25,14 @@ docker: Dockerfile
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%m:%SZ")" \
 		.
 
+manpage: $(GO_FILES)
+	mkdir -p $@
+	go run -mod vendor doc/main.go --man-page
+
+bash_completion: $(GO_FILES)
+	go run -mod vendor completion/main.go
+
+.PHONY: clean
 clean:
 	go clean
-	rm -f exo
-
-.PHONY: docker all exo lint test clean
+	rm -f exo bash_completion manpage
