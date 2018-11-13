@@ -1,6 +1,7 @@
 .git
 dist
-Dockerfile.goreleaser
-go.sum
-ops.asc
 exo
+manpage
+
+bash_completion
+go.sum

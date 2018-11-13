@@ -62,7 +62,7 @@ type config struct {
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:           "exo",
-	Short:         "Manage easily your Exoscale infrastructure",
+	Short:         "Manage your Exoscale infrastructure easily",
 	SilenceUsage:  true,
 	SilenceErrors: true,
 }

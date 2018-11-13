@@ -15,6 +15,7 @@ import (
 
 	"github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
+	"github.com/spf13/cobra/doc"
 	"github.com/spf13/pflag"
 )
 
@@ -33,6 +34,7 @@ func main() {
 	var flagError pflag.ErrorHandling
 	docCmd := pflag.NewFlagSet("", flagError)
 	var isHugo = docCmd.BoolP("is-hugo", "", true, "set false if you dont want to generate fot hugo (https://gohugo.io/)")
+	var manPage = docCmd.BoolP("man-page", "", false, "Generate exo manual pages")
 	var filesDir = docCmd.StringP("doc-path", "", "./website/content", "Path directory where you want generate doc files")
 	var help = docCmd.BoolP("help", "h", false, "Help about any command")
 
@@ -46,6 +48,19 @@ func main() {
 			log.Fatal(err)
 		}
 		os.Exit(1)
+	}
+
+	if *manPage {
+		header := &doc.GenManHeader{
+			Title:   "exo",
+			Section: "1",
+		}
+
+		err := doc.GenManTree(cmd.RootCmd, header, "./manpage")
+		if err != nil {
+			log.Fatal(err)
+		}
+		return
 	}
 
 	filePrepender := func(filename string, cmd *cobra.Command) string {
