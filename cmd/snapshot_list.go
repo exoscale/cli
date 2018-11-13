@@ -31,8 +31,7 @@ var snapshotListCmd = &cobra.Command{
 			var vmNameTmp string
 			for _, s := range res {
 				snapshot := s.(*egoscale.Snapshot)
-				names := strings.SplitN(snapshot.Name, "_"+snapshot.VolumeName+"_", 2)
-				vmName := names[0]
+				vmName := snapshotVMName(*snapshot)
 				if vmName == vmNameTmp {
 					vmName = ""
 				}
@@ -86,4 +85,10 @@ var snapshotListCmd = &cobra.Command{
 
 func init() {
 	snapshotCmd.AddCommand(snapshotListCmd)
+}
+
+// snapshotVMName returns the instance name based on the snapshot name
+func snapshotVMName(snapshot egoscale.Snapshot) string {
+	names := strings.SplitN(snapshot.Name, "_"+snapshot.VolumeName+"_", 2)
+	return names[0]
 }

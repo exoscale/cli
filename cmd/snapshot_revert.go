@@ -16,14 +16,28 @@ var snapshotRevertCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
 		tasks := make([]task, 0, len(args))
 		for _, arg := range args {
 			snapshot, err := getSnapshotWithNameOrID(arg)
 			if err != nil {
 				return err
 			}
-			task := task{egoscale.RevertSnapshot{ID: snapshot.ID}, fmt.Sprintf("Reverting snapshot %q", snapshot.Name)}
-			tasks = append(tasks, task)
+
+			vmName := snapshotVMName(*snapshot)
+			q := fmt.Sprintf("Are you sure you want to revert %q using the snapshot: %q", vmName, snapshot.Name)
+			if !force && !askQuestion(q) {
+				continue
+			}
+
+			tasks = append(tasks, task{
+				egoscale.RevertSnapshot{ID: snapshot.ID},
+				fmt.Sprintf("Reverting snapshot %q", snapshot.Name),
+			})
 		}
 
 		results := asyncTasks(tasks)
@@ -38,4 +52,5 @@ var snapshotRevertCmd = &cobra.Command{
 
 func init() {
 	snapshotCmd.AddCommand(snapshotRevertCmd)
+	snapshotRevertCmd.Flags().BoolP("force", "f", false, "Attempt to revert snapshot without prompting for confirmation")
 }
