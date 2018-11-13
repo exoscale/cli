@@ -49,11 +49,11 @@ nfpm:
   overrides:
     deb:
       files:
-        "./manpage/exo*.gz": "/usr/share/man/man1"
+        "./manpage/exo*.1.gz": "/usr/share/man/man1"
         "./bash_completion": "/etc/bash_completion.d/exo"
     rpm:
       files:
-        "./manpage/exo*.gz": "/usr/share/man/man1"
+        "./manpage/exo*.1.gz": "/usr/share/man/man1"
         "./bash_completion": "/etc/bash_completion.d/exo"
 
 brew:

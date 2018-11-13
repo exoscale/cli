@@ -25,9 +25,13 @@ docker: Dockerfile $(GO_FILES)
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%m:%SZ")" \
 		.
 
-manpage: $(GO_FILES)
+manpage:
 	mkdir -p $@
 	go run -mod vendor doc/main.go --man-page
+
+.PHONY: manpages
+manpages: manpage $(GO_FILES)
+	$(foreach page,$(shell find $< -type f -iname '*.1'), gzip $(page);)
 
 bash_completion: $(GO_FILES)
 	go run -mod vendor completion/main.go
@@ -35,4 +39,4 @@ bash_completion: $(GO_FILES)
 .PHONY: clean
 clean:
 	go clean
-	rm -f exo bash_completion manpage
+	rm -rf exo bash_completion manpage
