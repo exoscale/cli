@@ -31,7 +31,6 @@ jobs:
     - stage: goreleaser
       go: "1.11.x"
       script:
-        - cd manpage && gzip * && cd ..
         - curl -sL https://git.io/goreleaser | head -n -2 | bash
         - tar -xf /tmp/goreleaser.tar.gz -C $GOPATH/bin
         - goreleaser --snapshot --skip-sign
