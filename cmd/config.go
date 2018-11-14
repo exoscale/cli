@@ -191,7 +191,7 @@ func getAccount() (*account, error) {
 
 		secret := account.Secret()
 		secretShow := account.Secret()
-		if secret != "" && len(secret) > 11 {
+		if secret != "" && len(secret) > 10 {
 			secretShow = secret[0:7] + "..."
 		}
 		secretKey, err := readInput(reader, "Secret Key", secretShow)
