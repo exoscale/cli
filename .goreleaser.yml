@@ -1,3 +1,5 @@
+project_name: exoscale-cli
+
 builds:
   - binary: exo
     env:
@@ -46,18 +48,11 @@ nfpm:
     - deb
     - rpm
 
-  overrides:
-    deb:
-      files:
-        "./manpage/exo*.1.gz": "/usr/share/man/man1"
-        "./bash_completion": "/etc/bash_completion.d/exo"
-    rpm:
-      files:
-        "./manpage/exo*.1.gz": "/usr/share/man/man1"
-        "./bash_completion": "/etc/bash_completion.d/exo"
+  files:
+    "./manpage/exo*.1.gz": "/usr/share/man/man1"
+    "./bash_completion": "/etc/bash_completion.d/exo"
 
 brew:
-  name: "exo"
   github:
     owner: exoscale
     name: homebrew-tap
