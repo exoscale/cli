@@ -1,8 +1,10 @@
 1.0.4
 -----
 
+- feature snapshot
 - feature dns CAA record
 - feature privnet `--cidrmask` as an alternative to `--netmask`
+- manpage and bash autocompletion in binaries
 
 1.0.3
 -----
