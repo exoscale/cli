@@ -40,25 +40,6 @@ var gUploadAlias = []string{"up"}
 var gDissociateAlias = []string{"disassociate", "dissoc"}
 var gAssociateAlias = []string{"assoc"}
 
-type account struct {
-	Name            string
-	Account         string
-	Endpoint        string
-	ComputeEndpoint string // legacy config.
-	DNSEndpoint     string
-	SosEndpoint     string
-	Key             string
-	Secret          string
-	DefaultZone     string
-	DefaultSSHKey   string
-	DefaultTemplate string
-}
-
-type config struct {
-	DefaultAccount string
-	Accounts       []account
-}
-
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:           "exo",
@@ -127,8 +108,8 @@ func buildClient() {
 		return
 	}
 
-	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint, gCurrentAccount.Key, gCurrentAccount.Secret)
-	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.Secret)
+	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint, gCurrentAccount.Key, gCurrentAccount.Secret())
+	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.Secret())
 }
 
 // initConfig reads in config file and ENV variables if set.
