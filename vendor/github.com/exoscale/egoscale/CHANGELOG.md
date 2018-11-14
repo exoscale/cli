@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.12.4
+------
+
+- feat: `Snapshot` is `Listable`
+
 0.12.3
 ------
 

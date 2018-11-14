@@ -12,15 +12,19 @@ import (
 // listCmd represents the list command
 var vmlistCmd = &cobra.Command{
 	Use:     "list",
-	Short:   "List virtual machines instances",
+	Short:   "List all the virtual machines instances",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 0 {
+			return cmd.Usage()
+		}
 		return listVMs()
 	},
 }
 
 func listVMs() error {
-	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{})
+	vm := &egoscale.VirtualMachine{}
+	vms, err := cs.ListWithContext(gContext, vm)
 	if err != nil {
 		return err
 	}
