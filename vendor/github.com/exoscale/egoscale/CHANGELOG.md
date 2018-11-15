@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.13.2
+------
+
+- feat: initial Runstatus API support
+
 0.13.1
 ------
 
