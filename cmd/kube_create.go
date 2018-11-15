@@ -66,7 +66,11 @@ sudo apt-get update && \
 sudo apt-get install -y kubelet kubeadm kubectl && \
 sudo apt-mark hold kubelet kubeadm kubectl`},
 	{name: "Kubernetes cluster node initialization", command: `\
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16`},
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 &&
+sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master- &&
+sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
+  -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml \
+  -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml`},
 }
 
 // kubeCreateCmd represents the create command
