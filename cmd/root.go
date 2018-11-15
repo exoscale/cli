@@ -179,7 +179,14 @@ func initConfig() {
 
 	usr, err := user.Current()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(`current user cannot be read, using "root"`)
+		usr = &user.User{
+			Uid:      "0",
+			Gid:      "0",
+			Username: "root",
+			Name:     "root",
+			HomeDir:  "/root",
+		}
 	}
 
 	gConfigFolder = path.Join(usr.HomeDir, ".exoscale")
