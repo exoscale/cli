@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"text/template"
 	"time"
 
 	"github.com/cenkalti/backoff"
@@ -22,6 +23,11 @@ var kubeCreateDebug bool
 type kubeBootstrapStep struct {
 	name    string
 	command string
+}
+
+type kubeCluster struct {
+	Name    string
+	Version string
 }
 
 // kubeBootstrapSteps represents a k8s instance bootstrap steps
@@ -66,7 +72,7 @@ sudo apt-get update && \
 sudo apt-get install -y kubelet kubeadm kubectl && \
 sudo apt-mark hold kubelet kubeadm kubectl`},
 	{name: "Kubernetes cluster node initialization", command: `\
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16 &&
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version {{ .Version }} &&
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master- &&
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
   -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml \
@@ -84,6 +90,11 @@ var kubeCreateCmd = &cobra.Command{
 		clusterName := args[0]
 
 		kubeCreateDebug, err := cmd.Flags().GetBool("debug")
+		if err != nil {
+			return err
+		}
+
+		version, err := cmd.Flags().GetString("version")
 		if err != nil {
 			return err
 		}
@@ -134,8 +145,8 @@ var kubeCreateCmd = &cobra.Command{
 
 		fmt.Println("Bootstrapping Kubernetes cluster:")
 
-		if err := bootstrapExokubeCluster(&vm, clusterName, kubeCreateDebug); err != nil {
-			return fmt.Errorf("Kubernetes cluster failed: %s", err) // nolint: golint
+		if err := bootstrapExokubeCluster(&vm, kubeCluster{clusterName, version}, kubeCreateDebug); err != nil {
+			return fmt.Errorf("Cluster bootstrap failed: %s", err) // nolint: golint
 		}
 
 		fmt.Printf(`
@@ -223,11 +234,10 @@ func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
 	return sg, nil
 }
 
-func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, clusterName string, debug bool) error {
+func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, cluster kubeCluster, debug bool) error {
 	var (
 		sshClient  *ssh.Client
 		kubeConfig bytes.Buffer
-		err        error
 	)
 
 	key, err := ioutil.ReadFile(path.Join(getKeyPairPath(vm.ID.String()), "id_rsa"))
@@ -262,8 +272,13 @@ func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, clusterName string, de
 	}
 
 	for _, step := range kubeBootstrapSteps {
-		var stdout, stderr io.Writer
+		var (
+			stdout, stderr io.Writer
+			cmd            bytes.Buffer
+			errBuf         bytes.Buffer
+		)
 
+		stderr = &errBuf
 		if debug {
 			stdout = os.Stderr
 			stderr = os.Stderr
@@ -271,8 +286,17 @@ func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, clusterName string, de
 
 		fmt.Printf("* %s... ", step.name)
 
-		if err := runSSHCommand(sshClient, step.command, stdout, stderr); err != nil {
+		err := template.Must(template.New("command").Parse(step.command)).Execute(&cmd, cluster)
+		if err != nil {
+			return fmt.Errorf("template error: %s", err)
+		}
+
+		if err := runSSHCommand(sshClient, cmd.String(), stdout, stderr); err != nil {
 			fmt.Println("failed")
+			if errBuf.Len() > 0 {
+				fmt.Println(errBuf.String())
+			}
+
 			return err
 		}
 
@@ -283,7 +307,7 @@ func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, clusterName string, de
 		return fmt.Errorf("unable to retrieve Kubernetes cluster configuration: %s", err)
 	}
 
-	if err := saveKubeConfig(kubeConfig.Bytes(), clusterName); err != nil {
+	if err := saveKubeConfig(kubeConfig.Bytes(), cluster.Name); err != nil {
 		return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
 	}
 
@@ -309,6 +333,8 @@ func runSSHCommand(client *ssh.Client, cmd string, stdout, stderr io.Writer) err
 
 func init() {
 	kubeCreateCmd.PersistentFlags().BoolVarP(&kubeCreateDebug, "debug", "d", false, "debug mode on")
+	kubeCreateCmd.Flags().StringP("version", "v", "stable-1", "<version label> "+
+		"(see https://godoc.org/github.com/kubernetes/kubernetes/cmd/kubeadm/app/util#KubernetesReleaseVersion)")
 	kubeCreateCmd.Flags().StringP("size", "s", "small", "<name | id> "+
 		"(micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
 	kubeCmd.AddCommand(kubeCreateCmd)
