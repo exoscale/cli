@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"os/user"
 	"path"
 	"path/filepath"
@@ -16,6 +17,41 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+type config struct {
+	DefaultAccount string
+	Accounts       []account
+}
+
+type account struct {
+	Name            string
+	Account         string
+	Endpoint        string
+	ComputeEndpoint string // legacy config.
+	DNSEndpoint     string
+	SosEndpoint     string
+	Key             string
+	secret          string
+	SecretCommand   []string
+	DefaultZone     string
+	DefaultSSHKey   string
+	DefaultTemplate string
+}
+
+func (a account) Secret() string {
+	if len(a.SecretCommand) != 0 {
+		cmd := exec.Command(a.SecretCommand[0], a.SecretCommand[1:]...)
+		cmd.Stdin = os.Stdin
+		cmd.Stderr = os.Stderr
+		out, err := cmd.Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+		return strings.TrimRight(string(out), "\n")
+	}
+
+	return a.secret
+}
 
 const (
 	defaultConfigFileName = "exoscale"
@@ -132,7 +168,7 @@ func getAccount() (*account, error) {
 	account := &account{
 		Endpoint: defaultEndpoint,
 		Key:      "",
-		Secret:   "",
+		secret:   "",
 	}
 
 	for i := 0; ; i++ {
@@ -154,19 +190,20 @@ func getAccount() (*account, error) {
 			account.Key = apiKey
 		}
 
-		secret := ""
-		if account.Secret != "" && len(account.Secret) > 10 {
-			secret = account.Secret[0:7] + "..."
+		secret := account.Secret()
+		secretShow := account.Secret()
+		if secret != "" && len(secret) > 10 {
+			secretShow = secret[0:7] + "..."
 		}
-		secretKey, err := readInput(reader, "Secret Key", secret)
+		secretKey, err := readInput(reader, "Secret Key", secretShow)
 		if err != nil {
 			return nil, err
 		}
-		if secretKey != account.Secret && secretKey != secret {
-			account.Secret = secretKey
+		if secretKey != secret && secretKey != secretShow {
+			account.secret = secretKey
 		}
 
-		client = egoscale.NewClient(account.Endpoint, account.Key, account.Secret)
+		client = egoscale.NewClient(account.Endpoint, account.Key, account.secret)
 
 		fmt.Printf("Checking the credentials of %q...", account.Key)
 		acc := &egoscale.Account{}
@@ -229,21 +266,28 @@ func addAccount(filePath string, newAccounts *config) error {
 		newAccountsSize = len(newAccounts.Accounts)
 	}
 
-	accounts := make([]map[string]string, accountsSize+newAccountsSize)
+	accounts := make([]map[string]interface{}, accountsSize+newAccountsSize)
 
 	conf := &config{}
 
 	for i, acc := range currentAccounts {
 
-		accounts[i] = map[string]string{}
+		accounts[i] = map[string]interface{}{}
 
 		accounts[i]["name"] = acc.Name
 		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["key"] = acc.Key
 		accounts[i]["secret"] = acc.Secret
 		accounts[i]["defaultZone"] = acc.DefaultZone
-		accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
-		accounts[i]["defaultTemplate"] = defaultTemplate
+		if acc.DefaultSSHKey != "" {
+			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
+		}
+		if acc.DefaultTemplate != "" {
+			accounts[i]["defaultTemplate"] = acc.DefaultTemplate
+		}
+		if len(acc.SecretCommand) != 0 {
+			accounts[i]["secretCommand"] = acc.SecretCommand
+		}
 		accounts[i]["account"] = acc.Account
 
 		conf.Accounts = append(conf.Accounts, acc)
@@ -253,15 +297,16 @@ func addAccount(filePath string, newAccounts *config) error {
 
 		for i, acc := range newAccounts.Accounts {
 
-			accounts[accountsSize+i] = map[string]string{}
+			accounts[accountsSize+i] = map[string]interface{}{}
 
 			accounts[accountsSize+i]["name"] = acc.Name
 			accounts[accountsSize+i]["endpoint"] = acc.Endpoint
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
-			accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
-			accounts[accountsSize+i]["defaultTemplate"] = defaultTemplate
+			if acc.DefaultSSHKey != "" {
+				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
+			}
 			accounts[accountsSize+i]["account"] = acc.Account
 			conf.Accounts = append(conf.Accounts, acc)
 		}
@@ -377,10 +422,10 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			Name:     acc.Name(),
 			Endpoint: acc.Key("endpoint").String(),
 			Key:      acc.Key("key").String(),
-			Secret:   acc.Key("secret").String(),
+			secret:   acc.Key("secret").String(),
 		}
 
-		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.Secret)
+		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.secret)
 
 		fmt.Printf("Checking the credentials of %q...", csAccount.Key)
 		a := &egoscale.Account{}
