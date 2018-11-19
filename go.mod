@@ -17,6 +17,12 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/manifoldco/promptui v0.3.2
+	github.com/gernest/wow v0.0.0-20171118080535-7e0b2a239898
+	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
+	github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a // indirect
+	github.com/magefile/mage v1.7.1 // indirect
+	github.com/mattn/go-colorable v0.0.9 // indirect
+	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/minio/minio-go v6.0.11+incompatible
 	github.com/mitchellh/go-homedir v1.0.0 // indirect

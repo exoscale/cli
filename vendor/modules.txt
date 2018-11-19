@@ -13,6 +13,8 @@ github.com/client9/misspell
 github.com/cpuguy83/go-md2man/md2man
 # github.com/cenkalti/backoff v2.0.0+incompatible
 github.com/cenkalti/backoff
+# github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
+github.com/chzyer/readline
 # github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 github.com/dustin/go-humanize
 # github.com/exoscale/egoscale v0.13.1
@@ -22,6 +24,9 @@ github.com/fatih/camelcase
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/go-ini/ini v1.39.3
+# github.com/gernest/wow v0.0.0-20171118080535-7e0b2a239898
+github.com/gernest/wow
+github.com/gernest/wow/spin
 github.com/go-ini/ini
 # github.com/golang/lint v0.0.0-20181026193005-c67002cb31c3
 github.com/golang/lint/golint
@@ -47,6 +52,9 @@ github.com/juju/ansiterm
 github.com/juju/ansiterm/tabwriter
 # github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a
 github.com/lunixbochs/vtclean
+# github.com/magefile/mage v1.7.1
+github.com/magefile/mage/mg
+github.com/magefile/mage/sh
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
 # github.com/manifoldco/promptui v0.3.2
