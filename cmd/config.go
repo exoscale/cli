@@ -67,7 +67,7 @@ var configCmd = &cobra.Command{
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
-	if viper.ConfigFileUsed() != "" {
+	if viper.ConfigFileUsed() != "" && gAccountName != "" {
 		fmt.Println("Good day! exo is already configured with accounts:")
 		accounts := listAccounts()
 		prompt := promptui.Select{
@@ -277,7 +277,6 @@ func addAccount(filePath string, newAccounts *config) error {
 		accounts[i]["name"] = acc.Name
 		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["key"] = acc.Key
-		accounts[i]["secret"] = acc.Secret
 		accounts[i]["defaultZone"] = acc.DefaultZone
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
@@ -287,6 +286,8 @@ func addAccount(filePath string, newAccounts *config) error {
 		}
 		if len(acc.SecretCommand) != 0 {
 			accounts[i]["secretCommand"] = acc.SecretCommand
+		} else {
+			accounts[i]["secret"] = acc.secret
 		}
 		accounts[i]["account"] = acc.Account
 
@@ -302,7 +303,7 @@ func addAccount(filePath string, newAccounts *config) error {
 			accounts[accountsSize+i]["name"] = acc.Name
 			accounts[accountsSize+i]["endpoint"] = acc.Endpoint
 			accounts[accountsSize+i]["key"] = acc.Key
-			accounts[accountsSize+i]["secret"] = acc.Secret
+			accounts[accountsSize+i]["secret"] = acc.Secret()
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
 			if acc.DefaultSSHKey != "" {
 				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey

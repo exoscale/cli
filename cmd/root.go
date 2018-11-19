@@ -206,6 +206,11 @@ func initConfig() {
 		log.Fatal(fmt.Errorf("couldn't read config: %s", err))
 	}
 
+	if len(config.Accounts) == 0 {
+		ignoreClientBuild = true
+		return
+	}
+
 	if config.DefaultAccount == "" && gAccountName == "" {
 		log.Fatalf("default account not defined")
 	}
