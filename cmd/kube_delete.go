@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -16,7 +17,15 @@ var kubeDeleteCmd = &cobra.Command{
 		}
 		clusterName := args[0]
 
-		vm, err := getVMWithNameOrID(args[0])
+		clusterInstance, err := loadKubeData(clusterName, "instance")
+		if err != nil {
+			if os.IsNotExist(err) {
+				return fmt.Errorf("%q: no such cluster", clusterName)
+			}
+			return err
+		}
+
+		vm, err := getVMWithNameOrID(string(clusterInstance))
 		if err != nil {
 			return err
 		}
@@ -42,7 +51,7 @@ var kubeDeleteCmd = &cobra.Command{
 		fmt.Println("done")
 
 		deleteKeyPair(*vm.ID)
-		deleteKubeconfig(clusterName)
+		deleteKubeData(clusterName)
 
 		return nil
 	},
