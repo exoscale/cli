@@ -12,6 +12,8 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/exoscale/egoscale"
+	"github.com/gernest/wow"
+	"github.com/gernest/wow/spin"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
@@ -32,7 +34,7 @@ type kubeCluster struct {
 
 // kubeBootstrapSteps represents a k8s instance bootstrap steps
 var kubeBootstrapSteps = []kubeBootstrapStep{
-	{name: "Instance system upgrade & reboot", command: `\
+	{name: "Instance system upgrade", command: `\
 sudo apt-get update && sudo apt-get upgrade -y && \
 nohup sh -c 'sleep 5s ; sudo reboot' & \
 exit`},
@@ -147,7 +149,7 @@ var kubeCreateCmd = &cobra.Command{
 			return fmt.Errorf("unable to tag cluster instance: %s", err)
 		}
 
-		fmt.Println("Bootstrapping Kubernetes cluster:")
+		fmt.Println("🚧 Bootstrapping Kubernetes cluster:")
 
 		sshClient, err := newSSHClient(
 			vm.IP().String(),
@@ -167,7 +169,7 @@ var kubeCreateCmd = &cobra.Command{
 		}
 
 		fmt.Printf(`
-Your Kubernetes cluster is ready. What to do now?
+🏁 Your Kubernetes cluster is ready. What to do now?
 
 1. Install the "kubectl" command, if you don't have it already:
 
@@ -184,7 +186,7 @@ configuration (e.g. ~/.bashrc, ~/.zshrc).
 
     kubectl cluster-info
 
-4. Profit!
+4. Profit! ✨🦄🌈
 
 5. When you're done with your cluster, you can either stop it using the
 "exo kube stop" command and restart it later using the "exo kube start"
@@ -261,6 +263,7 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			stdout, stderr io.Writer
 			cmd            bytes.Buffer
 			errBuf         bytes.Buffer
+			w              *wow.Wow
 		)
 
 		stderr = &errBuf
@@ -269,15 +272,23 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			stderr = os.Stderr
 		}
 
-		fmt.Printf("* %s... ", step.name)
-
 		err := template.Must(template.New("command").Parse(step.command)).Execute(&cmd, cluster)
 		if err != nil {
 			return fmt.Errorf("template error: %s", err)
 		}
 
+		if !kubeCreateDebug {
+			w = wow.New(os.Stdout, spin.Get(spin.Dots), " "+step.name)
+			w.Start()
+		} else {
+			fmt.Println(">>>", step.name)
+		}
+
 		if err := sshClient.runCommand(cmd.String(), stdout, stderr); err != nil {
-			fmt.Println("failed")
+			if !kubeCreateDebug {
+				w.PersistWith(spin.Spinner{Frames: []string{"⚠️"}}, fmt.Sprintf(" %s: failed", step.name))
+			}
+
 			if errBuf.Len() > 0 {
 				fmt.Println(errBuf.String())
 			}
@@ -285,7 +296,9 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			return err
 		}
 
-		fmt.Println("done")
+		if !kubeCreateDebug {
+			w.PersistWith(spin.Spinner{Frames: []string{"✅"}}, " "+step.name)
+		}
 	}
 
 	if err := sshClient.runCommand("sudo cat /etc/kubernetes/admin.conf", &kubeConfig, nil); err != nil {
