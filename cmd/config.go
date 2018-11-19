@@ -42,6 +42,7 @@ func (a account) Secret() string {
 	if len(a.SecretCommand) != 0 {
 		cmd := exec.Command(a.SecretCommand[0], a.SecretCommand[1:]...)
 		cmd.Stdin = os.Stdin
+		cmd.Stderr = os.Stderr
 		out, err := cmd.Output()
 		if err != nil {
 			log.Fatal(err)
