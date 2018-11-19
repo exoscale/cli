@@ -307,7 +307,11 @@ func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, cluster kubeCluster, d
 		return fmt.Errorf("unable to retrieve Kubernetes cluster configuration: %s", err)
 	}
 
-	if err := saveKubeConfig(kubeConfig.Bytes(), cluster.Name); err != nil {
+	if err := saveKubeData(cluster.Name, "kubeconfig", kubeConfig.Bytes()); err != nil {
+		return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
+	}
+
+	if err := saveKubeData(cluster.Name, "instance", []byte(vm.ID.String())); err != nil {
 		return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
 	}
 

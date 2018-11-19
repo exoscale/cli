@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	// "github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
@@ -35,21 +36,28 @@ func getKubeconfigPath(clusterName string) string {
 	return path.Join(gConfigFolder, "kube", clusterName)
 }
 
-func saveKubeConfig(config []byte, clusterName string) error {
+// func getKubeInstance(clusterName string) (*egoscale.VirtualMachine, error) {
+// }
+
+func saveKubeData(clusterName, key string, data []byte) error {
 	if _, err := os.Stat(getKubeconfigPath(clusterName)); os.IsNotExist(err) {
 		if err := os.MkdirAll(getKubeconfigPath(clusterName), os.ModePerm); err != nil {
-			return fmt.Errorf("unable to create Kubernetes configuration directory: %s", err)
+			return fmt.Errorf("unable to create directory: %s", err)
 		}
 	}
 
-	if err := ioutil.WriteFile(path.Join(getKubeconfigPath(clusterName), "kubeconfig"), config, 0600); err != nil {
-		return fmt.Errorf("unable to create Kubernetes configuration file: %s", err)
+	if err := ioutil.WriteFile(path.Join(getKubeconfigPath(clusterName), key), data, 0600); err != nil {
+		return fmt.Errorf("unable to write file: %s", err)
 	}
 
 	return nil
 }
 
-func deleteKubeconfig(clusterName string) {
+func loadKubeData(clusterName, key string) ([]byte, error) {
+	return ioutil.ReadFile(path.Join(getKubeconfigPath(clusterName), key))
+}
+
+func deleteKubeData(clusterName string) {
 	folder := getKubeconfigPath(clusterName)
 
 	if _, err := os.Stat(folder); !os.IsNotExist(err) {
