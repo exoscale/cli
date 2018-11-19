@@ -32,8 +32,12 @@ type kubeCluster struct {
 
 // kubeBootstrapSteps represents a k8s instance bootstrap steps
 var kubeBootstrapSteps = []kubeBootstrapStep{
+	{name: "Instance system upgrade & reboot", command: `\
+sudo apt-get update && sudo apt-get upgrade -y && \
+nohup sh -c 'sleep 5s ; sudo reboot' & \
+exit`},
 	{name: "Docker Engine installation", command: `\
-sudo apt-get update && sudo apt-get install -y \
+sudo apt-get install -y \
     apt-transport-https \
     ca-certificates \
 	curl \
@@ -145,8 +149,21 @@ var kubeCreateCmd = &cobra.Command{
 
 		fmt.Println("Bootstrapping Kubernetes cluster:")
 
-		if err := bootstrapExokubeCluster(&vm, kubeCluster{clusterName, version}, kubeCreateDebug); err != nil {
+		sshClient, err := newSSHClient(
+			vm.IP().String(),
+			"ubuntu",
+			path.Join(getKeyPairPath(vm.ID.String()), "id_rsa"),
+		)
+		if err != nil {
+			return fmt.Errorf("unable to initialize SSH client: %s", err)
+		}
+
+		if err := bootstrapExokubeCluster(sshClient, kubeCluster{clusterName, version}, kubeCreateDebug); err != nil {
 			return fmt.Errorf("Cluster bootstrap failed: %s", err) // nolint: golint
+		}
+
+		if err := saveKubeData(clusterName, "instance", []byte(vm.ID.String())); err != nil {
+			return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
 		}
 
 		fmt.Printf(`
@@ -234,42 +251,10 @@ func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
 	return sg, nil
 }
 
-func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, cluster kubeCluster, debug bool) error {
+func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bool) error {
 	var (
-		sshClient  *ssh.Client
 		kubeConfig bytes.Buffer
 	)
-
-	key, err := ioutil.ReadFile(path.Join(getKeyPairPath(vm.ID.String()), "id_rsa"))
-	if err != nil {
-		return fmt.Errorf("unable to read cluster instance SSH private key: %s", err)
-	}
-
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		return fmt.Errorf("unable to parse cluster instance SSH private key: %s", err)
-	}
-
-	retryOp := func() error {
-		if sshClient, err = ssh.Dial("tcp", fmt.Sprintf("%s:22", vm.IP().String()), &ssh.ClientConfig{
-			User:            "ubuntu",
-			Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
-			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		}); err != nil {
-			return fmt.Errorf("unable to connect to cluster instance: %s", err)
-		}
-
-		return nil
-	}
-
-	if err = backoff.RetryNotify(
-		retryOp,
-		backoff.WithMaxRetries(backoff.NewConstantBackOff(10*time.Second), 6),
-		func(_ error, d time.Duration) {
-			fmt.Printf("! Cluster instance not ready yet, retrying in %s...\n", d)
-		}); err != nil {
-		return err
-	}
 
 	for _, step := range kubeBootstrapSteps {
 		var (
@@ -291,7 +276,7 @@ func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, cluster kubeCluster, d
 			return fmt.Errorf("template error: %s", err)
 		}
 
-		if err := runSSHCommand(sshClient, cmd.String(), stdout, stderr); err != nil {
+		if err := sshClient.runCommand(cmd.String(), stdout, stderr); err != nil {
 			fmt.Println("failed")
 			if errBuf.Len() > 0 {
 				fmt.Println(errBuf.String())
@@ -303,7 +288,7 @@ func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, cluster kubeCluster, d
 		fmt.Println("done")
 	}
 
-	if err := runSSHCommand(sshClient, "sudo cat /etc/kubernetes/admin.conf", &kubeConfig, nil); err != nil {
+	if err := sshClient.runCommand("sudo cat /etc/kubernetes/admin.conf", &kubeConfig, nil); err != nil {
 		return fmt.Errorf("unable to retrieve Kubernetes cluster configuration: %s", err)
 	}
 
@@ -311,24 +296,70 @@ func bootstrapExokubeCluster(vm *egoscale.VirtualMachine, cluster kubeCluster, d
 		return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
 	}
 
-	if err := saveKubeData(cluster.Name, "instance", []byte(vm.ID.String())); err != nil {
-		return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
-	}
-
 	return nil
 }
 
-func runSSHCommand(client *ssh.Client, cmd string, stdout, stderr io.Writer) error {
-	sshSession, err := client.NewSession()
-	if err != nil {
-		return fmt.Errorf("unable to create SSH session: %s", err)
+type sshClient struct {
+	host    string
+	hostKey ssh.Signer
+	user    string
+	c       *ssh.Client
+}
+
+func newSSHClient(host, hostUser, keyFile string) (*sshClient, error) {
+	var c = sshClient{
+		host: host + ":22",
+		user: hostUser,
 	}
-	defer sshSession.Close()
 
-	sshSession.Stdout = stdout
-	sshSession.Stderr = stderr
+	key, err := ioutil.ReadFile(keyFile)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read cluster instance SSH private key: %s", err)
+	}
 
-	if err := sshSession.Run(cmd); err != nil {
+	if c.hostKey, err = ssh.ParsePrivateKey(key); err != nil {
+		return nil, fmt.Errorf("unable to parse cluster instance SSH private key: %s", err)
+	}
+
+	return &c, nil
+}
+
+func (c *sshClient) runCommand(cmd string, stdout, stderr io.Writer) error {
+	var err error
+
+	retryOp := func() error {
+		if c.c, err = ssh.Dial("tcp", c.host, &ssh.ClientConfig{
+			User:            c.user,
+			Auth:            []ssh.AuthMethod{ssh.PublicKeys(c.hostKey)},
+			HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		}); err != nil {
+			return fmt.Errorf("unable to connect to cluster instance: %s", err)
+		}
+
+		sshSession, err := c.c.NewSession()
+		if err != nil {
+			return fmt.Errorf("unable to create SSH session: %s", err)
+		}
+		defer sshSession.Close()
+
+		sshSession.Stdout = stdout
+		sshSession.Stderr = stderr
+
+		if err := sshSession.Run(cmd); err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	if err = backoff.RetryNotify(
+		retryOp,
+		backoff.WithMaxRetries(backoff.NewConstantBackOff(10*time.Second), 6),
+		func(_ error, d time.Duration) {
+			if kubeCreateDebug {
+				fmt.Printf("! Cluster instance not ready yet, retrying in %s...\n", d)
+			}
+		}); err != nil {
 		return err
 	}
 
