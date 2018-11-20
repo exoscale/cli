@@ -30,43 +30,69 @@ type kubeBootstrapStep struct {
 type kubeCluster struct {
 	Name    string
 	Version string
+	Address string
 }
 
 // kubeBootstrapSteps represents a k8s instance bootstrap steps
 var kubeBootstrapSteps = []kubeBootstrapStep{
 	{name: "Instance system upgrade", command: `\
-sudo apt-get update && sudo apt-get upgrade -y && \
-nohup sh -c 'sleep 5s ; sudo reboot' & \
-exit`},
-	{name: "Docker Engine installation", command: `\
+sudo apt-get update && sudo apt-get upgrade -y
 sudo apt-get install -y \
     apt-transport-https \
     ca-certificates \
 	curl \
 	software-properties-common
-
+nohup sh -c 'sleep 5s ; sudo reboot' &
+exit`},
+	{name: "Docker Engine installation", command: `\
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
 sudo add-apt-repository \
    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
    $(lsb_release -cs) \
    stable"
-
 sudo apt-get update && sudo apt-get install -y docker-ce=18.06.0~ce~3-0~ubuntu
 
-cat <<EOF | sudo tee /etc/docker/daemon.json
+curl -so cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+curl -so cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+chmod +x cfssl* && sudo mv cfssl* /usr/bin
+
+cat <<EOF > csr.json
 {
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2"
+    "hosts": ["{{ .Address }}"],
+    "key": {"algo": "rsa", "size": 2048},
+    "names": [{"C": "CH", "L": "Lausanne", "O": "Exoscale", "OU": "exokube", "ST": ""}]
 }
 EOF
 
-sudo mkdir -p /etc/systemd/system/docker.service.d
+cfssl genkey -initca csr.json | cfssljson -bare ca
 
+cfssl gencert \
+	-ca ca.pem \
+	-ca-key ca-key.pem \
+	-hostname {{ .Address }} csr.json | cfssljson -bare
+
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+  "hosts": ["unix:///var/run/docker.sock", "tcp://0.0.0.0:2376"],
+  "tlsverify": true,
+  "tlscacert": "/etc/docker/ca.pem",
+  "tlscert": "/etc/docker/cert.pem",
+  "tlskey": "/etc/docker/key.pem",
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "storage-driver": "overlay2",
+  "log-driver": "json-file",
+  "log-opts": {
+	  "max-size": "100m"
+  }
+}
+EOF
+
+sudo mv ca.pem /etc/docker/ca.pem
+sudo mv cert.pem /etc/docker/cert.pem
+sudo mv cert-key.pem /etc/docker/key.pem
+rm -f *.{csr,json,pem}
+
+sudo sed -i -re 's#^ExecStart=.*#ExecStart=/usr/bin/dockerd#' /lib/systemd/system/docker.service
 sudo systemctl daemon-reload && sudo systemctl restart docker`},
 	{name: "Kubernetes cluster node installation", command: `\
 curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -149,7 +175,7 @@ var kubeCreateCmd = &cobra.Command{
 			return fmt.Errorf("unable to tag cluster instance: %s", err)
 		}
 
-		fmt.Println("🚧 Bootstrapping Kubernetes cluster:")
+		fmt.Println("🚧 Bootstrapping Kubernetes cluster (can take up to several minutes):")
 
 		sshClient, err := newSSHClient(
 			vm.IP().String(),
@@ -160,7 +186,11 @@ var kubeCreateCmd = &cobra.Command{
 			return fmt.Errorf("unable to initialize SSH client: %s", err)
 		}
 
-		if err := bootstrapExokubeCluster(sshClient, kubeCluster{clusterName, version}, kubeCreateDebug); err != nil {
+		if err := bootstrapExokubeCluster(sshClient, kubeCluster{
+			Name:    clusterName,
+			Version: version,
+			Address: vm.IP().String(),
+		}, kubeCreateDebug); err != nil {
 			return fmt.Errorf("Cluster bootstrap failed: %s", err) // nolint: golint
 		}
 
@@ -231,6 +261,14 @@ func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
 					},
 					{
 						SecurityGroupID: sg.ID,
+						Description:     "Docker API",
+						CIDRList:        []egoscale.CIDR{*egoscale.MustParseCIDR("0.0.0.0/0")},
+						Protocol:        "TCP",
+						StartPort:       2376,
+						EndPort:         2376,
+					},
+					{
+						SecurityGroupID: sg.ID,
 						Description:     "Kubernetes API",
 						CIDRList:        []egoscale.CIDR{*egoscale.MustParseCIDR("0.0.0.0/0")},
 						Protocol:        "TCP",
@@ -254,10 +292,6 @@ func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
 }
 
 func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bool) error {
-	var (
-		kubeConfig bytes.Buffer
-	)
-
 	for _, step := range kubeBootstrapSteps {
 		var (
 			stdout, stderr io.Writer
@@ -301,12 +335,16 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 		}
 	}
 
-	if err := sshClient.runCommand("sudo cat /etc/kubernetes/admin.conf", &kubeConfig, nil); err != nil {
-		return fmt.Errorf("unable to retrieve Kubernetes cluster configuration: %s", err)
+	for _, file := range []string{"ca.pem", "cert.pem", "key.pem"} {
+		err := sshClient.scp("/etc/docker/"+file, path.Join(getKubeconfigPath(cluster.Name), "docker", file))
+		if err != nil {
+			return fmt.Errorf("unable to retrieve Docker host file %q: %s", file, err)
+		}
 	}
 
-	if err := saveKubeData(cluster.Name, "kubeconfig", kubeConfig.Bytes()); err != nil {
-		return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
+	err := sshClient.scp("/etc/kubernetes/admin.conf", path.Join(getKubeconfigPath(cluster.Name), "kubeconfig"))
+	if err != nil {
+		return fmt.Errorf("unable to retrieve Kubernetes cluster configuration: %s", err)
 	}
 
 	return nil
@@ -377,6 +415,22 @@ func (c *sshClient) runCommand(cmd string, stdout, stderr io.Writer) error {
 	}
 
 	return nil
+}
+
+func (c *sshClient) scp(src, dst string) error {
+	var buf bytes.Buffer
+
+	if err := c.runCommand(fmt.Sprintf("sudo cat %s", src), &buf, nil); err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(path.Dir(dst)); os.IsNotExist(err) {
+		if err := os.MkdirAll(path.Dir(dst), os.ModePerm); err != nil {
+			return fmt.Errorf("unable to create directory %q: %s", path.Dir(dst), err)
+		}
+	}
+
+	return ioutil.WriteFile(dst, buf.Bytes(), 0600)
 }
 
 func init() {

@@ -36,9 +36,6 @@ func getKubeconfigPath(clusterName string) string {
 	return path.Join(gConfigFolder, "kube", clusterName)
 }
 
-// func getKubeInstance(clusterName string) (*egoscale.VirtualMachine, error) {
-// }
-
 func saveKubeData(clusterName, key string, data []byte) error {
 	if _, err := os.Stat(getKubeconfigPath(clusterName)); os.IsNotExist(err) {
 		if err := os.MkdirAll(getKubeconfigPath(clusterName), os.ModePerm); err != nil {
