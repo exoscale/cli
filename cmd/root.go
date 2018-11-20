@@ -211,7 +211,7 @@ func initConfig() {
 			return
 		}
 
-		log.Fatalf("no accounts we found into %q", viper.ConfigFileUsed())
+		log.Fatalf("no accounts were found into %q", viper.ConfigFileUsed())
 		return
 	}
 
