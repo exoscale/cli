@@ -182,7 +182,6 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(gConfigFilePath)
 	} else {
-		// Search config in home directory with name ".cobra_test" (without extension).
 		viper.SetConfigName("exoscale")
 		viper.AddConfigPath(gConfigFolder)
 		// Retain backwards compatibility
@@ -207,7 +206,12 @@ func initConfig() {
 	}
 
 	if len(config.Accounts) == 0 {
-		ignoreClientBuild = true
+		if isNonCredentialCmd(nonCredentialCmd...) {
+			ignoreClientBuild = true
+			return
+		}
+
+		log.Fatalf("no accounts we found into %q", viper.ConfigFileUsed())
 		return
 	}
 
