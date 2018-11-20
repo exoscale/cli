@@ -170,7 +170,14 @@ func initConfig() {
 		}
 	}
 
-	gConfigFolder = path.Join(usr.HomeDir, ".exoscale")
+
+	xdgHome, found := os.LookupEnv("XDG_CONFIG_HOME")
+	if found {
+		gConfigFolder = path.Join(xdgHome, "exoscale")
+	} else {
+		// The XDG spec specifies a default XDG_CONFIG_HOME in $HOME/.config
+		gConfigFolder = path.Join(usr.HomeDir, ".config", "exoscale")
+	}
 
 	if gConfigFilePath != "" {
 		// Use config file from the flag.
@@ -178,6 +185,8 @@ func initConfig() {
 	} else {
 		// Search config in home directory with name ".cobra_test" (without extension).
 		viper.SetConfigName("exoscale")
+		viper.AddConfigPath(gConfigFolder)
+		// Retain backwards compatibility
 		viper.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
 		viper.AddConfigPath(usr.HomeDir)
 		viper.AddConfigPath(".")
