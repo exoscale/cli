@@ -202,7 +202,8 @@ func initConfig() {
 	}
 
 	// All the stored data (e.g. ssh keys) will be put next to the config file.
-	gConfigFolder = path.Dir(viper.ConfigFileUsed())
+	gConfigFilePath = viper.ConfigFileUsed()
+	gConfigFolder = path.Dir(gConfigFilePath)
 
 	if err := viper.Unmarshal(config); err != nil {
 		log.Fatal(fmt.Errorf("couldn't read config: %s", err))

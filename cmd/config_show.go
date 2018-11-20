@@ -7,7 +7,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // showCmd represents the show command
@@ -62,9 +61,9 @@ var showCmd = &cobra.Command{
 			fmt.Fprintf(w, "SOS Endpoint:\t%s\n", acc.SosEndpoint) // nolint: errcheck
 		}
 
-		fmt.Fprintf(w, "\t\n")                                         // nolink: errcheck
-		fmt.Fprintf(w, "Configuration:\t%s\n", viper.ConfigFileUsed()) // nolink: errcheck
-		fmt.Fprintf(w, "Storage:\t%s\n", gConfigFolder)                // nolint: errcheck
+		fmt.Fprintf(w, "\t\n")                                  // nolink: errcheck
+		fmt.Fprintf(w, "Configuration:\t%s\n", gConfigFilePath) // nolink: errcheck
+		fmt.Fprintf(w, "Storage:\t%s\n", gConfigFolder)         // nolint: errcheck
 
 		return w.Flush()
 	},
