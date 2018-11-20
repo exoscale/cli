@@ -33,7 +33,7 @@ var showCmd = &cobra.Command{
 			return fmt.Errorf("account %q was not found", account)
 		}
 
-		secret := strings.Repeat("×", len(acc.secret)/4)
+		secret := strings.Repeat("×", len(acc.Secret)/4)
 
 		if len(acc.SecretCommand) > 0 {
 			secret = strings.Join(acc.SecretCommand, " ")
