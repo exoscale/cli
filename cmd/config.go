@@ -53,7 +53,6 @@ func (a account) GetSecret() string {
 	return a.Secret
 }
 
-
 const (
 	defaultConfigFileName = "exoscale"
 	defaultEndpoint       = "https://api.exoscale.ch/compute"
