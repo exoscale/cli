@@ -170,7 +170,6 @@ func initConfig() {
 		}
 	}
 
-
 	xdgHome, found := os.LookupEnv("XDG_CONFIG_HOME")
 	if found {
 		gConfigFolder = path.Join(xdgHome, "exoscale")
