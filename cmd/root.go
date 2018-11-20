@@ -108,8 +108,8 @@ func buildClient() {
 		return
 	}
 
-	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint, gCurrentAccount.Key, gCurrentAccount.GetSecret())
-	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.GetSecret())
+	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint, gCurrentAccount.Key, gCurrentAccount.APISecret())
+	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret())
 }
 
 // initConfig reads in config file and ENV variables if set.

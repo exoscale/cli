@@ -38,7 +38,7 @@ type account struct {
 	DefaultTemplate string
 }
 
-func (a account) GetSecret() string {
+func (a account) APISecret() string {
 	if len(a.SecretCommand) != 0 {
 		cmd := exec.Command(a.SecretCommand[0], a.SecretCommand[1:]...)
 		cmd.Stdin = os.Stdin
@@ -190,8 +190,8 @@ func getAccount() (*account, error) {
 			account.Key = apiKey
 		}
 
-		secret := account.GetSecret()
-		secretShow := account.GetSecret()
+		secret := account.APISecret()
+		secretShow := account.APISecret()
 		if secret != "" && len(secret) > 10 {
 			secretShow = secret[0:7] + "..."
 		}
@@ -203,7 +203,7 @@ func getAccount() (*account, error) {
 			account.Secret = secretKey
 		}
 
-		client = egoscale.NewClient(account.Endpoint, account.Key, account.GetSecret())
+		client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
 
 		fmt.Printf("Checking the credentials of %q...", account.Key)
 		acc := &egoscale.Account{}
