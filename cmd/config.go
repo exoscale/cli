@@ -31,14 +31,14 @@ type account struct {
 	DNSEndpoint     string
 	SosEndpoint     string
 	Key             string
-	secret          string
+	Secret          string
 	SecretCommand   []string
 	DefaultZone     string
 	DefaultSSHKey   string
 	DefaultTemplate string
 }
 
-func (a account) Secret() string {
+func (a account) APISecret() string {
 	if len(a.SecretCommand) != 0 {
 		cmd := exec.Command(a.SecretCommand[0], a.SecretCommand[1:]...)
 		cmd.Stdin = os.Stdin
@@ -50,7 +50,7 @@ func (a account) Secret() string {
 		return strings.TrimRight(string(out), "\n")
 	}
 
-	return a.secret
+	return a.Secret
 }
 
 const (
@@ -168,7 +168,7 @@ func getAccount() (*account, error) {
 	account := &account{
 		Endpoint: defaultEndpoint,
 		Key:      "",
-		secret:   "",
+		Secret:   "",
 	}
 
 	for i := 0; ; i++ {
@@ -190,8 +190,8 @@ func getAccount() (*account, error) {
 			account.Key = apiKey
 		}
 
-		secret := account.Secret()
-		secretShow := account.Secret()
+		secret := account.APISecret()
+		secretShow := account.APISecret()
 		if secret != "" && len(secret) > 10 {
 			secretShow = secret[0:7] + "..."
 		}
@@ -200,10 +200,10 @@ func getAccount() (*account, error) {
 			return nil, err
 		}
 		if secretKey != secret && secretKey != secretShow {
-			account.secret = secretKey
+			account.Secret = secretKey
 		}
 
-		client = egoscale.NewClient(account.Endpoint, account.Key, account.secret)
+		client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
 
 		fmt.Printf("Checking the credentials of %q...", account.Key)
 		acc := &egoscale.Account{}
@@ -422,10 +422,10 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			Name:     acc.Name(),
 			Endpoint: acc.Key("endpoint").String(),
 			Key:      acc.Key("key").String(),
-			secret:   acc.Key("secret").String(),
+			Secret:   acc.Key("secret").String(),
 		}
 
-		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.secret)
+		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.Secret)
 
 		fmt.Printf("Checking the credentials of %q...", csAccount.Key)
 		a := &egoscale.Account{}
