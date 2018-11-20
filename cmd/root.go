@@ -182,7 +182,6 @@ func initConfig() {
 		// Use config file from the flag.
 		viper.SetConfigFile(gConfigFilePath)
 	} else {
-		// Search config in home directory with name ".cobra_test" (without extension).
 		viper.SetConfigName("exoscale")
 		viper.AddConfigPath(gConfigFolder)
 		// Retain backwards compatibility
@@ -201,6 +200,9 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal(err)
 	}
+
+	// All the stored data (e.g. ssh keys) will be put next to the config file.
+	gConfigFolder = path.Dir(viper.ConfigFileUsed())
 
 	if err := viper.Unmarshal(config); err != nil {
 		log.Fatal(fmt.Errorf("couldn't read config: %s", err))
