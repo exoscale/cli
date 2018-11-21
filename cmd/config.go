@@ -67,8 +67,8 @@ var configCmd = &cobra.Command{
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
-	if viper.ConfigFileUsed() != "" {
-		fmt.Println("Good day! exo is already configured with accounts:")
+	if viper.ConfigFileUsed() != "" && gAccountName != "" {
+		fmt.Println("Good day! exo is already configured:")
 		accounts := listAccounts()
 		prompt := promptui.Select{
 			Label: "Select an account",
@@ -222,7 +222,7 @@ Let's start over.
 		}
 	}
 
-	name, err := readInput(reader, "Account name", account.Name)
+	name, err := readInput(reader, "Name", account.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -231,8 +231,8 @@ Let's start over.
 	}
 
 	for isAccountExist(account.Name) {
-		fmt.Printf("Account name [%s] already exist\n", name)
-		name, err = readInput(reader, "Account name", account.Name)
+		fmt.Printf("Name [%s] already exist\n", name)
+		name, err = readInput(reader, "Name", account.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -277,7 +277,6 @@ func addAccount(filePath string, newAccounts *config) error {
 		accounts[i]["name"] = acc.Name
 		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["key"] = acc.Key
-		accounts[i]["secret"] = acc.Secret
 		accounts[i]["defaultZone"] = acc.DefaultZone
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
@@ -287,6 +286,8 @@ func addAccount(filePath string, newAccounts *config) error {
 		}
 		if len(acc.SecretCommand) != 0 {
 			accounts[i]["secretCommand"] = acc.SecretCommand
+		} else {
+			accounts[i]["secret"] = acc.Secret
 		}
 		accounts[i]["account"] = acc.Account
 
@@ -427,22 +428,21 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.Secret)
 
-		fmt.Printf("Checking the credentials of %q...", csAccount.Key)
+		fmt.Printf("Checking the credentials of %q (%s)...", csAccount.Key, csAccount.Endpoint)
 		a := &egoscale.Account{}
 		err := csClient.GetWithContext(gContext, a)
 		if err != nil {
 			fmt.Println(" failure.")
-			if !askQuestion(fmt.Sprintf("Do you want to keep %s?", acc.Name())) {
+			if !askQuestion(fmt.Sprintf("Do you want to keep %s?", csAccount.Name)) {
 				continue
 			}
 		} else {
 			fmt.Println(" success!")
-			csAccount.Name = a.Name
 			csAccount.Account = a.Name
 		}
 		fmt.Println("")
 
-		name, err := readInput(reader, "Account name", csAccount.Name)
+		name, err := readInput(reader, fmt.Sprintf("Name (org: %q)", a.Name), csAccount.Name)
 		if err != nil {
 			return err
 		}
@@ -452,7 +452,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 		for isAccountExist(csAccount.Name) {
 			fmt.Printf("Account name [%s] already exist\n", csAccount.Name)
-			name, err = readInput(reader, "Account name", csAccount.Name)
+			name, err = readInput(reader, fmt.Sprintf("Name (org: %q)", a.Name), csAccount.Name)
 			if err != nil {
 				return err
 			}
@@ -508,8 +508,10 @@ func createConfigFile(fileName string) (string, error) {
 
 	filepath := path.Join(gConfigFolder, fileName+".toml")
 
-	if _, err := os.Stat(filepath); !os.IsNotExist(err) {
-		return "", fmt.Errorf("%q exists already", filepath)
+	if viper.ConfigFileUsed() == "" {
+		if _, err := os.Stat(filepath); !os.IsNotExist(err) {
+			return "", fmt.Errorf("%q exists already", filepath)
+		}
 	}
 
 	fp, err := os.OpenFile(filepath, os.O_RDONLY|os.O_CREATE, 0600)
