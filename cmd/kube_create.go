@@ -41,6 +41,7 @@ sudo apt-get install -y \
     apt-transport-https \
     ca-certificates \
 	curl \
+	golang-cfssl \
 	software-properties-common
 nohup sh -c 'sleep 5s ; sudo reboot' &
 exit`},
@@ -51,10 +52,6 @@ sudo add-apt-repository \
    $(lsb_release -cs) \
    stable"
 sudo apt-get update && sudo apt-get install -y docker-ce=18.06.0~ce~3-0~ubuntu
-
-curl -so cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
-curl -so cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
-chmod +x cfssl* && sudo mv cfssl* /usr/bin
 
 cat <<EOF > csr.json
 {
