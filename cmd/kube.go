@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 
-	// "github.com/exoscale/egoscale"
+	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
@@ -17,9 +17,6 @@ var (
 
 	// kubeInstanceTagKey represents the VM instance grouping tag key
 	kubeInstanceTagKey = "exokube"
-
-	// kubeInstanceTagValue represents the VM instance grouping tag value
-	kubeInstanceTagValue = "true"
 )
 
 // kubeCmd represents the kube command
@@ -30,6 +27,16 @@ var kubeCmd = &cobra.Command{
 instances in a similar fashion as Minikube. It runs a single-node Kubernetes
 cluster inside an Exoscale VM for users looking to try out Kubernetes or develop
 with it day-to-day.`,
+}
+
+func getKubeInstanceVersion(vm *egoscale.VirtualMachine) string {
+	for _, tag := range vm.Tags {
+		if tag.Key == kubeInstanceTagKey {
+			return tag.Value
+		}
+	}
+
+	return ""
 }
 
 func getKubeconfigPath(clusterName string) string {

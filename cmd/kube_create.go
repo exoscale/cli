@@ -168,7 +168,7 @@ var kubeCreateCmd = &cobra.Command{
 		if _, err := cs.Request(egoscale.CreateTags{
 			ResourceType: vm.ResourceType(),
 			ResourceIDs:  []egoscale.UUID{*vm.ID},
-			Tags:         []egoscale.ResourceTag{{Key: kubeInstanceTagKey, Value: kubeInstanceTagValue}},
+			Tags:         []egoscale.ResourceTag{{Key: kubeInstanceTagKey, Value: version}},
 		}); err != nil {
 			return fmt.Errorf("unable to tag cluster instance: %s", err)
 		}
