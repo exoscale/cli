@@ -25,7 +25,7 @@ var (
 // kubeCmd represents the kube command
 var kubeCmd = &cobra.Command{
 	Use:   "kube",
-	Short: "Standalone Kubernetes clusters management",
+	Short: "Standalone Kubernetes cluster management",
 	Long: `These commands allow you to bootstrap standalone Kubernetes cluster
 instances in a similar fashion as Minikube. It runs a single-node Kubernetes
 cluster inside an Exoscale VM for users looking to try out Kubernetes or develop
@@ -65,5 +65,5 @@ func deleteKubeData(clusterName string) {
 }
 
 func init() {
-	RootCmd.AddCommand(kubeCmd)
+	labCmd.AddCommand(kubeCmd)
 }
