@@ -79,18 +79,19 @@ func getSecurityGroupByNameOrID(name string) (*egoscale.SecurityGroup, error) {
 }
 
 func getMyCIDR(isIpv6 bool) (*egoscale.CIDR, error) {
-
 	cidrMask := 32
 	dnsServer := "resolver1.opendns.com"
+	protocol := "udp4"
 
 	if isIpv6 {
 		dnsServer = "resolver2.ipv6-sandbox.opendns.com"
 		cidrMask = 128
+		protocol = "udp6"
 	}
 
 	resolver := net.Resolver{
 		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-			return net.Dial("udp", dnsServer+":53")
+			return net.Dial(protocol, dnsServer+":53")
 		},
 		PreferGo: true,
 	}
