@@ -36,8 +36,8 @@ type kubeCluster struct {
 // kubeBootstrapSteps represents a k8s instance bootstrap steps
 var kubeBootstrapSteps = []kubeBootstrapStep{
 	{name: "Instance system upgrade", command: `\
-sudo apt-get update && sudo apt-get upgrade -y
-sudo apt-get install -y \
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get update && sudo -E DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y \
     apt-transport-https \
     ca-certificates \
 	curl \
@@ -51,7 +51,8 @@ sudo add-apt-repository \
    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
    $(lsb_release -cs) \
    stable"
-sudo apt-get update && sudo apt-get install -y docker-ce=18.06.0~ce~3-0~ubuntu
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce=18.06.0~ce~3-0~ubuntu
 
 cat <<EOF > csr.json
 {
@@ -97,8 +98,8 @@ cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
 deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 
-sudo apt-get update && \
-sudo apt-get install -y kubelet kubeadm kubectl && \
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get update && \
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y kubelet kubeadm kubectl && \
 sudo apt-mark hold kubelet kubeadm kubectl`},
 	{name: "Kubernetes cluster node initialization", command: `\
 sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version {{ .Version }} &&
