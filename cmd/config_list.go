@@ -15,7 +15,9 @@ var configListCmd = &cobra.Command{
 		if gAllAccount == nil {
 			return fmt.Errorf("no accounts defined")
 		}
-		listAccounts()
+		for _, account := range listAccounts() {
+			fmt.Println(account)
+		}
 		return nil
 	},
 }
