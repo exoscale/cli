@@ -71,10 +71,11 @@ func getSecurityGroupByNameOrID(name string) (*egoscale.SecurityGroup, error) {
 		sg.ID = id
 	}
 
-	if err := cs.GetWithContext(gContext, sg); err != nil {
+	resp, err := cs.GetWithContext(gContext, sg)
+	if err != nil {
 		return nil, err
 	}
-	return sg, nil
+	return resp.(*egoscale.SecurityGroup), nil
 
 }
 

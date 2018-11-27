@@ -23,7 +23,8 @@ func getAffinityGroupByName(name string) (*egoscale.AffinityGroup, error) {
 		aff.Name = name
 	}
 
-	if err := cs.GetWithContext(gContext, aff); err != nil {
+	resp, err := cs.GetWithContext(gContext, aff)
+	if err != nil {
 		if e, ok := err.(*egoscale.ErrorResponse); ok && e.ErrorCode == egoscale.ParamError {
 			return nil, fmt.Errorf("missing Affinity Group %q", name)
 		}
@@ -31,7 +32,7 @@ func getAffinityGroupByName(name string) (*egoscale.AffinityGroup, error) {
 		return nil, err
 	}
 
-	return aff, nil
+	return resp.(*egoscale.AffinityGroup), nil
 }
 
 func init() {

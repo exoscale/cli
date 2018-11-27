@@ -27,11 +27,12 @@ func getNetworkByName(name string) (*egoscale.Network, error) {
 		net.ID = id
 	}
 
-	if err := cs.GetWithContext(gContext, net); err != nil {
+	resp, err := cs.GetWithContext(gContext, net)
+	if err != nil {
 		return nil, err
 	}
 
-	return net, nil
+	return resp.(*egoscale.Network), nil
 }
 
 func getNetworkByNameAndZone(name string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
@@ -48,11 +49,12 @@ func getNetworkByNameAndZone(name string, zoneID *egoscale.UUID) (*egoscale.Netw
 		net.ID = id
 	}
 
-	if err := cs.GetWithContext(gContext, net); err != nil {
+	resp, err := cs.GetWithContext(gContext, net)
+	if err != nil {
 		return nil, err
 	}
 
-	return net, nil
+	return resp.(*egoscale.Network), nil
 }
 func init() {
 	RootCmd.AddCommand(privnetCmd)

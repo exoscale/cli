@@ -21,11 +21,12 @@ func getVMWithNameOrID(name string) (*egoscale.VirtualMachine, error) {
 		vm.ID = id
 	}
 
-	if err := cs.GetWithContext(gContext, vm); err != nil {
+	resp, err := cs.GetWithContext(gContext, vm)
+	if err != nil {
 		return nil, err
 	}
 
-	return vm, nil
+	return resp.(*egoscale.VirtualMachine), nil
 }
 
 func getSecurityGroup(vm *egoscale.VirtualMachine) []string {

@@ -65,23 +65,28 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, force bool) err
 		}
 	}
 
-	volume := &egoscale.Volume{
+	resp, err := cs.GetWithContext(gContext, egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
-	}
-
-	if err := cs.GetWithContext(gContext, volume); err != nil {
+	})
+	if err != nil {
 		return err
 	}
 
+	volume := resp.(*egoscale.Volume)
 	volumeSize := volume.Size >> 30
 
-	temp := &egoscale.Template{IsFeatured: true, ID: vm.TemplateID, ZoneID: vm.ZoneID}
+	resp, err = cs.GetWithContext(gContext, egoscale.Template{
+		IsFeatured: true,
+		ID:         vm.TemplateID,
+		ZoneID:     vm.ZoneID,
+	})
 
-	if err := cs.GetWithContext(gContext, temp); err != nil {
+	if err != nil {
 		return err
 	}
 
+	temp := resp.(*egoscale.Template)
 	tempSize := temp.Size >> 30
 
 	rootDiskSize := int64(volumeSize)

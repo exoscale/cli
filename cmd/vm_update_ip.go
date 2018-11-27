@@ -75,11 +75,15 @@ func showVMWithNics(vm *egoscale.VirtualMachine) error {
 	for _, nic := range vm.Nic {
 		if nic.IsDefault {
 		} else {
-			network := &egoscale.Network{ID: nic.NetworkID}
-			if err := cs.GetWithContext(gContext, network); err != nil {
+			resp, err := cs.GetWithContext(gContext, &egoscale.Network{
+				ID: nic.NetworkID,
+			})
+
+			if err != nil {
 				return err
 			}
 
+			network := resp.(*egoscale.Network)
 			networkName := network.Name
 			if networkName == "" {
 				networkName = network.ID.String()

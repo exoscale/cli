@@ -23,16 +23,23 @@ var snapshotCreateCmd = &cobra.Command{
 			return err
 		}
 
-		volume := &egoscale.Volume{
+		query := &egoscale.Volume{
 			VirtualMachineID: vm.ID,
 			Type:             "ROOT",
 		}
 
-		if err := cs.GetWithContext(gContext, volume); err != nil {
+		resp, err := cs.GetWithContext(gContext, query)
+		if err != nil {
 			return err
 		}
 
-		res, err := asyncRequest(&egoscale.CreateSnapshot{VolumeID: volume.ID}, fmt.Sprintf("Creating snapshot of %q", vm.Name))
+		createSnapshot := &egoscale.CreateSnapshot{
+			VolumeID: resp.(*egoscale.Volume).ID,
+		}
+
+		message := fmt.Sprintf("Creating snapshot of %q", vm.Name)
+
+		res, err := asyncRequest(createSnapshot, message)
 		if err != nil {
 			return err
 		}

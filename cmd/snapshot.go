@@ -21,11 +21,12 @@ func getSnapshotWithNameOrID(name string) (*egoscale.Snapshot, error) {
 		snapshot.ID = id
 	}
 
-	if err := cs.GetWithContext(gContext, snapshot); err != nil {
+	resp, err := cs.GetWithContext(gContext, snapshot)
+	if err != nil {
 		return nil, err
 	}
 
-	return snapshot, nil
+	return resp.(*egoscale.Snapshot), nil
 }
 
 func init() {

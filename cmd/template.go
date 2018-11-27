@@ -33,8 +33,9 @@ func getTemplateByName(zoneID *egoscale.UUID, name string) (*egoscale.Template, 
 		template.ID = id
 	}
 
-	if err := cs.GetWithContext(gContext, template); err == nil {
-		return template, err
+	resp, err := cs.GetWithContext(gContext, template)
+	if err == nil {
+		return resp.(*egoscale.Template), err
 	}
 
 	// attempts a fuzzy search

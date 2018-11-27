@@ -59,11 +59,15 @@ var snapshotListCmd = &cobra.Command{
 				Type:             "ROOT",
 			}
 
-			if err := cs.GetWithContext(gContext, volume); err != nil {
+			resp, err := cs.GetWithContext(gContext, volume)
+			if err != nil {
 				return err
 			}
 
-			snapshots, err := cs.ListWithContext(gContext, egoscale.Snapshot{VolumeID: volume.ID})
+			snapshots, err := cs.ListWithContext(gContext, egoscale.Snapshot{
+				VolumeID: resp.(*egoscale.Volume).ID,
+			})
+
 			if err != nil {
 				return err
 			}
