@@ -42,6 +42,7 @@ type ListAPIsResponse struct {
 	API   []API `json:"api"`
 }
 
-func (*ListAPIs) response() interface{} {
+// Response returns the struct to unmarshal
+func (*ListAPIs) Response() interface{} {
 	return new(ListAPIsResponse)
 }

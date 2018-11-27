@@ -6,25 +6,25 @@ import (
 
 // Command represents a CloudStack request
 type Command interface {
-	response() interface{}
+	Response() interface{}
 }
 
 // AsyncCommand represents a async CloudStack request
 type AsyncCommand interface {
 	Command
-	// Response interface to Unmarshal the JSON into
-	asyncResponse() interface{}
+	AsyncResponse() interface{}
 }
 
 // ListCommand represents a CloudStack list request
 type ListCommand interface {
+	Listable
 	Command
 	// SetPage defines the current pages
 	SetPage(int)
 	// SetPageSize defines the size of the page
 	SetPageSize(int)
-	// each reads the data from the response and feeds channels, and returns true if we are on the last page
-	each(interface{}, IterateItemFunc)
+	// Each reads the data from the response and feeds channels, and returns true if we are on the last page
+	Each(interface{}, IterateItemFunc)
 }
 
 // onBeforeHook represents an action to be done on the params before sending them

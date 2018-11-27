@@ -12,6 +12,19 @@ type ResourceTag struct {
 	Value        string `json:"value,omitempty" doc:"tag value"`
 }
 
+// ListRequest builds the ListZones request
+func (tag ResourceTag) ListRequest() (ListCommand, error) {
+	req := &ListTags{
+		Customer:     tag.Customer,
+		Key:          tag.Key,
+		ResourceID:   tag.ResourceID,
+		ResourceType: tag.ResourceType,
+		Value:        tag.Value,
+	}
+
+	return req, nil
+}
+
 // CreateTags (Async) creates resource tag(s)
 type CreateTags struct {
 	ResourceIDs  []UUID        `json:"resourceids" doc:"list of resources to create the tags for"`
@@ -21,11 +34,13 @@ type CreateTags struct {
 	_            bool          `name:"createTags" description:"Creates resource tag(s)"`
 }
 
-func (CreateTags) response() interface{} {
+// Response returns the struct to unmarshal
+func (CreateTags) Response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (CreateTags) asyncResponse() interface{} {
+// AsyncResponse returns the struct to unmarshal the async job
+func (CreateTags) AsyncResponse() interface{} {
 	return new(booleanResponse)
 }
 
@@ -37,13 +52,17 @@ type DeleteTags struct {
 	_            bool          `name:"deleteTags" description:"Deleting resource tag(s)"`
 }
 
-func (DeleteTags) response() interface{} {
+// Response returns the struct to unmarshal
+func (DeleteTags) Response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (DeleteTags) asyncResponse() interface{} {
+// AsyncResponse returns the struct to unmarshal the async job
+func (DeleteTags) AsyncResponse() interface{} {
 	return new(booleanResponse)
 }
+
+//go:generate go run generate/main.go -interface=Listable ListTags
 
 // ListTags list resource tag(s)
 type ListTags struct {
@@ -62,8 +81,4 @@ type ListTags struct {
 type ListTagsResponse struct {
 	Count int           `json:"count"`
 	Tag   []ResourceTag `json:"tag"`
-}
-
-func (ListTags) response() interface{} {
-	return new(ListTagsResponse)
 }

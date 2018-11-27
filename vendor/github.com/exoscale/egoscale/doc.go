@@ -117,7 +117,7 @@ Security Groups provide a way to isolate traffic to VMs. Rules are added via the
 	})
 	// ...
 
-Security Group also implement the generic List, Get and Delete interfaces (Listable, Gettable and Deletable).
+Security Group also implement the generic List, Get and Delete interfaces (Listable and Deletable).
 
 	// List all Security Groups
 	sgs, err := cs.List(new(egoscale.SecurityGroup))
@@ -127,11 +127,11 @@ Security Group also implement the generic List, Get and Delete interfaces (Lista
 	}
 
 	// Get a Security Group
-	sg := &egoscale.SecurityGroup{Name: "Load balancer"}
-	if err := cs.Get(sg); err != nil {
+	sgQuery := &egoscale.SecurityGroup{Name: "Load balancer"}
+	resp, err := cs.Get(sgQuery); err != nil {
 		...
 	}
-	// The SecurityGroup struct has been loaded with the SecurityGroup informations
+	sg := resp.(*egoscale.SecurityGroup)
 
 	if err := cs.Delete(sg); err != nil {
 		...
