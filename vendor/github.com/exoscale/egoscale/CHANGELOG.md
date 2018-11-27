@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.13.2
+------
+
+- feat: `admin` namespace containing `ListVirtualMachines` for admin usage
+
 0.13.1
 ------
 

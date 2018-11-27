@@ -153,6 +153,10 @@ func buildFlags(method egoscale.Command, cmd *cobra.Command) {
 	// we've got a pointer
 	value := val.Elem()
 
+	buildFlag(value, cmd)
+}
+
+func buildFlag(value reflect.Value, cmd *cobra.Command) {
 	if value.Kind() != reflect.Struct {
 		log.Fatalf("struct was expected")
 		return
@@ -272,6 +276,8 @@ func buildFlags(method egoscale.Command, cmd *cobra.Command) {
 			default:
 				log.Printf("[SKIP] Ptr type of %s is not supported!", field.Name)
 			}
+		case reflect.Struct:
+			buildFlag(val, cmd)
 		default:
 			log.Printf("[SKIP] Type of %s is not supported! %v", field.Name, val.Kind())
 		}
