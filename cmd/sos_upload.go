@@ -123,14 +123,14 @@ var sosUploadCmd = &cobra.Command{
 			base := filepath.Base(fileToUpload.localPath)
 
 			bar := progress.AddBar(fileInfo.Size(),
-				mpb.PrependDecorators(
+				mpb.AppendDecorators(
 					// simple name decorator
 					decor.Name(base, decor.WC{W: len(base) + 1, C: decor.DidentRight}),
+				),
+				mpb.PrependDecorators(
+					decor.AverageETA(decor.ET_STYLE_GO),
 					// decor.DSyncWidth bit enables column width synchronization
 					decor.Percentage(decor.WCSyncSpace),
-				),
-				mpb.AppendDecorators(
-					decor.AverageETA(decor.ET_STYLE_GO),
 				),
 			)
 
