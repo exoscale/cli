@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -11,10 +12,15 @@ import (
 	"github.com/vbauerster/mpb"
 	"github.com/vbauerster/mpb/decor"
 
-	humanize "github.com/dustin/go-humanize"
 	minio "github.com/minio/minio-go"
 	"github.com/spf13/cobra"
 )
+
+type fileToUpload struct {
+	localPath   string
+	remotePath  string
+	contentType string
+}
 
 // uploadCmd represents the upload command
 var sosUploadCmd = &cobra.Command{
@@ -48,6 +54,11 @@ var sosUploadCmd = &cobra.Command{
 			return err
 		}
 
+		recursive, err := cmd.Flags().GetBool("recursive")
+		if err != nil {
+			return err
+		}
+
 		// Upload the  file
 		bucketName := args[0]
 		objectName := filepath.Base(args[1])
@@ -57,14 +68,35 @@ var sosUploadCmd = &cobra.Command{
 			remoteFilePath = remoteFilePath + objectName
 		}
 
+		if remoteFilePath == "" {
+			remoteFilePath = objectName
+		}
+
 		file, err := os.Open(filePath)
 		if err != nil {
 			return err
 		}
 
-		// Only the first 512 bytes are used to sniff the content type.
-		buffer := make([]byte, 512)
-		_, err = file.Read(buffer)
+		fileStat, err := file.Stat()
+		if err != nil {
+			return err
+		}
+
+		filesToUpload := []fileToUpload{}
+		if recursive && fileStat.IsDir() {
+			filesToUpload, err = getFiles(filePath, strings.TrimRight(remoteFilePath, "/"), filesToUpload)
+		} else {
+			// Only the first 512 bytes are used to sniff the content type.
+			buffer := make([]byte, 512)
+			_, err = file.Read(buffer)
+
+			contentType := http.DetectContentType(buffer)
+			filesToUpload = append(filesToUpload, fileToUpload{
+				localPath:   filePath,
+				remotePath:  remoteFilePath,
+				contentType: contentType,
+			})
+		}
 		if err != nil {
 			return err
 		}
@@ -73,59 +105,102 @@ var sosUploadCmd = &cobra.Command{
 			return err
 		}
 
-		if remoteFilePath == "" {
-			remoteFilePath = objectName
+		for _, fileToUpload := range filesToUpload {
+
+			fileInfo, err := os.Stat(fileToUpload.localPath)
+			if err != nil {
+				return err
+			}
+
+			progress := mpb.New(
+				mpb.WithContext(gContext),
+				// override default (80) width
+				mpb.WithWidth(64),
+				// override default 120ms refresh rate
+				mpb.WithRefreshRate(180*time.Millisecond),
+			)
+
+			base := filepath.Base(fileToUpload.localPath)
+
+			bar := progress.AddBar(fileInfo.Size(),
+				mpb.PrependDecorators(
+					// simple name decorator
+					decor.Name(base, decor.WC{W: len(base) + 1, C: decor.DidentRight}),
+					// decor.DSyncWidth bit enables column width synchronization
+					decor.Percentage(decor.WCSyncSpace),
+				),
+				mpb.AppendDecorators(
+					decor.AverageETA(decor.ET_STYLE_GO),
+				),
+			)
+
+			f, err := os.Open(fileToUpload.localPath)
+			if err != nil {
+				return err
+			}
+
+			reader := bar.ProxyReader(f)
+
+			// Upload object with FPutObject
+			_, err = minioClient.PutObjectWithContext(gContext, bucketName, fileToUpload.remotePath, f, fileInfo.Size(), minio.PutObjectOptions{ContentType: fileToUpload.contentType, Progress: reader})
+			if err != nil {
+				return err
+			}
+
+			progress.Wait()
+
+			if err := f.Close(); err != nil {
+				return err
+			}
+
 		}
 
-		contentType := http.DetectContentType(buffer)
-
-		fileInfo, err := os.Stat(filePath)
-		if err != nil {
-			return err
-		}
-
-		progress := mpb.New(
-			mpb.WithContext(gContext),
-			// override default (80) width
-			mpb.WithWidth(64),
-			// override default 120ms refresh rate
-			mpb.WithRefreshRate(180*time.Millisecond),
-		)
-
-		bar := progress.AddBar(fileInfo.Size(),
-			mpb.PrependDecorators(
-				// simple name decorator
-				decor.Name(objectName, decor.WC{W: len(objectName) + 1, C: decor.DidentRight}),
-				// decor.DSyncWidth bit enables column width synchronization
-				decor.Percentage(decor.WCSyncSpace),
-			),
-			mpb.AppendDecorators(
-				decor.AverageETA(decor.ET_STYLE_GO),
-			),
-		)
-
-		f, err := os.Open(filePath)
-		if err != nil {
-			return err
-		}
-		defer f.Close() // nolint: errcheck
-
-		reader := bar.ProxyReader(f)
-
-		// Upload object with FPutObject
-		n, err := minioClient.PutObjectWithContext(gContext, bucketName, remoteFilePath, f, fileInfo.Size(), minio.PutObjectOptions{ContentType: contentType, Progress: reader})
-		if err != nil {
-			return err
-		}
-
-		progress.Wait()
-
-		log.Printf("Successfully uploaded %s of size %s\n", objectName, humanize.IBytes(uint64(n)))
+		log.Printf("Successfully uploaded %q\n", objectName)
 
 		return nil
 	},
 }
 
+func getFiles(folderName, remoteFilePath string, resFiles []fileToUpload) ([]fileToUpload, error) {
+	files, err := ioutil.ReadDir(folderName)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, f := range files {
+		localPath := filepath.Join(folderName, f.Name())
+		if f.IsDir() {
+			resFiles, err = getFiles(localPath, filepath.Join(remoteFilePath, f.Name()), resFiles)
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
+		file, err := os.Open(localPath)
+		if err != nil {
+			return nil, err
+		}
+
+		// Only the first 512 bytes are used to sniff the content type.
+		buffer := make([]byte, 512)
+		_, err = file.Read(buffer)
+		if err != nil {
+			return nil, err
+		}
+
+		contentType := http.DetectContentType(buffer)
+
+		resFiles = append(resFiles, fileToUpload{
+			localPath:   localPath,
+			remotePath:  filepath.Join(remoteFilePath, f.Name()),
+			contentType: contentType,
+		})
+	}
+	return resFiles, nil
+}
+
 func init() {
 	sosCmd.AddCommand(sosUploadCmd)
+	sosUploadCmd.Flags().BoolP("recursive", "r", false, "Upload a folder recursively")
 }
