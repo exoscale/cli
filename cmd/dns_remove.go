@@ -15,6 +15,18 @@ var dnsRemoveCmd = &cobra.Command{
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
+
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
+		if !force {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to remove %q record", args[1])) {
+				return nil
+			}
+		}
+
 		id, err := removeRecord(args[0], args[1])
 		if err != nil {
 			return err
@@ -38,4 +50,5 @@ func removeRecord(domainName, record string) (int64, error) {
 
 func init() {
 	dnsCmd.AddCommand(dnsRemoveCmd)
+	dnsRemoveCmd.Flags().BoolP("force", "f", false, "Attempt to remove without prompting for confirmation")
 }
