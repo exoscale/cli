@@ -35,7 +35,6 @@ var sosUploadCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		remoteFilePath = strings.TrimLeft(filepath.ToSlash(args[2]), "/")
 
 		minioClient, err := newMinioClient(sosZone)
 		if err != nil {
@@ -62,6 +61,8 @@ var sosUploadCmd = &cobra.Command{
 		bucketName := args[0]
 
 		for _, arg := range args[1:] {
+
+			remoteFilePath = strings.TrimLeft(filepath.ToSlash(arg), "/")
 
 			arg = filepath.ToSlash(arg)
 			objectName := filepath.Base(arg)
@@ -171,11 +172,10 @@ func getFiles(folderName, remoteFilePath string, resFiles []fileToUpload) ([]fil
 
 	println("folder: ", folderName)
 
-	println("remote: ", remoteFilePath)
-
 	for _, f := range files {
 		localPath := filepath.Join(folderName, f.Name())
 		if f.IsDir() {
+			println("local:", localPath, "remote: ", remoteFilePath)
 			resFiles, err = getFiles(localPath, filepath.Join(remoteFilePath, f.Name()), resFiles)
 			if err != nil {
 				return nil, err
