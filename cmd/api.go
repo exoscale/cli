@@ -78,6 +78,11 @@ func buildCommands(methods []category) {
 
 			runCMD := func(cmd *cobra.Command, args []string) error {
 
+				if len(args) > 0 {
+					fmt.Fprintf(os.Stderr, "Raw arg(s) not allowed %q\n", strings.Join(args, ", ")) // nolint: errcheck
+					return cmd.Usage()
+				}
+
 				// Show request and quit DEBUG
 				if apiDebug {
 					payload, err := cs.Payload(s.command)
