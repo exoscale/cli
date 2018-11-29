@@ -79,7 +79,7 @@ func buildCommands(methods []category) {
 			runCMD := func(cmd *cobra.Command, args []string) error {
 
 				if len(args) > 0 {
-					return fmt.Errorf("Raw arguments are not supported. Did you mean?\n\n%s --%s", cmd.CommandPath(), strings.Join(args, " --"))
+					return fmt.Errorf("raw arguments are not supported. Did you mean?\n\n%s --%s", cmd.CommandPath(), strings.Join(args, " --"))
 				}
 
 				// Show request and quit DEBUG
