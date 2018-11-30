@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/vbauerster/mpb"
@@ -110,55 +112,74 @@ var sosUploadCmd = &cobra.Command{
 
 		}
 
-		for _, fileToUpload := range filesToUpload {
+		lenFileToUpload := len(filesToUpload)
 
-			fileInfo, err := os.Stat(fileToUpload.localPath)
-			if err != nil {
-				return err
-			}
+		var taskWG sync.WaitGroup
+		p := mpb.New(
+			mpb.WithWaitGroup(&taskWG),
+			mpb.WithContext(gContext),
+			// override default (80) width
+			mpb.WithWidth(64),
+			// override default 120ms refresh rate
+			mpb.WithRefreshRate(180*time.Millisecond),
+		)
+		taskWG.Add(lenFileToUpload)
 
-			progress := mpb.New(
-				mpb.WithContext(gContext),
-				// override default (80) width
-				mpb.WithWidth(64),
-				// override default 120ms refresh rate
-				mpb.WithRefreshRate(180*time.Millisecond),
-			)
+		workerSem := make(chan int, parallelTask)
 
-			base := filepath.Base(fileToUpload.localPath)
+		for _, fToUpload := range filesToUpload {
 
-			bar := progress.AddBar(fileInfo.Size(),
-				mpb.AppendDecorators(
-					// simple name decorator
-					decor.Name(base, decor.WC{W: len(base) + 1, C: decor.DidentRight}),
-				),
-				mpb.PrependDecorators(
-					decor.AverageETA(decor.ET_STYLE_GO),
-					// decor.DSyncWidth bit enables column width synchronization
-					decor.Percentage(decor.WCSyncSpace),
-				),
-			)
+			workerSem <- 1
 
-			f, err := os.Open(fileToUpload.localPath)
-			if err != nil {
-				return err
-			}
+			go func(fileToUP fileToUpload, sem chan int, wg *sync.WaitGroup) {
+				fileInfo, err := os.Stat(fileToUP.localPath)
+				if err != nil {
+					log.Fatal(err)
+				}
 
-			reader := bar.ProxyReader(f)
+				base := filepath.Base(fileToUP.localPath)
+				bar := p.AddBar(fileInfo.Size(),
+					mpb.AppendDecorators(
+						// simple name decorator
+						decor.Name(base, decor.WC{W: len(base) + 1, C: decor.DidentRight}),
+					),
+					mpb.PrependDecorators(
+						decor.AverageETA(decor.ET_STYLE_GO),
+						// decor.DSyncWidth bit enables column width synchronization
+						decor.Percentage(decor.WCSyncSpace),
+					),
+				)
 
-			// Upload object with FPutObject
-			_, err = minioClient.PutObjectWithContext(gContext, bucketName, fileToUpload.remotePath, f, fileInfo.Size(), minio.PutObjectOptions{ContentType: fileToUpload.contentType, Progress: reader})
-			if err != nil {
-				return err
-			}
+				f, err := os.Open(fileToUP.localPath)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer f.Close() //nolint: errcheck
+				defer wg.Done()
 
-			progress.Wait()
+				reader := bar.ProxyReader(f)
+				// Upload object with FPutObject
+				_, upErr := minioClient.PutObjectWithContext(
+					gContext,
+					bucketName,
+					fileToUP.remotePath,
+					f,
+					fileInfo.Size(),
+					minio.PutObjectOptions{
+						ContentType: fileToUP.contentType,
+						Progress:    reader,
+					},
+				)
+				if upErr != nil {
+					log.Fatal(upErr)
+				}
 
-			if err := f.Close(); err != nil {
-				return err
-			}
+				<-sem
 
+			}(fToUpload, workerSem, &taskWG)
 		}
+		taskWG.Wait()
+		p.Wait()
 
 		return nil
 	},
