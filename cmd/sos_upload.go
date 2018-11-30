@@ -62,18 +62,18 @@ var sosUploadCmd = &cobra.Command{
 
 		for _, arg := range args[1:] {
 
-			remoteFilePath = strings.TrimLeft(filepath.ToSlash(arg), "/")
-
 			arg = filepath.ToSlash(arg)
 			objectName := filepath.Base(arg)
 			filePath := arg
 
-			if strings.HasSuffix(remoteFilePath, "/") {
-				remoteFilePath = remoteFilePath + objectName
+			remote := strings.TrimLeft(filepath.ToSlash(remoteFilePath), "/")
+
+			if strings.HasSuffix(remote, "/") {
+				remote = remoteFilePath + objectName
 			}
 
-			if remoteFilePath == "" {
-				remoteFilePath = objectName
+			if remote == "" {
+				remote = objectName
 			}
 
 			file, err := os.Open(filePath)
@@ -87,7 +87,7 @@ var sosUploadCmd = &cobra.Command{
 			}
 
 			if recursive && fileStat.IsDir() {
-				filesToUpload, err = getFiles(filePath, strings.TrimRight(remoteFilePath, "/"), filesToUpload)
+				filesToUpload, err = getFiles(filePath, strings.TrimRight(remote, "/"), filesToUpload)
 			} else {
 				// Only the first 512 bytes are used to sniff the content type.
 				buffer := make([]byte, 512)
@@ -96,7 +96,7 @@ var sosUploadCmd = &cobra.Command{
 				contentType := http.DetectContentType(buffer)
 				filesToUpload = append(filesToUpload, fileToUpload{
 					localPath:   filePath,
-					remotePath:  remoteFilePath,
+					remotePath:  remote,
 					contentType: contentType,
 				})
 			}
@@ -170,20 +170,15 @@ func getFiles(folderName, remoteFilePath string, resFiles []fileToUpload) ([]fil
 		return nil, err
 	}
 
-	println("folder: ", folderName)
-
 	for _, f := range files {
 		localPath := filepath.Join(folderName, f.Name())
 		if f.IsDir() {
-			println("local:", localPath, "remote: ", remoteFilePath)
 			resFiles, err = getFiles(localPath, filepath.Join(remoteFilePath, f.Name()), resFiles)
 			if err != nil {
 				return nil, err
 			}
 			continue
 		}
-
-		println("file: ", localPath)
 
 		file, err := os.Open(localPath)
 		if err != nil {
