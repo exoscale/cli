@@ -17,6 +17,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	parallelSosUpload = 10
+)
+
 type fileToUpload struct {
 	localPath   string
 	remotePath  string
@@ -129,7 +133,7 @@ var sosUploadCmd = &cobra.Command{
 		)
 		taskWG.Add(lenFileToUpload)
 
-		workerSem := make(chan int, 4)
+		workerSem := make(chan int, parallelSosUpload)
 
 		for _, fToUpload := range filesToUpload {
 
