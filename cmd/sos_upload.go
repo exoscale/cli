@@ -56,6 +56,11 @@ var sosUploadCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		lo, err := os.OpenFile("./log", os.O_RDWR|os.O_CREATE, os.ModePerm)
+		if err != nil {
+			return err
+		}
+		minioClient.TraceOn(lo)
 
 		recursive, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
@@ -152,7 +157,7 @@ var sosUploadCmd = &cobra.Command{
 						decor.Name(base, decor.WC{W: len(base) + 1, C: decor.DidentRight}),
 					),
 					mpb.PrependDecorators(
-						decor.AverageETA(decor.ET_STYLE_GO),
+						decor.OnComplete(decor.AverageETA(decor.ET_STYLE_GO), "done!"),
 						// decor.DSyncWidth bit enables column width synchronization
 						decor.Percentage(decor.WCSyncSpace),
 					),
@@ -183,7 +188,6 @@ var sosUploadCmd = &cobra.Command{
 				}
 
 				<-sem
-
 			}(fToUpload, workerSem, &taskWG)
 		}
 		taskWG.Wait()
