@@ -68,8 +68,8 @@ var sosUploadCmd = &cobra.Command{
 
 			remote := strings.TrimLeft(filepath.ToSlash(remoteFilePath), "/")
 
-			if strings.HasSuffix(remote, "/") {
-				remote = remoteFilePath + objectName
+			if (len(args[1:]) > 1 && remote != "") || (len(args[1:]) == 1 && strings.HasSuffix(remote, "/")) {
+				remote = filepath.Join(remoteFilePath, objectName)
 			}
 
 			if remote == "" {
