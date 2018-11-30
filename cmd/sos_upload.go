@@ -91,11 +91,15 @@ var sosUploadCmd = &cobra.Command{
 			if recursive && fileStat.IsDir() {
 				filesToUpload, err = getFiles(filePath, strings.TrimRight(remote, "/"), filesToUpload)
 			} else {
-				// Only the first 512 bytes are used to sniff the content type.
-				buffer := make([]byte, 512)
-				_, err = file.Read(buffer)
+				var contentType string
+				if fileStat.Size() >= 512 {
+					// Only the first 512 bytes are used to sniff the content type.
+					buffer := make([]byte, 512)
+					_, err = file.Read(buffer)
 
-				contentType := http.DetectContentType(buffer)
+					contentType = http.DetectContentType(buffer)
+
+				}
 				filesToUpload = append(filesToUpload, fileToUpload{
 					localPath:   filePath,
 					remotePath:  remote,
@@ -125,7 +129,7 @@ var sosUploadCmd = &cobra.Command{
 		)
 		taskWG.Add(lenFileToUpload)
 
-		workerSem := make(chan int, parallelTask)
+		workerSem := make(chan int, 4)
 
 		for _, fToUpload := range filesToUpload {
 
