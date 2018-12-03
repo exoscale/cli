@@ -2,6 +2,8 @@ module github.com/exoscale/cli
 
 replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.39.0
 
+replace github.com/olekukonko/tablewriter => github.com/brutasse/tablewriter v0.0.2-0.20181112090232-4cef6bb3497c
+
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/VividCortex/ewma v1.1.1 // indirect
@@ -22,7 +24,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/minio/minio-go v6.0.6+incompatible
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
-	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
+	github.com/olekukonko/tablewriter v0.0.2-0.20181112090232-4cef6bb3497c
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday v1.5.2 // indirect
 	github.com/shurcooL/sanitized_anchor_name v0.0.0-20170918181015-86672fcb3f95 // indirect

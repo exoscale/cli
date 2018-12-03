@@ -25,6 +25,15 @@ func NewTable(fd *os.File) *Table {
 		t.SetCenterSeparator("┼")
 		t.SetColumnSeparator("│")
 		t.SetRowSeparator("─")
+		t.SetCenterSeparator("┼")
+		t.SetTopSeparator("┬")
+		t.SetBottomSeparator("┴")
+		t.SetLeftSeparator("├")
+		t.SetRightSeparator("┤")
+		t.SetTopLeftSeparator("┌")
+		t.SetTopRightSeparator("┐")
+		t.SetBottomLeftSeparator("└")
+		t.SetBottomRightSeparator("┘")
 		return t
 	}
 

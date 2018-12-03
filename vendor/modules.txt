@@ -55,7 +55,7 @@ github.com/minio/minio-go/pkg/set
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.0.0
 github.com/mitchellh/mapstructure
-# github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
+# github.com/olekukonko/tablewriter v0.0.2-0.20181112090232-4cef6bb3497c => github.com/brutasse/tablewriter v0.0.2-0.20181112090232-4cef6bb3497c
 github.com/olekukonko/tablewriter
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
