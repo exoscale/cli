@@ -22,12 +22,15 @@ func newMinioClient(zone string) (*minio.Client, error) {
 	endpoint := strings.Replace(gCurrentAccount.SosEndpoint, "https://", "", -1)
 	endpoint = strings.Replace(endpoint, "{zone}", zone, -1)
 	client, err := minio.NewV4(endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret(), true)
+	if err != nil {
+		return nil, err
+	}
 
 	if _, ok := os.LookupEnv("EXOSCALE_TRACE"); ok {
 		client.TraceOn(os.Stderr)
 	}
 
-	return client, err
+	return client, nil
 }
 
 func init() {
