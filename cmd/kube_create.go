@@ -205,7 +205,7 @@ var kubeCreateCmd = &cobra.Command{
 
 2. Execute the following command:
 
-    eval $(exo kube env "%s")
+    eval $(exo lab kube env "%s")
 
 You might want to persist this change by adding it to your shell startup
 configuration (e.g. ~/.bashrc, ~/.zshrc).
@@ -216,9 +216,10 @@ configuration (e.g. ~/.bashrc, ~/.zshrc).
 
 4. Profit! ✨🦄🌈
 
-5. When you're done with your cluster, you can either stop it using the
-"exo kube stop" command and restart it later using the "exo kube start"
-command, or delete it permanently using the "exo kube delete" command.
+5. When you're done with your cluster, you can either:
+* stop it using the "exo lab kube stop" command
+* restart it later using the "exo lab kube start" command
+* delete it permanently using the "exo lab kube delete" command
 `,
 			clusterName)
 
