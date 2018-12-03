@@ -30,10 +30,16 @@ var kubeEnvCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf(`export KUBECONFIG="%s/%s"\n`, getKubeconfigPath(clusterName), "kubeconfig")
-		fmt.Printf(`export DOCKER_HOST="tcp://%s:2376"\n`, vm.IP().String())
-		fmt.Printf(`export DOCKER_CERT_PATH="%s/%s"\n`, getKubeconfigPath(clusterName), "docker")
-		fmt.Printf(`export DOCKER_TLS_VERIFY=1\n`)
+		fmt.Printf(`
+export KUBECONFIG="%s/kubeconfig"
+export DOCKER_HOST="tcp://%s:2376"
+export DOCKER_CERT_PATH="%s/docker"
+export DOCKER_TLS_VERIFY=1
+`,
+			getKubeconfigPath(clusterName),
+			vm.IP().String(),
+			getKubeconfigPath(clusterName),
+		)
 
 		return nil
 	},
