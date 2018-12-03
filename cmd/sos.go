@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 	"strings"
 
 	minio "github.com/minio/minio-go"
@@ -20,7 +21,16 @@ var sosCmd = &cobra.Command{
 func newMinioClient(zone string) (*minio.Client, error) {
 	endpoint := strings.Replace(gCurrentAccount.SosEndpoint, "https://", "", -1)
 	endpoint = strings.Replace(endpoint, "{zone}", zone, -1)
-	return minio.NewV4(endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret(), true)
+	client, err := minio.NewV4(endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret(), true)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, ok := os.LookupEnv("EXOSCALE_TRACE"); ok {
+		client.TraceOn(os.Stderr)
+	}
+
+	return client, nil
 }
 
 func init() {
