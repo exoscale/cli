@@ -124,7 +124,7 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 		if vm != nil {
-			return fmt.Errorf("Cluster instance %q already exists", clusterName)
+			return fmt.Errorf("Cluster instance %q already exists", clusterName) // nolint: golint
 		}
 
 		kubeCreateDebug, err := cmd.Flags().GetBool("debug")
@@ -178,7 +178,7 @@ var kubeCreateCmd = &cobra.Command{
 			ResourceIDs:  []egoscale.UUID{*vm.ID},
 			Tags:         []egoscale.ResourceTag{{Key: kubeInstanceTagKey, Value: version}},
 		}); err != nil {
-			return fmt.Errorf("Unable to tag cluster instance: %s", err)
+			return fmt.Errorf("Unable to tag cluster instance: %s", err) // nolint: golint
 		}
 
 		fmt.Println("🚧 Bootstrapping Kubernetes cluster (can take up to several minutes):")
