@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
+// kubeDeleteCmd represents the delete command
 var kubeDeleteCmd = &cobra.Command{
 	Use:   "delete <cluster name>",
 	Short: "Delete a standalone Kubernetes cluster instance",

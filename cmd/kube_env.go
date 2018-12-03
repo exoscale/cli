@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// envCmd represents the env command
+// kubeEnvCmd represents the env command
 var kubeEnvCmd = &cobra.Command{
 	Use:   "env <cluster name>",
 	Short: "Print a standalone Kubernetes cluster's environment variables",
