@@ -25,7 +25,7 @@ func listKubeInstances() error {
 	}
 
 	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "IP Address", "Size", "Version"})
+	table.SetHeader([]string{"Name", "IP Address", "Size", "Version", "State"})
 
 	for _, key := range vms {
 		vm := key.(*egoscale.VirtualMachine)
@@ -35,7 +35,7 @@ func listKubeInstances() error {
 			continue
 		}
 
-		table.Append([]string{vm.Name, vm.IP().String(), vm.ServiceOfferingName, kubeVersion})
+		table.Append([]string{vm.Name, vm.IP().String(), vm.ServiceOfferingName, kubeVersion, vm.State})
 	}
 
 	table.Render()
