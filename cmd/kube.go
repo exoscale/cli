@@ -14,9 +14,6 @@ import (
 var (
 	// kubeSecurityGroup represents the firewall security group to add k8s VM instances into
 	kubeSecurityGroup = "exokube"
-
-	// kubeInstanceTagKey represents the VM instance grouping tag key
-	kubeInstanceTagKey = "exokube"
 )
 
 // kubeCmd represents the kube command
@@ -31,7 +28,7 @@ with it day-to-day.`,
 
 func getKubeInstanceVersion(vm *egoscale.VirtualMachine) string {
 	for _, tag := range vm.Tags {
-		if tag.Key == kubeInstanceTagKey {
+		if tag.Key == "exokube_version" {
 			return tag.Value
 		}
 	}
