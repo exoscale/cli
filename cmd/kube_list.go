@@ -19,6 +19,14 @@ var kubeListCmd = &cobra.Command{
 }
 
 func listKubeInstances() error {
+	/* FIXME: with egoscale >= 0.13, replace this implementation with:
+	   vms, err := cs.ListWithContext(gContext, &egoscale.ListVirtualMachines{
+	       Tag: []egoscale.ResourceTag{{
+	           Key: "managedby",
+	           Value: "exokube",
+	       }}
+	   })
+	*/
 	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{})
 	if err != nil {
 		return err

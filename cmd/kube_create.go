@@ -121,7 +121,11 @@ var kubeCreateCmd = &cobra.Command{
 
 		vm, err := getVMWithNameOrID(clusterName)
 		if err != nil {
-			return err
+			// If the cluster instance doesn't exist (expected case) we receive a well deserved
+			// "431 not found" error, but check if we got any other error just in case...
+			if csError, ok := err.(*egoscale.ErrorResponse); ok && csError.ErrorCode != 431 {
+				return err
+			}
 		}
 		if vm != nil {
 			return fmt.Errorf("Cluster instance %q already exists", clusterName) // nolint: golint
@@ -176,7 +180,10 @@ var kubeCreateCmd = &cobra.Command{
 		if _, err := cs.Request(egoscale.CreateTags{
 			ResourceType: vm.ResourceType(),
 			ResourceIDs:  []egoscale.UUID{*vm.ID},
-			Tags:         []egoscale.ResourceTag{{Key: kubeInstanceTagKey, Value: version}},
+			Tags: []egoscale.ResourceTag{
+				{Key: "managedby", Value: "exokube"},
+				{Key: "exokube_version", Value: version},
+			},
 		}); err != nil {
 			return fmt.Errorf("Unable to tag cluster instance: %s", err) // nolint: golint
 		}
