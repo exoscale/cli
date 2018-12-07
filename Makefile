@@ -18,7 +18,7 @@ test: $(GO_FILES)
 
 .PHONY: docker
 docker: Dockerfile $(GO_FILES)
-	docker build -f $^ \
+	docker build -f $< \
 		-t exoscale/cli:${version} \
 		--build-arg VERSION="${version}" \
 		--build-arg VCS_REF="$(shell git rev-parse HEAD)" \
