@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.12.5
+------
+
+- fix: `AuthorizeSecurityGroupEgress` could return `authorizeSecurityGroupIngress` as name
+
 0.12.4
 ------
 

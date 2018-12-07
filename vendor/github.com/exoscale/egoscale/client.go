@@ -305,7 +305,9 @@ func (client *Client) PaginateWithContext(ctx context.Context, req ListCommand, 
 // APIName returns the CloudStack name of the given command
 func (client *Client) APIName(command Command) string {
 	// This is due to a limitation of Go<=1.7
-	if _, ok := command.(*AuthorizeSecurityGroupEgress); ok {
+	_, ok := command.(*AuthorizeSecurityGroupEgress)
+	_, okPtr := command.(AuthorizeSecurityGroupEgress)
+	if ok || okPtr {
 		return "authorizeSecurityGroupEgress"
 	}
 

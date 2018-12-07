@@ -123,12 +123,12 @@ var kubeCreateCmd = &cobra.Command{
 		if err != nil {
 			// If the cluster instance doesn't exist (expected case) we receive a well deserved
 			// "431 not found" error, but check if we got any other error just in case...
-			if csError, ok := err.(*egoscale.ErrorResponse); ok && csError.ErrorCode != 431 {
+			if csError, ok := err.(*egoscale.ErrorResponse); ok && csError.ErrorCode != egoscale.ParamError {
 				return err
 			}
 		}
 		if vm != nil {
-			return fmt.Errorf("Cluster instance %q already exists", clusterName) // nolint: golint
+			return fmt.Errorf("cluster instance %q already exists", clusterName)
 		}
 
 		kubeCreateDebug, err := cmd.Flags().GetBool("debug")
@@ -185,7 +185,7 @@ var kubeCreateCmd = &cobra.Command{
 				{Key: "exokube_version", Value: version},
 			},
 		}); err != nil {
-			return fmt.Errorf("Unable to tag cluster instance: %s", err) // nolint: golint
+			return fmt.Errorf("unable to tag cluster instance: %s", err)
 		}
 
 		fmt.Println("🚧 Bootstrapping Kubernetes cluster (can take up to several minutes):")
@@ -204,7 +204,7 @@ var kubeCreateCmd = &cobra.Command{
 			Version: version,
 			Address: vm.IP().String(),
 		}, kubeCreateDebug); err != nil {
-			return fmt.Errorf("Cluster bootstrap failed: %s", err) // nolint: golint
+			return fmt.Errorf("cluster bootstrap failed: %s", err)
 		}
 
 		if err := saveKubeData(clusterName, "instance", []byte(vm.ID.String())); err != nil {
@@ -245,60 +245,54 @@ configuration (e.g. ~/.bashrc, ~/.zshrc).
 // createExokubeSecurityGroup creates the firewall security group to put kube VM instances into, or returns it if it
 // already exists.
 func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
-	var (
-		sg  *egoscale.SecurityGroup
-		err error
-	)
+	sg, err := getSecurityGroupByNameOrID(kubeSecurityGroup)
+	if err == nil {
+		return sg, err
+	}
 
-	if sg, err = getSecurityGroupByNameOrID(kubeSecurityGroup); err != nil {
-		if r, ok := err.(*egoscale.ErrorResponse); ok {
-			// Looks like the SG doesn't exist, try to create it
-			if r.ErrorCode == egoscale.ParamError {
-				resp, err := cs.RequestWithContext(gContext, &egoscale.CreateSecurityGroup{
-					Name:        kubeSecurityGroup,
-					Description: "Created by exo CLI",
-				})
-				if err != nil {
-					return nil, err
-				}
+	r, ok := err.(*egoscale.ErrorResponse)
+	if !ok || r.ErrorCode != egoscale.ParamError {
+		return nil, err
+	}
 
-				sg = resp.(*egoscale.SecurityGroup)
+	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateSecurityGroup{
+		Name:        kubeSecurityGroup,
+		Description: "Created by exo CLI",
+	})
 
-				sgRules := []egoscale.AuthorizeSecurityGroupIngress{
-					{
-						SecurityGroupID: sg.ID,
-						Description:     "SSH",
-						CIDRList:        []egoscale.CIDR{*egoscale.MustParseCIDR("0.0.0.0/0")},
-						Protocol:        "TCP",
-						StartPort:       22,
-						EndPort:         22,
-					},
-					{
-						SecurityGroupID: sg.ID,
-						Description:     "Docker API",
-						CIDRList:        []egoscale.CIDR{*egoscale.MustParseCIDR("0.0.0.0/0")},
-						Protocol:        "TCP",
-						StartPort:       2376,
-						EndPort:         2376,
-					},
-					{
-						SecurityGroupID: sg.ID,
-						Description:     "Kubernetes API",
-						CIDRList:        []egoscale.CIDR{*egoscale.MustParseCIDR("0.0.0.0/0")},
-						Protocol:        "TCP",
-						StartPort:       6443,
-						EndPort:         6443,
-					},
-				}
+	if err != nil {
+		return nil, err
+	}
 
-				for _, rule := range sgRules {
-					if _, err = cs.RequestWithContext(gContext, rule); err != nil {
-						return nil, err
-					}
-				}
+	sg = resp.(*egoscale.SecurityGroup)
 
-				return sg, nil
-			}
+	cidrList := []egoscale.CIDR{
+		*egoscale.MustParseCIDR("0.0.0.0/0"),
+		*egoscale.MustParseCIDR("::/0"),
+	}
+
+	sgRules := []egoscale.AuthorizeSecurityGroupIngress{{
+		Description: "SSH",
+		Protocol:    "TCP",
+		StartPort:   22,
+		EndPort:     22,
+	}, {
+		Description: "Docker API",
+		Protocol:    "TCP",
+		StartPort:   2376,
+		EndPort:     2376,
+	}, {
+		Description: "Kubernetes API",
+		Protocol:    "TCP",
+		StartPort:   6443,
+		EndPort:     6443,
+	}}
+
+	for _, rule := range sgRules {
+		rule.SecurityGroupID = sg.ID
+		rule.CIDRList = cidrList
+		if _, err = cs.RequestWithContext(gContext, rule); err != nil {
+			return nil, err
 		}
 	}
 

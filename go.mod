@@ -9,7 +9,7 @@ require (
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
-	github.com/exoscale/egoscale v0.12.4
+	github.com/exoscale/egoscale v0.12.5-0.20181207080844-0d4d6be9544a
 	github.com/fatih/camelcase v1.0.0
 	github.com/gernest/wow v0.0.0-20171118080535-7e0b2a239898
 	github.com/go-ini/ini v1.39.0
