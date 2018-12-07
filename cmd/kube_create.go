@@ -38,8 +38,8 @@ var kubeBootstrapSteps = []kubeBootstrapStep{
 	{name: "Instance system upgrade", command: `\
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get update && sudo -E DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
+	apt-transport-https \
+	ca-certificates \
 	curl \
 	golang-cfssl \
 	software-properties-common
@@ -48,17 +48,17 @@ exit`},
 	{name: "Docker Engine installation", command: `\
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
+	"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+	$(lsb_release -cs) \
+	stable"
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce=18.06.0~ce~3-0~ubuntu
 
 cat <<EOF > csr.json
 {
-    "hosts": ["{{ .Address }}"],
-    "key": {"algo": "rsa", "size": 2048},
-    "names": [{"C": "CH", "L": "Lausanne", "O": "Exoscale", "OU": "exokube", "ST": ""}]
+	"hosts": ["{{ .Address }}"],
+	"key": {"algo": "rsa", "size": 2048},
+	"names": [{"C": "CH", "L": "Lausanne", "O": "Exoscale", "OU": "exokube", "ST": ""}]
 }
 EOF
 
@@ -71,17 +71,17 @@ cfssl gencert \
 
 cat <<EOF | sudo tee /etc/docker/daemon.json
 {
-  "hosts": ["unix:///var/run/docker.sock", "tcp://0.0.0.0:2376"],
-  "tlsverify": true,
-  "tlscacert": "/etc/docker/ca.pem",
-  "tlscert": "/etc/docker/cert.pem",
-  "tlskey": "/etc/docker/key.pem",
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "storage-driver": "overlay2",
-  "log-driver": "json-file",
-  "log-opts": {
-	  "max-size": "100m"
-  }
+	"hosts": ["unix:///var/run/docker.sock", "tcp://0.0.0.0:2376"],
+	"tlsverify": true,
+	"tlscacert": "/etc/docker/ca.pem",
+	"tlscert": "/etc/docker/cert.pem",
+	"tlskey": "/etc/docker/key.pem",
+	"exec-opts": ["native.cgroupdriver=systemd"],
+	"storage-driver": "overlay2",
+	"log-driver": "json-file",
+	"log-opts": {
+		"max-size": "100m"
+	}
 }
 EOF
 
@@ -105,8 +105,8 @@ sudo apt-mark hold kubelet kubeadm kubectl`},
 sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version {{ .Version }} &&
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master- &&
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
-  -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml \
-  -f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml`},
+	-f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml \
+	-f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml`},
 }
 
 // kubeCreateCmd represents the create command
