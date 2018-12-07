@@ -15,6 +15,8 @@ github.com/cpuguy83/go-md2man/md2man
 github.com/cenkalti/backoff
 # github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 github.com/chzyer/readline
+# github.com/cpuguy83/go-md2man v1.0.8
+github.com/cpuguy83/go-md2man/md2man
 # github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 github.com/dustin/go-humanize
 # github.com/exoscale/egoscale v0.13.1
