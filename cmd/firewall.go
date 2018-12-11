@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -29,11 +28,7 @@ func formatRules(name string, rule *egoscale.IngressRule) []string {
 	if rule.CIDR != nil {
 		source = fmt.Sprintf("CIDR %s", rule.CIDR)
 	} else {
-		ss := make([]string, len(rule.UserSecurityGroupList))
-		for i, usg := range rule.UserSecurityGroupList {
-			ss[i] = usg.String()
-		}
-		source = fmt.Sprintf("SG %s", strings.Join(ss, ","))
+		source = fmt.Sprintf("SG %s", rule.SecurityGroupName)
 	}
 
 	var ports string
