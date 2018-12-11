@@ -1,8 +1,6 @@
 package egoscale
 
-// Template represents a machine to be deployed
-//
-// See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/templates.html
+// Template represents a machine to be deployed.
 type Template struct {
 	Account               string            `json:"account,omitempty" doc:"the account name to which the template belongs"`
 	AccountID             *UUID             `json:"accountid,omitempty" doc:"the account id to which the template belongs"`

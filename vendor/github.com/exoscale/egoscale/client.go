@@ -13,11 +13,11 @@ import (
 	"time"
 )
 
-// Taggable represents a resource which can have tags attached
+// Taggable represents a resource to which tags can be attached
 //
 // This is a helper to fill the resourcetype of a CreateTags call
 type Taggable interface {
-	// CloudStack resource type of the Taggable type
+	// ResourceType is the name of the Taggable type
 	ResourceType() string
 }
 
@@ -33,11 +33,11 @@ type Listable interface {
 	ListRequest() (ListCommand, error)
 }
 
-// Client represents the CloudStack API client
+// Client represents the API client
 type Client struct {
 	// HTTPClient holds the HTTP client
 	HTTPClient *http.Client
-	// Endpoints is CloudStack API
+	// Endpoint is the HTTP URL
 	Endpoint string
 	// APIKey is the API identifier
 	APIKey string
@@ -55,7 +55,7 @@ type Client struct {
 	Logger *log.Logger
 }
 
-// RetryStrategyFunc represents a how much time to wait between two calls to CloudStack
+// RetryStrategyFunc represents a how much time to wait between two calls to the API
 type RetryStrategyFunc func(int64) time.Duration
 
 // IterateItemFunc represents the callback to iterate a list of results, if false stops
@@ -64,7 +64,7 @@ type IterateItemFunc func(interface{}, error) bool
 // WaitAsyncJobResultFunc represents the callback to wait a results of an async request, if false stops
 type WaitAsyncJobResultFunc func(*AsyncJobResult, error) bool
 
-// NewClient creates a CloudStack API client with default timeout (60)
+// NewClient creates an API client with default timeout (60)
 //
 // Timeout is set to both the HTTP client and the client itself.
 func NewClient(endpoint, apiKey, apiSecret string) *Client {
@@ -313,7 +313,7 @@ func (client *Client) PaginateWithContext(ctx context.Context, g Listable, callb
 	}
 }
 
-// APIName returns the CloudStack name of the given command
+// APIName returns the name of the given command
 func (client *Client) APIName(command Command) string {
 	// This is due to a limitation of Go<=1.7
 	_, ok := command.(*AuthorizeSecurityGroupEgress)
@@ -329,7 +329,7 @@ func (client *Client) APIName(command Command) string {
 	return info.Name
 }
 
-// APIDescription returns the description of the given CloudStack command
+// APIDescription returns the description of the given command
 func (client *Client) APIDescription(command Command) string {
 	info, err := info(command)
 	if err != nil {

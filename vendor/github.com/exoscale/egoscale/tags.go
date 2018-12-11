@@ -2,7 +2,7 @@ package egoscale
 
 // ResourceTag is a tag associated with a resource
 //
-// http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/4.9/management.html
+// https://community.exoscale.com/documentation/compute/instance-tags/
 type ResourceTag struct {
 	Account      string `json:"account,omitempty" doc:"the account associated with the tag"`
 	Customer     string `json:"customer,omitempty" doc:"customer associated with the tag"`

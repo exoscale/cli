@@ -119,7 +119,7 @@ func (vm VirtualMachine) Delete(ctx context.Context, client *Client) error {
 
 // ListRequest builds the ListVirtualMachines request
 func (vm VirtualMachine) ListRequest() (ListCommand, error) {
-	// XXX: AffinityGroupID, SecurityGroupID, Tags
+	// XXX: AffinityGroupID, SecurityGroupID
 
 	req := &ListVirtualMachines{
 		GroupID:    vm.GroupID,
@@ -133,6 +133,10 @@ func (vm VirtualMachine) ListRequest() (ListCommand, error) {
 	nic := vm.DefaultNic()
 	if nic != nil {
 		req.IPAddress = nic.IPAddress
+	}
+
+	for i := range vm.Tags {
+		req.Tags = append(req.Tags, vm.Tags[i])
 	}
 
 	return req, nil

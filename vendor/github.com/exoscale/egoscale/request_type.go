@@ -4,18 +4,18 @@ import (
 	"net/url"
 )
 
-// Command represents a CloudStack request
+// Command represents a generic request
 type Command interface {
 	Response() interface{}
 }
 
-// AsyncCommand represents a async CloudStack request
+// AsyncCommand represents a async request
 type AsyncCommand interface {
 	Command
 	AsyncResponse() interface{}
 }
 
-// ListCommand represents a CloudStack list request
+// ListCommand represents a listing request
 type ListCommand interface {
 	Listable
 	Command
@@ -57,7 +57,7 @@ const (
 
 // ErrorCode represents the CloudStack ApiErrorCode enum
 //
-// See: https://github.com/apache/cloudstack/blob/master/api/src/org/apache/cloudstack/api/ApiErrorCode.java
+// See: https://github.com/apache/cloudstack/blob/master/api/src/main/java/org/apache/cloudstack/api/ApiErrorCode.java
 type ErrorCode int
 
 //go:generate stringer -type ErrorCode
@@ -162,7 +162,7 @@ const (
 	ServerAPIException CSErrorCode = 9999
 )
 
-// ErrorResponse represents the standard error response from CloudStack
+// ErrorResponse represents the standard error response
 type ErrorResponse struct {
 	CSErrorCode CSErrorCode `json:"cserrorcode"`
 	ErrorCode   ErrorCode   `json:"errorcode"`
