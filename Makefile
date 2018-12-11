@@ -14,8 +14,7 @@ lint: $(GO_FILES)
 
 .PHONY: test
 test: $(GO_FILES)
-	go test -v -mod=vendor .
-	go test -v -mod=vendor ./cmd
+	go test -v -mod=vendor ./...
 
 .PHONY: docker
 docker: Dockerfile $(GO_FILES)
