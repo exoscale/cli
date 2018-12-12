@@ -2,6 +2,8 @@ module github.com/exoscale/cli
 
 replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.41.0
 
+replace github.com/minio/minio-go => github.com/greut/minio-go v6.0.12-0.20181212115950-56efdd1c7a56+incompatible
+
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/VividCortex/ewma v1.1.1 // indirect

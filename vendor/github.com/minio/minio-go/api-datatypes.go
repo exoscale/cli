@@ -28,6 +28,8 @@ type BucketInfo struct {
 	Name string `json:"name"`
 	// Date the bucket was created.
 	CreationDate time.Time `json:"creationDate"`
+	// CORS contains the bucket cors.
+	CORS []CORSRule
 }
 
 // ObjectInfo container for object metadata.
@@ -81,4 +83,30 @@ type ObjectMultipartInfo struct {
 
 	// Error
 	Err error
+}
+
+// CORS container for bucket cors.
+type CORSRule struct {
+	// AllowedHeader specifies which headers are allowed in a pre-flight OPTIONS request
+	// through the Access-Control-Request-Headers header.
+	AllowedHeader []string `xml:"AllowedHeader"`
+
+	// AllowedMethod identifies an HTTP method that the domain/origin specified in the
+	// rule is allowed to execute.
+	AllowedMethod []string `xml:"AllowedOrigin"`
+
+	// AllowedOrigin specifies the response headers that you want customers to be able to
+	// access from their applications.
+	AllowedOrigin []string `xml:"AllowedMethod"`
+
+	// ExposeHeader specifies the headers in the response that you want customers to be
+	// able to access from their applications.
+	ExposeHeader []string `xml:"ExposeHeader,omitempty"`
+
+	// ID is an optional unique identifier for the rule.
+	ID string `xml:"ID,omitempty"`
+
+	// MaxAgeSeconds specifies the time in seconds that your browser is to cache the
+	// preflight response for the specified resource.
+	MaxAgeSeconds int `xml:"MaxAgeSeconds,omitempty"`
 }

@@ -61,7 +61,7 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.3
 github.com/mattn/go-runewidth
-# github.com/minio/minio-go v6.0.11+incompatible
+# github.com/minio/minio-go v6.0.11+incompatible => github.com/greut/minio-go v6.0.12-0.20181212115950-56efdd1c7a56+incompatible
 github.com/minio/minio-go
 github.com/minio/minio-go/pkg/credentials
 github.com/minio/minio-go/pkg/encrypt
