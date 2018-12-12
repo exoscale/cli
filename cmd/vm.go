@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -12,21 +14,49 @@ var vmCmd = &cobra.Command{
 }
 
 func getVMWithNameOrID(name string) (*egoscale.VirtualMachine, error) {
-	vm := &egoscale.VirtualMachine{}
-
+	vmQuery := egoscale.VirtualMachine{}
 	id, err := egoscale.ParseUUID(name)
 	if err != nil {
-		vm.Name = name
+		vmQuery.Name = name
 	} else {
-		vm.ID = id
+		vmQuery.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, vm)
+	vms, err := cs.ListWithContext(gContext, vmQuery)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.(*egoscale.VirtualMachine), nil
+	var vm *egoscale.VirtualMachine
+	switch len(vms) {
+	case 0:
+		return nil, fmt.Errorf("no VMs has been found")
+	case 1:
+		vm = vms[0].(*egoscale.VirtualMachine)
+	default:
+		names := []string{}
+		for _, i := range vms {
+			v := i.(*egoscale.VirtualMachine)
+			if v.Name != vmQuery.Name {
+				continue
+			}
+
+			vm = v
+			names = append(names, fmt.Sprintf("\t%s\t%s\t%s", v.ID.String(), v.ZoneName, v.IP()))
+		}
+
+		if len(names) == 1 {
+			break
+		}
+
+		fmt.Println("More than one VM has been found, use the ID instead:")
+		for _, name := range names {
+			fmt.Println(name)
+		}
+		return nil, fmt.Errorf("abort vm name %q is ambiguous", vmQuery.Name)
+	}
+
+	return vm, nil
 }
 
 func getSecurityGroup(vm *egoscale.VirtualMachine) []string {
