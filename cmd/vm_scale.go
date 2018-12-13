@@ -56,7 +56,7 @@ var vmScaleCmd = &cobra.Command{
 
 // scaleVirtualMachine scale a virtual machine instance Async with context
 func scaleVirtualMachine(vmName string, serviceofferingID egoscale.UUID) error {
-	vm, err := getVMWithNameOrID(vmName)
+	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
 	}

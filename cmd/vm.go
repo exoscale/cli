@@ -13,7 +13,7 @@ var vmCmd = &cobra.Command{
 	Short: "Virtual machines management",
 }
 
-func getVMWithNameOrID(name string) (*egoscale.VirtualMachine, error) {
+func getVirtualMachineByNameOrID(name string) (*egoscale.VirtualMachine, error) {
 	vmQuery := egoscale.VirtualMachine{}
 	id, err := egoscale.ParseUUID(name)
 	if err != nil {

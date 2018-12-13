@@ -55,7 +55,7 @@ var vmResizeCmd = &cobra.Command{
 
 // resizeVirtualMachine stop a virtual machine instance
 func resizeVirtualMachine(vmName string, diskValue int64, force bool) error {
-	vm, err := getVMWithNameOrID(vmName)
+	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
 	}

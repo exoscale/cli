@@ -49,7 +49,7 @@ var snapshotListCmd = &cobra.Command{
 		table.SetHeader([]string{"VM", "State", "Created On", "Size", "ID"})
 
 		for _, arg := range args {
-			vm, err := getVMWithNameOrID(arg)
+			vm, err := getVirtualMachineByNameOrID(arg)
 			if err != nil {
 				return err
 			}

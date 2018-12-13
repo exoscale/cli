@@ -32,7 +32,7 @@ func dissociateIP(ipAddr, instance string) error {
 		return fmt.Errorf("invalid IP address %q", ipAddr)
 	}
 
-	vm, err := getVMWithNameOrID(instance)
+	vm, err := getVirtualMachineByNameOrID(instance)
 	if err != nil {
 		return err
 	}

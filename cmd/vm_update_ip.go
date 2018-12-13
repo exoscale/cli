@@ -19,7 +19,7 @@ var vmUpdateIPCmd = &cobra.Command{
 		vmName := args[0]
 		netName := args[1]
 
-		vm, err := getVMWithNameOrID(vmName)
+		vm, err := getVirtualMachineByNameOrID(vmName)
 		if err != nil {
 			return err
 		}
