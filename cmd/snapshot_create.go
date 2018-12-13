@@ -18,7 +18,7 @@ var snapshotCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		vm, err := getVMWithNameOrID(args[0])
+		vm, err := getVirtualMachineByNameOrID(args[0])
 		if err != nil {
 			return err
 		}

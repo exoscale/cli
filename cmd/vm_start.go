@@ -44,7 +44,7 @@ var vmStartCmd = &cobra.Command{
 
 // startVirtualMachine start a virtual machine instance Async
 func startVirtualMachine(vmName string) error {
-	vm, err := getVMWithNameOrID(vmName)
+	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
 	}

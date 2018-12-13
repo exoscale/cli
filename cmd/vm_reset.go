@@ -54,7 +54,7 @@ var vmResetCmd = &cobra.Command{
 
 // resetVirtualMachine stop a virtual machine instance
 func resetVirtualMachine(vmName string, diskValue int64PtrValue, force bool) error {
-	vm, err := getVMWithNameOrID(vmName)
+	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
 	}

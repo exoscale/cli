@@ -44,7 +44,7 @@ var vmRebootCmd = &cobra.Command{
 
 // rebootVirtualMachine reboot a virtual machine instance Async
 func rebootVirtualMachine(vmName string) error {
-	vm, err := getVMWithNameOrID(vmName)
+	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
 	}
