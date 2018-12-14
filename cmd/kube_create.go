@@ -90,7 +90,12 @@ sudo mv cert.pem /etc/docker/cert.pem
 sudo mv cert-key.pem /etc/docker/key.pem
 rm -f *.{csr,json,pem}
 
-sudo sed -i -re 's#^ExecStart=.*#ExecStart=/usr/bin/dockerd#' /lib/systemd/system/docker.service
+sudo mkdir /etc/systemd/system/docker.service.d/
+cat <<EOF | sudo tee /etc/systemd/system/docker.service.d/override.conf
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd
+EOF
 sudo systemctl daemon-reload && sudo systemctl restart docker`},
 	{name: "Kubernetes cluster node installation", command: `\
 curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -102,8 +107,8 @@ sudo -E DEBIAN_FRONTEND=noninteractive apt-get update && \
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y kubelet kubeadm kubectl && \
 sudo apt-mark hold kubelet kubeadm kubectl`},
 	{name: "Kubernetes cluster node initialization", command: `\
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version {{ .Version }} &&
-sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master- &&
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version {{ .Version }} && \
+sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master- && \
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
 	-f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml \
 	-f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml`},
