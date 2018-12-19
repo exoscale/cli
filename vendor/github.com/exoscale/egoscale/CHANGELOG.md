@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.13.1
+------
+
+- feat: `Iso` support `ListIsos`, `AttachIso`, and `DetachIso`
+
 0.13.0
 ------
 
