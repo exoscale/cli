@@ -25,7 +25,7 @@ var kubeDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		vm, err := getVMWithNameOrID(string(clusterInstance))
+		vm, err := getVirtualMachineByNameOrID(string(clusterInstance))
 		if err != nil {
 			return err
 		}

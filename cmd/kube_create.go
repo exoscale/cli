@@ -124,7 +124,7 @@ var kubeCreateCmd = &cobra.Command{
 		}
 		clusterName := args[0]
 
-		vm, err := getVMWithNameOrID(clusterName)
+		vm, err := getVirtualMachineByNameOrID(clusterName)
 		if err != nil {
 			// If the cluster instance doesn't exist (expected case) we receive a well deserved
 			// "431 not found" error, but check if we got any other error just in case...
