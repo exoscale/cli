@@ -59,23 +59,6 @@ func buildCommands(methods []category) {
 				name = s.name
 			}
 
-			hiddenCMD := cobra.Command{
-				Use:    realName,
-				Short:  description,
-				Long:   fmt.Sprintf("%s <%s>", description, fmt.Sprintf(url, realName)),
-				Hidden: true,
-			}
-
-			subCMD := cobra.Command{
-				Use:     name,
-				Short:   description,
-				Long:    fmt.Sprintf("%s <%s>", description, fmt.Sprintf(url, realName)),
-				Aliases: append(s.alias, realName),
-			}
-
-			buildFlags(s.command, &subCMD)
-			buildFlags(s.command, &hiddenCMD)
-
 			runCMD := func(cmd *cobra.Command, args []string) error {
 
 				if len(args) > 0 {
@@ -134,14 +117,31 @@ func buildCommands(methods []category) {
 				return nil
 			}
 
-			subCMD.RunE = runCMD
+			hiddenCMD := cobra.Command{
+				Use:    realName,
+				Short:  description,
+				Long:   fmt.Sprintf("%s <%s>", description, fmt.Sprintf(url, realName)),
+				Hidden: true,
+			}
+
+			buildFlags(s.command, &hiddenCMD)
 			hiddenCMD.RunE = runCMD
-
-			subCMD.Flags().SortFlags = false
 			hiddenCMD.Flags().SortFlags = false
-
-			cmd.AddCommand(&subCMD)
 			apiCmd.AddCommand(&hiddenCMD)
+
+			if !s.hidden {
+				subCMD := cobra.Command{
+					Use:     name,
+					Short:   description,
+					Long:    fmt.Sprintf("%s <%s>", description, fmt.Sprintf(url, realName)),
+					Aliases: append(s.alias, realName),
+				}
+
+				buildFlags(s.command, &subCMD)
+				subCMD.RunE = runCMD
+				subCMD.Flags().SortFlags = false
+				cmd.AddCommand(&subCMD)
+			}
 		}
 	}
 }
