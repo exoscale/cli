@@ -206,8 +206,7 @@ func getAccount() (*account, error) {
 		client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
 
 		fmt.Printf("Checking the credentials of %q...", account.Key)
-		acc := &egoscale.Account{}
-		err = client.GetWithContext(gContext, acc)
+		resp, err := client.GetWithContext(gContext, egoscale.Account{})
 		if err != nil {
 			fmt.Print(` failure.
 
@@ -216,6 +215,7 @@ Let's start over.
 `)
 		} else {
 			fmt.Print(" success!\n\n")
+			acc := resp.(*egoscale.Account)
 			account.Name = acc.Name
 			account.Account = acc.Name
 			break
@@ -429,8 +429,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.Secret)
 
 		fmt.Printf("Checking the credentials of %q (%s)...", csAccount.Key, csAccount.Endpoint)
-		a := &egoscale.Account{}
-		err := csClient.GetWithContext(gContext, a)
+		resp, err := csClient.GetWithContext(gContext, egoscale.Account{})
 		if err != nil {
 			fmt.Println(" failure.")
 			if !askQuestion(fmt.Sprintf("Do you want to keep %s?", csAccount.Name)) {
@@ -438,11 +437,11 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			}
 		} else {
 			fmt.Println(" success!")
-			csAccount.Account = a.Name
+			csAccount.Account = resp.(*egoscale.Account).Name
 		}
 		fmt.Println("")
 
-		name, err := readInput(reader, fmt.Sprintf("Name (org: %q)", a.Name), csAccount.Name)
+		name, err := readInput(reader, fmt.Sprintf("Name (org: %q)", csAccount.Account), csAccount.Name)
 		if err != nil {
 			return err
 		}
@@ -452,7 +451,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 		for isAccountExist(csAccount.Name) {
 			fmt.Printf("Account name [%s] already exist\n", csAccount.Name)
-			name, err = readInput(reader, fmt.Sprintf("Name (org: %q)", a.Name), csAccount.Name)
+			name, err = readInput(reader, fmt.Sprintf("Name (org: %q)", csAccount.Account), csAccount.Name)
 			if err != nil {
 				return err
 			}

@@ -56,11 +56,12 @@ func getServiceOfferingByName(name string) (*egoscale.ServiceOffering, error) {
 		so.ID = id
 	}
 
-	if err := cs.GetWithContext(gContext, so); err != nil {
+	resp, err := cs.GetWithContext(gContext, so)
+	if err != nil {
 		return nil, err
 	}
 
-	return so, nil
+	return resp.(*egoscale.ServiceOffering), nil
 }
 
 func init() {

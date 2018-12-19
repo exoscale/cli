@@ -57,11 +57,13 @@ type CreateAffinityGroup struct {
 	_           bool   `name:"createAffinityGroup" description:"Creates an affinity/anti-affinity group"`
 }
 
-func (CreateAffinityGroup) response() interface{} {
+// Response returns the struct to unmarshal
+func (CreateAffinityGroup) Response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (CreateAffinityGroup) asyncResponse() interface{} {
+// AsyncResponse returns the struct to unmarshal the async job
+func (CreateAffinityGroup) AsyncResponse() interface{} {
 	return new(AffinityGroup)
 }
 
@@ -81,11 +83,13 @@ func (req UpdateVMAffinityGroup) onBeforeSend(params url.Values) error {
 	return nil
 }
 
-func (UpdateVMAffinityGroup) response() interface{} {
+// Response returns the struct to unmarshal
+func (UpdateVMAffinityGroup) Response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (UpdateVMAffinityGroup) asyncResponse() interface{} {
+// AsyncResponse returns the struct to unmarshal the async job
+func (UpdateVMAffinityGroup) AsyncResponse() interface{} {
 	return new(VirtualMachine)
 }
 
@@ -96,13 +100,17 @@ type DeleteAffinityGroup struct {
 	_    bool   `name:"deleteAffinityGroup" description:"Deletes affinity group"`
 }
 
-func (DeleteAffinityGroup) response() interface{} {
+// Response returns the struct to unmarshal
+func (DeleteAffinityGroup) Response() interface{} {
 	return new(AsyncJobResult)
 }
 
-func (DeleteAffinityGroup) asyncResponse() interface{} {
+// AsyncResponse returns the struct to unmarshal the async job
+func (DeleteAffinityGroup) AsyncResponse() interface{} {
 	return new(booleanResponse)
 }
+
+//go:generate go run generate/main.go -interface=Listable ListAffinityGroups
 
 // ListAffinityGroups represents an (anti-)affinity groups search
 type ListAffinityGroups struct {
@@ -114,34 +122,6 @@ type ListAffinityGroups struct {
 	Type             string `json:"type,omitempty" doc:"Lists affinity groups by type"`
 	VirtualMachineID *UUID  `json:"virtualmachineid,omitempty" doc:"Lists affinity groups by virtual machine ID"`
 	_                bool   `name:"listAffinityGroups" description:"Lists affinity groups"`
-}
-
-func (ListAffinityGroups) response() interface{} {
-	return new(ListAffinityGroupsResponse)
-}
-
-// SetPage sets the current page
-func (ls *ListAffinityGroups) SetPage(page int) {
-	ls.Page = page
-}
-
-// SetPageSize sets the page size
-func (ls *ListAffinityGroups) SetPageSize(pageSize int) {
-	ls.PageSize = pageSize
-}
-
-func (ListAffinityGroups) each(resp interface{}, callback IterateItemFunc) {
-	vms, ok := resp.(*ListAffinityGroupsResponse)
-	if !ok {
-		callback(nil, fmt.Errorf("wrong type. ListAffinityGroupsResponse expected, got %T", resp))
-		return
-	}
-
-	for i := range vms.AffinityGroup {
-		if !callback(&vms.AffinityGroup[i], nil) {
-			break
-		}
-	}
 }
 
 // ListAffinityGroupsResponse represents a list of (anti-)affinity groups
@@ -158,7 +138,8 @@ type ListAffinityGroupTypes struct {
 	_        bool   `name:"listAffinityGroupTypes" description:"Lists affinity group types available"`
 }
 
-func (ListAffinityGroupTypes) response() interface{} {
+// Response returns the struct to unmarshal
+func (ListAffinityGroupTypes) Response() interface{} {
 	return new(ListAffinityGroupTypesResponse)
 }
 

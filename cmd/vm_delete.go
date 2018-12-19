@@ -28,7 +28,7 @@ var vmDeleteCmd = &cobra.Command{
 		vms := make([]egoscale.VirtualMachine, len(args))
 
 		for i, arg := range args {
-			vm, err := getVMWithNameOrID(arg)
+			vm, err := getVirtualMachineByNameOrID(arg)
 			if err != nil {
 				return err
 			}

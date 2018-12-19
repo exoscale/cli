@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
-
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +35,7 @@ func listZones() error {
 }
 
 func getZoneIDByName(name string) (*egoscale.UUID, error) {
-	zone := egoscale.Zone{}
+	zone := &egoscale.Zone{}
 
 	id, err := egoscale.ParseUUID(name)
 	if err != nil {
@@ -46,15 +44,12 @@ func getZoneIDByName(name string) (*egoscale.UUID, error) {
 		zone.ID = id
 	}
 
-	if err := cs.GetWithContext(gContext, &zone); err != nil {
-		if e, ok := err.(*egoscale.ErrorResponse); ok && e.ErrorCode == egoscale.ParamError {
-			return nil, fmt.Errorf("missing Zone %q", name)
-		}
-
+	resp, err := cs.GetWithContext(gContext, zone)
+	if err != nil {
 		return nil, err
 	}
 
-	return zone.ID, nil
+	return resp.(*egoscale.Zone).ID, nil
 }
 
 func init() {

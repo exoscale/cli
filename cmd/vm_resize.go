@@ -55,7 +55,7 @@ var vmResizeCmd = &cobra.Command{
 
 // resizeVirtualMachine stop a virtual machine instance
 func resizeVirtualMachine(vmName string, diskValue int64, force bool) error {
-	vm, err := getVMWithNameOrID(vmName)
+	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
 	}
@@ -71,16 +71,19 @@ func resizeVirtualMachine(vmName string, diskValue int64, force bool) error {
 		}
 	}
 
-	volume := &egoscale.Volume{
+	resp, err := cs.GetWithContext(gContext, egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
-	}
+	})
 
-	if err = cs.GetWithContext(gContext, volume); err != nil {
+	if err != nil {
 		return err
 	}
-
-	_, err = asyncRequest(&egoscale.ResizeVolume{ID: volume.ID, Size: diskValue}, fmt.Sprintf("Resizing %q ", vm.Name))
+	resizeVolume := &egoscale.ResizeVolume{
+		ID:   resp.(*egoscale.Volume).ID,
+		Size: diskValue,
+	}
+	_, err = asyncRequest(resizeVolume, fmt.Sprintf("Resizing %q ", vm.Name))
 	return err
 }
 

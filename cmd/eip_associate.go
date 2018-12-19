@@ -36,7 +36,7 @@ func associateIP(ipAddr, instance string) (*egoscale.UUID, error) {
 		return nil, fmt.Errorf("invalid IP address %q", ipAddr)
 	}
 
-	vm, err := getVMWithNameOrID(instance)
+	vm, err := getVirtualMachineByNameOrID(instance)
 	if err != nil {
 		return nil, err
 	}

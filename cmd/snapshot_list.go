@@ -49,7 +49,7 @@ var snapshotListCmd = &cobra.Command{
 		table.SetHeader([]string{"VM", "State", "Created On", "Size", "ID"})
 
 		for _, arg := range args {
-			vm, err := getVMWithNameOrID(arg)
+			vm, err := getVirtualMachineByNameOrID(arg)
 			if err != nil {
 				return err
 			}
@@ -59,11 +59,15 @@ var snapshotListCmd = &cobra.Command{
 				Type:             "ROOT",
 			}
 
-			if err := cs.GetWithContext(gContext, volume); err != nil {
+			resp, err := cs.GetWithContext(gContext, volume)
+			if err != nil {
 				return err
 			}
 
-			snapshots, err := cs.ListWithContext(gContext, egoscale.Snapshot{VolumeID: volume.ID})
+			snapshots, err := cs.ListWithContext(gContext, egoscale.Snapshot{
+				VolumeID: resp.(*egoscale.Volume).ID,
+			})
+
 			if err != nil {
 				return err
 			}

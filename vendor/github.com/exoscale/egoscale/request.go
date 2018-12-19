@@ -32,12 +32,17 @@ func (e booleanResponse) Error() error {
 	return nil
 }
 
-// XXX: addIpToNic, activateIp6, restorevmresponse are kind of special
-var responseKeys = map[string]string{
-	"addiptonicresponse":            "addiptovmnicresponse",
-	"activateip6response":           "activateip6nicresponse",
-	"restorevirtualmachineresponse": "restorevmresponse",
-	"updatevmaffinitygroupresponse": "updatevirtualmachineresponse",
+func responseKey(key string) (string, bool) {
+	// XXX: addIpToNic, activateIp6, restorevmresponse are kind of special
+	var responseKeys = map[string]string{
+		"addiptonicresponse":            "addiptovmnicresponse",
+		"activateip6response":           "activateip6nicresponse",
+		"restorevirtualmachineresponse": "restorevmresponse",
+		"updatevmaffinitygroupresponse": "updatevirtualmachineresponse",
+	}
+
+	k, ok := responseKeys[key]
+	return k, ok
 }
 
 func (client *Client) parseResponse(resp *http.Response, apiName string) (json.RawMessage, error) {
@@ -60,7 +65,7 @@ func (client *Client) parseResponse(resp *http.Response, apiName string) (json.R
 
 		if !ok {
 			// try again with the special keys
-			value, ok := responseKeys[key]
+			value, ok := responseKey(key)
 			if ok {
 				key = value
 			}
@@ -109,7 +114,7 @@ func (client *Client) parseResponse(resp *http.Response, apiName string) (json.R
 func (client *Client) asyncRequest(ctx context.Context, asyncCommand AsyncCommand) (interface{}, error) {
 	var err error
 
-	resp := asyncCommand.asyncResponse()
+	resp := asyncCommand.AsyncResponse()
 	client.AsyncRequestWithContext(
 		ctx,
 		asyncCommand,
@@ -137,7 +142,7 @@ func (client *Client) SyncRequestWithContext(ctx context.Context, command Comman
 		return nil, err
 	}
 
-	response := command.response()
+	response := command.Response()
 	b, ok := response.(*booleanResponse)
 	if ok {
 		m := make(map[string]interface{})
@@ -207,9 +212,9 @@ func (client *Client) Request(command Command) (interface{}, error) {
 
 // RequestWithContext preforms a command with a context
 func (client *Client) RequestWithContext(ctx context.Context, command Command) (interface{}, error) {
-	switch command.(type) {
+	switch c := command.(type) {
 	case AsyncCommand:
-		return client.asyncRequest(ctx, command.(AsyncCommand))
+		return client.asyncRequest(ctx, c)
 	default:
 		return client.SyncRequestWithContext(ctx, command)
 	}
@@ -276,10 +281,9 @@ func (client *Client) AsyncRequestWithContext(ctx context.Context, asyncCommand 
 
 // Payload builds the HTTP request params from the given command
 func (client *Client) Payload(command Command) (url.Values, error) {
-	params := url.Values{}
-	err := prepareValues("", params, command)
+	params, err := prepareValues("", command)
 	if err != nil {
-		return params, err
+		return nil, err
 	}
 	if hookReq, ok := command.(onBeforeHook); ok {
 		if err := hookReq.onBeforeSend(params); err != nil {

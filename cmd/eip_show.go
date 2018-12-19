@@ -54,11 +54,13 @@ func eipDetails(eip *egoscale.UUID) (*egoscale.IPAddress, []egoscale.VirtualMach
 
 	var eipID = eip
 
-	addr := &egoscale.IPAddress{ID: eipID, IsElastic: true}
-	if err := cs.GetWithContext(gContext, addr); err != nil {
+	query := &egoscale.IPAddress{ID: eipID, IsElastic: true}
+	resp, err := cs.GetWithContext(gContext, query)
+	if err != nil {
 		return nil, nil, err
 	}
 
+	addr := resp.(*egoscale.IPAddress)
 	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: addr.ZoneID})
 	if err != nil {
 		return nil, nil, err

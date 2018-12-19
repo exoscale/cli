@@ -63,7 +63,7 @@ type sshInfo struct {
 }
 
 func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
-	vm, err := getVMWithNameOrID(name)
+	vm, err := getVirtualMachineByNameOrID(name)
 	if err != nil {
 		return nil, err
 	}
@@ -88,16 +88,18 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 		return nil, fmt.Errorf("no valid IP address found")
 	}
 
-	template := &egoscale.Template{
+	query := &egoscale.Template{
 		ID:         vm.TemplateID,
 		IsFeatured: true,
 		ZoneID:     vm.ZoneID,
 	}
 
-	if err := cs.GetWithContext(gContext, template); err != nil {
+	resp, err := cs.GetWithContext(gContext, query)
+	if err != nil {
 		return nil, err
 	}
 
+	template := resp.(*egoscale.Template)
 	tempUser, ok := template.Details["username"]
 	if !ok {
 		return nil, fmt.Errorf("missing username information in Template %q", template.ID)

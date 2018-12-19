@@ -34,7 +34,7 @@ var dissociateCmd = &cobra.Command{
 }
 
 func dissociatePrivNet(privnet *egoscale.Network, vmName string) (*egoscale.UUID, error) {
-	vm, err := getVMWithNameOrID(vmName)
+	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return nil, err
 	}
