@@ -7,22 +7,17 @@ require (
 	github.com/VividCortex/ewma v1.1.1 // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/cenkalti/backoff v2.0.0+incompatible
-	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 	github.com/exoscale/egoscale v0.13.1
 	github.com/fatih/camelcase v1.0.0
+	github.com/gernest/wow v0.0.0-20171118080535-7e0b2a239898
 	github.com/go-ini/ini v1.39.3
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
-	github.com/manifoldco/promptui v0.3.2
-	github.com/gernest/wow v0.0.0-20171118080535-7e0b2a239898
-	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
-	github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a // indirect
 	github.com/magefile/mage v1.7.1 // indirect
-	github.com/mattn/go-colorable v0.0.9 // indirect
-	github.com/mattn/go-isatty v0.0.4 // indirect
+	github.com/manifoldco/promptui v0.3.2
 	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/minio/minio-go v6.0.11+incompatible
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
