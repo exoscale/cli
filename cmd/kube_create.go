@@ -202,7 +202,7 @@ var kubeCreateCmd = &cobra.Command{
 		sshClient, err := newSSHClient(
 			vm.IP().String(),
 			"ubuntu",
-			path.Join(getKeyPairPath(vm.ID.String()), "id_rsa"),
+			getKeyPairPath(vm.ID.String()),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize SSH client: %s", err)

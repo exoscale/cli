@@ -72,19 +72,18 @@ func getSecurityGroup(vm *egoscale.VirtualMachine) []string {
 }
 
 func getKeyPairPath(vmID string) string {
-	return path.Join(gConfigFolder, "instances", vmID)
+	return path.Join(gConfigFolder, "instances", vmID, "id_rsa")
 }
 
 func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
-	folder := getKeyPairPath(vmID.String())
+	filePath := getKeyPairPath(vmID.String())
+	folder := path.Dir(filePath)
 
 	if _, err := os.Stat(folder); os.IsNotExist(err) {
 		if err := os.MkdirAll(folder, os.ModePerm); err != nil {
 			log.Fatal(err)
 		}
 	}
-
-	filePath := path.Join(folder, "id_rsa")
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		if err := ioutil.WriteFile(filePath, []byte(keyPairs.PrivateKey), 0600); err != nil {
