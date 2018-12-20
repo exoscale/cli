@@ -193,6 +193,10 @@ var kubeCreateCmd = &cobra.Command{
 			return fmt.Errorf("unable to tag cluster instance: %s", err)
 		}
 
+		if err := saveKubeData(clusterName, "instance", []byte(vm.ID.String())); err != nil {
+			return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
+		}
+
 		fmt.Println("🚧 Bootstrapping Kubernetes cluster (can take up to several minutes):")
 
 		sshClient, err := newSSHClient(
@@ -210,10 +214,6 @@ var kubeCreateCmd = &cobra.Command{
 			Address: vm.IP().String(),
 		}, kubeCreateDebug); err != nil {
 			return fmt.Errorf("cluster bootstrap failed: %s", err)
-		}
-
-		if err := saveKubeData(clusterName, "instance", []byte(vm.ID.String())); err != nil {
-			return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
 		}
 
 		fmt.Printf(`
