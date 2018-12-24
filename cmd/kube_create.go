@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"text/template"
@@ -17,6 +18,9 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
+
+// kubeDefaultVersion represents the Kubernetes version installed by default
+const kubeDefaultVersion = "1.13"
 
 // kubeCreateDebug represents a debug mode flag
 var kubeCreateDebug bool
@@ -102,12 +106,20 @@ curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key 
 cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
 deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
 
-sudo -E DEBIAN_FRONTEND=noninteractive apt-get update && \
-sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y kubelet kubeadm kubectl && \
+export PKG_VERSION=$(apt-cache madison kubelet | awk '$3 ~ /{{ .Version }}/ { print $3 }' | head -n 1)
+if [[ -z "${PKG_VERSION}" ]]; then
+	echo "error: unable to find package for version {{ .Version }}" >&2
+	exit 1
+fi
+
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y kubelet=${PKG_VERSION} \
+	kubeadm=${PKG_VERSION} \
+	kubectl=${PKG_VERSION} && \
 sudo apt-mark hold kubelet kubeadm kubectl`},
 	{name: "Kubernetes cluster node initialization", command: `\
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version {{ .Version }} && \
+sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version stable-{{ .Version }} && \
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master- && \
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
 	-f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml \
@@ -143,6 +155,9 @@ var kubeCreateCmd = &cobra.Command{
 
 		version, err := cmd.Flags().GetString("version")
 		if err != nil {
+			return err
+		}
+		if err := checkKubeVersion("stable-" + version); err != nil {
 			return err
 		}
 
@@ -446,10 +461,23 @@ func (c *sshClient) scp(src, dst string) error {
 	return ioutil.WriteFile(dst, buf.Bytes(), 0600)
 }
 
+func checkKubeVersion(version string) error {
+	r, err := http.Get(fmt.Sprintf("https://dl.k8s.io/release/%s.txt", version))
+	if err != nil {
+		return err
+	}
+	defer r.Body.Close()
+
+	if r.StatusCode != http.StatusOK {
+		return fmt.Errorf("unable to find Kubernetes release for version %q", version)
+	}
+
+	return nil
+}
+
 func init() {
 	kubeCreateCmd.PersistentFlags().BoolVarP(&kubeCreateDebug, "debug", "d", false, "debug mode on")
-	kubeCreateCmd.Flags().StringP("version", "v", "stable-1", "<version label> "+
-		"(see https://godoc.org/github.com/kubernetes/kubernetes/cmd/kubeadm/app/util#KubernetesReleaseVersion)")
+	kubeCreateCmd.Flags().StringP("version", "v", kubeDefaultVersion, "<version>")
 	kubeCreateCmd.Flags().StringP("size", "s", "small", "<name | id> "+
 		"(micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
 	kubeCmd.AddCommand(kubeCreateCmd)
