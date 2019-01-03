@@ -26,9 +26,16 @@ install:
   - npm i codeclimate-test-reporter
   - '[ "$(echo "$TRAVIS_GO_VERSION" | perl -pe "s/\\.[x\\d]+$//")" = "1.11" ] && go mod vendor || go get -u github.com/satori/go.uuid'
 
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+
 script:
-  - go test -race -coverprofile=coverage.out -covermode=atomic .
-  - npx codeclimate-test-reporter < coverage.out
+  - go test -race -coverprofile=c.out -covermode=atomic .
+
+after_script:
+  - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
 
 jobs:
   include:

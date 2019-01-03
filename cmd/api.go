@@ -66,15 +66,17 @@ func buildCommands(methods []category) {
 				Hidden: true,
 			}
 
+			buildFlags(s.command, &hiddenCMD)
+
 			subCMD := cobra.Command{
 				Use:     name,
 				Short:   description,
 				Long:    fmt.Sprintf("%s <%s>", description, fmt.Sprintf(url, realName)),
 				Aliases: append(s.alias, realName),
+				Hidden:  s.hidden,
 			}
 
 			buildFlags(s.command, &subCMD)
-			buildFlags(s.command, &hiddenCMD)
 
 			runCMD := func(cmd *cobra.Command, args []string) error {
 

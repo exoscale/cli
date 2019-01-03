@@ -15,6 +15,7 @@ type cmd struct {
 	command egoscale.Command
 	name    string
 	alias   []string
+	hidden  bool
 }
 
 var methods = []category{
@@ -23,11 +24,11 @@ var methods = []category{
 		[]string{"net"},
 		"Network management",
 		[]cmd{
-			{&egoscale.CreateNetwork{}, "create", gCreateAlias},
-			{&egoscale.DeleteNetwork{}, "delete", gDeleteAlias},
-			{&egoscale.ListNetworkOfferings{}, "", nil},
-			{&egoscale.ListNetworks{}, "list", gListAlias},
-			{&egoscale.UpdateNetwork{}, "update", nil},
+			{command: &egoscale.CreateNetwork{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.DeleteNetwork{}, name: "delete", alias: gDeleteAlias},
+			{command: &egoscale.ListNetworkOfferings{}},
+			{command: &egoscale.ListNetworks{}, name: "list", alias: gListAlias},
+			{command: &egoscale.UpdateNetwork{}, name: "update"},
 		},
 	},
 	{
@@ -35,28 +36,28 @@ var methods = []category{
 		[]string{"virtual-machine"},
 		"Virtual machine management",
 		[]cmd{
-			{&egoscale.AddNicToVirtualMachine{}, "addNic", nil},
-			{&egoscale.ChangeServiceForVirtualMachine{}, "changeService", nil},
-			{&egoscale.DeployVirtualMachine{}, "deploy", nil},
-			{&egoscale.DestroyVirtualMachine{}, "destroy", nil},
-			{&egoscale.ExpungeVirtualMachine{}, "expunge", nil},
-			{&egoscale.GetVMPassword{}, "getPassword", nil},
-			{&egoscale.GetVirtualMachineUserData{}, "getUserData", nil},
-			{&egoscale.ListVirtualMachines{}, "list", gListAlias},
-			{&egoscale.RebootVirtualMachine{}, "reboot", nil},
-			{&egoscale.RecoverVirtualMachine{}, "recover", nil},
-			{&egoscale.RemoveNicFromVirtualMachine{}, "removeNic", nil},
-			{&egoscale.ResetPasswordForVirtualMachine{}, "resetPassword", nil},
-			{&egoscale.RestoreVirtualMachine{}, "restore", nil},
-			{&egoscale.ScaleVirtualMachine{}, "scale", nil},
-			{&egoscale.StartVirtualMachine{}, "start", nil},
-			{&egoscale.StopVirtualMachine{}, "stop", nil},
-			{&egoscale.UpdateVirtualMachine{}, "update", nil},
-			{&egoscale.UpdateVMAffinityGroup{}, "", nil},
-			{&egoscale.DeleteReverseDNSFromVirtualMachine{}, "deleteReverseDNSFromVM", nil},
-			{&egoscale.QueryReverseDNSForVirtualMachine{}, "queryReverseDNSForVM", nil},
-			{&egoscale.UpdateReverseDNSForVirtualMachine{}, "updateReverseDNSForVM", nil},
-			{&egoscale.UpdateVMNicIP{}, "updateVMNicIP", nil},
+			{command: &egoscale.AddNicToVirtualMachine{}, name: "addNic"},
+			{command: &egoscale.ChangeServiceForVirtualMachine{}, name: "changeService"},
+			{command: &egoscale.DeployVirtualMachine{}, name: "deploy"},
+			{command: &egoscale.DestroyVirtualMachine{}, name: "destroy"},
+			{command: &egoscale.ExpungeVirtualMachine{}, name: "expunge"},
+			{command: &egoscale.GetVMPassword{}, name: "getPassword"},
+			{command: &egoscale.GetVirtualMachineUserData{}, name: "getUserData"},
+			{command: &egoscale.ListVirtualMachines{}, name: "list", alias: gListAlias},
+			{command: &egoscale.RebootVirtualMachine{}, name: "reboot"},
+			{command: &egoscale.RecoverVirtualMachine{}, name: "recover"},
+			{command: &egoscale.RemoveNicFromVirtualMachine{}, name: "removeNic"},
+			{command: &egoscale.ResetPasswordForVirtualMachine{}, name: "resetPassword"},
+			{command: &egoscale.RestoreVirtualMachine{}, name: "restore"},
+			{command: &egoscale.ScaleVirtualMachine{}, name: "scale"},
+			{command: &egoscale.StartVirtualMachine{}, name: "start"},
+			{command: &egoscale.StopVirtualMachine{}, name: "stop"},
+			{command: &egoscale.UpdateVirtualMachine{}, name: "update"},
+			{command: &egoscale.UpdateVMAffinityGroup{}, name: ""},
+			{command: &egoscale.DeleteReverseDNSFromVirtualMachine{}, name: "deleteReverseDNSFromVM"},
+			{command: &egoscale.QueryReverseDNSForVirtualMachine{}, name: "queryReverseDNSForVM"},
+			{command: &egoscale.UpdateReverseDNSForVirtualMachine{}, name: "updateReverseDNSForVM"},
+			{command: &egoscale.UpdateVMNicIP{}, name: "updateVMNicIP"},
 		},
 	},
 	{
@@ -64,9 +65,9 @@ var methods = []category{
 		[]string{"ag"},
 		"Affinity group management",
 		[]cmd{
-			{&egoscale.CreateAffinityGroup{}, "create", gCreateAlias},
-			{&egoscale.DeleteAffinityGroup{}, "delete", gDeleteAlias},
-			{&egoscale.ListAffinityGroups{}, "list", gListAlias},
+			{command: &egoscale.CreateAffinityGroup{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.DeleteAffinityGroup{}, name: "delete", alias: gDeleteAlias},
+			{command: &egoscale.ListAffinityGroups{}, name: "list", alias: gListAlias},
 		},
 	},
 	{
@@ -74,8 +75,8 @@ var methods = []category{
 		[]string{"vol"},
 		"Volume management",
 		[]cmd{
-			{&egoscale.ListVolumes{}, "list", gListAlias},
-			{&egoscale.ResizeVolume{}, "resize", nil},
+			{command: &egoscale.ListVolumes{}, name: "list", alias: gListAlias},
+			{command: &egoscale.ResizeVolume{}, name: "resize"},
 		},
 	},
 	{
@@ -83,7 +84,10 @@ var methods = []category{
 		[]string{"temp"},
 		"Template management",
 		[]cmd{
-			{&egoscale.ListTemplates{}, "list", gListAlias},
+			{command: &egoscale.ListTemplates{}, name: "list", alias: gListAlias},
+			{command: &egoscale.ListISOs{}, hidden: true},
+			{command: &egoscale.AttachISO{}, hidden: true},
+			{command: &egoscale.DetachISO{}, hidden: true},
 		},
 	},
 	{
@@ -91,7 +95,7 @@ var methods = []category{
 		[]string{"acc"},
 		"Account management",
 		[]cmd{
-			{&egoscale.ListAccounts{}, "list", gListAlias},
+			{command: &egoscale.ListAccounts{}, name: "list", alias: gListAlias},
 		},
 	},
 	{
@@ -99,7 +103,7 @@ var methods = []category{
 		nil,
 		"Zone management",
 		[]cmd{
-			{&egoscale.ListZones{}, "list", gListAlias},
+			{command: &egoscale.ListZones{}, name: "list", alias: gListAlias},
 		},
 	},
 	{
@@ -107,10 +111,10 @@ var methods = []category{
 		[]string{"snap"},
 		"Snapshot management",
 		[]cmd{
-			{&egoscale.CreateSnapshot{}, "create", gCreateAlias},
-			{&egoscale.DeleteSnapshot{}, "delete", gDeleteAlias},
-			{&egoscale.ListSnapshots{}, "list", gListAlias},
-			{&egoscale.RevertSnapshot{}, "revert", nil},
+			{command: &egoscale.CreateSnapshot{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.DeleteSnapshot{}, name: "delete", alias: gDeleteAlias},
+			{command: &egoscale.ListSnapshots{}, name: "list", alias: gListAlias},
+			{command: &egoscale.RevertSnapshot{}, name: "revert"},
 		},
 	},
 	{
@@ -118,8 +122,8 @@ var methods = []category{
 		[]string{"usr"},
 		"User management",
 		[]cmd{
-			{&egoscale.ListUsers{}, "list", gListAlias},
-			{&egoscale.RegisterUserKeys{}, "", nil},
+			{command: &egoscale.ListUsers{}, name: "list", alias: gListAlias},
+			{command: &egoscale.RegisterUserKeys{}},
 		},
 	},
 	{
@@ -127,13 +131,13 @@ var methods = []category{
 		[]string{"sg"},
 		"Security group management",
 		[]cmd{
-			{&egoscale.AuthorizeSecurityGroupEgress{}, "authorizeEgress", nil},
-			{&egoscale.AuthorizeSecurityGroupIngress{}, "authorizeIngress", nil},
-			{&egoscale.CreateSecurityGroup{}, "create", gCreateAlias},
-			{&egoscale.DeleteSecurityGroup{}, "delete", gDeleteAlias},
-			{&egoscale.ListSecurityGroups{}, "list", gListAlias},
-			{&egoscale.RevokeSecurityGroupEgress{}, "revokeEgress", nil},
-			{&egoscale.RevokeSecurityGroupIngress{}, "revokeIngress", nil},
+			{command: &egoscale.AuthorizeSecurityGroupEgress{}, name: "authorizeEgress"},
+			{command: &egoscale.AuthorizeSecurityGroupIngress{}, name: "authorizeIngress"},
+			{command: &egoscale.CreateSecurityGroup{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.DeleteSecurityGroup{}, name: "delete", alias: gDeleteAlias},
+			{command: &egoscale.ListSecurityGroups{}, name: "list", alias: gListAlias},
+			{command: &egoscale.RevokeSecurityGroupEgress{}, name: "revokeEgress"},
+			{command: &egoscale.RevokeSecurityGroupIngress{}, name: "revokeIngress"},
 		},
 	},
 	{
@@ -141,11 +145,11 @@ var methods = []category{
 		nil,
 		"SSH management",
 		[]cmd{
-			{&egoscale.RegisterSSHKeyPair{}, "register", nil},
-			{&egoscale.ListSSHKeyPairs{}, "list", gListAlias},
-			{&egoscale.CreateSSHKeyPair{}, "create", gCreateAlias},
-			{&egoscale.DeleteSSHKeyPair{}, "delete", gDeleteAlias},
-			{&egoscale.ResetSSHKeyForVirtualMachine{}, "reset", nil},
+			{command: &egoscale.RegisterSSHKeyPair{}, name: "register"},
+			{command: &egoscale.ListSSHKeyPairs{}, name: "list", alias: gListAlias},
+			{command: &egoscale.CreateSSHKeyPair{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.DeleteSSHKeyPair{}, name: "delete", alias: gDeleteAlias},
+			{command: &egoscale.ResetSSHKeyForVirtualMachine{}, name: "reset"},
 		},
 	},
 	{
@@ -153,10 +157,10 @@ var methods = []category{
 		[]string{"vg"},
 		"VM group management",
 		[]cmd{
-			{&egoscale.CreateInstanceGroup{}, "create", gCreateAlias},
-			{&egoscale.DeleteInstanceGroup{}, "delete", gDeleteAlias},
-			{&egoscale.ListInstanceGroups{}, "list", gListAlias},
-			{&egoscale.UpdateInstanceGroup{}, "update", nil},
+			{command: &egoscale.CreateInstanceGroup{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.DeleteInstanceGroup{}, name: "delete", alias: gDeleteAlias},
+			{command: &egoscale.ListInstanceGroups{}, name: "list", alias: gListAlias},
+			{command: &egoscale.UpdateInstanceGroup{}, name: "update"},
 		},
 	},
 	{
@@ -164,9 +168,9 @@ var methods = []category{
 		nil,
 		"Tags management",
 		[]cmd{
-			{&egoscale.CreateTags{}, "create", gCreateAlias},
-			{&egoscale.DeleteTags{}, "delete", gDeleteAlias},
-			{&egoscale.ListTags{}, "list", gListAlias},
+			{command: &egoscale.CreateTags{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.DeleteTags{}, name: "delete", alias: gDeleteAlias},
+			{command: &egoscale.ListTags{}, name: "list", alias: gListAlias},
 		},
 	},
 	{
@@ -174,10 +178,10 @@ var methods = []category{
 		nil,
 		"Nic management",
 		[]cmd{
-			{&egoscale.ActivateIP6{}, "", nil},
-			{&egoscale.AddIPToNic{}, "", nil},
-			{&egoscale.ListNics{}, "list", gListAlias},
-			{&egoscale.RemoveIPFromNic{}, "", nil},
+			{command: &egoscale.ActivateIP6{}},
+			{command: &egoscale.AddIPToNic{}},
+			{command: &egoscale.ListNics{}, name: "list", alias: gListAlias},
+			{command: &egoscale.RemoveIPFromNic{}},
 		},
 	},
 	{
@@ -185,13 +189,13 @@ var methods = []category{
 		[]string{"addr"},
 		"Address management",
 		[]cmd{
-			{&egoscale.AssociateIPAddress{}, "associate", gAssociateAlias},
-			{&egoscale.DisassociateIPAddress{}, "disassociate", gDissociateAlias},
-			{&egoscale.ListPublicIPAddresses{}, "list", gListAlias},
-			{&egoscale.UpdateIPAddress{}, "update", nil},
-			{&egoscale.DeleteReverseDNSFromPublicIPAddress{}, "deleteReverseDNSFromAddress", nil},
-			{&egoscale.QueryReverseDNSForPublicIPAddress{}, "queryReverseDNSForAddress", nil},
-			{&egoscale.UpdateReverseDNSForPublicIPAddress{}, "updateReverseDNSForAddress", nil},
+			{command: &egoscale.AssociateIPAddress{}, name: "associate", alias: gAssociateAlias},
+			{command: &egoscale.DisassociateIPAddress{}, name: "disassociate", alias: gDissociateAlias},
+			{command: &egoscale.ListPublicIPAddresses{}, name: "list", alias: gListAlias},
+			{command: &egoscale.UpdateIPAddress{}, name: "update"},
+			{command: &egoscale.DeleteReverseDNSFromPublicIPAddress{}, name: "deleteReverseDNSFromAddress"},
+			{command: &egoscale.QueryReverseDNSForPublicIPAddress{}, name: "queryReverseDNSForAddress"},
+			{command: &egoscale.UpdateReverseDNSForPublicIPAddress{}, name: "updateReverseDNSForAddress"},
 		},
 	},
 	{
@@ -199,8 +203,8 @@ var methods = []category{
 		[]string{"aj"},
 		"Async job management",
 		[]cmd{
-			{&egoscale.QueryAsyncJobResult{}, "", nil},
-			{&egoscale.ListAsyncJobs{}, "", nil},
+			{command: &egoscale.QueryAsyncJobResult{}},
+			{command: &egoscale.ListAsyncJobs{}},
 		},
 	},
 	{
@@ -208,7 +212,7 @@ var methods = []category{
 		nil,
 		"Apis management",
 		[]cmd{
-			{&egoscale.ListAPIs{}, "list", gListAlias},
+			{command: &egoscale.ListAPIs{}, name: "list", alias: gListAlias},
 		},
 	},
 	{
@@ -216,8 +220,8 @@ var methods = []category{
 		nil,
 		"Event management",
 		[]cmd{
-			{&egoscale.ListEventTypes{}, "listType", nil},
-			{&egoscale.ListEvents{}, "list", gListAlias},
+			{command: &egoscale.ListEventTypes{}, name: "listType"},
+			{command: &egoscale.ListEvents{}, name: "list", alias: gListAlias},
 		},
 	},
 	{
@@ -225,9 +229,9 @@ var methods = []category{
 		nil,
 		"Offerings management",
 		[]cmd{
-			{&egoscale.ListResourceDetails{}, "listDetails", nil},
-			{&egoscale.ListResourceLimits{}, "listLimits", nil},
-			{&egoscale.ListServiceOfferings{}, "list", gListAlias},
+			{command: &egoscale.ListResourceDetails{}, name: "listDetails"},
+			{command: &egoscale.ListResourceLimits{}, name: "listLimits"},
+			{command: &egoscale.ListServiceOfferings{}, name: "list", alias: gListAlias},
 		},
 	},
 }

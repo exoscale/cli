@@ -43,18 +43,21 @@ func (Template) ResourceType() string {
 }
 
 // ListRequest builds the ListTemplates request
-func (temp Template) ListRequest() (ListCommand, error) {
+func (template Template) ListRequest() (ListCommand, error) {
 	req := &ListTemplates{
-		Name:   temp.Name,
-		ID:     temp.ID,
-		ZoneID: temp.ZoneID,
-		//TODO Tags
+		ID:     template.ID,
+		Name:   template.Name,
+		ZoneID: template.ZoneID,
 	}
-	if temp.IsFeatured {
+	if template.IsFeatured {
 		req.TemplateFilter = "featured"
 	}
-	if temp.Removed != "" {
+	if template.Removed != "" {
 		*req.ShowRemoved = true
+	}
+
+	for i := range template.Tags {
+		req.Tags = append(req.Tags, template.Tags[i])
 	}
 
 	return req, nil
