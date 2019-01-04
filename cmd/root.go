@@ -190,7 +190,6 @@ func initConfig() {
 		viper.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
 		viper.AddConfigPath(usr.HomeDir)
 		viper.AddConfigPath(".")
-		gConfigFilePath = path.Join(gConfigFolder, fmt.Sprintf("%s.toml", defaultConfigFileName))
 	}
 
 	nonCredentialCmd := []string{"config", "version", "status"}
