@@ -578,9 +578,6 @@ func (client *Client) runstatusRequest(ctx context.Context, uri string, structPa
 	defer resp.Body.Close() // nolint: errcheck
 
 	contentType := resp.Header.Get("content-type")
-	if resp.StatusCode < 400 && contentType == "" {
-		return nil, nil
-	}
 	if !strings.Contains(contentType, "application/json") {
 		return nil, fmt.Errorf(`response content-type expected to be "application/json", got %q`, contentType)
 	}
