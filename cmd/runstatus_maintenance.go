@@ -22,10 +22,10 @@ func getMaintenanceByNameOrID(page egoscale.RunstatusPage, name string) (*egosca
 	}
 
 	if maintenanceID > 0 {
-		return csRunstatus.GetRunstatusMaintenance(gContext, page, egoscale.RunstatusMaintenance{ID: maintenanceID})
+		return csRunstatus.GetRunstatusMaintenance(gContext, egoscale.RunstatusMaintenance{PageURL: page.URL, ID: maintenanceID})
 	}
 
-	return csRunstatus.GetRunstatusMaintenance(gContext, page, egoscale.RunstatusMaintenance{Title: name})
+	return csRunstatus.GetRunstatusMaintenance(gContext, egoscale.RunstatusMaintenance{PageURL: page.URL, Title: name})
 }
 
 func init() {

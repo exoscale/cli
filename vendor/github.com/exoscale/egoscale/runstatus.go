@@ -23,7 +23,7 @@ type RunstatusErrorResponse map[string][]string
 // runstatusPagesURL is the only URL that cannot be guessed
 const runstatusPagesURL = "/pages"
 
-//RunstatusPage runstatus page
+// RunstatusPage runstatus page
 type RunstatusPage struct {
 	Created          *time.Time             `json:"created,omitempty"`
 	DarkTheme        bool                   `json:"dark_theme,omitempty"`
@@ -236,16 +236,21 @@ func (client *Client) CreateRunstatusEvent(ctx context.Context, incident Runstat
 }
 
 // GetRunstatusMaintenance retrieves the details of a specific maintenance.
-func (client *Client) GetRunstatusMaintenance(ctx context.Context, page RunstatusPage, maintenance RunstatusMaintenance) (*RunstatusMaintenance, error) {
+func (client *Client) GetRunstatusMaintenance(ctx context.Context, maintenance RunstatusMaintenance) (*RunstatusMaintenance, error) {
 	if maintenance.URL != "" {
 		return client.getRunstatusMaintenance(ctx, maintenance)
 	}
 
-	if page.MaintenancesURL == "" {
-		return nil, fmt.Errorf("empty Maintenances URL for %#v", page)
+	if maintenance.PageURL == "" {
+		return nil, fmt.Errorf("empty Page URL for %#v", maintenance)
 	}
 
-	ms, err := client.ListRunstatusMaintenances(ctx, page)
+	page, err := client.getRunstatusPage(ctx, RunstatusPage{URL: maintenance.PageURL})
+	if err != nil {
+		return nil, err
+	}
+
+	ms, err := client.ListRunstatusMaintenances(ctx, *page)
 	if err != nil {
 		return nil, err
 	}
@@ -335,16 +340,21 @@ func (client *Client) UpdateRunstatusMaintenance(ctx context.Context, maintenanc
 }
 
 // GetRunstatusIncident retrieves the details of a specific incident.
-func (client *Client) GetRunstatusIncident(ctx context.Context, page RunstatusPage, incident RunstatusIncident) (*RunstatusIncident, error) {
+func (client *Client) GetRunstatusIncident(ctx context.Context, incident RunstatusIncident) (*RunstatusIncident, error) {
 	if incident.URL != "" {
 		return client.getRunstatusIncident(ctx, incident)
 	}
 
-	if page.IncidentsURL == "" {
-		return nil, fmt.Errorf("empty Incidents URL for %#v", incident)
+	if incident.PageURL == "" {
+		return nil, fmt.Errorf("empty Page URL for %#v", incident)
 	}
 
-	is, err := client.ListRunstatusIncidents(ctx, page)
+	page, err := client.getRunstatusPage(ctx, RunstatusPage{URL: incident.PageURL})
+	if err != nil {
+		return nil, err
+	}
+
+	is, err := client.ListRunstatusIncidents(ctx, *page)
 	if err != nil {
 		return nil, err
 	}

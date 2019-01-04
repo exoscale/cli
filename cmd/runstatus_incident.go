@@ -23,10 +23,10 @@ func getIncidentByNameOrID(page egoscale.RunstatusPage, name string) (*egoscale.
 	}
 
 	if incidentID > 0 {
-		return csRunstatus.GetRunstatusIncident(gContext, page, egoscale.RunstatusIncident{ID: incidentID})
+		return csRunstatus.GetRunstatusIncident(gContext, egoscale.RunstatusIncident{PageURL: page.URL, ID: incidentID})
 	}
 
-	return csRunstatus.GetRunstatusIncident(gContext, page, egoscale.RunstatusIncident{Title: name})
+	return csRunstatus.GetRunstatusIncident(gContext, egoscale.RunstatusIncident{PageURL: page.URL, Title: name})
 }
 
 func init() {
