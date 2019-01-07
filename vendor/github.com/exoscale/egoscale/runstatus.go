@@ -175,9 +175,44 @@ type RunstatusEvent struct {
 
 // RunstatusService is a runstatus service
 type RunstatusService struct {
-	Name  string `json:"name"`
-	State string `json:"state,omitempty"`
-	URL   string `json:"url,omitempty"`
+	ID      int    `json:"id"` // missing field
+	Name    string `json:"name"`
+	PageURL string `json:"page_url,omitempty"` // fake field
+	State   string `json:"state,omitempty"`
+	URL     string `json:"url,omitempty"`
+}
+
+// FakeID fills up the ID field as it's currently missing
+func (service *RunstatusService) FakeID() error {
+	if service.URL == "" {
+		return fmt.Errorf("empty URL for %#v", service)
+	}
+
+	u, err := url.Parse(service.URL)
+	if err != nil {
+		return err
+	}
+
+	s := path.Base(u.Path)
+	id, err := strconv.Atoi(s)
+	if err != nil {
+		return err
+	}
+	service.ID = id
+	return nil
+}
+
+// Match returns true if the other service has got similarities with itself
+func (service RunstatusService) Match(other RunstatusService) bool {
+	if other.Name != "" && service.Name == other.Name {
+		return true
+	}
+
+	if other.ID > 0 && service.ID == other.ID {
+		return true
+	}
+
+	return false
 }
 
 // RunstatusServiceList service list
@@ -196,13 +231,78 @@ func (client *Client) DeleteRunstatusService(ctx context.Context, service Runsta
 }
 
 // CreateRunstatusService create runstatus service
-func (client *Client) CreateRunstatusService(ctx context.Context, page RunstatusPage, service RunstatusService) error {
-	if page.ServicesURL == "" {
-		return fmt.Errorf("empty Services URL for %#v", page)
+func (client *Client) CreateRunstatusService(ctx context.Context, service RunstatusService) (*RunstatusService, error) {
+	if service.PageURL == "" {
+		return nil, fmt.Errorf("empty Page URL for %#v", service)
 	}
 
-	_, err := client.runstatusRequest(ctx, page.ServicesURL, service, "POST")
-	return err
+	page, err := client.GetRunstatusPage(ctx, RunstatusPage{URL: service.PageURL})
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.runstatusRequest(ctx, page.ServicesURL, service, "POST")
+	if err != nil {
+		return nil, err
+	}
+
+	s := &RunstatusService{}
+	if err := json.Unmarshal(resp, s); err != nil {
+		return nil, err
+	}
+
+	return s, nil
+}
+
+// GetRunstatusService displays service detail.
+func (client *Client) GetRunstatusService(ctx context.Context, service RunstatusService) (*RunstatusService, error) {
+	if service.URL != "" {
+		return client.getRunstatusService(ctx, service)
+	}
+
+	if service.PageURL == "" {
+		return nil, fmt.Errorf("empty Page URL in %#v", service)
+	}
+
+	page, err := client.GetRunstatusPage(ctx, RunstatusPage{URL: service.PageURL})
+	if err != nil {
+		return nil, err
+	}
+
+	ss, err := client.ListRunstatusServices(ctx, *page)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range ss {
+		if ss[i].Match(service) {
+			return &ss[i], nil
+		}
+	}
+
+	return nil, fmt.Errorf("%#v not found", service)
+}
+
+func (client *Client) getRunstatusService(ctx context.Context, service RunstatusService) (*RunstatusService, error) {
+	if service.URL == "" {
+		return nil, fmt.Errorf("missing URL for %#v", service)
+	}
+
+	resp, err := client.runstatusRequest(ctx, service.URL, nil, "GET")
+	if err != nil {
+		return nil, err
+	}
+
+	s := &RunstatusService{}
+	if err := json.Unmarshal(resp, &s); err != nil {
+		return nil, err
+	}
+
+	if err := s.FakeID(); err != nil {
+		log.Printf("bad fake ID for %#v, %s", s, err)
+	}
+
+	return s, nil
 }
 
 // ListRunstatusServices displays the list of services.
@@ -219,6 +319,13 @@ func (client *Client) ListRunstatusServices(ctx context.Context, page RunstatusP
 	var p *RunstatusServiceList
 	if err := json.Unmarshal(resp, &p); err != nil {
 		return nil, err
+	}
+
+	// NOTE: fix the missing IDs
+	for i := range p.Services {
+		if err := p.Services[i].FakeID(); err != nil {
+			log.Printf("bad fake ID for %#v, %s", p.Services[i], err)
+		}
 	}
 
 	// NOTE: no pagination
@@ -578,6 +685,9 @@ func (client *Client) runstatusRequest(ctx context.Context, uri string, structPa
 	defer resp.Body.Close() // nolint: errcheck
 
 	if resp.StatusCode == 204 {
+		if method != "DELETE" {
+			return nil, fmt.Errorf("only DELETE is expected to produce 204, was %q", method)
+		}
 		return nil, nil
 	}
 
@@ -593,7 +703,7 @@ func (client *Client) runstatusRequest(ctx context.Context, uri string, structPa
 
 	if resp.StatusCode >= 400 {
 		if resp.StatusCode == 404 {
-			return nil, fmt.Errorf("Not found")
+			return nil, fmt.Errorf("not found")
 		}
 		e := new(RunstatusErrorResponse)
 		if err := json.Unmarshal(b, e); err != nil {

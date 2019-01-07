@@ -40,13 +40,15 @@ var runstatusServiceCreateCmd = &cobra.Command{
 			return err
 		}
 
-		err = csRunstatus.CreateRunstatusService(gContext, *runstatusPage, egoscale.RunstatusService{
-			Name: serviceName,
+		s, err := csRunstatus.CreateRunstatusService(gContext, egoscale.RunstatusService{
+			PageURL: runstatusPage.URL,
+			Name:    serviceName,
 		})
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Service %q successfully created\n", serviceName)
+
+		fmt.Printf("Service %q successfully created\n", s.Name)
 
 		return nil
 	},
