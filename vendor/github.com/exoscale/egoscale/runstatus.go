@@ -549,7 +549,7 @@ func (client *Client) CreateRunstatusPage(ctx context.Context, page RunstatusPag
 
 // DeleteRunstatusPage delete runstatus page
 func (client *Client) DeleteRunstatusPage(ctx context.Context, page RunstatusPage) error {
-	if page.URL != "" {
+	if page.URL == "" {
 		return fmt.Errorf("empty URL for %#v", page)
 	}
 	_, err := client.runstatusRequest(ctx, page.URL, nil, "DELETE")
