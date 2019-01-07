@@ -13,8 +13,6 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/exoscale/egoscale"
-	"github.com/gernest/wow"
-	"github.com/gernest/wow/spin"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
@@ -325,7 +323,6 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			stdout, stderr io.Writer
 			cmd            bytes.Buffer
 			errBuf         bytes.Buffer
-			w              *wow.Wow
 		)
 
 		stderr = &errBuf
@@ -339,18 +336,13 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			return fmt.Errorf("template error: %s", err)
 		}
 
-		if !kubeCreateDebug {
-			w = wow.New(os.Stdout, spin.Get(spin.Dots), " "+step.name)
-			w.Start()
-		} else {
-			fmt.Println(">>>", step.name)
+		fmt.Printf("🚥 %s", step.name)
+		if kubeCreateDebug {
+			fmt.Println()
 		}
 
 		if err := sshClient.runCommand(cmd.String(), stdout, stderr); err != nil {
-			if !kubeCreateDebug {
-				w.PersistWith(spin.Spinner{Frames: []string{"⚠️"}}, fmt.Sprintf(" %s: failed", step.name))
-			}
-
+			fmt.Printf("\r⚠ %s: failed\n", step.name)
 			if errBuf.Len() > 0 {
 				fmt.Println(errBuf.String())
 			}
@@ -358,9 +350,7 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			return err
 		}
 
-		if !kubeCreateDebug {
-			w.PersistWith(spin.Spinner{Frames: []string{"✅"}}, " "+step.name)
-		}
+		fmt.Printf("\r✅ %s\n", step.name)
 	}
 
 	for _, file := range []string{"ca.pem", "cert.pem", "key.pem"} {

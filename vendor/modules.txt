@@ -21,9 +21,6 @@ github.com/exoscale/egoscale
 github.com/fatih/camelcase
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
-# github.com/gernest/wow v0.0.0-20171118080535-7e0b2a239898
-github.com/gernest/wow
-github.com/gernest/wow/spin
 # github.com/go-ini/ini v1.39.3
 github.com/go-ini/ini
 # github.com/golang/lint v0.0.0-20181026193005-c67002cb31c3
