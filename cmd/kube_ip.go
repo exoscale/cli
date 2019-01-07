@@ -8,7 +8,7 @@ import (
 )
 
 // kubeEnvCmd represents the env command
-var kubeIpCmd = &cobra.Command{
+var kubeIPCmd = &cobra.Command{
 	Use:   "ip <cluster name>",
 	Short: "Print a standalone Kubernetes cluster's IP address",
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -37,5 +37,5 @@ var kubeIpCmd = &cobra.Command{
 }
 
 func init() {
-	kubeCmd.AddCommand(kubeIpCmd)
+	kubeCmd.AddCommand(kubeIPCmd)
 }
