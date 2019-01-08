@@ -129,17 +129,19 @@ var runstatusIncidentAddCmd = &cobra.Command{
 			return nil
 		}
 
-		if err := csRunstatus.CreateRunstatusIncident(gContext, *runstatusPage, egoscale.RunstatusIncident{
-			Title:      title,
-			StatusText: description,
-			Status:     status,
-			State:      state,
+		incident, err := csRunstatus.CreateRunstatusIncident(gContext, egoscale.RunstatusIncident{
+			PageURL:    runstatusPage.URL,
 			Services:   services,
-		}); err != nil {
+			State:      state,
+			Status:     status,
+			StatusText: description,
+			Title:      title,
+		})
+		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Incident %q successfully created\n", title)
+		fmt.Printf("Incident %q successfully created\n", incident.Title)
 		return nil
 	},
 }

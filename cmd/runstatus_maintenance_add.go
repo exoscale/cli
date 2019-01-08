@@ -134,18 +134,20 @@ var runstatusMaintenanceAddCmd = &cobra.Command{
 			return nil
 		}
 
-		if err := csRunstatus.CreateRunstatusMaintenance(gContext, *runstatusPage, egoscale.RunstatusMaintenance{
+		maintenance, err := csRunstatus.CreateRunstatusMaintenance(gContext, egoscale.RunstatusMaintenance{
 			Title:       title,
 			Description: description,
 			Status:      status,
 			Services:    services,
 			StartDate:   &startDate,
 			EndDate:     &endDate,
-		}); err != nil {
+			PageURL:     runstatusPage.URL,
+		})
+		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Maintenance %q successfully created\n", title)
+		fmt.Printf("Maintenance %q successfully created\n", maintenance.Title)
 		return nil
 	},
 }

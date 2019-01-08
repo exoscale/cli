@@ -113,7 +113,7 @@ passing a resolved status and flagging the services state as operational`,
 			return nil
 		}
 
-		if err := csRunstatus.CreateRunstatusEvent(gContext, *incident, egoscale.RunstatusEvent{
+		if err := csRunstatus.UpdateRunstatusIncident(gContext, *incident, egoscale.RunstatusEvent{
 			Text:   description,
 			Status: status,
 			State:  state,

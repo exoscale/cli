@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
-	github.com/exoscale/egoscale v0.13.2-0.20190107145308-98b10f69c4b8
+	github.com/exoscale/egoscale v0.13.2-0.20190108120822-e72797f4d64e
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.39.3
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
