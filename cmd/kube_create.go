@@ -210,7 +210,7 @@ var kubeCreateCmd = &cobra.Command{
 			return fmt.Errorf("unable to write Kubernetes configuration file: %s", err)
 		}
 
-		fmt.Println("🚧 Bootstrapping Kubernetes cluster (can take up to several minutes):")
+		fmt.Println("Bootstrapping Kubernetes cluster (can take up to several minutes):")
 
 		sshClient, err := newSSHClient(
 			vm.IP().String(),
@@ -230,7 +230,7 @@ var kubeCreateCmd = &cobra.Command{
 		}
 
 		fmt.Printf(`
-🏁 Your Kubernetes cluster is ready. What to do now?
+Your Kubernetes cluster is ready. What to do now?
 
 1. Install the "kubectl" command, if you don't have it already:
 
@@ -247,7 +247,7 @@ configuration (e.g. ~/.bashrc, ~/.zshrc).
 
     kubectl cluster-info
 
-4. Profit! ✨🦄🌈
+4. Profit!
 
 5. When you're done with your cluster, you can either:
 * stop it using the "exo lab kube stop" command
@@ -336,13 +336,13 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			return fmt.Errorf("template error: %s", err)
 		}
 
-		fmt.Printf("🚥 %s", step.name)
+		fmt.Printf("%s", step.name)
 		if kubeCreateDebug {
 			fmt.Println()
 		}
 
 		if err := sshClient.runCommand(cmd.String(), stdout, stderr); err != nil {
-			fmt.Printf("\r⚠ %s: failed\n", step.name)
+			fmt.Printf("\r%s: failed\n", step.name)
 			if errBuf.Len() > 0 {
 				fmt.Println(errBuf.String())
 			}
@@ -350,7 +350,7 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			return err
 		}
 
-		fmt.Printf("\r✅ %s\n", step.name)
+		fmt.Printf("\r%s: success\n", step.name)
 	}
 
 	for _, file := range []string{"ca.pem", "cert.pem", "key.pem"} {
