@@ -266,7 +266,7 @@ var kubeCreateCmd = &cobra.Command{
 			ResourceIDs:  []egoscale.UUID{*vm.ID},
 			Tags: []egoscale.ResourceTag{
 				{Key: "managedby", Value: "exokube"},
-				{Key: "exokube_version", Value: version},
+				{Key: kubeTagName, Value: kubernetesVersion},
 			},
 		}); err != nil {
 			return fmt.Errorf("unable to tag cluster instance: %s", err)
@@ -562,7 +562,7 @@ func fetchKubernetesVersion(version string) (string, error) {
 		return "", err
 	}
 
-	v := strings.TrimPrefix(string(b), "v")
+	v := strings.TrimSuffix(strings.TrimPrefix(string(b), "v"), "\n")
 	_, err = semver.Parse(v)
 	return v, err
 }
