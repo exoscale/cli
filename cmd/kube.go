@@ -15,7 +15,7 @@ var (
 	kubeSecurityGroup = "exokube"
 
 	// kubeTagName represents the name of the tag used to store the kubernetes version
-	kubeTagName = "kubernetes:version"
+	kubeTagName = "exokube:kubernetes"
 )
 
 // kubeCmd represents the kube command
