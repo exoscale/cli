@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -17,15 +16,7 @@ var kubeStartCmd = &cobra.Command{
 		}
 		clusterName := args[0]
 
-		clusterInstance, err := loadKubeData(clusterName, "instance")
-		if err != nil {
-			if os.IsNotExist(err) {
-				return fmt.Errorf("%q: no such cluster", clusterName)
-			}
-			return err
-		}
-
-		vm, err := getVirtualMachineByNameOrID(string(clusterInstance))
+		vm, err := getKubeVM(clusterName)
 		if err != nil {
 			return err
 		}

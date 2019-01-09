@@ -56,13 +56,18 @@ func saveKubeData(clusterName, key string, data []byte) error {
 	return nil
 }
 
-func loadKubeData(clusterName, key string) (string, error) {
-	filename := path.Join(getKubeconfigPath(clusterName), key)
+func getKubeVM(clusterName string) (*egoscale.VirtualMachine, error) {
+	filename := path.Join(getKubeconfigPath(clusterName), "instance")
 	content, err := ioutil.ReadFile(filename)
+
 	if err != nil {
-		return "", err
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("%q: no such cluster", clusterName)
+		}
+		return nil, err
 	}
-	return string(content), err
+
+	return getVirtualMachineByNameOrID(string(string(content)))
 }
 
 func deleteKubeData(clusterName string) error {
