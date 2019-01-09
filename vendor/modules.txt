@@ -4,6 +4,8 @@ github.com/VividCortex/ewma
 github.com/alecthomas/gometalinter
 # github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
 github.com/alecthomas/units
+# github.com/blang/semver v3.5.1+incompatible
+github.com/blang/semver
 # github.com/cenkalti/backoff v2.0.0+incompatible
 github.com/cenkalti/backoff
 # github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
@@ -47,9 +49,6 @@ github.com/juju/ansiterm
 github.com/juju/ansiterm/tabwriter
 # github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a
 github.com/lunixbochs/vtclean
-# github.com/magefile/mage v1.7.1
-github.com/magefile/mage/mg
-github.com/magefile/mage/sh
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
 # github.com/manifoldco/promptui v0.3.2

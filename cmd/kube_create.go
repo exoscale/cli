@@ -8,17 +8,29 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"text/template"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/cenkalti/backoff"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
 
-// kubeDefaultVersion represents the Kubernetes version installed by default
-const kubeDefaultVersion = "1.13"
+const (
+	// kubeDockerVersion is the version installed on Ubuntu Xenial
+	kubeDockerVersion = "18.06"
+
+	// kubeCalicoVersion is the version of Calico installed
+	kubeCalicoVersion = "3.4"
+
+	// kubeDefaultTemplate is the template to install Kubernetes on.
+	//
+	// Using xenial means cfssl must be installed by other means
+	kubeDefaultTemplate = defaultTemplate
+)
 
 // kubeCreateDebug represents a debug mode flag
 var kubeCreateDebug bool
@@ -30,15 +42,22 @@ type kubeBootstrapStep struct {
 }
 
 type kubeCluster struct {
-	Name    string
-	Version string
-	Address string
+	Name              string
+	KubernetesVersion string
+	DockerVersion     string
+	CalicoVersion     string
+	Address           string
 }
 
 // kubeBootstrapSteps represents a k8s instance bootstrap steps
 var kubeBootstrapSteps = []kubeBootstrapStep{
-	{name: "Instance system upgrade", command: `\
-sudo -E DEBIAN_FRONTEND=noninteractive apt-get update && sudo -E DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+	{
+		name: "Instance system upgrade",
+		command: `\
+set -xe
+
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	apt-transport-https \
 	ca-certificates \
@@ -46,15 +65,30 @@ sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	golang-cfssl \
 	software-properties-common
 nohup sh -c 'sleep 5s ; sudo reboot' &
-exit`},
-	{name: "Docker Engine installation", command: `\
+exit`,
+	},
+	{
+		name: "Docker Engine installation",
+		command: `\
+set -xe
+
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
 sudo add-apt-repository \
 	"deb [arch=amd64] https://download.docker.com/linux/ubuntu \
 	$(lsb_release -cs) \
 	stable"
+
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
-sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce=18.06.0~ce~3-0~ubuntu
+
+PKG_VERSION=$(apt-cache madison docker-ce | awk '$3 ~ /{{ .DockerVersion }}/ { print $3 }' | sort -t : -k 2 -n | tail -n 1)
+if [[ -z "${PKG_VERSION}" ]]; then
+	echo "error: unable to find docker-ce package for version {{ .DockerVersion }}" >&2
+	exit 1
+fi
+
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce=${PKG_VERSION}
+sudo apt-mark hold docker-ce
 
 cat <<EOF > csr.json
 {
@@ -98,30 +132,43 @@ cat <<EOF | sudo tee /etc/systemd/system/docker.service.d/override.conf
 ExecStart=
 ExecStart=/usr/bin/dockerd
 EOF
-sudo systemctl daemon-reload && sudo systemctl restart docker`},
-	{name: "Kubernetes cluster node installation", command: `\
+sudo systemctl daemon-reload \
+ && sudo systemctl restart docker`,
+	},
+	{
+		name: "Kubernetes cluster node installation", command: `\
+set -xe
+
 curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
 deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
 
-export PKG_VERSION=$(apt-cache madison kubelet | awk '$3 ~ /{{ .Version }}/ { print $3 }' | head -n 1)
+PKG_VERSION=$(apt-cache madison kubelet | awk '$3 ~ /{{ .KubernetesVersion }}-/ { print $3 }' | sort -t "-" -k 2 -n | tail -n 1)
 if [[ -z "${PKG_VERSION}" ]]; then
-	echo "error: unable to find package for version {{ .Version }}" >&2
+	echo "error: unable to find kubelet package for version {{ .KubernetesVersion }}" >&2
 	exit 1
 fi
 
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y kubelet=${PKG_VERSION} \
 	kubeadm=${PKG_VERSION} \
-	kubectl=${PKG_VERSION} && \
-sudo apt-mark hold kubelet kubeadm kubectl`},
-	{name: "Kubernetes cluster node initialization", command: `\
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16 --kubernetes-version stable-{{ .Version }} && \
-sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master- && \
+	kubectl=${PKG_VERSION}
+sudo apt-mark hold kubelet kubeadm kubectl`,
+	}, {
+		name: "Kubernetes cluster node initialization",
+		command: `\
+set -xe
+
+sudo kubeadm init \
+	--pod-network-cidr=192.168.0.0/16 \
+	--kubernetes-version "{{ .KubernetesVersion }}"
+sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
-	-f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml \
-	-f https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml`},
+		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/etcd.yaml
+sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
+		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/calico.yaml`,
+	},
 }
 
 // kubeCreateCmd represents the create command
@@ -151,11 +198,21 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		version, err := cmd.Flags().GetString("version")
+		dockerVersion, err := cmd.Flags().GetString("docker-version")
 		if err != nil {
 			return err
 		}
-		if err := checkKubeVersion("stable-" + version); err != nil {
+
+		version, err := cmd.Flags().GetString("kubernetes-version")
+		if err != nil {
+			return err
+		}
+		if version == "" {
+			version = "latest"
+		}
+
+		kubernetesVersion, err := inferKubernetesVersion(version)
+		if err != nil {
 			return err
 		}
 
@@ -179,7 +236,15 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		template, _ := getTemplateByName(zone, defaultTemplate)
+		template, err := getTemplateByName(zone, kubeDefaultTemplate)
+		if err != nil {
+			return err
+		}
+
+		userName, ok := template.Details["username"]
+		if !ok {
+			return fmt.Errorf("cannot fetch username from template %q", defaultTemplate)
+		}
 
 		r, errs := createVM([]egoscale.DeployVirtualMachine{{
 			Name:              clusterName,
@@ -189,6 +254,7 @@ var kubeCreateCmd = &cobra.Command{
 			RootDiskSize:      10,
 			SecurityGroupIDs:  []egoscale.UUID{*sg.ID},
 		}})
+
 		if len(errs) > 0 {
 			return errs[0]
 		}
@@ -214,7 +280,7 @@ var kubeCreateCmd = &cobra.Command{
 
 		sshClient, err := newSSHClient(
 			vm.IP().String(),
-			"ubuntu",
+			userName,
 			getKeyPairPath(vm.ID.String()),
 		)
 		if err != nil {
@@ -222,9 +288,11 @@ var kubeCreateCmd = &cobra.Command{
 		}
 
 		if err := bootstrapExokubeCluster(sshClient, kubeCluster{
-			Name:    clusterName,
-			Version: version,
-			Address: vm.IP().String(),
+			Name:              clusterName,
+			KubernetesVersion: kubernetesVersion,
+			CalicoVersion:     kubeCalicoVersion,
+			DockerVersion:     dockerVersion,
+			Address:           vm.IP().String(),
 		}, kubeCreateDebug); err != nil {
 			return fmt.Errorf("cluster bootstrap failed: %s", err)
 		}
@@ -247,9 +315,7 @@ configuration (e.g. ~/.bashrc, ~/.zshrc).
 
     kubectl cluster-info
 
-4. Profit!
-
-5. When you're done with your cluster, you can either:
+4. When you're done with your cluster, you can either:
 * stop it using the "exo lab kube stop" command
 * restart it later using the "exo lab kube start" command
 * delete it permanently using the "exo lab kube delete" command
@@ -336,13 +402,11 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			return fmt.Errorf("template error: %s", err)
 		}
 
-		fmt.Printf("%s", step.name)
-		if kubeCreateDebug {
-			fmt.Println()
-		}
+		fmt.Printf("%s... ", step.name)
 
 		if err := sshClient.runCommand(cmd.String(), stdout, stderr); err != nil {
-			fmt.Printf("\r%s: failed\n", step.name)
+			fmt.Printf("\n%s: failed\n", step.name)
+
 			if errBuf.Len() > 0 {
 				fmt.Println(errBuf.String())
 			}
@@ -350,7 +414,7 @@ func bootstrapExokubeCluster(sshClient *sshClient, cluster kubeCluster, debug bo
 			return err
 		}
 
-		fmt.Printf("\r%s: success\n", step.name)
+		fmt.Printf("success!\n")
 	}
 
 	for _, file := range []string{"ca.pem", "cert.pem", "key.pem"} {
@@ -451,24 +515,63 @@ func (c *sshClient) scp(src, dst string) error {
 	return ioutil.WriteFile(dst, buf.Bytes(), 0600)
 }
 
-func checkKubeVersion(version string) error {
-	r, err := http.Get(fmt.Sprintf("https://dl.k8s.io/release/%s.txt", version))
+// inferKubernetesVersion infers the real Kubernetes version from a given version
+func inferKubernetesVersion(version string) (string, error) {
+	v := strings.TrimPrefix(version, "v")
+
+	if _, err := semver.Parse(v); err != nil {
+		if _, err := semver.ParseTolerant(v); err != nil {
+			return "", err
+		}
+
+		v, err = fetchKubernetesVersion(fmt.Sprintf("stable-%s", v))
+		if err != nil {
+			return "", err
+		}
+	}
+
+	r, err := http.Head(fmt.Sprintf("https://dl.k8s.io/release/v%s/bin/linux/amd64/kubectl", v))
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer r.Body.Close()
 
 	if r.StatusCode != http.StatusOK {
-		return fmt.Errorf("unable to find Kubernetes release for version %q", version)
+		return "", fmt.Errorf("unable to find Kubernetes release for version %q", version)
 	}
 
-	return nil
+	return v, nil
+}
+
+// fetchKubernetesVersion fetches the version from the latest file
+//
+// https://godoc.org/github.com/kubernetes/kubernetes/cmd/kubeadm/app/util#KubernetesReleaseVersion
+func fetchKubernetesVersion(version string) (string, error) {
+	r, err := http.Get(fmt.Sprintf("https://dl.k8s.io/release/%s.txt", version))
+	if err != nil {
+		return "", err
+	}
+	defer r.Body.Close()
+
+	if r.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("unable to find Kubernetes release for version %q", version)
+	}
+
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return "", err
+	}
+
+	v := strings.TrimPrefix(string(b), "v")
+	_, err = semver.Parse(v)
+	return v, err
 }
 
 func init() {
 	kubeCreateCmd.PersistentFlags().BoolVarP(&kubeCreateDebug, "debug", "d", false, "debug mode on")
-	kubeCreateCmd.Flags().StringP("version", "v", kubeDefaultVersion, "<version>")
-	kubeCreateCmd.Flags().StringP("size", "s", "small", "<name | id> "+
+	kubeCreateCmd.Flags().String("kubernetes-version", "", "Kubernetes version (default to current stable release)")
+	kubeCreateCmd.Flags().String("docker-version", kubeDockerVersion, "Docker version version")
+	kubeCreateCmd.Flags().StringP("size", "s", "medium", "<name | id> "+
 		"(micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
 	kubeCmd.AddCommand(kubeCreateCmd)
 }

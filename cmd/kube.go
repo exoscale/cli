@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 
@@ -54,18 +53,25 @@ func saveKubeData(clusterName, key string, data []byte) error {
 	return nil
 }
 
-func loadKubeData(clusterName, key string) ([]byte, error) {
-	return ioutil.ReadFile(path.Join(getKubeconfigPath(clusterName), key))
+func loadKubeData(clusterName, key string) (string, error) {
+	filename := path.Join(getKubeconfigPath(clusterName), key)
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+	return string(content), err
 }
 
-func deleteKubeData(clusterName string) {
+func deleteKubeData(clusterName string) error {
 	folder := getKubeconfigPath(clusterName)
 
 	if _, err := os.Stat(folder); !os.IsNotExist(err) {
 		if err := os.RemoveAll(folder); err != nil {
-			log.Fatalf("Kubernetes cluster configuration could not be deleted: %s", err)
+			return fmt.Errorf("the Kubernetes cluster configuration could not be deleted: %s", err)
 		}
 	}
+
+	return nil
 }
 
 func init() {
