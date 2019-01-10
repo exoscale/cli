@@ -198,20 +198,7 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		dockerVersion, err := cmd.Flags().GetString("docker-version")
-		if err != nil {
-			return err
-		}
-
-		version, err := cmd.Flags().GetString("kubernetes-version")
-		if err != nil {
-			return err
-		}
-		if version == "" {
-			version = "latest"
-		}
-
-		kubernetesVersion, err := inferKubernetesVersion(version)
+		kubernetesVersion, err := fetchKubernetesVersion()
 		if err != nil {
 			return err
 		}
@@ -291,7 +278,7 @@ var kubeCreateCmd = &cobra.Command{
 			Name:              clusterName,
 			KubernetesVersion: kubernetesVersion,
 			CalicoVersion:     kubeCalicoVersion,
-			DockerVersion:     dockerVersion,
+			DockerVersion:     kubeDockerVersion,
 			Address:           vm.IP().String(),
 		}, kubeCreateDebug); err != nil {
 			return fmt.Errorf("cluster bootstrap failed: %s", err)
@@ -515,39 +502,11 @@ func (c *sshClient) scp(src, dst string) error {
 	return ioutil.WriteFile(dst, buf.Bytes(), 0600)
 }
 
-// inferKubernetesVersion infers the real Kubernetes version from a given version
-func inferKubernetesVersion(version string) (string, error) {
-	v := strings.TrimPrefix(version, "v")
-
-	if _, err := semver.Parse(v); err != nil {
-		if _, err := semver.ParseTolerant(v); err != nil {
-			return "", err
-		}
-
-		v, err = fetchKubernetesVersion(fmt.Sprintf("stable-%s", v))
-		if err != nil {
-			return "", err
-		}
-	}
-
-	r, err := http.Head(fmt.Sprintf("https://dl.k8s.io/release/v%s/bin/linux/amd64/kubectl", v))
-	if err != nil {
-		return "", err
-	}
-	defer r.Body.Close()
-
-	if r.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unable to find Kubernetes release for version %q", version)
-	}
-
-	return v, nil
-}
-
 // fetchKubernetesVersion fetches the version from the latest file
 //
 // https://godoc.org/github.com/kubernetes/kubernetes/cmd/kubeadm/app/util#KubernetesReleaseVersion
-func fetchKubernetesVersion(version string) (string, error) {
-	r, err := http.Get(fmt.Sprintf("https://dl.k8s.io/release/%s.txt", version))
+func fetchKubernetesVersion() (string, error) {
+	r, err := http.Get(fmt.Sprintf("https://dl.k8s.io/release/stable.txt", version))
 	if err != nil {
 		return "", err
 	}
@@ -569,8 +528,6 @@ func fetchKubernetesVersion(version string) (string, error) {
 
 func init() {
 	kubeCreateCmd.PersistentFlags().BoolVarP(&kubeCreateDebug, "debug", "d", false, "debug mode on")
-	kubeCreateCmd.Flags().String("kubernetes-version", "", "Kubernetes version (default to current stable release)")
-	kubeCreateCmd.Flags().String("docker-version", kubeDockerVersion, "Docker version version")
 	kubeCreateCmd.Flags().StringP("size", "s", "medium", "<name | id> "+
 		"(micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
 	kubeCmd.AddCommand(kubeCreateCmd)
