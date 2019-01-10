@@ -13,7 +13,7 @@ addons:
       - rpm
 
 env:
-  - GO111MODULE=on HUGO_VERSION=0.51 GOLANGCI_LINT_VERSION=1.12
+  - GO111MODULE=on HUGO_VERSION=0.53 GOLANGCI_LINT_VERSION=1.12.5
 
 script:
   - '[ "$(echo "$TRAVIS_GO_VERSION" | perl -pe "s/\\.[x\\d]+$//")" = "1.10" ] && go test -v ./... || go test -mod vendor -v ./...'

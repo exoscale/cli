@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 
@@ -14,6 +13,9 @@ import (
 var (
 	// kubeSecurityGroup represents the firewall security group to add k8s VM instances into
 	kubeSecurityGroup = "exokube"
+
+	// kubeTagName represents the name of the tag used to store the kubernetes version
+	kubeTagName = "exokube:kubernetes"
 )
 
 // kubeCmd represents the kube command
@@ -28,7 +30,7 @@ with it day-to-day.`,
 
 func getKubeInstanceVersion(vm *egoscale.VirtualMachine) string {
 	for _, tag := range vm.Tags {
-		if tag.Key == "exokube_version" {
+		if tag.Key == kubeTagName {
 			return tag.Value
 		}
 	}
@@ -54,18 +56,30 @@ func saveKubeData(clusterName, key string, data []byte) error {
 	return nil
 }
 
-func loadKubeData(clusterName, key string) ([]byte, error) {
-	return ioutil.ReadFile(path.Join(getKubeconfigPath(clusterName), key))
+func getKubeVM(clusterName string) (*egoscale.VirtualMachine, error) {
+	filename := path.Join(getKubeconfigPath(clusterName), "instance")
+	content, err := ioutil.ReadFile(filename)
+
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("%q: no such cluster", clusterName)
+		}
+		return nil, err
+	}
+
+	return getVirtualMachineByNameOrID(string(string(content)))
 }
 
-func deleteKubeData(clusterName string) {
+func deleteKubeData(clusterName string) error {
 	folder := getKubeconfigPath(clusterName)
 
 	if _, err := os.Stat(folder); !os.IsNotExist(err) {
 		if err := os.RemoveAll(folder); err != nil {
-			log.Fatalf("Kubernetes cluster configuration could not be deleted: %s", err)
+			return fmt.Errorf("the Kubernetes cluster configuration could not be deleted: %s", err)
 		}
 	}
+
+	return nil
 }
 
 func init() {
