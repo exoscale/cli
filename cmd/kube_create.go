@@ -506,14 +506,14 @@ func (c *sshClient) scp(src, dst string) error {
 //
 // https://godoc.org/github.com/kubernetes/kubernetes/cmd/kubeadm/app/util#KubernetesReleaseVersion
 func fetchKubernetesVersion() (string, error) {
-	r, err := http.Get(fmt.Sprintf("https://dl.k8s.io/release/stable.txt", version))
+	r, err := http.Get("https://dl.k8s.io/release/stable.txt")
 	if err != nil {
 		return "", err
 	}
 	defer r.Body.Close()
 
 	if r.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unable to find Kubernetes release for version %q", version)
+		return "", fmt.Errorf("unable to find Kubernetes release for stable version")
 	}
 
 	b, err := ioutil.ReadAll(r.Body)
