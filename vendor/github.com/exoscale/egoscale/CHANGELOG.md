@@ -5,6 +5,7 @@ Changelog
 ------
 
 - feat: initial Runstatus API support
+- feat: `admin` namespace containing `ListVirtualMachines` for admin usage
 
 0.13.1
 ------
