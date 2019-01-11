@@ -4,9 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
-	"path"
 	"strings"
 
 	"github.com/exoscale/cli/utils"
@@ -324,24 +321,6 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 		}
 	}
 	return vmResp, nil
-}
-
-func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
-	filePath := path.Join(gConfigFolder, "instances", vmID.String())
-
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	filePath = path.Join(filePath, "id_rsa")
-
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		if err := ioutil.WriteFile(filePath, []byte(keyPairs.PrivateKey), 0600); err != nil {
-			log.Fatalf("SSH private key could not be written. %s", err)
-		}
-	}
 }
 
 func init() {

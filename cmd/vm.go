@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -65,6 +69,39 @@ func getSecurityGroup(vm *egoscale.VirtualMachine) []string {
 		sgs = append(sgs, sgN.Name)
 	}
 	return sgs
+}
+
+func getKeyPairPath(vmID string) string {
+	return path.Join(gConfigFolder, "instances", vmID, "id_rsa")
+}
+
+func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
+	filePath := getKeyPairPath(vmID.String())
+	folder := path.Dir(filePath)
+
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		if err := os.MkdirAll(folder, os.ModePerm); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		if err := ioutil.WriteFile(filePath, []byte(keyPairs.PrivateKey), 0600); err != nil {
+			log.Fatalf("SSH private key could not be written: %s", err)
+		}
+	}
+}
+
+func deleteKeyPair(vmID egoscale.UUID) error {
+	folder := getKeyPairPath(vmID.String())
+
+	if _, err := os.Stat(folder); !os.IsNotExist(err) {
+		if err := os.RemoveAll(folder); err != nil {
+			return fmt.Errorf("the SSH private key could not be deleted: %s", err)
+		}
+	}
+
+	return nil
 }
 
 func init() {

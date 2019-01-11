@@ -33,13 +33,12 @@ var vmDeleteCmd = &cobra.Command{
 				return err
 			}
 			vms[i] = *vm
-			tsk, err := prepareDeleteVM(vm, force)
-			if err != nil {
-				return err
-			}
 
-			if tsk != nil {
-				tasks = append(tasks, task{tsk, fmt.Sprintf("Destroying %q ", vm.Name)})
+			if ok := prepareDeleteVM(vm, force); ok {
+				tasks = append(tasks, task{
+					&egoscale.DestroyVirtualMachine{ID: vm.ID},
+					fmt.Sprintf("Destroying %q ", vm.Name),
+				})
 			}
 		}
 
@@ -67,14 +66,14 @@ var vmDeleteCmd = &cobra.Command{
 	},
 }
 
-func prepareDeleteVM(vm *egoscale.VirtualMachine, force bool) (*egoscale.DestroyVirtualMachine, error) {
+func prepareDeleteVM(vm *egoscale.VirtualMachine, force bool) bool {
 	if !force {
 		if !askQuestion(fmt.Sprintf("sure you want to delete %q virtual machine", vm.Name)) {
-			return nil, nil
+			return false
 		}
 	}
 
-	return &egoscale.DestroyVirtualMachine{ID: vm.ID}, nil
+	return true
 }
 
 func init() {

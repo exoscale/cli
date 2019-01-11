@@ -4,6 +4,10 @@ github.com/VividCortex/ewma
 github.com/alecthomas/gometalinter
 # github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
 github.com/alecthomas/units
+# github.com/blang/semver v3.5.1+incompatible
+github.com/blang/semver
+# github.com/cenkalti/backoff v2.0.0+incompatible
+github.com/cenkalti/backoff
 # github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 github.com/chzyer/readline
 # github.com/client9/misspell v0.3.4
@@ -103,12 +107,20 @@ github.com/vbauerster/mpb/decor
 github.com/vbauerster/mpb/cwriter
 github.com/vbauerster/mpb/internal
 # golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
+golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/internal/chacha20
+golang.org/x/crypto/poly1305
 golang.org/x/crypto/argon2
+golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/blake2b
 # golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3
 golang.org/x/lint
 # golang.org/x/net v0.0.0-20181207154023-610586996380
+golang.org/x/net/context
 golang.org/x/net/http/httpguts
 golang.org/x/net/idna
 # golang.org/x/sys v0.0.0-20181122145206-62eef0e2fa9b
