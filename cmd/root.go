@@ -29,6 +29,7 @@ var gAllAccount *config
 //egoscale client
 var cs *egoscale.Client
 var csDNS *egoscale.Client
+var csRunstatus *egoscale.Client
 
 //Aliases
 var gListAlias = []string{"ls"}
@@ -110,6 +111,7 @@ func buildClient() {
 
 	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint, gCurrentAccount.Key, gCurrentAccount.APISecret())
 	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret())
+	csRunstatus = egoscale.NewClient(gCurrentAccount.RunstatusEndpoint, gCurrentAccount.Key, gCurrentAccount.APISecret())
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -260,9 +262,14 @@ func initConfig() {
 		gCurrentAccount.SosEndpoint = defaultSosEndpoint
 	}
 
+	if gCurrentAccount.RunstatusEndpoint == "" {
+		gCurrentAccount.RunstatusEndpoint = defaultRunstatusEndpoint
+	}
+
 	gCurrentAccount.Endpoint = strings.TrimRight(gCurrentAccount.Endpoint, "/")
 	gCurrentAccount.DNSEndpoint = strings.TrimRight(gCurrentAccount.DNSEndpoint, "/")
 	gCurrentAccount.SosEndpoint = strings.TrimRight(gCurrentAccount.SosEndpoint, "/")
+	gCurrentAccount.RunstatusEndpoint = strings.TrimRight(gCurrentAccount.RunstatusEndpoint, "/")
 }
 
 func isNonCredentialCmd(cmds ...string) bool {

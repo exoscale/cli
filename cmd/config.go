@@ -24,18 +24,20 @@ type config struct {
 }
 
 type account struct {
-	Name            string
-	Account         string
-	Endpoint        string
-	ComputeEndpoint string // legacy config.
-	DNSEndpoint     string
-	SosEndpoint     string
-	Key             string
-	Secret          string
-	SecretCommand   []string
-	DefaultZone     string
-	DefaultSSHKey   string
-	DefaultTemplate string
+	Name                 string
+	Account              string
+	Endpoint             string
+	ComputeEndpoint      string // legacy config.
+	DNSEndpoint          string
+	SosEndpoint          string
+	RunstatusEndpoint    string
+	Key                  string
+	Secret               string
+	SecretCommand        []string
+	DefaultZone          string
+	DefaultSSHKey        string
+	DefaultTemplate      string
+	DefaultRunstatusPage string
 }
 
 func (a account) APISecret() string {
@@ -54,10 +56,11 @@ func (a account) APISecret() string {
 }
 
 const (
-	defaultConfigFileName = "exoscale"
-	defaultEndpoint       = "https://api.exoscale.ch/compute"
-	defaultTemplate       = "Linux Ubuntu 18.04 LTS 64-bit"
-	defaultSosEndpoint    = "https://sos-{zone}.exo.io"
+	defaultConfigFileName    = "exoscale"
+	defaultEndpoint          = "https://api.exoscale.ch/compute"
+	defaultTemplate          = "Linux Ubuntu 18.04 LTS 64-bit"
+	defaultSosEndpoint       = "https://sos-{zone}.exo.io"
+	defaultRunstatusEndpoint = "https://api.runstatus.com"
 )
 
 // configCmd represents the config command
@@ -281,6 +284,9 @@ func addAccount(filePath string, newAccounts *config) error {
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
 		}
+		if acc.DefaultRunstatusPage != "" {
+			accounts[i]["defaultRunstatusPage"] = acc.DefaultRunstatusPage
+		}
 		if acc.DefaultTemplate != "" {
 			accounts[i]["defaultTemplate"] = acc.DefaultTemplate
 		}
@@ -307,6 +313,9 @@ func addAccount(filePath string, newAccounts *config) error {
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
 			if acc.DefaultSSHKey != "" {
 				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
+			}
+			if acc.DefaultRunstatusPage != "" {
+				accounts[accountsSize+i]["defaultRunstatusPage"] = acc.DefaultRunstatusPage
 			}
 			accounts[accountsSize+i]["account"] = acc.Account
 			conf.Accounts = append(conf.Accounts, acc)
