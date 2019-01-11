@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/exoscale/egoscale"
+	"github.com/exoscale/egoscale/admin"
 )
 
 type category struct {
@@ -17,6 +18,8 @@ type cmd struct {
 	alias   []string
 	hidden  bool
 }
+
+var t = true
 
 var methods = []category{
 	{
@@ -58,6 +61,7 @@ var methods = []category{
 			{command: &egoscale.QueryReverseDNSForVirtualMachine{}, name: "queryReverseDNSForVM"},
 			{command: &egoscale.UpdateReverseDNSForVirtualMachine{}, name: "updateReverseDNSForVM"},
 			{command: &egoscale.UpdateVMNicIP{}, name: "updateVMNicIP"},
+			{command: &admin.ListVirtualMachines{ListAll: &t}, name: "listAll", hidden: true},
 		},
 	},
 	{
