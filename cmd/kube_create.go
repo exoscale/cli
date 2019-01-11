@@ -26,6 +26,9 @@ const (
 	// kubeCalicoVersion is the version of Calico installed
 	kubeCalicoVersion = "3.4"
 
+	// kubeDashboardVersion is the version of Kubernetes Dashboard installed
+	kubeDashboardVersion = "1.10.1"
+
 	// kubeDefaultTemplate is the template to install Kubernetes on.
 	//
 	// Using xenial means cfssl must be installed by other means
@@ -42,11 +45,12 @@ type kubeBootstrapStep struct {
 }
 
 type kubeCluster struct {
-	Name              string
-	KubernetesVersion string
-	DockerVersion     string
-	CalicoVersion     string
-	Address           string
+	Name                 string
+	KubernetesVersion    string
+	DockerVersion        string
+	CalicoVersion        string
+	KubeDashboardVersion string
+	Address              string
 }
 
 // kubeBootstrapSteps represents a k8s instance bootstrap steps
@@ -164,10 +168,34 @@ sudo kubeadm init \
 	--pod-network-cidr=192.168.0.0/16 \
 	--kubernetes-version "{{ .KubernetesVersion }}"
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
+
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
 		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/etcd.yaml
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
-		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/calico.yaml`,
+		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/calico.yaml
+
+sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
+		-f https://raw.githubusercontent.com/kubernetes/dashboard/v{{ .KubeDashboardVersion }}/src/deploy/recommended/kubernetes-dashboard.yaml
+cat <<EOF | sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: exokube-admin
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: exokube-admin
+  namespace: kube-system
+EOF`,
 	},
 }
 
@@ -275,11 +303,12 @@ var kubeCreateCmd = &cobra.Command{
 		}
 
 		if err := bootstrapExokubeCluster(sshClient, kubeCluster{
-			Name:              clusterName,
-			KubernetesVersion: kubernetesVersion,
-			CalicoVersion:     kubeCalicoVersion,
-			DockerVersion:     kubeDockerVersion,
-			Address:           vm.IP().String(),
+			Name:                 clusterName,
+			KubernetesVersion:    kubernetesVersion,
+			CalicoVersion:        kubeCalicoVersion,
+			DockerVersion:        kubeDockerVersion,
+			KubeDashboardVersion: kubeDashboardVersion,
+			Address:              vm.IP().String(),
 		}, kubeCreateDebug); err != nil {
 			return fmt.Errorf("cluster bootstrap failed: %s", err)
 		}
