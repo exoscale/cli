@@ -37,12 +37,12 @@ func init() {
 					return err
 				}
 
-				domain, err := csDNS.GetDomain(args[0])
+				domain, err := csDNS.GetDomain(gContext, args[0])
 				if err != nil {
 					return err
 				}
 
-				_, err = csDNS.UpdateRecord(args[0], egoscale.UpdateDNSRecord{
+				_, err = csDNS.UpdateRecord(gContext, args[0], egoscale.UpdateDNSRecord{
 					ID:         recordID,
 					DomainID:   domain.ID,
 					TTL:        ttl,

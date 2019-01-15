@@ -27,7 +27,7 @@ var dnsCreateCmd = &cobra.Command{
 }
 
 func createDomain(domainName string) (*egoscale.DNSDomain, error) {
-	return csDNS.CreateDomain(domainName)
+	return csDNS.CreateDomain(gContext, domainName)
 }
 
 func init() {

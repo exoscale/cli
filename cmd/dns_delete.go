@@ -37,7 +37,7 @@ var dnsDeleteCmd = &cobra.Command{
 }
 
 func deleteDomain(domainName string) error {
-	return csDNS.DeleteDomain(domainName)
+	return csDNS.DeleteDomain(gContext, domainName)
 }
 
 func init() {

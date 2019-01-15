@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -15,7 +16,7 @@ var runstatusMaintenanceListCmd = &cobra.Command{
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Page Name", "Title", "Status"})
+		table.SetHeader([]string{"Page Name", "Title", "Status", "When", "ID"})
 
 		if len(args) < 1 {
 
@@ -31,7 +32,13 @@ var runstatusMaintenanceListCmd = &cobra.Command{
 				}
 
 				for _, maintenance := range maintenances {
-					table.Append([]string{page.Subdomain, maintenance.Title, maintenance.Status})
+					table.Append([]string{
+						page.Subdomain,
+						maintenance.Title,
+						maintenance.Status,
+						formatSchedule(maintenance.StartDate, maintenance.EndDate),
+						strconv.Itoa(maintenance.ID),
+					})
 					page.Subdomain = ""
 				}
 
@@ -42,18 +49,25 @@ var runstatusMaintenanceListCmd = &cobra.Command{
 		}
 
 		for _, arg := range args {
-			runstatusPage, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: arg})
+			page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: arg})
 			if err != nil {
 				return err
 			}
 
-			maintenances, err := csRunstatus.ListRunstatusMaintenances(gContext, *runstatusPage)
+			maintenances, err := csRunstatus.ListRunstatusMaintenances(gContext, *page)
 			if err != nil {
 				return err
 			}
+
 			for _, maintenance := range maintenances {
-				table.Append([]string{arg, maintenance.Title, maintenance.Status})
-				arg = ""
+				table.Append([]string{
+					page.Subdomain,
+					maintenance.Title,
+					maintenance.Status,
+					formatSchedule(maintenance.StartDate, maintenance.EndDate),
+					strconv.Itoa(maintenance.ID),
+				})
+				page.Subdomain = ""
 			}
 		}
 		table.Render()

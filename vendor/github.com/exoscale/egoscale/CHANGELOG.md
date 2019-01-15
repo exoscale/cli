@@ -1,6 +1,17 @@
 Changelog
 =========
 
+0.14.1 (unreleased)
+-------------------
+
+- fix: `GetRunstatusPage` to always contain the subresources
+
+0.14.0
+------
+
+- change: all DNS calls require a context
+- fix: `CreateAffinityGroup` allows empty `name`
+
 0.13.3
 ------
 

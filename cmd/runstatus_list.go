@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/exoscale/cli/table"
@@ -20,9 +19,9 @@ var runstatusListCmd = &cobra.Command{
 		}
 
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Page Name", "Public URL", "ID"})
+		table.SetHeader([]string{"Page Name", "Public URL"})
 		for _, page := range pages {
-			table.Append([]string{page.Subdomain, page.PublicURL, fmt.Sprintf("%d", page.ID)})
+			table.Append([]string{page.Subdomain, page.PublicURL})
 		}
 		table.Render()
 

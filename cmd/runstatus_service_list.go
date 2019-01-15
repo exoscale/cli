@@ -18,7 +18,6 @@ var runstatusServiceListCmd = &cobra.Command{
 		table.SetHeader([]string{"Page Name", "Name", "State"})
 
 		if len(args) < 1 {
-
 			pages, err := csRunstatus.ListRunstatusPages(gContext)
 			if err != nil {
 				return err
@@ -47,11 +46,7 @@ var runstatusServiceListCmd = &cobra.Command{
 				return err
 			}
 
-			services, err := csRunstatus.ListRunstatusServices(gContext, *runstatusPage)
-			if err != nil {
-				return err
-			}
-			for _, service := range services {
+			for _, service := range runstatusPage.Services {
 				table.Append([]string{arg, service.Name, service.State})
 				arg = ""
 			}

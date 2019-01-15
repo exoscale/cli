@@ -50,7 +50,7 @@ func domainListRecords(t *table.Table, domain, name string, types []string) erro
 	t.SetHeader([]string{"Type", "Name", "Content", "TTL", "Prio", "ID"})
 
 	for _, recordType := range types {
-		records, err := csDNS.GetRecordsWithFilters(domain, name, recordType)
+		records, err := csDNS.GetRecordsWithFilters(gContext, domain, name, recordType)
 		if err != nil {
 			return err
 		}

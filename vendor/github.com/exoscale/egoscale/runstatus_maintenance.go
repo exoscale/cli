@@ -65,9 +65,11 @@ func (maintenance *RunstatusMaintenance) FakeID() error {
 	return nil
 }
 
-//RunstatusMaintenanceList is a list of incident
+// RunstatusMaintenanceList is a list of incident
 type RunstatusMaintenanceList struct {
-	Maintenances []RunstatusMaintenance `json:"maintenances"`
+	Next         string                 `json:"next"`
+	Previous     string                 `json:"previous"`
+	Maintenances []RunstatusMaintenance `json:"results"`
 }
 
 // GetRunstatusMaintenance retrieves the details of a specific maintenance.
@@ -85,14 +87,13 @@ func (client *Client) GetRunstatusMaintenance(ctx context.Context, maintenance R
 		return nil, err
 	}
 
-	ms, err := client.ListRunstatusMaintenances(ctx, *page)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range ms {
-		if ms[i].Match(maintenance) {
-			return &ms[i], nil
+	for i := range page.Maintenances {
+		m := &page.Maintenances[i]
+		if m.Match(maintenance) {
+			if err := m.FakeID(); err != nil {
+				log.Printf("bad fake ID for %#v, %s", m, err)
+			}
+			return m, nil
 		}
 	}
 
@@ -135,8 +136,37 @@ func (client *Client) ListRunstatusMaintenances(ctx context.Context, page Runsta
 		}
 	}
 
-	// NOTE: the list of maintenances doesn't have any pagination
 	return p.Maintenances, nil
+}
+
+//PaginateRunstatusMaintenances paginate Maintenances
+func (client *Client) PaginateRunstatusMaintenances(ctx context.Context, page RunstatusPage, callback func(*RunstatusMaintenance, error) bool) {
+	if page.MaintenancesURL == "" {
+		callback(nil, fmt.Errorf("empty Maintenances URL for %#v", page))
+		return
+	}
+	MaintenancesURL := page.MaintenancesURL
+	for MaintenancesURL != "" {
+		resp, err := client.runstatusRequest(ctx, MaintenancesURL, nil, "GET")
+		if err != nil {
+			callback(nil, err)
+			return
+		}
+
+		var ms *RunstatusMaintenanceList
+		if err := json.Unmarshal(resp, &ms); err != nil {
+			callback(nil, err)
+			return
+		}
+
+		for i := range ms.Maintenances {
+			if ok := callback(&ms.Maintenances[i], nil); ok {
+				return
+			}
+		}
+
+		MaintenancesURL = ms.Next
+	}
 }
 
 // CreateRunstatusMaintenance create runstatus Maintenance

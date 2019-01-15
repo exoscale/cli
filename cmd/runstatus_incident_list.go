@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -15,7 +16,7 @@ var runstatusIncidentListCmd = &cobra.Command{
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Page Name", "Title", "State", "Status"})
+		table.SetHeader([]string{"Page Name", "Title", "State", "Status", "When", "ID"})
 
 		if len(args) < 1 {
 
@@ -31,7 +32,14 @@ var runstatusIncidentListCmd = &cobra.Command{
 				}
 
 				for _, incident := range incidents {
-					table.Append([]string{page.Subdomain, incident.Title, incident.State, incident.Status})
+					table.Append([]string{
+						page.Subdomain,
+						incident.Title,
+						incident.State,
+						incident.Status,
+						formatSchedule(incident.StartDate, incident.EndDate),
+						strconv.Itoa(incident.ID),
+					})
 					page.Subdomain = ""
 				}
 
@@ -42,18 +50,26 @@ var runstatusIncidentListCmd = &cobra.Command{
 		}
 
 		for _, arg := range args {
-			runstatusPage, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: arg})
+			page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: arg})
 			if err != nil {
 				return err
 			}
 
-			incidents, err := csRunstatus.ListRunstatusIncidents(gContext, *runstatusPage)
+			incidents, err := csRunstatus.ListRunstatusIncidents(gContext, *page)
 			if err != nil {
 				return err
 			}
+
 			for _, incident := range incidents {
-				table.Append([]string{arg, incident.Title, incident.State, incident.Status})
-				arg = ""
+				table.Append([]string{
+					page.Subdomain,
+					incident.Title,
+					incident.State,
+					incident.Status,
+					formatSchedule(incident.StartDate, incident.EndDate),
+					strconv.Itoa(incident.ID),
+				})
+				page.Subdomain = ""
 			}
 		}
 

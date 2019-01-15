@@ -41,7 +41,7 @@ func removeRecord(domainName, record string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	if err := csDNS.DeleteRecord(domainName, id); err != nil {
+	if err := csDNS.DeleteRecord(gContext, domainName, id); err != nil {
 		return 0, err
 	}
 

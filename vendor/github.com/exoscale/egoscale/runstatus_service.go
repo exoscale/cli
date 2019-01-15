@@ -58,7 +58,7 @@ func (service RunstatusService) Match(other RunstatusService) bool {
 
 // RunstatusServiceList service list
 type RunstatusServiceList struct {
-	Services []RunstatusService `json:"services"`
+	Services []RunstatusService `json:"results"`
 }
 
 // DeleteRunstatusService delete runstatus service
@@ -110,14 +110,13 @@ func (client *Client) GetRunstatusService(ctx context.Context, service Runstatus
 		return nil, err
 	}
 
-	ss, err := client.ListRunstatusServices(ctx, *page)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range ss {
-		if ss[i].Match(service) {
-			return &ss[i], nil
+	for i := range page.Services {
+		s := &page.Services[i]
+		if s.Match(service) {
+			if err := s.FakeID(); err != nil {
+				log.Printf("bad fake ID for %#v, %s", s, err)
+			}
+			return s, nil
 		}
 	}
 
@@ -143,6 +142,8 @@ func (client *Client) getRunstatusService(ctx context.Context, serviceURL string
 }
 
 // ListRunstatusServices displays the list of services.
+//
+// Warning: this call returns the 50 oldest services, Use the data from the RunstatusPage instead
 func (client *Client) ListRunstatusServices(ctx context.Context, page RunstatusPage) ([]RunstatusService, error) {
 	if page.ServicesURL == "" {
 		return nil, fmt.Errorf("empty Services URL for %#v", page)
