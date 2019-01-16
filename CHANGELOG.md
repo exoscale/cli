@@ -2,6 +2,7 @@
 -----
 
 - change: `firewall add` sets a CIDR by default
+- fix: `firewall add --my-ip` to not create the default CIDR
 
 1.0.4
 -----
