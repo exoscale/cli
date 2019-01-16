@@ -99,14 +99,14 @@ var firewallAddCmd = &cobra.Command{
 			return err
 		}
 
-		var ip *egoscale.CIDR
+		var cidr *egoscale.CIDR
 		if isMyIP {
-			cidr, cirdErr := getMyCIDR(isIpv6)
+			c, cirdErr := getMyCIDR(isIpv6)
 			if cirdErr != nil {
 				return cirdErr
 			}
 
-			ip = cidr
+			cidr = c
 		}
 
 		tasks := []task{}
@@ -132,9 +132,10 @@ var firewallAddCmd = &cobra.Command{
 				rule.Protocol = strings.ToLower(protocol)
 			}
 
-			if ip != nil {
-				rule.CIDRList = append(rule.CIDRList, *ip)
+			if cidr != nil {
+				rule.CIDRList = []egoscale.CIDR{*cidr}
 			}
+
 			if cidrList != "" {
 				cidrs := getCommaflag(cidrList)
 				for _, cidr := range cidrs {

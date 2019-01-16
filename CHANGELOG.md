@@ -1,3 +1,8 @@
+1.0.5
+-----
+
+- fix: `firewall add --my-ip` to not create the default CIDR
+
 1.0.4
 -----
 
