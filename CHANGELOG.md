@@ -1,3 +1,8 @@
+1.0.5
+-----
+
+- change: `firewall add` sets a CIDR by default
+
 1.0.4
 -----
 
