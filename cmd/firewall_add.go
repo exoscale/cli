@@ -18,7 +18,7 @@ func init() {
 	firewallAddCmd.Flags().BoolP("ipv6", "6", false, "Set ipv6 on default rules or on --my-ip")
 	firewallAddCmd.Flags().BoolP("my-ip", "", false, "Set CIDR for my ip")
 	firewallAddCmd.Flags().BoolP("egress", "e", false, "By default rule is INGRESS (set --egress to have EGRESS rule)")
-	firewallAddCmd.Flags().StringP("protocol", "p", "", "Rule Protocol available [tcp, udp, icmp, icmpv6, ah, esp, gre]")
+	firewallAddCmd.Flags().StringP("protocol", "p", "tcp", "Rule Protocol available [tcp, udp, icmp, icmpv6, ah, esp, gre]")
 	firewallAddCmd.Flags().StringP("cidr", "c", "", "Rule Cidr [CIDR 0.0.0.0/0,::/0,...]")
 	firewallAddCmd.Flags().StringP("security-group", "s", "", "Rule security group [name or id ex: sg1,sg2...]")
 	firewallAddCmd.Flags().StringP("port", "P", "", "Rule port range [80-80,443,22-22]")
