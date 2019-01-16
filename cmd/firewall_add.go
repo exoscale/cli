@@ -104,10 +104,6 @@ A set of predefined commands exists, such a ssh, ping or minecraft.
 			return err
 		}
 
-		if cidrList == "" && sg == "" {
-			cidrList = "0.0.0.0/0"
-		}
-
 		isIpv6, err := cmd.Flags().GetBool("ipv6")
 		if err != nil {
 			return err
@@ -138,7 +134,7 @@ A set of predefined commands exists, such a ssh, ping or minecraft.
 			rule := &egoscale.AuthorizeSecurityGroupIngress{}
 
 			if len(args) > 1 {
-				rule, err = getDefaultRule(args[i], isIpv6)
+				rule, err = getDefaultRule(args[i])
 				if err != nil {
 					return err
 				}
@@ -154,6 +150,7 @@ A set of predefined commands exists, such a ssh, ping or minecraft.
 			if ip != nil {
 				rule.CIDRList = append(rule.CIDRList, *ip)
 			}
+
 			if cidrList != "" {
 				cidrs := getCommaflag(cidrList)
 				for _, cidr := range cidrs {
@@ -174,6 +171,12 @@ A set of predefined commands exists, such a ssh, ping or minecraft.
 				}
 
 				rule.UserSecurityGroupList = userSecurityGroups
+			} else if len(rule.CIDRList) == 0 {
+				if isIpv6 {
+					rule.CIDRList = append(rule.CIDRList, *defaultCIDR6)
+				} else {
+					rule.CIDRList = append(rule.CIDRList, *defaultCIDR)
+				}
 			}
 
 			if icmptype.uint8 != nil {
@@ -264,21 +267,24 @@ func getUserSecurityGroups(names []string) ([]egoscale.UserSecurityGroup, error)
 	return us, nil
 }
 
-func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGroupIngress, error) {
-
-	icmpType := uint8(8)
-	cidr := defaultCIDR
-	if isIpv6 {
-		cidr = defaultCIDR6
-		icmpType = uint8(128)
-	}
+func getDefaultRule(ruleName string) (*egoscale.AuthorizeSecurityGroupIngress, error) {
 
 	ruleName = strings.ToLower(ruleName)
 	if ruleName == "ping" {
 		return &egoscale.AuthorizeSecurityGroupIngress{
 			Protocol:    "icmp",
-			CIDRList:    []egoscale.CIDR{*cidr},
-			IcmpType:    icmpType,
+			CIDRList:    []egoscale.CIDR{},
+			IcmpType:    8,
+			IcmpCode:    0,
+			Description: "",
+		}, nil
+	}
+
+	if ruleName == "ping6" {
+		return &egoscale.AuthorizeSecurityGroupIngress{
+			Protocol:    "icmp",
+			CIDRList:    []egoscale.CIDR{},
+			IcmpType:    128,
 			IcmpCode:    0,
 			Description: "",
 		}, nil
@@ -288,7 +294,7 @@ func getDefaultRule(ruleName string, isIpv6 bool) (*egoscale.AuthorizeSecurityGr
 		if strings.ToLower(port.String(d)) == ruleName {
 			return &egoscale.AuthorizeSecurityGroupIngress{
 				Protocol:    "tcp",
-				CIDRList:    []egoscale.CIDR{*cidr},
+				CIDRList:    []egoscale.CIDR{},
 				StartPort:   uint16(d),
 				EndPort:     uint16(d),
 				Description: fmt.Sprintf(""),
