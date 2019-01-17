@@ -1,3 +1,27 @@
+
+
+1.0.7
+-----
+
+- change: `firewall add` sets a CIDR by default
+- fix: `firewall add --my-ip` to not create the default CIDR
+
+1.0.6
+-----
+
+- feature: runstatus
+- feature: lab kube
+
+1.0.5
+-----
+
+- feature: sos recursive upload
+- feature: EXOSCALE_TRACE on the sos command
+- feature: allow secrets to come from an external source
+- feature: use XDG_CONFIG_HOME by default
+- feature: dns remove asks for confirmation
+- fix: `--my-ip` fix by @falzm
+
 1.0.4
 -----
 

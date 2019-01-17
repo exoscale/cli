@@ -64,7 +64,10 @@ var firewallRemoveCmd = &cobra.Command{
 			return err
 		}
 
-		var cidr *egoscale.CIDR
+		cidr := defaultCIDR
+		if isIpv6 {
+			cidr = defaultCIDR6
+		}
 		if isMyIP {
 			c, errGet := getMyCIDR(isIpv6)
 			if errGet != nil {
@@ -85,10 +88,10 @@ var firewallRemoveCmd = &cobra.Command{
 				}
 			}
 
-			r, err := getDefaultRule(arg, isIpv6)
+			r, err := getDefaultRule(arg)
 			if err == nil {
 				ru := &egoscale.IngressRule{
-					CIDR:      &r.CIDRList[0],
+					CIDR:      cidr,
 					StartPort: r.StartPort,
 					EndPort:   r.EndPort,
 					Protocol:  r.Protocol,
