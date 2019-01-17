@@ -109,3 +109,43 @@ var sosDeleteCORSCmd = &cobra.Command{
 func init() {
 	sosCORSCmd.AddCommand(sosDeleteCORSCmd)
 }
+
+/*
+// sosPutCORSCmd represents the sos cors show
+var sosPutCORSCmd = &cobra.Command{
+	Use:     "put <bucket name>",
+	Short:   "put bucket CORSs",
+	Aliases: gPutAlias,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return cmd.Usage()
+		}
+
+		minioClient, err := newMinioClient(sosZone)
+		if err != nil {
+			return err
+		}
+
+		location, err := minioClient.GetBucketLocation(args[0])
+		if err != nil {
+			return err
+		}
+
+		minioClient, err = newMinioClient(location)
+		if err != nil {
+			return err
+		}
+
+		if err := minioClient.RemoveBucketCORS(args[0]); err != nil {
+			return err
+		}
+
+		fmt.Println(args[0])
+		return nil
+	},
+}
+
+func init() {
+	sosCORSCmd.AddCommand(sosPutCORSCmd)
+}
+*/

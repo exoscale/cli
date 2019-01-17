@@ -61,7 +61,7 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.3
 github.com/mattn/go-runewidth
-# github.com/minio/minio-go v6.0.11+incompatible => github.com/greut/minio-go v0.0.0-20181219123401-037247da62ef
+# github.com/minio/minio-go v6.0.11+incompatible => github.com/greut/minio-go v0.0.0-20190115150026-7b61c15d0519
 github.com/minio/minio-go
 github.com/minio/minio-go/pkg/credentials
 github.com/minio/minio-go/pkg/encrypt
@@ -122,6 +122,7 @@ golang.org/x/lint
 # golang.org/x/net v0.0.0-20181207154023-610586996380
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
+golang.org/x/net/publicsuffix
 golang.org/x/net/idna
 # golang.org/x/sys v0.0.0-20181211161752-7da8ea5c8182
 golang.org/x/sys/unix
