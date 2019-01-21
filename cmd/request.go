@@ -164,11 +164,10 @@ func syncTasksAsync(tasks []syncTask) []taskResponse {
 		go execSyncTask(task, i, c, &responses[i], workerSem, &workerWG)
 		taskBars[i] = p.AddBar(int64(maximum),
 			mpb.PrependDecorators(
-				// simple name decorator
-				decor.Name(task.string),
 				// decor.DSyncWidth bit enables column width synchronization
 				decor.Percentage(decor.WCSyncSpace),
 			),
+			mpb.AppendDecorators(decor.Name(task.string)),
 		)
 
 		taskSem := make(chan int, parallelTask)
@@ -181,19 +180,11 @@ func syncTasksAsync(tasks []syncTask) []taskResponse {
 			sem <- 1
 
 			max := 100 * time.Millisecond
-			count := 1
 			for status := range chanel {
 				start := time.Now()
 				time.Sleep(time.Duration(rand.Intn(10)+1) * max / 10)
-				if status.jobStatus == egoscale.Pending {
-					if count < maximum {
-						taskBars[status.id].IncrBy(1, time.Since(start))
-					}
-				} else {
-					taskBars[status.id].IncrBy(maximum, time.Since(start))
-					return
-				}
-				count++
+				taskBars[status.id].IncrBy(maximum, time.Since(start))
+				return
 			}
 
 			<-sem
