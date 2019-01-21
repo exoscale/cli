@@ -14,6 +14,11 @@ const (
 	parallelTask = 20
 )
 
+type syncTask struct {
+	egoscale.Command
+	string
+}
+
 type task struct {
 	egoscale.AsyncCommand
 	string
@@ -135,6 +140,87 @@ func filterErrors(tasks []taskResponse) []error {
 		}
 	}
 	return r
+}
+
+func syncTasksAsync(tasks []syncTask) []taskResponse {
+
+	//init results
+	responses := make([]taskResponse, len(tasks))
+
+	//create task Progress
+	taskBars := make([]*mpb.Bar, len(tasks))
+	maximum := 10
+	var taskWG sync.WaitGroup
+	p := mpb.New(mpb.WithWaitGroup(&taskWG), mpb.WithContext(gContext), mpb.WithWidth(40))
+	taskWG.Add(len(tasks))
+
+	var workerWG sync.WaitGroup
+	workerWG.Add(len(tasks))
+	workerSem := make(chan int, parallelTask)
+
+	//exec task and init bars
+	for i, task := range tasks {
+		c := make(chan taskStatus)
+		go execSyncTask(task, i, c, &responses[i], workerSem, &workerWG)
+		taskBars[i] = p.AddBar(int64(maximum),
+			mpb.PrependDecorators(
+				// simple name decorator
+				decor.Name(task.string),
+				// decor.DSyncWidth bit enables column width synchronization
+				decor.Percentage(decor.WCSyncSpace),
+			),
+		)
+
+		taskSem := make(chan int, parallelTask)
+
+		//listen for bar progress
+		go func(chanel chan taskStatus, sem chan int) {
+			defer taskWG.Done()
+			defer close(chanel)
+
+			sem <- 1
+
+			max := 100 * time.Millisecond
+			count := 1
+			for status := range chanel {
+				start := time.Now()
+				time.Sleep(time.Duration(rand.Intn(10)+1) * max / 10)
+				if status.jobStatus == egoscale.Pending {
+					if count < maximum {
+						taskBars[status.id].IncrBy(1, time.Since(start))
+					}
+				} else {
+					taskBars[status.id].IncrBy(maximum, time.Since(start))
+					return
+				}
+				count++
+			}
+
+			<-sem
+
+		}(c, taskSem)
+	}
+
+	workerWG.Wait()
+	p.Wait()
+
+	return responses
+}
+
+func execSyncTask(task syncTask, id int, c chan taskStatus, resp *taskResponse, sem chan int, wg *sync.WaitGroup) {
+
+	defer wg.Done()
+	sem <- 1
+
+	result, err := cs.RequestWithContext(gContext, task.Command)
+	if err != nil {
+		c <- taskStatus{id, egoscale.Failure}
+		(*resp).error = fmt.Errorf("failure %s: %s", task.string, err)
+		return
+	}
+	(*resp).resp = result
+	c <- taskStatus{id, egoscale.Success}
+	<-sem
 }
 
 // asyncRequest if no response expected send nil
