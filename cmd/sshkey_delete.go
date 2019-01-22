@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -55,9 +54,6 @@ var sshkeyDeleteCmd = &cobra.Command{
 			res, err := deleteSSHKey(sshkey.Name)
 			if err != nil {
 				return err
-			}
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err) //nolint: errcheck
 			}
 			fmt.Println(res)
 
