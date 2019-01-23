@@ -48,24 +48,19 @@ var sshkeyDeleteCmd = &cobra.Command{
 				}
 			}
 
-			res, err := deleteSSHKey(sshkey.Name)
-			if err != nil {
+			if err := deleteSSHKey(sshkey.Name); err != nil {
 				return err
 			}
-			fmt.Println(res)
+			fmt.Println(sshkey.Name)
 		}
 
 		return nil
 	},
 }
 
-func deleteSSHKey(name string) (string, error) {
+func deleteSSHKey(name string) error {
 	sshKey := &egoscale.DeleteSSHKeyPair{Name: name}
-	if err := cs.BooleanRequestWithContext(gContext, sshKey); err != nil {
-		return "", err
-	}
-
-	return sshKey.Name, nil
+	return cs.BooleanRequestWithContext(gContext, sshKey)
 }
 
 func init() {
