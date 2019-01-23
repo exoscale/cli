@@ -65,6 +65,6 @@ func deleteSSHKey(name string) error {
 
 func init() {
 	sshkeyDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove SSH key pair without prompting for confirmation")
-	sshkeyDeleteCmd.Flags().BoolP("all", "", false, "Remove all sshkey")
+	sshkeyDeleteCmd.Flags().BoolP("all", "", false, "Remove all SSH keys")
 	sshkeyCmd.AddCommand(sshkeyDeleteCmd)
 }
