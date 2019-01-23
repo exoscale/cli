@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"strings"
 	"sync"
 	"time"
@@ -35,9 +36,8 @@ type Bar struct {
 	operateState  chan func(*bState)
 	int64Ch       chan int64
 	boolCh        chan bool
-	frameReaderCh chan io.Reader
+	frameReaderCh chan *frameReader
 	syncTableCh   chan [][]chan int
-	bufNL         *bytes.Buffer
 
 	// done is closed by Bar's goroutine, after cacheState is written
 	done chan struct{}
@@ -52,6 +52,7 @@ type (
 		total              int64
 		current            int64
 		runes              barRunes
+		spinner            []rune
 		trimLeftSpace      bool
 		trimRightSpace     bool
 		toComplete         bool
@@ -64,8 +65,9 @@ type (
 		shutdownListeners  []decor.ShutdownListener
 		refill             *refill
 		bufP, bufB, bufA   *bytes.Buffer
+		bufNL              *bytes.Buffer
 		panicMsg           string
-		newLineExtendFn    func(io.Writer, bool)
+		newLineExtendFn    func(io.Writer, *decor.Statistics)
 
 		// following options are assigned to the *Bar
 		priority   int
@@ -77,6 +79,7 @@ type (
 	}
 	frameReader struct {
 		io.Reader
+		extendedLines    int
 		toShutdown       bool
 		removeOnComplete bool
 	}
@@ -109,7 +112,7 @@ func newBar(wg *sync.WaitGroup, id int, total int64, cancel <-chan struct{}, opt
 		operateState:  make(chan func(*bState)),
 		int64Ch:       make(chan int64),
 		boolCh:        make(chan bool),
-		frameReaderCh: make(chan io.Reader, 1),
+		frameReaderCh: make(chan *frameReader, 1),
 		syncTableCh:   make(chan [][]chan int),
 		done:          make(chan struct{}),
 		shutdown:      make(chan struct{}),
@@ -120,7 +123,7 @@ func newBar(wg *sync.WaitGroup, id int, total int64, cancel <-chan struct{}, opt
 	}
 
 	if s.newLineExtendFn != nil {
-		b.bufNL = bytes.NewBuffer(make([]byte, 0, s.width))
+		s.bufNL = bytes.NewBuffer(make([]byte, 0, s.width))
 	}
 
 	go b.serve(wg, s, cancel)
@@ -143,13 +146,16 @@ func (b *Bar) RemoveAllAppenders() {
 	}
 }
 
-// ProxyReader allows progress tracking against provided io.Reader.
-func (b *Bar) ProxyReader(r io.Reader) *Reader {
-	proxyReader := &Reader{
-		Reader: r,
-		bar:    b,
+// ProxyReader wraps r with metrics required for progress tracking.
+func (b *Bar) ProxyReader(r io.Reader) io.ReadCloser {
+	if r == nil {
+		panic("expect io.Reader, got nil")
 	}
-	return proxyReader
+	rc, ok := r.(io.ReadCloser)
+	if !ok {
+		rc = ioutil.NopCloser(r)
+	}
+	return &proxyReader{rc, b, time.Now()}
 }
 
 // ID returs id of the bar.
@@ -174,8 +180,9 @@ func (b *Bar) Current() int64 {
 
 // SetTotal sets total dynamically.
 // Set final to true, when total is known, it will trigger bar complete event.
-func (b *Bar) SetTotal(total int64, final bool) {
-	b.operateState <- func(s *bState) {
+func (b *Bar) SetTotal(total int64, final bool) bool {
+	select {
+	case b.operateState <- func(s *bState) {
 		if total > 0 {
 			s.total = total
 		}
@@ -183,6 +190,10 @@ func (b *Bar) SetTotal(total int64, final bool) {
 			s.current = s.total
 			s.toComplete = true
 		}
+	}:
+		return true
+	case <-b.done:
+		return false
 	}
 }
 
@@ -279,13 +290,16 @@ func (b *Bar) render(debugOut io.Writer, tw int) {
 			}
 		}()
 		r := s.draw(tw)
+		var extendedLines int
 		if s.newLineExtendFn != nil {
-			b.bufNL.Reset()
-			s.newLineExtendFn(b.bufNL, s.completeFlushed)
-			r = io.MultiReader(r, b.bufNL)
+			s.bufNL.Reset()
+			s.newLineExtendFn(s.bufNL, newStatistics(s))
+			extendedLines = countLines(s.bufNL.Bytes())
+			r = io.MultiReader(r, s.bufNL)
 		}
 		b.frameReaderCh <- &frameReader{
 			Reader:           r,
+			extendedLines:    extendedLines,
 			toShutdown:       s.toComplete && !s.completeFlushed,
 			removeOnComplete: s.removeOnComplete,
 		}
@@ -294,12 +308,17 @@ func (b *Bar) render(debugOut io.Writer, tw int) {
 	case <-b.done:
 		s := b.cacheState
 		r := s.draw(tw)
+		var extendedLines int
 		if s.newLineExtendFn != nil {
-			b.bufNL.Reset()
-			s.newLineExtendFn(b.bufNL, s.completeFlushed)
-			r = io.MultiReader(r, b.bufNL)
+			s.bufNL.Reset()
+			s.newLineExtendFn(s.bufNL, newStatistics(s))
+			extendedLines = countLines(s.bufNL.Bytes())
+			r = io.MultiReader(r, s.bufNL)
 		}
-		b.frameReaderCh <- &frameReader{Reader: r}
+		b.frameReaderCh <- &frameReader{
+			Reader:        r,
+			extendedLines: extendedLines,
+		}
 	}
 }
 
@@ -327,7 +346,7 @@ func (s *bState) draw(termWidth int) io.Reader {
 		return io.MultiReader(s.bufP, s.bufA)
 	}
 
-	s.fillBar(s.width)
+	s.fill(s.width)
 	barCount := utf8.RuneCount(s.bufB.Bytes())
 	totalCount := prependCount + barCount + appendCount
 	if spaceCount := 0; totalCount > termWidth {
@@ -337,10 +356,35 @@ func (s *bState) draw(termWidth int) io.Reader {
 		if !s.trimRightSpace {
 			spaceCount++
 		}
-		s.fillBar(termWidth - prependCount - appendCount - spaceCount)
+		s.fill(termWidth - prependCount - appendCount - spaceCount)
 	}
 
 	return io.MultiReader(s.bufP, s.bufB, s.bufA)
+}
+
+func (s *bState) fill(width int) {
+	if len(s.spinner) != 0 {
+		s.fillSpinner(width)
+	} else {
+		s.fillBar(width)
+	}
+}
+
+func (s *bState) fillSpinner(width int) {
+	s.bufB.Reset()
+
+	if !s.trimLeftSpace {
+		s.bufB.WriteByte(' ')
+	}
+
+	spin := []byte(string(s.spinner[s.current%int64(len(s.spinner))]))
+	for _, b := range spin {
+		s.bufB.WriteByte(b)
+	}
+
+	for i := len(spin); i < width; i++ {
+		s.bufB.WriteRune(' ')
+	}
 }
 
 func (s *bState) fillBar(width int) {
@@ -430,4 +474,8 @@ func strToBarRunes(format string) (array barRunes) {
 		format = format[n:]
 	}
 	return
+}
+
+func countLines(b []byte) int {
+	return bytes.Count(b, []byte("\n"))
 }

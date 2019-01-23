@@ -39,7 +39,12 @@ func asyncTasks(tasks []task) []taskResponse {
 	taskBars := make([]*mpb.Bar, len(tasks))
 	maximum := 10
 	var taskWG sync.WaitGroup
-	p := mpb.New(mpb.WithWaitGroup(&taskWG), mpb.WithContext(gContext), mpb.WithWidth(40))
+	p := mpb.New(
+		mpb.WithWaitGroup(&taskWG),
+		mpb.WithContext(gContext),
+		mpb.WithWidth(40),
+		mpb.WithSpinner("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"),
+	)
 	taskWG.Add(len(tasks))
 
 	var workerWG sync.WaitGroup
@@ -54,8 +59,6 @@ func asyncTasks(tasks []task) []taskResponse {
 			mpb.PrependDecorators(
 				// simple name decorator
 				decor.Name(task.string),
-				// decor.DSyncWidth bit enables column width synchronization
-				decor.Percentage(decor.WCSyncSpace),
 			),
 		)
 

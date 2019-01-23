@@ -103,11 +103,17 @@ func BarPriority(priority int) BarOption {
 	}
 }
 
-// BarNewLineExtend takes user defined efn, which is called each render cycle.
-// Any write to provided writer w of efn, will appear on new line of respective bar.
-func BarNewLineExtend(efn func(w io.Writer, completed bool)) BarOption {
+// BarNewLineExtend takes user defined efn, which gets called each render cycle.
+// Any write to provided writer of efn, will appear on new line of respective bar.
+func BarNewLineExtend(efn func(io.Writer, *decor.Statistics)) BarOption {
 	return func(s *bState) {
 		s.newLineExtendFn = efn
+	}
+}
+
+func barSpinner(spinner string) BarOption {
+	return func(s *bState) {
+		s.spinner = []rune(spinner)
 	}
 }
 

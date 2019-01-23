@@ -29,34 +29,28 @@ type Progress struct {
 	done         chan struct{}
 }
 
-type (
-	pState struct {
-		bHeap           *priorityQueue
-		shutdownPending []*Bar
-		heapUpdated     bool
-		zeroWait        bool
-		idCounter       int
-		width           int
-		format          string
-		rr              time.Duration
-		cw              *cwriter.Writer
-		ticker          *time.Ticker
-		pMatrix         map[int][]chan int
-		aMatrix         map[int][]chan int
+type pState struct {
+	bHeap           *priorityQueue
+	shutdownPending []*Bar
+	heapUpdated     bool
+	zeroWait        bool
+	idCounter       int
+	width           int
+	format          string
+	spinner         string
+	rr              time.Duration
+	cw              *cwriter.Writer
+	pMatrix         map[int][]chan int
+	aMatrix         map[int][]chan int
 
-		// following are provided by user
-		uwg              *sync.WaitGroup
-		cancel           <-chan struct{}
-		shutdownNotifier chan struct{}
-		waitBars         map[*Bar]*Bar
-		debugOut         io.Writer
-	}
-	widthSyncer struct {
-		// Public for easy testing
-		Accumulator []chan int
-		Distributor []chan int
-	}
-)
+	// following are provided by user
+	uwg              *sync.WaitGroup
+	manualRefreshCh  <-chan time.Time
+	cancel           <-chan struct{}
+	shutdownNotifier chan struct{}
+	waitBars         map[*Bar]*Bar
+	debugOut         io.Writer
+}
 
 // New creates new Progress instance, which orchestrates bars rendering process.
 // Accepts mpb.ProgressOption funcs for customization.
@@ -69,7 +63,6 @@ func New(options ...ProgressOption) *Progress {
 		format:   pformat,
 		cw:       cwriter.New(os.Stdout),
 		rr:       prr,
-		ticker:   time.NewTicker(prr),
 		waitBars: make(map[*Bar]*Bar),
 		debugOut: ioutil.Discard,
 	}
@@ -97,6 +90,9 @@ func (p *Progress) AddBar(total int64, options ...BarOption) *Bar {
 	select {
 	case p.operateState <- func(s *pState) {
 		options = append(options, barWidth(s.width), barFormat(s.format))
+		if s.spinner != "" {
+			options = append(options, barSpinner(s.spinner))
+		}
 		b := newBar(p.wg, s.idCounter, total, s.cancel, options...)
 		if b.runningBar != nil {
 			s.waitBars[b.runningBar] = b
@@ -201,20 +197,17 @@ func (s *pState) render(tw int) {
 		go bar.render(s.debugOut, tw)
 	}
 
-	if err := s.flush(); err != nil {
+	if err := s.flush(s.bHeap.Len()); err != nil {
 		fmt.Fprintf(s.debugOut, "%s %s %v\n", "[mpb]", time.Now(), err)
 	}
 }
 
-func (s *pState) flush() (err error) {
+func (s *pState) flush(lineCount int) error {
 	for s.bHeap.Len() > 0 {
 		bar := heap.Pop(s.bHeap).(*Bar)
-		reader := <-bar.frameReaderCh
-		if _, e := s.cw.ReadFrom(reader); e != nil {
-			err = e
-		}
+		frameReader := <-bar.frameReaderCh
 		defer func() {
-			if frame, ok := reader.(*frameReader); ok && frame.toShutdown {
+			if frameReader.toShutdown {
 				// shutdown at next flush, in other words decrement underlying WaitGroup
 				// only after the bar with completed state has been flushed.
 				// this ensures no bar ends up with less than 100% rendered.
@@ -224,24 +217,23 @@ func (s *pState) flush() (err error) {
 					s.heapUpdated = true
 					delete(s.waitBars, bar)
 				}
-				if frame.removeOnComplete {
+				if frameReader.removeOnComplete {
 					s.heapUpdated = true
 					return
 				}
 			}
 			heap.Push(s.bHeap, bar)
 		}()
-	}
-
-	if e := s.cw.Flush(); err == nil {
-		err = e
+		s.cw.ReadFrom(frameReader)
+		lineCount += frameReader.extendedLines
 	}
 
 	for i := len(s.shutdownPending) - 1; i >= 0; i-- {
 		close(s.shutdownPending[i].shutdown)
 		s.shutdownPending = s.shutdownPending[:i]
 	}
-	return
+
+	return s.cw.Flush(lineCount)
 }
 
 func syncWidth(matrix map[int][]chan int) {

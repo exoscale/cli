@@ -102,7 +102,7 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9
 github.com/tsenart/deadcode
-# github.com/vbauerster/mpb v3.3.2+incompatible
+# github.com/vbauerster/mpb v3.3.2+incompatible => github.com/greut/mpb v3.3.4-0.20190123095546-2e52c8acb01e+incompatible
 github.com/vbauerster/mpb
 github.com/vbauerster/mpb/decor
 github.com/vbauerster/mpb/cwriter

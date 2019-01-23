@@ -32,6 +32,13 @@ func WithWidth(w int) ProgressOption {
 	}
 }
 
+// WithSpinner overrides default bar format to use a spinner
+func WithSpinner(spinner string) ProgressOption {
+	return func(s *pState) {
+		s.spinner = spinner
+	}
+}
+
 // WithFormat overrides default bar format "[=>-]"
 func WithFormat(format string) ProgressOption {
 	return func(s *pState) {
@@ -47,9 +54,15 @@ func WithRefreshRate(d time.Duration) ProgressOption {
 		if d < 10*time.Millisecond {
 			return
 		}
-		s.ticker.Stop()
-		s.ticker = time.NewTicker(d)
 		s.rr = d
+	}
+}
+
+// WithManualRefresh disables internal auto refresh time.Ticker.
+// Refresh will occur upon receive value from provided ch.
+func WithManualRefresh(ch <-chan time.Time) ProgressOption {
+	return func(s *pState) {
+		s.manualRefreshCh = ch
 	}
 }
 

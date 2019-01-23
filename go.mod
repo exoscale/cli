@@ -2,6 +2,8 @@ module github.com/exoscale/cli
 
 replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.41.0
 
+replace github.com/vbauerster/mpb => github.com/greut/mpb v3.3.4-0.20190123095546-2e52c8acb01e+incompatible
+
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/VividCortex/ewma v1.1.1 // indirect

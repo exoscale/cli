@@ -5,23 +5,18 @@ import (
 	"time"
 )
 
-// Reader is io.Reader wrapper, for proxy read bytes
-type Reader struct {
-	io.Reader
+// proxyReader is io.Reader wrapper, for proxy read bytes
+type proxyReader struct {
+	io.ReadCloser
 	bar *Bar
+	iT  time.Time
 }
 
-func (r *Reader) Read(p []byte) (int, error) {
-	start := time.Now()
-	n, err := r.Reader.Read(p)
-	r.bar.IncrBy(n, time.Since(start))
-	return n, err
-}
-
-// Close the reader when it implements io.Closer
-func (r *Reader) Close() error {
-	if closer, ok := r.Reader.(io.Closer); ok {
-		return closer.Close()
+func (pr *proxyReader) Read(p []byte) (n int, err error) {
+	n, err = pr.ReadCloser.Read(p)
+	if n > 0 {
+		pr.bar.IncrBy(n, time.Since(pr.iT))
+		pr.iT = time.Now()
 	}
-	return nil
+	return
 }
