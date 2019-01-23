@@ -24,9 +24,6 @@ var sshkeyDeleteCmd = &cobra.Command{
 
 		sshKeys := []egoscale.SSHKeyPair{}
 		if all {
-			if !askQuestion("Are you sure you want to delete all sshkey(s)") {
-				return nil
-			}
 			sshKeys, err = getSSHKeys(cs)
 			if err != nil {
 				return err
@@ -47,7 +44,7 @@ var sshkeyDeleteCmd = &cobra.Command{
 
 			if !force {
 				if !askQuestion(fmt.Sprintf("Are you sure you want to delete %q SSH key pair", sshkey.Name)) {
-					return nil
+					continue
 				}
 			}
 
@@ -56,7 +53,6 @@ var sshkeyDeleteCmd = &cobra.Command{
 				return err
 			}
 			fmt.Println(res)
-
 		}
 
 		return nil
