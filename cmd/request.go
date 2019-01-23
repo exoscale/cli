@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"math/rand"
 	"sync"
 	"time"
 
@@ -37,7 +36,7 @@ func asyncTasks(tasks []task) []taskResponse {
 
 	//create task Progress
 	taskBars := make([]*mpb.Bar, len(tasks))
-	maximum := 10
+	maximum := 1 << 30
 	var taskWG sync.WaitGroup
 	p := mpb.New(
 		mpb.WithWaitGroup(&taskWG),
@@ -51,6 +50,8 @@ func asyncTasks(tasks []task) []taskResponse {
 	workerWG.Add(len(tasks))
 	workerSem := make(chan int, parallelTask)
 
+	max := 50 * time.Millisecond
+
 	//exec task and init bars
 	for i, task := range tasks {
 		c := make(chan taskStatus)
@@ -62,34 +63,27 @@ func asyncTasks(tasks []task) []taskResponse {
 			),
 		)
 
-		taskSem := make(chan int, parallelTask)
-
 		//listen for bar progress
-		go func(chanel chan taskStatus, sem chan int) {
+		go func(channel chan taskStatus, idx int) {
 			defer taskWG.Done()
-			defer close(chanel)
+			defer close(channel)
 
-			sem <- 1
+			start := time.Now()
 
-			max := 100 * time.Millisecond
-			count := 1
-			for status := range chanel {
-				start := time.Now()
-				time.Sleep(time.Duration(rand.Intn(10)+1) * max / 10)
-				if status.jobStatus == egoscale.Pending {
-					if count < maximum {
-						taskBars[status.id].IncrBy(1, time.Since(start))
+			// for select + sleep
+			for {
+				select {
+				case status := <-channel:
+					if status.jobStatus != egoscale.Pending {
+						taskBars[idx].IncrBy(maximum, time.Since(start))
+						return
 					}
-				} else {
-					taskBars[status.id].IncrBy(maximum, time.Since(start))
-					return
+				case <-time.After(max):
+					// do nothing
 				}
-				count++
+				taskBars[idx].IncrBy(1, time.Since(start))
 			}
-
-			<-sem
-
-		}(c, taskSem)
+		}(c, i)
 	}
 
 	workerWG.Wait()
@@ -99,8 +93,8 @@ func asyncTasks(tasks []task) []taskResponse {
 }
 
 func execTask(task task, id int, c chan taskStatus, resp *taskResponse, sem chan int, wg *sync.WaitGroup) {
-
 	defer wg.Done()
+
 	sem <- 1
 
 	response := cs.Response(task.AsyncCommand)
