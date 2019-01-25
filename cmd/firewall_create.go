@@ -22,15 +22,15 @@ var firewallCreateCmd = &cobra.Command{
 			return err
 		}
 
-		syncTasks := []syncTask{}
+		syncTasks := []task{}
 		for _, arg := range args {
-			syncTasks = append(syncTasks, syncTask{
+			syncTasks = append(syncTasks, task{
 				egoscale.CreateSecurityGroup{Name: arg, Description: desc},
 				fmt.Sprintf("Create security group %q", arg),
 			})
 		}
 
-		taskResponses := syncTasksAsync(syncTasks)
+		taskResponses := asyncTasks(syncTasks)
 		errors := filterErrors(taskResponses)
 		if len(errors) > 0 {
 			return errors[0]

@@ -14,13 +14,8 @@ const (
 	parallelTask = 20
 )
 
-type syncTask struct {
-	egoscale.Command
-	string
-}
-
 type task struct {
-	egoscale.AsyncCommand
+	egoscale.Command
 	string
 }
 
@@ -58,7 +53,12 @@ func asyncTasks(tasks []task) []taskResponse {
 	//exec task and init bars
 	for i, task := range tasks {
 		c := make(chan taskStatus)
-		go execTask(task, i, c, &responses[i], workerSem, &workerWG)
+		switch cmd := task.Command.(type) {
+		case egoscale.AsyncCommand:
+			go execTask(cmd, task.string, i, c, &responses[i], workerSem, &workerWG)
+		default:
+			go execSyncTask(task, i, c, &responses[i], workerSem, &workerWG)
+		}
 		taskBars[i] = p.AddSpinner(int64(maximum),
 			mpb.SpinnerOnLeft,
 			mpb.PrependDecorators(
@@ -96,14 +96,15 @@ func asyncTasks(tasks []task) []taskResponse {
 	return responses
 }
 
-func execTask(task task, id int, c chan taskStatus, resp *taskResponse, sem chan int, wg *sync.WaitGroup) {
+func execTask(task egoscale.AsyncCommand, message string, id int, c chan taskStatus, resp *taskResponse, sem chan int, wg *sync.WaitGroup) {
+
 	defer wg.Done()
 
 	sem <- 1
 
-	response := cs.Response(task.AsyncCommand)
+	response := cs.Response(task)
 	var errorReq error
-	cs.AsyncRequestWithContext(gContext, task.AsyncCommand, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+	cs.AsyncRequestWithContext(gContext, task, func(jobResult *egoscale.AsyncJobResult, err error) bool {
 		if err != nil {
 			errorReq = err
 			return false
@@ -125,7 +126,7 @@ func execTask(task task, id int, c chan taskStatus, resp *taskResponse, sem chan
 		c <- taskStatus{id, egoscale.Success}
 	} else {
 		c <- taskStatus{id, egoscale.Failure}
-		(*resp).error = fmt.Errorf("failure %s: %s", task.string, errorReq)
+		(*resp).error = fmt.Errorf("failure %s: %s", message, errorReq)
 	}
 
 	<-sem
@@ -142,66 +143,21 @@ func filterErrors(tasks []taskResponse) []error {
 	return r
 }
 
-func syncTasksAsync(tasks []syncTask) []taskResponse {
-
-	//init results
-	responses := make([]taskResponse, len(tasks))
-
-	//create task Progress
-	taskBars := make([]*mpb.Bar, len(tasks))
-	maximum := 10
-	var taskWG sync.WaitGroup
-	p := mpb.New(mpb.WithWaitGroup(&taskWG), mpb.WithContext(gContext), mpb.WithWidth(40))
-	taskWG.Add(len(tasks))
-
-	var workerWG sync.WaitGroup
-	workerWG.Add(len(tasks))
-	workerSem := make(chan int, parallelTask)
-
-	//exec task and init bars
-	for i, task := range tasks {
-		c := make(chan taskStatus)
-		go execSyncTask(task, i, c, &responses[i], workerSem, &workerWG)
-		taskBars[i] = p.AddBar(int64(maximum),
-			mpb.PrependDecorators(
-				// decor.DSyncWidth bit enables column width synchronization
-				decor.Percentage(decor.WCSyncSpace),
-			),
-			mpb.AppendDecorators(decor.Name(task.string)),
-		)
-
-		taskSem := make(chan int, parallelTask)
-
-		//listen for bar progress
-		go func(chanel chan taskStatus, sem chan int) {
-			defer taskWG.Done()
-			defer close(chanel)
-
-			sem <- 1
-
-			max := 100 * time.Millisecond
-			for status := range chanel {
-				start := time.Now()
-				time.Sleep(time.Duration(rand.Intn(10)+1) * max / 10)
-				taskBars[status.id].IncrBy(maximum, time.Since(start))
-				return
-			}
-
-			<-sem
-
-		}(c, taskSem)
-	}
-
-	workerWG.Wait()
-	p.Wait()
-
-	return responses
-}
-
-func execSyncTask(task syncTask, id int, c chan taskStatus, resp *taskResponse, sem chan int, wg *sync.WaitGroup) {
-
+func execSyncTask(task task, id int, c chan taskStatus, resp *taskResponse, sem chan int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	sem <- 1
+
+	_, ok := cs.Response(task.Command).(*egoscale.BooleanResponse)
+	if ok {
+		if err := cs.BooleanRequestWithContext(gContext, task.Command); err != nil {
+			c <- taskStatus{id, egoscale.Failure}
+			(*resp).error = fmt.Errorf("failure %s: %s", task.string, err)
+			return
+		}
+		c <- taskStatus{id, egoscale.Success}
+		<-sem
+		return
+	}
 
 	result, err := cs.RequestWithContext(gContext, task.Command)
 	if err != nil {

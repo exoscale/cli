@@ -107,7 +107,7 @@ func (DeleteAffinityGroup) Response() interface{} {
 
 // AsyncResponse returns the struct to unmarshal the async job
 func (DeleteAffinityGroup) AsyncResponse() interface{} {
-	return new(booleanResponse)
+	return new(BooleanResponse)
 }
 
 //go:generate go run generate/main.go -interface=Listable ListAffinityGroups
