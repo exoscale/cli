@@ -272,7 +272,7 @@ func getDefaultRule(ruleName string) (*egoscale.AuthorizeSecurityGroupIngress, e
 	ruleName = strings.ToLower(ruleName)
 	if ruleName == "ping" {
 		return &egoscale.AuthorizeSecurityGroupIngress{
-			Protocol:    "icmp",
+			Protocol:    "ICMP",
 			CIDRList:    []egoscale.CIDR{},
 			IcmpType:    8,
 			IcmpCode:    0,
@@ -282,7 +282,7 @@ func getDefaultRule(ruleName string) (*egoscale.AuthorizeSecurityGroupIngress, e
 
 	if ruleName == "ping6" {
 		return &egoscale.AuthorizeSecurityGroupIngress{
-			Protocol:    "icmp",
+			Protocol:    "ICMPv6",
 			CIDRList:    []egoscale.CIDR{},
 			IcmpType:    128,
 			IcmpCode:    0,
