@@ -2,6 +2,7 @@ package mpb
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,20 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/vbauerster/mpb/decor"
-	"github.com/vbauerster/mpb/internal"
 )
-
-const (
-	rLeft = iota
-	rFill
-	rTip
-	rEmpty
-	rRight
-)
-
-const formatLen = 5
-
-type barRunes [formatLen]rune
 
 // Bar represents a progress Bar
 type Bar struct {
@@ -45,16 +33,23 @@ type Bar struct {
 	shutdown chan struct{}
 }
 
+// Filler interface.
+// Bar renders by calling Filler's Fill method. You can literally have
+// any bar kind, by implementing this interface and passing it to the
+// Add method.
+type Filler interface {
+	Fill(w io.Writer, width int, s *decor.Statistics)
+}
+
 type (
 	bState struct {
+		filler             Filler
 		id                 int
 		width              int
+		alignment          int
 		total              int64
 		current            int64
-		runes              barRunes
-		spinner            []rune
-		trimLeftSpace      bool
-		trimRightSpace     bool
+		trimSpace          bool
 		toComplete         bool
 		removeOnComplete   bool
 		barClearOnComplete bool
@@ -74,8 +69,8 @@ type (
 		runningBar *Bar
 	}
 	refill struct {
-		char rune
-		till int64
+		r     rune
+		limit int64
 	}
 	frameReader struct {
 		io.Reader
@@ -85,14 +80,23 @@ type (
 	}
 )
 
-func newBar(wg *sync.WaitGroup, id int, total int64, cancel <-chan struct{}, options ...BarOption) *Bar {
+func newBar(
+	ctx context.Context,
+	wg *sync.WaitGroup,
+	filler Filler,
+	id, width int,
+	total int64,
+	options ...BarOption,
+) *Bar {
 	if total <= 0 {
 		total = time.Now().Unix()
 	}
 
 	s := &bState{
+		filler:   filler,
 		id:       id,
 		priority: id,
+		width:    width,
 		total:    total,
 	}
 
@@ -102,9 +106,12 @@ func newBar(wg *sync.WaitGroup, id int, total int64, cancel <-chan struct{}, opt
 		}
 	}
 
-	s.bufP = bytes.NewBuffer(make([]byte, 0, s.width))
-	s.bufB = bytes.NewBuffer(make([]byte, 0, s.width))
-	s.bufA = bytes.NewBuffer(make([]byte, 0, s.width))
+	s.bufP = bytes.NewBuffer(make([]byte, 0, width))
+	s.bufB = bytes.NewBuffer(make([]byte, 0, width))
+	s.bufA = bytes.NewBuffer(make([]byte, 0, width))
+	if s.newLineExtendFn != nil {
+		s.bufNL = bytes.NewBuffer(make([]byte, 0, width))
+	}
 
 	b := &Bar{
 		priority:      s.priority,
@@ -122,11 +129,7 @@ func newBar(wg *sync.WaitGroup, id int, total int64, cancel <-chan struct{}, opt
 		b.priority = b.runningBar.priority
 	}
 
-	if s.newLineExtendFn != nil {
-		s.bufNL = bytes.NewBuffer(make([]byte, 0, s.width))
-	}
-
-	go b.serve(wg, s, cancel)
+	go b.serve(ctx, wg, s)
 	return b
 }
 
@@ -203,13 +206,10 @@ func (b *Bar) SetRefill(n int, r rune) {
 		return
 	}
 	b.operateState <- func(s *bState) {
-		s.refill = &refill{r, int64(n)}
+		if bf, ok := s.filler.(*barFiller); ok {
+			bf.refill = &refill{r, int64(n)}
+		}
 	}
-}
-
-// RefillBy is deprecated, use SetRefill
-func (b *Bar) RefillBy(n int, r rune) {
-	b.SetRefill(n, r)
 }
 
 // Increment is a shorthand for b.IncrBy(1).
@@ -218,8 +218,8 @@ func (b *Bar) Increment() {
 }
 
 // IncrBy increments progress bar by amount of n.
-// wdd is optional work duration i.e. time.Since(start),
-// which expected to be provided, if any ewma based decorator is used.
+// wdd is optional work duration i.e. time.Since(start), which expected
+// to be provided, if any ewma based decorator is used.
 func (b *Bar) IncrBy(n int, wdd ...time.Duration) {
 	select {
 	case b.operateState <- func(s *bState) {
@@ -239,9 +239,9 @@ func (b *Bar) IncrBy(n int, wdd ...time.Duration) {
 // Completed reports whether the bar is in completed state.
 func (b *Bar) Completed() bool {
 	// omit select here, because primary usage of the method is for loop
-	// condition, like 	for !bar.Completed() {...}
-	// so when toComplete=true it is called once (at which time, the bar is still alive),
-	// then quits the loop and never suppose to be called afterwards.
+	// condition, like for !bar.Completed() {...} so when toComplete=true
+	// it is called once (at which time, the bar is still alive), then
+	// quits the loop and never suppose to be called afterwards.
 	return <-b.boolCh
 }
 
@@ -254,8 +254,9 @@ func (b *Bar) wSyncTable() [][]chan int {
 	}
 }
 
-func (b *Bar) serve(wg *sync.WaitGroup, s *bState, cancel <-chan struct{}) {
+func (b *Bar) serve(ctx context.Context, wg *sync.WaitGroup, s *bState) {
 	defer wg.Done()
+	cancel := ctx.Done()
 	for {
 		select {
 		case op := <-b.operateState:
@@ -323,8 +324,6 @@ func (b *Bar) render(debugOut io.Writer, tw int) {
 }
 
 func (s *bState) draw(termWidth int) io.Reader {
-	defer s.bufA.WriteByte('\n')
-
 	if s.panicMsg != "" {
 		return strings.NewReader(fmt.Sprintf(fmt.Sprintf("%%.%ds\n", termWidth), s.panicMsg))
 	}
@@ -339,102 +338,32 @@ func (s *bState) draw(termWidth int) io.Reader {
 		s.bufA.WriteString(d.Decor(stat))
 	}
 
-	prependCount := utf8.RuneCount(s.bufP.Bytes())
-	appendCount := utf8.RuneCount(s.bufA.Bytes())
-
 	if s.barClearOnComplete && s.completeFlushed {
+		s.bufA.WriteByte('\n')
 		return io.MultiReader(s.bufP, s.bufA)
 	}
 
-	s.fill(s.width)
-	barCount := utf8.RuneCount(s.bufB.Bytes())
-	totalCount := prependCount + barCount + appendCount
-	if spaceCount := 0; totalCount > termWidth {
-		if !s.trimLeftSpace {
-			spaceCount++
-		}
-		if !s.trimRightSpace {
-			spaceCount++
-		}
-		s.fill(termWidth - prependCount - appendCount - spaceCount)
+	prependCount := utf8.RuneCount(s.bufP.Bytes())
+	appendCount := utf8.RuneCount(s.bufA.Bytes())
+
+	if !s.trimSpace {
+		// reserve space for edge spaces
+		termWidth -= 2
+		s.bufB.WriteByte(' ')
 	}
 
+	if prependCount+s.width+appendCount > termWidth {
+		s.filler.Fill(s.bufB, termWidth-prependCount-appendCount, stat)
+	} else {
+		s.filler.Fill(s.bufB, s.width, stat)
+	}
+
+	if !s.trimSpace {
+		s.bufB.WriteByte(' ')
+	}
+
+	s.bufA.WriteByte('\n')
 	return io.MultiReader(s.bufP, s.bufB, s.bufA)
-}
-
-func (s *bState) fill(width int) {
-	if len(s.spinner) != 0 {
-		s.fillSpinner(width)
-	} else {
-		s.fillBar(width)
-	}
-}
-
-func (s *bState) fillSpinner(width int) {
-	s.bufB.Reset()
-
-	if !s.trimLeftSpace {
-		s.bufB.WriteByte(' ')
-	}
-
-	spin := []byte(string(s.spinner[s.current%int64(len(s.spinner))]))
-	for _, b := range spin {
-		s.bufB.WriteByte(b)
-	}
-
-	for i := len(spin); i < width; i++ {
-		s.bufB.WriteRune(' ')
-	}
-}
-
-func (s *bState) fillBar(width int) {
-	defer func() {
-		s.bufB.WriteRune(s.runes[rRight])
-		if !s.trimRightSpace {
-			s.bufB.WriteByte(' ')
-		}
-	}()
-
-	s.bufB.Reset()
-	if !s.trimLeftSpace {
-		s.bufB.WriteByte(' ')
-	}
-	s.bufB.WriteRune(s.runes[rLeft])
-	if width <= 2 {
-		return
-	}
-
-	// bar s.width without leftEnd and rightEnd runes
-	barWidth := width - 2
-
-	completedWidth := internal.Percentage(s.total, s.current, int64(barWidth))
-
-	if s.refill != nil {
-		till := internal.Percentage(s.total, s.refill.till, int64(barWidth))
-		// append refill rune
-		var i int64
-		for i = 0; i < till; i++ {
-			s.bufB.WriteRune(s.refill.char)
-		}
-		for i = till; i < completedWidth; i++ {
-			s.bufB.WriteRune(s.runes[rFill])
-		}
-	} else {
-		var i int64
-		for i = 0; i < completedWidth; i++ {
-			s.bufB.WriteRune(s.runes[rFill])
-		}
-	}
-
-	if completedWidth < int64(barWidth) && completedWidth > 0 {
-		_, size := utf8.DecodeLastRune(s.bufB.Bytes())
-		s.bufB.Truncate(s.bufB.Len() - size)
-		s.bufB.WriteRune(s.runes[rTip])
-	}
-
-	for i := completedWidth; i < int64(barWidth); i++ {
-		s.bufB.WriteRune(s.runes[rEmpty])
-	}
 }
 
 func (s *bState) wSyncTable() [][]chan int {
@@ -466,14 +395,6 @@ func newStatistics(s *bState) *decor.Statistics {
 		Total:     s.total,
 		Current:   s.current,
 	}
-}
-
-func strToBarRunes(format string) (array barRunes) {
-	for i, n := 0, 0; len(format) > 0; i++ {
-		array[i], n = utf8.DecodeRuneInString(format)
-		format = format[n:]
-	}
-	return
 }
 
 func countLines(b []byte) int {

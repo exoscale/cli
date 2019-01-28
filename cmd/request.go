@@ -41,8 +41,6 @@ func asyncTasks(tasks []task) []taskResponse {
 	p := mpb.New(
 		mpb.WithWaitGroup(&taskWG),
 		mpb.WithContext(gContext),
-		mpb.WithWidth(40),
-		mpb.WithSpinner("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"),
 	)
 	taskWG.Add(len(tasks))
 
@@ -56,7 +54,8 @@ func asyncTasks(tasks []task) []taskResponse {
 	for i, task := range tasks {
 		c := make(chan taskStatus)
 		go execTask(task, i, c, &responses[i], workerSem, &workerWG)
-		taskBars[i] = p.AddBar(int64(maximum),
+		taskBars[i] = p.AddSpinner(int64(maximum),
+			mpb.SpinnerOnLeft,
 			mpb.PrependDecorators(
 				// simple name decorator
 				decor.Name(task.string),

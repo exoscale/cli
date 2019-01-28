@@ -2,8 +2,6 @@ module github.com/exoscale/cli
 
 replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.41.0
 
-replace github.com/vbauerster/mpb => github.com/greut/mpb v3.3.4-0.20190123095546-2e52c8acb01e+incompatible
-
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/VividCortex/ewma v1.1.1 // indirect
@@ -30,7 +28,7 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.2
 	github.com/spf13/viper v1.2.0
-	github.com/vbauerster/mpb v3.3.2+incompatible
+	github.com/vbauerster/mpb v3.3.5-0.20190127232217-1f544b0f9b21+incompatible
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
 	golang.org/x/net v0.0.0-20181207154023-610586996380 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
