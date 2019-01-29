@@ -175,8 +175,8 @@ func isDefaultRule(rule, defaultRule *egoscale.IngressRule, isIpv6 bool, myCidr 
 }
 
 func prepareDefaultRemove(sg *egoscale.SecurityGroup, ruleName string, rule *egoscale.IngressRule, cidr *egoscale.CIDR, isIpv6 bool) (*egoscale.UUID, error) {
-	for _, in := range sg.IngressRule {
-		if !isDefaultRule(&in, rule, isIpv6, cidr) {
+	for i, in := range sg.IngressRule {
+		if !isDefaultRule(&sg.IngressRule[i], rule, isIpv6, cidr) {
 			// Rule not found
 			continue
 		}

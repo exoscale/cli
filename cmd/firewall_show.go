@@ -41,13 +41,13 @@ func firewallListRules(t *table.Table, name string) error {
 
 	heading := "INGRESS"
 	for _, in := range sg.IngressRule {
-		t.Append(formatRules(heading, &in))
+		t.Append(formatRules(heading, in))
 		heading = ""
 	}
 
 	heading = "EGRESS"
 	for _, out := range sg.EgressRule {
-		t.Append(formatRules(heading, (*egoscale.IngressRule)(&out)))
+		t.Append(formatRules(heading, (egoscale.IngressRule)(out)))
 		heading = ""
 	}
 
