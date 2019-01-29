@@ -44,3 +44,9 @@ $ exo --help
 ```
 
 [community]: https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/
+
+## Powered by
+
+- [cobra](https://github.com/spf13/cobra), by Steve Francia
+- [mpb](https://github.com/vbauerster/mpb), by Vladimir Bauer
+- [tablewriter](https://github.com/olekukonko/tablewriter), by Oleku Konku
