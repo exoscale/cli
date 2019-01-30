@@ -10,10 +10,10 @@ import (
 func init() {
 
 	for i := egoscale.A; i <= egoscale.URL; i++ {
-
+		recordType := egoscale.Record.String(i)
 		var cmdUpdateRecord = &cobra.Command{
-			Use:   fmt.Sprintf("%s <domain name> <record name | id>", egoscale.Record.String(i)),
-			Short: fmt.Sprintf("Update %s record type to a domain", egoscale.Record.String(i)),
+			Use:   fmt.Sprintf("%s <domain name> <record name | id>", recordType),
+			Short: fmt.Sprintf("Update %s record type to a domain", recordType),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) < 2 {
 					return cmd.Usage()
@@ -46,7 +46,7 @@ func init() {
 					ID:         recordID,
 					DomainID:   domain.ID,
 					TTL:        ttl,
-					RecordType: egoscale.Record.String(i),
+					RecordType: recordType,
 					Name:       name,
 					Content:    addr,
 				})

@@ -55,8 +55,8 @@ var gCommit string
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of exo",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("exo %s %s (egoscale %s)\n", gVersion, gCommit, egoscale.Version)
+	Run: func(cmd *cobra.Command, _ []string) {
+		fmt.Printf("%s %s %s (egoscale %s)\n", cmd.Parent().Name(), gVersion, gCommit, egoscale.Version)
 	},
 }
 

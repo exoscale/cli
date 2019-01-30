@@ -23,7 +23,7 @@ func init() {
 
 // Utils func for the firewall family
 
-func formatRules(name string, rule *egoscale.IngressRule) []string {
+func formatRules(name string, rule egoscale.IngressRule) []string {
 	var source string
 	if rule.CIDR != nil {
 		source = fmt.Sprintf("CIDR %s", rule.CIDR)
@@ -86,13 +86,13 @@ func getMyCIDR(isIpv6 bool) (*egoscale.CIDR, error) {
 	}
 
 	resolver := net.Resolver{
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+		Dial: func(_ context.Context, _, _ string) (net.Conn, error) {
 			return net.Dial(protocol, dnsServer+":53")
 		},
 		PreferGo: true,
 	}
 
-	ips, err := resolver.LookupIPAddr(context.Background(), "myip.opendns.com")
+	ips, err := resolver.LookupIPAddr(gContext, "myip.opendns.com")
 	if err != nil {
 		return nil, err
 	}
