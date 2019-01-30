@@ -65,6 +65,9 @@ func asyncTasks(tasks []task) []taskResponse {
 				// simple name decorator
 				decor.Name(task.string),
 			),
+			mpb.AppendDecorators(
+				decor.OnComplete(decor.Elapsed(decor.ET_STYLE_GO), "done!"),
+			),
 		)
 
 		//listen for bar progress
