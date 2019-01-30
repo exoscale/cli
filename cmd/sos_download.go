@@ -10,8 +10,8 @@ import (
 
 	minio "github.com/minio/minio-go"
 	"github.com/spf13/cobra"
-	"github.com/vbauerster/mpb"
-	"github.com/vbauerster/mpb/decor"
+	mpb "github.com/vbauerster/mpb/v4"
+	"github.com/vbauerster/mpb/v4/decor"
 )
 
 // downloadCmd represents the download command

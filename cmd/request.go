@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale"
-	"github.com/vbauerster/mpb"
-	"github.com/vbauerster/mpb/decor"
+	mpb "github.com/vbauerster/mpb/v4"
+	"github.com/vbauerster/mpb/v4/decor"
 )
 
 const (
