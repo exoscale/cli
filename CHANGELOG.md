@@ -1,17 +1,12 @@
-1.0.8 (unreleased)
+1.0.7
 -----
 
 - feature: spinners instead of fake loading bars
 - feature: `api admin listVirtualMachines`
 - feature: `sshkey delete --all`
 - fix: `firewall ping6` protocol name
-- fix: `firewall --my-ip` flag
-
-1.0.7
------
-
-- change: `firewall add` sets a CIDR by default
 - fix: `firewall add --my-ip` to not create the default CIDR
+- change: `firewall add` sets a CIDR by default
 
 1.0.6
 -----
