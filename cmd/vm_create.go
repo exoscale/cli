@@ -302,7 +302,7 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 		if keypairsName != "" {
 			deploys[i].KeyPair = keypairsName
 		}
-		tasks[i].AsyncCommand = deploys[i]
+		tasks[i].Command = deploys[i]
 	}
 
 	resps := asyncTasks(tasks)

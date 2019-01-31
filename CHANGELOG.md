@@ -1,4 +1,11 @@
+1.0.8 (unreleased)
+-----
 
+- feature: spinners instead of fake loading bars
+- feature: `api admin listVirtualMachines`
+- feature: `sshkey delete --all`
+- fix: `firewall ping6` protocol name
+- fix: `firewall --my-ip` flag
 
 1.0.7
 -----
