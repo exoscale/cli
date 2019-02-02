@@ -162,7 +162,7 @@ var vmCreateCmd = &cobra.Command{
 		}
 
 		fmt.Printf(`
-What to do now?
+What do now?
 
 1. Connect to the machine
 

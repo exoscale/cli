@@ -285,7 +285,7 @@ var kubeCreateCmd = &cobra.Command{
 		}
 
 		fmt.Printf(`
-Your Kubernetes cluster is ready. What to do now?
+Your Kubernetes cluster is ready. What do now?
 
 1. Install the "kubectl" command, if you don't have it already:
 
