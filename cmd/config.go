@@ -55,6 +55,19 @@ func (a account) APISecret() string {
 	return a.Secret
 }
 
+func (a account) AccountName() string {
+	if a.Name == "" {
+		resp, err := cs.GetWithContext(gContext, egoscale.Account{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		acc := resp.(*egoscale.Account)
+		return acc.Name
+	}
+
+	return a.Name
+}
+
 const (
 	defaultConfigFileName    = "exoscale"
 	defaultEndpoint          = "https://api.exoscale.ch/compute"

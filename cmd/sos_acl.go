@@ -90,7 +90,7 @@ var sosAddACLCmd = &cobra.Command{
 
 		if okHeader && !okMeta {
 			objInfo.Metadata.Del("X-Amz-Acl")
-			objInfo.Metadata.Add(manualFullControl, "id="+gCurrentAccount.Account)
+			objInfo.Metadata.Add(manualFullControl, "id="+gCurrentAccount.AccountName())
 		}
 
 		mergeHeader(src.Headers, objInfo.Metadata)

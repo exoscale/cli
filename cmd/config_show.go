@@ -19,7 +19,7 @@ var showCmd = &cobra.Command{
 			return fmt.Errorf("no accounts are defined")
 		}
 
-		account := gCurrentAccount.Name
+		account := gCurrentAccount.AccountName()
 		if len(args) > 0 {
 			account = args[0]
 		}
