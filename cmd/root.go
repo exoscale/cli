@@ -23,9 +23,9 @@ var gConfigFilePath string
 //current Account information
 var gAccountName string
 var gCurrentAccount = &account{
-	DefaultZone:     "ch-dk-2",
-	DefaultTemplate: "Linux Ubuntu 18.04 LTS 64-bit",
-	SosEndpoint:     "https://sos-{zone}.exo.io",
+	DefaultZone:     defaultZone,
+	DefaultTemplate: defaultTemplate,
+	SosEndpoint:     defaultSosEndpoint,
 }
 
 var gAllAccount *config

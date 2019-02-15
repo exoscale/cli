@@ -74,6 +74,7 @@ const (
 	defaultTemplate          = "Linux Ubuntu 18.04 LTS 64-bit"
 	defaultSosEndpoint       = "https://sos-{zone}.exo.io"
 	defaultRunstatusEndpoint = "https://api.runstatus.com"
+	defaultZone              = "ch-dk-2"
 )
 
 // configCmd represents the config command
