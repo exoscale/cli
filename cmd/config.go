@@ -81,6 +81,11 @@ const (
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage config for exo cli",
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if gAllAccount == nil {
+			log.Fatalf("remove ENV credentials variables to use config cmd")
+		}
+	},
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
