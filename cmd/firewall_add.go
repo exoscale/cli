@@ -272,32 +272,29 @@ func getDefaultRule(ruleName string) (*egoscale.AuthorizeSecurityGroupIngress, e
 	ruleName = strings.ToLower(ruleName)
 	if ruleName == "ping" {
 		return &egoscale.AuthorizeSecurityGroupIngress{
-			Protocol:    "ICMP",
-			CIDRList:    []egoscale.CIDR{},
-			IcmpType:    8,
-			IcmpCode:    0,
-			Description: "",
+			Protocol: "ICMP",
+			CIDRList: []egoscale.CIDR{},
+			IcmpType: uint8(echo),
+			IcmpCode: 0,
 		}, nil
 	}
 
 	if ruleName == "ping6" {
 		return &egoscale.AuthorizeSecurityGroupIngress{
-			Protocol:    "ICMPv6",
-			CIDRList:    []egoscale.CIDR{},
-			IcmpType:    128,
-			IcmpCode:    0,
-			Description: "",
+			Protocol: "ICMPv6",
+			CIDRList: []egoscale.CIDR{},
+			IcmpType: uint8(echoRequest),
+			IcmpCode: 0,
 		}, nil
 	}
 
 	for d := Daytime; d <= Minecraft; d++ {
 		if strings.ToLower(port.String(d)) == ruleName {
 			return &egoscale.AuthorizeSecurityGroupIngress{
-				Protocol:    "tcp",
-				CIDRList:    []egoscale.CIDR{},
-				StartPort:   uint16(d),
-				EndPort:     uint16(d),
-				Description: fmt.Sprintf(""),
+				Protocol:  "TCP",
+				CIDRList:  []egoscale.CIDR{},
+				StartPort: uint16(d),
+				EndPort:   uint16(d),
 			}, nil
 		}
 	}
