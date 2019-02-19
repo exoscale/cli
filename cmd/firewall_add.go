@@ -172,7 +172,7 @@ A set of predefined commands exists, such a ssh, ping or minecraft.
 
 				rule.UserSecurityGroupList = userSecurityGroups
 			} else if len(rule.CIDRList) == 0 {
-				if isIpv6 {
+				if (isIpv6 || rule.Protocol == "ICMPv6") && rule.Protocol != "ICMP" {
 					rule.CIDRList = append(rule.CIDRList, *defaultCIDR6)
 				} else {
 					rule.CIDRList = append(rule.CIDRList, *defaultCIDR)
