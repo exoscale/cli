@@ -17,7 +17,7 @@ github.com/client9/misspell
 github.com/cpuguy83/go-md2man/md2man
 # github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.14.1-0.20190219095037-cd7b7c0c27ce
+# github.com/exoscale/egoscale v0.14.1-0.20190219140521-62b79b1f6b14
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
 # github.com/fatih/camelcase v1.0.0
