@@ -23,41 +23,58 @@ var eipDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q EIP", args[0])) {
-				return nil
+		tasks := make([]task, 0, len(args))
+
+		for _, arg := range args {
+			cmd, err := prepareDeleteEip(arg)
+			if err != nil {
+				return err
 			}
+
+			if !force {
+				if !askQuestion(fmt.Sprintf("sure you want to delete %q EIP", cmd.ID.String())) {
+					continue
+				}
+			}
+
+			tasks = append(tasks, task{
+				cmd,
+				fmt.Sprintf("Remove %q EIP", cmd.ID.String()),
+			})
 		}
 
-		return deleteEip(args[0])
+		resps := asyncTasks(tasks)
+		errs := filterErrors(resps)
+		if len(errs) > 0 {
+			return errs[0]
+		}
+
+		return nil
 	},
 }
 
-func deleteEip(ip string) error {
-	addrReq := &egoscale.DisassociateIPAddress{}
+// Builds the disassociateIPAddress request
+func prepareDeleteEip(ip string) (*egoscale.DisassociateIPAddress, error) {
+	dissocReq := &egoscale.DisassociateIPAddress{}
 
 	ipAddr := net.ParseIP(ip)
 
 	if ipAddr == nil {
 		id, err := egoscale.ParseUUID(ip)
 		if err != nil {
-			return fmt.Errorf("delete the eip by ID or IP address, gotb %q", ip)
+			return nil, fmt.Errorf("delete the eip by ID or IP address, gotb %q", ip)
 		}
-		addrReq.ID = id
+		dissocReq.ID = id
 	} else {
 		req := &egoscale.IPAddress{IPAddress: ipAddr, IsElastic: true}
 		resp, err := cs.GetWithContext(gContext, req)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		addrReq.ID = resp.(*egoscale.IPAddress).ID
+		dissocReq.ID = resp.(*egoscale.IPAddress).ID
 	}
 
-	if err := cs.BooleanRequestWithContext(gContext, addrReq); err != nil {
-		return err
-	}
-	println(addrReq.ID)
-	return nil
+	return dissocReq, nil
 }
 
 func init() {
