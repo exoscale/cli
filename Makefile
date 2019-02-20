@@ -33,11 +33,11 @@ manpage:
 manpages: manpage $(GO_FILES)
 	$(foreach page,$(shell find $< -type f -iname '*.1'), gzip $(page);)
 
-completion:
+completion/bash:
 	mkdir -p completion/bash
 
 .PHONY: completions
-completions: completion $(GO_FILES)
+completions: completion/bash $(GO_FILES)
 	go run -mod vendor completion/main.go
 	mv bash_completion completion/bash/exo
 
