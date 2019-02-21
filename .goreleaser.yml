@@ -50,7 +50,7 @@ nfpm:
 
   files:
     "./manpage/exo*.1": "/usr/share/man/man1"
-    "./completion/bash/exo": "/etc/bash_completion.d/exo"
+    "./contrib/completion/bash/exo": "/etc/bash_completion.d/exo"
 
 brew:
   github:
@@ -62,4 +62,4 @@ brew:
   install: |
     bin.install "exo"
     man1.install Dir["manpage/exo*.1"]
-    bash_completion.install "completion/bash/exo"
+    bash_completion.install "contrib/completion/bash/exo"
