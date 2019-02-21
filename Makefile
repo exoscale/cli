@@ -27,21 +27,20 @@ docker: Dockerfile $(GO_FILES)
 
 manpage:
 	mkdir -p $@
-	go run -mod vendor doc/main.go --man-page
 
 .PHONY: manpages
 manpages: manpage $(GO_FILES)
-	$(foreach page,$(shell find $< -type f -iname '*.1'), gzip $(page);)
+	go run -mod vendor doc/main.go --man-page
 
-completion/bash:
-	mkdir -p completion/bash
+contrib/completion/bash:
+	mkdir -p $@
 
 .PHONY: completions
-completions: completion/bash $(GO_FILES)
+completions: contrib/completion/bash $(GO_FILES)
 	go run -mod vendor completion/main.go
-	mv bash_completion completion/bash/exo
+	mv bash_completion $</exo
 
 .PHONY: clean
 clean:
 	go clean
-	rm -rf exo bash_completion manpage
+	rm -rf exo contrib/completion manpage

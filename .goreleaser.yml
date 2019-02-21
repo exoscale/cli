@@ -29,7 +29,7 @@ archive:
       format: zip
   files:
     - LICENSE
-    - completion/*
+    - contrib/completion/**/*
     - manpage/*
 
 release:
@@ -49,8 +49,8 @@ nfpm:
     - rpm
 
   files:
-    "./manpage/exo*.1.gz": "/usr/share/man/man1"
-    "./completion/bash/exo": "/etc/bash_completion.d/exo"
+    "./manpage/exo*.1": "/usr/share/man/man1"
+    "./contrib/completion/bash/exo": "/etc/bash_completion.d/exo"
 
 brew:
   github:
@@ -61,5 +61,5 @@ brew:
   description: Manage (almost) everything at Exoscale from the command line.
   install: |
     bin.install "exo"
-    man.install "manpage/exo*.1.gz"
-    bash_completion.install "completion/bash/exo"
+    man1.install Dir["manpage/exo*.1"]
+    bash_completion.install "contrib/completion/bash/exo"
