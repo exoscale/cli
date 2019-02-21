@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale"
-	mpb "github.com/vbauerster/mpb/v4"
+	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 )
 

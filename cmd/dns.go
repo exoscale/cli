@@ -14,7 +14,7 @@ var dnsCmd = &cobra.Command{
 
 // getRecordIDByName get record ID by name
 func getRecordIDByName(domainName, recordName string) (int64, error) {
-	records, err := csDNS.GetRecords(domainName)
+	records, err := csDNS.GetRecords(gContext, domainName)
 	if err != nil {
 		return 0, err
 	}

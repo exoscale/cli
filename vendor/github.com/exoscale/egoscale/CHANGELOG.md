@@ -1,6 +1,19 @@
 Changelog
 =========
 
+0.14.1
+------
+
+- fix: `GetRunstatusPage` to always contain the subresources
+- fix: `ListRunstatus*` to fetch all the subresources
+- feature: `PaginateRunstatus*` used by list
+
+0.14.0
+------
+
+- change: all DNS calls require a context
+- fix: `CreateAffinityGroup` allows empty `name`
+
 0.13.3
 ------
 

@@ -26,7 +26,7 @@ var dnsListCmd = &cobra.Command{
 }
 
 func listDomains(t *table.Table, filters []string) error {
-	domains, err := csDNS.GetDomains()
+	domains, err := csDNS.GetDomains(gContext)
 	if err != nil {
 		return err
 	}

@@ -22,11 +22,12 @@ var runstatusMaintenanceRemoveCmd = &cobra.Command{
 		maintenanceName := args[0]
 
 		if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
-			fmt.Fprintf(os.Stderr, `Error: No default runstat.us page is set:
-  Please specify a page in parameter or add it to %q
+			fmt.Fprintf(os.Stderr, `Missing page argument.
 
-  `, gConfigFilePath)
-			return cmd.Usage()
+  Please specify a page in parameter or
+  Set the key "defaultRunstatusPage" into %q.
+`, gConfigFilePath)
+			return fmt.Errorf("missing default runstat.us page")
 		}
 
 		if len(args) > 1 {
@@ -44,14 +45,14 @@ var runstatusMaintenanceRemoveCmd = &cobra.Command{
 			return err
 		}
 
-		if !askQuestion(fmt.Sprintf("sure you want to remove %q maintenance", maintenanceName)) {
+		if !askQuestion(fmt.Sprintf("Remove maintenance %q (%d) from %q?", maintenance.Title, maintenance.ID, pageName)) {
 			return nil
 		}
 
 		if err := csRunstatus.DeleteRunstatusMaintenance(gContext, *maintenance); err != nil {
 			return fmt.Errorf("error removing %q:\n%v", maintenanceName, err)
 		}
-		fmt.Printf("Maintenance %q successfully removed\n", maintenanceName)
+		fmt.Println(maintenance.ID)
 		return nil
 	},
 }

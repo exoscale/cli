@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/spf13/cobra"
 )
 
@@ -14,4 +17,11 @@ knowing that when something does go wrong you can keep everyone informed using R
 
 func init() {
 	RootCmd.AddCommand(runstatusCmd)
+}
+
+func formatSchedule(start, end *time.Time) string {
+	if start == nil || end == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s - %s", start, end.Sub(*start))
 }

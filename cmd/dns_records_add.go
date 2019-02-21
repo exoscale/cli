@@ -32,12 +32,12 @@ var dnsACmd = &cobra.Command{
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "A",
@@ -85,12 +85,12 @@ var dnsAAAACmd = &cobra.Command{
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "AAAA",
@@ -150,12 +150,12 @@ What is a flag? <https://tools.ietf.org/html/rfc6844#section-3>
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "CAA",
@@ -204,12 +204,12 @@ the record name. Note: If you want to redirect to a URL, use a URL record instea
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "ALIAS",
@@ -258,12 +258,12 @@ These types of records are used when a server is reached by several names. Only 
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "CNAME",
@@ -319,12 +319,12 @@ var dnsHINFOCmd = &cobra.Command{
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "HINFO",
@@ -382,12 +382,12 @@ These types of records are used to describe which servers handle incoming email.
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "MX",
@@ -491,12 +491,12 @@ the domain name syntax to a label that is. More information can be found in RFC 
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "NAPTR",
@@ -569,12 +569,12 @@ You may only delegate subdomains (for example subdomain.yourdomain.com).`,
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "NS",
@@ -626,12 +626,12 @@ part of a pool of available CNAME records. This is a DNSimple custom record type
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "POOL",
@@ -708,12 +708,12 @@ var dnsSRVCmd = &cobra.Command{
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "SRV",
@@ -791,12 +791,12 @@ var dnsSSHFPCmd = &cobra.Command{
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "SSHFP",
@@ -851,12 +851,12 @@ the standard record types. For example, Google uses this type of record for doma
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "TXT",
@@ -905,12 +905,12 @@ This type of record uses an HTTP redirect to redirect visitors from a domain to 
 			return err
 		}
 
-		domain, err := csDNS.GetDomain(args[0])
+		domain, err := csDNS.GetDomain(gContext, args[0])
 		if err != nil {
 			return err
 		}
 
-		_, err = csDNS.CreateRecord(args[0], egoscale.DNSRecord{
+		_, err = csDNS.CreateRecord(gContext, args[0], egoscale.DNSRecord{
 			DomainID:   domain.ID,
 			TTL:        ttl,
 			RecordType: "URL",

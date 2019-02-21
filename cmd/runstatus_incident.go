@@ -14,19 +14,15 @@ var runstatusIncidentCmd = &cobra.Command{
 }
 
 func getIncidentByNameOrID(page egoscale.RunstatusPage, name string) (*egoscale.RunstatusIncident, error) {
+	i := egoscale.RunstatusIncident{PageURL: page.URL}
 
-	incidentID := -1
-
-	id, err := strconv.Atoi(name)
-	if err == nil {
-		incidentID = id
+	if id, err := strconv.Atoi(name); err == nil {
+		i.ID = id
+	} else {
+		i.Title = name
 	}
 
-	if incidentID > 0 {
-		return csRunstatus.GetRunstatusIncident(gContext, egoscale.RunstatusIncident{PageURL: page.URL, ID: incidentID})
-	}
-
-	return csRunstatus.GetRunstatusIncident(gContext, egoscale.RunstatusIncident{PageURL: page.URL, Title: name})
+	return csRunstatus.GetRunstatusIncident(gContext, i)
 }
 
 func init() {

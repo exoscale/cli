@@ -14,18 +14,15 @@ var runstatusMaintenanceCmd = &cobra.Command{
 }
 
 func getMaintenanceByNameOrID(page egoscale.RunstatusPage, name string) (*egoscale.RunstatusMaintenance, error) {
-	maintenanceID := -1
+	m := egoscale.RunstatusMaintenance{PageURL: page.URL}
 
-	id, err := strconv.Atoi(name)
-	if err == nil {
-		maintenanceID = id
+	if id, err := strconv.Atoi(name); err == nil {
+		m.ID = id
+	} else {
+		m.Title = name
 	}
 
-	if maintenanceID > 0 {
-		return csRunstatus.GetRunstatusMaintenance(gContext, egoscale.RunstatusMaintenance{PageURL: page.URL, ID: maintenanceID})
-	}
-
-	return csRunstatus.GetRunstatusMaintenance(gContext, egoscale.RunstatusMaintenance{PageURL: page.URL, Title: name})
+	return csRunstatus.GetRunstatusMaintenance(gContext, m)
 }
 
 func init() {

@@ -10,7 +10,7 @@ import (
 
 	minio "github.com/minio/minio-go"
 	"github.com/spf13/cobra"
-	mpb "github.com/vbauerster/mpb/v4"
+	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 )
 
