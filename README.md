@@ -1,9 +1,11 @@
-# Exoscale CLI
+---
+title: Exoscale CLI
+description: |
+    Manage easily your Exoscale infrastructure from the command-line with `exo`.
+
+---
 
 [![Build Status](https://travis-ci.com/exoscale/cli.svg?branch=master)](https://travis-ci.com/exoscale/cli) [![Go Report Card](https://goreportcard.com/badge/github.com/exoscale/cli)](https://goreportcard.com/report/github.com/exoscale/cli) [![Docker image](https://images.microbadger.com/badges/image/exoscale/cli.svg)](https://microbadger.com/images/exoscale/cli "Get your own image badge on microbadger.com")
-
-Manage easily your Exoscale infrastructure from the command-line with `exo`.
-
 
 ## Installation
 
