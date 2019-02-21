@@ -2,6 +2,5 @@
 dist
 exo
 manpage
-
-bash_completion
+completion/bash
 go.sum

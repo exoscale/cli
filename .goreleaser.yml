@@ -16,7 +16,7 @@ builds:
       - amd64
 
     hooks:
-      pre: make manpages bash_completion
+      pre: make manpages completions
 
 sign:
   cmd: gpg
@@ -29,7 +29,7 @@ archive:
       format: zip
   files:
     - LICENSE
-    - bash_completion
+    - completion/*
     - manpage/*
 
 release:
@@ -50,7 +50,7 @@ nfpm:
 
   files:
     "./manpage/exo*.1.gz": "/usr/share/man/man1"
-    "./bash_completion": "/etc/bash_completion.d/exo"
+    "./completion/bash/exo": "/etc/bash_completion.d/exo"
 
 brew:
   github:
@@ -59,3 +59,7 @@ brew:
   folder: Formula
   homepage: "https://exoscale.github.io/cli/"
   description: Manage (almost) everything at Exoscale from the command line.
+  install: |
+    bin.install "exo"
+    man.install "manpage/exo*.1.gz"
+    bash_completion.install "completion/bash/exo
