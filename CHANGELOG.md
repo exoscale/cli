@@ -1,3 +1,11 @@
+1.0.8
+-----
+
+- feature: What do now?
+- feature: allow multiple EIP deletion
+- feature: runstatus show page
+- fix: runstatus reflect API changes
+
 1.0.7
 -----
 
