@@ -62,4 +62,4 @@ brew:
   install: |
     bin.install "exo"
     man.install "manpage/exo*.1.gz"
-    bash_completion.install "completion/bash/exo
+    bash_completion.install "completion/bash/exo"
