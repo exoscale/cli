@@ -29,7 +29,7 @@ archive:
       format: zip
   files:
     - LICENSE
-    - completion/*
+    - contrib/completion/**/*
     - manpage/*
 
 release:
