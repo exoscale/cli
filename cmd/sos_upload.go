@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	mpb "github.com/vbauerster/mpb/v4"
+	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 
 	minio "github.com/minio/minio-go"

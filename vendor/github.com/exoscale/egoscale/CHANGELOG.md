@@ -1,10 +1,12 @@
 Changelog
 =========
 
-0.14.1 (unreleased)
--------------------
+0.14.1
+------
 
 - fix: `GetRunstatusPage` to always contain the subresources
+- fix: `ListRunstatus*` to fetch all the subresources
+- feature: `PaginateRunstatus*` used by list
 
 0.14.0
 ------

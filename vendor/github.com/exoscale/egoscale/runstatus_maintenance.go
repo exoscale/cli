@@ -136,7 +136,7 @@ func (client *Client) ListRunstatusMaintenances(ctx context.Context, page Runsta
 }
 
 // PaginateRunstatusMaintenances paginate Maintenances
-func (client *Client) PaginateRunstatusMaintenances(ctx context.Context, page RunstatusPage, callback func(*RunstatusMaintenance, error) bool) {
+func (client *Client) PaginateRunstatusMaintenances(ctx context.Context, page RunstatusPage, callback func(*RunstatusMaintenance, error) bool) { // nolint: dupl
 	if page.MaintenancesURL == "" {
 		callback(nil, fmt.Errorf("empty Maintenances URL for %#v", page))
 		return
