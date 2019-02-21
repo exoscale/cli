@@ -1,9 +1,6 @@
 package mpb
 
 import (
-	"io"
-	"unicode/utf8"
-
 	"github.com/vbauerster/mpb/v4/decor"
 )
 
@@ -64,10 +61,17 @@ func BarRemoveOnComplete() BarOption {
 	}
 }
 
-// BarReplaceOnComplete is indicator for delayed bar start, after the
-// `runningBar` is complete. To achieve bar replacement effect,
-// `runningBar` should has its `BarRemoveOnComplete` option set.
+// BarReplaceOnComplete is deprecated. Refer to BarParkTo option.
 func BarReplaceOnComplete(runningBar *Bar) BarOption {
+	return BarParkTo(runningBar)
+}
+
+// BarParkTo parks constructed bar into the runningBar. In other words,
+// constructed bar will start only after runningBar has been completed.
+// Parked bar will replace runningBar if BarRemoveOnComplete option
+// is set on the runningBar. Parked bar inherits priority of the
+// runningBar, if no BarPriority option is set.
+func BarParkTo(runningBar *Bar) BarOption {
 	return func(s *bState) {
 		s.runningBar = runningBar
 	}
@@ -91,12 +95,11 @@ func BarPriority(priority int) BarOption {
 	}
 }
 
-// BarNewLineExtend takes user defined efn, which gets called each
-// render cycle. Any write to provided writer of efn, will appear on
-// new line of respective bar.
-func BarNewLineExtend(efn func(io.Writer, *decor.Statistics)) BarOption {
+// BarExtender is an option to extend bar to the next new line, with
+// arbitrary output.
+func BarExtender(extender Filler) BarOption {
 	return func(s *bState) {
-		s.newLineExtendFn = efn
+		s.extender = extender
 	}
 }
 
@@ -107,8 +110,23 @@ func TrimSpace() BarOption {
 	}
 }
 
-// BarStyle sets custom bar style.
-// Effective when Filler type is bar.
+// BarStyle sets custom bar style, default one is "[=>-]<+".
+//
+//	'[' left bracket rune
+//
+//	'=' fill rune
+//
+//	'>' tip rune
+//
+//	'-' empty rune
+//
+//	']' right bracket rune
+//
+//	'<' reverse tip rune, used when BarReverse option is set
+//
+//	'+' refill rune, used when *Bar.SetRefill(int) is called
+//
+// It's ok to provide first five runes only, for example mpb.BarStyle("╢▌▌░╟")
 func BarStyle(style string) BarOption {
 	chk := func(filler Filler) (interface{}, bool) {
 		if style == "" {
@@ -118,15 +136,19 @@ func BarStyle(style string) BarOption {
 		return t, ok
 	}
 	cb := func(t interface{}) {
-		bf := t.(*barFiller)
-		if !utf8.ValidString(style) {
-			panic("invalid style string")
-		}
-		defaultFormat := bf.format
-		bf.format = []rune(style)
-		if len(bf.format) < 5 {
-			bf.format = defaultFormat
-		}
+		t.(*barFiller).setStyle(style)
+	}
+	return MakeFillerTypeSpecificBarOption(chk, cb)
+}
+
+// BarReverse reverse mode, bar will progress from right to left.
+func BarReverse() BarOption {
+	chk := func(filler Filler) (interface{}, bool) {
+		t, ok := filler.(*barFiller)
+		return t, ok
+	}
+	cb := func(t interface{}) {
+		t.(*barFiller).setReverse()
 	}
 	return MakeFillerTypeSpecificBarOption(chk, cb)
 }
@@ -161,8 +183,8 @@ func MakeFillerTypeSpecificBarOption(
 	}
 }
 
-// OptionOnCondition returns option when condition evaluates to true.
-func OptionOnCondition(option BarOption, condition func() bool) BarOption {
+// BarOptOnCond returns option when condition evaluates to true.
+func BarOptOnCond(option BarOption, condition func() bool) BarOption {
 	if condition() {
 		return option
 	}

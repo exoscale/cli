@@ -28,7 +28,7 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.1
 	github.com/vbauerster/mpb/v4 v4.5.0
-	golang.org/x/crypto v0.0.0-20190129170551-bf88e3f4ba72
+	golang.org/x/crypto v0.0.0-20190219172222-a4c6cb3142f2
 	golang.org/x/net v0.0.0-20181207154023-610586996380 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/ini.v1 v1.42.0 // indirect
