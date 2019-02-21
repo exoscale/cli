@@ -27,11 +27,10 @@ docker: Dockerfile $(GO_FILES)
 
 manpage:
 	mkdir -p $@
-	go run -mod vendor doc/main.go --man-page
 
 .PHONY: manpages
 manpages: manpage $(GO_FILES)
-	$(foreach page,$(shell find $< -type f -iname '*.1'), gzip $(page);)
+	go run -mod vendor doc/main.go --man-page
 
 completion/bash:
 	mkdir -p completion/bash
