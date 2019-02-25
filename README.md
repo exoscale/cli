@@ -11,7 +11,7 @@ The easiest way is to follow [the tutorial on the Exoscale command-line interfac
 
 ### Manual compilation
 
-This project is open source and may be modified, studied, and built at will. We use and recommand Go 1.11+
+This project is open source and may be modified, studied, and built at will. We use and recommend Go 1.11+
 
 ```shell
 # clone it
