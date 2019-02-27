@@ -22,7 +22,11 @@ var gConfigFilePath string
 
 //current Account information
 var gAccountName string
-var gCurrentAccount *account
+var gCurrentAccount = &account{
+	DefaultZone:     defaultZone,
+	DefaultTemplate: defaultTemplate,
+	SosEndpoint:     defaultSosEndpoint,
+}
 
 var gAllAccount *config
 
@@ -153,7 +157,14 @@ func initConfig() {
 		"CLOUDSTACK_SECRET_KEY",
 	)
 
+	envSosEndpoint := readFromEnv(
+		"EXOSCALE_SOS_ENDPOINT",
+	)
+
 	if envEndpoint != "" && envKey != "" && envSecret != "" {
+		gCurrentAccount.SosEndpoint = envSosEndpoint
+		gCurrentAccount.Key = envKey
+		gCurrentAccount.Secret = envSecret
 		cs = egoscale.NewClient(envEndpoint, envKey, envSecret)
 		return
 	}

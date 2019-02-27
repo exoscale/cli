@@ -55,18 +55,37 @@ func (a account) APISecret() string {
 	return a.Secret
 }
 
+func (a account) AccountName() string {
+	if a.Name == "" {
+		resp, err := cs.GetWithContext(gContext, egoscale.Account{})
+		if err != nil {
+			log.Fatal(err)
+		}
+		acc := resp.(*egoscale.Account)
+		return acc.Name
+	}
+
+	return a.Name
+}
+
 const (
 	defaultConfigFileName    = "exoscale"
 	defaultEndpoint          = "https://api.exoscale.ch/compute"
 	defaultTemplate          = "Linux Ubuntu 18.04 LTS 64-bit"
 	defaultSosEndpoint       = "https://sos-{zone}.exo.io"
 	defaultRunstatusEndpoint = "https://api.runstatus.com"
+	defaultZone              = "ch-dk-2"
 )
 
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage config for exo cli",
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		if gAllAccount == nil {
+			log.Fatalf("remove ENV credentials variables to use config cmd")
+		}
+	},
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
