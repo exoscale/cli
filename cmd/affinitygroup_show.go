@@ -13,7 +13,7 @@ var affinitygroupShowCmd = &cobra.Command{
 	Short:   "Show affinity group details",
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
+		if len(args) != 1 {
 			return cmd.Usage()
 		}
 		return showAffinityGroup(args[0])
