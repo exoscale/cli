@@ -3,6 +3,7 @@ language: go
 go:
   - "1.10.x"
   - "1.11.x"
+  - "1.12.x"
   - tip
 
 cache: apt
@@ -14,7 +15,7 @@ addons:
       - rpm
 
 env:
-  - GO111MODULE=on HUGO_VERSION=0.54 GOLANGCI_LINT_VERSION=1.14.0
+  - GO111MODULE=on HUGO_VERSION=0.54 GOLANGCI_LINT_VERSION=1.15.0
 
 script:
   - '[ "$(echo "$TRAVIS_GO_VERSION" | perl -pe "s/\\.[x\\d]+$//")" = "1.10" ] && go test -v ./... || go test -mod vendor -v ./...'
