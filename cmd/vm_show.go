@@ -84,7 +84,11 @@ func showVM(name string) error {
 
 	sgName := strings.Join(sgs, " - ")
 
-	table.Append([]string{"Security Group", sgName})
+	table.Append([]string{"Security Groups", sgName})
+
+	ags := getAffinityGroups(vm)
+
+	table.Append([]string{"Affinity Groups", strings.Join(ags, " - ")})
 
 	table.Append([]string{"Instance IP", vm.IP().String()})
 
