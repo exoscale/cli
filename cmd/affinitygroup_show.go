@@ -27,6 +27,10 @@ func showAffinityGroup(name string) error {
 		return err
 	}
 
+	if len(ag.VirtualMachineIDs) == 0 {
+		return nil
+	}
+
 	resp, err := cs.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
 	if err != nil {
 		return err
