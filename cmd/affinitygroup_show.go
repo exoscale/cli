@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
@@ -26,15 +27,16 @@ func showAffinityGroup(name string) error {
 		return err
 	}
 
+	resp, err := cs.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
+	if err != nil {
+		return err
+	}
+
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{"Instance Display Name", "Instance ID"})
 
-	for _, id := range ag.VirtualMachineIDs {
-		vm, err := getVirtualMachineByNameOrID(id)
-		if err != nil {
-			return err
-		}
-
+	for _, r := range resp {
+		vm := r.(*egoscale.VirtualMachine)
 		table.Append([]string{vm.Name, vm.ID.String()})
 	}
 

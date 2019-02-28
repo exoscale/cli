@@ -509,7 +509,7 @@ type ListVirtualMachines struct {
 	ForVirtualNetwork *bool         `json:"forvirtualnetwork,omitempty" doc:"list by network type; true if need to list vms using Virtual Network, false otherwise"`
 	GroupID           *UUID         `json:"groupid,omitempty" doc:"the group ID"`
 	ID                *UUID         `json:"id,omitempty" doc:"the ID of the virtual machine"`
-	IDs               []string      `json:"ids,omitempty" doc:"the IDs of the virtual machines, mutually exclusive with id"`
+	IDs               []UUID        `json:"ids,omitempty" doc:"the IDs of the virtual machines, mutually exclusive with id"`
 	IPAddress         net.IP        `json:"ipaddress,omitempty" doc:"an IP address to filter the result"`
 	IsoID             *UUID         `json:"isoid,omitempty" doc:"list vms by iso"`
 	Keyword           string        `json:"keyword,omitempty" doc:"List by keyword"`
