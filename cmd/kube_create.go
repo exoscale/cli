@@ -198,9 +198,14 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		kubernetesVersion, err := fetchKubernetesVersion()
+		kubernetesVersion, err := cmd.Flags().GetString("version")
 		if err != nil {
 			return err
+		}
+		if kubernetesVersion == "" {
+			if kubernetesVersion, err = fetchKubernetesVersion(); err != nil {
+				return err
+			}
 		}
 
 		sizeOpt, err := cmd.Flags().GetString("size")
@@ -530,5 +535,6 @@ func init() {
 	kubeCreateCmd.PersistentFlags().BoolVarP(&kubeCreateDebug, "debug", "d", false, "debug mode on")
 	kubeCreateCmd.Flags().StringP("size", "s", "medium", "<name | id> "+
 		"(micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
+	kubeCreateCmd.Flags().StringP("version", "v", "", "install a specific Kubernetes version")
 	kubeCmd.AddCommand(kubeCreateCmd)
 }
