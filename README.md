@@ -47,6 +47,7 @@ $ exo --help
 
 ## Powered by
 
-- [cobra](https://github.com/spf13/cobra), by Steve Francia
-- [mpb](https://github.com/vbauerster/mpb), by Vladimir Bauer
+- [cobra](https://github.com/spf13/cobra), by Steve Francia :us:
+- [mpb](https://github.com/vbauerster/mpb), by Vladimir Bauer :ru:
 - [tablewriter](https://github.com/olekukonko/tablewriter), by Oleku Konku
+- [chroma](https://github.com/alecthomas/chroma), by Alec Thomas :australia:
