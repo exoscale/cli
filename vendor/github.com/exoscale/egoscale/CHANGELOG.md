@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.14.3
+------
+
+- fix: `AffinityGroup` lists virtual machines with `UUID` rather than string
+
+0.14.2
+------
+
+- fix: `ListVirtualMachines` by `IDs` to accept `UUID` rather than string
+
 0.14.1
 ------
 
