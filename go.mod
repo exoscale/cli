@@ -4,6 +4,7 @@ replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.42.0
 
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/alecthomas/chroma v0.6.2
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cenkalti/backoff v2.0.0+incompatible

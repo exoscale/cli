@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -131,7 +132,7 @@ func buildCommands(methods []category) {
 					return err
 				}
 
-				fmt.Println(string(data))
+				utils.PrintJSON(string(data), "")
 
 				return nil
 			}
