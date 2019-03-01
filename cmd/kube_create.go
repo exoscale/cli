@@ -198,14 +198,13 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		kubernetesVersion, err := cmd.Flags().GetString("version")
+		requestedKubernetesVersion, err := cmd.Flags().GetString("version")
 		if err != nil {
 			return err
 		}
-		if kubernetesVersion == "" {
-			if kubernetesVersion, err = fetchKubernetesVersion(); err != nil {
-				return err
-			}
+		kubernetesVersion, err := fetchKubernetesVersion(requestedKubernetesVersion)
+		if err != nil {
+			return err
 		}
 
 		sizeOpt, err := cmd.Flags().GetString("size")
@@ -507,10 +506,26 @@ func (c *sshClient) scp(src, dst string) error {
 	return ioutil.WriteFile(dst, buf.Bytes(), 0600)
 }
 
-// fetchKubernetesVersion fetches the version from the latest file
+// fetchKubernetesVersion fetches the latest stable version from the official
+// release source, or if a specific version is requested checks if it actually
+// exists.
 //
 // https://godoc.org/github.com/kubernetes/kubernetes/cmd/kubeadm/app/util#KubernetesReleaseVersion
-func fetchKubernetesVersion() (string, error) {
+func fetchKubernetesVersion(requested string) (string, error) {
+	if requested != "" {
+		r, err := http.Head(fmt.Sprintf("https://dl.k8s.io/release/v%s/bin/linux/amd64/kubectl", requested))
+		if err != nil {
+			return "", err
+		}
+		defer r.Body.Close()
+
+		if r.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("unable to find Kubernetes release for version %q", requested)
+		}
+
+		return requested, nil
+	}
+
 	r, err := http.Get("https://dl.k8s.io/release/stable.txt")
 	if err != nil {
 		return "", err
