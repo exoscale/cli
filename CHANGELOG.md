@@ -1,3 +1,9 @@
+1.0.9
+-----
+
+- feature: affinitygroup show
+- fix: no panics when the config is made via env variables only
+
 1.0.8
 -----
 

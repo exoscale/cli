@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -28,10 +29,15 @@ func displayAffinitygroup() error {
 	affinityGroups := resp.(*egoscale.ListAffinityGroupsResponse).AffinityGroup
 
 	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Description", "ID"})
+	table.SetHeader([]string{"Name", "Description", "Size", "ID"})
 
 	for _, affinitygroup := range affinityGroups {
-		table.Append([]string{affinitygroup.Name, affinitygroup.Description, affinitygroup.ID.String()})
+		table.Append([]string{
+			affinitygroup.Name,
+			affinitygroup.Description,
+			strconv.Itoa(len(affinitygroup.VirtualMachineIDs)),
+			affinitygroup.ID.String(),
+		})
 	}
 
 	table.Render()
