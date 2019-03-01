@@ -1,3 +1,13 @@
+1.1.0
+-----
+
+- Found a misspelling.
+- Fix panic with env credentials
+- CLI: show VMs in anti-affinity group
+- api: highlight the output (stolen from go-cs)
+- affinitygroup: enrich show and list
+- lab: kube: add flag --version to create subcommand
+
 1.0.9
 -----
 
