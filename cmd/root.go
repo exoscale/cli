@@ -174,7 +174,13 @@ func initConfig() {
 			gCurrentAccount.SosEndpoint = envSosEndpoint
 		}
 
+		gAllAccount = &config{
+			DefaultAccount: gCurrentAccount.Name,
+			Accounts:       []account{*gCurrentAccount},
+		}
+
 		cs = egoscale.NewClient(gCurrentAccount.Endpoint, envKey, envSecret)
+
 		return
 	}
 

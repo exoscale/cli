@@ -81,15 +81,15 @@ const (
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage config for exo cli",
-	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
-		if strings.HasPrefix(cmd.Use, "config") && gAllAccount == nil {
-			log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
-		}
-	},
+	RunE:  configCmdRun,
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
-	if viper.ConfigFileUsed() != "" && gAccountName != "" {
+	if gConfigFilePath == "" && gCurrentAccount.Key != "" {
+		log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
+	}
+
+	if gConfigFilePath != "" && gCurrentAccount.Key != "" {
 		fmt.Println("Good day! exo is already configured:")
 		accounts := listAccounts()
 		prompt := promptui.Select{
@@ -657,6 +657,5 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 
 func init() {
 
-	configCmd.RunE = configCmdRun
 	RootCmd.AddCommand(configCmd)
 }
