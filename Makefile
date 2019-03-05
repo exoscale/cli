@@ -19,11 +19,12 @@ test: $(GO_FILES)
 .PHONY: docker
 docker: Dockerfile $(GO_FILES)
 	docker build -f $< \
-		-t exoscale/cli:${version} \
+		-t exoscale/cli \
 		--build-arg VERSION="${version}" \
 		--build-arg VCS_REF="$(shell git rev-parse HEAD)" \
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%m:%SZ")" \
 		.
+	docker tag exoscale/cli:latest exoscale/cli:${version}
 
 manpage:
 	mkdir -p $@
