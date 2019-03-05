@@ -277,9 +277,14 @@ func initConfig() {
 		}
 	}
 
+	if gCurrentAccount.DefaultZone == "" {
+		gCurrentAccount.DefaultZone = defaultZone
+	}
+
 	if gCurrentAccount.DNSEndpoint == "" {
 		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/compute", "/dns", 1)
 	}
+
 	if gCurrentAccount.DefaultTemplate == "" {
 		gCurrentAccount.DefaultTemplate = defaultTemplate
 	}
