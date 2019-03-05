@@ -25,6 +25,7 @@ var gAccountName string
 var gCurrentAccount = &account{
 	DefaultZone:     defaultZone,
 	DefaultTemplate: defaultTemplate,
+	Endpoint:        defaultEndpoint,
 	SosEndpoint:     defaultSosEndpoint,
 }
 
@@ -120,7 +121,6 @@ func buildClient() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
 	envs := map[string]string{
 		"EXOSCALE_CONFIG":  "config",
 		"EXOSCALE_ACCOUNT": "account",
@@ -161,11 +161,26 @@ func initConfig() {
 		"EXOSCALE_SOS_ENDPOINT",
 	)
 
-	if envEndpoint != "" && envKey != "" && envSecret != "" {
-		gCurrentAccount.SosEndpoint = envSosEndpoint
+	if envKey != "" && envSecret != "" {
+		gCurrentAccount.Name = "environment variables"
+		gCurrentAccount.Account = "unknown"
 		gCurrentAccount.Key = envKey
 		gCurrentAccount.Secret = envSecret
-		cs = egoscale.NewClient(envEndpoint, envKey, envSecret)
+
+		if envEndpoint != "" {
+			gCurrentAccount.Endpoint = envEndpoint
+		}
+		if envSosEndpoint != "" {
+			gCurrentAccount.SosEndpoint = envSosEndpoint
+		}
+
+		gAllAccount = &config{
+			DefaultAccount: gCurrentAccount.Name,
+			Accounts:       []account{*gCurrentAccount},
+		}
+
+		cs = egoscale.NewClient(gCurrentAccount.Endpoint, envKey, envSecret)
+
 		return
 	}
 
@@ -203,14 +218,14 @@ func initConfig() {
 		viper.AddConfigPath(".")
 	}
 
-	nonCredentialCmd := []string{"config", "version", "status"}
-
-	if err := viper.ReadInConfig(); err != nil && isNonCredentialCmd(nonCredentialCmd...) {
-		ignoreClientBuild = true
-		return
-	}
+	nonCredentialCmds := []string{"config", "version", "status"}
 
 	if err := viper.ReadInConfig(); err != nil {
+		if isNonCredentialCmd(nonCredentialCmds...) {
+			ignoreClientBuild = true
+			return
+		}
+
 		log.Fatal(err)
 	}
 
@@ -223,7 +238,7 @@ func initConfig() {
 	}
 
 	if len(config.Accounts) == 0 {
-		if isNonCredentialCmd(nonCredentialCmd...) {
+		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
 			return
 		}
@@ -240,7 +255,6 @@ func initConfig() {
 		gAccountName = config.DefaultAccount
 	}
 
-	gAllAccount = config
 	gAllAccount.DefaultAccount = gAccountName
 
 	for i, acc := range config.Accounts {

@@ -24,7 +24,7 @@ var showCmd = &cobra.Command{
 			account = args[0]
 		}
 
-		if !isAccountExist(account) {
+		if !doesAccountExist(account) {
 			return fmt.Errorf("account %q does not exist", account)
 		}
 
@@ -61,9 +61,13 @@ var showCmd = &cobra.Command{
 			fmt.Fprintf(w, "SOS Endpoint:\t%s\n", acc.SosEndpoint) // nolint: errcheck
 		}
 
-		fmt.Fprintf(w, "\t\n")                                  // nolink: errcheck
-		fmt.Fprintf(w, "Configuration:\t%s\n", gConfigFilePath) // nolink: errcheck
-		fmt.Fprintf(w, "Storage:\t%s\n", gConfigFolder)         // nolint: errcheck
+		fmt.Fprintf(w, "\t\n") // nolink: errcheck
+		if gConfigFilePath != "" {
+			fmt.Fprintf(w, "Configuration:\t%s\n", gConfigFilePath) // nolink: errcheck
+			fmt.Fprintf(w, "Storage:\t%s\n", gConfigFolder)         // nolint: errcheck
+		} else {
+			fmt.Fprintf(w, "Configuration:\tenvironment variables\n") // nolink: errcheck
+		}
 
 		return w.Flush()
 	},
