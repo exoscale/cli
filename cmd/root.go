@@ -255,6 +255,7 @@ func initConfig() {
 		gAccountName = config.DefaultAccount
 	}
 
+	gAllAccount = config
 	gAllAccount.DefaultAccount = gAccountName
 
 	for i, acc := range config.Accounts {
