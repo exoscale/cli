@@ -19,7 +19,7 @@ var configSetCmd = &cobra.Command{
 			return fmt.Errorf("no accounts are defined")
 		}
 
-		if !isAccountExist(args[0]) {
+		if !doesAccountExist(args[0]) {
 			return fmt.Errorf("account %q does not exist", args[0])
 		}
 

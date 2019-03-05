@@ -81,9 +81,9 @@ const (
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Manage config for exo cli",
-	PersistentPreRun: func(_ *cobra.Command, _ []string) {
-		if gAllAccount == nil {
-			log.Fatalf("remove ENV credentials variables to use config cmd")
+	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+		if strings.HasPrefix(cmd.Use, "config") && gAllAccount == nil {
+			log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
 		}
 	},
 }
@@ -252,7 +252,7 @@ Let's start over.
 		account.Name = name
 	}
 
-	for isAccountExist(account.Name) {
+	for doesAccountExist(account.Name) {
 		fmt.Printf("Name [%s] already exist\n", name)
 		name, err = readInput(reader, "Name", account.Name)
 		if err != nil {
@@ -477,7 +477,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			csAccount.Name = name
 		}
 
-		for isAccountExist(csAccount.Name) {
+		for doesAccountExist(csAccount.Name) {
 			fmt.Printf("Account name [%s] already exist\n", csAccount.Name)
 			name, err = readInput(reader, fmt.Sprintf("Name (org: %q)", csAccount.Account), csAccount.Name)
 			if err != nil {
@@ -511,10 +511,10 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 	return addAccount(cfgPath, config)
 }
 
-func isAccountExist(name string) bool {
+func doesAccountExist(name string) bool {
 
 	if gAllAccount == nil {
-		return false
+		return gCurrentAccount.Name == name
 	}
 
 	for _, acc := range gAllAccount.Accounts {

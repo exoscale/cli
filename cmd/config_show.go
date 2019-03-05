@@ -15,7 +15,7 @@ var showCmd = &cobra.Command{
 	Short:   "Show an account details",
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if gAllAccount == nil {
+		if gCurrentAccount == nil {
 			return fmt.Errorf("no accounts are defined")
 		}
 
@@ -24,13 +24,16 @@ var showCmd = &cobra.Command{
 			account = args[0]
 		}
 
-		if !isAccountExist(account) {
+		if !doesAccountExist(account) {
 			return fmt.Errorf("account %q does not exist", account)
 		}
 
 		acc := getAccountByName(account)
 		if acc == nil {
-			return fmt.Errorf("account %q was not found", account)
+			if account != gCurrentAccount.AccountName() {
+				return fmt.Errorf("account %q was not found", account)
+			}
+			acc = gCurrentAccount
 		}
 
 		secret := strings.Repeat("×", len(acc.Secret)/4)
@@ -62,8 +65,12 @@ var showCmd = &cobra.Command{
 		}
 
 		fmt.Fprintf(w, "\t\n")                                  // nolink: errcheck
-		fmt.Fprintf(w, "Configuration:\t%s\n", gConfigFilePath) // nolink: errcheck
-		fmt.Fprintf(w, "Storage:\t%s\n", gConfigFolder)         // nolint: errcheck
+		if gConfigFilePath != "" {
+			fmt.Fprintf(w, "Configuration:\t%s\n", gConfigFilePath) // nolink: errcheck
+			fmt.Fprintf(w, "Storage:\t%s\n", gConfigFolder)         // nolint: errcheck
+		} else {
+			fmt.Fprintf(w, "Configuration:\tenvironment variables\n") // nolink: errcheck
+		}
 
 		return w.Flush()
 	},
