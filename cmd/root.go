@@ -173,13 +173,14 @@ func initConfig() {
 		if envSosEndpoint != "" {
 			gCurrentAccount.SosEndpoint = envSosEndpoint
 		}
+		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/compute", "/dns", 1)
 
 		gAllAccount = &config{
 			DefaultAccount: gCurrentAccount.Name,
 			Accounts:       []account{*gCurrentAccount},
 		}
 
-		cs = egoscale.NewClient(gCurrentAccount.Endpoint, envKey, envSecret)
+		buildClient()
 
 		return
 	}
