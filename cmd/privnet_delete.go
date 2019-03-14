@@ -9,7 +9,7 @@ import (
 
 // deleteCmd represents the delete command
 var privnetDeleteCmd = &cobra.Command{
-	Use:     "delete <name | id>",
+	Use:     "delete <name | id>+",
 	Short:   "Delete private network",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -22,30 +22,44 @@ var privnetDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q private network", args[0])) {
-				return nil
+		tasks := make([]task, 0, len(args))
+		for _, arg := range args {
+			cmd, err := deletePrivnet(arg, force)
+			if err != nil {
+				return err
 			}
+
+			if !force {
+				if !askQuestion(fmt.Sprintf("sure you want to delete %q private network", args[0])) {
+					continue
+				}
+			}
+
+			tasks = append(tasks, task{
+				cmd,
+				fmt.Sprintf("delete %q privnet", cmd.ID.String()),
+			})
 		}
 
-		return deletePrivnet(args[0], force)
+		resps := asyncTasks(tasks)
+		errs := filterErrors(resps)
+		if len(errs) > 0 {
+			return errs[0]
+		}
+		return nil
 	},
 }
 
-func deletePrivnet(name string, force bool) error {
+func deletePrivnet(name string, force bool) (*egoscale.DeleteNetwork, error) {
 	addrReq := &egoscale.DeleteNetwork{}
 	var err error
 	network, err := getNetworkByName(name)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	addrReq.ID = network.ID
 	addrReq.Forced = &force
-	if err := cs.BooleanRequestWithContext(gContext, addrReq); err != nil {
-		return err
-	}
-	fmt.Println(addrReq.ID.String())
-	return nil
+	return addrReq, nil
 }
 
 func init() {
