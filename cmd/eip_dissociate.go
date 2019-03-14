@@ -17,44 +17,69 @@ var eipDissociateCmd = &cobra.Command{
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
+
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
+		tasks := make([]task, 0, len(args[1:]))
+		ipAddr := args[0]
+
+		ip := net.ParseIP(ipAddr)
+		if ip == nil {
+			return fmt.Errorf("invalid IP address %q", ipAddr)
+		}
+
 		for _, arg := range args[1:] {
-			if err := dissociateIP(args[0], arg); err != nil {
+
+			vm, err := getVirtualMachineByNameOrID(arg)
+			if err != nil {
 				return err
 			}
+
+			if !force {
+				if !askQuestion(fmt.Sprintf("sure you want to dissociate %q EIP from %q", ip.String(), vm.Name)) {
+					continue
+				}
+			}
+
+			cmd, err := prepareDissociateIP(vm, ip)
+			if err != nil {
+				return err
+			}
+			tasks = append(tasks, task{
+				cmd,
+				fmt.Sprintf("dissociate %q EIP", cmd.ID.String()),
+			})
 		}
+
+		resps := asyncTasks(tasks)
+		errs := filterErrors(resps)
+		if len(errs) > 0 {
+			return errs[0]
+		}
+
 		return nil
 	},
 }
 
-func dissociateIP(ipAddr, instance string) error {
-	ip := net.ParseIP(ipAddr)
-	if ip == nil {
-		return fmt.Errorf("invalid IP address %q", ipAddr)
-	}
-
-	vm, err := getVirtualMachineByNameOrID(instance)
-	if err != nil {
-		return err
-	}
+func prepareDissociateIP(vm *egoscale.VirtualMachine, ip net.IP) (*egoscale.RemoveIPFromNic, error) {
 
 	defaultNic := vm.DefaultNic()
 
 	if defaultNic == nil {
-		return fmt.Errorf("the instance %q has no default NIC", vm.ID)
+		return nil, fmt.Errorf("the instance %q has no default NIC", vm.ID)
 	}
 
 	eipID, err := getSecondaryIP(defaultNic, ip)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req := &egoscale.RemoveIPFromNic{ID: eipID}
 
-	if err := cs.BooleanRequestWithContext(gContext, req); err != nil {
-		return err
-	}
-	println(req.ID)
-	return nil
+	return req, nil
 }
 
 func getSecondaryIP(nic *egoscale.Nic, ip net.IP) (*egoscale.UUID, error) {
@@ -67,5 +92,6 @@ func getSecondaryIP(nic *egoscale.Nic, ip net.IP) (*egoscale.UUID, error) {
 }
 
 func init() {
+	eipDissociateCmd.Flags().BoolP("force", "f", false, "Attempt to dissociate EIP without prompting for confirmation")
 	eipCmd.AddCommand(eipDissociateCmd)
 }
