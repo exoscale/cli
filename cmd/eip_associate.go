@@ -34,7 +34,7 @@ var eipAssociateCmd = &cobra.Command{
 				return err
 			}
 
-			cmd, err := associateIP(vm, ip)
+			cmd, err := prepareAssociateIP(vm, ip)
 			if err != nil {
 				return err
 			}
@@ -52,7 +52,7 @@ var eipAssociateCmd = &cobra.Command{
 	},
 }
 
-func associateIP(vm *egoscale.VirtualMachine, ip net.IP) (*egoscale.AddIPToNic, error) {
+func prepareAssociateIP(vm *egoscale.VirtualMachine, ip net.IP) (*egoscale.AddIPToNic, error) {
 	defaultNic := vm.DefaultNic()
 	if defaultNic == nil {
 		return nil, fmt.Errorf("the instance %q has not default NIC", vm.ID)

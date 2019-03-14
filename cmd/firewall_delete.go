@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/exoscale/egoscale"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +14,7 @@ func init() {
 
 // deleteCmd represents the delete command
 var firewallDeleteCmd = &cobra.Command{
-	Use:     "delete <security group name | id>",
+	Use:     "delete <security group name | id>+",
 	Short:   "Delete security group",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -28,33 +27,30 @@ var firewallDeleteCmd = &cobra.Command{
 			return err
 		}
 
+		tasks := make([]task, 0, len(args))
 		for _, arg := range args {
-			q := fmt.Sprintf("Are you sure you want to delete the security group: %q", arg)
+			sg, err := getSecurityGroupByNameOrID(arg)
+			if err != nil {
+				return err
+			}
+
+			q := fmt.Sprintf("Are you sure you want to delete the security group: %q", sg.Name)
 			if !force && !askQuestion(q) {
 				continue
 			}
 
-			output, err := firewallDelete(arg)
-			if err != nil {
-				return err
-			}
-			fmt.Println(output)
+			cmd := &egoscale.DeleteSecurityGroup{ID: sg.ID}
+			tasks = append(tasks, task{
+				cmd,
+				fmt.Sprintf("associate %q EIP", sg.Name),
+			})
 		}
 
+		resps := asyncTasks(tasks)
+		errs := filterErrors(resps)
+		if len(errs) > 0 {
+			return errs[0]
+		}
 		return nil
 	},
-}
-
-func firewallDelete(name string) (*egoscale.UUID, error) {
-	sg, err := getSecurityGroupByNameOrID(name)
-	if err != nil {
-		return nil, err
-	}
-
-	req := &egoscale.SecurityGroup{ID: sg.ID}
-	if err := cs.Delete(req); err != nil {
-		return nil, err
-	}
-
-	return sg.ID, nil
 }
