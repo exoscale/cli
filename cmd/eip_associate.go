@@ -19,42 +19,46 @@ var eipAssociateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
+		tasks := make([]task, 0, len(args[1:]))
+
+		ipaddr := args[0]
+		ip := net.ParseIP(ipaddr)
+		if ip == nil {
+			return fmt.Errorf("invalid IP address %q", ipaddr)
+		}
+
 		for _, arg := range args[1:] {
-			res, err := associateIP(args[0], arg)
+
+			vm, err := getVirtualMachineByNameOrID(arg)
 			if err != nil {
 				return err
 			}
-			println(res)
+
+			cmd, err := associateIP(vm, ip)
+			if err != nil {
+				return err
+			}
+			tasks = append(tasks, task{
+				cmd,
+				fmt.Sprintf("associate %q EIP", cmd.IPAddress.String()),
+			})
+		}
+		resps := asyncTasks(tasks)
+		errs := filterErrors(resps)
+		if len(errs) > 0 {
+			return errs[0]
 		}
 		return nil
 	},
 }
 
-func associateIP(ipAddr, instance string) (*egoscale.UUID, error) {
-	ip := net.ParseIP(ipAddr)
-	if ip == nil {
-		return nil, fmt.Errorf("invalid IP address %q", ipAddr)
-	}
-
-	vm, err := getVirtualMachineByNameOrID(instance)
-	if err != nil {
-		return nil, err
-	}
-
+func associateIP(vm *egoscale.VirtualMachine, ip net.IP) (*egoscale.AddIPToNic, error) {
 	defaultNic := vm.DefaultNic()
-
 	if defaultNic == nil {
 		return nil, fmt.Errorf("the instance %q has not default NIC", vm.ID)
 	}
 
-	resp, err := cs.RequestWithContext(gContext, &egoscale.AddIPToNic{NicID: defaultNic.ID, IPAddress: ip})
-	if err != nil {
-		return nil, err
-	}
-
-	result := resp.(*egoscale.NicSecondaryIP)
-
-	return result.NicID, nil
+	return &egoscale.AddIPToNic{NicID: defaultNic.ID, IPAddress: ip}, nil
 }
 
 func init() {

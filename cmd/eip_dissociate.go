@@ -24,8 +24,8 @@ var eipDissociateCmd = &cobra.Command{
 		}
 
 		tasks := make([]task, 0, len(args[1:]))
-		ipAddr := args[0]
 
+		ipAddr := args[0]
 		ip := net.ParseIP(ipAddr)
 		if ip == nil {
 			return fmt.Errorf("invalid IP address %q", ipAddr)
@@ -65,9 +65,7 @@ var eipDissociateCmd = &cobra.Command{
 }
 
 func prepareDissociateIP(vm *egoscale.VirtualMachine, ip net.IP) (*egoscale.RemoveIPFromNic, error) {
-
 	defaultNic := vm.DefaultNic()
-
 	if defaultNic == nil {
 		return nil, fmt.Errorf("the instance %q has no default NIC", vm.ID)
 	}
@@ -77,9 +75,7 @@ func prepareDissociateIP(vm *egoscale.VirtualMachine, ip net.IP) (*egoscale.Remo
 		return nil, err
 	}
 
-	req := &egoscale.RemoveIPFromNic{ID: eipID}
-
-	return req, nil
+	return &egoscale.RemoveIPFromNic{ID: eipID}, nil
 }
 
 func getSecondaryIP(nic *egoscale.Nic, ip net.IP) (*egoscale.UUID, error) {
