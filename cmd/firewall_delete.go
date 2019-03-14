@@ -42,7 +42,7 @@ var firewallDeleteCmd = &cobra.Command{
 			cmd := &egoscale.DeleteSecurityGroup{ID: sg.ID}
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("associate %q EIP", sg.Name),
+				fmt.Sprintf("delete %q SG", sg.Name),
 			})
 		}
 
