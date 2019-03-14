@@ -9,7 +9,7 @@ import (
 
 // deleteCmd represents the delete command
 var affinitygroupDeleteCmd = &cobra.Command{
-	Use:     "delete <name | id>",
+	Use:     "delete <name | id>+",
 	Short:   "Delete affinity group",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -22,30 +22,42 @@ var affinitygroupDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q affinity group", args[0])) {
-				return nil
+		tasks := make([]task, 0, len(args))
+		for _, arg := range args {
+			cmd, err := prepareDeleteAffinityGroup(arg)
+			if err != nil {
+				return err
 			}
+
+			tasks = append(tasks, task{
+				cmd,
+				fmt.Sprintf("delete %q affinity group", cmd.Name),
+			})
+
+			if !force {
+				if !askQuestion(fmt.Sprintf("sure you want to delete %q affinity group", arg)) {
+					continue
+				}
+			}
+
 		}
 
-		return deleteAffinityGroup(args[0])
+		resps := asyncTasks(tasks)
+		errs := filterErrors(resps)
+		if len(errs) > 0 {
+			return errs[0]
+		}
+		return nil
 	},
 }
 
-func deleteAffinityGroup(name string) error {
+func prepareDeleteAffinityGroup(name string) (*egoscale.DeleteAffinityGroup, error) {
 	aff, err := getAffinityGroupByName(name)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = cs.Request(&egoscale.DeleteAffinityGroup{ID: aff.ID})
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(aff.ID)
-
-	return nil
+	return &egoscale.DeleteAffinityGroup{ID: aff.ID, Name: aff.Name}, nil
 }
 
 func init() {
