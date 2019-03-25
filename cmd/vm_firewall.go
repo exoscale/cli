@@ -35,6 +35,7 @@ var vmFirewallSetCmd = &cobra.Command{
 			return err
 		}
 
+		defer printVirtualMachineSecurityGroups(vm)
 		return setVirtualMachineSecurityGroups(vm, sgs)
 	},
 }
@@ -71,6 +72,7 @@ var vmFirewallAddCmd = &cobra.Command{
 			sgToAdd = append(sgToAdd, sgs[i])
 		}
 
+		defer printVirtualMachineSecurityGroups(vm)
 		return setVirtualMachineSecurityGroups(vm, append(vm.SecurityGroup, sgToAdd...))
 	},
 }
@@ -106,6 +108,7 @@ var vmFirewallRemoveCmd = &cobra.Command{
 			sgRemaining = append(sgRemaining, vm.SecurityGroup[i])
 		}
 
+		defer printVirtualMachineSecurityGroups(vm)
 		return setVirtualMachineSecurityGroups(vm, sgRemaining)
 	},
 }
@@ -135,13 +138,18 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 		return fmt.Errorf("wrong type expected %q, got %T", "egoscale.VirtualMachine", resp)
 	}
 
+	return nil
+}
+
+// printVirtualMachineSecurityGroups prints a virtual machine instance security groups to standard output.
+func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) {
+	// Refresh the vm object to ensure its properties are up-to-date
+	vm, _ = getVirtualMachineByNameOrID(vm.ID.String())
+
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{vm.Name})
-	vmsgs := getSecurityGroup(vm)
-	table.Append([]string{"Security Groups", strings.Join(vmsgs, ", ")})
+	table.Append([]string{"Security Groups", strings.Join(getSecurityGroup(vm), " - ")})
 	table.Render()
-
-	return nil
 }
 
 // getSecurityGroupsByNameOrID tries to retrieve a list of security groups by their name or ID.
