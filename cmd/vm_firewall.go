@@ -39,8 +39,7 @@ var vmFirewallSetCmd = &cobra.Command{
 			return err
 		}
 
-		printVirtualMachineSecurityGroups(vm)
-		return nil
+		return printVirtualMachineSecurityGroups(vm)
 	},
 }
 
@@ -80,8 +79,7 @@ var vmFirewallAddCmd = &cobra.Command{
 			return err
 		}
 
-		printVirtualMachineSecurityGroups(vm)
-		return nil
+		return printVirtualMachineSecurityGroups(vm)
 	},
 }
 
@@ -120,8 +118,7 @@ var vmFirewallRemoveCmd = &cobra.Command{
 			return err
 		}
 
-		printVirtualMachineSecurityGroups(vm)
-		return nil
+		return printVirtualMachineSecurityGroups(vm)
 	},
 }
 
@@ -149,18 +146,19 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 }
 
 // printVirtualMachineSecurityGroups prints a virtual machine instance security groups to standard output.
-func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) {
+func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) error {
 	// Refresh the vm object to ensure its properties are up-to-date
 	vm, err := getVirtualMachineByNameOrID(vm.ID.String())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{vm.Name})
 	table.Append([]string{"Security Groups", strings.Join(getSecurityGroup(vm), " - ")})
 	table.Render()
+
+	return nil
 }
 
 // getSecurityGroupsByNameOrID tries to retrieve a list of security groups by their name or ID.
