@@ -35,8 +35,12 @@ var vmFirewallSetCmd = &cobra.Command{
 			return err
 		}
 
-		defer printVirtualMachineSecurityGroups(vm)
-		return setVirtualMachineSecurityGroups(vm, sgs)
+		if err := setVirtualMachineSecurityGroups(vm, sgs); err != nil {
+			return err
+		}
+
+		printVirtualMachineSecurityGroups(vm)
+		return nil
 	},
 }
 
@@ -72,8 +76,12 @@ var vmFirewallAddCmd = &cobra.Command{
 			sgToAdd = append(sgToAdd, sgs[i])
 		}
 
-		defer printVirtualMachineSecurityGroups(vm)
-		return setVirtualMachineSecurityGroups(vm, append(vm.SecurityGroup, sgToAdd...))
+		if err := setVirtualMachineSecurityGroups(vm, append(vm.SecurityGroup, sgToAdd...)); err != nil {
+			return err
+		}
+
+		printVirtualMachineSecurityGroups(vm)
+		return nil
 	},
 }
 
@@ -108,8 +116,12 @@ var vmFirewallRemoveCmd = &cobra.Command{
 			sgRemaining = append(sgRemaining, vm.SecurityGroup[i])
 		}
 
-		defer printVirtualMachineSecurityGroups(vm)
-		return setVirtualMachineSecurityGroups(vm, sgRemaining)
+		if err := setVirtualMachineSecurityGroups(vm, sgRemaining); err != nil {
+			return err
+		}
+
+		printVirtualMachineSecurityGroups(vm)
+		return nil
 	},
 }
 
@@ -125,17 +137,12 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 		ids[i] = *sgs[i].ID
 	}
 
-	resp, err := cs.RequestWithContext(gContext, &egoscale.UpdateVirtualMachine{
+	_, err := cs.RequestWithContext(gContext, &egoscale.UpdateVirtualMachine{
 		ID:               vm.ID,
 		SecurityGroupIDs: ids,
 	})
 	if err != nil {
 		return err
-	}
-
-	vm, ok := resp.(*egoscale.VirtualMachine)
-	if !ok {
-		return fmt.Errorf("wrong type expected %q, got %T", "egoscale.VirtualMachine", resp)
 	}
 
 	return nil
@@ -144,7 +151,11 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 // printVirtualMachineSecurityGroups prints a virtual machine instance security groups to standard output.
 func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) {
 	// Refresh the vm object to ensure its properties are up-to-date
-	vm, _ = getVirtualMachineByNameOrID(vm.ID.String())
+	vm, err := getVirtualMachineByNameOrID(vm.ID.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
 
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{vm.Name})
