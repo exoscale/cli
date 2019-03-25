@@ -138,7 +138,7 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{vm.Name})
 	vmsgs := getSecurityGroup(vm)
-	table.Append([]string{"Security Groups", strings.Join(vmsgs, " - ")})
+	table.Append([]string{"Security Groups", strings.Join(vmsgs, ", ")})
 	table.Render()
 
 	return nil
