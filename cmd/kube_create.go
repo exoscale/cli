@@ -21,7 +21,7 @@ import (
 
 const (
 	// kubeDockerVersion is the version recommended by Kubernetes
-	kubeDockerVersion = "18.06"
+	kubeDockerVersion = "18.09"
 
 	// kubeCalicoVersion is the version of Calico installed
 	kubeCalicoVersion = "3.5"
