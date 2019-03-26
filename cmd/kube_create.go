@@ -20,15 +20,13 @@ import (
 )
 
 const (
-	// kubeDockerVersion is the version installed on Ubuntu Xenial
+	// kubeDockerVersion is the version recommended by Kubernetes
 	kubeDockerVersion = "18.06"
 
 	// kubeCalicoVersion is the version of Calico installed
-	kubeCalicoVersion = "3.4"
+	kubeCalicoVersion = "3.5"
 
 	// kubeDefaultTemplate is the template to install Kubernetes on.
-	//
-	// Using xenial means cfssl must be installed by other means
 	kubeDefaultTemplate = defaultTemplate
 )
 
@@ -57,7 +55,7 @@ var kubeBootstrapSteps = []kubeBootstrapStep{
 set -xe
 
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
-sudo -E DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confnew" upgrade -y
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	apt-transport-https \
 	ca-certificates \
