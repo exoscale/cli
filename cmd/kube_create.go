@@ -21,10 +21,10 @@ import (
 
 const (
 	// kubeDockerVersion is the version recommended by Kubernetes
-	kubeDockerVersion = "18.09"
+	kubeDockerVersion = "18.06"
 
 	// kubeCalicoVersion is the version of Calico installed
-	kubeCalicoVersion = "3.5"
+	kubeCalicoVersion = "3.4"
 
 	// kubeDefaultTemplate is the template to install Kubernetes on.
 	kubeDefaultTemplate = defaultTemplate
