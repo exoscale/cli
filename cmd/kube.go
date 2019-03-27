@@ -14,8 +14,14 @@ var (
 	// kubeSecurityGroup represents the firewall security group to add k8s VM instances into
 	kubeSecurityGroup = "exokube"
 
-	// kubeTagName represents the name of the tag used to store the kubernetes version
-	kubeTagName = "exokube:kubernetes"
+	// kubeTagKubernetes represents the name of the tag used to store the version of Kubernetes
+	kubeTagKubernetes = "exokube:kubernetes"
+
+	// kubeTagCalico represents the name of the tag used to store the version of Calico
+	kubeTagCalico = "exokube:calico"
+
+	// kubeTagDocker represents the name of the tag used to store the version of Docker
+	kubeTagDocker = "exokube:docker"
 )
 
 // kubeCmd represents the kube command
@@ -28,9 +34,9 @@ cluster inside an Exoscale VM for users looking to try out Kubernetes or develop
 with it day-to-day.`,
 }
 
-func getKubeInstanceVersion(vm *egoscale.VirtualMachine) string {
+func getKubeInstanceVersion(vm *egoscale.VirtualMachine, tagName string) string {
 	for _, tag := range vm.Tags {
-		if tag.Key == kubeTagName {
+		if tag.Key == tagName {
 			return tag.Value
 		}
 	}
