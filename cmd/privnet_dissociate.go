@@ -17,6 +17,11 @@ var dissociateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
 		network, err := getNetworkByName(args[0])
 		if err != nil {
 			return err
@@ -32,6 +37,12 @@ var dissociateCmd = &cobra.Command{
 			cmd, err := prepareDissociatePrivNet(network, vm)
 			if err != nil {
 				return err
+			}
+
+			if !force {
+				if !askQuestion(fmt.Sprintf("sure you want to dissociate %q private network", args[0])) {
+					continue
+				}
 			}
 
 			tasks = append(tasks, task{
@@ -62,5 +73,6 @@ func prepareDissociatePrivNet(privnet *egoscale.Network, vm *egoscale.VirtualMac
 }
 
 func init() {
+	dissociateCmd.Flags().BoolP("force", "f", false, "Attempt to dissociate private network without prompting for confirmation")
 	privnetCmd.AddCommand(dissociateCmd)
 }
