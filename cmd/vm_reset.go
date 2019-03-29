@@ -23,6 +23,11 @@ var vmResetCmd = &cobra.Command{
 			return err
 		}
 
+		template, err := cmd.Flags().GetString("template")
+		if err != nil {
+			return err
+		}
+
 		force, err := cmd.Flags().GetBool("force")
 		if err != nil {
 			return err
@@ -30,7 +35,7 @@ var vmResetCmd = &cobra.Command{
 
 		errs := []error{}
 		for _, v := range args {
-			if err := resetVirtualMachine(v, diskValue, force); err != nil {
+			if err := resetVirtualMachine(v, diskValue, template, force); err != nil {
 				errs = append(errs, fmt.Errorf("could not reset %q: %s", v, err))
 			}
 		}
@@ -53,7 +58,7 @@ var vmResetCmd = &cobra.Command{
 }
 
 // resetVirtualMachine stop a virtual machine instance
-func resetVirtualMachine(vmName string, diskValue int64PtrValue, force bool) error {
+func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName string, force bool) error {
 	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
@@ -62,6 +67,29 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, force bool) err
 	if !force {
 		if !askQuestion(fmt.Sprintf("sure you want to reset %q virtual machine", vm.Name)) {
 			return nil
+		}
+	}
+
+	var template *egoscale.Template
+
+	if templateName != "" {
+		template, err = getTemplateByName(vm.ZoneID, templateName)
+		if err != nil {
+			return err
+		}
+	} else {
+		resp, err := cs.ListWithContext(gContext, egoscale.Template{
+			IsFeatured: true,
+			ID:         vm.TemplateID,
+			ZoneID:     vm.ZoneID,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		if len(resp) > 0 {
+			template = resp[0].(*egoscale.Template)
 		}
 	}
 
@@ -76,31 +104,29 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, force bool) err
 	volume := resp.(*egoscale.Volume)
 	volumeSize := volume.Size >> 30
 
-	resp, err = cs.GetWithContext(gContext, egoscale.Template{
-		IsFeatured: true,
-		ID:         vm.TemplateID,
-		ZoneID:     vm.ZoneID,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	temp := resp.(*egoscale.Template)
-	tempSize := temp.Size >> 30
-
 	rootDiskSize := int64(volumeSize)
 
 	if diskValue.int64 != nil {
-		if *diskValue.int64 < tempSize {
-			return fmt.Errorf("root disk size must be greater or equal than %dGB", tempSize)
+		if template != nil && *diskValue.int64 < (template.Size>>30) {
+			return fmt.Errorf("root disk size must be greater or equal than %dGB", template.Size>>30)
 		}
+
 		rootDiskSize = *diskValue.int64
 	}
 
-	fmt.Printf("Resetting %q ", vm.Name)
+	cmd := &egoscale.RestoreVirtualMachine{
+		VirtualMachineID: vm.ID,
+		RootDiskSize:     rootDiskSize,
+	}
+	if template != nil {
+		cmd.TemplateID = template.ID
+
+		fmt.Printf("Resetting %q using %q", vm.Name, template.DisplayText)
+	} else {
+		fmt.Printf("Resetting %q ", vm.Name)
+	}
 	var errorReq error
-	cs.AsyncRequestWithContext(gContext, &egoscale.RestoreVirtualMachine{VirtualMachineID: vm.ID, RootDiskSize: rootDiskSize}, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+	cs.AsyncRequestWithContext(gContext, cmd, func(jobResult *egoscale.AsyncJobResult, err error) bool {
 
 		fmt.Print(".")
 
@@ -128,5 +154,6 @@ func init() {
 	vmCmd.AddCommand(vmResetCmd)
 	diskSizeVarP := new(int64PtrValue)
 	vmResetCmd.Flags().VarP(diskSizeVarP, "disk", "d", "New disk size after reset in GB")
+	vmResetCmd.Flags().StringP("template", "t", "", fmt.Sprintf("<template name | id> (default: %s)", defaultTemplate))
 	vmResetCmd.Flags().BoolP("force", "f", false, "Attempt to reset vitual machine without prompting for confirmation")
 }
