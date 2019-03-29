@@ -39,7 +39,7 @@ var sshkeyDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		//XXX Create a function to execute non async tasks asynchronousely
+		tasks := make([]task, 0, len(sshKeys))
 		for _, sshkey := range sshKeys {
 
 			if !force {
@@ -48,12 +48,18 @@ var sshkeyDeleteCmd = &cobra.Command{
 				}
 			}
 
-			if err := deleteSSHKey(sshkey.Name); err != nil {
-				return err
-			}
-			fmt.Println(sshkey.Name)
+			cmd := &egoscale.DeleteSSHKeyPair{Name: sshkey.Name}
+			tasks = append(tasks, task{
+				cmd,
+				fmt.Sprintf("delete %q key pair", cmd.Name),
+			})
 		}
 
+		resps := asyncTasks(tasks)
+		errs := filterErrors(resps)
+		if len(errs) > 0 {
+			return errs[0]
+		}
 		return nil
 	},
 }
