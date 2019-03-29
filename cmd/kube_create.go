@@ -24,7 +24,7 @@ const (
 	kubeDockerVersion = "18.06"
 
 	// kubeCalicoVersion is the version of Calico installed
-	kubeCalicoVersion = "3.4"
+	kubeCalicoVersion = "3.6"
 
 	// kubeDefaultTemplate is the template to install Kubernetes on.
 	kubeDefaultTemplate = defaultTemplate
@@ -40,11 +40,12 @@ type kubeBootstrapStep struct {
 }
 
 type kubeCluster struct {
-	Name              string
-	KubernetesVersion string
-	DockerVersion     string
-	CalicoVersion     string
 	Address           string
+	CalicoVersion     string
+	DockerVersion     string
+	IsOldCalico       bool
+	KubernetesVersion string
+	Name              string
 }
 
 // kubeBootstrapSteps represents a k8s instance bootstrap steps
@@ -162,10 +163,15 @@ sudo kubeadm init \
 	--pod-network-cidr=192.168.0.0/16 \
 	--kubernetes-version "{{ .KubernetesVersion }}"
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
+{{ if not .IsOldCalico }}
+sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
+		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
+{{ else }}
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
 		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/etcd.yaml
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
-		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/calico.yaml`,
+		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/calico.yaml
+{{ end }}`,
 	},
 }
 
@@ -203,6 +209,24 @@ var kubeCreateCmd = &cobra.Command{
 		kubernetesVersion, err := fetchKubernetesVersion(requestedKubernetesVersion)
 		if err != nil {
 			return err
+		}
+
+		dockerVersion, err := cmd.Flags().GetString("docker-version")
+		if err != nil {
+			return nil
+		}
+
+		if dockerVersion == "" {
+			dockerVersion = kubeDockerVersion
+		}
+
+		calicoVersion, err := cmd.Flags().GetString("calico-version")
+		if err != nil {
+			return nil
+		}
+
+		if calicoVersion == "" {
+			calicoVersion = kubeCalicoVersion
 		}
 
 		sizeOpt, err := cmd.Flags().GetString("size")
@@ -255,7 +279,9 @@ var kubeCreateCmd = &cobra.Command{
 			ResourceIDs:  []egoscale.UUID{*vm.ID},
 			Tags: []egoscale.ResourceTag{
 				{Key: "managedby", Value: "exokube"},
-				{Key: kubeTagName, Value: kubernetesVersion},
+				{Key: kubeTagKubernetes, Value: kubernetesVersion},
+				{Key: kubeTagDocker, Value: dockerVersion},
+				{Key: kubeTagCalico, Value: calicoVersion},
 			},
 		}); err != nil {
 			return fmt.Errorf("unable to tag cluster instance: %s", err)
@@ -279,9 +305,11 @@ var kubeCreateCmd = &cobra.Command{
 		if err := bootstrapExokubeCluster(sshClient, kubeCluster{
 			Name:              clusterName,
 			KubernetesVersion: kubernetesVersion,
-			CalicoVersion:     kubeCalicoVersion,
-			DockerVersion:     kubeDockerVersion,
+			CalicoVersion:     calicoVersion,
+			DockerVersion:     dockerVersion,
 			Address:           vm.IP().String(),
+			// Calico 3.4 and 3.5 have a different set of files
+			IsOldCalico: strings.Compare("3.6", calicoVersion) == 1,
 		}, kubeCreateDebug); err != nil {
 			return fmt.Errorf("cluster bootstrap failed: %s", err)
 		}
@@ -549,5 +577,7 @@ func init() {
 	kubeCreateCmd.Flags().StringP("size", "s", "medium", "<name | id> "+
 		"(micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
 	kubeCreateCmd.Flags().StringP("version", "v", "", "install a specific Kubernetes version")
+	kubeCreateCmd.Flags().String("calico-version", "", "install a specific Calico version")
+	kubeCreateCmd.Flags().String("docker-version", "", "install a specific Docker version")
 	kubeCmd.AddCommand(kubeCreateCmd)
 }
