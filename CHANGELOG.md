@@ -1,3 +1,31 @@
+1.1.4
+-----
+
+- kube: calico/docker version
+- vm: reset could accept a template parameter
+- kube: force to accept the new conf of cloud-init
+- api: make attach/detach ISO visible
+- Pimp CMDs having this issue (issue #99) (pr #101)
+- Allow VM instance security group modification
+
+1.1.3
+-----
+
+- Fix #117
+- makefile: build exoscale/cli:latest
+
+
+1.1.2
+-----
+
+- config: panic on empty defaultZone
+- fixup! config: improve life of people without config
+
+1.1.1
+-----
+
+- config: improve life of people without config
+
 1.1.0
 -----
 
