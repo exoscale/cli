@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/exoscale/cli/table"
@@ -32,18 +33,47 @@ var eipShowCmd = &cobra.Command{
 		}
 
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Zone", "IP", "Virtual Machine", "Virtual Machine ID"})
 
 		zone := ip.ZoneName
 		ipaddr := ip.IPAddress.String()
+
+		table.SetHeader([]string{ipaddr})
+		table.Append([]string{"ID", id.String()})
+		table.Append([]string{"Zone", zone})
+		if ip.Healthcheck != nil {
+			table.Append([]string{
+				"Healthcheck Mode",
+				ip.Healthcheck.Mode})
+			table.Append([]string{
+				"Healthcheck Path",
+				ip.Healthcheck.Path})
+			table.Append([]string{
+				"Healthcheck Port",
+				fmt.Sprintf("%d", ip.Healthcheck.Port)})
+			table.Append([]string{
+				"Healthcheck Interval",
+				fmt.Sprintf("%d", ip.Healthcheck.Interval)})
+			table.Append([]string{
+				"Healthcheck Strikes Fail",
+				fmt.Sprintf("%d", ip.Healthcheck.StrikesFail)})
+			table.Append([]string{
+				"Healthcheck Strikes OK",
+				fmt.Sprintf("%d", ip.Healthcheck.StrikesOk)})
+			table.Append([]string{
+				"Healthcheck Timeout",
+				fmt.Sprintf("%d", ip.Healthcheck.Timeout)})
+		}
+
 		if len(vms) > 0 {
-			for _, vm := range vms {
-				table.Append([]string{zone, ipaddr, vm.Name, vm.ID.String()})
-				zone = ""
-				ipaddr = ""
+			table.Append([]string{
+				"Instances",
+				vms[0].Name,
+			})
+			for _, vm := range vms[1:] {
+				table.Append([]string{
+					"",
+					vm.Name})
 			}
-		} else {
-			table.Append([]string{zone, ipaddr})
 		}
 		table.Render()
 		return nil
