@@ -54,7 +54,7 @@ github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.15.0
+# github.com/exoscale/egoscale v0.17.0
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
 # github.com/fatih/camelcase v1.0.0
@@ -63,6 +63,8 @@ github.com/fatih/camelcase
 github.com/fsnotify/fsnotify
 # github.com/go-ini/ini v1.42.0
 github.com/go-ini/ini
+# github.com/gofrs/uuid v3.2.0+incompatible
+github.com/gofrs/uuid
 # github.com/golang/lint v0.0.0-20181026193005-c67002cb31c3
 github.com/golang/lint/golint
 # github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
@@ -121,8 +123,6 @@ github.com/olekukonko/tablewriter
 github.com/pelletier/go-toml
 # github.com/russross/blackfriday v1.5.2
 github.com/russross/blackfriday
-# github.com/satori/go.uuid v1.2.0
-github.com/satori/go.uuid
 # github.com/spf13/afero v1.1.2
 github.com/spf13/afero
 github.com/spf13/afero/mem

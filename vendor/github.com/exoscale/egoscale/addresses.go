@@ -96,7 +96,7 @@ type AssociateIPAddress struct {
 	HealthcheckStrikesFail int64  `json:"strikes-fail,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'dead'. Default: 3"`
 	HealthcheckStrikesOk   int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
 	HealthcheckTimeout     int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
-	ZoneID                 *UUID  `json:"zoneid,omitempty" doc:"the ID of the availability zone you want to acquire an public IP address from"`
+	ZoneID                 *UUID  `json:"zoneid,omitempty" doc:"the ID of the availability zone you want to acquire a public IP address from"`
 	_                      bool   `name:"associateIpAddress" description:"Acquires and associates a public IP to an account."`
 }
 
@@ -128,9 +128,15 @@ func (DisassociateIPAddress) AsyncResponse() interface{} {
 
 // UpdateIPAddress (Async) represents the IP modification
 type UpdateIPAddress struct {
-	ID       *UUID `json:"id" doc:"the id of the public ip address to update"`
-	CustomID *UUID `json:"customid,omitempty" doc:"an optional field, in case you want to set a custom id to the resource. Allowed to Root Admins only"`
-	_        bool  `name:"updateIpAddress" description:"Updates an ip address"`
+	HealthcheckInterval    int64  `json:"interval,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 10, minimum: 5"`
+	HealthcheckMode        string `json:"mode,omitempty" doc:"healthcheck definition: healthcheck mode can be either 'tcp' or 'http'"`
+	HealthcheckPath        string `json:"path,omitempty" doc:"healthcheck definition: the path against which the 'http' healthcheck will be performed. Required if mode is 'http', ignored otherwise."`
+	HealthcheckPort        int64  `json:"port,omitempty" doc:"healthcheck definition: the port against which the healthcheck will be performed. Required if a 'mode' is provided."`
+	HealthcheckStrikesFail int64  `json:"strikes-fail,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'dead'. Default: 3"`
+	HealthcheckStrikesOk   int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
+	HealthcheckTimeout     int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
+	ID                     *UUID  `json:"id" doc:"the id of the public IP address to update"`
+	_                      bool   `name:"updateIpAddress" description:"Updates an IP address"`
 }
 
 // Response returns the struct to unmarshal
