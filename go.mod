@@ -10,7 +10,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
-	github.com/exoscale/egoscale v0.15.0
+	github.com/exoscale/egoscale v0.16.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.42.0
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
@@ -23,6 +23,7 @@ require (
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
 	github.com/russross/blackfriday v1.5.2 // indirect
+	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect
 	github.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c // indirect
 	github.com/spf13/cobra v0.0.3
