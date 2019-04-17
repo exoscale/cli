@@ -54,14 +54,14 @@ func getTemplateByName(zoneID *egoscale.UUID, name string) (*egoscale.Template, 
 	return &sortedTemplates[0], nil
 }
 
-func findTemplates(zoneID *egoscale.UUID, filters ...string) ([]egoscale.Template, error) {
+func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...string) ([]egoscale.Template, error) {
 	allOS := make(map[string]*egoscale.Template)
 
 	reLinux := regexp.MustCompile(`^Linux (?P<name>.+?) (?P<version>[0-9]+(\.[0-9]+)?)`)
 	reVersion := regexp.MustCompile(`(?P<version>[0-9]+(\.[0-9]+)?)`)
 
 	req := &egoscale.ListTemplates{
-		TemplateFilter: "featured",
+		TemplateFilter: templateFilter,
 		ZoneID:         zoneID,
 		Keyword:        strings.Join(filters, " "),
 	}

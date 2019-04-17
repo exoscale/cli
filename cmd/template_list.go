@@ -13,14 +13,17 @@ import (
 )
 
 func init() {
+	templateListCmd.Flags().BoolP("community", "", false, "List community templates")
 	templateListCmd.Flags().BoolP("iso", "i", false, "List ISOs")
+	templateListCmd.Flags().BoolP("featured", "", false, "List featured templates")
+	templateListCmd.Flags().BoolP("mine", "", false, "List your templates")
 	templateCmd.AddCommand(templateListCmd)
 }
 
 // templateListCmd represents the list command
 var templateListCmd = &cobra.Command{
 	Use:     "list [keyword]",
-	Short:   "List all available templates",
+	Short:   "List all available templates. By default, list featured templates.",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		t := table.NewTable(os.Stdout)
@@ -33,11 +36,45 @@ var templateListCmd = &cobra.Command{
 			return listISOs()
 		}
 
-		err = listTemplates(t, args)
-		if err == nil {
-			t.Render()
+		community, err := cmd.Flags().GetBool("community")
+		if err != nil {
+			return err
 		}
-		return err
+		featured, err := cmd.Flags().GetBool("featured")
+		if err != nil {
+			return err
+		}
+		mine, err := cmd.Flags().GetBool("mine")
+		if err != nil {
+			return err
+		}
+
+		// by default, list featured templates
+		if !(community || featured || mine) {
+			featured = true
+		}
+		t.SetHeader([]string{"Operating System", "Disk", "Release Date", "ID", "Category"})
+
+		if community {
+			err = listTemplates(t, "community", args)
+			if err != nil {
+				return err
+			}
+		}
+		if featured {
+			err = listTemplates(t, "featured", args)
+			if err != nil {
+				return err
+			}
+		}
+		if mine {
+			err = listTemplates(t, "self", args)
+			if err != nil {
+				return err
+			}
+		}
+		t.Render()
+		return nil
 	},
 }
 
@@ -60,24 +97,23 @@ func listISOs() error {
 	return nil
 }
 
-func listTemplates(t *table.Table, filters []string) error {
+func listTemplates(t *table.Table, templateFilter string, filters []string) error {
 	zoneID, err := getZoneIDByName(gCurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}
 
-	templates, err := findTemplates(zoneID, filters...)
+	templates, err := findTemplates(zoneID, templateFilter, filters...)
 	if err != nil {
 		return err
 	}
 
-	t.SetHeader([]string{"Operating System", "Disk", "Release Date", "ID"})
 	for _, template := range templates {
 		sz := strconv.FormatInt(template.Size>>30, 10)
 		if sz == "10" && strings.HasPrefix(template.Name, "Linux") {
 			sz = ""
 		}
-		t.Append([]string{template.Name, sz, template.Created, template.ID.String()})
+		t.Append([]string{template.Name, sz, template.Created, template.ID.String(), templateFilter})
 	}
 
 	return nil
