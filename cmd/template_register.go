@@ -113,12 +113,12 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 }
 
 func init() {
-	templateRegisterCmd.Flags().StringP("checksum", "", "", "the MD5 checksum value of this template")
+	templateRegisterCmd.Flags().StringP("checksum", "", "", "the MD5 checksum value of the template")
 	templateRegisterCmd.Flags().StringP("description", "", "", "the template description")
 	templateRegisterCmd.Flags().StringP("name", "", "", "the name of the template")
 	templateRegisterCmd.Flags().StringP("zone", "", "", "the ID or name of the zone the template is to be hosted on")
 	templateRegisterCmd.Flags().StringP("url", "", "", "the URL of where the template is hosted")
-	templateRegisterCmd.Flags().BoolP("featured", "", false, "true if this template is a featured template, default is false")
+	templateRegisterCmd.Flags().BoolP("featured", "", false, "mark the template as featured")
 	templateRegisterCmd.Flags().BoolP("disable-password", "", false, "true if the template does not support password authentication; default is false")
 	templateRegisterCmd.Flags().BoolP("disable-ssh-key", "", false, "true if the template does not support ssh key authentication; default is false")
 	templateRegisterCmd.Flags().StringP("username", "", "", "The default username of the template")
