@@ -21,7 +21,7 @@ var templateRegisterCmd = &cobra.Command{
 			return err
 		}
 
-		displaytext, err := cmd.Flags().GetString("displaytext")
+		description, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ var templateRegisterCmd = &cobra.Command{
 		req := egoscale.RegisterCustomTemplate{
 			Checksum:        checksum,
 			Details:         details,
-			Displaytext:     displaytext,
+			Displaytext:     description,
 			IsFeatured:      &featured,
 			Name:            name,
 			PasswordEnabled: &enablePassword,
@@ -114,7 +114,7 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 
 func init() {
 	templateRegisterCmd.Flags().StringP("checksum", "", "", "the MD5 checksum value of this template")
-	templateRegisterCmd.Flags().StringP("displaytext", "", "", "the display text of the template")
+	templateRegisterCmd.Flags().StringP("description", "", "", "the template description")
 	templateRegisterCmd.Flags().StringP("name", "", "", "the name of the template")
 	templateRegisterCmd.Flags().StringP("zone", "", "", "the ID or name of the zone the template is to be hosted on")
 	templateRegisterCmd.Flags().StringP("url", "", "", "the URL of where the template is hosted")
