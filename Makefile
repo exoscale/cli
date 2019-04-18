@@ -26,6 +26,9 @@ docker: Dockerfile $(GO_FILES)
 		.
 	docker tag exoscale/cli:latest exoscale/cli:${version}
 
+docker-push:
+	docker push exoscale/cli:latest && docker push exoscale/cli:${version}
+
 manpage:
 	mkdir -p $@
 
