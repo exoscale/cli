@@ -1,3 +1,17 @@
+1.2.0
+-----
+
+- Fix content-type sniffing on files < 512 bytes
+- Add the registerCustomTemplate call
+- exoscale/feat/list-template-filter
+- exoscale/feat/deleteTemplate
+- template list: add the templateFilter parameter
+- templates: add the "exo vm template delete" subcommand
+- exoscale/feat/updateIpAddress
+- Add the `eip update` command
+- exoscale/mcorbin/ch1915/eip-health-check
+- eip_create/eip-show: support for healthchecks 
+
 1.1.4
 -----
 
