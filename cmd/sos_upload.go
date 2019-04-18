@@ -102,20 +102,19 @@ var sosUploadCmd = &cobra.Command{
 			} else {
 				var contentType string
 				var bufferSize int64
-				
+
 				// Only the first 512 bytes are used to sniff the content type.
 				if fileStat.Size() >= 512 {
 					bufferSize = 512
 				} else {
 					bufferSize = fileStat.Size()
 				}
-				
+
 				buffer := make([]byte, bufferSize)
 				_, err = file.Read(buffer)
 
 				contentType = http.DetectContentType(buffer)
 
-				
 				filesToUpload = append(filesToUpload, fileToUpload{
 					localPath:   filePath,
 					remotePath:  remote,
