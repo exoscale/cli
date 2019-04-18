@@ -101,7 +101,7 @@ var sosUploadCmd = &cobra.Command{
 				filesToUpload, err = getFiles(filePath, strings.TrimRight(remote, "/"), filesToUpload)
 			} else {
 				var contentType string
-				var bufferSize int
+				var bufferSize int64
 				
 				// Only the first 512 bytes are used to sniff the content type.
 				if fileStat.Size() >= 512 {
