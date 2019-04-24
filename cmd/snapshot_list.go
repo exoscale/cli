@@ -18,7 +18,6 @@ var snapshotListCmd = &cobra.Command{
 	Short:   "List snapshot",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		table := table.NewTable(os.Stdout)
 
 		if len(args) == 0 {
@@ -78,7 +77,6 @@ var snapshotListCmd = &cobra.Command{
 				table.Append([]string{vm.Name, snapshot.State, snapshot.Created, fmt.Sprintf("%v", humanize.IBytes(uint64(snapshot.Size))), snapshot.ID.String()})
 				vm.Name = ""
 			}
-
 		}
 
 		table.Render()

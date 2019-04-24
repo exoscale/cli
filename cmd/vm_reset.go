@@ -127,7 +127,6 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName st
 	}
 	var errorReq error
 	cs.AsyncRequestWithContext(gContext, cmd, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-
 		fmt.Print(".")
 
 		if err != nil {

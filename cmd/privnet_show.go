@@ -44,7 +44,6 @@ var privnetShowCmd = &cobra.Command{
 
 		if len(vms) > 0 {
 			for _, vm := range vms {
-
 				privateNic := vm.NicByNetworkID(*network.ID)
 				table.Append([]string{
 					vm.ID.String(),

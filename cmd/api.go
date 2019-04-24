@@ -38,7 +38,6 @@ func init() {
 
 func buildCommands(methods []category) {
 	for _, category := range methods {
-
 		cmd := cobra.Command{
 			Use:     category.name,
 			Aliases: category.alias,
@@ -80,7 +79,6 @@ func buildCommands(methods []category) {
 			buildFlags(s.command, &subCMD)
 
 			runCMD := func(cmd *cobra.Command, args []string) error {
-
 				if len(args) > 0 {
 					return fmt.Errorf("raw arguments are not supported. Did you mean?\n\n%s --%s", cmd.CommandPath(), strings.Join(args, " --"))
 				}

@@ -8,7 +8,6 @@ import (
 )
 
 func init() {
-
 	for i := egoscale.A; i <= egoscale.URL; i++ {
 		recordType := egoscale.Record.String(i)
 		var cmdUpdateRecord = &cobra.Command{

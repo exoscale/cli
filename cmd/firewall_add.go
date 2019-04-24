@@ -268,7 +268,6 @@ func getUserSecurityGroups(names []string) ([]egoscale.UserSecurityGroup, error)
 }
 
 func getDefaultRule(ruleName string) (*egoscale.AuthorizeSecurityGroupIngress, error) {
-
 	ruleName = strings.ToLower(ruleName)
 	if ruleName == "ping" {
 		return &egoscale.AuthorizeSecurityGroupIngress{

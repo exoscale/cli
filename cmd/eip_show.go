@@ -81,7 +81,6 @@ var eipShowCmd = &cobra.Command{
 }
 
 func eipDetails(eip *egoscale.UUID) (*egoscale.IPAddress, []egoscale.VirtualMachine, error) {
-
 	var eipID = eip
 
 	query := &egoscale.IPAddress{ID: eipID, IsElastic: true}

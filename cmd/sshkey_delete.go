@@ -41,7 +41,6 @@ var sshkeyDeleteCmd = &cobra.Command{
 
 		tasks := make([]task, 0, len(sshKeys))
 		for _, sshkey := range sshKeys {
-
 			if !force {
 				if !askQuestion(fmt.Sprintf("Are you sure you want to delete %q SSH key pair", sshkey.Name)) {
 					continue

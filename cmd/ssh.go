@@ -134,7 +134,6 @@ func printSSHInfo(info *sshInfo) {
 }
 
 func connectSSH(info *sshInfo) error {
-
 	args := make([]string, 0, 3)
 
 	if _, err := os.Stat(info.sshKeys); os.IsNotExist(err) {

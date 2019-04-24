@@ -30,7 +30,6 @@ type taskResponse struct {
 }
 
 func asyncTasks(tasks []task) []taskResponse {
-
 	//init results
 	responses := make([]taskResponse, len(tasks))
 
@@ -100,7 +99,6 @@ func asyncTasks(tasks []task) []taskResponse {
 }
 
 func execTask(task egoscale.AsyncCommand, message string, id int, c chan taskStatus, resp *taskResponse, sem chan int, wg *sync.WaitGroup) {
-
 	defer wg.Done()
 
 	sem <- 1
@@ -180,7 +178,6 @@ func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 	fmt.Print(msg)
 	var errorReq error
 	cs.AsyncRequestWithContext(gContext, cmd, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-
 		fmt.Print(".")
 
 		if err != nil {

@@ -28,7 +28,6 @@ var eipAssociateCmd = &cobra.Command{
 		}
 
 		for _, arg := range args[1:] {
-
 			vm, err := getVirtualMachineByNameOrID(arg)
 			if err != nil {
 				return err

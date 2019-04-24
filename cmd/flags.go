@@ -201,7 +201,6 @@ type boolFlag struct {
 }
 
 func (v *boolFlag) Set(val string) error {
-
 	r := true
 	if val == "true" {
 		*(v.bool) = &r

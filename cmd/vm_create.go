@@ -125,7 +125,6 @@ var vmCreateCmd = &cobra.Command{
 		tasks := make([]egoscale.DeployVirtualMachine, len(args))
 
 		for i, name := range args {
-
 			vmInfo := &egoscale.DeployVirtualMachine{
 				Name:              name,
 				UserData:          userData,
@@ -210,7 +209,6 @@ func getCommaflag(p string) []string {
 }
 
 func getSecurityGroups(commaParameter string) ([]egoscale.UUID, error) {
-
 	sgs := getCommaflag(commaParameter)
 	ids := make([]egoscale.UUID, len(sgs))
 
@@ -227,7 +225,6 @@ func getSecurityGroups(commaParameter string) ([]egoscale.UUID, error) {
 }
 
 func getPrivnetList(commaParameter string, zoneID *egoscale.UUID) ([]egoscale.UUID, error) {
-
 	sgs := getCommaflag(commaParameter)
 	ids := make([]egoscale.UUID, len(sgs))
 
@@ -292,7 +289,6 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 		defer deleteSSHKey(keyPairs.Name) // nolint: errcheck
 
 		keypairsName = keyPairs.Name
-
 	}
 
 	tasks := make([]task, len(deploys))

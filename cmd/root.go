@@ -318,15 +318,12 @@ func isNonCredentialCmd(cmds ...string) bool {
 // example: "$ exo -r preprod vm create" vm position is 1 and create is 2
 //
 func getCmdPosition(cmd string) int {
-
 	count := 1
 
 	isFlagParam := false
 
 	for _, arg := range os.Args[1:] {
-
 		if strings.HasPrefix(arg, "-") {
-
 			flag := RootCmd.Flags().Lookup(strings.Trim(arg, "-"))
 			if flag == nil {
 				flag = RootCmd.Flags().ShorthandLookup(strings.Trim(arg, "-"))

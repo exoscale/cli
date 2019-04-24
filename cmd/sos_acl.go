@@ -114,7 +114,6 @@ func mergeHeader(dst, src http.Header) {
 }
 
 func getACL(cmd *cobra.Command) (map[string]string, error) {
-
 	meta := map[string]string{}
 
 	defACL, err := getDefaultCannedACL(cmd)
@@ -137,7 +136,6 @@ func getACL(cmd *cobra.Command) (map[string]string, error) {
 	}
 
 	for k, v := range manualACLs {
-
 		for i := range v {
 			v[i] = fmt.Sprintf("id=%s", v[i])
 		}
@@ -149,7 +147,6 @@ func getACL(cmd *cobra.Command) (map[string]string, error) {
 }
 
 func getDefaultCannedACL(cmd *cobra.Command) (string, error) {
-
 	acl, err := cmd.Flags().GetBool(private)
 	if err != nil {
 		return "", err
@@ -202,7 +199,6 @@ func getDefaultCannedACL(cmd *cobra.Command) (string, error) {
 }
 
 func getManualACL(cmd *cobra.Command) (map[string][]string, error) {
-
 	res := map[string][]string{}
 
 	acl, err := cmd.Flags().GetString("read")
@@ -354,7 +350,6 @@ func init() {
 }
 
 func getManualACLBool(cmd *cobra.Command) ([]string, error) {
-
 	var res []string
 
 	acl, err := cmd.Flags().GetBool("read")

@@ -79,7 +79,6 @@ var firewallRemoveCmd = &cobra.Command{
 		tasks := make([]task, 0, len(args[1:]))
 
 		for _, arg := range args[1:] {
-
 			var ruleID *egoscale.UUID
 
 			if !force {
@@ -119,7 +118,6 @@ var firewallRemoveCmd = &cobra.Command{
 }
 
 func removeAllRules(sg *egoscale.SecurityGroup) error {
-
 	tasks := []task{}
 
 	for _, in := range sg.IngressRule {

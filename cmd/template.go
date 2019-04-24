@@ -19,7 +19,6 @@ var templateCmd = &cobra.Command{
 }
 
 func getTemplateByName(zoneID *egoscale.UUID, name string) (*egoscale.Template, error) {
-
 	// Find by name, then by ID
 	template := &egoscale.Template{
 		IsFeatured: true,

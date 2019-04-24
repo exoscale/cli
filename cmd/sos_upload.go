@@ -72,7 +72,6 @@ var sosUploadCmd = &cobra.Command{
 		bucketName := args[0]
 
 		for _, arg := range args[1:] {
-
 			arg = filepath.ToSlash(arg)
 			objectName := filepath.Base(arg)
 			filePath := arg
@@ -128,7 +127,6 @@ var sosUploadCmd = &cobra.Command{
 			if err = file.Close(); err != nil {
 				return err
 			}
-
 		}
 
 		lenFileToUpload := len(filesToUpload)
@@ -147,7 +145,6 @@ var sosUploadCmd = &cobra.Command{
 		workerSem := make(chan int, parallelSosUpload)
 
 		for _, fToUpload := range filesToUpload {
-
 			workerSem <- 1
 
 			go func(fileToUP fileToUpload, sem chan int, wg *sync.WaitGroup) {

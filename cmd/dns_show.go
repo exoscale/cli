@@ -46,7 +46,6 @@ var dnsShowCmd = &cobra.Command{
 }
 
 func domainListRecords(t *table.Table, domain, name string, types []string) error {
-
 	t.SetHeader([]string{"Type", "Name", "Content", "TTL", "Prio", "ID"})
 
 	for _, recordType := range types {

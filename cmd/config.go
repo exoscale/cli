@@ -143,7 +143,6 @@ We now need some very important information, find them there.
 }
 
 func addNewAccount(firstRun bool) error {
-
 	config := &config{}
 
 	if firstRun {
@@ -274,7 +273,6 @@ Let's start over.
 }
 
 func addAccount(filePath string, newAccounts *config) error {
-
 	accountsSize := 0
 	currentAccounts := []account{}
 	if gAllAccount != nil {
@@ -293,7 +291,6 @@ func addAccount(filePath string, newAccounts *config) error {
 	conf := &config{}
 
 	for i, acc := range currentAccounts {
-
 		accounts[i] = map[string]interface{}{}
 
 		accounts[i]["name"] = acc.Name
@@ -320,9 +317,7 @@ func addAccount(filePath string, newAccounts *config) error {
 	}
 
 	if newAccounts != nil {
-
 		for i, acc := range newAccounts.Accounts {
-
 			accounts[accountsSize+i] = map[string]interface{}{}
 
 			accounts[accountsSize+i]["name"] = acc.Name
@@ -354,11 +349,9 @@ func addAccount(filePath string, newAccounts *config) error {
 	gAllAccount = conf
 
 	return nil
-
 }
 
 func isCloudstackINIFileExist() (string, bool) {
-
 	envConfigPath := os.Getenv("CLOUDSTACK_CONFIG")
 
 	usr, _ := user.Current()
@@ -388,7 +381,6 @@ func isCloudstackINIFileExist() (string, bool) {
 }
 
 func askCloudstackINIMigration(csFilePath string) (string, bool, error) {
-
 	cfg, err := ini.LoadSources(ini.LoadOptions{IgnoreInlineComment: true}, csFilePath)
 	if err != nil {
 		return "", false, err
@@ -512,7 +504,6 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 }
 
 func doesAccountExist(name string) bool {
-
 	if gAllAccount == nil {
 		return gCurrentAccount.Name == name
 	}
@@ -584,7 +575,6 @@ func readInput(reader *bufio.Reader, text, def string) (string, error) {
 }
 
 func askQuestion(text string) bool {
-
 	reader := bufio.NewReader(os.Stdin)
 
 	resp, err := readInput(reader, text, "yN")
@@ -656,6 +646,5 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 }
 
 func init() {
-
 	RootCmd.AddCommand(configCmd)
 }
