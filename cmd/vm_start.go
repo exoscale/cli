@@ -18,9 +18,14 @@ var vmStartCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
+		rescueProfile, err := cmd.Flags().GetString("rescue-profile")
+		if err != nil {
+			return err
+		}
+
 		errs := []error{}
 		for _, v := range args {
-			if err := startVirtualMachine(v); err != nil {
+			if err := startVirtualMachine(v, rescueProfile); err != nil {
 				errs = append(errs, fmt.Errorf("could not start %q: %s", v, err))
 			}
 		}
@@ -43,7 +48,7 @@ var vmStartCmd = &cobra.Command{
 }
 
 // startVirtualMachine start a virtual machine instance Async
-func startVirtualMachine(vmName string) error {
+func startVirtualMachine(vmName string, vmRescueProfile string) error {
 	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
@@ -54,10 +59,12 @@ func startVirtualMachine(vmName string) error {
 		return fmt.Errorf("%q is not in a %s state, got: %s", vmName, state, vm.State)
 	}
 
-	_, err = asyncRequest(&egoscale.StartVirtualMachine{ID: vm.ID}, fmt.Sprintf("Starting %q ", vm.Name))
+	_, err = asyncRequest(&egoscale.StartVirtualMachine{ID: vm.ID, RescueProfile: vmRescueProfile},
+		fmt.Sprintf("Starting %q ", vm.Name))
 	return err
 }
 
 func init() {
+	vmStartCmd.Flags().StringP("rescue-profile", "", "", "option rescue profile when starting VM")
 	vmCmd.AddCommand(vmStartCmd)
 }
