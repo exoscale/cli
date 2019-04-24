@@ -32,7 +32,7 @@ var kubeStartCmd = &cobra.Command{
 			}
 		}
 
-		if err := startVirtualMachine(vm.Name); err != nil {
+		if err := startVirtualMachine(vm.Name, ""); err != nil {
 			fmt.Println("failed")
 			return err
 		}
