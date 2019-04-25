@@ -1,3 +1,8 @@
+UNRELEASED
+----------
+
+- Add support for client request custom HTTP headers
+
 1.2.0
 -----
 
@@ -27,7 +32,6 @@
 
 - Fix #117
 - makefile: build exoscale/cli:latest
-
 
 1.1.2
 -----

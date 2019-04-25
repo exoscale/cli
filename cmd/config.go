@@ -38,6 +38,7 @@ type account struct {
 	DefaultSSHKey        string
 	DefaultTemplate      string
 	DefaultRunstatusPage string
+	CustomHeaders        map[string]string
 }
 
 func (a account) APISecret() string {
