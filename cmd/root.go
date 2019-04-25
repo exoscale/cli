@@ -105,20 +105,6 @@ func init() {
 
 var ignoreClientBuild = false
 
-func buildClient() {
-	if ignoreClientBuild {
-		return
-	}
-
-	if cs != nil {
-		return
-	}
-
-	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint, gCurrentAccount.Key, gCurrentAccount.APISecret())
-	cs = egoscale.NewClient(gCurrentAccount.Endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret())
-	csRunstatus = egoscale.NewClient(gCurrentAccount.RunstatusEndpoint, gCurrentAccount.Key, gCurrentAccount.APISecret())
-}
-
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	envs := map[string]string{
