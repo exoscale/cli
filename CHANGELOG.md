@@ -1,7 +1,8 @@
 UNRELEASED
 ----------
 
-- Add support for client request custom HTTP headers
+- config: add support for client request custom HTTP headers
+- vm: add support for *rescue profile* to `vm create`
 
 1.2.0
 -----
