@@ -17,7 +17,6 @@ var templateRegisterCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		checksum, err := cmd.Flags().GetString("checksum")
 		if err != nil {
-			fmt.Println("aa")
 			return err
 		}
 
