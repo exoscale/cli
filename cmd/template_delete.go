@@ -7,10 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	templateCmd.AddCommand(templateDeleteCmd)
-}
-
 // templateDeleteCmd represents the delete command
 var templateDeleteCmd = &cobra.Command{
 	Use:   "delete <template id>+",
