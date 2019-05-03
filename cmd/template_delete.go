@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	templateCmd.AddCommand(templateShowCmd)
+	templateCmd.AddCommand(templateDeleteCmd)
 }
 
 // templateDeleteCmd represents the delete command
