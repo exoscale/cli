@@ -95,9 +95,6 @@ func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...stri
 				allOS[key] = template
 				return true
 			}
-			// skip
-			log.Printf("Malformed Linux. %q", template.DisplayText)
-			return true
 		}
 
 		if strings.HasPrefix(template.Name, "Windows Server") || strings.HasPrefix(template.Name, "OpenBSD") {
@@ -112,9 +109,6 @@ func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...stri
 				allOS[key] = template
 				return true
 			}
-
-			log.Printf("Malformed Windows/OpenBSD. %q", template.DisplayText)
-			return true
 		}
 
 		// In doubt, use it directly
