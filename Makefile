@@ -1,12 +1,13 @@
-version := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null || echo 'latest')
-
+VERSION := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null || echo 'dev' | sed 's/^v//')
+COMMIT := $(shell git rev-parse HEAD)
+GO_BUILDOPTS := -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}"
 GO_FILES = $(shell find . -type f -name '*.go')
 
 .PHONY: all
 all: clean exo
 
 exo: $(GO_FILES)
-	go build -mod=vendor -o $@
+	go build ${GO_BUILDOPTS} -mod=vendor -o $@
 
 .PHONY: lint
 lint: $(GO_FILES)
@@ -18,16 +19,16 @@ test: $(GO_FILES)
 
 .PHONY: docker
 docker: Dockerfile $(GO_FILES)
-	docker build -f $< \
+	docker build ${GO_BUILDOPTS} -f $< \
 		-t exoscale/cli \
-		--build-arg VERSION="${version}" \
-		--build-arg VCS_REF="$(shell git rev-parse HEAD)" \
+		--build-arg VERSION="${VERSION}" \
+		--build-arg VCS_REF="${COMMIT}" \
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%m:%SZ")" \
 		.
-	docker tag exoscale/cli:latest exoscale/cli:${version}
+	docker tag exoscale/cli:latest exoscale/cli:${VERSION}
 
 docker-push:
-	docker push exoscale/cli:latest && docker push exoscale/cli:${version}
+	docker push exoscale/cli:latest && docker push exoscale/cli:${VERSION}
 
 manpage:
 	mkdir -p $@
