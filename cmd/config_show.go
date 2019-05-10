@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"text/tabwriter"
 
+	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
@@ -19,57 +19,56 @@ var showCmd = &cobra.Command{
 			return fmt.Errorf("no accounts are defined")
 		}
 
-		account := gCurrentAccount.AccountName()
+		name := gCurrentAccount.AccountName()
 		if len(args) > 0 {
-			account = args[0]
+			name = args[0]
 		}
 
-		if !doesAccountExist(account) {
-			return fmt.Errorf("account %q does not exist", account)
+		if !doesAccountExist(name) {
+			return fmt.Errorf("account %q does not exist", name)
 		}
 
-		acc := getAccountByName(account)
-		if acc == nil {
-			return fmt.Errorf("account %q was not found", account)
+		account := getAccountByName(name)
+		if account == nil {
+			return fmt.Errorf("account %q was not found", name)
 		}
 
-		secret := strings.Repeat("×", len(acc.Secret)/4)
-
-		if len(acc.SecretCommand) > 0 {
-			secret = strings.Join(acc.SecretCommand, " ")
+		secret := strings.Repeat("×", len(account.Key))
+		if len(account.SecretCommand) > 0 {
+			secret = strings.Join(account.SecretCommand, " ")
 		}
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
-		fmt.Fprintf(w, " \t%s\n", acc.Name)                    // nolint: errcheck
-		fmt.Fprintf(w, "\t\n")                                 // nolink: errcheck
-		fmt.Fprintf(w, "Account:\t%s\n", acc.Account)          // nolint: errcheck
-		fmt.Fprintf(w, "API Key:\t%s\n", acc.Key)              // nolint: errcheck
-		fmt.Fprintf(w, "API Secret:\t%s\n", secret)            // nolint: errcheck
-		fmt.Fprintf(w, "\t\n")                                 // nolink: errcheck
-		fmt.Fprintf(w, "Default zone:\t%s\n", acc.DefaultZone) // nolint: errcheck
+		t := table.NewTable(os.Stdout)
+		t.SetHeader([]string{name})
 
-		if acc.DefaultTemplate != "" {
-			fmt.Fprintf(w, "Default template:\t%s\n", acc.DefaultTemplate) // nolint: errcheck
+		t.Append([]string{"Account Name", account.Account})
+		t.Append([]string{"API Key", account.Key})
+		t.Append([]string{"API Secret", secret})
+		t.Append([]string{"Default Zone", account.DefaultZone})
+
+		if account.DefaultTemplate != "" {
+			t.Append([]string{"Default Template", account.DefaultTemplate})
 		}
 
-		if acc.Endpoint != defaultEndpoint {
-			fmt.Fprintf(w, "Endpoint:\t%s\n", acc.Endpoint)        // nolint: errcheck
-			fmt.Fprintf(w, "DNS Endpoint:\t%s\n", acc.DNSEndpoint) // nolint: errcheck
+		if account.Endpoint != defaultEndpoint {
+			t.Append([]string{"Endpoint", account.Endpoint})
+			t.Append([]string{"DNS Endpoint", account.DNSEndpoint})
 		}
 
-		if acc.SosEndpoint != defaultSosEndpoint {
-			fmt.Fprintf(w, "SOS Endpoint:\t%s\n", acc.SosEndpoint) // nolint: errcheck
+		if account.SosEndpoint != defaultSosEndpoint {
+			t.Append([]string{"SOS Endpoint", account.SosEndpoint})
 		}
 
-		fmt.Fprintf(w, "\t\n") // nolink: errcheck
 		if gConfigFilePath != "" {
-			fmt.Fprintf(w, "Configuration:\t%s\n", gConfigFilePath) // nolink: errcheck
-			fmt.Fprintf(w, "Storage:\t%s\n", gConfigFolder)         // nolint: errcheck
+			t.Append([]string{"Configuration Folder", gConfigFolder})
+			t.Append([]string{"Configuration", gConfigFilePath})
 		} else {
-			fmt.Fprintf(w, "Configuration:\tenvironment variables\n") // nolink: errcheck
+			t.Append([]string{"Configuration", "environment variables"})
 		}
 
-		return w.Flush()
+		t.Render()
+
+		return nil
 	},
 }
 

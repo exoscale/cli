@@ -30,7 +30,6 @@ var statusCmd = &cobra.Command{
 
 		t := table.NewTable(os.Stdout)
 		t.SetHeader([]string{"Service", "Status"})
-
 		for service, status := range status.Status {
 			t.Append([]string{service, status.State})
 		}
