@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"text/tabwriter"
 	"time"
 
+	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
@@ -28,15 +28,14 @@ var statusCmd = &cobra.Command{
 			return err
 		}
 
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.FilterHTML)
+		t := table.NewTable(os.Stdout)
+		t.SetHeader([]string{"Service", "Status"})
 
-		fmt.Printf("Exoscale Status\n\t%s\n\n", statusURL)
-
-		for k, service := range status.Status {
-			fmt.Fprintf(w, "%s\t%s\n", k, service.State) // nolint: errcheck
+		for service, status := range status.Status {
+			t.Append([]string{service, status.State})
 		}
-		fmt.Fprintln(w) // nolint: errcheck
-		w.Flush()
+		t.Render()
+
 		if len(status.Incidents) > 0 {
 			suffix := ""
 			if len(status.Incidents) > 1 {
