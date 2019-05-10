@@ -81,7 +81,7 @@ const (
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Manage config for exo cli",
+	Short: "Manage config for exo CLI",
 	RunE:  configCmdRun,
 }
 

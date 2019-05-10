@@ -12,7 +12,7 @@ import (
 // metadataCmd represents the metadata command
 var sosMetadataCmd = &cobra.Command{
 	Use:   "metadata",
-	Short: "Object metadate management",
+	Short: "Object metadata management",
 }
 
 func init() {
@@ -22,7 +22,7 @@ func init() {
 // metadataCmd represents the metadata command
 var sosAddMetadataCmd = &cobra.Command{
 	Use:   "add <bucket name> <object name> <key> <value>",
-	Short: "Add a metadata to an object",
+	Short: "Add metadata to an object",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 4 {
 			return cmd.Usage()
@@ -77,7 +77,7 @@ func init() {
 var sosRemoveMetadataCmd = &cobra.Command{
 	Use:     "remove <bucket name> <object name> <key>",
 	Aliases: gRemoveAlias,
-	Short:   "Remove a metadata from an object",
+	Short:   "Remove metadata from an object",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 3 {
 			return cmd.Usage()
@@ -135,7 +135,7 @@ func init() {
 // metadataCmd represents the metadata command
 var sosShowMetadataCmd = &cobra.Command{
 	Use:     "list <bucket name> <object name>",
-	Short:   "list object metadatas",
+	Short:   "List object metadata",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
