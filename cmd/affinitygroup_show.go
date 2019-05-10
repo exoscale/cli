@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"text/tabwriter"
+	"strings"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -29,36 +28,32 @@ func showAffinityGroup(name string) error {
 		return err
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
+	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{ag.Name})
 
-	fmt.Fprintf(w, "Affinity Group:\t%s\n", ag.Name)     // nolint: errcheck
-	fmt.Fprintf(w, "ID:\t%s\n", ag.ID)                   // nolint: errcheck
-	fmt.Fprintf(w, "Description:\t%s\n", ag.Description) // nolint: errcheck
-	fmt.Fprintf(w, "Type:\t%s\n", ag.Type)               // nolint: errcheck
+	t.Append([]string{"ID", ag.ID.String()})
+	t.Append([]string{"Name", ag.Name})
+	t.Append([]string{"Description", ag.Description})
 
 	if len(ag.VirtualMachineIDs) == 0 {
-		fmt.Fprintf(w, "VirtualMachines:\tn/a\n") // nolint: errcheck
-		w.Flush()
+		t.Append([]string{"Instances", "n/a"})
+		t.Render()
 		return nil
 	}
-
-	fmt.Fprintf(w, "VirtualMachines:\n") // nolint: errcheck
-	w.Flush()
 
 	resp, err := cs.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
 	if err != nil {
 		return err
 	}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "ID"})
-
-	for _, r := range resp {
+	instances := make([]string, len(ag.VirtualMachineIDs))
+	for i, r := range resp {
 		vm := r.(*egoscale.VirtualMachine)
-		table.Append([]string{vm.Name, vm.ID.String()})
+		instances[i] = vm.ID.String() + " │ " + vm.Name
 	}
+	t.Append([]string{"Instances", strings.Join(instances, "\n")})
 
-	table.Render()
+	t.Render()
 
 	return nil
 }
