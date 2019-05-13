@@ -3,11 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"io"
 	"os"
-	"strings"
-	"text/tabwriter"
 
+	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
@@ -20,20 +18,14 @@ var templateShowCmd = &cobra.Command{
 	Use:   "show <template name | id>",
 	Short: "Show a template",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) == 0 {
+		if len(args) != 1 {
 			return errors.New("show expects one template by name or id")
 		}
-
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
-		err := showTemplate(w, strings.Join(args, " "))
-		if err == nil {
-			return w.Flush()
-		}
-		return err
+		return showTemplate(args[0])
 	},
 }
 
-func showTemplate(w io.Writer, name string) error {
+func showTemplate(name string) error {
 	zoneID, err := getZoneIDByName(gCurrentAccount.DefaultZone)
 	if err != nil {
 		return err
@@ -46,15 +38,22 @@ func showTemplate(w io.Writer, name string) error {
 
 	username, usernameOk := template.Details["username"]
 
-	fmt.Fprintf(w, "ID:\t%s\n", template.ID)              // nolint: errcheck
-	fmt.Fprintf(w, "Name:\t%s\n", template.Name)          // nolint: errcheck
-	fmt.Fprintf(w, "OS Type:\t%s\n", template.OsTypeName) // nolint: errcheck
+	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{template.Name})
+
+	t.Append([]string{"ID", template.ID.String()})
+	t.Append([]string{"Name", template.Name})
+	t.Append([]string{"OS Type", template.OsTypeName})
+	t.Append([]string{"Created", template.Created})
+	t.Append([]string{"Size", fmt.Sprintf("%d", template.Size>>30)})
+
 	if usernameOk {
-		fmt.Fprintf(w, "Username:\t%s\n", username) // nolint: errcheck
+		t.Append([]string{"Username", username})
 	}
-	fmt.Fprintf(w, "Size:\t%d GiB\n", template.Size>>30)         // nolint: errcheck
-	fmt.Fprintf(w, "Created:\t%s\n", template.Created)           // nolint: errcheck
-	fmt.Fprintf(w, "Password?:\t%v\n", template.PasswordEnabled) // nolint: errcheck
+
+	t.Append([]string{"Password?", fmt.Sprintf("%t", template.PasswordEnabled)})
+
+	t.Render()
 
 	return nil
 }
