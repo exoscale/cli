@@ -19,7 +19,7 @@ var configDeleteCmd = &cobra.Command{
 		if gAllAccount == nil {
 			return fmt.Errorf("no accounts defined")
 		}
-		if !doesAccountExist(args[0]) {
+		if a := getAccountByName(args[0]); a == nil {
 			return fmt.Errorf("account %q doesn't exist", args[0])
 		}
 

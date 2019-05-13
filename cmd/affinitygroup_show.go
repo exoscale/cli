@@ -9,17 +9,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// affinitygroupShowCmd represents the affinitygroup show command
-var affinitygroupShowCmd = &cobra.Command{
-	Use:     "show <name | id>",
-	Short:   "Show affinity group details",
-	Aliases: gShowAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return cmd.Usage()
-		}
-		return showAffinityGroup(args[0])
-	},
+func init() {
+	affinitygroupCmd.AddCommand(&cobra.Command{
+		Use:     "show <name | id>",
+		Short:   "Show affinity group details",
+		Aliases: gShowAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return cmd.Usage()
+			}
+			return showAffinityGroup(args[0])
+		},
+	})
 }
 
 func showAffinityGroup(name string) error {
@@ -59,8 +60,4 @@ func showAffinityGroup(name string) error {
 	t.Render()
 
 	return nil
-}
-
-func init() {
-	affinitygroupCmd.AddCommand(affinitygroupShowCmd)
 }

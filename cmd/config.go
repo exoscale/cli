@@ -252,7 +252,11 @@ Let's start over.
 		account.Name = name
 	}
 
-	for doesAccountExist(account.Name) {
+	for {
+		if a := getAccountByName(account.Name); a == nil {
+			break
+		}
+
 		fmt.Printf("Name [%s] already exist\n", name)
 		name, err = readInput(reader, "Name", account.Name)
 		if err != nil {
@@ -470,7 +474,11 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			csAccount.Name = name
 		}
 
-		for doesAccountExist(csAccount.Name) {
+		for {
+			if a := getAccountByName(csAccount.Name); a == nil {
+				break
+			}
+
 			fmt.Printf("Account name [%s] already exist\n", csAccount.Name)
 			name, err = readInput(reader, fmt.Sprintf("Name (org: %q)", csAccount.Account), csAccount.Name)
 			if err != nil {
@@ -502,20 +510,6 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 	gAllAccount = nil
 	return addAccount(cfgPath, config)
-}
-
-func doesAccountExist(name string) bool {
-	if gAllAccount == nil {
-		return gCurrentAccount.Name == name
-	}
-
-	for _, acc := range gAllAccount.Accounts {
-		if acc.Name == name {
-			return true
-		}
-	}
-
-	return false
 }
 
 func createConfigFile(fileName string) (string, error) {
@@ -604,11 +598,13 @@ func getAccountByName(name string) *account {
 	if gAllAccount == nil {
 		return nil
 	}
+
 	for i, acc := range gAllAccount.Accounts {
 		if acc.Name == name {
 			return &gAllAccount.Accounts[i]
 		}
 	}
+
 	return nil
 }
 
