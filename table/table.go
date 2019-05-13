@@ -1,6 +1,7 @@
 package table
 
 import (
+	"bytes"
 	"os"
 
 	"github.com/olekukonko/tablewriter"
@@ -34,6 +35,24 @@ func NewTable(fd *os.File) *Table {
 	t.SetBorders(tablewriter.Border{
 		Left:   true,
 		Right:  true,
+		Top:    false,
+		Bottom: false,
+	})
+
+	return t
+}
+
+func NewEmbeddedTable(buf *bytes.Buffer) *Table {
+	t := &Table{tablewriter.NewWriter(buf)}
+
+	t.SetAutoWrapText(false)
+	t.SetHeaderLine(false)
+	t.SetCenterSeparator(" ")
+	t.SetColumnSeparator(" ")
+	t.SetRowSeparator(" ")
+	t.SetBorders(tablewriter.Border{
+		Left:   false,
+		Right:  false,
 		Top:    false,
 		Bottom: false,
 	})

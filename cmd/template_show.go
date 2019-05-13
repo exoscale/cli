@@ -10,19 +10,16 @@ import (
 )
 
 func init() {
-	templateCmd.AddCommand(templateShowCmd)
-}
-
-// templateShowCmd represents the show command
-var templateShowCmd = &cobra.Command{
-	Use:   "show <template name | id>",
-	Short: "Show a template",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("show expects one template by name or id")
-		}
-		return showTemplate(args[0])
-	},
+	templateCmd.AddCommand(&cobra.Command{
+		Use:   "show <template name | id>",
+		Short: "Show a template details",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return errors.New("show expects one template by name or id")
+			}
+			return showTemplate(args[0])
+		},
+	})
 }
 
 func showTemplate(name string) error {

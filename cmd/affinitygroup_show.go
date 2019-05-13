@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"bytes"
 	"os"
-	"strings"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -46,12 +46,15 @@ func showAffinityGroup(name string) error {
 		return err
 	}
 
-	instances := make([]string, len(ag.VirtualMachineIDs))
-	for i, r := range resp {
+	buf := bytes.NewBuffer(nil)
+	it := table.NewEmbeddedTable(buf)
+	it.SetHeader([]string{" "})
+	for _, r := range resp {
 		vm := r.(*egoscale.VirtualMachine)
-		instances[i] = vm.ID.String() + " │ " + vm.Name
+		it.Append([]string{vm.Name, vm.ID.String()})
 	}
-	t.Append([]string{"Instances", strings.Join(instances, "\n")})
+	it.Render()
+	t.Append([]string{"Instances", buf.String()})
 
 	t.Render()
 
