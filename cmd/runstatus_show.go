@@ -49,6 +49,26 @@ func showRunstatusPage(name string) error {
 		t.Append([]string{"Services", buf.String()})
 	}
 
+	if len(page.Incidents) > 0 {
+		buf := bytes.NewBuffer(nil)
+		it := table.NewEmbeddedTable(buf)
+		for _, i := range page.Incidents {
+			it.Append([]string{i.Title, i.State, i.Status, formatSchedule(i.StartDate, i.EndDate)})
+		}
+		it.Render()
+		t.Append([]string{"Incidents", buf.String()})
+	}
+
+	if len(page.Maintenances) > 0 {
+		buf := bytes.NewBuffer(nil)
+		mt := table.NewEmbeddedTable(buf)
+		for _, m := range page.Maintenances {
+			mt.Append([]string{m.Title, m.Status, formatSchedule(m.StartDate, m.EndDate)})
+		}
+		mt.Render()
+		t.Append([]string{"Maintenances", buf.String()})
+	}
+
 	t.Render()
 
 	return nil
