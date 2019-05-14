@@ -14,7 +14,7 @@ import (
 func init() {
 	runstatusIncidentCmd.AddCommand(&cobra.Command{
 		Use:     "show [page name] <incident name | id>",
-		Short:   "Show an incident detail",
+		Short:   "Show an incident details",
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {

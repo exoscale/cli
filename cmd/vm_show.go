@@ -13,7 +13,7 @@ import (
 // showCmd represents the show command
 var vmShowCmd = &cobra.Command{
 	Use:     "show <name | id>",
-	Short:   "Show virtual machine details",
+	Short:   "Show a virtual machine details",
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {

@@ -13,7 +13,7 @@ import (
 func init() {
 	runstatusCmd.AddCommand(&cobra.Command{
 		Use:     "show <page name>",
-		Short:   "Show runstat.us page details",
+		Short:   "Show a runstat.us page details",
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {

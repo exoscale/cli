@@ -14,7 +14,7 @@ func init() {
 	runstatusMaintenanceCmd.AddCommand(
 		&cobra.Command{
 			Use:     "show [page name] <maintenance name|id>",
-			Short:   "Show a runstat.us page maintenance details",
+			Short:   "Show a maintenance details",
 			Aliases: gShowAlias,
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) < 1 {
