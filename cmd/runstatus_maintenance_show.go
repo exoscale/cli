@@ -52,6 +52,7 @@ func showRunstatusMaintenance(p, m string) error {
 	if err != nil {
 		return err
 	}
+
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{page.Subdomain})
 
