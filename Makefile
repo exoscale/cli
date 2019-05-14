@@ -1,4 +1,7 @@
-VERSION := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null || echo 'dev' | sed 's/^v//')
+VERSION := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null | sed 's/^v//')
+ifndef VERSION
+	VERSION = dev
+endif
 COMMIT := $(shell git rev-parse HEAD)
 GO_BUILDOPTS := -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}"
 GO_FILES = $(shell find . -type f -name '*.go')
@@ -19,7 +22,7 @@ test: $(GO_FILES)
 
 .PHONY: docker
 docker: Dockerfile $(GO_FILES)
-	docker build ${GO_BUILDOPTS} -f $< \
+	docker build -f $< \
 		-t exoscale/cli \
 		--build-arg VERSION="${VERSION}" \
 		--build-arg VCS_REF="${COMMIT}" \
