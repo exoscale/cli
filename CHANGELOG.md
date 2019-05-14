@@ -3,6 +3,7 @@ UNRELEASED
 
 - config: add support for client request custom HTTP headers
 - vm: add support for *rescue profile* to `vm create`
+- Various `exo * show` commands output normalization
 
 1.2.0
 -----

@@ -1,26 +1,26 @@
 package cmd
 
 import (
-	"fmt"
+	"bytes"
 	"os"
-	"text/tabwriter"
 
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// affinitygroupShowCmd represents the affinitygroup show command
-var affinitygroupShowCmd = &cobra.Command{
-	Use:     "show <name | id>",
-	Short:   "Show affinity group details",
-	Aliases: gShowAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return cmd.Usage()
-		}
-		return showAffinityGroup(args[0])
-	},
+func init() {
+	affinitygroupCmd.AddCommand(&cobra.Command{
+		Use:     "show <name | id>",
+		Short:   "Show affinity group details",
+		Aliases: gShowAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return cmd.Usage()
+			}
+			return showAffinityGroup(args[0])
+		},
+	})
 }
 
 func showAffinityGroup(name string) error {
@@ -29,40 +29,35 @@ func showAffinityGroup(name string) error {
 		return err
 	}
 
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
+	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{ag.Name})
 
-	fmt.Fprintf(w, "Affinity Group:\t%s\n", ag.Name)     // nolint: errcheck
-	fmt.Fprintf(w, "ID:\t%s\n", ag.ID)                   // nolint: errcheck
-	fmt.Fprintf(w, "Description:\t%s\n", ag.Description) // nolint: errcheck
-	fmt.Fprintf(w, "Type:\t%s\n", ag.Type)               // nolint: errcheck
+	t.Append([]string{"ID", ag.ID.String()})
+	t.Append([]string{"Name", ag.Name})
+	t.Append([]string{"Description", ag.Description})
 
 	if len(ag.VirtualMachineIDs) == 0 {
-		fmt.Fprintf(w, "VirtualMachines:\tn/a\n") // nolint: errcheck
-		w.Flush()
+		t.Append([]string{"Instances", "n/a"})
+		t.Render()
 		return nil
 	}
-
-	fmt.Fprintf(w, "VirtualMachines:\n") // nolint: errcheck
-	w.Flush()
 
 	resp, err := cs.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
 	if err != nil {
 		return err
 	}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "ID"})
-
+	buf := bytes.NewBuffer(nil)
+	it := table.NewEmbeddedTable(buf)
+	it.SetHeader([]string{" "})
 	for _, r := range resp {
 		vm := r.(*egoscale.VirtualMachine)
-		table.Append([]string{vm.Name, vm.ID.String()})
+		it.Append([]string{vm.Name, vm.ID.String()})
 	}
+	it.Render()
+	t.Append([]string{"Instances", buf.String()})
 
-	table.Render()
+	t.Render()
 
 	return nil
-}
-
-func init() {
-	affinitygroupCmd.AddCommand(affinitygroupShowCmd)
 }

@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-	"text/tabwriter"
 	"time"
 
+	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
@@ -17,64 +18,6 @@ const (
 	statusContentPage = "application/json"
 	twitterURL        = "https://twitter.com/exoscalestatus"
 )
-
-// statusCmd represents the status command
-var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Exoscale status",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		status, err := fetchRunStatus(jsonStatusURL)
-		if err != nil {
-			return err
-		}
-
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.FilterHTML)
-
-		fmt.Printf("Exoscale Status\n\t%s\n\n", statusURL)
-
-		for k, service := range status.Status {
-			fmt.Fprintf(w, "%s\t%s\n", k, service.State) // nolint: errcheck
-		}
-		fmt.Fprintln(w) // nolint: errcheck
-		w.Flush()
-		if len(status.Incidents) > 0 {
-			suffix := ""
-			if len(status.Incidents) > 1 {
-				suffix = "s"
-			}
-			msg := fmt.Sprintf("%d ongoing Incident%s (last: %s)",
-				len(status.Incidents),
-				suffix,
-				status.Incidents[0].Title)
-			fmt.Println(msg)
-			fmt.Printf("Updates available at %s\n", twitterURL)
-			return fmt.Errorf(msg)
-		}
-
-		return nil
-	},
-}
-
-func fetchRunStatus(url string) (*RunStatus, error) {
-	// XXX need gContext
-	r, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Body.Close()
-
-	contentType := r.Header.Get("content-type")
-	if contentType != statusContentPage {
-		return nil, fmt.Errorf("status page content type expected %q, but got %q", statusContentPage, contentType)
-	}
-
-	response := &RunStatus{}
-	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
-		return nil, err
-	}
-
-	return response, nil
-}
 
 // ServiceStatus represents the state of a service
 type ServiceStatus struct {
@@ -100,5 +43,79 @@ type RunStatus struct {
 }
 
 func init() {
-	RootCmd.AddCommand(statusCmd)
+	RootCmd.AddCommand(&cobra.Command{
+		Use:   "status",
+		Short: "Exoscale status",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return statusShow()
+		},
+	})
+}
+
+func statusShow() error {
+	status, err := fetchRunStatus(jsonStatusURL)
+	if err != nil {
+		return err
+	}
+
+	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"Exoscale Status"})
+
+	buf := bytes.NewBuffer(nil)
+	st := table.NewEmbeddedTable(buf)
+	for service, status := range status.Status {
+		st.Append([]string{service, status.State})
+	}
+	st.Render()
+
+	t.Append([]string{"Services", buf.String()})
+
+	buf = bytes.NewBuffer([]byte("n/a"))
+	if len(status.Incidents) > 0 {
+		buf.Reset()
+		it := table.NewEmbeddedTable(buf)
+		for _, i := range status.Incidents {
+			it.Append([]string{i.Title, i.Status, fmt.Sprint(i.Created), fmt.Sprint(i.Updated)})
+		}
+		it.Render()
+	}
+	t.Append([]string{"Incidents", buf.String()})
+
+	buf = bytes.NewBuffer([]byte("n/a"))
+	if len(status.UpcomingMaintenances) > 0 {
+		buf.Reset()
+		mt := table.NewEmbeddedTable(buf)
+		for _, m := range status.UpcomingMaintenances {
+			mt.Append([]string{m.Title, m.Description, fmt.Sprint(m.Date)})
+		}
+		mt.Render()
+	}
+	t.Append([]string{"Maintenances", buf.String()})
+
+	t.Render()
+
+	fmt.Println("Updates available at", twitterURL)
+
+	return nil
+}
+
+func fetchRunStatus(url string) (*RunStatus, error) {
+	// XXX need gContext
+	r, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Body.Close()
+
+	contentType := r.Header.Get("content-type")
+	if contentType != statusContentPage {
+		return nil, fmt.Errorf("status page content type expected %q, but got %q", statusContentPage, contentType)
+	}
+
+	response := &RunStatus{}
+	if err := json.NewDecoder(r.Body).Decode(response); err != nil {
+		return nil, err
+	}
+
+	return response, nil
 }
