@@ -12,7 +12,7 @@ import (
 func init() {
 	runstatusServiceCmd.AddCommand(&cobra.Command{
 		Use:     "show [page name] <service name>",
-		Short:   "Show a service",
+		Short:   "Show a service details",
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
