@@ -18,39 +18,43 @@ var templateCmd = &cobra.Command{
 	Short: "Templates details",
 }
 
-func getTemplateByName(zoneID *egoscale.UUID, name string) (*egoscale.Template, error) {
-	// Find by name, then by ID
-	template := &egoscale.Template{
-		IsFeatured: true,
-		ZoneID:     zoneID,
+// validateTemplateFilter takes a template filter. Verifies if the
+// filter value is valid, and handle filter aliases.
+// Returns the template filter to use.
+func validateTemplateFilter(templateFilter string) (string, error) {
+	if templateFilter == "mine" {
+		return "self", nil
+	}
+	if templateFilter != "self" && templateFilter != "community" && templateFilter != "featured" {
+		return "", fmt.Errorf("invalid template filter %s", templateFilter)
+	}
+	return templateFilter, nil
+}
+
+func getTemplateByName(zoneID *egoscale.UUID, name string, templateFilter string) (*egoscale.Template, error) {
+	req := &egoscale.ListTemplates{
+		TemplateFilter: templateFilter,
+		ZoneID:         zoneID,
 	}
 
 	id, errUUID := egoscale.ParseUUID(name)
 	if errUUID != nil {
-		template.Name = name
+		req.Name = name
 	} else {
-		template.ID = id
+		req.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, template)
-	if err == nil {
-		return resp.(*egoscale.Template), err
-	}
-
-	// attempts a fuzzy search
-	sortedTemplates, err := findTemplates(zoneID, name)
+	resp, err := cs.ListWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}
-
-	if len(sortedTemplates) > 1 {
-		return nil, fmt.Errorf("more than one templates found")
-	}
-	if len(sortedTemplates) == 0 {
+	if len(resp) == 0 {
 		return nil, fmt.Errorf("template %q not found", name)
 	}
-
-	return &sortedTemplates[0], nil
+	if len(resp) == 1 {
+		return resp[0].(*egoscale.Template), nil
+	}
+	return nil, fmt.Errorf("more than one templates found for %q", name)
 }
 
 func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...string) ([]egoscale.Template, error) {

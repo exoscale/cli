@@ -23,6 +23,15 @@ var vmResetCmd = &cobra.Command{
 			return err
 		}
 
+		templateFilterCmd, err := cmd.Flags().GetString("template-filter")
+		if err != nil {
+			return err
+		}
+		templateFilter, err := validateTemplateFilter(templateFilterCmd)
+		if err != nil {
+			return err
+		}
+
 		template, err := cmd.Flags().GetString("template")
 		if err != nil {
 			return err
@@ -35,7 +44,7 @@ var vmResetCmd = &cobra.Command{
 
 		errs := []error{}
 		for _, v := range args {
-			if err := resetVirtualMachine(v, diskValue, template, force); err != nil {
+			if err := resetVirtualMachine(v, diskValue, template, templateFilter, force); err != nil {
 				errs = append(errs, fmt.Errorf("could not reset %q: %s", v, err))
 			}
 		}
@@ -58,7 +67,7 @@ var vmResetCmd = &cobra.Command{
 }
 
 // resetVirtualMachine stop a virtual machine instance
-func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName string, force bool) error {
+func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName string, templateFilter string, force bool) error {
 	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
 		return err
@@ -73,7 +82,7 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName st
 	var template *egoscale.Template
 
 	if templateName != "" {
-		template, err = getTemplateByName(vm.ZoneID, templateName)
+		template, err = getTemplateByName(vm.ZoneID, templateName, templateFilter)
 		if err != nil {
 			return err
 		}
@@ -154,5 +163,6 @@ func init() {
 	diskSizeVarP := new(int64PtrValue)
 	vmResetCmd.Flags().VarP(diskSizeVarP, "disk", "d", "New disk size after reset in GB")
 	vmResetCmd.Flags().StringP("template", "t", "", fmt.Sprintf("<template name | id> (default: %s)", defaultTemplate))
+	vmResetCmd.Flags().StringP("template-filter", "", "featured", "The template filter to use (mine,community,featured)")
 	vmResetCmd.Flags().BoolP("force", "f", false, "Attempt to reset vitual machine without prompting for confirmation")
 }

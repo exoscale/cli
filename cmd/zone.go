@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	zoneHelp = "<zone name | id | keyword> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1|bg-sof-1)"
+)
+
 // zoneCmd represents the zone command
 var zoneCmd = &cobra.Command{
 	Use:   "zone",
