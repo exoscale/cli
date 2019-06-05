@@ -12,6 +12,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	templateFilterHelp = "The template filter to use (mine,community,featured)"
+)
+
 // templateCmd represents the template command
 var templateCmd = &cobra.Command{
 	Use:   "template",
@@ -54,7 +58,7 @@ func getTemplateByName(zoneID *egoscale.UUID, name string, templateFilter string
 	if len(resp) == 1 {
 		return resp[0].(*egoscale.Template), nil
 	}
-	return nil, fmt.Errorf("more than one templates found for %q", name)
+	return nil, fmt.Errorf("multiple templates found for %q", name)
 }
 
 func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...string) ([]egoscale.Template, error) {

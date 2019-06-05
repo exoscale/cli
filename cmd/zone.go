@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	zoneHelp = "<zone name | id | keyword> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1|bg-sof-1)"
+	zoneHelp = "<zone name | id> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1|bg-sof-1)"
 )
 
 // zoneCmd represents the zone command

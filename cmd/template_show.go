@@ -70,6 +70,6 @@ var templateShowCmd = &cobra.Command{
 
 func init() {
 	templateCmd.AddCommand(templateShowCmd)
-	templateShowCmd.Flags().StringP("template-filter", "", "featured", "The template filter to use (mine,community,featured)")
+	templateShowCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	templateShowCmd.Flags().StringP("zone", "z", "", zoneHelp)
 }
