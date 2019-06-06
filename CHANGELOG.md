@@ -1,3 +1,8 @@
+UNRELEASED
+-----
+
+- Support template-filter in various commands
+
 1.3.0
 -----
 
