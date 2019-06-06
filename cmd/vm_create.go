@@ -21,6 +21,14 @@ var vmCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
+		templateFilterCmd, err := cmd.Flags().GetString("template-filter")
+		if err != nil {
+			return err
+		}
+		templateFilter, err := validateTemplateFilter(templateFilterCmd)
+		if err != nil {
+			return err
+		}
 		userDataPath, err := cmd.Flags().GetString("cloud-init-file")
 		if err != nil {
 			return err
@@ -63,7 +71,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		template, err := getTemplateByName(zone, templateName)
+		template, err := getTemplateByName(zone, templateName, templateFilter)
 		if err != nil {
 			return err
 		}
@@ -321,8 +329,9 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 
 func init() {
 	vmCreateCmd.Flags().StringP("cloud-init-file", "f", "", "Deploy instance with a cloud-init file")
-	vmCreateCmd.Flags().StringP("zone", "z", "", "<zone name | id | keyword> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1)")
+	vmCreateCmd.Flags().StringP("zone", "z", "", zoneHelp)
 	vmCreateCmd.Flags().StringP("template", "t", "", fmt.Sprintf("<template name | id> (default: %s)", defaultTemplate))
+	vmCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	vmCreateCmd.Flags().Int64P("disk", "d", 50, "<disk size>")
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "<ssh keys name>")
 	vmCreateCmd.Flags().StringP("security-group", "s", "", "<name | id, name | id, ...>")

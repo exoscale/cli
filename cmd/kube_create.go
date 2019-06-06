@@ -28,6 +28,9 @@ const (
 
 	// kubeDefaultTemplate is the template to install Kubernetes on.
 	kubeDefaultTemplate = defaultTemplate
+
+	// kubeTemplateFilter is the template filter for the default template
+	kubeTemplateFilter = "featured"
 )
 
 // kubeCreateDebug represents a debug mode flag
@@ -249,7 +252,7 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		template, err := getTemplateByName(zone, kubeDefaultTemplate)
+		template, err := getTemplateByName(zone, kubeDefaultTemplate, kubeTemplateFilter)
 		if err != nil {
 			return err
 		}

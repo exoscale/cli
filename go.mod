@@ -13,6 +13,7 @@ require (
 	github.com/exoscale/egoscale v0.17.2
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.42.0
+	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
