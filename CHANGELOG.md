@@ -2,6 +2,7 @@ UNRELEASED
 -----
 
 - Support template-filter in various commands
+- Display zone in `template (list|show)` commands
 
 1.3.0
 -----
