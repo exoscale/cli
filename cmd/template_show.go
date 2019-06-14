@@ -54,6 +54,7 @@ var templateShowCmd = &cobra.Command{
 		t.Append([]string{"Name", template.Name})
 		t.Append([]string{"OS Type", template.OsTypeName})
 		t.Append([]string{"Created", template.Created})
+		t.Append([]string{"Zone", template.ZoneName})
 		t.Append([]string{"Size", fmt.Sprintf("%d", template.Size>>30)})
 
 		if usernameOk {

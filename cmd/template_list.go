@@ -53,7 +53,7 @@ var templateListCmd = &cobra.Command{
 		if !(community || featured || mine) {
 			featured = true
 		}
-		t.SetHeader([]string{"Operating System", "Disk", "Release Date", "ID", "Category"})
+		t.SetHeader([]string{"Operating System", "Disk", "Release Date", "ID", "Zone", "Category"})
 
 		if community {
 			err = listTemplates(t, "community", args)
@@ -113,7 +113,7 @@ func listTemplates(t *table.Table, templateFilter string, filters []string) erro
 		if sz == "10" && strings.HasPrefix(template.Name, "Linux") {
 			sz = ""
 		}
-		t.Append([]string{template.Name, sz, template.Created, template.ID.String(), templateFilter})
+		t.Append([]string{template.Name, sz, template.Created, template.ID.String(), template.ZoneName, templateFilter})
 	}
 
 	return nil
