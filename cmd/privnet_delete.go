@@ -30,7 +30,7 @@ var privnetDeleteCmd = &cobra.Command{
 			}
 
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to delete %q private network", args[0])) {
+				if !askQuestion(fmt.Sprintf("sure you want to delete %q private network", arg)) {
 					continue
 				}
 			}
