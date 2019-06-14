@@ -1,8 +1,9 @@
 UNRELEASED
 -----
 
-- Support template-filter in various commands
-- Display zone in `template (list|show)` commands
+- Support template-filter in various commands (#151)
+- Fix output bug in `network delete` command (#152)
+- Display zone in `template (list|show)` commands (#153)
 
 1.3.0
 -----
