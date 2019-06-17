@@ -3,41 +3,72 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
-// dnsListCmd represents the list command
-var dnsListCmd = &cobra.Command{
-	Use:     "list [domain name | id]*",
-	Short:   "List domains",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		t := table.NewTable(os.Stdout)
-		err := listDomains(t, args)
-		if err == nil {
-			t.Render()
-		}
-		return err
-	},
+type dnsListItemOutput struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	UnicodeName string `json:"unicode_name,omitempty"`
 }
 
-func listDomains(t *table.Table, filters []string) error {
-	domains, err := csDNS.GetDomains(gContext)
-	if err != nil {
-		return err
+type dnsListOutput []dnsListItemOutput
+
+func (o *dnsListOutput) toJSON() { outputJSON(o) }
+
+func (o *dnsListOutput) toText() { outputText(o) }
+
+func (o *dnsListOutput) toTable() {
+	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"ID", "Name"})
+
+	for _, i := range *o {
+		name := i.Name
+		if i.UnicodeName != i.Name {
+			name = fmt.Sprintf("%s (%s)", i.Name, i.UnicodeName)
+		}
+
+		t.Append([]string{
+			fmt.Sprint(i.ID),
+			name,
+		})
 	}
 
-	data := make([][]string, 0)
+	t.Render()
+}
+
+func init() {
+	dnsCmd.AddCommand(&cobra.Command{
+		Use:   "list [filter ...]",
+		Short: "List domains",
+		Long: fmt.Sprintf(`This command lists existing DNS Domains.
+Optional patterns can be provided to filter results by ID, or name.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&dnsListOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return output(listDomains(args))
+		},
+	})
+}
+
+func listDomains(filters []string) (outputter, error) {
+	domains, err := csDNS.GetDomains(gContext)
+	if err != nil {
+		return nil, err
+	}
+
+	out := dnsListOutput{}
+
 	for _, d := range domains {
 		keep := true
 		if len(filters) > 0 {
 			keep = false
-			s := strings.ToLower(
-				fmt.Sprintf("%d#%s#%s", d.ID, d.Name, d.UnicodeName))
+			s := strings.ToLower(fmt.Sprintf("%d#%s#%s", d.ID, d.Name, d.UnicodeName))
 
 			for _, filter := range filters {
 				substr := strings.ToLower(filter)
@@ -52,28 +83,12 @@ func listDomains(t *table.Table, filters []string) error {
 			continue
 		}
 
-		unicodeName := ""
-		if d.Name != d.UnicodeName {
-			unicodeName = d.UnicodeName
-		}
-		data = append(data, []string{
-			d.Name, unicodeName, strconv.FormatInt(d.ID, 10),
+		out = append(out, dnsListItemOutput{
+			ID:          d.ID,
+			Name:        d.Name,
+			UnicodeName: d.UnicodeName,
 		})
 	}
 
-	headers := []string{"Name", "Unicode", "ID"}
-	if len(data) > 0 {
-		t.SetHeader(headers)
-	}
-
-	t.AppendBulk(data)
-	if len(data) > 10 {
-		t.SetFooter(headers)
-	}
-
-	return nil
-}
-
-func init() {
-	dnsCmd.AddCommand(dnsListCmd)
+	return &out, nil
 }

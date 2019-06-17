@@ -2,43 +2,52 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var listCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List SSH key pairs",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		t := table.NewTable(os.Stdout)
-		err := listSSHKey(t, args)
-		if err == nil {
-			t.Render()
-		}
-
-		return err
-	},
+type sshkeyListItemOutput struct {
+	Name        string `json:"name"`
+	Fingerprint string `json:"fingerprint"`
 }
 
-func listSSHKey(t *table.Table, filters []string) error {
+type sshkeyListOutput []sshkeyListItemOutput
+
+func (o *sshkeyListOutput) toJSON()  { outputJSON(o) }
+func (o *sshkeyListOutput) toText()  { outputText(o) }
+func (o *sshkeyListOutput) toTable() { outputTable(o) }
+
+func init() {
+	sshkeyCmd.AddCommand(&cobra.Command{
+		Use:   "list [filter ...]",
+		Short: "List SSH Keys",
+		Long: fmt.Sprintf(`This command lists existing SSH Keys.
+Optional patterns can be provided to filter results by name or fingerprint.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&sshkeyListOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return output(listSSHKey(args))
+		},
+	})
+}
+
+func listSSHKey(filters []string) (outputter, error) {
 	sshKeys, err := getSSHKeys(cs)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	data := make([][]string, 0)
+	out := sshkeyListOutput{}
 
 	for _, k := range sshKeys {
 		keep := true
 		if len(filters) > 0 {
 			keep = false
-			s := strings.ToLower(fmt.Sprintf("%s§%s", k.Name, k.Fingerprint))
+			s := strings.ToLower(fmt.Sprintf("%s#%s", k.Name, k.Fingerprint))
 
 			for _, filter := range filters {
 				substr := strings.ToLower(filter)
@@ -53,21 +62,13 @@ func listSSHKey(t *table.Table, filters []string) error {
 			continue
 		}
 
-		data = append(data, []string{k.Name, k.Fingerprint})
-
+		out = append(out, sshkeyListItemOutput{
+			Name:        k.Name,
+			Fingerprint: k.Fingerprint,
+		})
 	}
 
-	headers := []string{"Name", "Fingerprint"}
-	if len(data) > 0 {
-		t.SetHeader(headers)
-	}
-	if len(data) > 10 {
-		t.SetFooter(headers)
-	}
-
-	t.AppendBulk(data)
-
-	return nil
+	return &out, nil
 }
 
 func getSSHKeys(cs *egoscale.Client) ([]egoscale.SSHKeyPair, error) {
@@ -84,8 +85,4 @@ func getSSHKeys(cs *egoscale.Client) ([]egoscale.SSHKeyPair, error) {
 	}
 
 	return res, nil
-}
-
-func init() {
-	sshkeyCmd.AddCommand(listCmd)
 }

@@ -27,7 +27,7 @@ var templateCmd = &cobra.Command{
 // Returns the template filter to use.
 func validateTemplateFilter(templateFilter string) (string, error) {
 	if templateFilter == "mine" {
-		return "self", nil
+		return "self", nil // nolint
 	}
 	if templateFilter != "self" && templateFilter != "community" && templateFilter != "featured" {
 		return "", fmt.Errorf("invalid template filter %s", templateFilter)

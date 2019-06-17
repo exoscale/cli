@@ -65,6 +65,11 @@ var versionCmd = &cobra.Command{
 	},
 }
 
+var (
+	gOutputFormat   string
+	gOutputTemplate string
+)
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute(version, commit string) {
@@ -98,6 +103,8 @@ func Execute(version, commit string) {
 func init() {
 	RootCmd.PersistentFlags().StringVarP(&gConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
 	RootCmd.PersistentFlags().StringVarP(&gAccountName, "use-account", "A", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
+	RootCmd.PersistentFlags().StringVarP(&gOutputFormat, "output-format", "O", "", "Output format, can be table|json|text")
+	RootCmd.PersistentFlags().StringVar(&gOutputTemplate, "output-template", "", "Template to use if output format is \"template\"")
 	RootCmd.AddCommand(versionCmd)
 
 	cobra.OnInitialize(initConfig, buildClient)
@@ -236,6 +243,12 @@ func initConfig() {
 
 	if config.DefaultAccount == "" && gAccountName == "" {
 		log.Fatalf("default account not defined")
+	}
+
+	if gOutputFormat == "" {
+		if gOutputFormat = config.DefaultOutputFormat; gOutputFormat == "" {
+			gOutputFormat = defaultOutputFormat
+		}
 	}
 
 	if gAccountName == "" {

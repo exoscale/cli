@@ -2,54 +2,77 @@ package cmd
 
 import (
 	"errors"
-	"os"
+	"fmt"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
+type securityGroupShowItemOutput struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"`
+	Source      string `json:"source"`
+	Port        string `json:"port"`
+	Protocol    string `json:"protocol"`
+	Description string `json:"description,omitempty"`
+}
+
+type securityGroupShowOutput []securityGroupShowItemOutput
+
+func (o *securityGroupShowOutput) toJSON()  { outputJSON(o) }
+func (o *securityGroupShowOutput) toText()  { outputText(o) }
+func (o *securityGroupShowOutput) toTable() { outputTable(o) }
+
 func init() {
-	firewallCmd.AddCommand(firewallShow)
+	firewallCmd.AddCommand(&cobra.Command{
+		Use:   "show <security group name | id>",
+		Short: "Show a security group rules details",
+		Long: fmt.Sprintf(`This command shows a Security Group details.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&securityGroupShowOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return errors.New("show expects one security group by name or id")
+			}
+
+			return output(showSecurityGroup(args[0]))
+		},
+	})
 }
 
-var firewallShow = &cobra.Command{
-	Use:     "show <security group name | id>",
-	Short:   "Show a security group rules details",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			return errors.New("show expects one security group by name or id")
-		}
-
-		t := table.NewTable(os.Stdout)
-		err := firewallListRules(t, args[0])
-		if err == nil {
-			t.Render()
-		}
-		return err
-	},
-}
-
-func firewallListRules(t *table.Table, name string) error {
+func showSecurityGroup(name string) (outputter, error) {
 	sg, err := getSecurityGroupByNameOrID(name)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	t.SetHeader([]string{"Type", "Source", "Protocol", "Port", "Description", "ID"})
+	out := securityGroupShowOutput{}
 
-	heading := "INGRESS"
-	for _, in := range sg.IngressRule {
-		t.Append(formatRules(heading, in))
-		heading = ""
+	for _, rule := range sg.IngressRule {
+		out = append(out, securityGroupShowItemOutput{
+			Type:        "ingress",
+			ID:          rule.RuleID.String(),
+			Source:      formatRuleSource(rule),
+			Port:        formatRulePort(rule),
+			Protocol:    rule.Protocol,
+			Description: rule.Description,
+		})
+
 	}
 
-	heading = "EGRESS"
-	for _, out := range sg.EgressRule {
-		t.Append(formatRules(heading, (egoscale.IngressRule)(out)))
-		heading = ""
+	for _, rule := range sg.EgressRule {
+		out = append(out, securityGroupShowItemOutput{
+			Type:        "egress",
+			ID:          rule.RuleID.String(),
+			Source:      formatRuleSource((egoscale.IngressRule)(rule)),
+			Port:        formatRulePort((egoscale.IngressRule)(rule)),
+			Protocol:    rule.Protocol,
+			Description: rule.Description,
+		})
 	}
 
-	return nil
+	return &out, nil
 }

@@ -2,17 +2,35 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
+type configShowOutput struct {
+	Name               string `json:"name"`
+	APIKey             string `json:"api_key"`
+	APISecret          string `json:"api_secret"`
+	DefaultZone        string `json:"default_zone"`
+	DefaultTemplate    string `json:"default_template,omitempty"`
+	ComputeAPIEndpoint string `json:"compute_api_endpoint,omitempty"`
+	StorageAPIEndpoint string `json:"storage_api_endpoint,omitempty"`
+	DNSAPIEndpoint     string `json:"dns_api_endpoint,omitempty" outputLabel:"DNS API Endpoint"`
+}
+
+func (o *configShowOutput) Type() string { return "Account" }
+func (o *configShowOutput) toJSON()      { outputJSON(o) }
+func (o *configShowOutput) toText()      { outputText(o) }
+func (o *configShowOutput) toTable()     { outputTable(o) }
+
 func init() {
 	configCmd.AddCommand(&cobra.Command{
-		Use:     "show <account name>",
-		Short:   "Show an account details",
+		Use:   "show <account name>",
+		Short: "Show an account details",
+		Long: fmt.Sprintf(`This command shows an Exoscale account details.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&configShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if gAllAccount == nil {
@@ -24,15 +42,15 @@ func init() {
 				name = args[0]
 			}
 
-			return showConfig(name)
+			return output(showConfig(name))
 		},
 	})
 }
 
-func showConfig(name string) error {
+func showConfig(name string) (outputter, error) {
 	account := getAccountByName(name)
 	if account == nil {
-		return fmt.Errorf("account %q was not found", name)
+		return nil, fmt.Errorf("account %q was not found", name)
 	}
 
 	secret := strings.Repeat("×", len(account.Key))
@@ -40,35 +58,16 @@ func showConfig(name string) error {
 		secret = strings.Join(account.SecretCommand, " ")
 	}
 
-	t := table.NewTable(os.Stdout)
-	t.SetHeader([]string{name})
-
-	t.Append([]string{"Account Name", account.Account})
-	t.Append([]string{"API Key", account.Key})
-	t.Append([]string{"API Secret", secret})
-	t.Append([]string{"Default Zone", account.DefaultZone})
-
-	if account.DefaultTemplate != "" {
-		t.Append([]string{"Default Template", account.DefaultTemplate})
+	out := configShowOutput{
+		Name:               account.Name,
+		APIKey:             account.Key,
+		APISecret:          secret,
+		DefaultZone:        account.DefaultZone,
+		DefaultTemplate:    account.DefaultTemplate,
+		ComputeAPIEndpoint: account.Endpoint,
+		StorageAPIEndpoint: account.SosEndpoint,
+		DNSAPIEndpoint:     account.DNSEndpoint,
 	}
 
-	if account.Endpoint != defaultEndpoint {
-		t.Append([]string{"Endpoint", account.Endpoint})
-		t.Append([]string{"DNS Endpoint", account.DNSEndpoint})
-	}
-
-	if account.SosEndpoint != defaultSosEndpoint {
-		t.Append([]string{"SOS Endpoint", account.SosEndpoint})
-	}
-
-	if gConfigFilePath != "" {
-		t.Append([]string{"Configuration Folder", gConfigFolder})
-		t.Append([]string{"Configuration", gConfigFilePath})
-	} else {
-		t.Append([]string{"Configuration", "environment variables"})
-	}
-
-	t.Render()
-
-	return nil
+	return &out, nil
 }

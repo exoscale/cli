@@ -1,52 +1,78 @@
 package cmd
 
 import (
-	"os"
-	"strconv"
+	"fmt"
+	"strings"
+	"time"
 
-	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var runstatusIncidentListCmd = &cobra.Command{
-	Use:     "list [page name]+",
-	Short:   "List incidents from page(s)",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		pages, err := runstatusAllPages(args)
-		if err != nil {
-			return err
-		}
+type runstatusIncidentListItemOutput struct {
+	ID        int        `json:"id"`
+	Page      string     `json:"page"`
+	Title     string     `json:"title"`
+	StartDate *time.Time `json:"start_date"`
+	EndDate   *time.Time `json:"end_date"`
+	State     string     `json:"state"`
+	Status    string     `json:"status"`
+}
 
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Page Name", "Title", "State", "Status", "When", "ID"})
+type runstatusIncidentListOutput []runstatusIncidentListItemOutput
 
-		for _, page := range pages {
-			incidents, err := csRunstatus.ListRunstatusIncidents(gContext, page)
-			if err != nil {
-				return err
-			}
+func (o *runstatusIncidentListOutput) toJSON() { outputJSON(o) }
 
-			for _, incident := range incidents {
-				table.Append([]string{
-					page.Subdomain,
-					incident.Title,
-					incident.State,
-					incident.Status,
-					formatSchedule(incident.StartDate, incident.EndDate),
-					strconv.Itoa(incident.ID),
-				})
-				page.Subdomain = ""
-			}
-		}
+func (o *runstatusIncidentListOutput) toText() { outputText(o) }
 
-		table.Render()
+func (o *runstatusIncidentListOutput) toTable() {
+	for i := range *o {
+		(*o)[i].State = strings.ToUpper(strings.Replace((*o)[i].State, "_", " ", -1))
+	}
 
-		return nil
-	},
+	outputTable(o)
 }
 
 func init() {
-	runstatusIncidentCmd.AddCommand(runstatusIncidentListCmd)
+	runstatusIncidentCmd.AddCommand(&cobra.Command{
+		Use:   "list [page name ...]",
+		Short: "List incidents",
+		Long: fmt.Sprintf(`This command lists existing runstat.us incidents.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&runstatusIncidentListOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return output(runstatusListIncidents(args))
+		},
+	})
+}
+
+func runstatusListIncidents(pageNames []string) (outputter, error) {
+	pages, err := getRunstatusPages(pageNames)
+	if err != nil {
+		return nil, err
+	}
+
+	out := runstatusIncidentListOutput{}
+
+	for _, page := range pages {
+		incidents, err := csRunstatus.ListRunstatusIncidents(gContext, page)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, incident := range incidents {
+			out = append(out, runstatusIncidentListItemOutput{
+				ID:        incident.ID,
+				Title:     incident.Title,
+				StartDate: incident.StartDate,
+				EndDate:   incident.EndDate,
+				State:     incident.State,
+				Status:    incident.Status,
+				Page:      page.Subdomain,
+			})
+		}
+	}
+
+	return &out, nil
 }

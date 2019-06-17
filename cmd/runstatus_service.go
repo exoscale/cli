@@ -10,7 +10,7 @@ import (
 // runstatusServiceCmd represents the service command
 var runstatusServiceCmd = &cobra.Command{
 	Use:   "service",
-	Short: "Service management",
+	Short: "Runstat.us service management",
 }
 
 func getServiceByName(page egoscale.RunstatusPage, name string) (*egoscale.RunstatusService, error) {

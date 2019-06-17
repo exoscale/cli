@@ -1,24 +1,45 @@
 package cmd
 
 import (
-	"os"
+	"fmt"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// kubeListCmd represents the kube list command
-var kubeListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List running Kubernetes cluster instances",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return listKubeInstances()
-	},
+type kubeListItemOutput struct {
+	Name          string `json:"name"`
+	IPAddress     string `json:"ipaddress"`
+	State         string `json:"state"`
+	Size          string `json:"size"`
+	K8sVersion    string `json:"k8s_version" outputLabel:"k8s Version"`
+	DockerVersion string `json:"docker_version"`
+	CalicoVersion string `json:"calico_version"`
 }
 
-func listKubeInstances() error {
+type kubeListOutput []kubeListItemOutput
+
+func (o *kubeListOutput) toJSON()  { outputJSON(o) }
+func (o *kubeListOutput) toText()  { outputText(o) }
+func (o *kubeListOutput) toTable() { outputTable(o) }
+
+func init() {
+	kubeCmd.AddCommand(&cobra.Command{
+		Use:   "list",
+		Short: "List running Kubernetes cluster instances",
+		Long: fmt.Sprintf(`This command lists existing Kubernetes cluster instances.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&kubeListOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return output(listKubeInstances())
+		},
+	})
+}
+
+func listKubeInstances() (outputter, error) {
 	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{
 		Tags: []egoscale.ResourceTag{{
 			Key:   "managedby",
@@ -26,30 +47,24 @@ func listKubeInstances() error {
 		}},
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "IP Address", "Size", "Version", "Calico", "Docker", "State"})
+	out := kubeListOutput{}
 
 	for _, key := range vms {
 		vm := key.(*egoscale.VirtualMachine)
 
-		table.Append([]string{
-			vm.Name,
-			vm.IP().String(),
-			vm.ServiceOfferingName,
-			getKubeInstanceVersion(vm, kubeTagKubernetes),
-			getKubeInstanceVersion(vm, kubeTagCalico),
-			getKubeInstanceVersion(vm, kubeTagDocker),
-			vm.State})
+		out = append(out, kubeListItemOutput{
+			Name:          vm.Name,
+			IPAddress:     vm.IP().String(),
+			State:         vm.State,
+			Size:          vm.ServiceOfferingName,
+			K8sVersion:    getKubeInstanceVersion(vm, kubeTagKubernetes),
+			DockerVersion: getKubeInstanceVersion(vm, kubeTagDocker),
+			CalicoVersion: getKubeInstanceVersion(vm, kubeTagCalico),
+		})
 	}
 
-	table.Render()
-
-	return nil
-}
-
-func init() {
-	kubeCmd.AddCommand(kubeListCmd)
+	return &out, nil
 }

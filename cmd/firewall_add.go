@@ -224,7 +224,7 @@ A set of predefined commands exists, such a ssh, ping or minecraft.
 			return errs[0]
 		}
 
-		return firewallShow.RunE(cmd, []string{securityGroup.ID.String()})
+		return nil
 	},
 }
 

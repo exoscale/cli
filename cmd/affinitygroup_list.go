@@ -1,50 +1,57 @@
 package cmd
 
 import (
-	"os"
-	"strconv"
+	"fmt"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
-
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var affinitygroupListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List affinity group",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return displayAffinitygroup()
-	},
+type affinityGroupListItemOutput struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	NumInstances int    `json:"num_instances" outputLabel:"Instances"`
 }
 
-func displayAffinitygroup() error {
+type affinityGroupListOutput []affinityGroupListItemOutput
+
+func (o *affinityGroupListOutput) toJSON()  { outputJSON(o) }
+func (o *affinityGroupListOutput) toText()  { outputText(o) }
+func (o *affinityGroupListOutput) toTable() { outputTable(o) }
+
+func init() {
+	affinitygroupCmd.AddCommand(&cobra.Command{
+		Use:   "list",
+		Short: "List affinity group",
+		Long: fmt.Sprintf(`This command lists existing Anti-Affinity Groups.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&affinityGroupListOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return output(listAffinityGroups())
+		},
+	})
+}
+
+func listAffinityGroups() (outputter, error) {
 	resp, err := cs.RequestWithContext(gContext, &egoscale.ListAffinityGroups{})
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	affinityGroups := resp.(*egoscale.ListAffinityGroupsResponse).AffinityGroup
+	out := affinityGroupListOutput{}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Description", "Size", "ID"})
-
-	for _, affinitygroup := range affinityGroups {
-		table.Append([]string{
-			affinitygroup.Name,
-			affinitygroup.Description,
-			strconv.Itoa(len(affinitygroup.VirtualMachineIDs)),
-			affinitygroup.ID.String(),
+	for _, ag := range resp.(*egoscale.ListAffinityGroupsResponse).AffinityGroup {
+		out = append(out, affinityGroupListItemOutput{
+			ID:           ag.ID.String(),
+			Name:         ag.Name,
+			Description:  ag.Description,
+			NumInstances: len(ag.VirtualMachineIDs),
 		})
 	}
 
-	table.Render()
-
-	return nil
-}
-
-func init() {
-	affinitygroupCmd.AddCommand(affinitygroupListCmd)
+	return &out, nil
 }

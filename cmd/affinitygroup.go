@@ -35,14 +35,6 @@ func getAffinityGroupByName(name string) (*egoscale.AffinityGroup, error) {
 	return resp.(*egoscale.AffinityGroup), nil
 }
 
-func getAffinityGroups(vm *egoscale.VirtualMachine) []string {
-	ags := make([]string, len(vm.AffinityGroup))
-	for i, agN := range vm.AffinityGroup {
-		ags[i] = agN.Name
-	}
-	return ags
-}
-
 func init() {
 	RootCmd.AddCommand(affinitygroupCmd)
 }
