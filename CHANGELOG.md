@@ -4,6 +4,8 @@ UNRELEASED
 - Support template-filter in various commands (#151)
 - Fix output bug in `network delete` command (#152)
 - Display zone in `template (list|show)` commands (#153)
+- Set a custom User-Agent (#154)
+- Update egoscale to 0.18.1
 
 1.3.0
 -----

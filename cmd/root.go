@@ -288,6 +288,8 @@ func initConfig() {
 	gCurrentAccount.DNSEndpoint = strings.TrimRight(gCurrentAccount.DNSEndpoint, "/")
 	gCurrentAccount.SosEndpoint = strings.TrimRight(gCurrentAccount.SosEndpoint, "/")
 	gCurrentAccount.RunstatusEndpoint = strings.TrimRight(gCurrentAccount.RunstatusEndpoint, "/")
+
+	egoscale.UserAgent = fmt.Sprintf("Exoscale-CLI/%s (%s) %s", gVersion, gCommit, egoscale.UserAgent)
 }
 
 func isNonCredentialCmd(cmds ...string) bool {
