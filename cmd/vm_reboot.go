@@ -18,8 +18,19 @@ var vmRebootCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
 		errs := []error{}
 		for _, v := range args {
+			if !force {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to reboot virtual machine %q?", v)) {
+					return nil
+				}
+			}
+
 			if err := rebootVirtualMachine(v); err != nil {
 				errs = append(errs, fmt.Errorf("could not reboot %q: %s", v, err))
 			}
@@ -59,5 +70,6 @@ func rebootVirtualMachine(vmName string) error {
 }
 
 func init() {
+	vmRebootCmd.Flags().BoolP("force", "f", false, "Attempt to reboot vitual machine without prompting for confirmation")
 	vmCmd.AddCommand(vmRebootCmd)
 }

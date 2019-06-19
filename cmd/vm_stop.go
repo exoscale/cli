@@ -18,8 +18,19 @@ var vmStopCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
 		errs := []error{}
 		for _, v := range args {
+			if !force {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to stop virtual machine %q?", v)) {
+					return nil
+				}
+			}
+
 			if err := stopVirtualMachine(v); err != nil {
 				errs = append(errs, fmt.Errorf("could not stop %q: %s", v, err))
 			}
@@ -59,5 +70,6 @@ func stopVirtualMachine(vmName string) error {
 }
 
 func init() {
+	vmStopCmd.Flags().BoolP("force", "f", false, "Attempt to stop vitual machine without prompting for confirmation")
 	vmCmd.AddCommand(vmStopCmd)
 }
