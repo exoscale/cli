@@ -13,7 +13,7 @@ import (
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 
-	minio "github.com/minio/minio-go"
+	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
 )
 
@@ -179,11 +179,10 @@ var sosUploadCmd = &cobra.Command{
 					gContext,
 					bucketName,
 					fileToUP.remotePath,
-					f,
+					reader,
 					fileInfo.Size(),
 					minio.PutObjectOptions{
 						ContentType: fileToUP.contentType,
-						Progress:    reader,
 					},
 				)
 				if upErr != nil {

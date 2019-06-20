@@ -52,7 +52,7 @@ github.com/danwakefield/fnmatch
 # github.com/dlclark/regexp2 v1.1.6
 github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
-# github.com/dustin/go-humanize v0.0.0-20180713052910-9f541cc9db5d
+# github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
 # github.com/exoscale/egoscale v0.18.1
 github.com/exoscale/egoscale
@@ -101,14 +101,14 @@ github.com/mattn/go-colorable
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.3
 github.com/mattn/go-runewidth
-# github.com/minio/minio-go v6.0.11+incompatible
-github.com/minio/minio-go
-github.com/minio/minio-go/pkg/credentials
-github.com/minio/minio-go/pkg/encrypt
-github.com/minio/minio-go/pkg/s3signer
-github.com/minio/minio-go/pkg/s3utils
-github.com/minio/minio-go/pkg/set
-# github.com/mitchellh/go-homedir v1.0.0
+# github.com/minio/minio-go/v6 v6.0.29
+github.com/minio/minio-go/v6
+github.com/minio/minio-go/v6/pkg/credentials
+github.com/minio/minio-go/v6/pkg/encrypt
+github.com/minio/minio-go/v6/pkg/s3signer
+github.com/minio/minio-go/v6/pkg/s3utils
+github.com/minio/minio-go/v6/pkg/set
+# github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
@@ -144,7 +144,7 @@ github.com/vbauerster/mpb/v4
 github.com/vbauerster/mpb/v4/decor
 github.com/vbauerster/mpb/v4/cwriter
 github.com/vbauerster/mpb/v4/internal
-# golang.org/x/crypto v0.0.0-20190219172222-a4c6cb3142f2
+# golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/curve25519
@@ -157,11 +157,14 @@ golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/blake2b
 # golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3
 golang.org/x/lint
-# golang.org/x/net v0.0.0-20181207154023-610586996380
+# golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
+golang.org/x/net/http2
+golang.org/x/net/publicsuffix
 golang.org/x/net/idna
-# golang.org/x/sys v0.0.0-20190219203350-90b0e4468f99
+golang.org/x/net/http2/hpack
+# golang.org/x/sys v0.0.0-20190422165155-953cdadca894
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu
@@ -170,11 +173,13 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 golang.org/x/text/secure/bidirule
 golang.org/x/text/unicode/bidi
-# golang.org/x/tools v0.0.0-20181122213734-04b5d21e00f1
+# golang.org/x/tools v0.0.0-20190328211700-ab21143f2384
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/gcimporter
 # gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c
 gopkg.in/alecthomas/kingpin.v3-unstable
+# gopkg.in/ini.v1 v1.42.0
+gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2

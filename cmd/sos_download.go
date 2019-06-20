@@ -8,7 +8,7 @@ import (
 	"path"
 	"time"
 
-	minio "github.com/minio/minio-go"
+	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
