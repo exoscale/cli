@@ -15,19 +15,32 @@ var templateRegisterCmd = &cobra.Command{
 	Short:   "register a custom template",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		checksum, err := cmd.Flags().GetString("checksum")
+		name, err := cmd.Flags().GetString("name")
 		if err != nil {
 			return err
+		} else if name == "" {
+			return fmt.Errorf("template name must be specified")
 		}
 
 		description, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
+		} else if description == "" {
+			return fmt.Errorf("template description must be specified")
 		}
 
-		name, err := cmd.Flags().GetString("name")
+		url, err := cmd.Flags().GetString("url")
 		if err != nil {
 			return err
+		} else if url == "" {
+			return fmt.Errorf("template image URL must be specified")
+		}
+
+		checksum, err := cmd.Flags().GetString("checksum")
+		if err != nil {
+			return err
+		} else if checksum == "" {
+			return fmt.Errorf("template image file checksum must be specified")
 		}
 
 		zone, err := cmd.Flags().GetString("zone")
@@ -37,11 +50,6 @@ var templateRegisterCmd = &cobra.Command{
 
 		if zone == "" {
 			zone = gCurrentAccount.DefaultZone
-		}
-
-		url, err := cmd.Flags().GetString("url")
-		if err != nil {
-			return err
 		}
 
 		disablePassword, err := cmd.Flags().GetBool("disable-password")
@@ -58,22 +66,18 @@ var templateRegisterCmd = &cobra.Command{
 
 		enableSSHKey := !(disableSSHKey)
 
-		username, err := cmd.Flags().GetString("username")
-		if err != nil {
-			return err
-		}
-
-		details := make(map[string]string)
-		details["username"] = username
-
 		req := egoscale.RegisterCustomTemplate{
-			Checksum:        checksum,
-			Details:         details,
-			Displaytext:     description,
 			Name:            name,
+			URL:             url,
+			Checksum:        checksum,
+			Displaytext:     description,
 			PasswordEnabled: &enablePassword,
 			SSHKeyEnabled:   &enableSSHKey,
-			URL:             url,
+		}
+
+		if username, _ := cmd.Flags().GetString("username"); username != "" {
+			req.Details = make(map[string]string)
+			req.Details["username"] = username
 		}
 
 		return templateRegister(req, zone)
