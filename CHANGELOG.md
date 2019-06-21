@@ -7,6 +7,7 @@ UNRELEASED
 - Display zone in `template (list|show)` commands (#153)
 - Set a custom User-Agent (#154)
 - Fix SOS upload large file corruption bug (#137)
+- Require confirmation for `vm stop`/`vm reboot` commands (#156)
 - Update egoscale to 0.18.1
 
 1.3.0
