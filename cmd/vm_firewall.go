@@ -153,9 +153,14 @@ func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) error {
 		return err
 	}
 
+	sgs := []string{}
+	for _, sgN := range vm.SecurityGroup {
+		sgs = append(sgs, sgN.Name)
+	}
+
 	table := table.NewTable(os.Stdout)
 	table.SetHeader([]string{vm.Name})
-	table.Append([]string{"Security Groups", strings.Join(getSecurityGroup(vm), " - ")})
+	table.Append([]string{"Security Groups", strings.Join(sgs, " - ")})
 	table.Render()
 
 	return nil

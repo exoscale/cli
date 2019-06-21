@@ -63,14 +63,6 @@ func getVirtualMachineByNameOrID(name string) (*egoscale.VirtualMachine, error) 
 	return vm, nil
 }
 
-func getSecurityGroup(vm *egoscale.VirtualMachine) []string {
-	sgs := []string{}
-	for _, sgN := range vm.SecurityGroup {
-		sgs = append(sgs, sgN.Name)
-	}
-	return sgs
-}
-
 func getKeyPairPath(vmID string) string {
 	return path.Join(gConfigFolder, "instances", vmID, "id_rsa")
 }

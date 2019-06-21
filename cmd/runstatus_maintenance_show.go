@@ -2,13 +2,26 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"strings"
+	"time"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
+
+type runstatusMaintenanceShowOutput struct {
+	ID               int        `json:"id"`
+	Title            string     `json:"title"`
+	Description      string     `json:"description,omitempty"`
+	State            string     `json:"state"`
+	StartDate        *time.Time `json:"start_date"`
+	EndDate          *time.Time `json:"end_date"`
+	AffectedServices []string   `json:"affected_services,omitempty"`
+}
+
+func (o *runstatusMaintenanceShowOutput) Type() string { return "Maintenance" }
+func (o *runstatusMaintenanceShowOutput) toJSON()      { outputJSON(o) }
+func (o *runstatusMaintenanceShowOutput) toText()      { outputText(o) }
+func (o *runstatusMaintenanceShowOutput) toTable()     { outputTable(o) }
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(
@@ -25,11 +38,9 @@ func init() {
 				maintenance := args[0]
 
 				if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
-					fmt.Fprintf(os.Stderr, `Error: No default runstat.us page is set:
-  Please specify a page in parameter or add it to %q
-
-  `, gConfigFilePath)
-					return cmd.Usage()
+					return fmt.Errorf("No default runstat.us page is set.\n"+
+						"Please specify a page in parameter or add it to your configuration file %s",
+						gConfigFilePath)
 				}
 
 				if len(args) > 1 {
@@ -37,34 +48,31 @@ func init() {
 					maintenance = args[1]
 				}
 
-				return showRunstatusMaintenance(page, maintenance)
+				return output(showRunstatusMaintenance(page, maintenance))
 			},
 		})
 }
 
-func showRunstatusMaintenance(p, m string) error {
+func showRunstatusMaintenance(p, m string) (outputter, error) {
 	page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: p})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	maintenance, err := getMaintenanceByNameOrID(*page, m)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	t := table.NewTable(os.Stdout)
-	t.SetHeader([]string{page.Subdomain})
+	out := runstatusMaintenanceShowOutput{
+		ID:               maintenance.ID,
+		Title:            maintenance.Title,
+		Description:      maintenance.Description,
+		State:            maintenance.Status,
+		StartDate:        maintenance.StartDate,
+		EndDate:          maintenance.EndDate,
+		AffectedServices: maintenance.Services,
+	}
 
-	t.Append([]string{"ID", fmt.Sprint(maintenance.ID)})
-	t.Append([]string{"Title", maintenance.Title})
-	t.Append([]string{"Description", maintenance.Description})
-	t.Append([]string{"State", maintenance.Status})
-	t.Append([]string{"Start Date", fmt.Sprint(maintenance.StartDate)})
-	t.Append([]string{"End Date", fmt.Sprint(maintenance.EndDate)})
-	t.Append([]string{"Affected Services", strings.Join(maintenance.Services, "\n")})
-
-	t.Render()
-
-	return nil
+	return &out, nil
 }

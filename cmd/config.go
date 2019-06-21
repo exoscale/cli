@@ -19,8 +19,9 @@ import (
 )
 
 type config struct {
-	DefaultAccount string
-	Accounts       []account
+	DefaultAccount      string
+	DefaultOutputFormat string
+	Accounts            []account
 }
 
 type account struct {
@@ -69,6 +70,10 @@ func (a account) AccountName() string {
 	return a.Name
 }
 
+func (a account) IsDefault() bool {
+	return a.Name == gAllAccount.DefaultAccount
+}
+
 const (
 	defaultConfigFileName    = "exoscale"
 	defaultEndpoint          = "https://api.exoscale.ch/compute"
@@ -76,6 +81,7 @@ const (
 	defaultSosEndpoint       = "https://sos-{zone}.exo.io"
 	defaultRunstatusEndpoint = "https://api.runstatus.com"
 	defaultZone              = "ch-dk-2"
+	defaultOutputFormat      = "table"
 )
 
 // configCmd represents the config command

@@ -1,61 +1,73 @@
 package cmd
 
 import (
-	"os"
+	"fmt"
+	"strings"
 
-	"github.com/exoscale/cli/table"
-	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// runstatusListCmd represents the list command
-var runstatusListCmd = &cobra.Command{
-	Use:     "list [page name]+",
-	Short:   "List runstat.us pages",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		pages, err := runstatusAllPages(args)
-		if err != nil {
-			return err
-		}
-
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Page Name", "Public URL"})
-		for _, page := range pages {
-			table.Append([]string{page.Subdomain, page.PublicURL})
-		}
-		table.Render()
-
-		return nil
-	},
+type runstatusPageListItemOutput struct {
+	ID        int    `json:"id" output:"-"`
+	Name      string `json:"name"`
+	PublicURL string `json:"public_url"`
 }
 
-func runstatusAllPages(args []string) ([]egoscale.RunstatusPage, error) {
-	pages := []egoscale.RunstatusPage{}
+type runstatusPageListOutput []runstatusPageListItemOutput
 
-	if len(args) == 0 {
-		ps, err := csRunstatus.ListRunstatusPages(gContext)
-		if err != nil {
-			return nil, err
-		}
-
-		for i := range ps {
-			pages = append(pages, ps[i])
-		}
-	}
-
-	for _, arg := range args {
-		page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: arg})
-		if err != nil {
-			return nil, err
-		}
-
-		pages = append(pages, *page)
-	}
-
-	return pages, nil
-}
+func (o *runstatusPageListOutput) toJSON()  { outputJSON(o) }
+func (o *runstatusPageListOutput) toText()  { outputText(o) }
+func (o *runstatusPageListOutput) toTable() { outputTable(o) }
 
 func init() {
-	runstatusCmd.AddCommand(runstatusListCmd)
+	runstatusCmd.AddCommand(&cobra.Command{
+		Use:   "list [filter ...]",
+		Short: "List runstat.us pages",
+		Long: fmt.Sprintf(`This command lists existing runstat.us pages.
+Optional patterns can be provided to filter results by name.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&runstatusPageListOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return output(listRunstatusPages(args))
+		},
+	})
+}
+
+func listRunstatusPages(filters []string) (outputter, error) {
+	pages, err := csRunstatus.ListRunstatusPages(gContext)
+	if err != nil {
+		return nil, err
+	}
+
+	out := runstatusPageListOutput{}
+
+	for _, p := range pages {
+		keep := true
+		if len(filters) > 0 {
+			keep = false
+			s := strings.ToLower(p.Subdomain)
+
+			for _, filter := range filters {
+				substr := strings.ToLower(filter)
+				if strings.Contains(s, substr) {
+					keep = true
+					break
+				}
+			}
+		}
+
+		if !keep {
+			continue
+		}
+
+		out = append(out, runstatusPageListItemOutput{
+			ID:        p.ID,
+			Name:      p.Subdomain,
+			PublicURL: p.PublicURL,
+		})
+	}
+
+	return &out, nil
 }

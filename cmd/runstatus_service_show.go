@@ -2,17 +2,31 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
+type runstatusServiceShowOutput struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	State string `json:"state"`
+}
+
+func (o *runstatusServiceShowOutput) Type() string { return "Service" }
+func (o *runstatusServiceShowOutput) toJSON()      { outputJSON(o) }
+func (o *runstatusServiceShowOutput) toText()      { outputText(o) }
+func (o *runstatusServiceShowOutput) toTable()     { outputTable(o) }
+
 func init() {
 	runstatusServiceCmd.AddCommand(&cobra.Command{
-		Use:     "show [page name] <service name>",
-		Short:   "Show a service details",
+		Use:   "show [page name] <service name>",
+		Short: "Show a service details",
+		Long: fmt.Sprintf(`This command shows a runstat.us page details.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&runstatusServiceShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -23,11 +37,9 @@ func init() {
 			service := args[0]
 
 			if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
-				fmt.Fprintf(os.Stderr, `Error: No default runstat.us page is set:
-  Please specify a page in parameter or add it to %q
-
-  `, gConfigFilePath)
-				return cmd.Usage()
+				return fmt.Errorf("No default runstat.us page is set.\n"+
+					"Please specify a page in parameter or add it to your configuration file %s",
+					gConfigFilePath)
 			}
 
 			if len(args) > 1 {
@@ -35,30 +47,27 @@ func init() {
 				service = args[1]
 			}
 
-			return showRunstatusService(page, service)
+			return output(runstatusShowService(page, service))
 		},
 	})
 }
 
-func showRunstatusService(p, s string) error {
+func runstatusShowService(p, s string) (outputter, error) {
 	page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: p})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	service, err := getServiceByName(*page, s)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	t := table.NewTable(os.Stdout)
-	t.SetHeader([]string{page.Subdomain})
+	out := runstatusServiceShowOutput{
+		ID:    service.ID,
+		Name:  service.Name,
+		State: service.State,
+	}
 
-	t.Append([]string{"ID", fmt.Sprint(service.ID)})
-	t.Append([]string{"Name", service.Name})
-	t.Append([]string{"State", service.State})
-
-	t.Render()
-
-	return nil
+	return &out, nil
 }

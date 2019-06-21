@@ -2,31 +2,57 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/exoscale/cli/table"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// showCmd represents the show command
-var vmShowCmd = &cobra.Command{
-	Use:     "show <name | id>",
-	Short:   "Show a virtual machine details",
-	Aliases: gShowAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return cmd.Usage()
-		}
-		return showVM(args[0])
-	},
+type vmShowOutput struct {
+	ID                 string   `json:"id"`
+	Name               string   `json:"name"`
+	CreationDate       string   `json:"creation_date"`
+	Size               string   `json:"size"`
+	DiskSize           string   `json:"disk_size"`
+	Template           string   `json:"template"`
+	Zone               string   `json:"zone"`
+	State              string   `json:"state"`
+	IPAddress          string   `json:"ip_address"`
+	Username           string   `json:"username"`
+	SSHKey             string   `json:"ssh_key"`
+	SecurityGroups     []string `json:"security_groups,omitempty"`
+	AntiAffinityGroups []string `json:"antiaffinity_groups,omitempty" outputLabel:"Anti-Affinity Groups"`
 }
 
-func showVM(name string) error {
+func (o *vmShowOutput) Type() string { return "Instance" }
+func (o *vmShowOutput) toJSON()      { outputJSON(o) }
+func (o *vmShowOutput) toText()      { outputText(o) }
+func (o *vmShowOutput) toTable()     { outputTable(o) }
+
+func init() {
+	vmCmd.AddCommand(&cobra.Command{
+		Use:   "show <name | id>",
+		Short: "Show a virtual machine details",
+		Long: fmt.Sprintf(`This command shows a Compute instance details.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+		Aliases: gShowAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return cmd.Usage()
+			}
+
+			return output(showVM(args[0]))
+		},
+	})
+}
+
+func showVM(name string) (outputter, error) {
 	vm, err := getVirtualMachineByNameOrID(name)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := cs.GetWithContext(gContext, &egoscale.Template{
@@ -34,71 +60,48 @@ func showVM(name string) error {
 		ID:         vm.TemplateID,
 		ZoneID:     vm.ZoneID,
 	})
-
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	temp := resp.(*egoscale.Template)
+	template := resp.(*egoscale.Template)
 
 	resp, err = cs.GetWithContext(gContext, &egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})
-
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	volume := resp.(*egoscale.Volume)
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{vm.Name})
-
-	table.Append([]string{"State", vm.State})
-
-	table.Append([]string{"OS Template", vm.TemplateName})
-
-	table.Append([]string{"Region", vm.ZoneName})
-
-	table.Append([]string{"Instance Type", vm.ServiceOfferingName})
-
-	table.Append([]string{"Disk", fmt.Sprintf("%d GB", volume.Size>>30)})
-
-	table.Append([]string{"Instance Hostname", vm.Name})
-
-	table.Append([]string{"Instance Display Name", vm.DisplayName})
-
-	username, ok := temp.Details["username"]
-	if !ok {
-		return fmt.Errorf("template %q: failed to get username", temp.Name)
+	out := vmShowOutput{
+		ID:                 vm.ID.String(),
+		Name:               vm.DisplayName,
+		CreationDate:       vm.Created,
+		Size:               vm.ServiceOfferingName,
+		Template:           vm.TemplateName,
+		Zone:               vm.ZoneName,
+		State:              vm.State,
+		DiskSize:           humanize.IBytes(uint64(volume.Size)),
+		IPAddress:          vm.IP().String(),
+		Username:           "n/a",
+		SSHKey:             vm.KeyPair,
+		SecurityGroups:     make([]string, len(vm.SecurityGroup)),
+		AntiAffinityGroups: make([]string, len(vm.AffinityGroup)),
 	}
 
-	table.Append([]string{"Instance Username", username})
+	for i, sg := range vm.SecurityGroup {
+		out.SecurityGroups[i] = sg.Name
+	}
 
-	table.Append([]string{"Created on", vm.Created})
+	for i, aag := range vm.AffinityGroup {
+		out.AntiAffinityGroups[i] = aag.Name
+	}
 
-	table.Append([]string{"Base SSH Key", vm.KeyPair})
+	if username, ok := template.Details["username"]; ok {
+		out.Username = username
+	}
 
-	sgs := getSecurityGroup(vm)
-
-	sgName := strings.Join(sgs, " - ")
-
-	table.Append([]string{"Security Groups", sgName})
-
-	ags := getAffinityGroups(vm)
-
-	table.Append([]string{"Affinity Groups", strings.Join(ags, " - ")})
-
-	table.Append([]string{"Instance IP", vm.IP().String()})
-
-	table.Append([]string{"ID", vm.ID.String()})
-
-	table.Render()
-
-	return nil
-}
-
-func init() {
-	vmCmd.AddCommand(vmShowCmd)
+	return &out, nil
 }

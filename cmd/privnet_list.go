@@ -2,92 +2,96 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var privnetListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List private networks",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"zone", "Name", "ID", "Associated Virtual machine", "DHCP"})
-		if err := listPrivnets(zone, table); err != nil {
-			return err
-		}
-		table.Render()
-		return nil
-	},
+type privnetListItemOutput struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Zone         string `json:"zone"`
+	DHCP         string `json:"dhcp"`
+	NumInstances int    `json:"num_instances" outputLabel:"Instances"`
 }
 
-func listPrivnets(zone string, table *table.Table) error {
-	pnReq := &egoscale.Network{}
+type privnetListOutput []privnetListItemOutput
 
-	if zone != "" {
-		var err error
-		pnReq.Type = "Isolated"
-		pnReq.ZoneID, err = getZoneIDByName(zone)
-		if err != nil {
-			return err
-		}
-		pnReq.CanUseForDeploy = true
-		pns, err := cs.ListWithContext(gContext, pnReq)
-		if err != nil {
-			return err
-		}
+func (o *privnetListOutput) toJSON()  { outputJSON(o) }
+func (o *privnetListOutput) toText()  { outputText(o) }
+func (o *privnetListOutput) toTable() { outputTable(o) }
 
-		var zone string
-		for i, pNet := range pns {
-			pn := pNet.(*egoscale.Network)
-			if i == 0 {
-				zone = pn.ZoneName
-			}
+func init() {
+	var privnetListCmd = &cobra.Command{
+		Use:   "list",
+		Short: "List private networks",
+		Long: fmt.Sprintf(`This command lists existing Private Networks.
 
-			vms, err := privnetDetails(pn)
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&privnetListOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			zone, err := cmd.Flags().GetString("zone")
 			if err != nil {
 				return err
 			}
 
-			vmNum := fmt.Sprintf("%d", len(vms))
-
-			table.Append([]string{
-				zone,
-				pn.Name,
-				pn.ID.String(),
-				vmNum,
-				dhcpRange(*pn),
-			})
-
-			zone = ""
-		}
-		return nil
+			return output(listPrivnets(zone))
+		},
 	}
 
-	zones := &egoscale.Zone{}
-	zs, err := cs.ListWithContext(gContext, zones)
-	if err != nil {
-		return err
-	}
-
-	for _, z := range zs {
-		zID := z.(*egoscale.Zone).Name
-		if err := listPrivnets(zID, table); err != nil {
-			return err
-		}
-	}
-	return nil
+	privnetListCmd.Flags().StringP("zone", "z", "", "Show Private Networks only in specified zone")
+	privnetCmd.AddCommand(privnetListCmd)
 }
 
-func init() {
-	privnetListCmd.Flags().StringP("zone", "z", "", "Show Private Network from given zone")
-	privnetCmd.AddCommand(privnetListCmd)
+func listPrivnets(zone string) (outputter, error) {
+	out := privnetListOutput{}
+
+	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, z := range zones {
+		if zone != "" && z.(*egoscale.Zone).Name != zone {
+			continue
+		}
+
+		req := egoscale.Network{
+			ZoneID:          z.(*egoscale.Zone).ID,
+			Type:            "Isolated",
+			CanUseForDeploy: true,
+		}
+
+		privnets, err := cs.ListWithContext(gContext, &req)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, p := range privnets {
+			privnet := p.(*egoscale.Network)
+
+			vms, err := privnetDetails(privnet)
+			if err != nil {
+				return nil, err
+			}
+			instances := make([]string, len(vms))
+			for i := range vms {
+				instances[i] = vms[i].Name
+			}
+
+			o := privnetListItemOutput{
+				ID:           privnet.ID.String(),
+				Name:         privnet.Name,
+				Zone:         z.(*egoscale.Zone).Name,
+				DHCP:         dhcpRange(*privnet),
+				NumInstances: len(instances),
+			}
+
+			out = append(out, o)
+		}
+	}
+
+	return &out, nil
 }

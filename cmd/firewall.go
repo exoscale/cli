@@ -21,17 +21,21 @@ func init() {
 	RootCmd.AddCommand(firewallCmd)
 }
 
-// Utils func for the firewall family
-
-func formatRules(name string, rule egoscale.IngressRule) []string {
+func formatRuleSource(rule egoscale.IngressRule) string {
 	var source string
+
 	if rule.CIDR != nil {
 		source = fmt.Sprintf("CIDR %s", rule.CIDR)
 	} else {
 		source = fmt.Sprintf("SG %s", rule.SecurityGroupName)
 	}
 
+	return source
+}
+
+func formatRulePort(rule egoscale.IngressRule) string {
 	var ports string
+
 	if rule.Protocol == "icmp" || rule.Protocol == "icmpv6" {
 		c := icmpCode((uint16(rule.IcmpType) << 8) | uint16(rule.IcmpCode))
 		t := c.icmpType()
@@ -40,19 +44,14 @@ func formatRules(name string, rule egoscale.IngressRule) []string {
 		if desc == "" {
 			desc = t.StringFormatted()
 		}
-		ports = fmt.Sprintf("%d, %d (%s)", rule.IcmpType, rule.IcmpCode, desc)
+		ports = fmt.Sprintf("%d,%d (%s)", rule.IcmpType, rule.IcmpCode, desc)
 	} else if rule.StartPort == rule.EndPort {
-		p := port(rule.StartPort)
-		if p.StringFormatted() != "" {
-			ports = fmt.Sprintf("%d (%s)", rule.StartPort, p.String())
-		} else {
-			ports = fmt.Sprintf("%d", rule.StartPort)
-		}
+		ports = fmt.Sprint(rule.StartPort)
 	} else {
 		ports = fmt.Sprintf("%d-%d", rule.StartPort, rule.EndPort)
 	}
 
-	return []string{name, source, rule.Protocol, ports, rule.Description, rule.RuleID.String()}
+	return ports
 }
 
 func getSecurityGroupByNameOrID(name string) (*egoscale.SecurityGroup, error) {

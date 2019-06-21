@@ -1,50 +1,68 @@
 package cmd
 
 import (
-	"os"
+	"fmt"
 	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// listCmd represents the list command
-var vmlistCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List all the virtual machines instances",
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) > 0 {
-			return cmd.Usage()
-		}
-		return listVMs()
-	},
+type vmListItemOutput struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Size      string `json:"size"`
+	Zone      string `json:"zone"`
+	State     string `json:"state"`
+	IPAddress string `json:"ip_address"`
 }
 
-func listVMs() error {
+type vmListOutput []vmListItemOutput
+
+func (o *vmListOutput) toJSON()  { outputJSON(o) }
+func (o *vmListOutput) toText()  { outputText(o) }
+func (o *vmListOutput) toTable() { outputTable(o) }
+
+func init() {
+	vmCmd.AddCommand(&cobra.Command{
+		Use:   "list",
+		Short: "List all the virtual machines instances",
+		Long: fmt.Sprintf(`This command lists existing Compute instances.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&vmListOutput{}), ", ")),
+		Aliases: gListAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				return cmd.Usage()
+			}
+
+			return output(listVMs())
+		},
+	})
+}
+
+func listVMs() (outputter, error) {
 	vm := &egoscale.VirtualMachine{}
 	vms, err := cs.ListWithContext(gContext, vm)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Security Group", "IP Address", "Status", "Zone", "ID"})
+	out := vmListOutput{}
 
 	for _, key := range vms {
 		vm := key.(*egoscale.VirtualMachine)
 
-		sgs := getSecurityGroup(vm)
-
-		sgName := strings.Join(sgs, " - ")
-		table.Append([]string{vm.Name, sgName, vm.IP().String(), vm.State, vm.ZoneName, vm.ID.String()})
+		out = append(out, vmListItemOutput{
+			ID:        vm.ID.String(),
+			Name:      vm.Name,
+			Size:      vm.ServiceOfferingName,
+			Zone:      vm.ZoneName,
+			State:     vm.State,
+			IPAddress: vm.IP().String(),
+		})
 	}
-	table.Render()
 
-	return nil
-}
-
-func init() {
-	vmCmd.AddCommand(vmlistCmd)
+	return &out, nil
 }
