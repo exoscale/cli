@@ -70,6 +70,6 @@ func rebootVirtualMachine(vmName string) error {
 }
 
 func init() {
-	vmRebootCmd.Flags().BoolP("force", "f", false, "Attempt to reboot vitual machine without prompting for confirmation")
+	vmRebootCmd.Flags().BoolP("force", "f", false, "Attempt to reboot virtual machine without prompting for confirmation")
 	vmCmd.AddCommand(vmRebootCmd)
 }
