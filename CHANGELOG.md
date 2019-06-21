@@ -1,12 +1,12 @@
-UNRELEASED
-----------
+1.4.0
+-----
 
+- Fix SOS upload large file corruption bug (#137)
 - Add support for commands output customization (#150)
 - Support template-filter in various commands (#151)
 - Fix output bug in `network delete` command (#152)
 - Display zone in `template (list|show)` commands (#153)
 - Set a custom User-Agent (#154)
-- Fix SOS upload large file corruption bug (#137)
 - Require confirmation for `vm stop`/`vm reboot` commands (#156)
 - Update egoscale to 0.18.1
 
