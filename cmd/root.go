@@ -90,7 +90,7 @@ func Execute(version, commit string) {
 	gContext = ctx
 
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 		os.Exit(1)
 	}
 }
