@@ -70,6 +70,6 @@ func stopVirtualMachine(vmName string) error {
 }
 
 func init() {
-	vmStopCmd.Flags().BoolP("force", "f", false, "Attempt to stop vitual machine without prompting for confirmation")
+	vmStopCmd.Flags().BoolP("force", "f", false, "Attempt to stop virtual machine without prompting for confirmation")
 	vmCmd.AddCommand(vmStopCmd)
 }
