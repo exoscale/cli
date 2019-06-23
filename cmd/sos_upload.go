@@ -145,7 +145,7 @@ var sosUploadCmd = &cobra.Command{
 
 		for _, fToUpload := range filesToUpload {
 
-			go func(fileToUP fileToUpload, wg *sync.WaitGroup) {
+			go func(fileToUP fileToUpload) {
 				fileInfo, err := os.Stat(fileToUP.localPath)
 				if err != nil {
 					log.Fatal(err)
@@ -169,7 +169,7 @@ var sosUploadCmd = &cobra.Command{
 					log.Fatal(err)
 				}
 				defer f.Close() //nolint: errcheck
-				defer wg.Done()
+				defer taskWG.Done()
 
 				workerSem <- 1
 				reader := bar.ProxyReader(f)
@@ -189,7 +189,7 @@ var sosUploadCmd = &cobra.Command{
 				}
 				<-workerSem
 
-			}(fToUpload, &taskWG)
+			}(fToUpload)
 		}
 		p.Wait()
 
