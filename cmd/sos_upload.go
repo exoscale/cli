@@ -132,9 +132,8 @@ var sosUploadCmd = &cobra.Command{
 		lenFileToUpload := len(filesToUpload)
 
 		var taskWG sync.WaitGroup
-		p := mpb.New(
+		p := mpb.NewWithContext(gContext,
 			mpb.WithWaitGroup(&taskWG),
-			mpb.WithContext(gContext),
 			// override default (80) width
 			mpb.WithWidth(64),
 			// override default 120ms refresh rate
