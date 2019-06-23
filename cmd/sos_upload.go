@@ -191,7 +191,6 @@ var sosUploadCmd = &cobra.Command{
 				<-sem
 			}(fToUpload, workerSem, &taskWG)
 		}
-		taskWG.Wait()
 		p.Wait()
 
 		return nil
