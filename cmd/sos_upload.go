@@ -144,9 +144,8 @@ var sosUploadCmd = &cobra.Command{
 		workerSem := make(chan int, parallelSosUpload)
 
 		for _, fToUpload := range filesToUpload {
-			workerSem <- 1
 
-			go func(fileToUP fileToUpload, sem chan int, wg *sync.WaitGroup) {
+			go func(fileToUP fileToUpload, wg *sync.WaitGroup) {
 				fileInfo, err := os.Stat(fileToUP.localPath)
 				if err != nil {
 					log.Fatal(err)
@@ -172,6 +171,7 @@ var sosUploadCmd = &cobra.Command{
 				defer f.Close() //nolint: errcheck
 				defer wg.Done()
 
+				workerSem <- 1
 				reader := bar.ProxyReader(f)
 				// Upload object with FPutObject
 				_, upErr := minioClient.PutObjectWithContext(
@@ -187,9 +187,9 @@ var sosUploadCmd = &cobra.Command{
 				if upErr != nil {
 					log.Fatal(upErr)
 				}
+				<-workerSem
 
-				<-sem
-			}(fToUpload, workerSem, &taskWG)
+			}(fToUpload, &taskWG)
 		}
 		p.Wait()
 
