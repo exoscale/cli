@@ -146,10 +146,19 @@ var sosUploadCmd = &cobra.Command{
 		for _, fileToUP := range filesToUpload {
 			fileToUP := fileToUP
 			go func() {
+				defer taskWG.Done()
+				workerSem <- 1
+
 				fileInfo, err := os.Stat(fileToUP.localPath)
 				if err != nil {
 					log.Fatal(err)
 				}
+
+				f, err := os.Open(fileToUP.localPath)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer f.Close() //nolint: errcheck
 
 				base := filepath.Base(fileToUP.localPath)
 				bar := p.AddBar(fileInfo.Size(),
@@ -164,14 +173,6 @@ var sosUploadCmd = &cobra.Command{
 					),
 				)
 
-				f, err := os.Open(fileToUP.localPath)
-				if err != nil {
-					log.Fatal(err)
-				}
-				defer f.Close() //nolint: errcheck
-				defer taskWG.Done()
-
-				workerSem <- 1
 				reader := bar.ProxyReader(f)
 				// Upload object with FPutObject
 				_, upErr := minioClient.PutObjectWithContext(
@@ -188,11 +189,10 @@ var sosUploadCmd = &cobra.Command{
 					log.Fatal(upErr)
 				}
 				<-workerSem
-
 			}()
 		}
-		p.Wait()
 
+		p.Wait()
 		return nil
 	},
 }
