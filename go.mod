@@ -23,7 +23,7 @@ require (
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.1
-	github.com/vbauerster/mpb/v4 v4.5.0
-	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
+	github.com/vbauerster/mpb/v4 v4.8.4
+	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 )
