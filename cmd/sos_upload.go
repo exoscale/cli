@@ -143,9 +143,9 @@ var sosUploadCmd = &cobra.Command{
 
 		workerSem := make(chan int, parallelSosUpload)
 
-		for _, fToUpload := range filesToUpload {
-
-			go func(fileToUP fileToUpload) {
+		for _, fileToUP := range filesToUpload {
+			fileToUP := fileToUP
+			go func() {
 				fileInfo, err := os.Stat(fileToUP.localPath)
 				if err != nil {
 					log.Fatal(err)
@@ -189,7 +189,7 @@ var sosUploadCmd = &cobra.Command{
 				}
 				<-workerSem
 
-			}(fToUpload)
+			}()
 		}
 		p.Wait()
 
