@@ -1,3 +1,8 @@
+UNRELEASED
+----------
+
+- sos: disable upload logging by default
+
 1.4.0
 -----
 

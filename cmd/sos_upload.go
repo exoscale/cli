@@ -42,9 +42,21 @@ var sosUploadCmd = &cobra.Command{
 			return err
 		}
 
+		logfile, err := cmd.Flags().GetString("log")
+		if err != nil {
+			return err
+		}
 		minioClient, err := newMinioClient(sosZone)
 		if err != nil {
 			return err
+		}
+
+		if logfile != "" {
+			l, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE, os.ModePerm)
+			if err != nil {
+				return err
+			}
+			minioClient.TraceOn(l)
 		}
 
 		location, errGetBucket := minioClient.GetBucketLocation(args[0])
@@ -56,11 +68,6 @@ var sosUploadCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		lo, err := os.OpenFile("./log", os.O_RDWR|os.O_CREATE, os.ModePerm)
-		if err != nil {
-			return err
-		}
-		minioClient.TraceOn(lo)
 
 		recursive, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
@@ -245,6 +252,7 @@ func getFiles(folderName, remoteFilePath string, resFiles []fileToUpload) ([]fil
 
 func init() {
 	sosCmd.AddCommand(sosUploadCmd)
+	sosUploadCmd.Flags().StringP("log", "l", "", "Log upload transfer details to file")
 	sosUploadCmd.Flags().BoolP("recursive", "r", false, "Upload a folder recursively")
 	sosUploadCmd.Flags().StringP("remote-path", "p", "", "Set a remote path for local file(s)")
 }
