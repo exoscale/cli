@@ -132,9 +132,8 @@ var sosUploadCmd = &cobra.Command{
 		lenFileToUpload := len(filesToUpload)
 
 		var taskWG sync.WaitGroup
-		p := mpb.New(
+		p := mpb.NewWithContext(gContext,
 			mpb.WithWaitGroup(&taskWG),
-			mpb.WithContext(gContext),
 			// override default (80) width
 			mpb.WithWidth(64),
 			// override default 120ms refresh rate
@@ -144,14 +143,22 @@ var sosUploadCmd = &cobra.Command{
 
 		workerSem := make(chan int, parallelSosUpload)
 
-		for _, fToUpload := range filesToUpload {
-			workerSem <- 1
+		for _, fileToUP := range filesToUpload {
+			fileToUP := fileToUP
+			go func() {
+				defer taskWG.Done()
+				workerSem <- 1
 
-			go func(fileToUP fileToUpload, sem chan int, wg *sync.WaitGroup) {
 				fileInfo, err := os.Stat(fileToUP.localPath)
 				if err != nil {
 					log.Fatal(err)
 				}
+
+				f, err := os.Open(fileToUP.localPath)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer f.Close() //nolint: errcheck
 
 				base := filepath.Base(fileToUP.localPath)
 				bar := p.AddBar(fileInfo.Size(),
@@ -165,13 +172,6 @@ var sosUploadCmd = &cobra.Command{
 						decor.Percentage(decor.WCSyncSpace),
 					),
 				)
-
-				f, err := os.Open(fileToUP.localPath)
-				if err != nil {
-					log.Fatal(err)
-				}
-				defer f.Close() //nolint: errcheck
-				defer wg.Done()
 
 				reader := bar.ProxyReader(f)
 				// Upload object with FPutObject
@@ -188,13 +188,11 @@ var sosUploadCmd = &cobra.Command{
 				if upErr != nil {
 					log.Fatal(upErr)
 				}
-
-				<-sem
-			}(fToUpload, workerSem, &taskWG)
+				<-workerSem
+			}()
 		}
-		taskWG.Wait()
-		p.Wait()
 
+		p.Wait()
 		return nil
 	},
 }
