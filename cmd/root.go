@@ -104,7 +104,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&gConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
 	RootCmd.PersistentFlags().StringVarP(&gAccountName, "use-account", "A", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
 	RootCmd.PersistentFlags().StringVarP(&gOutputFormat, "output-format", "O", "", "Output format, can be table|json|text")
-	RootCmd.PersistentFlags().StringVar(&gOutputTemplate, "output-template", "", "Template to use if output format is \"template\"")
+	RootCmd.PersistentFlags().StringVar(&gOutputTemplate, "output-template", "", "Template to use if output format is \"text\"")
 	RootCmd.AddCommand(versionCmd)
 
 	cobra.OnInitialize(initConfig, buildClient)
