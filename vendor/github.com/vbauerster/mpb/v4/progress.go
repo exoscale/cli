@@ -3,7 +3,6 @@ package mpb
 import (
 	"container/heap"
 	"context"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -30,25 +29,28 @@ type Progress struct {
 	operateState chan func(*pState)
 	done         chan struct{}
 	forceRefresh chan time.Time
+	once         sync.Once
 	dlogger      *log.Logger
 }
 
 type pState struct {
-	bHeap           *priorityQueue
-	shutdownPending []*Bar
-	heapUpdated     bool
-	idCounter       int
-	width           int
-	rr              time.Duration
-	pMatrix         map[int][]chan int
-	aMatrix         map[int][]chan int
-	output          io.Writer
+	bHeap            priorityQueue
+	heapUpdated      bool
+	pMatrix          map[int][]chan int
+	aMatrix          map[int][]chan int
+	barShutdownQueue []*Bar
+	barPopQueue      []*Bar
 
 	// following are provided/overrided by user
+	idCount          int
+	width            int
+	popCompleted     bool
+	rr               time.Duration
 	uwg              *sync.WaitGroup
 	manualRefreshCh  <-chan time.Time
 	shutdownNotifier chan struct{}
 	parkedBars       map[*Bar]*Bar
+	output           io.Writer
 	debugOut         io.Writer
 }
 
@@ -62,11 +64,9 @@ func New(options ...ContainerOption) *Progress {
 // context. It's not possible to reuse instance after *Progress.Wait()
 // method has been called.
 func NewWithContext(ctx context.Context, options ...ContainerOption) *Progress {
-	pq := make(priorityQueue, 0)
-	heap.Init(&pq)
 
 	s := &pState{
-		bHeap:      &pq,
+		bHeap:      priorityQueue{},
 		width:      pwidth,
 		rr:         prr,
 		parkedBars: make(map[*Bar]*Bar),
@@ -110,10 +110,8 @@ func (p *Progress) AddSpinner(total int64, alignment SpinnerAlignment, options .
 }
 
 // Add creates a bar which renders itself by provided filler.
+// Set total to 0, if you plan to update it later.
 func (p *Progress) Add(total int64, filler Filler, options ...BarOption) *Bar {
-	if total <= 0 {
-		total = time.Now().Unix()
-	}
 	if filler == nil {
 		filler = newDefaultBarFiller()
 	}
@@ -121,31 +119,28 @@ func (p *Progress) Add(total int64, filler Filler, options ...BarOption) *Bar {
 	result := make(chan *Bar)
 	select {
 	case p.operateState <- func(ps *pState) {
-		logPrefix := fmt.Sprintf("%sbar#%02d ", p.dlogger.Prefix(), ps.idCounter)
-		dlogger := log.New(ps.debugOut, logPrefix, log.Lshortfile)
 		bs := &bState{
 			total:    total,
 			filler:   filler,
-			priority: ps.idCounter,
-			id:       ps.idCounter,
+			priority: ps.idCount,
+			id:       ps.idCount,
 			width:    ps.width,
+			debugOut: ps.debugOut,
 		}
 		for _, opt := range options {
 			if opt != nil {
 				opt(bs)
 			}
 		}
-		bar := newBar(p.ctx, p.bwg, p.forceRefresh, bs, dlogger)
-		if bar.runningBar != nil {
-			if bar.priority == ps.idCounter {
-				bar.priority = bar.runningBar.priority
-			}
-			ps.parkedBars[bar.runningBar] = bar
+		bar := newBar(p, bs)
+		if bs.runningBar != nil {
+			bs.runningBar.noPop = true
+			ps.parkedBars[bs.runningBar] = bar
 		} else {
-			heap.Push(ps.bHeap, bar)
+			heap.Push(&ps.bHeap, bar)
 			ps.heapUpdated = true
 		}
-		ps.idCounter++
+		ps.idCount++
 		result <- bar
 	}:
 		return <-result
@@ -155,32 +150,35 @@ func (p *Progress) Add(total int64, filler Filler, options ...BarOption) *Bar {
 	}
 }
 
-// Abort is only effective while bar progress is running, it means
-// remove bar now without waiting for its completion. If bar is already
-// completed, there is nothing to abort. If you need to remove bar
-// after completion, use BarRemoveOnComplete BarOption.
-func (p *Progress) Abort(b *Bar, remove bool) {
+func (p *Progress) dropBar(b *Bar) {
 	select {
 	case p.operateState <- func(s *pState) {
 		if b.index < 0 {
 			return
 		}
-		if remove {
-			s.heapUpdated = heap.Remove(s.bHeap, b.index) != nil
-		}
-		s.shutdownPending = append(s.shutdownPending, b)
+		heap.Remove(&s.bHeap, b.index)
+		s.heapUpdated = true
 	}:
 	case <-p.done:
 	}
 }
 
-// UpdateBarPriority provides a way to change bar's order position.
-// Zero is highest priority, i.e. bar will be on top.
-func (p *Progress) UpdateBarPriority(b *Bar, priority int) {
+func (p *Progress) setBarPriority(b *Bar, priority int) {
 	select {
-	case p.operateState <- func(s *pState) { s.bHeap.update(b, priority) }:
+	case p.operateState <- func(s *pState) {
+		if b.index < 0 {
+			return
+		}
+		b.priority = priority
+		heap.Fix(&s.bHeap, b.index)
+	}:
 	case <-p.done:
 	}
+}
+
+// UpdateBarPriority same as *Bar.SetPriority.
+func (p *Progress) UpdateBarPriority(b *Bar, priority int) {
+	p.setBarPriority(b, priority)
 }
 
 // BarCount returns bars count
@@ -206,10 +204,14 @@ func (p *Progress) Wait() {
 	// wait for bars to quit, if any
 	p.bwg.Wait()
 
-	close(p.done)
+	p.once.Do(p.shutdown)
 
 	// wait for container to quit
 	p.cwg.Wait()
+}
+
+func (p *Progress) shutdown() {
+	close(p.done)
 }
 
 func (p *Progress) serve(s *pState, cw *cwriter.Writer) {
@@ -251,8 +253,8 @@ func (s *pState) render(cw *cwriter.Writer) error {
 		tw = s.width
 	}
 	for i := 0; i < s.bHeap.Len(); i++ {
-		bar := (*s.bHeap)[i]
-		go bar.render(s.debugOut, tw)
+		bar := s.bHeap[i]
+		go bar.render(tw)
 	}
 
 	return s.flush(cw)
@@ -260,34 +262,54 @@ func (s *pState) render(cw *cwriter.Writer) error {
 
 func (s *pState) flush(cw *cwriter.Writer) error {
 	var lineCount int
+	bm := make(map[*Bar]struct{}, s.bHeap.Len())
 	for s.bHeap.Len() > 0 {
-		bar := heap.Pop(s.bHeap).(*Bar)
-		frame := <-bar.bFrameCh
-		defer func() {
-			if frame.toShutdown {
-				// shutdown at next flush, in other words decrement underlying WaitGroup
-				// only after the bar with completed state has been flushed. this
-				// ensures no bar ends up with less than 100% rendered.
-				s.shutdownPending = append(s.shutdownPending, bar)
-				if replacementBar, ok := s.parkedBars[bar]; ok {
-					heap.Push(s.bHeap, replacementBar)
-					s.heapUpdated = true
-					delete(s.parkedBars, bar)
+		b := heap.Pop(&s.bHeap).(*Bar)
+		cw.ReadFrom(<-b.frameCh)
+		if b.toShutdown {
+			// shutdown at next flush
+			// this ensures no bar ends up with less than 100% rendered
+			defer func() {
+				s.barShutdownQueue = append(s.barShutdownQueue, b)
+				if !b.noPop && s.popCompleted {
+					b.priority = -1
 				}
-				if frame.removeOnComplete {
-					s.heapUpdated = true
-					return
-				}
-			}
-			heap.Push(s.bHeap, bar)
-		}()
-		cw.ReadFrom(frame.rd)
-		lineCount += frame.extendedLines + 1
+			}()
+		}
+		lineCount += b.extendedLines + 1
+		bm[b] = struct{}{}
 	}
 
-	for i := len(s.shutdownPending) - 1; i >= 0; i-- {
-		close(s.shutdownPending[i].shutdown)
-		s.shutdownPending = s.shutdownPending[:i]
+	for _, b := range s.barShutdownQueue {
+		if parkedBar := s.parkedBars[b]; parkedBar != nil {
+			parkedBar.priority = b.priority
+			heap.Push(&s.bHeap, parkedBar)
+			delete(s.parkedBars, b)
+			b.toDrop = true
+		}
+		if b.toDrop {
+			delete(bm, b)
+			s.heapUpdated = true
+		} else if s.popCompleted {
+			if b := b; !b.noPop {
+				defer func() {
+					s.barPopQueue = append(s.barPopQueue, b)
+				}()
+			}
+		}
+		b.cancel()
+	}
+	s.barShutdownQueue = s.barShutdownQueue[0:0]
+
+	for _, b := range s.barPopQueue {
+		delete(bm, b)
+		s.heapUpdated = true
+		lineCount -= b.extendedLines + 1
+	}
+	s.barPopQueue = s.barPopQueue[0:0]
+
+	for b := range bm {
+		heap.Push(&s.bHeap, b)
 	}
 
 	return cw.Flush(lineCount)
@@ -305,7 +327,7 @@ func (s *pState) updateSyncMatrix() {
 	s.pMatrix = make(map[int][]chan int)
 	s.aMatrix = make(map[int][]chan int)
 	for i := 0; i < s.bHeap.Len(); i++ {
-		bar := (*s.bHeap)[i]
+		bar := s.bHeap[i]
 		table := bar.wSyncTable()
 		pRow, aRow := table[0], table[1]
 
@@ -325,8 +347,7 @@ func syncWidth(matrix map[int][]chan int) {
 		go func() {
 			var maxWidth int
 			for _, ch := range column {
-				w := <-ch
-				if w > maxWidth {
+				if w := <-ch; w > maxWidth {
 					maxWidth = w
 				}
 			}

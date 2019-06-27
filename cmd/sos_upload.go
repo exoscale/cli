@@ -139,7 +139,7 @@ var sosUploadCmd = &cobra.Command{
 		lenFileToUpload := len(filesToUpload)
 
 		var taskWG sync.WaitGroup
-		p := mpb.NewWithContext(gContext,
+		progress := mpb.NewWithContext(gContext,
 			mpb.WithWaitGroup(&taskWG),
 			// override default (80) width
 			mpb.WithWidth(64),
@@ -168,7 +168,7 @@ var sosUploadCmd = &cobra.Command{
 				defer f.Close() //nolint: errcheck
 
 				base := filepath.Base(fileToUP.localPath)
-				bar := p.AddBar(fileInfo.Size(),
+				bar := progress.AddBar(fileInfo.Size(),
 					mpb.AppendDecorators(
 						// simple name decorator
 						decor.Name(base, decor.WC{W: len(base) + 1, C: decor.DidentRight}),
@@ -199,7 +199,7 @@ var sosUploadCmd = &cobra.Command{
 			}()
 		}
 
-		p.Wait()
+		progress.Wait()
 		return nil
 	},
 }

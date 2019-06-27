@@ -32,70 +32,65 @@ func (f FillerFunc) Fill(w io.Writer, width int, stat *decor.Statistics) {
 
 // Bar represents a progress Bar.
 type Bar struct {
-	priority int
-	index    int
+	priority int // used by heap
+	index    int // used by heap
 
-	runningBar   *Bar
-	cacheState   *bState
-	operateState chan func(*bState)
-	bFrameCh     chan *bFrame
-	syncTableCh  chan [][]chan int
-	completed    chan bool
-	forceRefresh chan<- time.Time
+	extendedLines int
+	toShutdown    bool
+	toDrop        bool
+	noPop         bool
+	operateState  chan func(*bState)
+	frameCh       chan io.Reader
+	syncTableCh   chan [][]chan int
+	completed     chan bool
 
-	// done is closed by Bar's goroutine, after cacheState is written
+	// concel is called either by user or on complete event
+	cancel func()
+	// done is closed after cacheState is assigned
 	done chan struct{}
-	// shutdown is closed from master Progress goroutine only
-	shutdown chan struct{}
+	// cacheState is populated, right after close(shutdown)
+	cacheState *bState
 
 	arbitraryCurrent struct {
 		sync.Mutex
 		current int64
 	}
 
-	dlogger *log.Logger
+	container      *Progress
+	dlogger        *log.Logger
+	recoveredPanic interface{}
 }
 
-type (
-	bState struct {
-		filler             Filler
-		extender           Filler
-		id                 int
-		width              int
-		total              int64
-		current            int64
-		trimSpace          bool
-		toComplete         bool
-		removeOnComplete   bool
-		barClearOnComplete bool
-		completeFlushed    bool
-		aDecorators        []decor.Decorator
-		pDecorators        []decor.Decorator
-		amountReceivers    []decor.AmountReceiver
-		shutdownListeners  []decor.ShutdownListener
-		bufP, bufB, bufA   *bytes.Buffer
-		bufE               *bytes.Buffer
-		panicMsg           string
+type bState struct {
+	filler            Filler
+	extender          Filler
+	id                int
+	width             int
+	total             int64
+	current           int64
+	trimSpace         bool
+	toComplete        bool
+	completeFlushed   bool
+	noBufBOnComplete  bool
+	noPop             bool
+	aDecorators       []decor.Decorator
+	pDecorators       []decor.Decorator
+	amountReceivers   []decor.AmountReceiver
+	shutdownListeners []decor.ShutdownListener
+	bufP, bufB, bufA  *bytes.Buffer
+	bufE              *bytes.Buffer
 
-		// following options are assigned to the *Bar
-		priority   int
-		runningBar *Bar
-	}
-	bFrame struct {
-		rd               io.Reader
-		extendedLines    int
-		toShutdown       bool
-		removeOnComplete bool
-	}
-)
+	// priority overrides *Bar's priority, if set
+	priority int
+	// dropOnComplete propagates to *Bar
+	dropOnComplete bool
+	// runningBar is a key for *pState.parkedBars
+	runningBar *Bar
 
-func newBar(
-	ctx context.Context,
-	wg *sync.WaitGroup,
-	forceRefresh chan<- time.Time,
-	bs *bState,
-	dlogger *log.Logger,
-) *Bar {
+	debugOut io.Writer
+}
+
+func newBar(container *Progress, bs *bState) *Bar {
 
 	bs.bufP = bytes.NewBuffer(make([]byte, 0, bs.width))
 	bs.bufB = bytes.NewBuffer(make([]byte, 0, bs.width))
@@ -104,20 +99,23 @@ func newBar(
 		bs.bufE = bytes.NewBuffer(make([]byte, 0, bs.width))
 	}
 
+	logPrefix := fmt.Sprintf("%sbar#%02d ", container.dlogger.Prefix(), bs.id)
+	ctx, cancel := context.WithCancel(container.ctx)
 	bar := &Bar{
+		container:    container,
 		priority:     bs.priority,
-		runningBar:   bs.runningBar,
+		toDrop:       bs.dropOnComplete,
+		noPop:        bs.noPop,
 		operateState: make(chan func(*bState)),
-		bFrameCh:     make(chan *bFrame, 1),
+		frameCh:      make(chan io.Reader, 1),
 		syncTableCh:  make(chan [][]chan int),
-		completed:    make(chan bool),
+		completed:    make(chan bool, 1),
 		done:         make(chan struct{}),
-		shutdown:     make(chan struct{}),
-		forceRefresh: forceRefresh,
-		dlogger:      dlogger,
+		cancel:       cancel,
+		dlogger:      log.New(bs.debugOut, logPrefix, log.Lshortfile),
 	}
 
-	go bar.serve(ctx, wg, bs)
+	go bar.serve(ctx, bs)
 	return bar
 }
 
@@ -181,22 +179,18 @@ func (b *Bar) SetRefill(amount int64) {
 }
 
 // SetTotal sets total dynamically.
-// Set final to true, when total is known, it will trigger bar complete event.
-func (b *Bar) SetTotal(total int64, final bool) bool {
+// Set complete to true, to trigger bar complete event now.
+func (b *Bar) SetTotal(total int64, complete bool) {
 	select {
 	case b.operateState <- func(s *bState) {
-		if total > 0 {
-			s.total = total
-		}
-		if final && !s.toComplete {
+		s.total = total
+		if complete && !s.toComplete {
 			s.current = s.total
 			s.toComplete = true
 			go b.refreshNowTillShutdown()
 		}
 	}:
-		return true
 	case <-b.done:
-		return false
 	}
 }
 
@@ -212,19 +206,24 @@ func (b *Bar) SetCurrent(current int64, wdd ...time.Duration) {
 	b.arbitraryCurrent.Unlock()
 }
 
-// Increment is a shorthand for b.IncrBy(1).
-func (b *Bar) Increment() {
-	b.IncrBy(1)
+// Increment is a shorthand for b.IncrInt64(1, wdd...).
+func (b *Bar) Increment(wdd ...time.Duration) {
+	b.IncrInt64(1, wdd...)
 }
 
-// IncrBy increments progress bar by amount of n.
-// wdd is optional work duration i.e. time.Since(start), which expected
-// to be provided, if any ewma based decorator is used.
+// IncrBy is a shorthand for b.IncrInt64(int64(n), wdd...).
 func (b *Bar) IncrBy(n int, wdd ...time.Duration) {
+	b.IncrInt64(int64(n), wdd...)
+}
+
+// IncrInt64 increments progress bar by amount of n. wdd is an optional
+// work duration i.e. time.Since(start), which expected to be passed,
+// if any ewma based decorator is used.
+func (b *Bar) IncrInt64(n int64, wdd ...time.Duration) {
 	select {
 	case b.operateState <- func(s *bState) {
-		s.current += int64(n)
-		if s.current >= s.total && !s.toComplete {
+		s.current += n
+		if s.total > 0 && s.current >= s.total {
 			s.current = s.total
 			s.toComplete = true
 			go b.refreshNowTillShutdown()
@@ -237,13 +236,39 @@ func (b *Bar) IncrBy(n int, wdd ...time.Duration) {
 	}
 }
 
+// SetPriority changes bar's order among multiple bars. Zero is highest
+// priority, i.e. bar will be on top. If you don't need to set priority
+// dynamically, better use BarPriority option.
+func (b *Bar) SetPriority(priority int) {
+	select {
+	case <-b.done:
+	default:
+		b.container.setBarPriority(b, priority)
+	}
+}
+
+// Abort interrupts bar's running goroutine. Call this, if you'd like
+// to stop/remove bar before completion event. It has no effect after
+// completion event. If drop is true bar will be removed as well.
+func (b *Bar) Abort(drop bool) {
+	select {
+	case <-b.done:
+	default:
+		if drop {
+			b.container.dropBar(b)
+		}
+		b.cancel()
+	}
+}
+
 // Completed reports whether the bar is in completed state.
 func (b *Bar) Completed() bool {
-	// omit select here, because primary usage of the method is for loop
-	// condition, like for !bar.Completed() {...} so when toComplete=true
-	// it is called once (at which time, the bar is still alive), then
-	// quits the loop and never suppose to be called afterwards.
-	return <-b.completed
+	select {
+	case b.operateState <- func(s *bState) { b.completed <- s.toComplete }:
+		return <-b.completed
+	case <-b.done:
+		return true
+	}
 }
 
 func (b *Bar) wSyncTable() [][]chan int {
@@ -255,18 +280,13 @@ func (b *Bar) wSyncTable() [][]chan int {
 	}
 }
 
-func (b *Bar) serve(ctx context.Context, wg *sync.WaitGroup, s *bState) {
-	defer wg.Done()
-	cancel := ctx.Done()
+func (b *Bar) serve(ctx context.Context, s *bState) {
+	defer b.container.bwg.Done()
 	for {
 		select {
 		case op := <-b.operateState:
 			op(s)
-		case b.completed <- s.toComplete:
-		case <-cancel:
-			s.toComplete = true
-			cancel = nil
-		case <-b.shutdown:
+		case <-ctx.Done():
 			b.cacheState = s
 			close(b.done)
 			// Notifying decorators about shutdown event
@@ -278,55 +298,54 @@ func (b *Bar) serve(ctx context.Context, wg *sync.WaitGroup, s *bState) {
 	}
 }
 
-func (b *Bar) render(debugOut io.Writer, tw int) {
+func (b *Bar) render(tw int) {
+	if b.recoveredPanic != nil {
+		b.toShutdown = false
+		b.frameCh <- b.panicToFrame(tw)
+		return
+	}
 	select {
 	case b.operateState <- func(s *bState) {
 		defer func() {
 			// recovering if user defined decorator panics for example
 			if p := recover(); p != nil {
-				s.panicMsg = fmt.Sprintf("panic: %v", p)
-				b.dlogger.Println(s.panicMsg)
-				b.bFrameCh <- &bFrame{
-					rd:         strings.NewReader(fmt.Sprintf(fmt.Sprintf("%%.%ds\n", tw), s.panicMsg)),
-					toShutdown: true,
-				}
+				b.dlogger.Println(p)
+				b.recoveredPanic = p
+				b.toShutdown = !s.completeFlushed
+				b.frameCh <- b.panicToFrame(tw)
 			}
 		}()
-		r := s.draw(tw)
-		var extendedLines int
+
+		frame := s.draw(tw)
+
 		if s.extender != nil {
 			s.extender.Fill(s.bufE, tw, newStatistics(s))
-			extendedLines = countLines(s.bufE.Bytes())
-			r = io.MultiReader(r, s.bufE)
+			b.extendedLines = countLines(s.bufE.Bytes())
+			frame = io.MultiReader(frame, s.bufE)
 		}
-		b.bFrameCh <- &bFrame{
-			rd:               r,
-			extendedLines:    extendedLines,
-			toShutdown:       s.toComplete && !s.completeFlushed,
-			removeOnComplete: s.removeOnComplete,
-		}
+
+		b.toShutdown = s.toComplete && !s.completeFlushed
 		s.completeFlushed = s.toComplete
+
+		b.frameCh <- frame
 	}:
 	case <-b.done:
 		s := b.cacheState
-		r := s.draw(tw)
-		var extendedLines int
+		frame := s.draw(tw)
 		if s.extender != nil {
 			s.extender.Fill(s.bufE, tw, newStatistics(s))
-			extendedLines = countLines(s.bufE.Bytes())
-			r = io.MultiReader(r, s.bufE)
+			b.extendedLines = countLines(s.bufE.Bytes())
+			frame = io.MultiReader(frame, s.bufE)
 		}
-		b.bFrameCh <- &bFrame{
-			rd:            r,
-			extendedLines: extendedLines,
-		}
+		b.frameCh <- frame
 	}
 }
 
+func (b *Bar) panicToFrame(termWidth int) io.Reader {
+	return strings.NewReader(fmt.Sprintf(fmt.Sprintf("%%.%dv\n", termWidth), b.recoveredPanic))
+}
+
 func (s *bState) draw(termWidth int) io.Reader {
-	if s.panicMsg != "" {
-		return strings.NewReader(fmt.Sprintf(fmt.Sprintf("%%.%ds\n", termWidth), s.panicMsg))
-	}
 
 	stat := newStatistics(s)
 
@@ -338,31 +357,27 @@ func (s *bState) draw(termWidth int) io.Reader {
 		s.bufA.WriteString(d.Decor(stat))
 	}
 
-	if s.barClearOnComplete && s.completeFlushed {
-		s.bufA.WriteByte('\n')
+	s.bufA.WriteByte('\n')
+	if s.noBufBOnComplete && s.completeFlushed {
 		return io.MultiReader(s.bufP, s.bufA)
 	}
 
 	prependCount := utf8.RuneCount(s.bufP.Bytes())
-	appendCount := utf8.RuneCount(s.bufA.Bytes())
+	appendCount := utf8.RuneCount(s.bufA.Bytes()) - 1
 
-	if !s.trimSpace {
-		// reserve space for edge spaces
-		termWidth -= 2
-		s.bufB.WriteByte(' ')
+	if fitWidth := s.width; termWidth > 1 {
+		if !s.trimSpace {
+			// reserve space for edge spaces
+			termWidth -= 2
+			s.bufB.WriteByte(' ')
+			defer s.bufB.WriteByte(' ')
+		}
+		if prependCount+s.width+appendCount > termWidth {
+			fitWidth = termWidth - prependCount - appendCount
+		}
+		s.filler.Fill(s.bufB, fitWidth, stat)
 	}
 
-	calcWidth := s.width
-	if prependCount+s.width+appendCount > termWidth {
-		calcWidth = termWidth - prependCount - appendCount
-	}
-	s.filler.Fill(s.bufB, calcWidth, stat)
-
-	if !s.trimSpace {
-		s.bufB.WriteByte(' ')
-	}
-
-	s.bufA.WriteByte('\n')
 	return io.MultiReader(s.bufP, s.bufB, s.bufA)
 }
 
@@ -391,8 +406,8 @@ func (s *bState) wSyncTable() [][]chan int {
 func (b *Bar) refreshNowTillShutdown() {
 	for {
 		select {
-		case b.forceRefresh <- time.Now():
-		case <-b.shutdown:
+		case b.container.forceRefresh <- time.Now():
+		case <-b.done:
 			return
 		}
 	}

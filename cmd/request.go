@@ -37,10 +37,7 @@ func asyncTasks(tasks []task) []taskResponse {
 	taskBars := make([]*mpb.Bar, len(tasks))
 	maximum := 1 << 30
 	var taskWG sync.WaitGroup
-	p := mpb.New(
-		mpb.WithWaitGroup(&taskWG),
-		mpb.WithContext(gContext),
-	)
+	progress := mpb.NewWithContext(gContext, mpb.WithWaitGroup(&taskWG))
 	taskWG.Add(len(tasks))
 
 	var workerWG sync.WaitGroup
@@ -58,15 +55,13 @@ func asyncTasks(tasks []task) []taskResponse {
 		default:
 			go execSyncTask(task, i, c, &responses[i], workerSem, &workerWG)
 		}
-		taskBars[i] = p.AddSpinner(int64(maximum),
+		taskBars[i] = progress.AddSpinner(int64(maximum),
 			mpb.SpinnerOnLeft,
 			mpb.PrependDecorators(
 				// simple name decorator
 				decor.Name(task.string),
 			),
-			mpb.AppendDecorators(
-				decor.OnComplete(decor.Elapsed(decor.ET_STYLE_GO), "done!"),
-			),
+			mpb.AppendDecorators(decor.OnComplete(decor.Elapsed(decor.ET_STYLE_GO), "done!")),
 		)
 
 		//listen for bar progress
@@ -93,7 +88,7 @@ func asyncTasks(tasks []task) []taskResponse {
 	}
 
 	workerWG.Wait()
-	p.Wait()
+	progress.Wait()
 
 	return responses
 }

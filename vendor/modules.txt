@@ -139,12 +139,12 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9
 github.com/tsenart/deadcode
-# github.com/vbauerster/mpb/v4 v4.5.0
+# github.com/vbauerster/mpb/v4 v4.8.4
 github.com/vbauerster/mpb/v4
 github.com/vbauerster/mpb/v4/decor
 github.com/vbauerster/mpb/v4/cwriter
 github.com/vbauerster/mpb/v4/internal
-# golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
+# golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
 golang.org/x/crypto/curve25519
@@ -164,7 +164,7 @@ golang.org/x/net/http2
 golang.org/x/net/publicsuffix
 golang.org/x/net/idna
 golang.org/x/net/http2/hpack
-# golang.org/x/sys v0.0.0-20190422165155-953cdadca894
+# golang.org/x/sys v0.0.0-20190531175056-4c3a928424d2
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/cpu

@@ -1,9 +1,5 @@
-// Copyright (C) 2016-2018 Vladimir Bauer
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 /*
- Package decor contains common decorators used by "github.com/vbauerster/mpb" package.
+ Package decor provides common decorators for "github.com/vbauerster/mpb/v4" module.
 
  Some decorators returned by this package might have a closure state. It is ok to use
  decorators concurrently, unless you share the same decorator among multiple

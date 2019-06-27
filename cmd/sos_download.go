@@ -111,8 +111,7 @@ var downloadCmd = &cobra.Command{
 		*/
 		// XXXXXX
 
-		progress := mpb.New(
-			mpb.WithContext(gContext),
+		progress := mpb.NewWithContext(gContext,
 			// override default (80) width
 			mpb.WithWidth(64),
 			// override default 120ms refresh rate

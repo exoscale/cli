@@ -126,7 +126,7 @@ func (s SpeedKB) Format(st fmt.State, verb rune) {
 //
 //	`unitFormat` printf compatible verb for value, like "%f" or "%d"
 //
-//	`average` MovingAverage implementation
+//	`age` ewma age
 //
 //	`wcc` optional WC config
 //
@@ -192,7 +192,7 @@ func (d *movingAverageSpeed) Decor(st *Statistics) string {
 	return d.FormatMsg(d.msg)
 }
 
-func (d *movingAverageSpeed) NextAmount(n int, wdd ...time.Duration) {
+func (d *movingAverageSpeed) NextAmount(n int64, wdd ...time.Duration) {
 	var workDuration time.Duration
 	for _, wd := range wdd {
 		workDuration = wd

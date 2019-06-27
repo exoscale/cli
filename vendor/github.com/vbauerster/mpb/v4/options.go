@@ -1,7 +1,6 @@
 package mpb
 
 import (
-	"context"
 	"io"
 	"io/ioutil"
 	"sync"
@@ -48,12 +47,6 @@ func WithManualRefresh(ch <-chan time.Time) ContainerOption {
 	}
 }
 
-// WithContext deprecated and has no effect, please use NewWithContext instead.
-func WithContext(ctx context.Context) ContainerOption {
-	return func(s *pState) {
-	}
-}
-
 // WithShutdownNotifier provided chanel will be closed, after all bars
 // have been rendered.
 func WithShutdownNotifier(ch chan struct{}) ContainerOption {
@@ -83,6 +76,13 @@ func WithDebugOutput(w io.Writer) ContainerOption {
 			return
 		}
 		s.debugOut = w
+	}
+}
+
+// PopCompletedMode will pop and stop rendering completed bars.
+func PopCompletedMode() ContainerOption {
+	return func(s *pState) {
+		s.popCompleted = true
 	}
 }
 

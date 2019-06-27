@@ -26,7 +26,7 @@ func (f TimeNormalizerFunc) Normalize(src time.Duration) time.Duration {
 //
 //	`style` one of [ET_STYLE_GO|ET_STYLE_HHMMSS|ET_STYLE_HHMM|ET_STYLE_MMSS]
 //
-//	`age` is the previous N samples to average over.
+//	`age` ewma age
 //
 //	`wcc` optional WC config
 func EwmaETA(style TimeStyle, age float64, wcc ...WC) Decorator {
@@ -98,7 +98,7 @@ func (d *movingAverageETA) Decor(st *Statistics) string {
 	return d.FormatMsg(str)
 }
 
-func (d *movingAverageETA) NextAmount(n int, wdd ...time.Duration) {
+func (d *movingAverageETA) NextAmount(n int64, wdd ...time.Duration) {
 	var workDuration time.Duration
 	for _, wd := range wdd {
 		workDuration = wd
