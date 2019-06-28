@@ -1,8 +1,8 @@
-UNRELEASED
-----------
+1.4.1
+-----
 
-- sos: disable upload logging by default (#160)
-- vm template: fix bug in "list" command (#161)
+- Disable logging by default in `sos upload` command (#160)
+- Fix bug in `vm template list` command (#161)
 
 1.4.0
 -----
