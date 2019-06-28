@@ -2,6 +2,7 @@ UNRELEASED
 ----------
 
 - sos: disable upload logging by default (#160)
+- vm template: fix bug in "list" command (#161)
 
 1.4.0
 -----
