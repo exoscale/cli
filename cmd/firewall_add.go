@@ -119,6 +119,10 @@ A set of predefined commands exists, such a ssh, ping or minecraft.
 			return errors.New(`either one of "--cidr", "--my-ip" or "--security-group" must be specified`)
 		}
 
+		if port != "" && protocol == "" {
+			return errors.New(`"--port" can only be specified with "--protocol"`)
+		}
+
 		var ip *egoscale.CIDR
 		if isMyIP {
 			cidr, cirdErr := getMyCIDR(isIpv6)
