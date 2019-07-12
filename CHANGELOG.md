@@ -1,3 +1,8 @@
+UNRELEASED
+----------
+
+- Require a CIDR or a Security Group when adding a Security Group rule
+
 1.4.1
 -----
 
