@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -112,6 +113,10 @@ A set of predefined commands exists, such a ssh, ping or minecraft.
 		isMyIP, err := cmd.Flags().GetBool("my-ip")
 		if err != nil {
 			return err
+		}
+
+		if port != "" && protocol == "" {
+			return errors.New(`"--port" can only be specified with "--protocol"`)
 		}
 
 		var ip *egoscale.CIDR

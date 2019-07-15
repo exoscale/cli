@@ -1,3 +1,8 @@
+UNRELEASED
+----------
+
+- Require protocol to be specified if a port is provided when adding a Security Group rule
+
 1.4.1
 -----
 
