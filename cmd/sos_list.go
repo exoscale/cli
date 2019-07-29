@@ -83,6 +83,11 @@ var sosListCmd = &cobra.Command{
 
 		last := ""
 		for message := range minioClient.ListObjectsV2(bucketName, prefix, recursive, gContext.Done()) {
+			if message.Err != nil {
+				fmt.Fprintf(os.Stderr, "error: %s\n", message.Err)
+				continue
+			}
+
 			sPrefix := splitPath(prefix)
 			sKey := splitPath(message.Key)
 
@@ -127,6 +132,11 @@ var sosListCmd = &cobra.Command{
 
 func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBucket, isShort bool, table io.Writer) {
 	for message := range c.ListObjectsV2(bucketName, prefix, true, gContext.Done()) {
+		if message.Err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", message.Err)
+			continue
+		}
+
 		sPrefix := splitPath(prefix)
 		sKey := splitPath(message.Key)
 		if len(prefix) != len(strings.Join(sKey[:len(sPrefix)], "/")) {

@@ -2,6 +2,7 @@ UNRELEASED
 ----------
 
 - Require protocol to be specified if a port is provided when adding a Security Group rule
+- Fix `sos list` command panic if SOS returns bogus entries
 
 1.4.1
 -----
