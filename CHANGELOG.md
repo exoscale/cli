@@ -3,6 +3,7 @@ UNRELEASED
 
 - Require protocol to be specified if a port is provided when adding a Security Group rule
 - Fix `sos list` command panic if SOS returns bogus entries
+- Fix `lab kube create` node instance upgrade stage (#166)
 
 1.4.1
 -----

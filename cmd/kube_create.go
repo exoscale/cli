@@ -59,6 +59,11 @@ var kubeBootstrapSteps = []kubeBootstrapStep{
 set -xe
 
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get update
+
+while true; do
+	sudo lsof /var/lib/dpkg/lock-frontend > /dev/null && (echo "Waiting for apt/dpkg to finish..."; sleep 10) || break
+done
+
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-confnew" upgrade -y
 sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	apt-transport-https \
