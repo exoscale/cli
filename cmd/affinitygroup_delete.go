@@ -29,17 +29,16 @@ var affinitygroupDeleteCmd = &cobra.Command{
 				return err
 			}
 
-			tasks = append(tasks, task{
-				cmd,
-				fmt.Sprintf("delete %q affinity group", cmd.Name),
-			})
-
 			if !force {
 				if !askQuestion(fmt.Sprintf("sure you want to delete %q affinity group", arg)) {
 					continue
 				}
 			}
 
+			tasks = append(tasks, task{
+				cmd,
+				fmt.Sprintf("delete %q affinity group", cmd.Name),
+			})
 		}
 
 		resps := asyncTasks(tasks)
