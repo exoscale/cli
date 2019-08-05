@@ -52,7 +52,11 @@ func init() {
 				if err != nil {
 					return err
 				}
-				fmt.Printf("Record %q was updated successfully to %q\n", cmd.Name(), args[0])
+
+				if !gQuiet {
+					fmt.Printf("Record %q was updated successfully to %q\n", cmd.Name(), args[0])
+				}
+
 				return nil
 			},
 		}

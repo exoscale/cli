@@ -174,29 +174,27 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf(`
+		if !gQuiet {
+			fmt.Printf(`
 What do now?
 
 1. Connect to the machine
 
 > exo ssh %s
 `, r[0].Name)
-
-		printSSHConnectSTR(sshinfo)
-
-		fmt.Printf(`
+			printSSHConnectSTR(sshinfo)
+			fmt.Printf(`
 2. Put the SSH configuration into ".ssh/config"
 
 > exo ssh %s --info
 `, r[0].Name)
-
-		printSSHInfo(sshinfo)
-
-		fmt.Print(`
+			printSSHInfo(sshinfo)
+			fmt.Print(`
 Tip of the day:
 	You're the sole owner of the private key.
 	Be cautious with it.
 `)
+		}
 
 		return nil
 	},

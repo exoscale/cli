@@ -42,6 +42,7 @@ var vmResetCmd = &cobra.Command{
 			return err
 		}
 
+		// FIXME: this should be refactored using asyncTasks()
 		errs := []error{}
 		for _, v := range args {
 			if err := resetVirtualMachine(v, diskValue, template, templateFilter, force); err != nil {

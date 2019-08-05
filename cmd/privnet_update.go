@@ -109,14 +109,17 @@ func privnetUpdate(id, name, desc string, startIP, endIP, netmask net.IP) (*egos
 }
 
 func privnetShow(network egoscale.Network) error {
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Description", "ID", "DHCP"})
-	table.Append([]string{
-		network.Name,
-		network.DisplayText,
-		network.ID.String(),
-		dhcpRange(network)})
-	table.Render()
+	if !gQuiet {
+		table := table.NewTable(os.Stdout)
+		table.SetHeader([]string{"Name", "Description", "ID", "DHCP"})
+		table.Append([]string{
+			network.Name,
+			network.DisplayText,
+			network.ID.String(),
+			dhcpRange(network)})
+		table.Render()
+	}
+
 	return nil
 }
 

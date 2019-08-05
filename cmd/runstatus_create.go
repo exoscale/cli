@@ -31,7 +31,10 @@ var runstatusCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Runstat.us page %q created:\n - %s\n", result.Subdomain, result.PublicURL)
+
+			if !gQuiet {
+				fmt.Printf("Runstat.us page %q created:\n - %s\n", result.Subdomain, result.PublicURL)
+			}
 		}
 
 		return nil

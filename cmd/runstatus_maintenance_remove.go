@@ -45,6 +45,7 @@ var runstatusMaintenanceRemoveCmd = &cobra.Command{
 			return err
 		}
 
+		// TODO: add "--force" flag
 		if !askQuestion(fmt.Sprintf("Remove maintenance %q (%d) from %q?", maintenance.Title, maintenance.ID, pageName)) {
 			return nil
 		}

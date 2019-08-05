@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
@@ -32,20 +33,20 @@ var kubeDeleteCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Printf("Destroying cluster instance... ")
-
-		if err := cs.DeleteWithContext(gContext, vm); err != nil {
-			fmt.Println("instance deletion failed")
-			return err
+		resps := asyncTasks([]task{{
+			&egoscale.DestroyVirtualMachine{ID: vm.ID},
+			fmt.Sprintf("Destroying cluster instance %q", clusterName),
+		}})
+		errs := filterErrors(resps)
+		if len(errs) > 0 {
+			return errs[0]
 		}
-
-		fmt.Println("done")
 
 		if err := deleteKeyPair(*vm.ID); err != nil {
 			return err
 		}
-		return deleteKubeData(clusterName)
 
+		return deleteKubeData(clusterName)
 	},
 }
 

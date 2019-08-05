@@ -48,7 +48,9 @@ var runstatusServiceCreateCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("Service %q successfully created\n", s.Name)
+		if !gQuiet {
+			fmt.Printf("Service %q successfully created\n", s.Name)
+		}
 
 		return nil
 	},

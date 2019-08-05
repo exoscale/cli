@@ -22,7 +22,11 @@ var sshCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		displayResult(keyPair)
+
+		if !gQuiet {
+			displayResult(keyPair)
+		}
+
 		return nil
 	},
 }

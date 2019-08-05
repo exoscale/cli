@@ -21,6 +21,7 @@ var zoneCmd = &cobra.Command{
 	},
 }
 
+// FIXME: this should be reimplemented using an outputter interface
 func listZones() error {
 	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {

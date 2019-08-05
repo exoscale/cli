@@ -21,7 +21,10 @@ var dnsCreateCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("Domain %q was created successfully\n", resp.Name)
+		if !gQuiet {
+			fmt.Printf("Domain %q was created successfully\n", resp.Name)
+		}
+
 		return nil
 	},
 }
