@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const maxUserDataLength = 32768
+
 // vmCreateCmd represents the create command
 var vmCreateCmd = &cobra.Command{
 	Use:     "create <vm name>+",
@@ -40,6 +42,10 @@ var vmCreateCmd = &cobra.Command{
 			userData, err = getUserData(userDataPath)
 			if err != nil {
 				return err
+			}
+
+			if len(userData) >= maxUserDataLength {
+				return fmt.Errorf("user-data maximum allowed length is %d bytes", maxUserDataLength)
 			}
 		}
 
