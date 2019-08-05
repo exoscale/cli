@@ -24,7 +24,7 @@ var privnetDeleteCmd = &cobra.Command{
 
 		tasks := make([]task, 0, len(args))
 		for _, arg := range args {
-			cmd, err := deletePrivnet(arg, force)
+			cmd, err := deletePrivnet(arg)
 			if err != nil {
 				return err
 			}
@@ -50,7 +50,7 @@ var privnetDeleteCmd = &cobra.Command{
 	},
 }
 
-func deletePrivnet(name string, force bool) (*egoscale.DeleteNetwork, error) {
+func deletePrivnet(name string) (*egoscale.DeleteNetwork, error) {
 	addrReq := &egoscale.DeleteNetwork{}
 	var err error
 	network, err := getNetworkByName(name)
@@ -58,7 +58,6 @@ func deletePrivnet(name string, force bool) (*egoscale.DeleteNetwork, error) {
 		return nil, err
 	}
 	addrReq.ID = network.ID
-	addrReq.Forced = &force
 	return addrReq, nil
 }
 
