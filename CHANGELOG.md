@@ -2,6 +2,7 @@ UNRELEASED
 ----------
 
 - Require protocol to be specified if a port is provided when adding a Security Group rule
+- Require a user-data maximum length of 32Kb during instance creation (#168)
 - Fix `sos list` command panic if SOS returns bogus entries
 - Fix `lab kube create` node instance upgrade stage (#166)
 - Fix `affinitygroup delete` command confirmation prompt bug (#169)
