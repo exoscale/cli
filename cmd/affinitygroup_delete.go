@@ -37,7 +37,7 @@ var affinitygroupDeleteCmd = &cobra.Command{
 
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("delete %q affinity group", cmd.Name),
+				fmt.Sprintf("deleting %q affinity group", cmd.Name),
 			})
 		}
 
