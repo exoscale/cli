@@ -147,21 +147,23 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 
 // printVirtualMachineSecurityGroups prints a virtual machine instance security groups to standard output.
 func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) error {
-	// Refresh the vm object to ensure its properties are up-to-date
-	vm, err := getVirtualMachineByNameOrID(vm.ID.String())
-	if err != nil {
-		return err
-	}
+	if !gQuiet {
+		// Refresh the vm object to ensure its properties are up-to-date
+		vm, err := getVirtualMachineByNameOrID(vm.ID.String())
+		if err != nil {
+			return err
+		}
 
-	sgs := []string{}
-	for _, sgN := range vm.SecurityGroup {
-		sgs = append(sgs, sgN.Name)
-	}
+		sgs := []string{}
+		for _, sgN := range vm.SecurityGroup {
+			sgs = append(sgs, sgN.Name)
+		}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{vm.Name})
-	table.Append([]string{"Security Groups", strings.Join(sgs, " - ")})
-	table.Render()
+		table := table.NewTable(os.Stdout)
+		table.SetHeader([]string{vm.Name})
+		table.Append([]string{"Security Groups", strings.Join(sgs, " - ")})
+		table.Render()
+	}
 
 	return nil
 }

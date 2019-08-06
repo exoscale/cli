@@ -98,13 +98,14 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 
 	templates := resp.(*[]egoscale.Template)
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Zone", "Name", "ID"})
-	for _, template := range *templates {
-		table.Append([]string{template.ZoneName, template.Name, template.ID.String()})
+	if !gQuiet {
+		table := table.NewTable(os.Stdout)
+		table.SetHeader([]string{"Zone", "Name", "ID"})
+		for _, template := range *templates {
+			table.Append([]string{template.ZoneName, template.Name, template.ID.String()})
+		}
+		table.Render()
 	}
-
-	table.Render()
 
 	return nil
 }

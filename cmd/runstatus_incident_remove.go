@@ -44,13 +44,16 @@ var runstatusIncidentRemoveCmd = &cobra.Command{
 			return err
 		}
 
+		// TODO: add "--force" flag
 		if !askQuestion(fmt.Sprintf("sure you want to delete %q incident", incidentName)) {
 			return nil
 		}
 		if err := csRunstatus.DeleteRunstatusIncident(gContext, *incident); err != nil {
 			return fmt.Errorf("error removing %q:\n%v", incidentName, err)
 		}
+
 		fmt.Printf("Incident %q successfully removed\n", incidentName)
+
 		return nil
 	},
 }

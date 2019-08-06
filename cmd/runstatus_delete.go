@@ -18,6 +18,7 @@ var runstatusDeleteCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 		for _, arg := range args {
+			// TODO: add "--force" flag
 			if !askQuestion(fmt.Sprintf("sure you want to delete %q runstat.us page", arg)) {
 				continue
 			}
@@ -30,7 +31,10 @@ var runstatusDeleteCmd = &cobra.Command{
 			if err := csRunstatus.DeleteRunstatusPage(gContext, *runstatusPage); err != nil {
 				return err
 			}
-			fmt.Printf("Page %q successfully deleted\n", arg)
+
+			if !gQuiet {
+				fmt.Printf("Page %q successfully deleted\n", arg)
+			}
 		}
 
 		return nil

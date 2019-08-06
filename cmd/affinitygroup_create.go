@@ -35,10 +35,13 @@ func createAffinityGroup(name, desc string) error {
 
 	affinityGroup := resp.(*egoscale.AffinityGroup)
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Description", "ID"})
-	table.Append([]string{affinityGroup.Name, affinityGroup.Description, affinityGroup.ID.String()})
-	table.Render()
+	if !gQuiet {
+		table := table.NewTable(os.Stdout)
+		table.SetHeader([]string{"Name", "Description", "ID"})
+		table.Append([]string{affinityGroup.Name, affinityGroup.Description, affinityGroup.ID.String()})
+		table.Render()
+	}
+
 	return nil
 }
 

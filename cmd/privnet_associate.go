@@ -33,6 +33,8 @@ var privnetAssociateCmd = &cobra.Command{
 		fmt.Fprintf(w, "Zone:\t%s\n", network.ZoneName)           // nolint: errcheck
 		fmt.Fprintf(w, "IP Range:\t%s\n", dhcp)                   // nolint: errcheck
 
+		// FIXME: this implementation mixes side effects with user reporting,
+		// this is not great and should be split.
 		table := table.NewTable(os.Stdout)
 		table.SetHeader([]string{"Virtual Machine", "IP Address"})
 		for i := 1; i < len(args); i++ {
@@ -61,7 +63,11 @@ var privnetAssociateCmd = &cobra.Command{
 				nicIP(*nic)})
 		}
 		w.Flush() // nolint: errcheck
-		table.Render()
+
+		if !gQuiet {
+			table.Render()
+		}
+
 		return nil
 	},
 }

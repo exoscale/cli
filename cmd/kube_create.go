@@ -322,7 +322,8 @@ var kubeCreateCmd = &cobra.Command{
 			return fmt.Errorf("cluster bootstrap failed: %s", err)
 		}
 
-		fmt.Printf(`
+		if !gQuiet {
+			fmt.Printf(`
 Your Kubernetes cluster is ready. What do now?
 
 1. Install the "kubectl" command, if you don't have it already:
@@ -345,7 +346,8 @@ configuration (e.g. ~/.bashrc, ~/.zshrc).
 * restart it later using the "exo lab kube start" command
 * delete it permanently using the "exo lab kube delete" command
 `,
-			clusterName)
+				clusterName)
+		}
 
 		return nil
 	},

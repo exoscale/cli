@@ -44,6 +44,7 @@ var runstatusServiceDeleteCmd = &cobra.Command{
 			return err
 		}
 
+		// TODO: add "--force" flag
 		if !askQuestion(fmt.Sprintf("sure you want to delete %q service", serviceName)) {
 			return nil
 		}

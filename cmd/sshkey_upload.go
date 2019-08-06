@@ -38,10 +38,14 @@ func uploadSSHKey(name, publicKeyPath string) error {
 	}
 
 	keyPair := resp.(*egoscale.SSHKeyPair)
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Fingerprint"})
-	table.Append([]string{keyPair.Name, keyPair.Fingerprint})
-	table.Render()
+
+	if !gQuiet {
+		table := table.NewTable(os.Stdout)
+		table.SetHeader([]string{"Name", "Fingerprint"})
+		table.Append([]string{keyPair.Name, keyPair.Fingerprint})
+		table.Render()
+	}
+
 	return nil
 }
 

@@ -27,11 +27,14 @@ var dnsRemoveCmd = &cobra.Command{
 			}
 		}
 
-		id, err := removeRecord(args[0], args[1])
-		if err != nil {
+		if _, err = removeRecord(args[0], args[1]); err != nil {
 			return err
 		}
-		fmt.Println(id)
+
+		if !gQuiet {
+			fmt.Printf("Record %q removed successfully from %q\n", args[1], args[0])
+		}
+
 		return nil
 	},
 }

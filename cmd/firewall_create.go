@@ -36,25 +36,15 @@ var firewallCreateCmd = &cobra.Command{
 			return errors[0]
 		}
 
-		description := (desc != "")
-
-		table := table.NewTable(os.Stdout)
-		if !description {
-			table.SetHeader([]string{"Name", "ID"})
-		} else {
-			table.SetHeader([]string{"Name", "Description", "ID"})
-		}
-
-		for _, resp := range taskResponses {
-			r := resp.resp.(*egoscale.SecurityGroup)
-
-			if description {
-				table.Append([]string{r.Name, r.ID.String()})
-				continue
+		if !gQuiet {
+			table := table.NewTable(os.Stdout)
+			table.SetHeader([]string{"ID", "Name", "Description"})
+			for _, resp := range taskResponses {
+				r := resp.resp.(*egoscale.SecurityGroup)
+				table.Append([]string{r.ID.String(), r.Name, r.Description})
 			}
-			table.Append([]string{r.Name, r.Description, r.ID.String()})
+			table.Render()
 		}
-		table.Render()
 
 		return nil
 	},

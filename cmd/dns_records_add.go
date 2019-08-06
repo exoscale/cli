@@ -724,7 +724,11 @@ var dnsSRVCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Record %q was created successfully to %q\n", cmd.Name(), args[0])
+
+		if !gQuiet {
+			fmt.Printf("Record %q was created successfully to %q\n", cmd.Name(), args[0])
+		}
+
 		return nil
 	},
 }
