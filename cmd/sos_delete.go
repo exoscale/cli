@@ -67,7 +67,9 @@ var sosDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("Bucket %q deleted successfully\n", bucket)
+		if !gQuiet {
+			fmt.Printf("Bucket %q deleted successfully\n", bucket)
+		}
 
 		return nil
 	},
