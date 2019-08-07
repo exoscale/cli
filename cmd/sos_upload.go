@@ -196,6 +196,13 @@ var sosUploadCmd = &cobra.Command{
 				if upErr != nil {
 					log.Fatal(upErr)
 				}
+
+				// Workaround required to avoid the io.Reader from hanging when uploading empty files
+				// (see https://github.com/vbauerster/mpb/issues/7#issuecomment-518756758)
+				if fileInfo.Size() == 0 {
+					bar.SetTotal(100, true)
+				}
+
 				<-workerSem
 			}()
 		}
