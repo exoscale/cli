@@ -30,28 +30,21 @@ type taskResponse struct {
 }
 
 func asyncTasks(tasks []task) []taskResponse {
-	var (
-		progress *mpb.Progress
-		taskWG   sync.WaitGroup
-		workerWG sync.WaitGroup
-	)
-
 	//init results
 	responses := make([]taskResponse, len(tasks))
 
 	//create task Progress
 	taskBars := make([]*mpb.Bar, len(tasks))
 	maximum := 1 << 30
-
-	if gQuiet {
-		progress = mpb.NewWithContext(gContext, mpb.WithWaitGroup(&taskWG), mpb.WithOutput(nil))
-	} else {
-		progress = mpb.NewWithContext(gContext, mpb.WithWaitGroup(&taskWG))
-
-	}
+	var taskWG sync.WaitGroup
+	progress := mpb.NewWithContext(gContext,
+		mpb.WithWaitGroup(&taskWG),
+		mpb.ContainerOptOnCond(mpb.WithOutput(nil), func() bool { return gQuiet }),
+	)
 
 	taskWG.Add(len(tasks))
 
+	var workerWG sync.WaitGroup
 	workerWG.Add(len(tasks))
 	workerSem := make(chan int, parallelTask)
 

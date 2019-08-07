@@ -284,8 +284,11 @@ func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachin
 
 	var keypairsName string
 	if deploys[0].KeyPair == "" {
+		if !gQuiet {
+			fmt.Println("Creating private SSH key")
+		}
+
 		isDefaultKeyPair = true
-		fmt.Println("Creating private SSH key")
 		sshKeyName, err := utils.RandStringBytes(64)
 		if err != nil {
 			return nil, []error{err}
