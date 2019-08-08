@@ -58,7 +58,7 @@ var sosDeleteCmd = &cobra.Command{
 			for rmObjErr := range minioClient.RemoveObjectsWithContext(gContext, bucket, objectsCh) {
 				if rmObjErr.Err != nil {
 					fmt.Fprintf(os.Stderr, "error: %s: %s\n", rmObjErr.ObjectName, rmObjErr.Err)
-					continue
+					os.Exit(1)
 				}
 			}
 		}
