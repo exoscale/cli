@@ -49,7 +49,7 @@ var sosDeleteCmd = &cobra.Command{
 				for obj := range minioClient.ListObjectsV2(bucket, "", true, gContext.Done()) {
 					if obj.Err != nil {
 						fmt.Fprintf(os.Stderr, "error: %s: %s\n", obj.Key, obj.Err)
-						continue
+						os.Exit(1)
 					}
 					objectsCh <- obj.Key
 				}
