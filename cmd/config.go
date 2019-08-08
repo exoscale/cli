@@ -363,6 +363,9 @@ func addAccount(filePath string, newAccounts *config) error {
 }
 
 func isCloudstackINIFileExist() (string, bool) {
+	if isSnap {
+		return "", false
+	}
 	envConfigPath := os.Getenv("CLOUDSTACK_CONFIG")
 
 	usr, _ := user.Current()

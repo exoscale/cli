@@ -9,6 +9,7 @@ GO_FILES = $(shell find . -type f -name '*.go')
 .PHONY: all
 all: clean exo
 
+.PHONY: exo
 exo: $(GO_FILES)
 	go build ${GO_BUILDOPTS} -mod=vendor -o $@
 

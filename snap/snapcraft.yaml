@@ -1,0 +1,31 @@
+name: exoscale-cli
+base: core18
+version: '0.1' # just for humans, typically '1.2+git' or '1.3.2'
+summary: The Exoscale command line tool # 79 char long summary
+description: |
+  The Exoscale command line tool.
+
+  This snap allows you to use the "exo" command once installed, your
+  gateway to the Exoscale platform.
+
+grade: devel # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+
+apps:
+  exoscale-cli:
+    command: exo
+    plugs: [network, home]
+
+parts:
+  exo:
+    # See 'snapcraft plugins'
+    plugin: make
+    source: .
+    artifacts:
+      - exo
+    build-snaps:
+      - go
+    build-packages:
+      - git
+    #stage:
+    #  - exo
