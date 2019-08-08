@@ -1,14 +1,14 @@
-UNRELEASED
-----------
+1.5.0
+-----
 
 - Add new flag `--recursive` to the `sos delete` command to empty a bucket before deleting it (#172)
 - Add "quiet" mode (#171)
-- Require protocol to be specified if a port is provided when adding a Security Group rule
-- Require a user-data maximum length of 32Kb during instance creation (#168)
 - Fix `sos list` command panic if SOS returns bogus entries
 - Fix `lab kube create` node instance upgrade stage (#166)
 - Fix `affinitygroup delete` command confirmation prompt bug (#169)
 - Fix `sos upload` issue with empty files (#173)
+- Require protocol to be specified if a port is provided when adding a Security Group rule
+- Require a user-data maximum length of 32Kb during instance creation (#168)
 
 1.4.1
 -----
