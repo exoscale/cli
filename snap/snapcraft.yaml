@@ -19,6 +19,7 @@ apps:
 parts:
   exo:
     # See 'snapcraft plugins'
+    disable-parallel: True
     plugin: make
     source: .
     artifacts:
