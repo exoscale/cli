@@ -11,10 +11,19 @@ description: |
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 
+plugs:
+  read-write-config:
+    interface: personal-files
+    write:
+      - $HOME/.exoscale
+
 apps:
   exoscale-cli:
     command: exo
-    plugs: [network, home]
+    plugs:
+      - network
+      - home
+      - read-write-config
 
 parts:
   exo:
@@ -28,5 +37,3 @@ parts:
       - go
     build-packages:
       - git
-    #stage:
-    #  - exo

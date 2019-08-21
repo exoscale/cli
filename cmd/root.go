@@ -20,9 +20,6 @@ var gContext context.Context
 var gConfigFolder string
 var gConfigFilePath string
 
-// Stores whether we are running in a SNAP package
-var isSnap bool
-
 //current Account information
 var gAccountName string
 var gCurrentAccount = &account{
@@ -206,26 +203,16 @@ func initConfig() {
 		gConfigFolder = path.Join(usr.HomeDir, ".config", "exoscale")
 	}
 
-	snapHome, found := os.LookupEnv("SNAP_USER_COMMON")
-	isSnap = found
-	if isSnap {
-		// This is us running inside a snap package. Use that as a config dir
-		// Typically, this means: /home/$USER/snap/exoscale/common/exoscale.toml
-		gConfigFolder = path.Join(snapHome, "")
-	}
-
 	if gConfigFilePath != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(gConfigFilePath)
 	} else {
 		viper.SetConfigName("exoscale")
 		viper.AddConfigPath(gConfigFolder)
-		if !isSnap {
-			// Retain backwards compatibility
-			viper.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
-			viper.AddConfigPath(usr.HomeDir)
-			viper.AddConfigPath(".")
-		}
+		// Retain backwards compatibility
+		viper.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
+		viper.AddConfigPath(usr.HomeDir)
+		viper.AddConfigPath(".")
 	}
 
 	nonCredentialCmds := []string{"config", "version", "status"}
