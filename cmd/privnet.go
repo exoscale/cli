@@ -16,8 +16,11 @@ var privnetCmd = &cobra.Command{
 
 // getNetwork returns a Private Network by name or ID, and optionally a zone to restrict search to.
 // Since the Exoscale API doesn't support searching by unique name, we have to list all networks and
-// match results ourselves.
+// match results ourselves. In case the caller provides a network name and there are multiple matching
+// results an error is returned.
 func getNetwork(net string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
+	var found *egoscale.Network
+
 	req := &egoscale.Network{
 		ZoneID:          zoneID,
 		Type:            "Isolated",
@@ -38,9 +41,25 @@ func getNetwork(net string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
 
 	for _, item := range resp {
 		network := item.(*egoscale.Network)
-		if (id != nil && network.ID.Equal(*id)) || network.Name == net {
+
+		// If search criteria is unique ID, return first (i.e. only) match
+		if id != nil && network.ID.Equal(*id) {
 			return network, nil
 		}
+
+		// If search criteria is name, check that there isn't multiple networks named
+		// identically before returning a match
+		if network.Name == net {
+			// We already found a match before -> multiple results
+			if found != nil {
+				return nil, fmt.Errorf("found multiple networks named %q, please specify a unique ID instead", net)
+			}
+			found = network
+		}
+	}
+
+	if found != nil {
+		return found, nil
 	}
 
 	return nil, fmt.Errorf("network %q not found", net)
