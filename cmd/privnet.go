@@ -42,12 +42,12 @@ func getNetwork(net string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
 	for _, item := range resp {
 		network := item.(*egoscale.Network)
 
-		// If search criteria is unique ID, return first (i.e. only) match
+		// If search criterion is an unique ID, return the first (i.e. only) match
 		if id != nil && network.ID.Equal(*id) {
 			return network, nil
 		}
 
-		// If search criteria is name, check that there isn't multiple networks named
+		// If search criterion is a name, check that there isn't multiple networks named
 		// identically before returning a match
 		if network.Name == net {
 			// We already found a match before -> multiple results
