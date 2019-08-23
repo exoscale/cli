@@ -23,7 +23,7 @@ var vmUpdateIPCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		network, err := getNetworkByName(netName)
+		network, err := getNetwork(netName, nil)
 		if err != nil {
 			return err
 		}

@@ -40,7 +40,7 @@ Supported output template annotations: %s`,
 }
 
 func showPrivnet(name string) (outputter, error) {
-	privnet, err := getNetworkByName(name)
+	privnet, err := getNetwork(name, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -21,7 +21,7 @@ var privnetUpdateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		network, err := getNetworkByName(args[0])
+		network, err := getNetwork(args[0], nil)
 		if err != nil {
 			return err
 		}
