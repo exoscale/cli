@@ -38,7 +38,7 @@ func getNetwork(net string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
 
 	for _, item := range resp {
 		network := item.(*egoscale.Network)
-		if network.Name == net {
+		if (id != nil && network.ID.Equal(*id)) || network.Name == net {
 			return network, nil
 		}
 	}
