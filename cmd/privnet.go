@@ -14,48 +14,57 @@ var privnetCmd = &cobra.Command{
 	Short: "Private networks management",
 }
 
-func getNetworkByName(name string) (*egoscale.Network, error) {
-	net := &egoscale.Network{
-		Type:            "Isolated",
-		CanUseForDeploy: true,
-	}
+// getNetwork returns a Private Network by name or ID, and optionally a zone to restrict search to.
+// Since the Exoscale API doesn't support searching by unique name, we have to list all networks and
+// match results ourselves. In case the caller provides a network name and there are multiple matching
+// results an error is returned.
+func getNetwork(net string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
+	var found *egoscale.Network
 
-	id, errUUID := egoscale.ParseUUID(name)
-	if errUUID != nil {
-		net.Name = name
-	} else {
-		net.ID = id
-	}
-
-	resp, err := cs.GetWithContext(gContext, net)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp.(*egoscale.Network), nil
-}
-
-func getNetworkByNameAndZone(name string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
-	net := &egoscale.Network{
+	req := &egoscale.Network{
 		ZoneID:          zoneID,
 		Type:            "Isolated",
 		CanUseForDeploy: true,
 	}
 
-	id, errUUID := egoscale.ParseUUID(name)
+	id, errUUID := egoscale.ParseUUID(net)
 	if errUUID != nil {
-		net.Name = name
+		req.Name = net
 	} else {
-		net.ID = id
+		req.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, net)
+	resp, err := cs.ListWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.(*egoscale.Network), nil
+	for _, item := range resp {
+		network := item.(*egoscale.Network)
+
+		// If search criterion is an unique ID, return the first (i.e. only) match
+		if id != nil && network.ID.Equal(*id) {
+			return network, nil
+		}
+
+		// If search criterion is a name, check that there isn't multiple networks named
+		// identically before returning a match
+		if network.Name == net {
+			// We already found a match before -> multiple results
+			if found != nil {
+				return nil, fmt.Errorf("found multiple networks named %q, please specify a unique ID instead", net)
+			}
+			found = network
+		}
+	}
+
+	if found != nil {
+		return found, nil
+	}
+
+	return nil, fmt.Errorf("network %q not found", net)
 }
+
 func init() {
 	RootCmd.AddCommand(privnetCmd)
 }

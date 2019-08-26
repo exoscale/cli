@@ -241,7 +241,7 @@ func getPrivnetList(commaParameter string, zoneID *egoscale.UUID) ([]egoscale.UU
 	ids := make([]egoscale.UUID, len(sgs))
 
 	for i, sg := range sgs {
-		n, err := getNetworkByNameAndZone(sg, zoneID)
+		n, err := getNetwork(sg, zoneID)
 		if err != nil {
 			return nil, err
 		}
