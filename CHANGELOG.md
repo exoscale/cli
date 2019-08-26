@@ -1,3 +1,8 @@
+UNRELEASED
+----------
+
+- Fix network retrieval by name (#175)
+
 1.5.0
 -----
 
