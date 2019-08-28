@@ -1,29 +1,35 @@
 name: exoscale-cli
 base: core18
 version: git
-summary: The Exoscale command line tool # 79 char long summary
+summary: The Exoscale command line tool
 description: |
   The Exoscale command line tool.
 
   This snap allows you to use the "exo" command once installed, your
   gateway to the Exoscale platform.
 
+  Usage: sudo snap install exoscale-cli; exo config; exo vm list
+
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: strict # use 'strict' once you have the right plugs and slots
 
 plugs:
-  read-write-config:
+  # This allows us to read/write in $HOME/.exoscale/*
+  # It was granted via a forum post and is autoconnected.
+  # Do not change the plug name.
+  dot-exoscale:
     interface: personal-files
     write:
       - $HOME/.exoscale
 
 apps:
+  # The app has an alias to "exo" that was granted via forum post.
   exoscale-cli:
     command: exo
     plugs:
       - network
       - home
-      - read-write-config
+      - dot-exoscale
 
 parts:
   exo:
