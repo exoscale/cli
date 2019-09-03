@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -29,46 +27,41 @@ var vmResizeCmd = &cobra.Command{
 			return err
 		}
 
-		errs := []error{}
+		tasks := make([]task, 0, len(args))
 		for _, v := range args {
-			if err := resizeVirtualMachine(v, diskValue, force); err != nil {
-				errs = append(errs, fmt.Errorf("could not resize %q: %s", v, err))
-			}
-		}
-
-		if len(errs) == 1 {
-			return errs[0]
-		}
-		if len(errs) > 1 {
-			var b strings.Builder
-			for _, err := range errs {
-				if _, e := fmt.Fprintln(&b, err); e != nil {
-					return e
+			if !force {
+				if !askQuestion(fmt.Sprintf("sure you want to resize %q virtual machine", v)) {
+					continue
 				}
 			}
-			return errors.New(b.String())
+
+			task, err := resizeVirtualMachine(v, diskValue)
+			if err != nil {
+				return err
+			}
+
+			tasks = append(tasks, *task)
+		}
+
+		taskResponses := asyncTasks(tasks)
+		errors := filterErrors(taskResponses)
+		if len(errors) > 0 {
+			return errors[0]
 		}
 
 		return nil
 	},
 }
 
-// resizeVirtualMachine stop a virtual machine instance
-func resizeVirtualMachine(vmName string, diskValue int64, force bool) error {
+func resizeVirtualMachine(vmName string, diskValue int64) (*task, error) {
 	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	state := (string)(egoscale.VirtualMachineStopped)
 	if vm.State != state {
-		return fmt.Errorf("this operation is not permitted if your VM is not stopped")
-	}
-
-	if !force {
-		if !askQuestion(fmt.Sprintf("sure you want to resize %q virtual machine", vm.Name)) {
-			return nil
-		}
+		return nil, fmt.Errorf("this operation is not permitted if your VM is not stopped")
 	}
 
 	resp, err := cs.GetWithContext(gContext, egoscale.Volume{
@@ -77,14 +70,17 @@ func resizeVirtualMachine(vmName string, diskValue int64, force bool) error {
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 	resizeVolume := &egoscale.ResizeVolume{
 		ID:   resp.(*egoscale.Volume).ID,
 		Size: diskValue,
 	}
-	_, err = asyncRequest(resizeVolume, fmt.Sprintf("Resizing %q ", vm.Name))
-	return err
+
+	return &task{
+		resizeVolume,
+		fmt.Sprintf("Resizing %q ", vm.Name),
+	}, err
 }
 
 func init() {
