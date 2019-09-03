@@ -56,21 +56,6 @@ var vmScaleCmd = &cobra.Command{
 	},
 }
 
-// scaleVirtualMachine scale a virtual machine instance Async with context
-func scaleVirtualMachine(vmName string, serviceofferingID egoscale.UUID) error {
-	vm, err := getVirtualMachineByNameOrID(vmName)
-	if err != nil {
-		return err
-	}
-
-	if vm.State != (string)(egoscale.VirtualMachineStopped) {
-		return fmt.Errorf("this operation is not permitted if your VM is not stopped")
-	}
-
-	_, err = asyncRequest(&egoscale.ScaleVirtualMachine{ID: vm.ID, ServiceOfferingID: &serviceofferingID}, fmt.Sprintf("Scaling %q ", vm.Name))
-	return err
-}
-
 func init() {
 	vmCmd.AddCommand(vmScaleCmd)
 	vmScaleCmd.Flags().StringP("service-offering", "o", "", "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan")
