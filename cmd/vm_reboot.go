@@ -57,22 +57,6 @@ var vmRebootCmd = &cobra.Command{
 	},
 }
 
-// rebootVirtualMachine reboot a virtual machine instance Async
-func rebootVirtualMachine(vmName string) error {
-	vm, err := getVirtualMachineByNameOrID(vmName)
-	if err != nil {
-		return err
-	}
-
-	state := (string)(egoscale.VirtualMachineRunning)
-	if vm.State != state {
-		return fmt.Errorf("%q is not in a %s state, got %s", vmName, state, vm.State)
-	}
-
-	_, err = asyncRequest(&egoscale.RebootVirtualMachine{ID: vm.ID}, fmt.Sprintf("Rebooting %q ", vm.Name))
-	return err
-}
-
 func init() {
 	vmRebootCmd.Flags().BoolP("force", "f", false, "Attempt to reboot virtual machine without prompting for confirmation")
 	vmCmd.AddCommand(vmRebootCmd)
