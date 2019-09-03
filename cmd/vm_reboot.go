@@ -37,7 +37,7 @@ var vmRebootCmd = &cobra.Command{
 
 			state := (string)(egoscale.VirtualMachineRunning)
 			if vm.State != state {
-				fmt.Fprintf(os.Stderr, "%q is not in a %s state, got %s", vm.Name, state, vm.State)
+				fmt.Fprintf(os.Stderr, "%q is not in a %s state, got %s\n", vm.Name, state, vm.State)
 				continue
 			}
 
