@@ -25,7 +25,7 @@ func listServiceOffering() error {
 	}
 
 	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "cpu", "ram"})
+	table.SetHeader([]string{"ID", "Name", "cpu", "ram"})
 
 	for _, soff := range serviceOffering {
 		f := soff.(*egoscale.ServiceOffering)
@@ -37,7 +37,7 @@ func listServiceOffering() error {
 			ram = fmt.Sprintf("%d MB", f.Memory)
 		}
 
-		table.Append([]string{f.Name, fmt.Sprintf("%d× %d MHz", f.CPUNumber, f.CPUSpeed), ram})
+		table.Append([]string{f.ID.String(), f.Name, fmt.Sprintf("%d× %d MHz", f.CPUNumber, f.CPUSpeed), ram})
 	}
 
 	table.Render()
