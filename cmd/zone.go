@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"os"
+	"fmt"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -12,31 +12,49 @@ const (
 	zoneHelp = "<zone name | id> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1|bg-sof-1|de-muc-1)"
 )
 
-// zoneCmd represents the zone command
-var zoneCmd = &cobra.Command{
-	Use:   "zone",
-	Short: "List all available zones",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return listZones()
-	},
+type zoneListItemOutput struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
-// FIXME: this should be reimplemented using an outputter interface
-func listZones() error {
+type zoneListOutput []zoneListItemOutput
+
+func (o *zoneListOutput) toJSON()  { outputJSON(o) }
+func (o *zoneListOutput) toText()  { outputText(o) }
+func (o *zoneListOutput) toTable() { outputTable(o) }
+
+func init() {
+	RootCmd.AddCommand(&cobra.Command{
+		Use:   "zone",
+		Short: "List all available zones",
+		Long: fmt.Sprintf(`This command lists available Exoscale zones.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&zoneListOutput{}), ", ")),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return output(listZones())
+		},
+	})
+}
+
+func listZones() (outputter, error) {
 	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "ID"})
+	out := zoneListOutput{}
 
-	for _, zone := range zones {
-		z := zone.(*egoscale.Zone)
-		table.Append([]string{z.Name, z.ID.String()})
+	for _, key := range zones {
+		zone := key.(*egoscale.Zone)
+
+		out = append(out, zoneListItemOutput{
+			ID:   zone.ID.String(),
+			Name: zone.Name,
+		})
 	}
-	table.Render()
-	return nil
+
+	return &out, nil
 }
 
 func getZoneIDByName(name string) (*egoscale.UUID, error) {
@@ -55,8 +73,4 @@ func getZoneIDByName(name string) (*egoscale.UUID, error) {
 	}
 
 	return resp.(*egoscale.Zone).ID, nil
-}
-
-func init() {
-	RootCmd.AddCommand(zoneCmd)
 }
