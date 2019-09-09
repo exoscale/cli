@@ -2,6 +2,7 @@ UNRELEASED
 ----------
 
 - Fix network retrieval by name (#175)
+- `exo vm serviceoffering`: show the ID (#178)
 
 1.5.0
 -----
