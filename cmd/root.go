@@ -204,8 +204,7 @@ func initConfig() {
 	}
 
 	// Snap packages use $HOME/.exoscale (as negotiated with the snap store)
-	_, snap := os.LookupEnv("SNAP_USER_COMMON")
-	if snap {
+	if _, snap := os.LookupEnv("SNAP_USER_COMMON"); snap {
 		gConfigFolder = path.Join(usr.HomeDir, ".exoscale")
 	}
 
