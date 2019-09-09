@@ -195,16 +195,17 @@ func initConfig() {
 		}
 	}
 
-	_, snap := os.LookupEnv("SNAP_USER_COMMON")
-	if !snap {
-		xdgHome, found := os.LookupEnv("XDG_CONFIG_HOME")
-		if found {
-			gConfigFolder = path.Join(xdgHome, "exoscale")
-		} else {
-			// The XDG spec specifies a default XDG_CONFIG_HOME in $HOME/.config
-			gConfigFolder = path.Join(usr.HomeDir, ".config", "exoscale")
-		}
+	xdgHome, found := os.LookupEnv("XDG_CONFIG_HOME")
+	if found {
+		gConfigFolder = path.Join(xdgHome, "exoscale")
 	} else {
+		// The XDG spec specifies a default XDG_CONFIG_HOME in $HOME/.config
+		gConfigFolder = path.Join(usr.HomeDir, ".config", "exoscale")
+	}
+
+	// Snap packages use $HOME/.exoscale (as negotiated with the snap store)
+	_, snap := os.LookupEnv("SNAP_USER_COMMON")
+	if snap {
 		gConfigFolder = path.Join(usr.HomeDir, ".exoscale")
 	}
 
