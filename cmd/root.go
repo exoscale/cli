@@ -203,6 +203,11 @@ func initConfig() {
 		gConfigFolder = path.Join(usr.HomeDir, ".config", "exoscale")
 	}
 
+	// Snap packages use $HOME/.exoscale (as negotiated with the snap store)
+	if _, snap := os.LookupEnv("SNAP_USER_COMMON"); snap {
+		gConfigFolder = path.Join(usr.HomeDir, ".exoscale")
+	}
+
 	if gConfigFilePath != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(gConfigFilePath)

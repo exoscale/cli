@@ -4,3 +4,5 @@ exo
 manpage
 contrib
 cli
+*.snap
+*.xdelta3
