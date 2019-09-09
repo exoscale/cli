@@ -208,7 +208,6 @@ func initConfig() {
 		gConfigFolder = path.Join(usr.HomeDir, ".exoscale")
 	}
 
-
 	if gConfigFilePath != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(gConfigFilePath)
