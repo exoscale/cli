@@ -2,47 +2,66 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// serviceofferingCmd represents the serviceoffering command
-var serviceofferingCmd = &cobra.Command{
-	Use:   "serviceoffering",
-	Short: "List available services offerings with details",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return listServiceOffering()
-	},
+type serviceOfferingListItemOutput struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	CPU  string `json:"cpu"`
+	RAM  string `json:"ram"`
 }
 
-func listServiceOffering() error {
+type serviceOfferingListOutput []serviceOfferingListItemOutput
+
+func (o *serviceOfferingListOutput) toJSON()  { outputJSON(o) }
+func (o *serviceOfferingListOutput) toText()  { outputText(o) }
+func (o *serviceOfferingListOutput) toTable() { outputTable(o) }
+
+func init() {
+	vmCmd.AddCommand(&cobra.Command{
+		Use:   "serviceoffering",
+		Short: "List available services offerings with details",
+		Long: fmt.Sprintf(`This command lists available Compute service offerings.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&serviceOfferingListOutput{}), ", ")),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return output(listServiceOfferings())
+		},
+	})
+}
+
+func listServiceOfferings() (outputter, error) {
 	serviceOffering, err := cs.ListWithContext(gContext, &egoscale.ServiceOffering{})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"ID", "Name", "cpu", "ram"})
+	out := serviceOfferingListOutput{}
 
-	for _, soff := range serviceOffering {
-		f := soff.(*egoscale.ServiceOffering)
+	for _, key := range serviceOffering {
+		so := key.(*egoscale.ServiceOffering)
 
 		ram := ""
-		if f.Memory > 1000 {
-			ram = fmt.Sprintf("%d GB", f.Memory>>10)
-		} else if f.Memory < 1000 {
-			ram = fmt.Sprintf("%d MB", f.Memory)
+		if so.Memory > 1000 {
+			ram = fmt.Sprintf("%d GB", so.Memory>>10)
+		} else if so.Memory < 1000 {
+			ram = fmt.Sprintf("%d MB", so.Memory)
 		}
 
-		table.Append([]string{f.ID.String(), f.Name, fmt.Sprintf("%d× %d MHz", f.CPUNumber, f.CPUSpeed), ram})
+		out = append(out, serviceOfferingListItemOutput{
+			ID:   so.ID.String(),
+			Name: so.Name,
+			CPU:  fmt.Sprintf("%d × %d MHz", so.CPUNumber, so.CPUSpeed),
+			RAM:  ram,
+		})
 	}
 
-	table.Render()
-
-	return nil
+	return &out, nil
 
 }
 
@@ -62,8 +81,4 @@ func getServiceOfferingByName(name string) (*egoscale.ServiceOffering, error) {
 	}
 
 	return resp.(*egoscale.ServiceOffering), nil
-}
-
-func init() {
-	vmCmd.AddCommand(serviceofferingCmd)
 }
