@@ -1,5 +1,5 @@
-UNRELEASED
-----------
+1.5.1
+-----
 
 - Fix network retrieval by name (#175)
 - `exo vm serviceoffering`: show the ID (#178)
