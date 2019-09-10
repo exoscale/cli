@@ -142,7 +142,7 @@ func initConfig() {
 		"EXOSCALE_KEY",
 		"EXOSCALE_API_KEY",
 		"CLOUDSTACK_KEY",
-		"CLOUSTACK_API_KEY",
+		"CLOUDSTACK_API_KEY",
 	)
 
 	envSecret := readFromEnv(
