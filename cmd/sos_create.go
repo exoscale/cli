@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/exoscale/egoscale"
 	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +26,16 @@ var sosCreateCmd = &cobra.Command{
 
 		if zone != "" {
 			gCurrentAccount.DefaultZone = zone
+		}
+
+		if _, err := getZoneIDByName(zone); err != nil {
+			if apiErr, ok := err.(*egoscale.ErrorResponse); ok {
+				if strings.HasPrefix(apiErr.ErrorText, "not found") {
+					return fmt.Errorf("invalid zone %q", zone)
+				}
+				return err
+			}
+			return err
 		}
 
 		minioClient, err := newMinioClient(gCurrentAccount.DefaultZone)
