@@ -4,6 +4,7 @@ UNRELEASED
 - Fix network retrieval by name (#175)
 - `exo vm serviceoffering`: show the ID (#178)
 - `exo zone`: honor command output formatting options (#179)
+- `exo vm serviceoffering`: honor command output formatting options (#182)
 
 1.5.0
 -----
