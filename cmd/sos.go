@@ -30,6 +30,8 @@ func newMinioClient(zone string) (*minio.Client, error) {
 		client.TraceOn(os.Stderr)
 	}
 
+	client.SetAppInfo("Exoscale-CLI", gVersion)
+
 	return client, nil
 }
 
