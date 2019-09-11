@@ -1,6 +1,7 @@
 UNRELEASED
 ----------
 
+- Make vm stop, start... more async (#134)
 - `exo sos create`: check specified zone validity to avoid timeouts (#183)
 
 1.5.1
