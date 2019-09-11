@@ -1,3 +1,8 @@
+UNRELEASED
+----------
+
+- `exo sos create`: check specified zone validity to avoid timeouts (#183)
+
 1.5.1
 -----
 
