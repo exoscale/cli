@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -42,42 +40,36 @@ var vmResetCmd = &cobra.Command{
 			return err
 		}
 
-		// FIXME: this should be refactored using asyncTasks()
-		errs := []error{}
+		tasks := make([]task, 0, len(args))
 		for _, v := range args {
-			if err := resetVirtualMachine(v, diskValue, template, templateFilter, force); err != nil {
-				errs = append(errs, fmt.Errorf("could not reset %q: %s", v, err))
-			}
-		}
-
-		if len(errs) == 1 {
-			return errs[0]
-		}
-		if len(errs) > 1 {
-			var b strings.Builder
-			for _, err := range errs {
-				if _, e := fmt.Fprintln(&b, err); e != nil {
-					return e
+			if !force {
+				if !askQuestion(fmt.Sprintf("sure you want to reset %q virtual machine", v)) {
+					continue
 				}
 			}
-			return errors.New(b.String())
+
+			task, err := makeResetVirtualMachineCMD(v, diskValue, template, templateFilter)
+			if err != nil {
+				return err
+			}
+
+			tasks = append(tasks, *task)
+		}
+
+		taskResponses := asyncTasks(tasks)
+		errors := filterErrors(taskResponses)
+		if len(errors) > 0 {
+			return errors[0]
 		}
 
 		return nil
 	},
 }
 
-// resetVirtualMachine stop a virtual machine instance
-func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName string, templateFilter string, force bool) error {
+func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, templateName string, templateFilter string) (*task, error) {
 	vm, err := getVirtualMachineByNameOrID(vmName)
 	if err != nil {
-		return err
-	}
-
-	if !force {
-		if !askQuestion(fmt.Sprintf("sure you want to reset %q virtual machine", vm.Name)) {
-			return nil
-		}
+		return nil, err
 	}
 
 	var template *egoscale.Template
@@ -85,7 +77,7 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName st
 	if templateName != "" {
 		template, err = getTemplateByName(vm.ZoneID, templateName, templateFilter)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	} else {
 		resp, err := cs.ListWithContext(gContext, egoscale.Template{
@@ -95,7 +87,7 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName st
 		})
 
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if len(resp) > 0 {
@@ -108,7 +100,7 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName st
 		Type:             "ROOT",
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	volume := resp.(*egoscale.Volume)
@@ -118,7 +110,7 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName st
 
 	if diskValue.int64 != nil {
 		if template != nil && *diskValue.int64 < (template.Size>>30) {
-			return fmt.Errorf("root disk size must be greater or equal than %dGB", template.Size>>30)
+			return nil, fmt.Errorf("root disk size must be greater or equal than %dGB", template.Size>>30)
 		}
 
 		rootDiskSize = *diskValue.int64
@@ -128,35 +120,17 @@ func resetVirtualMachine(vmName string, diskValue int64PtrValue, templateName st
 		VirtualMachineID: vm.ID,
 		RootDiskSize:     rootDiskSize,
 	}
+
+	var msg string
 	if template != nil {
 		cmd.TemplateID = template.ID
 
-		fmt.Printf("Resetting %q using %q", vm.Name, template.DisplayText)
+		msg = fmt.Sprintf("Resetting %q using %q", vm.Name, template.DisplayText)
 	} else {
-		fmt.Printf("Resetting %q ", vm.Name)
-	}
-	var errorReq error
-	cs.AsyncRequestWithContext(gContext, cmd, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-		fmt.Print(".")
-
-		if err != nil {
-			errorReq = err
-			return false
-		}
-
-		if jobResult.JobStatus == egoscale.Success {
-			fmt.Println(" success.")
-			return false
-		}
-
-		return true
-	})
-
-	if errorReq != nil {
-		fmt.Println(" failure!")
+		msg = fmt.Sprintf("Resetting %q ", vm.Name)
 	}
 
-	return errorReq
+	return &task{cmd, msg}, nil
 }
 
 func init() {

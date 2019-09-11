@@ -1,9 +1,8 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"strings"
+	"os"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -23,50 +22,39 @@ var vmRebootCmd = &cobra.Command{
 			return err
 		}
 
-		errs := []error{}
+		tasks := make([]task, 0, len(args))
 		for _, v := range args {
 			if !force {
 				if !askQuestion(fmt.Sprintf("Are you sure you want to reboot virtual machine %q?", v)) {
-					return nil
+					continue
 				}
 			}
 
-			if err := rebootVirtualMachine(v); err != nil {
-				errs = append(errs, fmt.Errorf("could not reboot %q: %s", v, err))
+			vm, err := getVirtualMachineByNameOrID(v)
+			if err != nil {
+				return err
 			}
+
+			state := (string)(egoscale.VirtualMachineRunning)
+			if vm.State != state {
+				fmt.Fprintf(os.Stderr, "%q is not in a %s state, got %s\n", vm.Name, state, vm.State)
+				continue
+			}
+
+			tasks = append(tasks, task{
+				&egoscale.RebootVirtualMachine{ID: vm.ID},
+				fmt.Sprintf("Rebooting %q ", vm.Name),
+			})
 		}
 
-		if len(errs) == 1 {
-			return errs[0]
-		}
-		if len(errs) > 1 {
-			var b strings.Builder
-			for _, err := range errs {
-				if _, e := fmt.Fprintln(&b, err); e != nil {
-					return e
-				}
-			}
-			return errors.New(b.String())
+		taskResponses := asyncTasks(tasks)
+		errors := filterErrors(taskResponses)
+		if len(errors) > 0 {
+			return errors[0]
 		}
 
 		return nil
 	},
-}
-
-// rebootVirtualMachine reboot a virtual machine instance Async
-func rebootVirtualMachine(vmName string) error {
-	vm, err := getVirtualMachineByNameOrID(vmName)
-	if err != nil {
-		return err
-	}
-
-	state := (string)(egoscale.VirtualMachineRunning)
-	if vm.State != state {
-		return fmt.Errorf("%q is not in a %s state, got %s", vmName, state, vm.State)
-	}
-
-	_, err = asyncRequest(&egoscale.RebootVirtualMachine{ID: vm.ID}, fmt.Sprintf("Rebooting %q ", vm.Name))
-	return err
 }
 
 func init() {
