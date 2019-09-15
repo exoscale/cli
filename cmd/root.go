@@ -119,13 +119,17 @@ var ignoreClientBuild = false
 func initConfig() {
 	envs := map[string]string{
 		"EXOSCALE_CONFIG":  "config",
-		"EXOSCALE_ACCOUNT": "account",
+		"EXOSCALE_ACCOUNT": "use-account",
 	}
 
 	for env, flag := range envs {
-		flag := RootCmd.Flags().Lookup(flag)
+		pflag := RootCmd.Flags().Lookup(flag)
+		if pflag == nil {
+			panic(fmt.Sprintf("unknown flag '%s'", flag))
+		}
+
 		if value, ok := os.LookupEnv(env); ok {
-			if err := flag.Value.Set(value); err != nil {
+			if err := pflag.Value.Set(value); err != nil {
 				log.Fatal(err)
 			}
 		}
