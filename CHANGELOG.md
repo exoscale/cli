@@ -3,6 +3,7 @@ UNRELEASED
 
 - Make vm stop, start... more async (#134)
 - `exo sos create`: check specified zone validity to avoid timeouts (#183)
+- Fix panic when `EXOSCALE_ACCOUNT` environment variable is set (#184)
 
 1.5.1
 -----
