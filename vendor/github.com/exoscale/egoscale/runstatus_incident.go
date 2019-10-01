@@ -3,6 +3,7 @@ package egoscale
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 )
@@ -67,7 +68,7 @@ func (client *Client) GetRunstatusIncident(ctx context.Context, incident Runstat
 		}
 	}
 
-	return nil, fmt.Errorf("%#v not found", incident)
+	return nil, errors.New("incident not found")
 }
 
 func (client *Client) getRunstatusIncident(ctx context.Context, incidentURL string) (*RunstatusIncident, error) {
