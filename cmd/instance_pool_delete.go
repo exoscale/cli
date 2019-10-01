@@ -38,7 +38,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 		tasks := make([]task, 0, len(args))
 		for _, arg := range args {
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to delete %q virtual machine", arg)) {
+				if !askQuestion(fmt.Sprintf("sure you want to delete %q", arg)) {
 					return nil
 				}
 			}
