@@ -9,7 +9,7 @@ import (
 
 var instancePoolDeleteCmd = &cobra.Command{
 	Use:     "delete <name | id>+",
-	Short:   "Create an instance pool",
+	Short:   "Delete an instance pool",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
