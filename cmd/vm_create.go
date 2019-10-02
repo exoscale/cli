@@ -91,7 +91,7 @@ var vmCreateCmd = &cobra.Command{
 			keypair = gCurrentAccount.DefaultSSHKey
 		}
 
-		sg, err := cmd.Flags().GetString("security-group")
+		sg, err := cmd.Flags().GetStringArray("security-group")
 		if err != nil {
 			return err
 		}
@@ -106,7 +106,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		privnet, err := cmd.Flags().GetString("privnet")
+		privnet, err := cmd.Flags().GetStringArray("privnet")
 		if err != nil {
 			return err
 		}
@@ -126,7 +126,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		affinitygroup, err := cmd.Flags().GetString("anti-affinity-group")
+		affinitygroup, err := cmd.Flags().GetStringArray("anti-affinity-group")
 		if err != nil {
 			return err
 		}
