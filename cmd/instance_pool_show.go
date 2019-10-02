@@ -26,7 +26,7 @@ func (o *instancePoolItemOutput) toText()  { outputText(o) }
 func (o *instancePoolItemOutput) toTable() { outputTable(o) }
 
 var instancePoolShowCmd = &cobra.Command{
-	Use:     "delete <name | id>",
+	Use:     "show <name | id>",
 	Short:   "Create an instance pool",
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
