@@ -88,7 +88,7 @@ var instancePoolCreateCmd = &cobra.Command{
 			return err
 		}
 
-		sg, err := cmd.Flags().GetStringArray("security-group")
+		sg, err := cmd.Flags().GetStringSlice("security-group")
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ var instancePoolCreateCmd = &cobra.Command{
 			return err
 		}
 
-		aff, err := cmd.Flags().GetStringArray("anti-affinity-group")
+		aff, err := cmd.Flags().GetStringSlice("anti-affinity-group")
 		if err != nil {
 			return err
 		}
@@ -108,7 +108,7 @@ var instancePoolCreateCmd = &cobra.Command{
 			return err
 		}
 
-		priv, err := cmd.Flags().GetStringArray("privnet")
+		priv, err := cmd.Flags().GetStringSlice("privnet")
 		if err != nil {
 			return err
 		}
@@ -148,13 +148,13 @@ var instancePoolCreateCmd = &cobra.Command{
 func init() {
 	instancePoolCreateCmd.Flags().StringP("description", "d", "", "Instance pool description")
 	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	instancePoolCreateCmd.Flags().StringP("service-offering", "s", "small", "Instance pool service offering")
+	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "small", "Instance pool service offering")
 	instancePoolCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
 	instancePoolCreateCmd.Flags().StringP("keypair", "k", "", "Instance pool keypair")
 	instancePoolCreateCmd.Flags().IntP("size", "", 2, "Number of instance in the pool")
-	instancePoolCreateCmd.Flags().StringArrayP("security-group", "", nil, "Security groups <name | id, name | id, ...>")
-	instancePoolCreateCmd.Flags().StringArrayP("anti-affinity-group", "a", nil, "Anti-Affinitygroup groups <name | id, name | id, ...>")
-	instancePoolCreateCmd.Flags().StringArrayP("privnet", "", nil, "Privnets <name | id, name | id, ...>")
+	instancePoolCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security groups <name | id, name | id, ...>")
+	instancePoolCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinitygroup groups <name | id, name | id, ...>")
+	instancePoolCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Privnets <name | id, name | id, ...>")
 	instancePoolCmd.AddCommand(instancePoolCreateCmd)
 }
