@@ -30,7 +30,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 			zoneName = gCurrentAccount.DefaultZone
 		}
 
-		zone, err := getZoneIDByName(zoneName)
+		zone, err := getZoneByName(zoneName)
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 				}
 			}
 
-			i, err := getInstancePoolByName(arg, zone)
+			i, err := getInstancePoolByName(arg, zone.ID)
 			if err != nil {
 				return err
 			}
@@ -51,7 +51,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 			tasks = append(tasks, task{
 				egoscale.DestroyInstancePool{
 					ID:     i.ID,
-					ZoneID: zone,
+					ZoneID: zone.ID,
 				},
 				fmt.Sprintf("Delete instance pool %q", args[0]),
 			})

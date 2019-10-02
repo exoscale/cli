@@ -6,11 +6,11 @@ import (
 )
 
 type instancePoolItem struct {
-	ID     *egoscale.UUID             `json:"id"`
-	Name   string                     `json:"name"`
-	ZoneID *egoscale.UUID             `json:"zoneid"`
-	Size   int                        `json:"size"`
-	State  egoscale.InstancePoolState `json:"state"`
+	ID    *egoscale.UUID             `json:"id"`
+	Name  string                     `json:"name"`
+	Zone  string                     `json:"zone"`
+	Size  int                        `json:"size"`
+	State egoscale.InstancePoolState `json:"state"`
 }
 
 type instancePoolListItemOutput []instancePoolItem
@@ -31,13 +31,13 @@ var instancePoolListCmd = &cobra.Command{
 			zoneName = args[0]
 		}
 
-		zone, err := getZoneIDByName(zoneName)
+		zone, err := getZoneByName(zoneName)
 		if err != nil {
 			return err
 		}
 
 		resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePool{
-			ZoneID: zone,
+			ZoneID: zone.ID,
 		})
 		if err != nil {
 			return err
@@ -46,11 +46,11 @@ var instancePoolListCmd = &cobra.Command{
 		o := make(instancePoolListItemOutput, 0, r.Count)
 		for _, i := range r.ListInstancePoolsResponse {
 			o = append(o, instancePoolItem{
-				ID:     i.ID,
-				Name:   i.Name,
-				ZoneID: i.ZoneID,
-				Size:   i.Size,
-				State:  i.State,
+				ID:    i.ID,
+				Name:  i.Name,
+				Zone:  zone.Name,
+				Size:  i.Size,
+				State: i.State,
 			})
 		}
 

@@ -1,15 +1,22 @@
 package egoscale
 
+// InstancePoolState reprsents a state of an instance pool
 type InstancePoolState string
 
 const (
-	InstancePoolCreating    InstancePoolState = "creating"
-	InstancePoolRunning     InstancePoolState = "running"
-	InstancePoolDestroying  InstancePoolState = "destroying"
-	InstancePoolScalingUP   InstancePoolState = "scaling-up"
+	// InstancePoolCreating creating state
+	InstancePoolCreating InstancePoolState = "creating"
+	// InstancePoolRunning running state
+	InstancePoolRunning InstancePoolState = "running"
+	// InstancePoolDestroying destroying state
+	InstancePoolDestroying InstancePoolState = "destroying"
+	// InstancePoolScalingUp scaling up state
+	InstancePoolScalingUp InstancePoolState = "scaling-up"
+	// InstancePoolScalingDown scaling down state
 	InstancePoolScalingDown InstancePoolState = "scaling-down"
 )
 
+// InstancePool represents an instrance pool
 type InstancePool struct {
 	ID                *UUID             `json:"id"`
 	Name              string            `json:"name"`
@@ -27,6 +34,7 @@ type InstancePool struct {
 	Virtualmachines   []VirtualMachine  `json:"virtualmachines"`
 }
 
+// CreateInstancePool create an instance pool
 type CreateInstancePool struct {
 	Name              string `json:"name"`
 	Description       string `json:"description,omitempty"`
@@ -42,9 +50,11 @@ type CreateInstancePool struct {
 	_                 bool   `name:"createInstancePool" description:"Creates an Instance Pool with the provided parameters"`
 }
 
+// CreateInstancePoolResponse instance pool create response
 type CreateInstancePoolResponse struct {
 	ID                *UUID             `json:"id"`
 	Name              string            `json:"name"`
+	Description       string            `json:"description"`
 	ServiceofferingID *UUID             `json:"serviceofferingid"`
 	TemplateID        *UUID             `json:"templateid"`
 	ZoneID            *UUID             `json:"zoneid"`
@@ -62,6 +72,7 @@ func (CreateInstancePool) Response() interface{} {
 	return new(CreateInstancePoolResponse)
 }
 
+// UpdateInstancePool update an instance pool
 type UpdateInstancePool struct {
 	ID          *UUID  `json:"id"`
 	ZoneID      *UUID  `json:"zoneid"`
@@ -70,6 +81,7 @@ type UpdateInstancePool struct {
 	_           bool   `name:"updateInstancePool" description:""`
 }
 
+// UpdateInstancePoolResponse update instance pool response
 type UpdateInstancePoolResponse struct {
 	Success bool `json:"success"`
 }
@@ -79,6 +91,7 @@ func (UpdateInstancePool) Response() interface{} {
 	return new(UpdateInstancePoolResponse)
 }
 
+// ScaleInstancePool scale an instance pool
 type ScaleInstancePool struct {
 	ID     *UUID `json:"id"`
 	ZoneID *UUID `json:"zoneid"`
@@ -86,6 +99,7 @@ type ScaleInstancePool struct {
 	_      bool  `name:"scaleInstancePool" description:""`
 }
 
+// ScaleInstancePoolResponse scale instance pool response
 type ScaleInstancePoolResponse struct {
 	Success bool `json:"success"`
 }
@@ -95,12 +109,14 @@ func (ScaleInstancePool) Response() interface{} {
 	return new(ScaleInstancePoolResponse)
 }
 
+// DestroyInstancePool destroy an instance pool
 type DestroyInstancePool struct {
 	ID     *UUID `json:"id"`
 	ZoneID *UUID `json:"zoneid"`
 	_      bool  `name:"destroyInstancePool" description:""`
 }
 
+// DestroyInstancePoolResponse destroy instance pool response
 type DestroyInstancePoolResponse struct {
 	Success bool `json:"success"`
 }
@@ -110,12 +126,14 @@ func (DestroyInstancePool) Response() interface{} {
 	return new(DestroyInstancePoolResponse)
 }
 
+// GetInstancePool get an instance pool
 type GetInstancePool struct {
 	ID     *UUID `json:"id"`
 	ZoneID *UUID `json:"zoneid"`
 	_      bool  `name:"getInstancePool" description:""`
 }
 
+// GetInstancePoolsResponse get instance pool response
 type GetInstancePoolsResponse struct {
 	Count                     int
 	ListInstancePoolsResponse []InstancePool `json:"instancepool"`
@@ -126,11 +144,13 @@ func (GetInstancePool) Response() interface{} {
 	return new(GetInstancePoolsResponse)
 }
 
+// ListInstancePool list instance pool
 type ListInstancePool struct {
 	ZoneID *UUID `json:"zoneid"`
 	_      bool  `name:"listInstancePools" description:""`
 }
 
+// ListInstancePoolsResponse list instance pool response
 type ListInstancePoolsResponse struct {
 	Count                     int
 	ListInstancePoolsResponse []InstancePool `json:"instancepool"`

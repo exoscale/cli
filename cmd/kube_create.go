@@ -247,7 +247,7 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		zone, err := getZoneIDByName(gCurrentAccount.DefaultZone)
+		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}
@@ -257,7 +257,7 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		template, err := getTemplateByName(zone, kubeDefaultTemplate, kubeTemplateFilter)
+		template, err := getTemplateByName(zone.ID, kubeDefaultTemplate, kubeTemplateFilter)
 		if err != nil {
 			return err
 		}
@@ -269,7 +269,7 @@ var kubeCreateCmd = &cobra.Command{
 
 		r, errs := createVM([]egoscale.DeployVirtualMachine{{
 			Name:              clusterName,
-			ZoneID:            zone,
+			ZoneID:            zone.ID,
 			ServiceOfferingID: size.ID,
 			TemplateID:        template.ID,
 			RootDiskSize:      10,

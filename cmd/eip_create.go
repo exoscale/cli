@@ -62,11 +62,11 @@ var eipCreateCmd = &cobra.Command{
 }
 
 func associateIPAddress(associateIPAddress egoscale.AssociateIPAddress, zone string) error {
-	zoneID, err := getZoneIDByName(zone)
+	z, err := getZoneByName(zone)
 	if err != nil {
 		return err
 	}
-	associateIPAddress.ZoneID = zoneID
+	associateIPAddress.ZoneID = z.ID
 
 	resp, err := cs.RequestWithContext(gContext, associateIPAddress)
 	if err != nil {

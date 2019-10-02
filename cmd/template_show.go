@@ -56,12 +56,12 @@ Supported output template annotations: %s`,
 				zoneName = gCurrentAccount.DefaultZone
 			}
 
-			zoneID, err := getZoneIDByName(zoneName)
+			zone, err := getZoneByName(zoneName)
 			if err != nil {
 				return err
 			}
 
-			return output(showTemplate(name, templateFilter, zoneID))
+			return output(showTemplate(name, templateFilter, zone.ID))
 		},
 	}
 

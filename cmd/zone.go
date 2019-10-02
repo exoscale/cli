@@ -57,7 +57,7 @@ func listZones() (outputter, error) {
 	return &out, nil
 }
 
-func getZoneIDByName(name string) (*egoscale.UUID, error) {
+func getZoneByName(name string) (*egoscale.Zone, error) {
 	zone := &egoscale.Zone{}
 
 	id, err := egoscale.ParseUUID(name)
@@ -72,5 +72,5 @@ func getZoneIDByName(name string) (*egoscale.UUID, error) {
 		return nil, err
 	}
 
-	return resp.(*egoscale.Zone).ID, nil
+	return resp.(*egoscale.Zone), nil
 }

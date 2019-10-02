@@ -8,8 +8,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/exoscale/egoscale"
-
 	"github.com/exoscale/cli/table"
 	"github.com/fatih/camelcase"
 	"github.com/spf13/cobra"
@@ -236,15 +234,7 @@ func outputTable(o interface{}) {
 			if n := v.Field(i).Len(); n == 0 {
 				tab.Append([]string{label, "n/a"})
 			} else {
-				items := []string{}
-				if v.Field(i).Type().String() == "[]egoscale.UUID" {
-					i := v.Field(i).Interface().([]egoscale.UUID)
-					for _, id := range i {
-						items = append(items, id.UUID.String())
-					}
-				} else {
-					items = v.Field(i).Interface().([]string)
-				}
+				items := v.Field(i).Interface().([]string)
 				tab.Append([]string{label, strings.Join(items, "\n")})
 			}
 

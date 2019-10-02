@@ -58,7 +58,7 @@ var vmCreateCmd = &cobra.Command{
 			zoneName = gCurrentAccount.DefaultZone
 		}
 
-		zone, err := getZoneIDByName(zoneName)
+		zone, err := getZoneByName(zoneName)
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		template, err := getTemplateByName(zone, templateName, templateFilter)
+		template, err := getTemplateByName(zone.ID, templateName, templateFilter)
 		if err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		pvs, err := getPrivnetList(privnet, zone)
+		pvs, err := getPrivnetList(privnet, zone.ID)
 		if err != nil {
 			return err
 		}
@@ -142,7 +142,7 @@ var vmCreateCmd = &cobra.Command{
 			vmInfo := &egoscale.DeployVirtualMachine{
 				Name:              name,
 				UserData:          userData,
-				ZoneID:            zone,
+				ZoneID:            zone.ID,
 				TemplateID:        template.ID,
 				RootDiskSize:      diskSize,
 				KeyPair:           keypair,

@@ -28,7 +28,7 @@ var sosCreateCmd = &cobra.Command{
 			gCurrentAccount.DefaultZone = zone
 		}
 
-		if _, err := getZoneIDByName(zone); err != nil {
+		if _, err := getZoneByName(zone); err != nil {
 			if apiErr, ok := err.(*egoscale.ErrorResponse); ok {
 				if strings.HasPrefix(apiErr.ErrorText, "not found") {
 					return fmt.Errorf("invalid zone %q", zone)

@@ -48,6 +48,8 @@ github.com/exoscale/egoscale v0.18.2-0.20190930133225-16e0a89e10c5 h1:TzORLhcwjS
 github.com/exoscale/egoscale v0.18.2-0.20190930133225-16e0a89e10c5/go.mod h1:Z7OOdzzTOz1Q1PjQXumlz9Wn/CddH0zSYdCF3rnBKXE=
 github.com/exoscale/egoscale v0.18.2-0.20191001152936-996180e09733 h1:qj6VhIqzhAhSYEReddaVuDLVQv5LR0SnM421qeHghFg=
 github.com/exoscale/egoscale v0.18.2-0.20191001152936-996180e09733/go.mod h1:Z7OOdzzTOz1Q1PjQXumlz9Wn/CddH0zSYdCF3rnBKXE=
+github.com/exoscale/egoscale v0.18.2-0.20191002143504-0073e08a65c9 h1:JAWxtErooNEu/ODFzca/FRUukSeg+7XYDb3kH8bs2Dg=
+github.com/exoscale/egoscale v0.18.2-0.20191002143504-0073e08a65c9/go.mod h1:Z7OOdzzTOz1Q1PjQXumlz9Wn/CddH0zSYdCF3rnBKXE=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
