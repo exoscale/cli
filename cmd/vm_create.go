@@ -220,11 +220,10 @@ func getCommaflag(p string) []string {
 	return res
 }
 
-func getSecurityGroups(commaParameter string) ([]egoscale.UUID, error) {
-	sgs := getCommaflag(commaParameter)
-	ids := make([]egoscale.UUID, len(sgs))
+func getSecurityGroups(params []string) ([]egoscale.UUID, error) {
+	ids := make([]egoscale.UUID, len(params))
 
-	for i, sg := range sgs {
+	for i, sg := range params {
 		s, err := getSecurityGroupByNameOrID(sg)
 		if err != nil {
 			return nil, err
@@ -236,11 +235,10 @@ func getSecurityGroups(commaParameter string) ([]egoscale.UUID, error) {
 	return ids, nil
 }
 
-func getPrivnetList(commaParameter string, zoneID *egoscale.UUID) ([]egoscale.UUID, error) {
-	sgs := getCommaflag(commaParameter)
-	ids := make([]egoscale.UUID, len(sgs))
+func getPrivnetList(params []string, zoneID *egoscale.UUID) ([]egoscale.UUID, error) {
+	ids := make([]egoscale.UUID, len(params))
 
-	for i, sg := range sgs {
+	for i, sg := range params {
 		n, err := getNetwork(sg, zoneID)
 		if err != nil {
 			return nil, err
@@ -252,11 +250,10 @@ func getPrivnetList(commaParameter string, zoneID *egoscale.UUID) ([]egoscale.UU
 	return ids, nil
 }
 
-func getAffinityGroup(commaParameter string) ([]egoscale.UUID, error) {
-	affs := getCommaflag(commaParameter)
-	ids := make([]egoscale.UUID, len(affs))
+func getAffinityGroup(params []string) ([]egoscale.UUID, error) {
+	ids := make([]egoscale.UUID, len(params))
 
-	for i, aff := range affs {
+	for i, aff := range params {
 		s, err := getAffinityGroupByName(aff)
 
 		if err != nil {
@@ -341,9 +338,9 @@ func init() {
 	vmCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	vmCreateCmd.Flags().Int64P("disk", "d", 50, "<disk size>")
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "<ssh keys name>")
-	vmCreateCmd.Flags().StringP("security-group", "s", "", "<name | id, name | id, ...>")
-	vmCreateCmd.Flags().StringP("privnet", "p", "", "<name | id, name | id, ...>")
-	vmCreateCmd.Flags().StringP("anti-affinity-group", "a", "", "<name | id, name | id, ...>")
+	vmCreateCmd.Flags().StringArrayP("security-group", "s", nil, "<name | id, name | id, ...>")
+	vmCreateCmd.Flags().StringArrayP("privnet", "p", nil, "<name | id, name | id, ...>")
+	vmCreateCmd.Flags().StringArrayP("anti-affinity-group", "a", nil, "<name | id, name | id, ...>")
 	vmCreateCmd.Flags().BoolP("ipv6", "6", false, "enable ipv6")
 	vmCreateCmd.Flags().StringP("service-offering", "o", "medium", "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
 	vmCmd.AddCommand(vmCreateCmd)

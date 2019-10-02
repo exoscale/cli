@@ -88,6 +88,36 @@ var instancePoolCreateCmd = &cobra.Command{
 			return err
 		}
 
+		sg, err := cmd.Flags().GetStringArray("security-group")
+		if err != nil {
+			return err
+		}
+
+		sgs, err := getSecurityGroups(sg)
+		if err != nil {
+			return err
+		}
+
+		aff, err := cmd.Flags().GetStringArray("anti-affinity-group")
+		if err != nil {
+			return err
+		}
+
+		affs, err := getAffinityGroup(aff)
+		if err != nil {
+			return err
+		}
+
+		priv, err := cmd.Flags().GetStringArray("privnet")
+		if err != nil {
+			return err
+		}
+
+		privs, err := getPrivnetList(priv, zone)
+		if err != nil {
+			return err
+		}
+
 		//It use asyncTasks to have spinner when user exec this command
 		r := asyncTasks([]task{task{
 			egoscale.CreateInstancePool{
@@ -98,9 +128,9 @@ var instancePoolCreateCmd = &cobra.Command{
 				TemplateID:        template.ID,
 				Keypair:           keypair,
 				Size:              size,
-				// SecuritygroupIDs:  []egoscale.UUID{*egoscale.MustParseUUID("a4430e9f-11e3-4da4-bf78-325d3640ea17")},
-				// AffinitygroupIDs:  []egoscale.UUID{*egoscale.MustParseUUID("9cf2a2fb-31e2-4ead-9c22-2339e1c71fbc")},
-				// NetworkIDs:        []egoscale.UUID{*egoscale.MustParseUUID("a7089285-98f2-98c3-c3a9-786b8a4c1ab4")},
+				SecuritygroupIDs:  sgs,
+				AffinitygroupIDs:  affs,
+				NetworkIDs:        privs,
 			},
 			fmt.Sprintf("Create instance pool %q", args[0]),
 		}})
@@ -123,5 +153,8 @@ func init() {
 	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
 	instancePoolCreateCmd.Flags().StringP("keypair", "k", "", "Instance pool keypair")
 	instancePoolCreateCmd.Flags().IntP("size", "", 2, "Number of instance in the pool")
+	instancePoolCreateCmd.Flags().StringArrayP("security-group", "", nil, "Security groups <name | id, name | id, ...>")
+	instancePoolCreateCmd.Flags().StringArrayP("anti-affinity-group", "a", nil, "Anti-Affinitygroup groups <name | id, name | id, ...>")
+	instancePoolCreateCmd.Flags().StringArrayP("privnet", "", nil, "Privnets <name | id, name | id, ...>")
 	instancePoolCmd.AddCommand(instancePoolCreateCmd)
 }
