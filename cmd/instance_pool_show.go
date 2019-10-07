@@ -34,16 +34,7 @@ var instancePoolShowCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		zoneName, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		if zoneName == "" {
-			zoneName = gCurrentAccount.DefaultZone
-		}
-
-		zone, err := getZoneByName(zoneName)
+		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}
@@ -53,7 +44,12 @@ var instancePoolShowCmd = &cobra.Command{
 			return err
 		}
 
-		so, err := getServiceOfferingByName(instancePool.ServiceofferingID.String())
+		zone, err = getZoneByName(instancePool.ZoneID.String())
+		if err != nil {
+			return err
+		}
+
+		serviceOffering, err := getServiceOfferingByName(instancePool.ServiceofferingID.String())
 		if err != nil {
 			return err
 		}
@@ -70,7 +66,7 @@ var instancePoolShowCmd = &cobra.Command{
 			ID:              instancePool.ID.String(),
 			Name:            instancePool.Name,
 			Description:     instancePool.Description,
-			Serviceoffering: so.Name,
+			Serviceoffering: serviceOffering.Name,
 			Template:        template.Name,
 			Zone:            zone.Name,
 			Keypair:         instancePool.Keypair,
@@ -111,6 +107,5 @@ var instancePoolShowCmd = &cobra.Command{
 }
 
 func init() {
-	instancePoolShowCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
 	instancePoolCmd.AddCommand(instancePoolShowCmd)
 }

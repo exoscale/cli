@@ -21,16 +21,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		zoneName, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		if zoneName == "" {
-			zoneName = gCurrentAccount.DefaultZone
-		}
-
-		zone, err := getZoneByName(zoneName)
+		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}
@@ -69,6 +60,5 @@ var instancePoolDeleteCmd = &cobra.Command{
 
 func init() {
 	instancePoolDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove instance pool without prompting for confirmation")
-	instancePoolDeleteCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
 	instancePoolCmd.AddCommand(instancePoolDeleteCmd)
 }
