@@ -18,7 +18,6 @@ type instancePoolCreateItemOutput struct {
 	Securitygroups  []string `json:"securitygroups"`
 	Privnets        []string `json:"Privnets"`
 	Keypair         string   `json:"keypair"`
-	Userdata        string   `json:"userdata"`
 	Size            int64    `json:"size"`
 	State           string   `json:"state"`
 }
@@ -107,7 +106,7 @@ var instancePoolCreateCmd = &cobra.Command{
 			return err
 		}
 
-		sgs, err := getSecurityGroups(sg)
+		securityGroups, err := getSecurityGroups(sg)
 		if err != nil {
 			return err
 		}
@@ -117,19 +116,37 @@ var instancePoolCreateCmd = &cobra.Command{
 			return err
 		}
 
-		affs, err := getAffinityGroup(aff)
+		affinityGroups, err := getAffinityGroup(aff)
 		if err != nil {
 			return err
 		}
 
-		priv, err := cmd.Flags().GetStringSlice("privnet")
+		privnet, err := cmd.Flags().GetStringSlice("privnet")
 		if err != nil {
 			return err
 		}
 
-		privs, err := getPrivnetList(priv, zone.ID)
+		privnets, err := getPrivnetList(privnet, zone.ID)
 		if err != nil {
 			return err
+		}
+
+		userDataPath, err := cmd.Flags().GetString("cloud-init")
+		if err != nil {
+			return err
+		}
+
+		userData := ""
+
+		if userDataPath != "" {
+			userData, err = getUserData(userDataPath)
+			if err != nil {
+				return err
+			}
+
+			if len(userData) >= maxUserDataLength {
+				return fmt.Errorf("user-data maximum allowed length is %d bytes", maxUserDataLength)
+			}
 		}
 
 		//It use asyncTasks to have spinner when user exec this command
@@ -142,9 +159,10 @@ var instancePoolCreateCmd = &cobra.Command{
 				TemplateID:        template.ID,
 				Keypair:           keypair,
 				Size:              size,
-				SecuritygroupIDs:  sgs,
-				AffinitygroupIDs:  affs,
-				NetworkIDs:        privs,
+				SecuritygroupIDs:  securityGroups,
+				AffinitygroupIDs:  affinityGroups,
+				NetworkIDs:        privnets,
+				Userdata:          userData,
 			},
 			fmt.Sprintf("Create instance pool %q", args[0]),
 		}})
@@ -214,6 +232,7 @@ func formatInstancePoolCreateItemOutput(instancePool *egoscale.CreateInstancePoo
 
 func init() {
 	instancePoolCreateCmd.Flags().StringP("description", "d", "", "Instance pool description")
+	instancePoolCreateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
 	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
 	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "small", "Instance pool service offering")
 	instancePoolCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
