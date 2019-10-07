@@ -20,18 +20,12 @@ func (o *instancePoolListItemOutput) toText()  { outputText(o) }
 func (o *instancePoolListItemOutput) toTable() { outputTable(o) }
 
 var instancePoolListCmd = &cobra.Command{
-	Use:     "list [zone]",
+	Use:     "list",
 	Short:   "List instance pool",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var zoneName string
-		if len(args) == 0 {
-			zoneName = gCurrentAccount.DefaultZone
-		} else {
-			zoneName = args[0]
-		}
 
-		zone, err := getZoneByName(zoneName)
+		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}
@@ -45,10 +39,15 @@ var instancePoolListCmd = &cobra.Command{
 		r := resp.(*egoscale.ListInstancePoolsResponse)
 		o := make(instancePoolListItemOutput, 0, r.Count)
 		for _, i := range r.ListInstancePoolsResponse {
+			z, err := getZoneByName(i.ZoneID.String())
+			if err != nil {
+				return err
+			}
+
 			o = append(o, instancePoolItem{
 				ID:    i.ID,
 				Name:  i.Name,
-				Zone:  zone.Name,
+				Zone:  z.Name,
 				Size:  i.Size,
 				State: i.State,
 			})
