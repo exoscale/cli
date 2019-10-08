@@ -6,7 +6,7 @@ import (
 )
 
 type instancePoolItem struct {
-	ID    *egoscale.UUID             `json:"id"`
+	ID    string                     `json:"id"`
 	Name  string                     `json:"name"`
 	Zone  string                     `json:"zone"`
 	Size  int                        `json:"size"`
@@ -45,7 +45,7 @@ var instancePoolListCmd = &cobra.Command{
 			}
 
 			o = append(o, instancePoolItem{
-				ID:    i.ID,
+				ID:    i.ID.String(),
 				Name:  i.Name,
 				Zone:  z.Name,
 				Size:  i.Size,

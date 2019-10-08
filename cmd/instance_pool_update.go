@@ -48,27 +48,39 @@ var instancePoolUpdateCmd = &cobra.Command{
 			return err
 		}
 
-		//It use asyncTasks to have spinner when user exec this command
-		r := asyncTasks([]task{task{
-			egoscale.UpdateInstancePool{
-				ID:          instancePool.ID,
-				Description: description,
-				ZoneID:      zone.ID,
-				Userdata:    userData,
-			},
-			fmt.Sprintf("Update instance pool %q", args[0]),
-		}})
-		errs := filterErrors(r)
-		if len(errs) > 0 {
-			return errs[0]
+		size, err := cmd.Flags().GetInt("size")
+		if err != nil {
+			return err
 		}
 
-		return nil
+		_, err = cs.RequestWithContext(gContext, &egoscale.UpdateInstancePool{
+			ID:          instancePool.ID,
+			Description: description,
+			ZoneID:      zone.ID,
+			Userdata:    userData,
+		})
+		if err != nil {
+			return err
+		}
+
+		if size > 0 {
+			_, err = cs.RequestWithContext(gContext, &egoscale.ScaleInstancePool{
+				ID:     instancePool.ID,
+				ZoneID: instancePool.ZoneID,
+				Size:   size,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return showInstancePool(instancePool.Name)
 	},
 }
 
 func init() {
 	instancePoolUpdateCmd.Flags().StringP("description", "d", "", "Instance pool description")
 	instancePoolUpdateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
+	instancePoolUpdateCmd.Flags().IntP("size", "s", 0, "Update instance pool size")
 	instancePoolCmd.AddCommand(instancePoolUpdateCmd)
 }

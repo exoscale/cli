@@ -34,76 +34,80 @@ var instancePoolShowCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
-		if err != nil {
-			return err
-		}
-
-		instancePool, err := getInstancePoolByName(args[0], zone.ID)
-		if err != nil {
-			return err
-		}
-
-		zone, err = getZoneByName(instancePool.ZoneID.String())
-		if err != nil {
-			return err
-		}
-
-		serviceOffering, err := getServiceOfferingByName(instancePool.ServiceofferingID.String())
-		if err != nil {
-			return err
-		}
-
-		template, err := getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "featured")
-		if err != nil {
-			template, err = getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "self")
-			if err != nil {
-				return err
-			}
-		}
-
-		o := instancePoolItemOutput{
-			ID:              instancePool.ID.String(),
-			Name:            instancePool.Name,
-			Description:     instancePool.Description,
-			Serviceoffering: serviceOffering.Name,
-			Template:        template.Name,
-			Zone:            zone.Name,
-			Keypair:         instancePool.Keypair,
-			Size:            instancePool.Size,
-			State:           instancePool.State,
-		}
-		for _, vm := range instancePool.Virtualmachines {
-			o.Virtualmachines = append(o.Virtualmachines, vm.Name)
-		}
-		for _, a := range instancePool.AffinitygroupIDs {
-			aff, err := getAffinityGroupByName(a.String())
-			if err != nil {
-				return err
-			}
-			o.Affinitygroups = append(o.Affinitygroups, aff.Name)
-		}
-		for _, s := range instancePool.SecuritygroupIDs {
-			sg, err := getSecurityGroupByNameOrID(s.String())
-			if err != nil {
-				return err
-			}
-			o.Securitygroups = append(o.Securitygroups, sg.Name)
-		}
-		for _, i := range instancePool.NetworkIDs {
-			net, err := getNetwork(i.String(), instancePool.ZoneID)
-			if err != nil {
-				return err
-			}
-			name := net.Name
-			if name == "" {
-				name = net.ID.String()
-			}
-			o.Privnets = append(o.Privnets, name)
-		}
-
-		return output(&o, err)
+		return showInstancePool(args[0])
 	},
+}
+
+func showInstancePool(name string) error {
+	zone, err := getZoneByName(gCurrentAccount.DefaultZone)
+	if err != nil {
+		return err
+	}
+
+	instancePool, err := getInstancePoolByName(name, zone.ID)
+	if err != nil {
+		return err
+	}
+
+	zone, err = getZoneByName(instancePool.ZoneID.String())
+	if err != nil {
+		return err
+	}
+
+	serviceOffering, err := getServiceOfferingByName(instancePool.ServiceofferingID.String())
+	if err != nil {
+		return err
+	}
+
+	template, err := getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "featured")
+	if err != nil {
+		template, err = getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "self")
+		if err != nil {
+			return err
+		}
+	}
+
+	o := instancePoolItemOutput{
+		ID:              instancePool.ID.String(),
+		Name:            instancePool.Name,
+		Description:     instancePool.Description,
+		Serviceoffering: serviceOffering.Name,
+		Template:        template.Name,
+		Zone:            zone.Name,
+		Keypair:         instancePool.Keypair,
+		Size:            instancePool.Size,
+		State:           instancePool.State,
+	}
+	for _, vm := range instancePool.Virtualmachines {
+		o.Virtualmachines = append(o.Virtualmachines, vm.Name)
+	}
+	for _, a := range instancePool.AffinitygroupIDs {
+		aff, err := getAffinityGroupByName(a.String())
+		if err != nil {
+			return err
+		}
+		o.Affinitygroups = append(o.Affinitygroups, aff.Name)
+	}
+	for _, s := range instancePool.SecuritygroupIDs {
+		sg, err := getSecurityGroupByNameOrID(s.String())
+		if err != nil {
+			return err
+		}
+		o.Securitygroups = append(o.Securitygroups, sg.Name)
+	}
+	for _, i := range instancePool.NetworkIDs {
+		net, err := getNetwork(i.String(), instancePool.ZoneID)
+		if err != nil {
+			return err
+		}
+		name := net.Name
+		if name == "" {
+			name = net.ID.String()
+		}
+		o.Privnets = append(o.Privnets, name)
+	}
+
+	return output(&o, err)
 }
 
 func init() {

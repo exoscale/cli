@@ -171,63 +171,9 @@ var instancePoolCreateCmd = &cobra.Command{
 			return errs[0]
 		}
 		pool := r[0].resp.(*egoscale.CreateInstancePoolResponse)
-		o, err := formatInstancePoolCreateItemOutput(pool, zone)
-		return output(o, err)
+
+		return showInstancePool(pool.Name)
 	},
-}
-
-func formatInstancePoolCreateItemOutput(instancePool *egoscale.CreateInstancePoolResponse, zone *egoscale.Zone) (*instancePoolCreateItemOutput, error) {
-	so, err := getServiceOfferingByName(instancePool.ServiceofferingID.String())
-	if err != nil {
-		return nil, err
-	}
-
-	template, err := getTemplateByName(zone.ID, instancePool.TemplateID.String(), "featured")
-	if err != nil {
-		template, err = getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "self")
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	output := &instancePoolCreateItemOutput{
-		ID:              instancePool.ID.String(),
-		Name:            instancePool.Name,
-		Description:     instancePool.Description,
-		Keypair:         instancePool.Keypair,
-		Size:            instancePool.Size,
-		Template:        template.Name,
-		Serviceoffering: so.Name,
-		Zone:            zone.Name,
-	}
-
-	for _, a := range instancePool.AffinitygroupIDs {
-		aff, err := getAffinityGroupByName(a.String())
-		if err != nil {
-			return nil, err
-		}
-		output.Affinitygroups = append(output.Affinitygroups, aff.Name)
-	}
-	for _, s := range instancePool.SecuritygroupIDs {
-		sg, err := getSecurityGroupByNameOrID(s.String())
-		if err != nil {
-			return nil, err
-		}
-		output.Securitygroups = append(output.Securitygroups, sg.Name)
-	}
-	for _, i := range instancePool.NetworkIDs {
-		net, err := getNetwork(i.String(), instancePool.ZoneID)
-		if err != nil {
-			return nil, err
-		}
-		name := net.Name
-		if name == "" {
-			name = net.ID.String()
-		}
-		output.Privnets = append(output.Privnets, name)
-	}
-
-	return output, nil
 }
 
 func init() {
