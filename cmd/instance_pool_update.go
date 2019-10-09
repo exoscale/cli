@@ -57,7 +57,7 @@ var instancePoolUpdateCmd = &cobra.Command{
 			ID:          instancePool.ID,
 			Description: description,
 			ZoneID:      zone.ID,
-			Userdata:    userData,
+			UserData:    userData,
 		})
 		if err != nil {
 			return err

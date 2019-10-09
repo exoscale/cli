@@ -9,16 +9,15 @@ type instancePoolItemOutput struct {
 	ID              string                     `json:"id"`
 	Name            string                     `json:"name"`
 	Description     string                     `json:"description"`
-	Serviceoffering string                     `json:"serviceoffering"`
+	ServiceOffering string                     `json:"serviceoffering"`
 	Template        string                     `json:"templateid"`
 	Zone            string                     `json:"zoneid"`
-	Affinitygroups  []string                   `json:"affinitygroups"`
-	Securitygroups  []string                   `json:"securitygroups"`
+	SecurityGroups  []string                   `json:"securitygroups"`
 	Privnets        []string                   `json:"Privnets"`
-	Keypair         string                     `json:"keypair"`
+	KeyPair         string                     `json:"keypair"`
 	Size            int                        `json:"size"`
 	State           egoscale.InstancePoolState `json:"state"`
-	Virtualmachines []string                   `json:"virtualmachines"`
+	VirtualMachines []string                   `json:"virtualmachines"`
 }
 
 func (o *instancePoolItemOutput) toJSON()  { outputJSON(o) }
@@ -54,7 +53,7 @@ func showInstancePool(name string) error {
 		return err
 	}
 
-	serviceOffering, err := getServiceOfferingByName(instancePool.ServiceofferingID.String())
+	serviceOffering, err := getServiceOfferingByName(instancePool.ServiceOfferingID.String())
 	if err != nil {
 		return err
 	}
@@ -71,26 +70,26 @@ func showInstancePool(name string) error {
 		ID:              instancePool.ID.String(),
 		Name:            instancePool.Name,
 		Description:     instancePool.Description,
-		Serviceoffering: serviceOffering.Name,
+		ServiceOffering: serviceOffering.Name,
 		Template:        template.Name,
 		Zone:            zone.Name,
-		Keypair:         instancePool.Keypair,
+		KeyPair:         instancePool.KeyPair,
 		Size:            instancePool.Size,
 		State:           instancePool.State,
 	}
-	for _, vm := range instancePool.Virtualmachines {
-		o.Virtualmachines = append(o.Virtualmachines, vm.Name)
+	for _, vm := range instancePool.VirtualMachines {
+		o.VirtualMachines = append(o.VirtualMachines, vm.Name)
 	}
 
-	for _, s := range instancePool.SecuritygroupIDs {
+	for _, s := range instancePool.SecurityGroupIDs {
 		sg, err := getSecurityGroupByNameOrID(s.String())
 		if err != nil {
 			return err
 		}
-		o.Securitygroups = append(o.Securitygroups, sg.Name)
+		o.SecurityGroups = append(o.SecurityGroups, sg.Name)
 	}
-	if len(instancePool.SecuritygroupIDs) == 0 {
-		o.Securitygroups = append(o.Securitygroups, "default")
+	if len(instancePool.SecurityGroupIDs) == 0 {
+		o.SecurityGroups = append(o.SecurityGroups, "default")
 	}
 
 	for _, i := range instancePool.NetworkIDs {

@@ -21,31 +21,29 @@ type InstancePool struct {
 	ID                *UUID             `json:"id"`
 	Name              string            `json:"name"`
 	Description       string            `json:"description"`
-	ServiceofferingID *UUID             `json:"serviceofferingid"`
+	ServiceOfferingID *UUID             `json:"serviceofferingid"`
 	TemplateID        *UUID             `json:"templateid"`
 	ZoneID            *UUID             `json:"zoneid"`
-	AffinitygroupIDs  []UUID            `json:"affinitygroupids"`
-	SecuritygroupIDs  []UUID            `json:"securitygroupids"`
+	SecurityGroupIDs  []UUID            `json:"securitygroupids"`
 	NetworkIDs        []UUID            `json:"networkids"`
-	Keypair           string            `json:"keypair"`
-	Userdata          string            `json:"userdata"`
+	KeyPair           string            `json:"keypair"`
+	UserData          string            `json:"userdata"`
 	Size              int               `json:"size"`
 	State             InstancePoolState `json:"state"`
-	Virtualmachines   []VirtualMachine  `json:"virtualmachines"`
+	VirtualMachines   []VirtualMachine  `json:"virtualmachines"`
 }
 
 // CreateInstancePool create an instance pool
 type CreateInstancePool struct {
 	Name              string `json:"name"`
 	Description       string `json:"description,omitempty"`
-	ServiceofferingID *UUID  `json:"serviceofferingid"`
+	ServiceOfferingID *UUID  `json:"serviceofferingid"`
 	TemplateID        *UUID  `json:"templateid"`
 	ZoneID            *UUID  `json:"zoneid"`
-	AffinitygroupIDs  []UUID `json:"affinitygroupids,omitempty"`
-	SecuritygroupIDs  []UUID `json:"securitygroupids,omitempty"`
+	SecurityGroupIDs  []UUID `json:"securitygroupids,omitempty"`
 	NetworkIDs        []UUID `json:"networkids,omitempty"`
-	Keypair           string `json:"keypair,omitempty"`
-	Userdata          string `json:"userdata,omitempty"`
+	KeyPair           string `json:"keypair,omitempty"`
+	UserData          string `json:"userdata,omitempty"`
 	Size              int    `json:"size"`
 	_                 bool   `name:"createInstancePool" description:"Creates an Instance Pool with the provided parameters"`
 }
@@ -55,14 +53,13 @@ type CreateInstancePoolResponse struct {
 	ID                *UUID             `json:"id"`
 	Name              string            `json:"name"`
 	Description       string            `json:"description"`
-	ServiceofferingID *UUID             `json:"serviceofferingid"`
+	ServiceOfferingID *UUID             `json:"serviceofferingid"`
 	TemplateID        *UUID             `json:"templateid"`
 	ZoneID            *UUID             `json:"zoneid"`
-	AffinitygroupIDs  []UUID            `json:"affinitygroupids"`
-	SecuritygroupIDs  []UUID            `json:"securitygroupids"`
+	SecurityGroupIDs  []UUID            `json:"securitygroupids"`
 	NetworkIDs        []UUID            `json:"networkids"`
-	Keypair           string            `json:"keypair"`
-	Userdata          string            `json:"userdata"`
+	KeyPair           string            `json:"keypair"`
+	UserData          string            `json:"userdata"`
 	Size              int64             `json:"size"`
 	State             InstancePoolState `json:"state"`
 }
@@ -77,7 +74,7 @@ type UpdateInstancePool struct {
 	ID          *UUID  `json:"id"`
 	ZoneID      *UUID  `json:"zoneid"`
 	Description string `json:"description,omitempty"`
-	Userdata    string `json:"userdata,omitempty"`
+	UserData    string `json:"userdata,omitempty"`
 	_           bool   `name:"updateInstancePool" description:""`
 }
 
