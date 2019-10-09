@@ -20,7 +20,7 @@ func init() {
 	RootCmd.AddCommand(instancePoolCmd)
 }
 
-func getInstancePool(id, zone *egoscale.UUID) (*egoscale.InstancePool, error) {
+func getInstancePoolByID(id, zone *egoscale.UUID) (*egoscale.InstancePool, error) {
 	resp, err := cs.RequestWithContext(gContext, egoscale.GetInstancePool{
 		ID:     id,
 		ZoneID: zone,
@@ -38,7 +38,7 @@ func getInstancePoolByName(name string, zone *egoscale.UUID) (*egoscale.Instance
 
 	id, err := egoscale.ParseUUID(name)
 	if err == nil {
-		return getInstancePool(id, zone)
+		return getInstancePoolByID(id, zone)
 	}
 
 	resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePool{

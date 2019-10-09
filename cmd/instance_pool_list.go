@@ -24,8 +24,16 @@ var instancePoolListCmd = &cobra.Command{
 	Short:   "List instance pool",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		zoneName, err := cmd.Flags().GetString("zone")
+		if err != nil {
+			return err
+		}
 
-		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
+		if zoneName == "" {
+			zoneName = gCurrentAccount.DefaultZone
+		}
+
+		zone, err := getZoneByName(zoneName)
 		if err != nil {
 			return err
 		}
@@ -58,5 +66,6 @@ var instancePoolListCmd = &cobra.Command{
 }
 
 func init() {
+	instancePoolListCmd.Flags().StringP("zone", "z", "", "List Instance pool by zone")
 	instancePoolCmd.AddCommand(instancePoolListCmd)
 }
