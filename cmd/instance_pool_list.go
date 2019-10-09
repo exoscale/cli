@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"strings"
+
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -24,13 +26,17 @@ var instancePoolListCmd = &cobra.Command{
 	Short:   "List instance pool",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		zoneName, err := cmd.Flags().GetString("zone")
+		zoneFlag, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
 		}
+		zoneFlag = strings.ToLower(zoneFlag)
 
-		if zoneName == "" {
+		var zoneName string
+		if zoneFlag == "" {
 			zoneName = gCurrentAccount.DefaultZone
+		} else {
+			zoneName = zoneFlag
 		}
 
 		zone, err := getZoneByName(zoneName)
@@ -50,6 +56,10 @@ var instancePoolListCmd = &cobra.Command{
 			z, err := getZoneByName(i.ZoneID.String())
 			if err != nil {
 				return err
+			}
+
+			if z.Name != zoneFlag && zoneFlag != "" {
+				continue
 			}
 
 			o = append(o, instancePoolItem{
