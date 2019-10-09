@@ -74,7 +74,11 @@ var instancePoolUpdateCmd = &cobra.Command{
 			}
 		}
 
-		return showInstancePool(instancePool.Name)
+		if !gQuiet {
+			return showInstancePool(instancePool.Name)
+		}
+
+		return nil
 	},
 }
 

@@ -152,7 +152,12 @@ var instancePoolCreateCmd = &cobra.Command{
 		}
 		pool := r[0].resp.(*egoscale.CreateInstancePoolResponse)
 
-		return showInstancePool(pool.ID.String())
+		if !gQuiet {
+			return showInstancePool(pool.ID.String())
+		}
+
+		return nil
+
 	},
 }
 
