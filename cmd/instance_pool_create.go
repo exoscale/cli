@@ -131,7 +131,6 @@ var instancePoolCreateCmd = &cobra.Command{
 			}
 		}
 
-		//It use asyncTasks to have spinner when user exec this command
 		r := asyncTasks([]task{task{
 			egoscale.CreateInstancePool{
 				Name:              args[0],
