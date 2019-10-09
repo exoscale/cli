@@ -13,10 +13,10 @@ func (o *apiKeyRevokeItemOutput) toJSON()  { outputJSON(o) }
 func (o *apiKeyRevokeItemOutput) toText()  { outputText(o) }
 func (o *apiKeyRevokeItemOutput) toTable() { outputTable(o) }
 
-// apiKeyCreateCmd represents the create command
+// apiKeyRevokeCmd represents an API key revocation command
 var apiKeyRevokeCmd = &cobra.Command{
-	Use:     "revoke <APIKey key>+",
-	Short:   "Revoke an APIKeys",
+	Use:     "revoke <key>+",
+	Short:   "Revoke API keys",
 	Aliases: gRevokeAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -39,7 +39,7 @@ var apiKeyRevokeCmd = &cobra.Command{
 			cmd := &egoscale.RevokeAPIKey{Key: arg}
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("Revoke APIKey %q", cmd.Key),
+				fmt.Sprintf("Revocation API key %q", cmd.Key),
 			})
 		}
 
@@ -48,11 +48,12 @@ var apiKeyRevokeCmd = &cobra.Command{
 		if len(errs) > 0 {
 			return errs[0]
 		}
+
 		return nil
 	},
 }
 
 func init() {
-	apiKeyRevokeCmd.Flags().BoolP("force", "f", false, "Attempt to revoke APIKey without prompting for confirmation")
+	apiKeyRevokeCmd.Flags().BoolP("force", "f", false, "Attempt to revoke API key without prompting for confirmation")
 	iamAPIKeyCmd.AddCommand(apiKeyRevokeCmd)
 }

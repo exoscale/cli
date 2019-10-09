@@ -13,10 +13,10 @@ func (o *apiKeyCreateItemOutput) toJSON()  { outputJSON(o) }
 func (o *apiKeyCreateItemOutput) toText()  { outputText(o) }
 func (o *apiKeyCreateItemOutput) toTable() { outputTable(o) }
 
-// apiKeyCreateCmd represents the create command
+// apiKeyCreateCmd represents an API key creation command
 var apiKeyCreateCmd = &cobra.Command{
-	Use:     "create <APIKey description>",
-	Short:   "Create an APIKey",
+	Use:     "create <description>",
+	Short:   "Create an API key",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -43,6 +43,6 @@ var apiKeyCreateCmd = &cobra.Command{
 }
 
 func init() {
-	apiKeyCreateCmd.Flags().StringSliceP("operations", "o", []string{}, "APIKey operation")
+	apiKeyCreateCmd.Flags().StringSliceP("operations", "o", []string{}, "API key operation")
 	iamAPIKeyCmd.AddCommand(apiKeyCreateCmd)
 }

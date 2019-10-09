@@ -20,13 +20,12 @@ func (o *apiKeyListItemOutput) toJSON()  { outputJSON(o) }
 func (o *apiKeyListItemOutput) toText()  { outputText(o) }
 func (o *apiKeyListItemOutput) toTable() { outputTable(o) }
 
-// apiKeyListCmd represents the List command
+// apiKeyListCmd represents the API keys Listing command
 var apiKeyListCmd = &cobra.Command{
 	Use:     "list",
-	Short:   "List APIKeys",
+	Short:   "List API keys",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
 		resp, err := cs.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
 		if err != nil {
 			return err
