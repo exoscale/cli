@@ -23,7 +23,7 @@ func (o *instancePoolListItemOutput) toTable() { outputTable(o) }
 
 var instancePoolListCmd = &cobra.Command{
 	Use:     "list",
-	Short:   "List instance pool",
+	Short:   "List instance pools",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		zoneFlag, err := cmd.Flags().GetString("zone")

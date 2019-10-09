@@ -145,7 +145,7 @@ var instancePoolCreateCmd = &cobra.Command{
 				NetworkIDs:        privnets,
 				UserData:          userData,
 			},
-			fmt.Sprintf("Create instance pool %q", args[0]),
+			fmt.Sprintf("Creating instance pool %q", args[0]),
 		}})
 		errs := filterErrors(r)
 		if len(errs) > 0 {
