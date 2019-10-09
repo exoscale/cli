@@ -45,10 +45,6 @@ var instancePoolCreateCmd = &cobra.Command{
 			return err
 		}
 
-		if zoneName == "" {
-			zoneName = gCurrentAccount.DefaultZone
-		}
-
 		zone, err := getZoneByName(zoneName)
 		if err != nil {
 			return err
@@ -78,10 +74,6 @@ var instancePoolCreateCmd = &cobra.Command{
 			return err
 		}
 
-		if templateName == "" {
-			templateName = gCurrentAccount.DefaultTemplate
-		}
-
 		template, err := getTemplateByName(zone.ID, templateName, templateFilter)
 		if err != nil {
 			return err
@@ -107,16 +99,6 @@ var instancePoolCreateCmd = &cobra.Command{
 		}
 
 		securityGroups, err := getSecurityGroups(sg)
-		if err != nil {
-			return err
-		}
-
-		aff, err := cmd.Flags().GetStringSlice("anti-affinity-group")
-		if err != nil {
-			return err
-		}
-
-		affinityGroups, err := getAffinityGroup(aff)
 		if err != nil {
 			return err
 		}
@@ -160,7 +142,6 @@ var instancePoolCreateCmd = &cobra.Command{
 				Keypair:           keypair,
 				Size:              size,
 				SecuritygroupIDs:  securityGroups,
-				AffinitygroupIDs:  affinityGroups,
 				NetworkIDs:        privnets,
 				Userdata:          userData,
 			},
@@ -177,16 +158,22 @@ var instancePoolCreateCmd = &cobra.Command{
 }
 
 func init() {
+	// Required Flags
+
+	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
+	instancePoolCreateCmd.MarkFlagRequired("zone")
+	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "", serviceOfferingHelp)
+	instancePoolCreateCmd.MarkFlagRequired("service-offering")
+	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
+	instancePoolCreateCmd.MarkFlagRequired("template")
+	instancePoolCreateCmd.Flags().IntP("size", "", 0, "Number of instance in the pool")
+	instancePoolCreateCmd.MarkFlagRequired("size")
+
 	instancePoolCreateCmd.Flags().StringP("description", "d", "", "Instance pool description")
 	instancePoolCreateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
-	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "small", "Instance pool service offering")
 	instancePoolCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
-	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
 	instancePoolCreateCmd.Flags().StringP("keypair", "k", "", "Instance pool keypair")
-	instancePoolCreateCmd.Flags().IntP("size", "", 2, "Number of instance in the pool")
 	instancePoolCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security groups <name | id, name | id, ...>")
-	instancePoolCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinitygroup groups <name | id, name | id, ...>")
 	instancePoolCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Privnets <name | id, name | id, ...>")
 	instancePoolCmd.AddCommand(instancePoolCreateCmd)
 }

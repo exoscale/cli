@@ -81,13 +81,7 @@ func showInstancePool(name string) error {
 	for _, vm := range instancePool.Virtualmachines {
 		o.Virtualmachines = append(o.Virtualmachines, vm.Name)
 	}
-	for _, a := range instancePool.AffinitygroupIDs {
-		aff, err := getAffinityGroupByName(a.String())
-		if err != nil {
-			return err
-		}
-		o.Affinitygroups = append(o.Affinitygroups, aff.Name)
-	}
+
 	for _, s := range instancePool.SecuritygroupIDs {
 		sg, err := getSecurityGroupByNameOrID(s.String())
 		if err != nil {
@@ -95,6 +89,10 @@ func showInstancePool(name string) error {
 		}
 		o.Securitygroups = append(o.Securitygroups, sg.Name)
 	}
+	if len(instancePool.SecuritygroupIDs) == 0 {
+		o.Securitygroups = append(o.Securitygroups, "default")
+	}
+
 	for _, i := range instancePool.NetworkIDs {
 		net, err := getNetwork(i.String(), instancePool.ZoneID)
 		if err != nil {

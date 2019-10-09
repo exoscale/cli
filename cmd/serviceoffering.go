@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	serviceOfferingHelp = "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)"
+)
+
 type serviceOfferingListItemOutput struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
