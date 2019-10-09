@@ -59,7 +59,7 @@ func getInstancePoolByName(name string, zone *egoscale.UUID) (*egoscale.Instance
 	case count == 0:
 		return nil, fmt.Errorf("not found: %q", name)
 	case count > 1:
-		return nil, fmt.Errorf("more than one element found: %q", count)
+		return nil, fmt.Errorf(`more than one element found: %d`, count)
 	}
 
 	return &instancePools[0], nil
