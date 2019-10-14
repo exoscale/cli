@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -8,10 +9,10 @@ import (
 )
 
 type apiKeyItem struct {
-	Description string              `json:"description"`
-	Key         string              `json:"key"`
-	Operations  string              `json:"operations,omitempty"`
-	Type        egoscale.APIKeyType `json:"type"`
+	Name       string `json:"name"`
+	Key        string `json:"key"`
+	Operations string `json:"operations,omitempty"`
+	Type       string `json:"type"`
 }
 
 type apiKeyListItemOutput []apiKeyItem
@@ -22,8 +23,12 @@ func (o *apiKeyListItemOutput) toTable() { outputTable(o) }
 
 // apiKeyListCmd represents the API keys Listing command
 var apiKeyListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List API keys",
+	Use:   "list",
+	Short: "List API keys",
+	Long: fmt.Sprintf(`This command lists existing API keys.
+	
+	Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&apiKeyListItemOutput{}), ", ")),
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := cs.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
@@ -36,10 +41,10 @@ var apiKeyListCmd = &cobra.Command{
 		o := make(apiKeyListItemOutput, 0, r.Count)
 		for _, i := range r.APIKeys {
 			o = append(o, apiKeyItem{
-				Description: i.Description,
-				Key:         i.Key,
-				Operations:  strings.Join(i.Operations, ", "),
-				Type:        i.Type,
+				Name:       i.Name,
+				Key:        i.Key,
+				Operations: strings.Join(i.Operations, ", "),
+				Type:       string(i.Type),
 			})
 		}
 

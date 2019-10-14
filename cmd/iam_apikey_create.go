@@ -1,13 +1,20 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-type apiKeyCreateItemOutput egoscale.APIKey
+type apiKeyCreateItemOutput struct {
+	Name       string   `json:"name"`
+	Key        string   `json:"key"`
+	Secret     string   `json:"secret,omitempty"`
+	Operations []string `json:"operations,omitempty"`
+	Type       string   `json:"type"`
+}
 
 func (o *apiKeyCreateItemOutput) toJSON()  { outputJSON(o) }
 func (o *apiKeyCreateItemOutput) toText()  { outputText(o) }
@@ -15,8 +22,12 @@ func (o *apiKeyCreateItemOutput) toTable() { outputTable(o) }
 
 // apiKeyCreateCmd represents an API key creation command
 var apiKeyCreateCmd = &cobra.Command{
-	Use:     "create <description>",
-	Short:   "Create an API key",
+	Use:   "create <name>",
+	Short: "Create an API key",
+	Long: fmt.Sprintf(`This command create an API key.
+
+	Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&apiKeyCreateItemOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -29,20 +40,32 @@ var apiKeyCreateCmd = &cobra.Command{
 		}
 
 		resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAPIKey{
-			Description: args[0],
-			Operations:  strings.Join(ops, ","),
+			Name:       args[0],
+			Operations: strings.Join(ops, ","),
 		})
 		if err != nil {
 			return err
 		}
 
 		apiKey := resp.(*egoscale.APIKey)
-		o := apiKeyCreateItemOutput(*apiKey)
-		return output(&o, err)
+
+		if !gQuiet {
+			o := apiKeyCreateItemOutput{
+				Name:       apiKey.Name,
+				Key:        apiKey.Key,
+				Secret:     apiKey.Secret,
+				Operations: apiKey.Operations,
+				Type:       string(apiKey.Type),
+			}
+
+			return output(&o, err)
+		}
+
+		return nil
 	},
 }
 
 func init() {
-	apiKeyCreateCmd.Flags().StringSliceP("operations", "o", []string{}, "API key operation")
+	apiKeyCreateCmd.Flags().StringSliceP("operations", "o", []string{}, "API key allowed operation")
 	iamAPIKeyCmd.AddCommand(apiKeyCreateCmd)
 }

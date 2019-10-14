@@ -7,12 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type apiKeyRevokeItemOutput egoscale.RevokeAPIKeyResponse
-
-func (o *apiKeyRevokeItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyRevokeItemOutput) toText()  { outputText(o) }
-func (o *apiKeyRevokeItemOutput) toTable() { outputTable(o) }
-
 // apiKeyRevokeCmd represents an API key revocation command
 var apiKeyRevokeCmd = &cobra.Command{
 	Use:     "revoke <key>+",
@@ -39,7 +33,7 @@ var apiKeyRevokeCmd = &cobra.Command{
 			cmd := &egoscale.RevokeAPIKey{Key: arg}
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("Revocation API key %q", cmd.Key),
+				fmt.Sprintf("Revoking API key %q", cmd.Key),
 			})
 		}
 
@@ -54,6 +48,6 @@ var apiKeyRevokeCmd = &cobra.Command{
 }
 
 func init() {
-	apiKeyRevokeCmd.Flags().BoolP("force", "f", false, "Attempt to revoke API key without prompting for confirmation")
+	apiKeyRevokeCmd.Flags().BoolP("force", "f", false, "Attempt to revoke API keys without prompting for confirmation")
 	iamAPIKeyCmd.AddCommand(apiKeyRevokeCmd)
 }
