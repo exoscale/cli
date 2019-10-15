@@ -34,7 +34,7 @@ var apiKeyCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		ops, err := cmd.Flags().GetStringSlice("operations")
+		ops, err := cmd.Flags().GetStringSlice("operation")
 		if err != nil {
 			return err
 		}
@@ -66,6 +66,6 @@ var apiKeyCreateCmd = &cobra.Command{
 }
 
 func init() {
-	apiKeyCreateCmd.Flags().StringSliceP("operations", "o", []string{}, "API key allowed operation")
-	iamAPIKeyCmd.AddCommand(apiKeyCreateCmd)
+	apiKeyCreateCmd.Flags().StringSliceP("operation", "o", []string{}, "API key allowed operation")
+	apiKeyCmd.AddCommand(apiKeyCreateCmd)
 }

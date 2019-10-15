@@ -53,5 +53,5 @@ var apiKeyListCmd = &cobra.Command{
 }
 
 func init() {
-	iamAPIKeyCmd.AddCommand(apiKeyListCmd)
+	apiKeyCmd.AddCommand(apiKeyListCmd)
 }

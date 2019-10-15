@@ -2,12 +2,12 @@ package cmd
 
 import "github.com/spf13/cobra"
 
-// addCmd represents the add command
-var iamAPIKeyCmd = &cobra.Command{
+// apiKeycmd represent the API key command
+var apiKeyCmd = &cobra.Command{
 	Use:   "apikey",
 	Short: "API Keys management",
 }
 
 func init() {
-	iamCmd.AddCommand(iamAPIKeyCmd)
+	iamCmd.AddCommand(apiKeyCmd)
 }

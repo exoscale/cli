@@ -49,5 +49,5 @@ var apiKeyRevokeCmd = &cobra.Command{
 
 func init() {
 	apiKeyRevokeCmd.Flags().BoolP("force", "f", false, "Attempt to revoke API keys without prompting for confirmation")
-	iamAPIKeyCmd.AddCommand(apiKeyRevokeCmd)
+	apiKeyCmd.AddCommand(apiKeyRevokeCmd)
 }
