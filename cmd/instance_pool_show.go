@@ -58,7 +58,7 @@ func showInstancePool(name string) error {
 		return err
 	}
 
-	template, err := getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "featured")
+	template, err := getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "")
 	if err != nil {
 		return err
 	}

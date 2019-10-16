@@ -54,7 +54,7 @@ github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.18.2-0.20191009151543-316f5bbc9d37
+# github.com/exoscale/egoscale v0.18.2-0.20191016091509-6156f9602d81
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
 # github.com/fatih/camelcase v1.0.0
