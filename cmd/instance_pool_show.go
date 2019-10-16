@@ -9,15 +9,15 @@ type instancePoolItemOutput struct {
 	ID              string                     `json:"id"`
 	Name            string                     `json:"name"`
 	Description     string                     `json:"description"`
-	ServiceOffering string                     `json:"serviceoffering"`
+	ServiceOffering string                     `json:"service_offering"`
 	Template        string                     `json:"templateid"`
 	Zone            string                     `json:"zoneid"`
-	SecurityGroups  []string                   `json:"securitygroups"`
+	SecurityGroups  []string                   `json:"security_groups"`
 	Privnets        []string                   `json:"Privnets"`
-	KeyPair         string                     `json:"keypair"`
+	SSHKey          string                     `json:"ssh_key"`
 	Size            int                        `json:"size"`
 	State           egoscale.InstancePoolState `json:"state"`
-	VirtualMachines []string                   `json:"virtualmachines"`
+	VirtualMachines []string                   `json:"virtual_machines"`
 }
 
 func (o *instancePoolItemOutput) toJSON()  { outputJSON(o) }
@@ -60,10 +60,7 @@ func showInstancePool(name string) error {
 
 	template, err := getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "featured")
 	if err != nil {
-		template, err = getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "self")
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	o := instancePoolItemOutput{
@@ -73,7 +70,7 @@ func showInstancePool(name string) error {
 		ServiceOffering: serviceOffering.Name,
 		Template:        template.Name,
 		Zone:            zone.Name,
-		KeyPair:         instancePool.KeyPair,
+		SSHKey:          instancePool.KeyPair,
 		Size:            instancePool.Size,
 		State:           instancePool.State,
 	}

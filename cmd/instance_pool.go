@@ -8,12 +8,8 @@ import (
 )
 
 var instancePoolCmd = &cobra.Command{
-	Use:   "instance-pool",
+	Use:   "instancepool",
 	Short: "Instance pool managment",
-	Long: `The Instance Pool is a managed service allowing users
-to provision a group of similar Compute instances created,
-ensuring that at any moment there is a user-specified
-fixed number of instances running.`,
 }
 
 func init() {

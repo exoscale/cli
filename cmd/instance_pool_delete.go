@@ -30,7 +30,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 		for _, arg := range args {
 			if !force {
 				if !askQuestion(fmt.Sprintf("sure you want to delete %q", arg)) {
-					return nil
+					continue
 				}
 			}
 
@@ -44,7 +44,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 					ID:     i.ID,
 					ZoneID: zone.ID,
 				},
-				fmt.Sprintf("Delete instance pool %q", args[0]),
+				fmt.Sprintf("Deleting instance pool %q", args[0]),
 			})
 		}
 

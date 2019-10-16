@@ -7,25 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type instancePoolCreateItemOutput struct {
-	ID              string   `json:"id"`
-	Name            string   `json:"description"`
-	Description     string   `json:"name"`
-	Serviceoffering string   `json:"serviceoffering"`
-	Template        string   `json:"template"`
-	Zone            string   `json:"zone"`
-	Affinitygroups  []string `json:"affinitygroups"`
-	Securitygroups  []string `json:"securitygroups"`
-	Privnets        []string `json:"Privnets"`
-	Keypair         string   `json:"keypair"`
-	Size            int64    `json:"size"`
-	State           string   `json:"state"`
-}
-
-func (o *instancePoolCreateItemOutput) toJSON()  { outputJSON(o) }
-func (o *instancePoolCreateItemOutput) toText()  { outputText(o) }
-func (o *instancePoolCreateItemOutput) toTable() { outputTable(o) }
-
 var instancePoolCreateCmd = &cobra.Command{
 	Use:     "create <name>",
 	Short:   "Create an instance pool",
@@ -157,21 +138,18 @@ var instancePoolCreateCmd = &cobra.Command{
 		}
 
 		return nil
-
 	},
 }
 
 func init() {
 	// Required Flags
-
 	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
 	instancePoolCreateCmd.MarkFlagRequired("zone")
 	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "", serviceOfferingHelp)
 	instancePoolCreateCmd.MarkFlagRequired("service-offering")
 	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
 	instancePoolCreateCmd.MarkFlagRequired("template")
-	instancePoolCreateCmd.Flags().IntP("size", "", 0, "Number of instance in the pool")
-	instancePoolCreateCmd.MarkFlagRequired("size")
+	instancePoolCreateCmd.Flags().IntP("size", "", 2, "Number of instance in the pool")
 
 	instancePoolCreateCmd.Flags().StringP("description", "d", "", "Instance pool description")
 	instancePoolCreateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
