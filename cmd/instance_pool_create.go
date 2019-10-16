@@ -2,14 +2,19 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
 var instancePoolCreateCmd = &cobra.Command{
-	Use:     "create <name>",
-	Short:   "Create an instance pool",
+	Use:   "create <name>",
+	Short: "Create an instance pool",
+	Long: fmt.Sprintf(`This command create an instance pool.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

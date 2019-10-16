@@ -2,14 +2,19 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
 var instancePoolUpdateCmd = &cobra.Command{
-	Use:     "update <name>",
-	Short:   "Update an instance pool",
+	Use:   "update <name>",
+	Short: "Update an instance pool",
+	Long: fmt.Sprintf(`This command update an instance pool.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

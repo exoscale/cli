@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -22,8 +23,12 @@ func (o *instancePoolListItemOutput) toText()  { outputText(o) }
 func (o *instancePoolListItemOutput) toTable() { outputTable(o) }
 
 var instancePoolListCmd = &cobra.Command{
-	Use:     "list",
-	Short:   "List instance pools",
+	Use:   "list",
+	Short: "List instance pools",
+	Long: fmt.Sprintf(`This command list instance pools.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&instancePoolItem{}), ", ")),
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		zoneFlag, err := cmd.Flags().GetString("zone")

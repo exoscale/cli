@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -25,8 +28,12 @@ func (o *instancePoolItemOutput) toText()  { outputText(o) }
 func (o *instancePoolItemOutput) toTable() { outputTable(o) }
 
 var instancePoolShowCmd = &cobra.Command{
-	Use:     "show <name | id>",
-	Short:   "Show an instance pool",
+	Use:   "show <name | id>",
+	Short: "Show an instance pool",
+	Long: fmt.Sprintf(`This command shows an instance pool details.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
