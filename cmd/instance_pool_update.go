@@ -21,6 +21,11 @@ Supported output template annotations: %s`,
 			return cmd.Usage()
 		}
 
+		name, err := cmd.Flags().GetString("name")
+		if err != nil {
+			return err
+		}
+
 		description, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
@@ -29,6 +34,28 @@ Supported output template annotations: %s`,
 		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
 		if err != nil {
 			return err
+		}
+
+		templateFilterCmd, err := cmd.Flags().GetString("template-filter")
+		if err != nil {
+			return err
+		}
+		templateFilter, err := validateTemplateFilter(templateFilterCmd)
+		if err != nil {
+			return err
+		}
+
+		template := new(egoscale.Template)
+		templateName, err := cmd.Flags().GetString("template")
+		if err != nil {
+			return err
+		}
+
+		if templateName != "" {
+			template, err = getTemplateByName(zone.ID, templateName, templateFilter)
+			if err != nil {
+				return err
+			}
 		}
 
 		userDataPath, err := cmd.Flags().GetString("cloud-init")
@@ -60,8 +87,10 @@ Supported output template annotations: %s`,
 
 		_, err = cs.RequestWithContext(gContext, &egoscale.UpdateInstancePool{
 			ID:          instancePool.ID,
-			Description: description,
 			ZoneID:      zone.ID,
+			Name:        name,
+			Description: description,
+			TemplateID:  template.ID,
 			UserData:    userData,
 		})
 		if err != nil {
@@ -79,6 +108,10 @@ Supported output template annotations: %s`,
 			}
 		}
 
+		if name != "" {
+			instancePool.Name = name
+		}
+
 		if !gQuiet {
 			return showInstancePool(instancePool.Name)
 		}
@@ -88,7 +121,10 @@ Supported output template annotations: %s`,
 }
 
 func init() {
+	instancePoolUpdateCmd.Flags().StringP("name", "n", "", "Instance pool name")
 	instancePoolUpdateCmd.Flags().StringP("description", "d", "", "Instance pool description")
+	instancePoolUpdateCmd.Flags().StringP("template", "t", "", "Instance pool template")
+	instancePoolUpdateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	instancePoolUpdateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
 	instancePoolUpdateCmd.Flags().IntP("size", "s", 0, "Update instance pool size")
 	instancePoolCmd.AddCommand(instancePoolUpdateCmd)

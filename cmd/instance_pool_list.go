@@ -49,7 +49,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePool{
+		resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePools{
 			ZoneID: zone.ID,
 		})
 		if err != nil {
@@ -57,7 +57,7 @@ Supported output template annotations: %s`,
 		}
 		r := resp.(*egoscale.ListInstancePoolsResponse)
 		o := make(instancePoolListItemOutput, 0, r.Count)
-		for _, i := range r.ListInstancePoolsResponse {
+		for _, i := range r.InstancePools {
 			z, err := getZoneByName(i.ZoneID.String())
 			if err != nil {
 				return err

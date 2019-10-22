@@ -24,9 +24,9 @@ func getInstancePoolByID(id, zone *egoscale.UUID) (*egoscale.InstancePool, error
 	if err != nil {
 		return nil, err
 	}
-	r := resp.(*egoscale.GetInstancePoolsResponse)
+	r := resp.(*egoscale.GetInstancePoolResponse)
 
-	return &r.ListInstancePoolsResponse[0], nil
+	return &r.InstancePools[0], nil
 }
 
 func getInstancePoolByName(name string, zone *egoscale.UUID) (*egoscale.InstancePool, error) {
@@ -37,7 +37,7 @@ func getInstancePoolByName(name string, zone *egoscale.UUID) (*egoscale.Instance
 		return getInstancePoolByID(id, zone)
 	}
 
-	resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePool{
+	resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePools{
 		ZoneID: zone,
 	})
 	if err != nil {
@@ -45,7 +45,7 @@ func getInstancePoolByName(name string, zone *egoscale.UUID) (*egoscale.Instance
 	}
 	r := resp.(*egoscale.ListInstancePoolsResponse)
 
-	for _, i := range r.ListInstancePoolsResponse {
+	for _, i := range r.InstancePools {
 		if i.Name == name {
 			instancePools = append(instancePools, i)
 		}
