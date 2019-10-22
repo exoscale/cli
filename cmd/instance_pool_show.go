@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	humanize "github.com/dustin/go-humanize"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,6 +20,7 @@ type instancePoolItemOutput struct {
 	Privnets        []string                   `json:"Privnets"`
 	SSHKey          string                     `json:"ssh_key"`
 	Size            int                        `json:"size"`
+	DiskSize        string                     `json:"disk_size"`
 	State           egoscale.InstancePoolState `json:"state"`
 	VirtualMachines []string                   `json:"virtual_machines"`
 }
@@ -79,6 +81,7 @@ func showInstancePool(name string) error {
 		Zone:            zone.Name,
 		SSHKey:          instancePool.KeyPair,
 		Size:            instancePool.Size,
+		DiskSize:        humanize.IBytes(uint64(instancePool.RootDiskSize << 30)),
 		State:           instancePool.State,
 	}
 	for _, vm := range instancePool.VirtualMachines {

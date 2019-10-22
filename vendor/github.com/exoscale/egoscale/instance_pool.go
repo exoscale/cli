@@ -29,6 +29,7 @@ type InstancePool struct {
 	KeyPair           string            `json:"keypair"`
 	UserData          string            `json:"userdata"`
 	Size              int               `json:"size"`
+	RootDiskSize      int               `json:"rootdisksize"`
 	State             InstancePoolState `json:"state"`
 	VirtualMachines   []VirtualMachine  `json:"virtualmachines"`
 }
@@ -45,6 +46,7 @@ type CreateInstancePool struct {
 	KeyPair           string `json:"keypair,omitempty"`
 	UserData          string `json:"userdata,omitempty"`
 	Size              int    `json:"size"`
+	RootDiskSize      int    `json:"rootdisksize"`
 	_                 bool   `name:"createInstancePool" description:"Creates an Instance Pool with the provided parameters"`
 }
 
@@ -61,6 +63,7 @@ type CreateInstancePoolResponse struct {
 	KeyPair           string            `json:"keypair"`
 	UserData          string            `json:"userdata"`
 	Size              int64             `json:"size"`
+	RootDiskSize      int               `json:"rootdisksize"`
 	State             InstancePoolState `json:"state"`
 }
 

@@ -79,6 +79,11 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		diskSize, err := cmd.Flags().GetInt("disk")
+		if err != nil {
+			return err
+		}
+
 		sg, err := cmd.Flags().GetStringSlice("security-group")
 		if err != nil {
 			return err
@@ -126,6 +131,7 @@ Supported output template annotations: %s`,
 				TemplateID:        template.ID,
 				KeyPair:           keypair,
 				Size:              size,
+				RootDiskSize:      diskSize,
 				SecurityGroupIDs:  securityGroups,
 				NetworkIDs:        privnets,
 				UserData:          userData,
@@ -155,8 +161,9 @@ func init() {
 	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
 	instancePoolCreateCmd.MarkFlagRequired("template")
 	instancePoolCreateCmd.Flags().IntP("size", "", 2, "Number of instance in the pool")
+	instancePoolCreateCmd.Flags().IntP("disk", "d", 50, "Disk size")
 
-	instancePoolCreateCmd.Flags().StringP("description", "d", "", "Instance pool description")
+	instancePoolCreateCmd.Flags().StringP("description", "", "", "Instance pool description")
 	instancePoolCreateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
 	instancePoolCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	instancePoolCreateCmd.Flags().StringP("keypair", "k", "", "Instance pool keypair")
