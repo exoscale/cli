@@ -20,19 +20,20 @@ builds:
     hooks:
       pre: make manpages completions
 
-sign:
-  cmd: gpg
-  args: ["-u", "ops@exoscale.ch", "--detach-sign", "${artifact}"]
-  artifacts: all
+signs:
+  - cmd: gpg
+    args: ["-u", "ops@exoscale.ch", "--detach-sign", "${artifact}"]
+    artifacts: all
 
-archive:
-  format_overrides:
-    - goos: windows
-      format: zip
-  files:
-    - LICENSE
-    - contrib/completion/**/*
-    - manpage/*
+archives:
+  - id: windows
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - contrib/completion/**/*
+      - manpage/*
 
 release:
   github:
@@ -40,28 +41,27 @@ release:
     name: cli
   draft: true
 
-nfpm:
-  vendor: Exoscale
-  homepage: https://www.exoscale.com/
-  maintainer: Exoscale Support <support@exoscale.com>
-  description: Manage (almost) everything at Exoscale from the command line.
-  license: Apache 2.0
-  formats:
-    - deb
-    - rpm
+nfpms:
+  - vendor: Exoscale
+    homepage: https://www.exoscale.com/
+    maintainer: Exoscale Support <support@exoscale.com>
+    description: Manage (almost) everything at Exoscale from the command line.
+    license: Apache 2.0
+    formats:
+      - deb
+      - rpm
+    files:
+      "./manpage/exo*.1": "/usr/share/man/man1"
+      "./contrib/completion/bash/exo": "/etc/bash_completion.d/exo"
 
-  files:
-    "./manpage/exo*.1": "/usr/share/man/man1"
-    "./contrib/completion/bash/exo": "/etc/bash_completion.d/exo"
-
-brew:
-  github:
-    owner: exoscale
-    name: homebrew-tap
-  folder: Formula
-  homepage: "https://exoscale.github.io/cli/"
-  description: Manage (almost) everything at Exoscale from the command line.
-  install: |
-    bin.install "exo"
-    man1.install Dir["manpage/exo*.1"]
-    bash_completion.install "contrib/completion/bash/exo"
+brews:
+  - github:
+      owner: exoscale
+      name: homebrew-tap
+    folder: Formula
+    homepage: "https://exoscale.github.io/cli/"
+    description: Manage (almost) everything at Exoscale from the command line.
+    install: |
+      bin.install "exo"
+      man1.install Dir["manpage/exo*.1"]
+      bash_completion.install "contrib/completion/bash/exo"
