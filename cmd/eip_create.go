@@ -18,7 +18,10 @@ var eipCreateCmd = &cobra.Command{
 		if len(args) >= 1 {
 			zone = args[0]
 		}
-
+		description, err := cmd.Flags().GetString("description")
+		if err != nil {
+			return err
+		}
 		interval, err := cmd.Flags().GetInt64("healthcheck-interval")
 		if err != nil {
 			return err
@@ -48,6 +51,7 @@ var eipCreateCmd = &cobra.Command{
 			return err
 		}
 		req := egoscale.AssociateIPAddress{
+			Description:            description,
 			HealthcheckInterval:    interval,
 			HealthcheckMode:        mode,
 			HealthcheckPath:        path,
@@ -77,8 +81,12 @@ func associateIPAddress(associateIPAddress egoscale.AssociateIPAddress, zone str
 
 	if !gQuiet {
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Zone", "IP", "ID"})
-		table.Append([]string{ipResp.ZoneName, ipResp.IPAddress.String(), ipResp.ID.String()})
+		table.SetHeader([]string{"Description", "ID", "IP", "Zone"})
+		table.Append([]string{
+			ipResp.Description,
+			ipResp.ID.String(),
+			ipResp.IPAddress.String(),
+			ipResp.ZoneName})
 		table.Render()
 	}
 
@@ -86,6 +94,7 @@ func associateIPAddress(associateIPAddress egoscale.AssociateIPAddress, zone str
 }
 
 func init() {
+	eipCreateCmd.Flags().StringP("description", "", "", "the IP address description.")
 	eipCreateCmd.Flags().Int64P("healthcheck-interval", "", 0, "the time in seconds to wait for between each healthcheck.")
 	eipCreateCmd.Flags().StringP("healthcheck-mode", "", "", "the healthcheck type. Should be tcp or http.")
 	eipCreateCmd.Flags().StringP("healthcheck-path", "", "", "the healthcheck path. Required if mode is http.")
