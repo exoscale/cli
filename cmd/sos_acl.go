@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/egoscale"
 	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
 )
@@ -90,7 +91,14 @@ var sosAddACLCmd = &cobra.Command{
 
 		if okHeader && !okMeta {
 			objInfo.Metadata.Del("X-Amz-Acl")
-			objInfo.Metadata.Add(manualFullControl, "id="+gCurrentAccount.AccountName())
+
+			resp, err := cs.GetWithContext(gContext, egoscale.Account{})
+			if err != nil {
+				return err
+			}
+			acc := resp.(*egoscale.Account)
+
+			objInfo.Metadata.Add(manualFullControl, "id="+acc.ID.String())
 		}
 
 		mergeHeader(src.Headers, objInfo.Metadata)
