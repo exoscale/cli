@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -122,22 +123,24 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		r := asyncTasks([]task{task{
-			egoscale.CreateInstancePool{
-				Name:              args[0],
-				Description:       description,
-				ZoneID:            zone.ID,
-				ServiceOfferingID: servOffering.ID,
-				TemplateID:        template.ID,
-				KeyPair:           keypair,
-				Size:              size,
-				RootDiskSize:      diskSize,
-				SecurityGroupIDs:  securityGroups,
-				NetworkIDs:        privnets,
-				UserData:          userData,
+		r := asyncTasks([]task{
+			task{
+				egoscale.CreateInstancePool{
+					Name:              args[0],
+					Description:       description,
+					ZoneID:            zone.ID,
+					ServiceOfferingID: servOffering.ID,
+					TemplateID:        template.ID,
+					KeyPair:           keypair,
+					Size:              size,
+					RootDiskSize:      diskSize,
+					SecurityGroupIDs:  securityGroups,
+					NetworkIDs:        privnets,
+					UserData:          userData,
+				},
+				fmt.Sprintf("Creating instance pool %q", args[0]),
 			},
-			fmt.Sprintf("Creating instance pool %q", args[0]),
-		}})
+		})
 		errs := filterErrors(r)
 		if len(errs) > 0 {
 			return errs[0]
@@ -155,14 +158,22 @@ Supported output template annotations: %s`,
 func init() {
 	// Required Flags
 	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	instancePoolCreateCmd.MarkFlagRequired("zone")
-	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "", serviceOfferingHelp)
-	instancePoolCreateCmd.MarkFlagRequired("service-offering")
-	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
-	instancePoolCreateCmd.MarkFlagRequired("template")
-	instancePoolCreateCmd.Flags().IntP("size", "", 2, "Number of instance in the pool")
-	instancePoolCreateCmd.Flags().IntP("disk", "d", 50, "Disk size")
+	if err := instancePoolCreateCmd.MarkFlagRequired("zone"); err != nil {
+		log.Fatal(err)
+	}
 
+	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "", serviceOfferingHelp)
+	if err := instancePoolCreateCmd.MarkFlagRequired("service-offering"); err != nil {
+		log.Fatal(err)
+	}
+
+	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
+	if err := instancePoolCreateCmd.MarkFlagRequired("template"); err != nil {
+		log.Fatal(err)
+	}
+
+	instancePoolCreateCmd.Flags().IntP("size", "", 3, "Number of instance in the pool")
+	instancePoolCreateCmd.Flags().IntP("disk", "d", 50, "Disk size")
 	instancePoolCreateCmd.Flags().StringP("description", "", "", "Instance pool description")
 	instancePoolCreateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
 	instancePoolCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)

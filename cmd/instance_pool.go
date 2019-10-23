@@ -9,7 +9,7 @@ import (
 
 var instancePoolCmd = &cobra.Command{
 	Use:   "instancepool",
-	Short: "Instance pool managment",
+	Short: "Instance pool management",
 }
 
 func init() {
