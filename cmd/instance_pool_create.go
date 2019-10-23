@@ -124,7 +124,7 @@ Supported output template annotations: %s`,
 		}
 
 		r := asyncTasks([]task{
-			task{
+			{
 				egoscale.CreateInstancePool{
 					Name:              args[0],
 					Description:       description,
