@@ -46,7 +46,7 @@ type CreateInstancePool struct {
 	KeyPair           string `json:"keypair,omitempty"`
 	UserData          string `json:"userdata,omitempty"`
 	Size              int    `json:"size"`
-	RootDiskSize      int    `json:"rootdisksize"`
+	RootDiskSize      int    `json:"rootdisksize,omitempty"`
 	_                 bool   `name:"createInstancePool" description:"Creates an Instance Pool with the provided parameters"`
 }
 
@@ -80,7 +80,7 @@ type UpdateInstancePool struct {
 	Description string `json:"description,omitempty"`
 	TemplateID  *UUID  `json:"templateid,omitempty"`
 	UserData    string `json:"userdata,omitempty"`
-	_           bool   `name:"updateInstancePool" description:""`
+	_           bool   `name:"updateInstancePool" description:"Update an Instance Pool with the provided parameters"`
 }
 
 // UpdateInstancePoolResponse update instance pool response
@@ -98,7 +98,7 @@ type ScaleInstancePool struct {
 	ID     *UUID `json:"id"`
 	ZoneID *UUID `json:"zoneid"`
 	Size   int   `json:"size"`
-	_      bool  `name:"scaleInstancePool" description:""`
+	_      bool  `name:"scaleInstancePool" description:"Scale an Instance Pool with the provided parameters"`
 }
 
 // ScaleInstancePoolResponse scale instance pool response
@@ -115,7 +115,7 @@ func (ScaleInstancePool) Response() interface{} {
 type DestroyInstancePool struct {
 	ID     *UUID `json:"id"`
 	ZoneID *UUID `json:"zoneid"`
-	_      bool  `name:"destroyInstancePool" description:""`
+	_      bool  `name:"destroyInstancePool" description:"Destroy an Instance Pool with the provided parameters"`
 }
 
 // DestroyInstancePoolResponse destroy instance pool response
@@ -132,7 +132,7 @@ func (DestroyInstancePool) Response() interface{} {
 type GetInstancePool struct {
 	ID     *UUID `json:"id"`
 	ZoneID *UUID `json:"zoneid"`
-	_      bool  `name:"getInstancePool" description:""`
+	_      bool  `name:"getInstancePool" description:"Get an Instance Pool with the provided parameters"`
 }
 
 // GetInstancePoolResponse get instance pool response
@@ -149,7 +149,7 @@ func (GetInstancePool) Response() interface{} {
 // ListInstancePools list instance pool
 type ListInstancePools struct {
 	ZoneID *UUID `json:"zoneid"`
-	_      bool  `name:"listInstancePools" description:""`
+	_      bool  `name:"listInstancePools" description:"List Instance Pools in the provided zone ID parameter"`
 }
 
 // ListInstancePoolsResponse list instance pool response
