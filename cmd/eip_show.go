@@ -37,10 +37,10 @@ func (o *eipShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Elastic IP"})
 
-	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"IP Address", o.IPAddress})
+	t.Append([]string{"Description", o.Description})
 
 	if o.Healthcheck != nil {
 		t.Append([]string{"Healthcheck Mode", o.Healthcheck.Mode})
