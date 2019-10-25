@@ -27,45 +27,50 @@ var sosAddMetadataCmd = &cobra.Command{
 		if len(args) < 4 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
+		object := args[1]
+		k, v := args[2], args[3]
 
-		minioClient, err := newMinioClient(sosZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		location, err := minioClient.GetBucketLocation(args[0])
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
 			return err
 		}
 
-		objInfo, err := minioClient.GetObjectACL(args[0], args[1])
+		if err := sosClient.setZone(location); err != nil {
+			return err
+		}
+
+		objInfo, err := sosClient.GetObjectACL(bucket, object)
 		if err != nil {
 			return err
 		}
 
 		objInfo.Metadata.Add("content-type", objInfo.ContentType)
 
-		src := minio.NewSourceInfo(args[0], args[1], nil)
+		src := minio.NewSourceInfo(bucket, object, nil)
 
 		mergeHeader(src.Headers, objInfo.Metadata)
 
-		meta := map[string]string{
-			args[2]: args[3],
-		}
+		meta := map[string]string{k: v}
 
 		// Destination object
-		dst, err := minio.NewDestinationInfo(args[0], args[1], nil, meta)
+		dst, err := minio.NewDestinationInfo(bucket, object, nil, meta)
 		if err != nil {
 			return err
 		}
 
 		// Copy object call
-		return minioClient.CopyObject(dst, src)
+		return sosClient.CopyObject(dst, src)
 	},
 }
 
@@ -82,23 +87,29 @@ var sosRemoveMetadataCmd = &cobra.Command{
 		if len(args) < 3 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
+		object := args[1]
 
-		minioClient, err := newMinioClient(sosZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		location, err := minioClient.GetBucketLocation(args[0])
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
 			return err
 		}
 
-		objInfo, err := minioClient.GetObjectACL(args[0], args[1])
+		if err := sosClient.setZone(location); err != nil {
+			return err
+		}
+
+		objInfo, err := sosClient.GetObjectACL(bucket, object)
 		if err != nil {
 			return err
 		}
@@ -108,23 +119,23 @@ var sosRemoveMetadataCmd = &cobra.Command{
 
 		for k := range objInfo.Metadata {
 			key := strings.ToLower(k)
-			if strings.HasPrefix(key, "x-amz-meta-") && strings.HasSuffix(key, args[2]) {
+			if strings.HasPrefix(key, "x-amz-meta-") && strings.HasSuffix(key, k) {
 				objInfo.Metadata.Del(k)
 			}
 		}
 
-		src := minio.NewSourceInfo(args[0], args[1], nil)
+		src := minio.NewSourceInfo(bucket, object, nil)
 
 		mergeHeader(src.Headers, objInfo.Metadata)
 
 		// Destination object
-		dst, err := minio.NewDestinationInfo(args[0], args[1], nil, nil)
+		dst, err := minio.NewDestinationInfo(bucket, object, nil, nil)
 		if err != nil {
 			return err
 		}
 
 		// Copy object call
-		return minioClient.CopyObject(dst, src)
+		return sosClient.CopyObject(dst, src)
 	},
 }
 
@@ -141,23 +152,29 @@ var sosShowMetadataCmd = &cobra.Command{
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
+		object := args[1]
 
-		minioClient, err := newMinioClient(sosZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		location, err := minioClient.GetBucketLocation(args[0])
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
 			return err
 		}
 
-		objInfo, err := minioClient.GetObjectACL(args[0], args[1])
+		if err := sosClient.setZone(location); err != nil {
+			return err
+		}
+
+		objInfo, err := sosClient.GetObjectACL(bucket, object)
 		if err != nil {
 			return err
 		}

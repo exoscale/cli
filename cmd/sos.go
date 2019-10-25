@@ -1,40 +1,142 @@
 package cmd
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"net"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
+	"golang.org/x/net/http2"
 )
 
 const (
-	sosZone = "ch-dk-2"
+	defaultSOSZone = "ch-dk-2"
 )
 
 // sosCmd represents the sos command
 var sosCmd = &cobra.Command{
 	Use:   "sos",
 	Short: "Simple Object Storage management",
+	Long: `Manage Exoscale Object Storage (SOS)
+
+IMPORTANT: Due to a bug in the Microsoft Windows support in the Go
+programming language (https://github.com/golang/go/issues/16736), some
+security certificates such as Exoscale SOS API's one are not recognized as
+being signed by a trusted Certificate Authority. In order to work around this
+issue until the bug is fixed upstream, Windows users are required to use the
+"--certs-file" flag with a path to a local file containing Exoscale SOS API's
+certificate chain to the "exo sos" commands. This file can be downloaded from
+the following address:
+
+	https://www.exoscale.com/static/files/sos-certs.pem
+
+We apologize for the inconvenience, however this issue is beyond our control.
+`,
+	TraverseChildren: true,
 }
 
-func newMinioClient(zone string) (*minio.Client, error) {
-	endpoint := strings.Replace(gCurrentAccount.SosEndpoint, "https://", "", -1)
-	endpoint = strings.Replace(endpoint, "{zone}", zone, -1)
-	client, err := minio.NewV4(endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret(), true)
-	if err != nil {
+type sosClient struct {
+	*minio.Client
+
+	certPool *x509.CertPool
+}
+
+func newSOSClient(certsFile string) (*sosClient, error) {
+	var (
+		c   sosClient
+		err error
+	)
+
+	if certsFile != "" {
+		c.certPool = x509.NewCertPool()
+		certs, err := ioutil.ReadFile(certsFile)
+		if err != nil {
+			return nil, fmt.Errorf("unable to read certificates from file: %s", err)
+		}
+		if !c.certPool.AppendCertsFromPEM(certs) {
+			return nil, errors.New("unable to load local certificates")
+		}
+	}
+
+	if err = c.setZone(defaultSOSZone); err != nil {
 		return nil, err
 	}
 
-	if _, ok := os.LookupEnv("EXOSCALE_TRACE"); ok {
-		client.TraceOn(os.Stderr)
+	return &c, nil
+}
+
+func (s *sosClient) setZone(zone string) error {
+	// When a user wants to set the SOS zone to use for an operation, we actually have to re-create the
+	// underlying Minio S3 client to specify the zone-based endpoint.
+
+	endpoint := strings.Replace(gCurrentAccount.SosEndpoint, "https://", "", -1)
+	endpoint = strings.Replace(endpoint, "{zone}", zone, -1)
+
+	minioClient, err := minio.NewV4(endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret(), true)
+	if err != nil {
+		return err
 	}
 
-	client.SetAppInfo("Exoscale-CLI", gVersion)
+	// This is a workaround to support SOS on the Windows platform because of a bug preventing access to system-wide
+	// trusted CA certificates with Go:
+	//   - https://github.com/golang/go/issues/16736
+	//   - https://golang.org/src/crypto/x509/root_windows.go#L228
+	//
+	// Pending resolution, we have to inject the user-provided PEM certificates chain for the TLS SOS API endpoints
+	// in our HTTPS client to avoid "https://sos-<zone>.exo.io/: x509: certificate signed by unknown authority" error.
+	if s.certPool != nil {
+		customTransport, err := func() (http.RoundTripper, error) {
+			tr := &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				MaxIdleConns:          1024,
+				MaxIdleConnsPerHost:   1024,
+				IdleConnTimeout:       90 * time.Second,
+				TLSHandshakeTimeout:   10 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+				DisableCompression:    true,
+				TLSClientConfig: &tls.Config{
+					RootCAs:    s.certPool,
+					MinVersion: tls.VersionTLS12,
+				},
+			}
 
-	return client, nil
+			if err := http2.ConfigureTransport(tr); err != nil {
+				return nil, err
+			}
+
+			return tr, nil
+		}()
+		if err != nil {
+			return fmt.Errorf("unable to initialize custom HTTP transport: %s", err)
+		}
+
+		minioClient.SetCustomTransport(customTransport)
+	}
+
+	minioClient.SetAppInfo("Exoscale-CLI", gVersion)
+
+	if _, ok := os.LookupEnv("EXOSCALE_TRACE"); ok {
+		minioClient.TraceOn(os.Stderr)
+	}
+
+	s.Client = minioClient
+
+	return nil
 }
 
 func init() {
 	RootCmd.AddCommand(sosCmd)
+	sosCmd.PersistentFlags().String("certs-file", "", "Path to file containing additional SOS API X.509 certificates")
 }
