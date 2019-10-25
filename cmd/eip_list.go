@@ -9,10 +9,10 @@ import (
 )
 
 type eipListItemOutput struct {
-	Description string   `json:"description"`
 	ID          string   `json:"id"`
 	Zone        string   `json:"zone"`
 	IPAddress   string   `json:"ip_address"`
+	Description string   `json:"description"`
 	Managed     bool     `json:"managed"`
 	Instances   []string `json:"instances,omitempty"`
 }

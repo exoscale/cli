@@ -81,11 +81,11 @@ func associateIPAddress(associateIPAddress egoscale.AssociateIPAddress, zone str
 
 	if !gQuiet {
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Description", "ID", "IP", "Zone"})
+		table.SetHeader([]string{"ID", "IP", "Description", "Zone"})
 		table.Append([]string{
-			ipResp.Description,
 			ipResp.ID.String(),
 			ipResp.IPAddress.String(),
+			ipResp.Description,
 			ipResp.ZoneName})
 		table.Render()
 	}

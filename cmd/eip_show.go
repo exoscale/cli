@@ -21,10 +21,10 @@ type eipHealthcheckShowOutput struct {
 }
 
 type eipShowOutput struct {
-	Description string                    `json:"description"`
 	ID          string                    `json:"id"`
 	Zone        string                    `json:"zone"`
 	IPAddress   string                    `json:"ip_address"`
+	Description string                    `json:"description"`
 	Healthcheck *eipHealthcheckShowOutput `json:"healthcheck"`
 	Instances   []string                  `json:"instances"`
 }

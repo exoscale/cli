@@ -82,12 +82,12 @@ func updateIPAddress(associateIPAddress egoscale.UpdateIPAddress) error {
 
 	if !gQuiet {
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Description", "ID", "IP", "Zone"})
+		table.SetHeader([]string{"Zone", "IP", "Description", "ID"})
 		table.Append([]string{
-			ip.Description,
-			ip.ID.String(),
+			ip.ZoneName,
 			ip.IPAddress.String(),
-			ip.ZoneName})
+			ip.Description,
+			ip.ID.String()})
 		table.Render()
 	}
 
