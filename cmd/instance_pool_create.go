@@ -12,7 +12,7 @@ import (
 var instancePoolCreateCmd = &cobra.Command{
 	Use:   "create <name>",
 	Short: "Create an instance pool",
-	Long: fmt.Sprintf(`This command create an instance pool.
+	Long: fmt.Sprintf(`This command creates an instance pool.
 
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),

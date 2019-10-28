@@ -9,9 +9,9 @@ import (
 )
 
 var instancePoolUpdateCmd = &cobra.Command{
-	Use:   "update <name>",
+	Use:   "update <name | id>",
 	Short: "Update an instance pool",
-	Long: fmt.Sprintf(`This command update an instance pool.
+	Long: fmt.Sprintf(`This command updates an instance pool.
 
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),

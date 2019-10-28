@@ -22,7 +22,7 @@ type instancePoolItemOutput struct {
 	Size            int                        `json:"size"`
 	DiskSize        string                     `json:"disk_size"`
 	State           egoscale.InstancePoolState `json:"state"`
-	VirtualMachines []string                   `json:"virtual_machines"`
+	Instances       []string                   `json:"instances"`
 }
 
 func (o *instancePoolItemOutput) toJSON()  { outputJSON(o) }
@@ -31,7 +31,7 @@ func (o *instancePoolItemOutput) toTable() { outputTable(o) }
 
 var instancePoolShowCmd = &cobra.Command{
 	Use:   "show <name | id>",
-	Short: "Show an instance pool",
+	Short: "Show an instance pool details",
 	Long: fmt.Sprintf(`This command shows an instance pool details.
 
 Supported output template annotations: %s`,
@@ -85,7 +85,7 @@ func showInstancePool(name string) error {
 		State:           instancePool.State,
 	}
 	for _, vm := range instancePool.VirtualMachines {
-		o.VirtualMachines = append(o.VirtualMachines, vm.Name)
+		o.Instances = append(o.Instances, vm.Name)
 	}
 
 	for _, s := range instancePool.SecurityGroupIDs {
