@@ -24,6 +24,7 @@ type eipShowOutput struct {
 	ID          string                    `json:"id"`
 	Zone        string                    `json:"zone"`
 	IPAddress   string                    `json:"ip_address"`
+	Description string                    `json:"description"`
 	Healthcheck *eipHealthcheckShowOutput `json:"healthcheck"`
 	Instances   []string                  `json:"instances"`
 }
@@ -39,6 +40,7 @@ func (o *eipShowOutput) toTable() {
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"IP Address", o.IPAddress})
+	t.Append([]string{"Description", o.Description})
 
 	if o.Healthcheck != nil {
 		t.Append([]string{"Healthcheck Mode", o.Healthcheck.Mode})
@@ -93,9 +95,10 @@ func showEIP(eip string) (outputter, error) {
 	}
 
 	out := eipShowOutput{
-		ID:        id.String(),
-		Zone:      ip.ZoneName,
-		IPAddress: ip.IPAddress.String(),
+		Description: ip.Description,
+		ID:          id.String(),
+		Zone:        ip.ZoneName,
+		IPAddress:   ip.IPAddress.String(),
 	}
 
 	if ip.Healthcheck != nil {

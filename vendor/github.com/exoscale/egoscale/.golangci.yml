@@ -11,6 +11,7 @@ linters:
     - deadcode
     - dupl
     - errcheck
+    - gocritic
     - gocyclo
     - goimports
     - golint

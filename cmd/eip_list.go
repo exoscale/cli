@@ -9,11 +9,12 @@ import (
 )
 
 type eipListItemOutput struct {
-	ID        string   `json:"id"`
-	Zone      string   `json:"zone"`
-	IPAddress string   `json:"ip_address"`
-	Managed   bool     `json:"managed"`
-	Instances []string `json:"instances,omitempty"`
+	ID          string   `json:"id"`
+	Zone        string   `json:"zone"`
+	IPAddress   string   `json:"ip_address"`
+	Description string   `json:"description"`
+	Managed     bool     `json:"managed"`
+	Instances   []string `json:"instances,omitempty"`
 }
 
 type eipListOutput []eipListItemOutput
@@ -81,10 +82,11 @@ func listEIP(zone string) (outputter, error) {
 			}
 
 			o := eipListItemOutput{
-				ID:        eip.ID.String(),
-				IPAddress: eip.IPAddress.String(),
-				Zone:      z.(*egoscale.Zone).Name,
-				Instances: instances,
+				Description: eip.Description,
+				ID:          eip.ID.String(),
+				IPAddress:   eip.IPAddress.String(),
+				Zone:        z.(*egoscale.Zone).Name,
+				Instances:   instances,
 			}
 			if eip.Healthcheck != nil {
 				o.Managed = true

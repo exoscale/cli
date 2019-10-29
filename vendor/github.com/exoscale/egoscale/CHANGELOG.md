@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.19.0
+------
+
+- feature: add field `Description` on type `IPAddress` (#413)
+- change: add Json tag `omitempty` on field  `TemplateFilter` in type `ListTemplates` (#412)
+
 0.18.1
 ------
 

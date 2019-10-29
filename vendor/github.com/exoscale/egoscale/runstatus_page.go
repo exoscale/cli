@@ -3,6 +3,7 @@ package egoscale
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -99,7 +100,7 @@ func (client *Client) GetRunstatusPage(ctx context.Context, page RunstatusPage) 
 		}
 	}
 
-	return nil, fmt.Errorf("%#v not found", page)
+	return nil, errors.New("page not found")
 }
 
 func (client *Client) getRunstatusPage(ctx context.Context, pageURL string) (*RunstatusPage, error) {

@@ -17,6 +17,10 @@ var eipUpdateCmd = &cobra.Command{
 		if len(args) != 1 {
 			return cmd.Usage()
 		}
+		description, err := cmd.Flags().GetString("description")
+		if err != nil {
+			return err
+		}
 		id, err := egoscale.ParseUUID(args[0])
 		if err != nil {
 			return err
@@ -50,6 +54,7 @@ var eipUpdateCmd = &cobra.Command{
 			return err
 		}
 		req := egoscale.UpdateIPAddress{
+			Description:            description,
 			HealthcheckInterval:    interval,
 			HealthcheckMode:        mode,
 			HealthcheckPath:        path,
@@ -77,8 +82,12 @@ func updateIPAddress(associateIPAddress egoscale.UpdateIPAddress) error {
 
 	if !gQuiet {
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Zone", "IP", "ID"})
-		table.Append([]string{ip.ZoneName, ip.IPAddress.String(), ip.ID.String()})
+		table.SetHeader([]string{"Zone", "IP", "Description", "ID"})
+		table.Append([]string{
+			ip.ZoneName,
+			ip.IPAddress.String(),
+			ip.Description,
+			ip.ID.String()})
 		table.Render()
 	}
 
@@ -86,6 +95,7 @@ func updateIPAddress(associateIPAddress egoscale.UpdateIPAddress) error {
 }
 
 func init() {
+	eipUpdateCmd.Flags().StringP("description", "", "", "the IP address description.")
 	eipUpdateCmd.Flags().Int64P("healthcheck-interval", "", 0, "the time in seconds to wait for between each healthcheck.")
 	eipUpdateCmd.Flags().StringP("healthcheck-mode", "", "", "the healthcheck type. Should be tcp or http.")
 	eipUpdateCmd.Flags().StringP("healthcheck-path", "", "", "the healthcheck path. Required if mode is http.")
