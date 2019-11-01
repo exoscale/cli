@@ -203,8 +203,13 @@ func initConfig() {
 	if found {
 		gConfigFolder = path.Join(xdgHome, "exoscale")
 	} else {
-		// The XDG spec specifies a default XDG_CONFIG_HOME in $HOME/.config
-		gConfigFolder = path.Join(usr.HomeDir, ".config", "exoscale")
+		home, found := os.LookupEnv("HOME")
+		if found {
+			gConfigFolder = path.Join(home, ".config", "exoscale")
+		} else {
+			// The XDG spec specifies a default XDG_CONFIG_HOME in $HOME/.config
+			gConfigFolder = path.Join(usr.HomeDir, ".config", "exoscale")
+		}
 	}
 
 	// Snap packages use $HOME/.exoscale (as negotiated with the snap store)
