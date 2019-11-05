@@ -54,7 +54,11 @@ github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
+<<<<<<< HEAD
 # github.com/exoscale/egoscale v0.20.0
+=======
+# github.com/exoscale/egoscale v0.18.2-0.20191104132434-3a5c32d0d82c
+>>>>>>> fad94d2... fixup! add show API key command & add API key to the config file when you create one
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
 # github.com/fatih/camelcase v1.0.0
