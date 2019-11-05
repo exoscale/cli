@@ -148,7 +148,7 @@ Supported output template annotations: %s`,
 		pool := r[0].resp.(*egoscale.CreateInstancePoolResponse)
 
 		if !gQuiet {
-			return showInstancePool(pool.ID.String())
+			return showInstancePool(pool.ID.String(), pool.ZoneID.String())
 		}
 
 		return nil

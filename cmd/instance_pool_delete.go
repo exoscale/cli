@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -21,7 +22,12 @@ var instancePoolDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
+		zoneflag, err := cmd.Flags().GetString("zone")
+		if err != nil {
+			return err
+		}
+
+		zone, err := getZoneByName(zoneflag)
 		if err != nil {
 			return err
 		}
@@ -59,6 +65,12 @@ var instancePoolDeleteCmd = &cobra.Command{
 }
 
 func init() {
+	// Required Flags
+	instancePoolDeleteCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
+	if err := instancePoolDeleteCmd.MarkFlagRequired("zone"); err != nil {
+		log.Fatal(err)
+	}
+
 	instancePoolDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove instance pool without prompting for confirmation")
 	instancePoolCmd.AddCommand(instancePoolDeleteCmd)
 }

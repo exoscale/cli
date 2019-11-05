@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
@@ -42,12 +43,17 @@ Supported output template annotations: %s`,
 			return cmd.Usage()
 		}
 
-		return showInstancePool(args[0])
+		zone, err := cmd.Flags().GetString("zone")
+		if err != nil {
+			return err
+		}
+
+		return showInstancePool(args[0], zone)
 	},
 }
 
-func showInstancePool(name string) error {
-	zone, err := getZoneByName(gCurrentAccount.DefaultZone)
+func showInstancePool(name, zoneName string) error {
+	zone, err := getZoneByName(zoneName)
 	if err != nil {
 		return err
 	}
@@ -115,5 +121,11 @@ func showInstancePool(name string) error {
 }
 
 func init() {
+	// Required Flags
+	instancePoolShowCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
+	if err := instancePoolShowCmd.MarkFlagRequired("zone"); err != nil {
+		log.Fatal(err)
+	}
+
 	instancePoolCmd.AddCommand(instancePoolShowCmd)
 }

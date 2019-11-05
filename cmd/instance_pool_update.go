@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -31,7 +32,12 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
+		zoneflag, err := cmd.Flags().GetString("zone")
+		if err != nil {
+			return err
+		}
+
+		zone, err := getZoneByName(zoneflag)
 		if err != nil {
 			return err
 		}
@@ -108,12 +114,8 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		if name != "" {
-			instancePool.Name = name
-		}
-
 		if !gQuiet {
-			return showInstancePool(instancePool.Name)
+			return showInstancePool(instancePool.ID.String(), instancePool.ZoneID.String())
 		}
 
 		return nil
@@ -121,6 +123,12 @@ Supported output template annotations: %s`,
 }
 
 func init() {
+	// Required Flags
+	instancePoolUpdateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
+	if err := instancePoolUpdateCmd.MarkFlagRequired("zone"); err != nil {
+		log.Fatal(err)
+	}
+
 	instancePoolUpdateCmd.Flags().StringP("name", "n", "", "Instance pool name")
 	instancePoolUpdateCmd.Flags().StringP("description", "d", "", "Instance pool description")
 	instancePoolUpdateCmd.Flags().StringP("template", "t", "", "Instance pool template")
