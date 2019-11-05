@@ -22,6 +22,11 @@ func (o *instancePoolListItemOutput) toJSON()  { outputJSON(o) }
 func (o *instancePoolListItemOutput) toText()  { outputText(o) }
 func (o *instancePoolListItemOutput) toTable() { outputTable(o) }
 
+type outputResult struct {
+	instancePoolListItemOutput
+	error
+}
+
 var instancePoolListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List instance pools",
@@ -37,47 +42,63 @@ Supported output template annotations: %s`,
 		}
 		zoneFlag = strings.ToLower(zoneFlag)
 
-		var zoneName string
+		var zones []egoscale.Zone
 		if zoneFlag == "" {
-			zoneName = gCurrentAccount.DefaultZone
-		} else {
-			zoneName = zoneFlag
-		}
-
-		zone, err := getZoneByName(zoneName)
-		if err != nil {
-			return err
-		}
-
-		resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePools{
-			ZoneID: zone.ID,
-		})
-		if err != nil {
-			return err
-		}
-		r := resp.(*egoscale.ListInstancePoolsResponse)
-		o := make(instancePoolListItemOutput, 0, r.Count)
-		for _, i := range r.InstancePools {
-			z, err := getZoneByName(i.ZoneID.String())
+			resp, err := cs.Request(egoscale.ListZones{})
 			if err != nil {
 				return err
 			}
+			zones = resp.(*egoscale.ListZonesResponse).Zone
+		} else {
+			zone, err := getZoneByName(zoneFlag)
+			if err != nil {
+				return err
+			}
+			zones = append(zones, *zone)
+		}
 
-			if z.Name != zoneFlag && zoneFlag != "" {
-				continue
+		results := make(chan outputResult, len(zones))
+		defer close(results)
+
+		for _, zone := range zones {
+			go getInstancePool(results, zone)
+		}
+
+		o := make(instancePoolListItemOutput, 0, len(zones))
+		for range zones {
+			result := <-results
+			if result.error != nil {
+				return err
 			}
 
-			o = append(o, instancePoolItem{
-				ID:    i.ID.String(),
-				Name:  i.Name,
-				Zone:  z.Name,
-				Size:  i.Size,
-				State: i.State,
-			})
+			o = append(o, result.instancePoolListItemOutput...)
 		}
 
 		return output(&o, nil)
 	},
+}
+
+func getInstancePool(result chan outputResult, zone egoscale.Zone) {
+	resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePools{
+		ZoneID: zone.ID,
+	})
+	if err != nil {
+		result <- outputResult{nil, err}
+		return
+	}
+	r := resp.(*egoscale.ListInstancePoolsResponse)
+	output := make(instancePoolListItemOutput, 0, r.Count)
+	for _, i := range r.InstancePools {
+		output = append(output, instancePoolItem{
+			ID:    i.ID.String(),
+			Name:  i.Name,
+			Zone:  zone.Name,
+			Size:  i.Size,
+			State: i.State,
+		})
+	}
+
+	result <- outputResult{output, nil}
 }
 
 func init() {
