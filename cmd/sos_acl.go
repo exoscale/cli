@@ -38,7 +38,7 @@ const (
 
 // aclCmd represents the acl command
 var sosACLCmd = &cobra.Command{
-	Use:   "acl <bucket name> <object name> [object name] ...",
+	Use:   "acl",
 	Short: "Object(s) ACLs management",
 }
 
@@ -48,14 +48,16 @@ func init() {
 
 // aclCmd represents the acl command
 var sosAddACLCmd = &cobra.Command{
-	Use:   "add <bucket name> <object name> [object name] ...",
-	Short: "Add ACL(s) to an object",
+	Use:   "add <bucket name> <object name>",
+	Short: "Add ACL(s) to object(s)",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
 		bucket := args[0]
 		object := args[1]
+
+		bucketName, objectName := args[0], args[1]
 
 		meta, err := getACL(cmd)
 		if err != nil {
@@ -98,12 +100,12 @@ var sosAddACLCmd = &cobra.Command{
 
 		src := minio.NewSourceInfo(bucket, object, nil)
 
-		_, okMeta := meta["X-Amz-Acl"]
-		_, okHeader := objInfo.Metadata["X-Amz-Acl"]
+		_, hasNewAmzACL := meta["X-Amz-Acl"]
+		_, hasAmzACL := objInfo.Metadata["X-Amz-Acl"]
 
-		if okHeader && !okMeta {
+		if hasAmzACL && !hasNewAmzACL {
 			objInfo.Metadata.Del("X-Amz-Acl")
-			objInfo.Metadata.Add(manualFullControl, "id="+gCurrentAccount.AccountName())
+			objInfo.Metadata.Add(manualFullControl, "id="+objInfo.Owner.ID)
 		}
 
 		mergeHeader(src.Headers, objInfo.Metadata)
