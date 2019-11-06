@@ -73,12 +73,12 @@ Supported output template annotations: %s`,
 }
 
 func listTemplates(templateFilter, zone string, filters []string) (outputter, error) {
-	zoneID, err := getZoneIDByName(zone)
+	z, err := getZoneByName(zone)
 	if err != nil {
 		return nil, err
 	}
 
-	templates, err := findTemplates(zoneID, templateFilter, filters...)
+	templates, err := findTemplates(z.ID, templateFilter, filters...)
 	if err != nil {
 		return nil, err
 	}

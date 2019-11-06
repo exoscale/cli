@@ -90,7 +90,7 @@ func isEmptyArgs(args ...string) bool {
 }
 
 func privnetCreate(name, desc, zoneName string, startIP, endIP, netmask net.IP) (*egoscale.Network, error) {
-	zoneID, err := getZoneIDByName(zoneName)
+	zone, err := getZoneByName(zoneName)
 
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func privnetCreate(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 	// NetworkOffering are cross zones
 	listReq := &egoscale.ListNetworkOfferings{
 		Name:     "PrivNet",
-		ZoneID:   zoneID,
+		ZoneID:   zone.ID,
 		Page:     1,
 		PageSize: 1,
 	}
@@ -121,7 +121,7 @@ func privnetCreate(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 	req := &egoscale.CreateNetwork{
 		Name:              name,
 		DisplayText:       desc,
-		ZoneID:            zoneID,
+		ZoneID:            zone.ID,
 		StartIP:           startIP,
 		EndIP:             endIP,
 		Netmask:           netmask,

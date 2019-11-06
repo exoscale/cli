@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.20.0
+------
+
+- feature: Add Instance pool implementation (#410)
+- feature: Add IAM implementation (#411)
+
 0.19.0
 ------
 

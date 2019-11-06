@@ -85,11 +85,11 @@ var templateRegisterCmd = &cobra.Command{
 }
 
 func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) error {
-	zoneID, err := getZoneIDByName(zone)
+	z, err := getZoneByName(zone)
 	if err != nil {
 		return err
 	}
-	registerTemplate.ZoneID = zoneID
+	registerTemplate.ZoneID = z.ID
 
 	resp, err := asyncRequest(registerTemplate, fmt.Sprintf("Registering the template"))
 	if err != nil {

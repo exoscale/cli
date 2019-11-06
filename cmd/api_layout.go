@@ -238,4 +238,17 @@ var methods = []category{
 			{command: &egoscale.ListServiceOfferings{}, name: "list", alias: gListAlias},
 		},
 	},
+	{
+		"instancepool",
+		[]string{"ipool"},
+		"Instance pool management",
+		[]cmd{
+			{command: &egoscale.CreateInstancePool{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.DestroyInstancePool{}, name: "destroy"},
+			{command: &egoscale.ListInstancePools{}, name: "list", alias: gListAlias},
+			{command: &egoscale.GetInstancePool{}, name: "get"},
+			{command: &egoscale.UpdateInstancePool{}, name: "update"},
+			{command: &egoscale.ScaleInstancePool{}, name: "scale"},
+		},
+	},
 }
