@@ -22,7 +22,7 @@ func (o *instancePoolListItemOutput) toJSON()  { outputJSON(o) }
 func (o *instancePoolListItemOutput) toText()  { outputText(o) }
 func (o *instancePoolListItemOutput) toTable() { outputTable(o) }
 
-type outputResult struct {
+type instancePoolFetchResult struct {
 	instancePoolListItemOutput
 	error
 }
@@ -57,7 +57,7 @@ Supported output template annotations: %s`,
 			zones = append(zones, *zone)
 		}
 
-		results := make(chan outputResult, len(zones))
+		results := make(chan instancePoolFetchResult, len(zones))
 		defer close(results)
 
 		for _, zone := range zones {
@@ -78,12 +78,12 @@ Supported output template annotations: %s`,
 	},
 }
 
-func getInstancePool(result chan outputResult, zone egoscale.Zone) {
+func getInstancePool(result chan instancePoolFetchResult, zone egoscale.Zone) {
 	resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePools{
 		ZoneID: zone.ID,
 	})
 	if err != nil {
-		result <- outputResult{nil, err}
+		result <- instancePoolFetchResult{nil, err}
 		return
 	}
 	r := resp.(*egoscale.ListInstancePoolsResponse)
@@ -98,7 +98,7 @@ func getInstancePool(result chan outputResult, zone egoscale.Zone) {
 		})
 	}
 
-	result <- outputResult{output, nil}
+	result <- instancePoolFetchResult{output, nil}
 }
 
 func init() {
