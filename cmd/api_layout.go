@@ -251,4 +251,15 @@ var methods = []category{
 			{command: &egoscale.ScaleInstancePool{}, name: "scale"},
 		},
 	},
+	{
+		"api-key",
+		nil,
+		"API keys management",
+		[]cmd{
+			{command: &egoscale.CreateAPIKey{}, name: "create", alias: gCreateAlias},
+			{command: &egoscale.RevokeAPIKey{}, name: "revoke", alias: gRevokeAlias},
+			{command: &egoscale.ListAPIKeys{}, name: "list", alias: gListAlias},
+			{command: &egoscale.GetAPIKey{}, name: "get", alias: gListAlias},
+		},
+	},
 }
