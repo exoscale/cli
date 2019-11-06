@@ -1,11 +1,17 @@
 UNRELEASED
 ----------
 
+1.6.0
+-----
+
+- Add IAM (#186)
+- Add Instance pool (#185)
+- root: default to $HOME if $XDG_CONFIG_HOME is not set (#193)
+- Elastic IPs: add description support (#191)
 - exo vm create (set medium so by default)
 - Make vm stop, start... more async (#134)
 - `exo sos create`: check specified zone validity to avoid timeouts (#183)
 - Fix panic when `EXOSCALE_ACCOUNT` environment variable is set (#184)
-- Elastic IPs: add description support (#191)
 
 1.5.1
 -----
