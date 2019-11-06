@@ -113,45 +113,46 @@ Let's start over.
 				break
 			}
 		}
-	}
 
-	name, err := readInput(reader, "Name", newAccount.Name)
-	if err != nil {
-		return err
-	}
-	if name != "" {
-		newAccount.Name = name
-	}
-
-	for {
-		if a := getAccountByName(newAccount.Name); a == nil {
-			break
+		name, err := readInput(reader, "Name", newAccount.Name)
+		if err != nil {
+			return err
+		}
+		if name != "" {
+			newAccount.Name = name
 		}
 
-		fmt.Printf("Name [%s] already exist\n", name)
-		name, err = readInput(reader, "Name", newAccount.Name)
+		for {
+			if a := getAccountByName(newAccount.Name); a == nil {
+				break
+			}
+
+			fmt.Printf("Name [%s] already exist\n", name)
+			name, err = readInput(reader, "Name", newAccount.Name)
+			if err != nil {
+				return err
+			}
+
+			newAccount.Name = name
+		}
+
+		defaultZone, err := chooseZone(newAccount.Name, client)
 		if err != nil {
 			return err
 		}
 
-		newAccount.Name = name
+		newAccount.DefaultZone = defaultZone
+		newAccount.DNSEndpoint = strings.Replace(newAccount.Endpoint, "/compute", "/dns", 1)
+
+		config.Accounts = append(config.Accounts, *newAccount)
+		if askQuestion("Make [" + newAccount.Name + "] your default profile?") {
+			config.DefaultAccount = newAccount.Name
+			viper.Set("defaultAccount", newAccount.Name)
+		}
+
+		return addAccount(viper.ConfigFileUsed(), config)
 	}
-
-	defaultZone, err := chooseZone(newAccount.Name, client)
-	if err != nil {
-		return err
-	}
-
-	newAccount.DefaultZone = defaultZone
-	newAccount.DNSEndpoint = strings.Replace(newAccount.Endpoint, "/compute", "/dns", 1)
-
-	config.Accounts = append(config.Accounts, *newAccount)
-	if askQuestion("Make [" + newAccount.Name + "] your default profile?") {
-		config.DefaultAccount = newAccount.Name
-		viper.Set("defaultAccount", newAccount.Name)
-	}
-
-	return addAccount(viper.ConfigFileUsed(), config)
+	return nil
 }
 
 func init() {
