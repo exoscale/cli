@@ -285,8 +285,8 @@ func init() {
 
 // aclCmd represents the acl command
 var sosRemoveACLCmd = &cobra.Command{
-	Use:     "remove <bucket name> <object name> [object name] ...",
-	Short:   "Remove ACL(s) from an object",
+	Use:     "remove <bucket name> <object name>",
+	Short:   "Remove ACL(s) from object(s)",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
