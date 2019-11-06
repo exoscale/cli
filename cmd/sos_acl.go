@@ -295,6 +295,8 @@ var sosRemoveACLCmd = &cobra.Command{
 		bucket := args[0]
 		object := args[1]
 
+		bucketName, objectName := args[0], args[1]
+
 		meta, err := getManualACLBool(cmd)
 		if err != nil {
 			return err
