@@ -9,7 +9,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.18.2-0.20191023142525-c4c3a995ad95
+	github.com/exoscale/egoscale v0.20.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.42.0
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect

@@ -60,6 +60,8 @@ github.com/exoscale/egoscale v0.18.2-0.20191022125635-f69a83ea54d3 h1:hwU7PKCd62
 github.com/exoscale/egoscale v0.18.2-0.20191022125635-f69a83ea54d3/go.mod h1:hRo78jkjkCDKpivQdRBEpNYF5+cVpCJCPDg2/r45KaY=
 github.com/exoscale/egoscale v0.18.2-0.20191023142525-c4c3a995ad95 h1:f4aKs6kJa0G+GYQ6wNBLvTGy4NPiERs3fD7R6EY3rPE=
 github.com/exoscale/egoscale v0.18.2-0.20191023142525-c4c3a995ad95/go.mod h1:hRo78jkjkCDKpivQdRBEpNYF5+cVpCJCPDg2/r45KaY=
+github.com/exoscale/egoscale v0.20.0 h1:IOzwUAUq/XtaQvxk1mUlP7MXrow0jNDaWp+KHJxHcDM=
+github.com/exoscale/egoscale v0.20.0/go.mod h1:hRo78jkjkCDKpivQdRBEpNYF5+cVpCJCPDg2/r45KaY=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
