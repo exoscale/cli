@@ -1,9 +1,6 @@
 UNRELEASED
 ----------
 
-1.6.0
------
-
 - Add IAM (#186)
 - Add Instance pool (#185)
 - root: default to $HOME if $XDG_CONFIG_HOME is not set (#193)
