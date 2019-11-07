@@ -9,11 +9,11 @@ import (
 
 var instancePoolCmd = &cobra.Command{
 	Use:   "instancepool",
-	Short: "Instance pool management",
+	Short: "Instance Pools management",
 }
 
 func init() {
-	RootCmd.AddCommand(instancePoolCmd)
+	labCmd.AddCommand(instancePoolCmd)
 }
 
 func getInstancePoolByID(id, zone *egoscale.UUID) (*egoscale.InstancePool, error) {
