@@ -42,11 +42,13 @@ func init() {
 // aclCmd represents the acl command
 var sosAddACLCmd = &cobra.Command{
 	Use:   "add <bucket name> <object name> [object name] ...",
-	Short: "Add ACL(s) to object(s)",
+	Short: "Add ACL(s) to an object",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
+		object := args[1]
 
 		meta, err := getACL(cmd)
 		if err != nil {
@@ -61,29 +63,33 @@ var sosAddACLCmd = &cobra.Command{
 			return fmt.Errorf("error: You have to choose one flag")
 		}
 
-		minioClient, err := newMinioClient(sosZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		location, err := minioClient.GetBucketLocation(args[0])
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
 			return err
 		}
 
-		objInfo, err := minioClient.GetObjectACL(args[0], args[1])
+		if err := sosClient.setZone(location); err != nil {
+			return err
+		}
+
+		objInfo, err := sosClient.GetObjectACL(bucket, object)
 		if err != nil {
 			return err
 		}
 
 		objInfo.Metadata.Add("content-type", objInfo.ContentType)
 
-		src := minio.NewSourceInfo(args[0], args[1], nil)
+		src := minio.NewSourceInfo(bucket, object, nil)
 
 		_, okMeta := meta["X-Amz-Acl"]
 		_, okHeader := objInfo.Metadata["X-Amz-Acl"]
@@ -96,13 +102,13 @@ var sosAddACLCmd = &cobra.Command{
 		mergeHeader(src.Headers, objInfo.Metadata)
 
 		// Destination object
-		dst, err := minio.NewDestinationInfo(args[0], args[1], nil, meta)
+		dst, err := minio.NewDestinationInfo(bucket, object, nil, meta)
 		if err != nil {
 			return err
 		}
 
 		// Copy object call
-		return minioClient.CopyObject(dst, src)
+		return sosClient.CopyObject(dst, src)
 	},
 }
 
@@ -271,12 +277,14 @@ func init() {
 // aclCmd represents the acl command
 var sosRemoveACLCmd = &cobra.Command{
 	Use:     "remove <bucket name> <object name> [object name] ...",
-	Short:   "Remove ACL(s) from object(s)",
+	Short:   "Remove ACL(s) from an object",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
+		object := args[1]
 
 		meta, err := getManualACLBool(cmd)
 		if err != nil {
@@ -291,22 +299,26 @@ var sosRemoveACLCmd = &cobra.Command{
 			return fmt.Errorf("error: You have to choose one flag")
 		}
 
-		minioClient, err := newMinioClient(sosZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		location, err := minioClient.GetBucketLocation(args[0])
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
 			return err
 		}
 
-		objInfo, err := minioClient.GetObjectACL(args[0], args[1])
+		if err := sosClient.setZone(location); err != nil {
+			return err
+		}
+
+		objInfo, err := sosClient.GetObjectACL(bucket, object)
 		if err != nil {
 			return err
 		}
@@ -314,7 +326,7 @@ var sosRemoveACLCmd = &cobra.Command{
 		objInfo.Metadata.Add("content-type", objInfo.ContentType)
 		objInfo.Metadata.Add("x-amz-metadata-directive", "REPLACE")
 
-		src := minio.NewSourceInfo(args[0], args[1], nil)
+		src := minio.NewSourceInfo(bucket, object, nil)
 
 		_, okHeader := objInfo.Metadata["X-Amz-Acl"]
 
@@ -329,13 +341,13 @@ var sosRemoveACLCmd = &cobra.Command{
 		mergeHeader(src.Headers, objInfo.Metadata)
 
 		// Destination object
-		dst, err := minio.NewDestinationInfo(args[0], args[1], nil, nil)
+		dst, err := minio.NewDestinationInfo(bucket, object, nil, nil)
 		if err != nil {
 			return err
 		}
 
 		// Copy object call
-		return minioClient.CopyObject(dst, src)
+		return sosClient.CopyObject(dst, src)
 	},
 }
 
@@ -404,23 +416,29 @@ var sosShowACLCmd = &cobra.Command{
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
+		object := args[1]
 
-		minioClient, err := newMinioClient(sosZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		location, err := minioClient.GetBucketLocation(args[0])
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
 			return err
 		}
 
-		objInfo, err := minioClient.GetObjectACL(args[0], args[1])
+		if err := sosClient.setZone(location); err != nil {
+			return err
+		}
+
+		objInfo, err := sosClient.GetObjectACL(bucket, object)
 		if err != nil {
 			return err
 		}

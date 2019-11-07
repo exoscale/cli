@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -17,7 +16,6 @@ var sosDeleteCmd = &cobra.Command{
 		if len(args) < 1 {
 			return cmd.Usage()
 		}
-
 		bucket := args[0]
 
 		recursive, err := cmd.Flags().GetBool("recursive")
@@ -25,18 +23,22 @@ var sosDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		minioClient, err := newMinioClient(sosZone)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		zone, err := minioClient.GetBucketLocation(bucket)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(zone)
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
+			return err
+		}
+
+		location, err := sosClient.GetBucketLocation(bucket)
+		if err != nil {
+			return err
+		}
+
+		if err := sosClient.setZone(location); err != nil {
 			return err
 		}
 
@@ -46,7 +48,7 @@ var sosDeleteCmd = &cobra.Command{
 			go func() {
 				defer close(objectsCh)
 
-				for obj := range minioClient.ListObjectsV2(bucket, "", true, gContext.Done()) {
+				for obj := range sosClient.ListObjectsV2(bucket, "", true, gContext.Done()) {
 					if obj.Err != nil {
 						fmt.Fprintf(os.Stderr, "error: %s: %s\n", obj.Key, obj.Err)
 						os.Exit(1)
@@ -55,7 +57,7 @@ var sosDeleteCmd = &cobra.Command{
 				}
 			}()
 
-			for rmObjErr := range minioClient.RemoveObjectsWithContext(gContext, bucket, objectsCh) {
+			for rmObjErr := range sosClient.RemoveObjectsWithContext(gContext, bucket, objectsCh) {
 				if rmObjErr.Err != nil {
 					fmt.Fprintf(os.Stderr, "error: %s: %s\n", rmObjErr.ObjectName, rmObjErr.Err)
 					os.Exit(1)
@@ -63,7 +65,7 @@ var sosDeleteCmd = &cobra.Command{
 			}
 		}
 
-		if err = minioClient.RemoveBucket(bucket); err != nil {
+		if err = sosClient.RemoveBucket(bucket); err != nil {
 			return err
 		}
 

@@ -22,23 +22,26 @@ var downloadCmd = &cobra.Command{
 		if len(args) < 3 {
 			return cmd.Usage()
 		}
-
-		bucketName := args[0]
+		bucket := args[0]
 		objectName := args[1]
 		localFilePath := args[2]
 
-		minioClient, err := newMinioClient(sosZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		location, err := minioClient.GetBucketLocation(args[0])
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
+			return err
+		}
+
+		if err := sosClient.setZone(location); err != nil {
 			return err
 		}
 
@@ -65,7 +68,7 @@ var downloadCmd = &cobra.Command{
 		}
 
 		// Gather md5sum.
-		objectStat, err := minioClient.StatObject(bucketName, objectName, minio.StatObjectOptions{})
+		objectStat, err := sosClient.StatObject(bucket, objectName, minio.StatObjectOptions{})
 		if err != nil {
 			return err
 		}
@@ -85,7 +88,7 @@ var downloadCmd = &cobra.Command{
 			return err
 		}
 
-		object, err := minioClient.GetObjectWithContext(gContext, bucketName, objectName, minio.GetObjectOptions{})
+		object, err := sosClient.GetObjectWithContext(gContext, bucket, objectName, minio.GetObjectOptions{})
 		if err != nil {
 			return err
 		}

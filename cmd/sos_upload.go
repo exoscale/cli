@@ -36,8 +36,20 @@ var sosUploadCmd = &cobra.Command{
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
+		files := args[1:]
 
 		remoteFilePath, err := cmd.Flags().GetString("remote-path")
+		if err != nil {
+			return err
+		}
+
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
+		if err != nil {
+			return err
+		}
+
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
@@ -46,26 +58,20 @@ var sosUploadCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		minioClient, err := newMinioClient(sosZone)
-		if err != nil {
-			return err
-		}
-
 		if logfile != "" {
 			l, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE, os.ModePerm)
 			if err != nil {
 				return err
 			}
-			minioClient.TraceOn(l)
+			sosClient.TraceOn(l)
 		}
 
-		location, errGetBucket := minioClient.GetBucketLocation(args[0])
-		if errGetBucket != nil {
+		location, err := sosClient.GetBucketLocation(bucket)
+		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
-		if err != nil {
+		if err := sosClient.setZone(location); err != nil {
 			return err
 		}
 
@@ -76,16 +82,15 @@ var sosUploadCmd = &cobra.Command{
 
 		// Upload the  file
 		filesToUpload := []fileToUpload{}
-		bucketName := args[0]
 
-		for _, arg := range args[1:] {
-			arg = filepath.ToSlash(arg)
-			objectName := filepath.Base(arg)
-			filePath := arg
+		for _, file := range files {
+			file = filepath.ToSlash(file)
+			objectName := filepath.Base(file)
+			filePath := file
 
 			remote := strings.TrimLeft(filepath.ToSlash(remoteFilePath), "/")
 
-			if (len(args[1:]) > 1 && remote != "") || (len(args[1:]) == 1 && strings.HasSuffix(remote, "/")) {
+			if (len(files) > 1 && remote != "") || (len(files) == 1 && strings.HasSuffix(remote, "/")) {
 				remote = filepath.Join(remoteFilePath, objectName)
 			}
 
@@ -183,9 +188,9 @@ var sosUploadCmd = &cobra.Command{
 
 				reader := bar.ProxyReader(f)
 				// Upload object with FPutObject
-				_, upErr := minioClient.PutObjectWithContext(
+				_, upErr := sosClient.PutObjectWithContext(
 					gContext,
-					bucketName,
+					bucket,
 					fileToUP.remotePath,
 					reader,
 					fileInfo.Size(),

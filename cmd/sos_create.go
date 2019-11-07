@@ -5,19 +5,19 @@ import (
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
 )
 
 // createCmd represents the create command
 var sosCreateCmd = &cobra.Command{
 	Use:     "create <name>",
-	Short:   "create bucket",
+	Short:   "Create a bucket",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
 
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
@@ -38,20 +38,25 @@ var sosCreateCmd = &cobra.Command{
 			return err
 		}
 
-		minioClient, err := newMinioClient(gCurrentAccount.DefaultZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		return createBucket(minioClient, args[0], gCurrentAccount.DefaultZone)
+		sosClient, err := newSOSClient(certsFile)
+		if err != nil {
+			return err
+		}
+
+		return createBucket(sosClient, bucket, zone)
 	},
 }
 
-func createBucket(minioClient *minio.Client, bucketName, zone string) error {
-	return minioClient.MakeBucket(bucketName, zone)
+func createBucket(sosClient *sosClient, name, zone string) error {
+	return sosClient.MakeBucket(name, zone)
 }
 
 func init() {
 	sosCmd.AddCommand(sosCreateCmd)
-	sosCreateCmd.Flags().StringP("zone", "z", "", "Simple object storage zone")
+	sosCreateCmd.Flags().StringP("zone", "z", defaultSOSZone, "Simple object storage zone")
 }

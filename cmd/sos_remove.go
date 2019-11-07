@@ -19,6 +19,7 @@ var removeCmd = &cobra.Command{
 		if len(args) < 1 {
 			return cmd.Usage()
 		}
+		bucket := args[0]
 
 		recursive, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
@@ -29,25 +30,33 @@ var removeCmd = &cobra.Command{
 			return err
 		}
 
+		objects := []string{}
 		if len(args) < 2 {
 			if !recursive {
+				// Cannot remove bucket objects when not invoked recursively
 				return cmd.Usage()
 			}
-			args = append(args, "")
+			objects = append(objects, "")
+		} else {
+			objects = args[1:]
 		}
 
-		minioClient, err := newMinioClient(sosZone)
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		location, err := minioClient.GetBucketLocation(args[0])
+		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
+			return err
+		}
+
+		if err := sosClient.setZone(location); err != nil {
 			return err
 		}
 
@@ -57,37 +66,37 @@ var removeCmd = &cobra.Command{
 		go func() {
 			defer close(objectsCh)
 			// List all objects from a bucket-name with a matching prefix.
-			errors := make([]error, 0, len(args[1:]))
+			errors := make([]error, 0, len(objects))
 
-			for _, arg := range args[1:] {
+			for _, keyPrefix := range objects {
 				nbFile := 0
-				for object := range minioClient.ListObjects(args[0], arg, true, gContext.Done()) {
+				for object := range sosClient.ListObjects(bucket, keyPrefix, true, gContext.Done()) {
 					if object.Err != nil {
 						log.Fatalln(object.Err)
 					}
 
 					obj := filepath.ToSlash(object.Key)
-					arg = filepath.ToSlash(arg)
-					arg = strings.Trim(arg, "/")
+					keyPrefix = filepath.ToSlash(keyPrefix)
+					keyPrefix = strings.Trim(keyPrefix, "/")
 
 					if strings.HasPrefix(obj, "/") {
-						arg = fmt.Sprintf("/%s", arg)
+						keyPrefix = fmt.Sprintf("/%s", keyPrefix)
 					}
 
-					if (strings.HasPrefix(obj, fmt.Sprintf("%s/", arg)) && obj != arg) || arg == "" {
+					if (strings.HasPrefix(obj, fmt.Sprintf("%s/", keyPrefix)) && obj != keyPrefix) || keyPrefix == "" {
 						if !recursive {
-							errors = append(errors, fmt.Errorf("%s: is a directory", arg)) // nolint: errcheck
+							errors = append(errors, fmt.Errorf("%s: is a directory", keyPrefix)) // nolint: errcheck
 							nbFile = 1
 							break
 						}
 						objectsCh <- obj
-					} else if obj == arg {
+					} else if obj == keyPrefix {
 						objectsCh <- obj
 					}
 					nbFile++
 				}
 				if nbFile == 0 {
-					errors = append(errors, fmt.Errorf("rm: cannot remove '%s': No such object or directory", arg))
+					errors = append(errors, fmt.Errorf("cannot remove '%s': No such object or directory", keyPrefix))
 				}
 				nbFile = 0
 			}
@@ -99,7 +108,7 @@ var removeCmd = &cobra.Command{
 			}
 		}()
 
-		for objectErr := range minioClient.RemoveObjectsWithContext(gContext, args[0], objectsCh) {
+		for objectErr := range sosClient.RemoveObjectsWithContext(gContext, bucket, objectsCh) {
 			return fmt.Errorf("error detected during deletion: %v", objectErr)
 		}
 

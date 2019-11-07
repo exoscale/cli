@@ -25,6 +25,7 @@ require (
 	github.com/spf13/viper v1.3.1
 	github.com/vbauerster/mpb/v4 v4.8.4
 	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
+	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 )
 

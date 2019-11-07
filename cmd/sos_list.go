@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,11 +24,6 @@ var sosListCmd = &cobra.Command{
 	Short:   "List file and folder",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		minioClient, err := newMinioClient(sosZone)
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		isRecursive, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
 			return err
@@ -40,8 +34,18 @@ var sosListCmd = &cobra.Command{
 			return err
 		}
 
+		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
+		if err != nil {
+			return err
+		}
+
+		sosClient, err := newSOSClient(certsFile)
+		if err != nil {
+			return err
+		}
+
 		if len(args) == 0 {
-			return displayBucket(minioClient, isRecursive, isShort)
+			return displayBucket(sosClient, isRecursive, isShort)
 		}
 
 		path := filepath.ToSlash(args[0])
@@ -49,7 +53,7 @@ var sosListCmd = &cobra.Command{
 		p := splitPath(args[0])
 
 		if len(p) == 0 || p[0] == "" {
-			return displayBucket(minioClient, isRecursive, isShort)
+			return displayBucket(sosClient, isRecursive, isShort)
 		}
 
 		var prefix string
@@ -58,31 +62,28 @@ var sosListCmd = &cobra.Command{
 			prefix = strings.Trim(prefix, "/")
 		}
 
-		bucketName := p[0]
+		bucket := p[0]
 
-		///XXX waiting for pithos 301 redirect
-		location, err := minioClient.GetBucketLocation(bucketName)
+		location, err := sosClient.GetBucketLocation(bucket)
 		if err != nil {
 			return err
 		}
 
-		minioClient, err = newMinioClient(location)
-		if err != nil {
+		if err := sosClient.setZone(location); err != nil {
 			return err
 		}
-		///
 
 		table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 
 		if isRecursive {
-			listRecursively(minioClient, bucketName, prefix, "", false, isShort, table)
+			listRecursively(sosClient, bucket, prefix, "", false, isShort, table)
 			return table.Flush()
 		}
 
 		recursive := true
 
 		last := ""
-		for message := range minioClient.ListObjectsV2(bucketName, prefix, recursive, gContext.Done()) {
+		for message := range sosClient.ListObjectsV2(bucket, prefix, recursive, gContext.Done()) {
 			if message.Err != nil {
 				fmt.Fprintf(os.Stderr, "error: %s\n", message.Err)
 				continue
@@ -130,8 +131,9 @@ var sosListCmd = &cobra.Command{
 	},
 }
 
-func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBucket, isShort bool, table io.Writer) {
-	for message := range c.ListObjectsV2(bucketName, prefix, true, gContext.Done()) {
+func listRecursively(sosClient *sosClient, bucket, prefix, zone string,
+	displayBucket, isShort bool, table io.Writer) {
+	for message := range sosClient.ListObjectsV2(bucket, prefix, true, gContext.Done()) {
 		if message.Err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", message.Err)
 			continue
@@ -147,7 +149,7 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 		var bucket string
 		var zoneFormat string
 		if displayBucket {
-			bucket = fmt.Sprintf("%s/", bucketName)
+			bucket = fmt.Sprintf("%s/", bucket)
 			zoneFormat = fmt.Sprintf("[%s]\t", zone)
 		}
 		if isShort {
@@ -159,8 +161,8 @@ func listRecursively(c *minio.Client, bucketName, prefix, zone string, displayBu
 	}
 }
 
-func displayBucket(minioClient *minio.Client, isRecursive, isShort bool) error {
-	allBuckets, err := listBucket(minioClient)
+func displayBucket(sosClient *sosClient, isRecursive, isShort bool) error {
+	allBuckets, err := listBucket(sosClient)
 	if err != nil {
 		return err
 	}
@@ -176,19 +178,18 @@ func displayBucket(minioClient *minio.Client, isRecursive, isShort bool) error {
 					"[%s]\t[%s]\t%6s \t%s/\n", bucket.CreationDate.Format(printDate), zoneName, humanize.IBytes(uint64(0)), bucket.Name) // nolint: errcheck
 			}
 			if isRecursive {
-				minioClient, err = newMinioClient(zoneName)
-				if err != nil {
+				if err = sosClient.setZone(zoneName); err != nil {
 					return err
 				}
-				listRecursively(minioClient, bucket.Name, "", zoneName, true, isShort, table)
+				listRecursively(sosClient, bucket.Name, "", zoneName, true, isShort, table)
 			}
 		}
 	}
 	return table.Flush()
 }
 
-func listBucket(minioClient *minio.Client) (map[string][]minio.BucketInfo, error) {
-	bucketInfos, err := minioClient.ListBuckets()
+func listBucket(sosClient *sosClient) (map[string][]minio.BucketInfo, error) {
+	bucketInfos, err := sosClient.ListBuckets()
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +197,7 @@ func listBucket(minioClient *minio.Client) (map[string][]minio.BucketInfo, error
 	res := map[string][]minio.BucketInfo{}
 
 	for _, bucketInfo := range bucketInfos {
-		bucketLocation, err := minioClient.GetBucketLocation(bucketInfo.Name)
+		bucketLocation, err := sosClient.GetBucketLocation(bucketInfo.Name)
 		if err != nil {
 			return nil, err
 		}
