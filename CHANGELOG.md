@@ -1,14 +1,24 @@
 UNRELEASED
 ----------
 
-- Add IAM (#186)
-- Add Instance pool (#185)
-- root: default to $HOME if $XDG_CONFIG_HOME is not set (#193)
-- Elastic IPs: add description support (#191)
-- exo vm create (set medium so by default)
-- Make vm stop, start... more async (#134)
-- `exo sos create`: check specified zone validity to avoid timeouts (#183)
-- Fix panic when `EXOSCALE_ACCOUNT` environment variable is set (#184)
+### New
+
+* Add support for Elastic IP descriptions (#191)
+* Add support for IAM management preview in `exo lab` (#186)
+* Add support for Instance Pools management in `exo lab` (#185)
+
+### Bug fixes
+
+* Fix panic when `$EXOSCALE_ACCOUNT` environment variable is set
+
+### Changes
+
+* `exo` now defaults to `$HOME` to look up configuration directory if `$XDG_CONFIG_HOME` is not set (#193)
+* `exo vm create` now sets the service offering to *Medium* by default
+* `exo sos create` now checks if user-specified zone exists (#183)
+* `exo vm` lifecycle commands (`start`, `stop`...) are now more efficient with multiple instances (#134)
+* On Windows, `exo sos` commands now require an external file containing the Exoscale SOS secure certificate chain. Use 
+  the `exo sos --help` for more information regarding this issue.
 
 1.5.1
 -----
