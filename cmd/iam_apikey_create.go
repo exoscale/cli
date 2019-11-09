@@ -75,43 +75,28 @@ func addAPIKeyInConfigFile(apiKey *egoscale.APIKey) error {
 
 	config := &config{}
 
-	var client *egoscale.Client
-
 	newAccount := &account{
 		Endpoint: defaultEndpoint,
 		Key:      apiKey.Key,
 		Secret:   apiKey.Secret,
+		Name:     apiKey.Name,
 	}
 
 	if askQuestion("do you wish to add this account in your config file?") {
-		for i := 0; ; i++ {
-			if i > 0 {
-				endpoint, err := readInput(reader, "API Endpoint", newAccount.Endpoint)
-				if err != nil {
-					return err
-				}
-				if endpoint != newAccount.Endpoint {
-					newAccount.Endpoint = endpoint
-				}
-			}
+		resp, err := cs.GetWithContext(gContext, egoscale.Account{})
+		if err != nil {
+			return err
+		}
 
-			client = egoscale.NewClient(newAccount.Endpoint, newAccount.Key, newAccount.APISecret())
+		acc := resp.(*egoscale.Account)
+		newAccount.Account = acc.Name
 
-			fmt.Printf("Checking the credentials of %q...", newAccount.Key)
-			resp, err := client.GetWithContext(gContext, egoscale.Account{})
-			if err != nil {
-				fmt.Print(` failure.
-
-Let's start over.
-
-`)
-			} else {
-				fmt.Print(" success!\n\n")
-				acc := resp.(*egoscale.Account)
-				newAccount.Name = apiKey.Name
-				newAccount.Account = acc.Name
-				break
-			}
+		endpoint, err := readInput(reader, "API Endpoint", newAccount.Endpoint)
+		if err != nil {
+			return err
+		}
+		if endpoint != newAccount.Endpoint {
+			newAccount.Endpoint = endpoint
 		}
 
 		name, err := readInput(reader, "Name", newAccount.Name)
@@ -136,7 +121,7 @@ Let's start over.
 			newAccount.Name = name
 		}
 
-		defaultZone, err := chooseZone(newAccount.Name, client)
+		defaultZone, err := chooseZone(newAccount.Name, cs)
 		if err != nil {
 			return err
 		}

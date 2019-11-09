@@ -9,7 +9,7 @@ import (
 
 // apiKeyRevokeCmd represents an API key revocation command
 var apiKeyRevokeCmd = &cobra.Command{
-	Use:     "revoke <key>+",
+	Use:     "revoke <key | name>+",
 	Short:   "Revoke API keys",
 	Aliases: gRevokeAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -30,7 +30,12 @@ var apiKeyRevokeCmd = &cobra.Command{
 				}
 			}
 
-			cmd := &egoscale.RevokeAPIKey{Key: arg}
+			apiKey, err := getAPIKeyByName(arg)
+			if err != nil {
+				return err
+			}
+
+			cmd := &egoscale.RevokeAPIKey{Key: apiKey.Key}
 			tasks = append(tasks, task{
 				cmd,
 				fmt.Sprintf("Revoking API key %q", cmd.Key),
