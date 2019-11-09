@@ -121,12 +121,15 @@ func addAPIKeyInConfigFile(apiKey *egoscale.APIKey) error {
 			newAccount.Name = name
 		}
 
-		defaultZone, err := chooseZone(newAccount.Name, cs)
+		zonesResp, err := cs.ListWithContext(gContext, &egoscale.Zone{ID: acc.DefaultZoneID})
 		if err != nil {
 			return err
 		}
 
-		newAccount.DefaultZone = defaultZone
+		zone := zonesResp[0].(*egoscale.Zone)
+		zName := strings.ToLower(zone.Name)
+
+		newAccount.DefaultZone = zName
 		newAccount.DNSEndpoint = strings.Replace(newAccount.Endpoint, "/compute", "/dns", 1)
 
 		config.Accounts = append(config.Accounts, *newAccount)
