@@ -133,13 +133,10 @@ func addAPIKeyInConfigFile(apiKey *egoscale.APIKey) error {
 		newAccount.DNSEndpoint = strings.Replace(newAccount.Endpoint, "/compute", "/dns", 1)
 
 		config.Accounts = append(config.Accounts, *newAccount)
-		if askQuestion("Make [" + newAccount.Name + "] your default profile?") {
-			config.DefaultAccount = newAccount.Name
-			viper.Set("defaultAccount", newAccount.Name)
-		}
 
 		return addAccount(viper.ConfigFileUsed(), config)
 	}
+
 	return nil
 }
 
