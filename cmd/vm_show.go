@@ -90,7 +90,7 @@ func showVM(name string) (outputter, error) {
 		SSHKey:             vm.KeyPair,
 		SecurityGroups:     make([]string, len(vm.SecurityGroup)),
 		AntiAffinityGroups: make([]string, len(vm.AffinityGroup)),
-		PrivateNetworks:    make([]string, len(vm.Nic)),
+		PrivateNetworks:    make([]string, 0, len(vm.Nic)-1),
 	}
 
 	for i, sg := range vm.SecurityGroup {
@@ -101,12 +101,12 @@ func showVM(name string) (outputter, error) {
 		out.AntiAffinityGroups[i] = aag.Name
 	}
 
-	for i, nic := range vm.Nic {
+	for _, nic := range vm.Nic {
 		if nic.ID == vm.DefaultNic().ID {
 			continue
 		}
 
-		out.PrivateNetworks[i] = nic.NetworkName
+		out.PrivateNetworks = append(out.PrivateNetworks, nic.NetworkName)
 	}
 
 	if username, ok := template.Details["username"]; ok {
