@@ -23,6 +23,7 @@ type vmShowOutput struct {
 	SSHKey             string   `json:"ssh_key"`
 	SecurityGroups     []string `json:"security_groups,omitempty"`
 	AntiAffinityGroups []string `json:"antiaffinity_groups,omitempty" outputLabel:"Anti-Affinity Groups"`
+	PrivateNetworks    []string `json:"private_networks,omitempty"`
 }
 
 func (o *vmShowOutput) Type() string { return "Instance" }
@@ -89,6 +90,7 @@ func showVM(name string) (outputter, error) {
 		SSHKey:             vm.KeyPair,
 		SecurityGroups:     make([]string, len(vm.SecurityGroup)),
 		AntiAffinityGroups: make([]string, len(vm.AffinityGroup)),
+		PrivateNetworks:    make([]string, 0),
 	}
 
 	for i, sg := range vm.SecurityGroup {
@@ -97,6 +99,14 @@ func showVM(name string) (outputter, error) {
 
 	for i, aag := range vm.AffinityGroup {
 		out.AntiAffinityGroups[i] = aag.Name
+	}
+
+	for _, nic := range vm.Nic {
+		if nic.IsDefault {
+			continue
+		}
+
+		out.PrivateNetworks = append(out.PrivateNetworks, nic.NetworkName)
 	}
 
 	if username, ok := template.Details["username"]; ok {
