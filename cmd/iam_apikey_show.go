@@ -31,6 +31,7 @@ var apiKeyShowCmd = &cobra.Command{
 		if len(args) != 1 {
 			return cmd.Usage()
 		}
+
 		apiKey, err := getAPIKeyByName(args[0])
 		if err != nil {
 			return err
