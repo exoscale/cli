@@ -18,7 +18,7 @@ type instancePoolItemOutput struct {
 	Template        string                     `json:"templateid"`
 	Zone            string                     `json:"zoneid"`
 	SecurityGroups  []string                   `json:"security_groups"`
-	Privnets        []string                   `json:"Privnets"`
+	PrivateNetworks []string                   `json:"private_networks"`
 	SSHKey          string                     `json:"ssh_key"`
 	Size            int                        `json:"size"`
 	DiskSize        string                     `json:"disk_size"`
@@ -114,7 +114,7 @@ func showInstancePool(name, zoneName string) error {
 		if name == "" {
 			name = net.ID.String()
 		}
-		o.Privnets = append(o.Privnets, name)
+		o.PrivateNetworks = append(o.PrivateNetworks, name)
 	}
 
 	return output(&o, err)
