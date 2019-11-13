@@ -90,7 +90,7 @@ func showVM(name string) (outputter, error) {
 		SSHKey:             vm.KeyPair,
 		SecurityGroups:     make([]string, len(vm.SecurityGroup)),
 		AntiAffinityGroups: make([]string, len(vm.AffinityGroup)),
-		PrivateNetworks:    make([]string, 0, len(vm.Nic)-1),
+		PrivateNetworks:    make([]string, 0),
 	}
 
 	for i, sg := range vm.SecurityGroup {
@@ -102,7 +102,7 @@ func showVM(name string) (outputter, error) {
 	}
 
 	for _, nic := range vm.Nic {
-		if nic.ID == vm.DefaultNic().ID {
+		if nic.IsDefault {
 			continue
 		}
 
