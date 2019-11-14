@@ -22,7 +22,7 @@ func (o *apiKeyOperationsItemOutput) toTable() { outputTable(o) }
 // apiKeyOperationsCmd represents the supported operations listing command for an API key
 var apiKeyOperationsCmd = &cobra.Command{
 	Use:   "operations [filter ...]",
-	Short: "List Operations",
+	Short: "List supported API key operations",
 	Long: fmt.Sprintf(`This command lists all suported Operations for an API key.
 	
 	Supported output template annotations: %s`,
