@@ -243,13 +243,20 @@ func getAccount() (*account, error) {
 		resp, err := client.GetWithContext(gContext, egoscale.Account{})
 		if err != nil {
 			if isRestricted {
-				fmt.Print(" can't get account!\n\n")
-				acc, err := readInput(reader, "Account", account.Account)
-				if err != nil {
-					return nil, err
-				}
-				if acc != "" {
-					account.Account = acc
+				fmt.Print(` can't get account!
+
+Please enter your account name.
+
+				`)
+				for {
+					acc, err := readInput(reader, "Account", account.Account)
+					if err != nil {
+						return nil, err
+					}
+					if acc != "" {
+						account.Account = acc
+						break
+					}
 				}
 
 				break
@@ -294,12 +301,15 @@ Let's start over.
 	account.DefaultZone, err = chooseZone(account.Name, client)
 	if err != nil {
 		if isRestricted {
-			defaultZone, err := readInput(reader, "Zone", account.DefaultZone)
-			if err != nil {
-				return nil, err
-			}
-			if defaultZone != "" {
-				account.DefaultZone = defaultZone
+			for {
+				defaultZone, err := readInput(reader, "Zone", account.DefaultZone)
+				if err != nil {
+					return nil, err
+				}
+				if defaultZone != "" {
+					account.DefaultZone = defaultZone
+					break
+				}
 			}
 		} else {
 			return nil, err
