@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 type apiKeyCreateItemOutput struct {
@@ -66,78 +63,14 @@ var apiKeyCreateCmd = &cobra.Command{
 			}
 		}
 
-		return addAPIKeyInConfigFile(apiKey)
+		fmt.Print(`
+/!\  Ensure to save your API Secret somewhere,   /!\
+/!\ as there is no way to recover it afterwards. /!\
+
+`)
+
+		return nil
 	},
-}
-
-func addAPIKeyInConfigFile(apiKey *egoscale.APIKey) error {
-	reader := bufio.NewReader(os.Stdin)
-
-	config := &config{}
-
-	newAccount := &account{
-		Endpoint: defaultEndpoint,
-		Key:      apiKey.Key,
-		Secret:   apiKey.Secret,
-		Name:     apiKey.Name,
-	}
-
-	if askQuestion("do you wish to add this account in your config file?") {
-		resp, err := cs.GetWithContext(gContext, egoscale.Account{})
-		if err != nil {
-			return err
-		}
-
-		acc := resp.(*egoscale.Account)
-		newAccount.Account = acc.Name
-
-		endpoint, err := readInput(reader, "API Endpoint", newAccount.Endpoint)
-		if err != nil {
-			return err
-		}
-		if endpoint != newAccount.Endpoint {
-			newAccount.Endpoint = endpoint
-		}
-
-		name, err := readInput(reader, "Name", newAccount.Name)
-		if err != nil {
-			return err
-		}
-		if name != "" {
-			newAccount.Name = name
-		}
-
-		for {
-			if a := getAccountByName(newAccount.Name); a == nil {
-				break
-			}
-
-			fmt.Printf("Name [%s] already exist\n", name)
-			name, err = readInput(reader, "Name", newAccount.Name)
-			if err != nil {
-				return err
-			}
-
-			newAccount.Name = name
-		}
-
-		zonesResp, err := cs.ListWithContext(gContext, &egoscale.Zone{ID: acc.DefaultZoneID})
-		if err != nil {
-			return err
-		}
-
-		zone := zonesResp[0].(*egoscale.Zone)
-		zName := strings.ToLower(zone.Name)
-
-		newAccount.DefaultZone = zName
-		newAccount.DNSEndpoint = strings.Replace(newAccount.Endpoint, "/compute", "/dns", 1)
-
-		config.Accounts = append(config.Accounts, *newAccount)
-
-		return addAccount(viper.ConfigFileUsed(), config)
-	}
-
-	return nil
 }
 
 func init() {

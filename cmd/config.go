@@ -199,8 +199,14 @@ func getAccount() (*account, error) {
 		Secret:   "",
 	}
 
+	isRestricted := false
+
+	if askQuestion("is it a restricted account?") {
+		isRestricted = true
+	}
+
 	for i := 0; ; i++ {
-		if i > 0 {
+		if i > 0 || isRestricted {
 			endpoint, err := readInput(reader, "API Endpoint", account.Endpoint)
 			if err != nil {
 				return nil, err
@@ -236,6 +242,19 @@ func getAccount() (*account, error) {
 		fmt.Printf("Checking the credentials of %q...", account.Key)
 		resp, err := client.GetWithContext(gContext, egoscale.Account{})
 		if err != nil {
+			if isRestricted {
+				fmt.Print(" can't get account!\n\n")
+				acc, err := readInput(reader, "Account", account.Account)
+				if err != nil {
+					return nil, err
+				}
+				if acc != "" {
+					account.Account = acc
+				}
+
+				break
+			}
+
 			fmt.Print(` failure.
 
 Let's start over.
@@ -272,12 +291,21 @@ Let's start over.
 		account.Name = name
 	}
 
-	defaultZone, err := chooseZone(account.Name, client)
+	account.DefaultZone, err = chooseZone(account.Name, client)
 	if err != nil {
-		return nil, err
+		if isRestricted {
+			defaultZone, err := readInput(reader, "Zone", account.DefaultZone)
+			if err != nil {
+				return nil, err
+			}
+			if defaultZone != "" {
+				account.DefaultZone = defaultZone
+			}
+		} else {
+			return nil, err
+		}
 	}
 
-	account.DefaultZone = defaultZone
 	account.DNSEndpoint = strings.Replace(account.Endpoint, "/compute", "/dns", 1)
 
 	return account, nil
