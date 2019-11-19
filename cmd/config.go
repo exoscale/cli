@@ -233,11 +233,15 @@ func getAccount() (*account, error) {
 
 		client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
 
-		fmt.Printf("Checking the credentials of %q...", account.Key)
+		fmt.Printf("Retrieving account information of %q...", account.Key)
 		resp, err := client.GetWithContext(gContext, egoscale.Account{})
 		if err != nil {
 			if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
-				fmt.Println("This key is restricted, Please enter your account name.")
+				fmt.Print(`failure.
+				
+Please enter your account information.
+
+`)
 				for {
 					acc, err := readInput(reader, "Account", account.Account)
 					if err != nil {
@@ -258,7 +262,7 @@ Let's start over.
 
 `)
 		} else {
-			fmt.Print(" success!\n\n")
+			fmt.Print(" done!\n\n")
 			acc := resp.(*egoscale.Account)
 			account.Name = acc.Name
 			account.Account = acc.Name
