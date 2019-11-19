@@ -233,16 +233,36 @@ func getAccount() (*account, error) {
 
 		client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
 
-		fmt.Printf("Checking the credentials of %q...", account.Key)
+		fmt.Printf("Retrieving account information of %q...", account.Key)
 		resp, err := client.GetWithContext(gContext, egoscale.Account{})
 		if err != nil {
+			if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
+				fmt.Print(`failure.
+				
+Please enter your account information.
+
+`)
+				for {
+					acc, err := readInput(reader, "Account", account.Account)
+					if err != nil {
+						return nil, err
+					}
+					if acc != "" {
+						account.Account = acc
+						break
+					}
+				}
+
+				break
+			}
+
 			fmt.Print(` failure.
 
 Let's start over.
 
 `)
 		} else {
-			fmt.Print(" success!\n\n")
+			fmt.Print(" done!\n\n")
 			acc := resp.(*egoscale.Account)
 			account.Name = acc.Name
 			account.Account = acc.Name
@@ -272,12 +292,24 @@ Let's start over.
 		account.Name = name
 	}
 
-	defaultZone, err := chooseZone(account.Name, client)
+	account.DefaultZone, err = chooseZone(account.Name, client)
 	if err != nil {
-		return nil, err
+		if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
+			for {
+				defaultZone, err := readInput(reader, "Zone", account.DefaultZone)
+				if err != nil {
+					return nil, err
+				}
+				if defaultZone != "" {
+					account.DefaultZone = defaultZone
+					break
+				}
+			}
+		} else {
+			return nil, err
+		}
 	}
 
-	account.DefaultZone = defaultZone
 	account.DNSEndpoint = strings.Replace(account.Endpoint, "/compute", "/dns", 1)
 
 	return account, nil
