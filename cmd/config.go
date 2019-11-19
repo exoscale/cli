@@ -199,14 +199,8 @@ func getAccount() (*account, error) {
 		Secret:   "",
 	}
 
-	isRestricted := false
-
-	if askQuestion("is it a restricted account?") {
-		isRestricted = true
-	}
-
 	for i := 0; ; i++ {
-		if i > 0 || isRestricted {
+		if i > 0 {
 			endpoint, err := readInput(reader, "API Endpoint", account.Endpoint)
 			if err != nil {
 				return nil, err
@@ -242,11 +236,8 @@ func getAccount() (*account, error) {
 		fmt.Printf("Checking the credentials of %q...", account.Key)
 		resp, err := client.GetWithContext(gContext, egoscale.Account{})
 		if err != nil {
-			if isRestricted {
-				fmt.Print(` can't get account!
-
-Please enter your account name.
-`)
+			if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
+				fmt.Println("This key is restricted, Please enter your account name.")
 				for {
 					acc, err := readInput(reader, "Account", account.Account)
 					if err != nil {
@@ -299,7 +290,7 @@ Let's start over.
 
 	account.DefaultZone, err = chooseZone(account.Name, client)
 	if err != nil {
-		if isRestricted {
+		if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
 			for {
 				defaultZone, err := readInput(reader, "Zone", account.DefaultZone)
 				if err != nil {
