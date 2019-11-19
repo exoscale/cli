@@ -246,8 +246,7 @@ func getAccount() (*account, error) {
 				fmt.Print(` can't get account!
 
 Please enter your account name.
-
-				`)
+`)
 				for {
 					acc, err := readInput(reader, "Account", account.Account)
 					if err != nil {
