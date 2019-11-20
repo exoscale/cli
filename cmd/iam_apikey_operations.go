@@ -58,13 +58,13 @@ func listAPIKeyOperations(filters []string) (outputter, error) {
 
 		switch true {
 		case strings.Contains(result, "compute"):
-			out.Compute = append(out.Compute, result)
+			out.Compute = append(out.Compute, o)
 		case strings.Contains(result, "dns"):
-			out.DNS = append(out.DNS, result)
+			out.DNS = append(out.DNS, o)
 		case strings.Contains(result, "iam"):
-			out.IAM = append(out.IAM, result)
+			out.IAM = append(out.IAM, o)
 		case strings.Contains(result, "sos"):
-			out.SOS = append(out.SOS, result)
+			out.SOS = append(out.SOS, o)
 		}
 	}
 
