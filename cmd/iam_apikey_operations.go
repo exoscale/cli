@@ -56,14 +56,14 @@ func listAPIKeyOperations(filters []string) (outputter, error) {
 			}
 		}
 
-		switch true {
-		case strings.Contains(result, "compute"):
+		switch {
+		case strings.HasPrefix(result, "compute/"):
 			out.Compute = append(out.Compute, o)
-		case strings.Contains(result, "dns"):
+		case strings.HasPrefix(result, "dns/"):
 			out.DNS = append(out.DNS, o)
-		case strings.Contains(result, "iam"):
+		case strings.HasPrefix(result, "iam/"):
 			out.IAM = append(out.IAM, o)
-		case strings.Contains(result, "sos"):
+		case strings.HasPrefix(result, "sos/"):
 			out.SOS = append(out.SOS, o)
 		}
 	}
