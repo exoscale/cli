@@ -10,7 +10,7 @@ import (
 // deleteCmd represents the delete command
 var configDeleteCmd = &cobra.Command{
 	Use:     "delete <account name>",
-	Short:   "Delete an account from config file",
+	Short:   "Delete an account from configuration",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -48,7 +48,7 @@ var configDeleteCmd = &cobra.Command{
 
 		gAllAccount.Accounts = append(gAllAccount.Accounts[:pos], gAllAccount.Accounts[pos+1:]...)
 
-		if err := addAccount(viper.ConfigFileUsed(), nil); err != nil {
+		if err := saveConfig(viper.ConfigFileUsed(), nil); err != nil {
 			return err
 		}
 

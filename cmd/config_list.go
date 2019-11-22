@@ -54,6 +54,10 @@ Supported output template annotations: %s`,
 func listConfigs() outputter {
 	out := configListOutput{}
 
+	if gAllAccount == nil {
+		return &out
+	}
+
 	for _, a := range gAllAccount.Accounts {
 		out = append(out, configListItemOutput{
 			Name:    a.Name,
