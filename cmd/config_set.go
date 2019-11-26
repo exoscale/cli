@@ -25,7 +25,7 @@ var configSetCmd = &cobra.Command{
 
 		viper.Set("defaultAccount", args[0])
 
-		if err := addAccount(viper.ConfigFileUsed(), nil); err != nil {
+		if err := saveConfig(viper.ConfigFileUsed(), nil); err != nil {
 			return err
 		}
 

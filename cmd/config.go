@@ -87,39 +87,48 @@ const (
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Manage config for exo CLI",
+	Short: "Exoscale CLI configuration management",
 	RunE:  configCmdRun,
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
+	var defaultAccountMark = "*"
+
 	if gConfigFilePath == "" && gCurrentAccount.Key != "" {
 		log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
 	}
 
 	if gConfigFilePath != "" && gCurrentAccount.Key != "" {
-		fmt.Println("Good day! exo is already configured:")
-		accounts := listAccounts()
+		fmt.Println("To configure a new account, run `exo config add`")
+
 		prompt := promptui.Select{
-			Label: "Select an account",
-			Items: accounts,
+			Label: fmt.Sprintf("Configured accounts (%s = default account)", defaultAccountMark),
+			Items: listAccounts(defaultAccountMark),
 		}
-
-		_, result, err := prompt.Run()
-
+		_, selectedAccount, err := prompt.Run()
 		if err != nil {
-			return fmt.Errorf("prompt failed %v", err)
+			switch err {
+			case promptui.ErrInterrupt:
+				return nil
+			default:
+				return fmt.Errorf("prompt failed: %s", err)
+			}
 		}
 
-		if fmt.Sprintf("%s [Default]", gAllAccount.DefaultAccount) != result {
-			viper.Set("defaultAccount", result)
-			if err := addAccount(viper.ConfigFileUsed(), nil); err != nil {
+		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != gAllAccount.DefaultAccount {
+			viper.Set("defaultAccount", selectedAccount)
+			if err := saveConfig(viper.ConfigFileUsed(), nil); err != nil {
 				return err
 			}
-			fmt.Println("Default profile set to", result)
+
+			fmt.Printf("Default account set to [%s]\n", selectedAccount)
 		}
 
-		return addNewAccount(false)
+		return addConfigAccount(false)
 	}
+
+	fmt.Println("No Exoscale CLI configuration found")
+
 	csPath, ok := isCloudstackINIFileExist()
 	if ok {
 		resp, ok, err := askCloudstackINIMigration(csPath)
@@ -127,7 +136,8 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		if !ok {
-			return addNewAccount(true)
+			fmt.Println("Please provide Exoscale account information:")
+			return addConfigAccount(true)
 		}
 
 		cfgPath, err := createConfigFile(defaultConfigFileName)
@@ -137,8 +147,9 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 		if err := importCloudstackINI(resp, csPath, cfgPath); err != nil {
 			return err
 		}
-		return addNewAccount(false)
+		return addConfigAccount(false)
 	}
+
 	fmt.Print(`
 Hi happy Exoscalian, some configuration is required to use exo.
 
@@ -146,176 +157,10 @@ We now need some very important information, find them there.
 	<https://portal.exoscale.com/account/profile/api>
 
 `)
-	return addNewAccount(true)
+	return addConfigAccount(true)
 }
 
-func addNewAccount(firstRun bool) error {
-	config := &config{}
-
-	if firstRun {
-		filePath, err := createConfigFile(defaultConfigFileName)
-		if err != nil {
-			return err
-		}
-
-		viper.SetConfigFile(filePath)
-
-		newAccount, err := getAccount()
-		if err != nil {
-			return err
-		}
-		config.DefaultAccount = newAccount.Name
-		config.Accounts = []account{*newAccount}
-		viper.Set("defaultAccount", newAccount.Name)
-	}
-
-	for askQuestion("Do you wish to add another account?") {
-		newAccount, err := getAccount()
-		if err != nil {
-			return err
-		}
-		config.Accounts = append(config.Accounts, *newAccount)
-		if askQuestion("Make [" + newAccount.Name + "] your default profile?") {
-			config.DefaultAccount = newAccount.Name
-			viper.Set("defaultAccount", newAccount.Name)
-		}
-	}
-
-	if len(config.Accounts) == 0 {
-		return nil
-	}
-
-	return addAccount(viper.ConfigFileUsed(), config)
-}
-
-func getAccount() (*account, error) {
-	reader := bufio.NewReader(os.Stdin)
-
-	var client *egoscale.Client
-
-	account := &account{
-		Endpoint: defaultEndpoint,
-		Key:      "",
-		Secret:   "",
-	}
-
-	for i := 0; ; i++ {
-		if i > 0 {
-			endpoint, err := readInput(reader, "API Endpoint", account.Endpoint)
-			if err != nil {
-				return nil, err
-			}
-			if endpoint != account.Endpoint {
-				account.Endpoint = endpoint
-			}
-		}
-
-		apiKey, err := readInput(reader, "API Key", account.Key)
-		if err != nil {
-			return nil, err
-		}
-		if apiKey != account.Key {
-			account.Key = apiKey
-		}
-
-		secret := account.APISecret()
-		secretShow := account.APISecret()
-		if secret != "" && len(secret) > 10 {
-			secretShow = secret[0:7] + "..."
-		}
-		secretKey, err := readInput(reader, "Secret Key", secretShow)
-		if err != nil {
-			return nil, err
-		}
-		if secretKey != secret && secretKey != secretShow {
-			account.Secret = secretKey
-		}
-
-		client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
-
-		fmt.Printf("Retrieving account information of %q...", account.Key)
-		resp, err := client.GetWithContext(gContext, egoscale.Account{})
-		if err != nil {
-			if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
-				fmt.Print(`failure.
-				
-Please enter your account information.
-
-`)
-				for {
-					acc, err := readInput(reader, "Account", account.Account)
-					if err != nil {
-						return nil, err
-					}
-					if acc != "" {
-						account.Account = acc
-						break
-					}
-				}
-
-				break
-			}
-
-			fmt.Print(` failure.
-
-Let's start over.
-
-`)
-		} else {
-			fmt.Print(" done!\n\n")
-			acc := resp.(*egoscale.Account)
-			account.Name = acc.Name
-			account.Account = acc.Name
-			break
-		}
-	}
-
-	name, err := readInput(reader, "Name", account.Name)
-	if err != nil {
-		return nil, err
-	}
-	if name != "" {
-		account.Name = name
-	}
-
-	for {
-		if a := getAccountByName(account.Name); a == nil {
-			break
-		}
-
-		fmt.Printf("Name [%s] already exist\n", name)
-		name, err = readInput(reader, "Name", account.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		account.Name = name
-	}
-
-	account.DefaultZone, err = chooseZone(account.Name, client)
-	if err != nil {
-		if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
-			for {
-				defaultZone, err := readInput(reader, "Zone", account.DefaultZone)
-				if err != nil {
-					return nil, err
-				}
-				if defaultZone != "" {
-					account.DefaultZone = defaultZone
-					break
-				}
-			}
-		} else {
-			return nil, err
-		}
-	}
-
-	account.DNSEndpoint = strings.Replace(account.Endpoint, "/compute", "/dns", 1)
-
-	return account, nil
-}
-
-func addAccount(filePath string, newAccounts *config) error {
+func saveConfig(filePath string, newAccounts *config) error {
 	accountsSize := 0
 	currentAccounts := []account{}
 	if gAllAccount != nil {
@@ -433,7 +278,7 @@ func askCloudstackINIMigration(csFilePath string) (string, bool, error) {
 		return "", false, nil
 	}
 
-	fmt.Printf("We've found a %q configuration file with the following configurations:\n", "cloudstack.ini")
+	fmt.Printf("We've found a %q configuration file with the following accounts:\n", "cloudstack.ini")
 	for i, acc := range cfg.Sections() {
 		if i == 0 {
 			continue
@@ -533,7 +378,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 		csAccount.DefaultZone = defaultZone
 
 		isDefault := false
-		if askQuestion(fmt.Sprintf("Is %q your default profile?", csAccount.Name)) {
+		if askQuestion(fmt.Sprintf("Is %q your default account?", csAccount.Name)) {
 			isDefault = true
 		}
 
@@ -547,7 +392,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 	}
 
 	gAllAccount = nil
-	return addAccount(cfgPath, config)
+	return saveConfig(cfgPath, config)
 }
 
 func createConfigFile(fileName string) (string, error) {
@@ -618,7 +463,7 @@ func askQuestion(text string) bool {
 	return (strings.ToLower(resp) == "y" || strings.ToLower(resp) == "yes")
 }
 
-func listAccounts() []string {
+func listAccounts(defaultAccountMark string) []string {
 	if gAllAccount == nil {
 		return nil
 	}
@@ -626,7 +471,7 @@ func listAccounts() []string {
 	for i, acc := range gAllAccount.Accounts {
 		res[i] = acc.Name
 		if acc.Name == gAllAccount.DefaultAccount {
-			res[i] = fmt.Sprintf("%s [Default]", res[i])
+			res[i] = fmt.Sprintf("%s%s", res[i], defaultAccountMark)
 		}
 	}
 	return res
