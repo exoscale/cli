@@ -174,7 +174,7 @@ func initConfig() {
 		if envSosEndpoint != "" {
 			gCurrentAccount.SosEndpoint = envSosEndpoint
 		}
-		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/compute", "/dns", 1)
+		gCurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(gCurrentAccount.Endpoint)
 
 		gAllAccount = &config{
 			DefaultAccount: gCurrentAccount.Name,
@@ -300,7 +300,7 @@ func initConfig() {
 	}
 
 	if gCurrentAccount.DNSEndpoint == "" {
-		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/compute", "/dns", 1)
+		gCurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(gCurrentAccount.Endpoint)
 	}
 
 	if gCurrentAccount.DefaultTemplate == "" {
@@ -330,6 +330,15 @@ func isNonCredentialCmd(cmds ...string) bool {
 		}
 	}
 	return false
+}
+
+func buildDNSAPIEndpoint(defaultEndpoint string) string {
+	dnsEndpoint := strings.Replace(defaultEndpoint, "/"+apiVersion, "/dns", 1)
+	if strings.Contains(dnsEndpoint, "/"+legacyAPIVersion) {
+		dnsEndpoint = strings.Replace(defaultEndpoint, "/"+legacyAPIVersion, "/dns", 1)
+	}
+
+	return dnsEndpoint
 }
 
 // getCmdPosition returns a command position by fetching os.args and ignoring flags

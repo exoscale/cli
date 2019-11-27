@@ -75,8 +75,10 @@ func (a account) IsDefault() bool {
 }
 
 const (
+	legacyAPIVersion         = "compute"
+	apiVersion               = "v1"
+	defaultEndpoint          = "https://api.exoscale.ch/" + apiVersion
 	defaultConfigFileName    = "exoscale"
-	defaultEndpoint          = "https://api.exoscale.ch/compute"
 	defaultTemplate          = "Linux Ubuntu 18.04 LTS 64-bit"
 	defaultSosEndpoint       = "https://sos-{zone}.exo.io"
 	defaultRunstatusEndpoint = "https://api.runstatus.com"

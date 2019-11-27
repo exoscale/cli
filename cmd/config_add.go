@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -184,7 +183,7 @@ Let's start over.
 		}
 	}
 
-	account.DNSEndpoint = strings.Replace(account.Endpoint, "/compute", "/dns", 1)
+	account.DNSEndpoint = buildDNSAPIEndpoint(account.Endpoint)
 
 	return account, nil
 }
