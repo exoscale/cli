@@ -333,9 +333,9 @@ func isNonCredentialCmd(cmds ...string) bool {
 }
 
 func buildDNSAPIEndpoint(defaultEndpoint string) string {
-	dnsEndpoint := strings.Replace(defaultEndpoint, "/"+defaultAPIVersion, "/dns", 1)
-	if strings.Contains(dnsEndpoint, "/"+defaultLagacyAPIVersion) {
-		dnsEndpoint = strings.Replace(defaultEndpoint, "/"+defaultLagacyAPIVersion, "/dns", 1)
+	dnsEndpoint := strings.Replace(defaultEndpoint, "/"+apiVersion, "/dns", 1)
+	if strings.Contains(dnsEndpoint, "/"+legacyAPIVersion) {
+		dnsEndpoint = strings.Replace(defaultEndpoint, "/"+legacyAPIVersion, "/dns", 1)
 	}
 
 	return dnsEndpoint
