@@ -174,7 +174,10 @@ func initConfig() {
 		if envSosEndpoint != "" {
 			gCurrentAccount.SosEndpoint = envSosEndpoint
 		}
-		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/compute", "/dns", 1)
+		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/"+defaultAPIVersion, "/dns", 1)
+		if strings.Contains(gCurrentAccount.DNSEndpoint, "/"+defaultLagacyAPIVersion) {
+			gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/"+defaultLagacyAPIVersion, "/dns", 1)
+		}
 
 		gAllAccount = &config{
 			DefaultAccount: gCurrentAccount.Name,
@@ -300,7 +303,10 @@ func initConfig() {
 	}
 
 	if gCurrentAccount.DNSEndpoint == "" {
-		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/compute", "/dns", 1)
+		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/"+defaultAPIVersion, "/dns", 1)
+		if strings.Contains(gCurrentAccount.DNSEndpoint, "/"+defaultLagacyAPIVersion) {
+			gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/"+defaultLagacyAPIVersion, "/dns", 1)
+		}
 	}
 
 	if gCurrentAccount.DefaultTemplate == "" {
