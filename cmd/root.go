@@ -174,10 +174,7 @@ func initConfig() {
 		if envSosEndpoint != "" {
 			gCurrentAccount.SosEndpoint = envSosEndpoint
 		}
-		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/"+defaultAPIVersion, "/dns", 1)
-		if strings.Contains(gCurrentAccount.DNSEndpoint, "/"+defaultLagacyAPIVersion) {
-			gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/"+defaultLagacyAPIVersion, "/dns", 1)
-		}
+		gCurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(gCurrentAccount.Endpoint)
 
 		gAllAccount = &config{
 			DefaultAccount: gCurrentAccount.Name,
@@ -303,10 +300,7 @@ func initConfig() {
 	}
 
 	if gCurrentAccount.DNSEndpoint == "" {
-		gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/"+defaultAPIVersion, "/dns", 1)
-		if strings.Contains(gCurrentAccount.DNSEndpoint, "/"+defaultLagacyAPIVersion) {
-			gCurrentAccount.DNSEndpoint = strings.Replace(gCurrentAccount.Endpoint, "/"+defaultLagacyAPIVersion, "/dns", 1)
-		}
+		gCurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(gCurrentAccount.Endpoint)
 	}
 
 	if gCurrentAccount.DefaultTemplate == "" {
@@ -336,6 +330,15 @@ func isNonCredentialCmd(cmds ...string) bool {
 		}
 	}
 	return false
+}
+
+func buildDNSAPIEndpoint(defaultEndpoint string) string {
+	dnsEndpoint := strings.Replace(defaultEndpoint, "/"+defaultAPIVersion, "/dns", 1)
+	if strings.Contains(dnsEndpoint, "/"+defaultLagacyAPIVersion) {
+		dnsEndpoint = strings.Replace(defaultEndpoint, "/"+defaultLagacyAPIVersion, "/dns", 1)
+	}
+
+	return dnsEndpoint
 }
 
 // getCmdPosition returns a command position by fetching os.args and ignoring flags

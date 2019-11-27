@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -184,10 +183,7 @@ Let's start over.
 		}
 	}
 
-	account.DNSEndpoint = strings.Replace(account.Endpoint, "/"+defaultAPIVersion, "/dns", 1)
-	if strings.Contains(account.DNSEndpoint, "/"+defaultLagacyAPIVersion) {
-		account.DNSEndpoint = strings.Replace(account.DNSEndpoint, "/"+defaultLagacyAPIVersion, "/dns", 1)
-	}
+	account.DNSEndpoint = buildDNSAPIEndpoint(account.Endpoint)
 
 	return account, nil
 }
