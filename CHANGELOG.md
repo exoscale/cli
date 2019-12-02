@@ -1,3 +1,20 @@
+1.7.0
+-----
+
+### New
+
+* Add new `exo config add` command to configure additional CLI accounts (#202)
+* Add new `exo lab iam apikey operations` command to list supported IAM API key operations (#199)
+
+### Bug fixes
+
+* Allow IAM API key revocation by name in addition of by key (#195)
+* Improve configuration account creation process when using restricted API keys (#195)
+
+### Changes
+
+* `exo vm show` now displays attached Private Networks (#196)
+
 1.6.0
 -----
 
