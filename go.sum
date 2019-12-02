@@ -44,6 +44,8 @@ github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/exoscale/egoscale v0.20.0 h1:IOzwUAUq/XtaQvxk1mUlP7MXrow0jNDaWp+KHJxHcDM=
 github.com/exoscale/egoscale v0.20.0/go.mod h1:hRo78jkjkCDKpivQdRBEpNYF5+cVpCJCPDg2/r45KaY=
+github.com/exoscale/egoscale v0.20.1 h1:lK4YonpKUGlJZ2M4CKt4oIRZaFlDBGPioFkNzz81k0g=
+github.com/exoscale/egoscale v0.20.1/go.mod h1:hRo78jkjkCDKpivQdRBEpNYF5+cVpCJCPDg2/r45KaY=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=

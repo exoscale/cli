@@ -39,7 +39,7 @@ type ListAPIKeys struct {
 // ListAPIKeysResponse represents a list of API keys
 type ListAPIKeysResponse struct {
 	Count   int      `json:"count"`
-	APIKeys []APIKey `json:"apikeys"`
+	APIKeys []APIKey `json:"apikey"`
 }
 
 // Response returns the struct to unmarshal
