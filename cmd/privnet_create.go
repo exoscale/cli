@@ -96,39 +96,20 @@ func privnetCreate(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 		return nil, err
 	}
 
-	// NetworkOffering are cross zones
-	listReq := &egoscale.ListNetworkOfferings{
-		Name:     "PrivNet",
-		ZoneID:   zone.ID,
-		Page:     1,
-		PageSize: 1,
-	}
-
-	resp, err := cs.RequestWithContext(gContext, listReq)
-	if err != nil {
-		return nil, err
-	}
-
-	nos := resp.(*egoscale.ListNetworkOfferingsResponse)
-	if len(nos.NetworkOffering) != 1 {
-		return nil, fmt.Errorf("missing Network Offering %q in %q", listReq.Name, zoneName)
-	}
-
 	if startIP != nil && endIP != nil && netmask == nil {
 		netmask = net.IPv4(255, 255, 255, 0)
 	}
 
 	req := &egoscale.CreateNetwork{
-		Name:              name,
-		DisplayText:       desc,
-		ZoneID:            zone.ID,
-		StartIP:           startIP,
-		EndIP:             endIP,
-		Netmask:           netmask,
-		NetworkOfferingID: nos.NetworkOffering[0].ID,
+		Name:        name,
+		DisplayText: desc,
+		ZoneID:      zone.ID,
+		StartIP:     startIP,
+		EndIP:       endIP,
+		Netmask:     netmask,
 	}
 
-	resp, err = cs.RequestWithContext(gContext, req)
+	resp, err := cs.RequestWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}
