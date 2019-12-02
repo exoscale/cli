@@ -26,7 +26,6 @@ type sosHeadersShowOutput struct {
 }
 
 type sosShowOutput struct {
-	Object   string                  `json:"object"`
 	URL      string                  `json:"url"`
 	ACL      []sosACLShowOutput      `json:"acl"`
 	Metadata []sosMetadataShowOutput `json:"metadata"`
@@ -39,16 +38,25 @@ func (o *sosShowOutput) toText() { outputText(o) }
 
 func (o *sosShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
-	t.SetHeader([]string{o.Object})
 
 	if o.ACL != nil {
 		buf := bytes.NewBuffer(nil)
 		at := table.NewEmbeddedTable(buf)
-		at.SetHeader([]string{"access", "value"})
-		for _, a := range o.ACL {
-			at.Append([]string{a.Access, a.Value})
+
+		switch {
+		case o.ACL[0].Access == "Canned":
+			at.SetHeader([]string{"canned"})
+			at.Append([]string{o.ACL[0].Value})
+		default:
+			at.SetHeader([]string{"access", "value"})
+
+			for _, a := range o.ACL {
+				at.Append([]string{a.Access, a.Value})
+			}
 		}
+
 		at.Render()
+
 		t.Append([]string{"ACL", buf.String()})
 	}
 
@@ -56,10 +64,13 @@ func (o *sosShowOutput) toTable() {
 		buf := bytes.NewBuffer(nil)
 		mt := table.NewEmbeddedTable(buf)
 		mt.SetHeader([]string{"key", "value"})
+
 		for _, m := range o.Metadata {
 			mt.Append([]string{m.Key, m.Value})
 		}
+
 		mt.Render()
+
 		t.Append([]string{"Metadata", buf.String()})
 	}
 
@@ -67,21 +78,24 @@ func (o *sosShowOutput) toTable() {
 		buf := bytes.NewBuffer(nil)
 		ht := table.NewEmbeddedTable(buf)
 		ht.SetHeader([]string{"key", "value"})
+
 		for _, h := range o.Headers {
 			ht.Append([]string{h.Key, h.Value})
 		}
+
 		ht.Render()
+
 		t.Append([]string{"Headers", buf.String()})
 	}
 
-	t.Append([]string{"URL", fmt.Sprint(o.URL)})
+	t.Append([]string{"URL", o.URL})
 
 	t.Render()
 }
 
 // sosShowCmd represents the show command
 var sosShowCmd = &cobra.Command{
-	Use:     "show <bucket name> <oject name>",
+	Use:     "show <bucket name> <object name>",
 	Short:   "show file and folder",
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -120,13 +134,10 @@ func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
 
 	cannedACL, okHeader := objInfo.Metadata["X-Amz-Acl"]
 
-	t := table.NewTable(os.Stdout)
-	t.SetHeader([]string{"ACL", "METADATA", "HEADER"})
-
 	var (
-		acls      []sosACLShowOutput
-		metadatas []sosMetadataShowOutput
-		headers   []sosHeadersShowOutput
+		acls     []sosACLShowOutput
+		metadata []sosMetadataShowOutput
+		headers  []sosHeadersShowOutput
 	)
 
 	if okHeader && len(cannedACL) > 0 {
@@ -156,7 +167,7 @@ func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
 			k = strings.ToLower(k)
 
 			if strings.HasPrefix(k, "x-amz-meta-") && len(v) > 0 {
-				metadatas = append(metadatas, sosMetadataShowOutput{
+				metadata = append(metadata, sosMetadataShowOutput{
 					Key:   k[len("x-amz-meta-"):],
 					Value: v[0],
 				})
@@ -172,10 +183,9 @@ func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
 	}
 
 	out := sosShowOutput{
-		Object:   object,
 		URL:      fmt.Sprintf("https://sos-%s.exo.io/%s/%s", location, bucket, object),
 		ACL:      acls,
-		Metadata: metadatas,
+		Metadata: metadata,
 		Headers:  headers,
 	}
 
