@@ -1,11 +1,6 @@
 Changelog
 =========
 
-0.20.1
-------
-
-- fix: update the `ListAPIKeysResponse` field (#415)
-
 0.20.0
 ------
 
