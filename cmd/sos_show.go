@@ -173,7 +173,7 @@ func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
 
 	out := sosShowOutput{
 		Object:   object,
-		URL:      fmt.Sprintf("https://sos-%v.exo.io/%v/%v", location, bucket, object),
+		URL:      fmt.Sprintf("https://sos-%s.exo.io/%s/%s", location, bucket, object),
 		ACL:      acls,
 		Metadata: metadatas,
 		Headers:  headers,
