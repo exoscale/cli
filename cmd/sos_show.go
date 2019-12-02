@@ -136,6 +136,13 @@ func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
 		})
 	}
 
+	if objInfo.ContentType != "" {
+		headers = append(headers, sosHeadersShowOutput{
+			Key:   "content-type",
+			Value: objInfo.ContentType,
+		})
+	}
+
 	for k, v := range objInfo.Metadata {
 		if len(v) > 0 {
 			if isGrantACL(k) {
