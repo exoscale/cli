@@ -45,7 +45,6 @@ func (o *sosShowOutput) toTable() {
 
 		switch {
 		case o.ACL[0].Access == "Canned":
-			at.SetHeader([]string{"canned"})
 			at.Append([]string{o.ACL[0].Value})
 		default:
 			at.SetHeader([]string{"access", "value"})
