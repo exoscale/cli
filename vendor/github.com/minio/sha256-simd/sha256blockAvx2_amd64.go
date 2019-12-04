@@ -1,6 +1,7 @@
+//+build !noasm,!appengine
+
 /*
- * MinIO Go Library for Amazon S3 Compatible Cloud Storage
- * Copyright 2018 MinIO, Inc.
+ * Minio Cloud Storage, (C) 2016 Minio, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +16,7 @@
  * limitations under the License.
  */
 
-package minio
+package sha256
 
-import (
-	"context"
-)
-
-//GetObjectACL get object ACLs
-func (c Client) GetObjectACL(bucketName, objectName string) (*ObjectInfo, error) {
-	return c.GetObjectACLWithContext(context.Background(), bucketName, objectName)
-}
+//go:noescape
+func blockAvx2(h []uint32, message []uint8)
