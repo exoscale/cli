@@ -450,14 +450,9 @@ var sosShowACLCmd = &cobra.Command{
 
 		if okHeader && len(cannedACL) > 0 {
 			table.Append([]string{objInfo.Key, "Canned", cannedACL[0]})
-		}
-
-		for k, v := range objInfo.Metadata {
-			if len(v) > 0 {
-				if isGrantACL(k) {
-					s := getGrantValue(v)
-					table.Append([]string{objInfo.Key, formatGrantKey(k), s})
-				}
+		} else {
+			for _, g := range objInfo.Grant {
+				table.Append([]string{objInfo.Key, formatGrantKey(g.Permission), g.Grantee.DisplayName})
 			}
 		}
 
@@ -467,33 +462,21 @@ var sosShowACLCmd = &cobra.Command{
 	},
 }
 
-func getGrantValue(values []string) string {
-	for i, v := range values {
-		values[i] = v[len("id="):]
-	}
-	return strings.Join(values, ", ")
-}
-
 func formatGrantKey(k string) string {
 	var res string
 	switch {
-	case k == manualRead:
+	case k == "READ":
 		res = "Read"
-	case k == manualWrite:
+	case k == "WRITE":
 		res = "Write"
-	case k == manualReadACP:
+	case k == "READ_ACP":
 		res = "Read ACP"
-	case k == manualWriteACP:
+	case k == "WRITE_ACP":
 		res = "Write ACP"
-	case k == manualFullControl:
+	case k == "FULL_CONTROL":
 		res = "Full Control"
 	}
 	return res
-}
-
-func isGrantACL(key string) bool {
-	key = strings.ToLower(key)
-	return strings.HasPrefix(key, "x-amz-grant-")
 }
 
 func init() {
