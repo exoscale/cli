@@ -98,17 +98,25 @@ var sosAddACLCmd = &cobra.Command{
 
 		src := minio.NewSourceInfo(bucket, object, nil)
 
-		// Those two variables and this if statment is here to prepare
-		// the new header when passing the object
-		// from Canned ACL (X-Amz-Acl) to Grant ACL (X-Amz-Grant).
+		// When the Object acl is updated from Canned ACL(X-Amz-Acl) to
+		// Grant ACL(X-Amz-Grant), we have to remove Canned ACL before.
 		_, hasNewCannedACL := meta["X-Amz-Acl"]
 		_, hasCannedACL := objInfo.Metadata["X-Amz-Acl"]
 		if hasCannedACL && !hasNewCannedACL {
 			// Remove Canned ACL from the header to let Grant ACL take effect.
 			objInfo.Metadata.Del("X-Amz-Acl")
-			// This is let the object owner to keep the control on the object,
+			// This lets the object owner to keep the control on the object,
 			// if the flag "--full-control" is not specified.
-			objInfo.Metadata.Add(manualFullControl, "id="+objInfo.Owner.ID)
+			var fullControl string
+			for _, g := range objInfo.Grant {
+				if g.Permission == sosACLFullControl {
+					fullControl = g.Grantee.ID
+				}
+			}
+			if fullControl == "" {
+				return fmt.Errorf(`Object %q have no "FULL_CONTROL" user ID`, object)
+			}
+			objInfo.Metadata.Add(manualFullControl, "id="+fullControl)
 		}
 
 		mergeHeader(src.Headers, objInfo.Metadata)
