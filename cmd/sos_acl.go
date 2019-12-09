@@ -29,11 +29,11 @@ const (
 	manualFullControl string = "X-Amz-Grant-Full-Control"
 
 	//S3 Grant ACLs response body
-	SOSACLRead        string = "READ"
-	SOSACLWrite       string = "WRITE"
-	SOSACLReadACP     string = "READ_ACP"
-	SOSACLWriteACP    string = "WRITE_ACP"
-	SOSACLFullControl string = "FULL_CONTROL"
+	sosACLRead        string = "READ"
+	sosACLWrite       string = "WRITE"
+	sosACLReadACP     string = "READ_ACP"
+	sosACLWriteACP    string = "WRITE_ACP"
+	sosACLFullControl string = "FULL_CONTROL"
 )
 
 // aclCmd represents the acl command
@@ -471,18 +471,20 @@ var sosShowACLCmd = &cobra.Command{
 
 func formatGrantKey(k string) string {
 	var res string
-	switch {
-	case k == SOSACLRead:
+
+	switch k {
+	case sosACLRead:
 		res = "Read"
-	case k == SOSACLWrite:
+	case sosACLWrite:
 		res = "Write"
-	case k == SOSACLReadACP:
+	case sosACLReadACP:
 		res = "Read ACP"
-	case k == SOSACLWriteACP:
+	case sosACLWriteACP:
 		res = "Write ACP"
-	case k == SOSACLFullControl:
+	case sosACLFullControl:
 		res = "Full Control"
 	}
+
 	return res
 }
 
