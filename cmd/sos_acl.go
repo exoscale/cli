@@ -105,7 +105,7 @@ var sosAddACLCmd = &cobra.Command{
 		if hasCannedACL && !hasNewCannedACL {
 			// Remove Canned ACL from the header to let Grant ACL take effect.
 			objInfo.Metadata.Del("X-Amz-Acl")
-			// This lets the object owner to keep the control on the object,
+			// This lets the object full control grantee to keep the control on the object,
 			// if the flag "--full-control" is not specified.
 			var fullControl string
 			for _, g := range objInfo.Grant {
@@ -114,7 +114,7 @@ var sosAddACLCmd = &cobra.Command{
 				}
 			}
 			if fullControl == "" {
-				return fmt.Errorf(`Object %q have no "FULL_CONTROL" user ID`, object)
+				return fmt.Errorf(`object %q has no "FULL_CONTROL" grantee`, object)
 			}
 			objInfo.Metadata.Add(manualFullControl, "id="+fullControl)
 		}
