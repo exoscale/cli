@@ -144,6 +144,13 @@ func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
 			Access: "Canned",
 			Value:  cannedACL[0],
 		})
+	} else {
+		for _, g := range objInfo.Grant {
+			acls = append(acls, sosACLShowOutput{
+				Access: formatGrantKey(g.Permission),
+				Value:  g.Grantee.DisplayName,
+			})
+		}
 	}
 
 	if objInfo.ContentType != "" {
@@ -154,30 +161,20 @@ func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
 	}
 
 	for k, v := range objInfo.Metadata {
-		if len(v) > 0 {
-			if isGrantACL(k) {
-				s := getGrantValue(v)
-				acls = append(acls, sosACLShowOutput{
-					Access: formatGrantKey(k),
-					Value:  s,
-				})
-			}
+		k = strings.ToLower(k)
 
-			k = strings.ToLower(k)
+		if strings.HasPrefix(k, "x-amz-meta-") && len(v) > 0 {
+			metadata = append(metadata, sosMetadataShowOutput{
+				Key:   k[len("x-amz-meta-"):],
+				Value: v[0],
+			})
+		}
 
-			if strings.HasPrefix(k, "x-amz-meta-") && len(v) > 0 {
-				metadata = append(metadata, sosMetadataShowOutput{
-					Key:   k[len("x-amz-meta-"):],
-					Value: v[0],
-				})
-			}
-
-			if isStandardHeader(k) && len(v) > 0 {
-				headers = append(headers, sosHeadersShowOutput{
-					Key:   k,
-					Value: v[0],
-				})
-			}
+		if isStandardHeader(k) && len(v) > 0 {
+			headers = append(headers, sosHeadersShowOutput{
+				Key:   k,
+				Value: v[0],
+			})
 		}
 	}
 

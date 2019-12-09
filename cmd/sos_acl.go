@@ -21,12 +21,19 @@ const (
 	bucketOwnerRead        string = "bucket-owner-read"
 	bucketOwnerFullControl string = "bucket-owner-full-control"
 
-	//Manual edit ACLs
+	//S3 Grant ACLs response header
 	manualRead        string = "X-Amz-Grant-Read"
 	manualWrite       string = "X-Amz-Grant-Write"
 	manualReadACP     string = "X-Amz-Grant-Read-Acp"
 	manualWriteACP    string = "X-Amz-Grant-Write-Acp"
 	manualFullControl string = "X-Amz-Grant-Full-Control"
+
+	//S3 Grant ACLs response body
+	sosACLRead        string = "READ"
+	sosACLWrite       string = "WRITE"
+	sosACLReadACP     string = "READ_ACP"
+	sosACLWriteACP    string = "WRITE_ACP"
+	sosACLFullControl string = "FULL_CONTROL"
 )
 
 // aclCmd represents the acl command
@@ -450,14 +457,9 @@ var sosShowACLCmd = &cobra.Command{
 
 		if okHeader && len(cannedACL) > 0 {
 			table.Append([]string{objInfo.Key, "Canned", cannedACL[0]})
-		}
-
-		for k, v := range objInfo.Metadata {
-			if len(v) > 0 {
-				if isGrantACL(k) {
-					s := getGrantValue(v)
-					table.Append([]string{objInfo.Key, formatGrantKey(k), s})
-				}
+		} else {
+			for _, g := range objInfo.Grant {
+				table.Append([]string{objInfo.Key, formatGrantKey(g.Permission), g.Grantee.DisplayName})
 			}
 		}
 
@@ -467,33 +469,23 @@ var sosShowACLCmd = &cobra.Command{
 	},
 }
 
-func getGrantValue(values []string) string {
-	for i, v := range values {
-		values[i] = v[len("id="):]
-	}
-	return strings.Join(values, ", ")
-}
-
 func formatGrantKey(k string) string {
 	var res string
-	switch {
-	case k == manualRead:
+
+	switch k {
+	case sosACLRead:
 		res = "Read"
-	case k == manualWrite:
+	case sosACLWrite:
 		res = "Write"
-	case k == manualReadACP:
+	case sosACLReadACP:
 		res = "Read ACP"
-	case k == manualWriteACP:
+	case sosACLWriteACP:
 		res = "Write ACP"
-	case k == manualFullControl:
+	case sosACLFullControl:
 		res = "Full Control"
 	}
-	return res
-}
 
-func isGrantACL(key string) bool {
-	key = strings.ToLower(key)
-	return strings.HasPrefix(key, "x-amz-grant-")
+	return res
 }
 
 func init() {
