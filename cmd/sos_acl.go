@@ -98,15 +98,16 @@ var sosAddACLCmd = &cobra.Command{
 
 		src := minio.NewSourceInfo(bucket, object, nil)
 
-		// hasNewAmzACL Represent a boolean true if new "X-Amz-Acl"
-		// is passed in flag command.
-		_, hasNewAmzACL := meta["X-Amz-Acl"]
-		// hasAmzACL Represent a boolean true if the current object header
-		// contain "X-Amz-Acl" rules.
-		_, hasAmzACL := objInfo.Metadata["X-Amz-Acl"]
-
-		if hasAmzACL && !hasNewAmzACL {
+		// Those two variables and this if statment is here to prepare
+		// the new header when passing the object
+		// from Canned ACL (X-Amz-Acl) to Grant ACL (X-Amz-Grant).
+		_, hasNewCannedACL := meta["X-Amz-Acl"]
+		_, hasCannedACL := objInfo.Metadata["X-Amz-Acl"]
+		if hasCannedACL && !hasNewCannedACL {
+			// Remove Canned ACL from the header to let Grant ACL take effect.
 			objInfo.Metadata.Del("X-Amz-Acl")
+			// This is let the object owner to keep the control on the object,
+			// if the flag "--full-control" is not specified.
 			objInfo.Metadata.Add(manualFullControl, "id="+objInfo.Owner.ID)
 		}
 
