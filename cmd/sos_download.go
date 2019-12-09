@@ -68,7 +68,7 @@ var downloadCmd = &cobra.Command{
 		}
 
 		// Gather md5sum.
-		objectStat, err := sosClient.StatObject(bucket, objectName, minio.StatObjectOptions{})
+		objectStat, err := sosClient.StatObjectWithContext(gContext, bucket, objectName, minio.StatObjectOptions{})
 		if err != nil {
 			return err
 		}

@@ -38,7 +38,7 @@ const (
 
 // aclCmd represents the acl command
 var sosACLCmd = &cobra.Command{
-	Use:   "acl <bucket name> <object name> [object name] ...",
+	Use:   "acl",
 	Short: "Object(s) ACLs management",
 }
 
@@ -48,7 +48,7 @@ func init() {
 
 // aclCmd represents the acl command
 var sosAddACLCmd = &cobra.Command{
-	Use:   "add <bucket name> <object name> [object name] ...",
+	Use:   "add <bucket name> <object name>",
 	Short: "Add ACL(s) to an object",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -89,7 +89,7 @@ var sosAddACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -98,12 +98,25 @@ var sosAddACLCmd = &cobra.Command{
 
 		src := minio.NewSourceInfo(bucket, object, nil)
 
-		_, okMeta := meta["X-Amz-Acl"]
-		_, okHeader := objInfo.Metadata["X-Amz-Acl"]
-
-		if okHeader && !okMeta {
+		// When the Object acl is updated from Canned ACL(X-Amz-Acl) to
+		// Grant ACL(X-Amz-Grant), we have to remove Canned ACL before.
+		_, hasNewCannedACL := meta["X-Amz-Acl"]
+		_, hasCannedACL := objInfo.Metadata["X-Amz-Acl"]
+		if hasCannedACL && !hasNewCannedACL {
+			// Remove Canned ACL from the header to let Grant ACL take effect.
 			objInfo.Metadata.Del("X-Amz-Acl")
-			objInfo.Metadata.Add(manualFullControl, "id="+gCurrentAccount.AccountName())
+			// This lets the object full control grantee to keep the control on the object,
+			// if the flag "--full-control" is not specified.
+			var fullControl string
+			for _, g := range objInfo.Grant {
+				if g.Permission == sosACLFullControl {
+					fullControl = g.Grantee.ID
+				}
+			}
+			if fullControl == "" {
+				return fmt.Errorf(`object %q has no "FULL_CONTROL" grantee`, object)
+			}
+			objInfo.Metadata.Add(manualFullControl, "id="+fullControl)
 		}
 
 		mergeHeader(src.Headers, objInfo.Metadata)
@@ -299,7 +312,7 @@ func init() {
 
 // aclCmd represents the acl command
 var sosRemoveACLCmd = &cobra.Command{
-	Use:     "remove <bucket name> <object name> [object name] ...",
+	Use:     "remove <bucket name> <object name>",
 	Short:   "Remove ACL(s) from an object",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -341,7 +354,7 @@ var sosRemoveACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -461,7 +474,7 @@ var sosShowACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
