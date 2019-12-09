@@ -100,7 +100,11 @@ var sosAddACLCmd = &cobra.Command{
 
 		src := minio.NewSourceInfo(bucket, object, nil)
 
+		// hasNewAmzACL Represent a boolean true if new "X-Amz-Acl"
+		// is passed in flag command.
 		_, hasNewAmzACL := meta["X-Amz-Acl"]
+		// hasAmzACL Represent a boolean true if the current object header
+		// contain "X-Amz-Acl" rules.
 		_, hasAmzACL := objInfo.Metadata["X-Amz-Acl"]
 
 		if hasAmzACL && !hasNewAmzACL {
