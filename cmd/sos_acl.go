@@ -49,7 +49,7 @@ func init() {
 // aclCmd represents the acl command
 var sosAddACLCmd = &cobra.Command{
 	Use:   "add <bucket name> <object name>",
-	Short: "Add ACL(s) to object(s)",
+	Short: "Add ACL(s) to an object",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			return cmd.Usage()
@@ -297,7 +297,7 @@ func init() {
 // aclCmd represents the acl command
 var sosRemoveACLCmd = &cobra.Command{
 	Use:     "remove <bucket name> <object name>",
-	Short:   "Remove ACL(s) from object(s)",
+	Short:   "Remove ACL(s) from an object",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
