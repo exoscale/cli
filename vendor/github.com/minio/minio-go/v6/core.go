@@ -61,11 +61,6 @@ func (c Core) CopyObjectWithContext(ctx context.Context, sourceBucket, sourceObj
 	return c.copyObjectDo(ctx, sourceBucket, sourceObject, destBucket, destObject, metadata)
 }
 
-// CopyObjectWithContext - copies an object from source object to destination object on server side.
-func (c Core) CopyObjectWithContext(ctx context.Context, sourceBucket, sourceObject, destBucket, destObject string, metadata map[string]string) (ObjectInfo, error) {
-	return c.copyObjectDo(ctx, sourceBucket, sourceObject, destBucket, destObject, metadata)
-}
-
 // CopyObject - copies an object from source object to destination object on server side.
 func (c Core) CopyObject(sourceBucket, sourceObject, destBucket, destObject string, metadata map[string]string) (ObjectInfo, error) {
 	return c.CopyObjectWithContext(context.Background(), sourceBucket, sourceObject, destBucket, destObject, metadata)
@@ -183,13 +178,6 @@ func (c Core) PutBucketPolicy(bucket, bucketPolicy string) error {
 // cancellations and timeouts.
 func (c Core) PutBucketPolicyWithContext(ctx context.Context, bucket, bucketPolicy string) error {
 	return c.putBucketPolicy(ctx, bucket, bucketPolicy)
-}
-
-// GetObjectWithContext is a lower level API implemented to support reading
-// partial objects and also downloading objects with special conditions
-// matching etag, modtime etc.
-func (c Core) GetObjectWithContext(ctx context.Context, bucketName, objectName string, opts GetObjectOptions) (io.ReadCloser, ObjectInfo, http.Header, error) {
-	return c.getObject(ctx, bucketName, objectName, opts)
 }
 
 // GetObjectWithContext is a lower level API implemented to support reading

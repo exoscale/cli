@@ -82,7 +82,7 @@ var sosAddHeadersCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -179,7 +179,7 @@ var sosRemoveHeadersCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -264,7 +264,7 @@ var sosShowHeadersCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}

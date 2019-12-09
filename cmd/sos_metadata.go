@@ -50,7 +50,7 @@ var sosAddMetadataCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -109,7 +109,7 @@ var sosRemoveMetadataCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -174,7 +174,7 @@ var sosShowMetadataCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}

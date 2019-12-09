@@ -57,8 +57,6 @@ var sosAddACLCmd = &cobra.Command{
 		bucket := args[0]
 		object := args[1]
 
-		bucketName, objectName := args[0], args[1]
-
 		meta, err := getACL(cmd)
 		if err != nil {
 			return err
@@ -91,7 +89,7 @@ var sosAddACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -299,8 +297,6 @@ var sosRemoveACLCmd = &cobra.Command{
 		bucket := args[0]
 		object := args[1]
 
-		bucketName, objectName := args[0], args[1]
-
 		meta, err := getManualACLBool(cmd)
 		if err != nil {
 			return err
@@ -333,7 +329,7 @@ var sosRemoveACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -453,7 +449,7 @@ var sosShowACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
