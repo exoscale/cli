@@ -21,12 +21,19 @@ const (
 	bucketOwnerRead        string = "bucket-owner-read"
 	bucketOwnerFullControl string = "bucket-owner-full-control"
 
-	//Manual edit ACLs
+	//S3 Grant ACLs response header
 	manualRead        string = "X-Amz-Grant-Read"
 	manualWrite       string = "X-Amz-Grant-Write"
 	manualReadACP     string = "X-Amz-Grant-Read-Acp"
 	manualWriteACP    string = "X-Amz-Grant-Write-Acp"
 	manualFullControl string = "X-Amz-Grant-Full-Control"
+
+	//S3 Grant ACLs response body
+	SOSACLRead        string = "READ"
+	SOSACLWrite       string = "WRITE"
+	SOSACLReadACP     string = "READ_ACP"
+	SOSACLWriteACP    string = "WRITE_ACP"
+	SOSACLFullControl string = "FULL_CONTROL"
 )
 
 // aclCmd represents the acl command
@@ -465,15 +472,15 @@ var sosShowACLCmd = &cobra.Command{
 func formatGrantKey(k string) string {
 	var res string
 	switch {
-	case k == "READ":
+	case k == SOSACLRead:
 		res = "Read"
-	case k == "WRITE":
+	case k == SOSACLWrite:
 		res = "Write"
-	case k == "READ_ACP":
+	case k == SOSACLReadACP:
 		res = "Read ACP"
-	case k == "WRITE_ACP":
+	case k == SOSACLWriteACP:
 		res = "Write ACP"
-	case k == "FULL_CONTROL":
+	case k == SOSACLFullControl:
 		res = "Full Control"
 	}
 	return res

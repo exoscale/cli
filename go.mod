@@ -16,7 +16,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/manifoldco/promptui v0.3.2
 	github.com/mattn/go-runewidth v0.0.3 // indirect
-	github.com/minio/minio-go/v6 v6.0.44-0.20191204155752-351efed7cc22
+	github.com/minio/minio-go/v6 v6.0.44
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
 	github.com/russross/blackfriday v1.5.2 // indirect
