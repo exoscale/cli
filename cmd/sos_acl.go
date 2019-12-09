@@ -115,7 +115,23 @@ var sosAddACLCmd = &cobra.Command{
 		}
 
 		// Copy object call
-		return sosClient.CopyObject(dst, src)
+		err = sosClient.CopyObject(dst, src)
+		if err != nil {
+			return err
+		}
+
+		if !gQuiet {
+			acl, err := getDefaultCannedACL(cmd)
+			if err != nil {
+				return err
+			}
+
+			if acl == publicReadWrite || acl == publicRead {
+				fmt.Printf("https://sos-%s.exo.io/%s/%s\n", location, bucket, object)
+			}
+		}
+
+		return nil
 	},
 }
 
