@@ -1,3 +1,20 @@
+1.8.0
+-----
+
+### New
+
+* A new `exo sos show` command has been added to display object storage object properties (#204)
+* Add support for `exo instancepool` as a top-level entity instead of as a lab feature (#211)
+
+### Bug fixes
+
+* Fixed Full-Control on object then adding a manual Grant rule. (#194)
+
+### Changes
+
+* Print back the SOS HTTP link when granting a canned `--public-read` or `--public-read-write` ACL (#208)
+* `-z` is now available as a shorthand parameter wherever a `--zone` parameter is accepted (#209)
+
 1.7.0
 -----
 
