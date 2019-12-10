@@ -9,6 +9,7 @@ import (
 )
 
 type apiKeyOperationsItemOutput struct {
+	Account []string `json:"account,omitempty"`
 	Compute []string `json:"compute,omitempty"`
 	DNS     []string `json:"dns,omitempty"`
 	IAM     []string `json:"iam,omitempty"`
@@ -57,6 +58,8 @@ func listAPIKeyOperations(filters []string) (outputter, error) {
 		}
 
 		switch {
+		case strings.HasPrefix(result, "account/"):
+			out.Account = append(out.Account, o)
 		case strings.HasPrefix(result, "compute/"):
 			out.Compute = append(out.Compute, o)
 		case strings.HasPrefix(result, "dns/"):
