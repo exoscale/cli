@@ -1,6 +1,21 @@
 Changelog
 =========
 
+0.22.0
+------
+
+- change: Remove all references to Network Offerings (#418)
+
+0.21.0
+------
+
+- feature: add const `NotFound` 404 on type `ErrorCode` (#417)
+
+0.20.1
+------
+
+- fix: update the `ListAPIKeysResponse` field (#415)
+
 0.20.0
 ------
 
