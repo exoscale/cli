@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
-	"crypto/sha256"
 	"errors"
 	"fmt"
 	"hash"
@@ -38,6 +37,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/minio/sha256-simd"
 
 	"golang.org/x/net/publicsuffix"
 
@@ -103,7 +104,7 @@ type Options struct {
 // Global constants.
 const (
 	libraryName    = "minio-go"
-	libraryVersion = "v6.0.29"
+	libraryVersion = "v6.0.44"
 )
 
 // User Agent should always following the below style.
@@ -185,6 +186,12 @@ func NewWithRegion(endpoint, accessKeyID, secretAccessKey string, secure bool, r
 // NewWithOptions - instantiate minio client with options
 func NewWithOptions(endpoint string, opts *Options) (*Client, error) {
 	return privateNew(endpoint, opts.Creds, opts.Secure, opts.Region, opts.BucketLookup)
+}
+
+// EndpointURL returns the URL of the S3 endpoint.
+func (c *Client) EndpointURL() *url.URL {
+	endpoint := *c.endpointURL // copy to prevent callers from modifying internal state
+	return &endpoint
 }
 
 // lockedRandSource provides protected rand source, implements rand.Source interface.
@@ -719,10 +726,14 @@ func (c Client) newRequest(method string, metadata requestMetadata) (req *http.R
 	}
 
 	// Look if target url supports virtual host.
-	isVirtualHost := c.isVirtualHostStyleRequest(*c.endpointURL, metadata.bucketName)
+	// We explicitly disallow MakeBucket calls to not use virtual DNS style,
+	// since the resolution may fail.
+	isMakeBucket := (metadata.objectName == "" && method == "PUT" && len(metadata.queryValues) == 0)
+	isVirtualHost := c.isVirtualHostStyleRequest(*c.endpointURL, metadata.bucketName) && !isMakeBucket
 
 	// Construct a new target URL.
-	targetURL, err := c.makeTargetURL(metadata.bucketName, metadata.objectName, location, isVirtualHost, metadata.queryValues)
+	targetURL, err := c.makeTargetURL(metadata.bucketName, metadata.objectName, location,
+		isVirtualHost, metadata.queryValues)
 	if err != nil {
 		return nil, err
 	}

@@ -21,17 +21,24 @@ const (
 	bucketOwnerRead        string = "bucket-owner-read"
 	bucketOwnerFullControl string = "bucket-owner-full-control"
 
-	//Manual edit ACLs
+	//S3 Grant ACLs response header
 	manualRead        string = "X-Amz-Grant-Read"
 	manualWrite       string = "X-Amz-Grant-Write"
 	manualReadACP     string = "X-Amz-Grant-Read-Acp"
 	manualWriteACP    string = "X-Amz-Grant-Write-Acp"
 	manualFullControl string = "X-Amz-Grant-Full-Control"
+
+	//S3 Grant ACLs response body
+	sosACLRead        string = "READ"
+	sosACLWrite       string = "WRITE"
+	sosACLReadACP     string = "READ_ACP"
+	sosACLWriteACP    string = "WRITE_ACP"
+	sosACLFullControl string = "FULL_CONTROL"
 )
 
 // aclCmd represents the acl command
 var sosACLCmd = &cobra.Command{
-	Use:   "acl <bucket name> <object name> [object name] ...",
+	Use:   "acl",
 	Short: "Object(s) ACLs management",
 }
 
@@ -41,7 +48,7 @@ func init() {
 
 // aclCmd represents the acl command
 var sosAddACLCmd = &cobra.Command{
-	Use:   "add <bucket name> <object name> [object name] ...",
+	Use:   "add <bucket name> <object name>",
 	Short: "Add ACL(s) to an object",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -82,7 +89,7 @@ var sosAddACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -91,12 +98,25 @@ var sosAddACLCmd = &cobra.Command{
 
 		src := minio.NewSourceInfo(bucket, object, nil)
 
-		_, okMeta := meta["X-Amz-Acl"]
-		_, okHeader := objInfo.Metadata["X-Amz-Acl"]
-
-		if okHeader && !okMeta {
+		// When the Object acl is updated from Canned ACL(X-Amz-Acl) to
+		// Grant ACL(X-Amz-Grant), we have to remove Canned ACL before.
+		_, hasNewCannedACL := meta["X-Amz-Acl"]
+		_, hasCannedACL := objInfo.Metadata["X-Amz-Acl"]
+		if hasCannedACL && !hasNewCannedACL {
+			// Remove Canned ACL from the header to let Grant ACL take effect.
 			objInfo.Metadata.Del("X-Amz-Acl")
-			objInfo.Metadata.Add(manualFullControl, "id="+gCurrentAccount.AccountName())
+			// This lets the object full control grantee to keep the control on the object,
+			// if the flag "--full-control" is not specified.
+			var fullControl string
+			for _, g := range objInfo.Grant {
+				if g.Permission == sosACLFullControl {
+					fullControl = g.Grantee.ID
+				}
+			}
+			if fullControl == "" {
+				return fmt.Errorf(`object %q has no "FULL_CONTROL" grantee`, object)
+			}
+			objInfo.Metadata.Add(manualFullControl, "id="+fullControl)
 		}
 
 		mergeHeader(src.Headers, objInfo.Metadata)
@@ -108,7 +128,23 @@ var sosAddACLCmd = &cobra.Command{
 		}
 
 		// Copy object call
-		return sosClient.CopyObject(dst, src)
+		err = sosClient.CopyObject(dst, src)
+		if err != nil {
+			return err
+		}
+
+		if !gQuiet {
+			acl, err := getDefaultCannedACL(cmd)
+			if err != nil {
+				return err
+			}
+
+			if acl == publicReadWrite || acl == publicRead {
+				fmt.Printf("https://sos-%s.exo.io/%s/%s\n", location, bucket, object)
+			}
+		}
+
+		return nil
 	},
 }
 
@@ -276,7 +312,7 @@ func init() {
 
 // aclCmd represents the acl command
 var sosRemoveACLCmd = &cobra.Command{
-	Use:     "remove <bucket name> <object name> [object name] ...",
+	Use:     "remove <bucket name> <object name>",
 	Short:   "Remove ACL(s) from an object",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -318,7 +354,7 @@ var sosRemoveACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -438,7 +474,7 @@ var sosShowACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACL(bucket, object)
+		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
 		if err != nil {
 			return err
 		}
@@ -450,14 +486,9 @@ var sosShowACLCmd = &cobra.Command{
 
 		if okHeader && len(cannedACL) > 0 {
 			table.Append([]string{objInfo.Key, "Canned", cannedACL[0]})
-		}
-
-		for k, v := range objInfo.Metadata {
-			if len(v) > 0 {
-				if isGrantACL(k) {
-					s := getGrantValue(v)
-					table.Append([]string{objInfo.Key, formatGrantKey(k), s})
-				}
+		} else {
+			for _, g := range objInfo.Grant {
+				table.Append([]string{objInfo.Key, formatGrantKey(g.Permission), g.Grantee.DisplayName})
 			}
 		}
 
@@ -467,33 +498,23 @@ var sosShowACLCmd = &cobra.Command{
 	},
 }
 
-func getGrantValue(values []string) string {
-	for i, v := range values {
-		values[i] = v[len("id="):]
-	}
-	return strings.Join(values, ", ")
-}
-
 func formatGrantKey(k string) string {
 	var res string
-	switch {
-	case k == manualRead:
+
+	switch k {
+	case sosACLRead:
 		res = "Read"
-	case k == manualWrite:
+	case sosACLWrite:
 		res = "Write"
-	case k == manualReadACP:
+	case sosACLReadACP:
 		res = "Read ACP"
-	case k == manualWriteACP:
+	case sosACLWriteACP:
 		res = "Write ACP"
-	case k == manualFullControl:
+	case sosACLFullControl:
 		res = "Full Control"
 	}
-	return res
-}
 
-func isGrantACL(key string) bool {
-	key = strings.ToLower(key)
-	return strings.HasPrefix(key, "x-amz-grant-")
+	return res
 }
 
 func init() {

@@ -13,7 +13,7 @@ var instancePoolCmd = &cobra.Command{
 }
 
 func init() {
-	labCmd.AddCommand(instancePoolCmd)
+	RootCmd.AddCommand(instancePoolCmd)
 }
 
 func getInstancePoolByID(id, zone *egoscale.UUID) (*egoscale.InstancePool, error) {

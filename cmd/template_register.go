@@ -114,7 +114,7 @@ func init() {
 	templateRegisterCmd.Flags().StringP("checksum", "", "", "the MD5 checksum value of the template")
 	templateRegisterCmd.Flags().StringP("description", "", "", "the template description")
 	templateRegisterCmd.Flags().StringP("name", "", "", "the name of the template")
-	templateRegisterCmd.Flags().StringP("zone", "", "", "the ID or name of the zone the template is to be hosted on")
+	templateRegisterCmd.Flags().StringP("zone", "z", "", "the ID or name of the zone the template is to be hosted on")
 	templateRegisterCmd.Flags().StringP("url", "", "", "the URL of where the template is hosted")
 	templateRegisterCmd.Flags().BoolP("disable-password", "", false, "true if the template does not support password authentication; default is false")
 	templateRegisterCmd.Flags().BoolP("disable-ssh-key", "", false, "true if the template does not support ssh key authentication; default is false")

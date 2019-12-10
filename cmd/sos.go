@@ -70,6 +70,11 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 		return nil, err
 	}
 
+	_, ok := os.LookupEnv("EXOSCALE_TRACE")
+	if ok {
+		c.TraceOn(os.Stderr)
+	}
+
 	return &c, nil
 }
 
