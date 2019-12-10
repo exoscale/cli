@@ -29,7 +29,6 @@ var methods = []category{
 		[]cmd{
 			{command: &egoscale.CreateNetwork{}, name: "create", alias: gCreateAlias},
 			{command: &egoscale.DeleteNetwork{}, name: "delete", alias: gDeleteAlias},
-			{command: &egoscale.ListNetworkOfferings{}},
 			{command: &egoscale.ListNetworks{}, name: "list", alias: gListAlias},
 			{command: &egoscale.UpdateNetwork{}, name: "update"},
 		},
