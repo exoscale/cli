@@ -19,6 +19,7 @@ import (
 
 const (
 	defaultSOSZone = "ch-dk-2"
+	minioMaxRetry  = 2
 )
 
 // sosCmd represents the sos command
@@ -142,6 +143,8 @@ func (s *sosClient) setZone(zone string) error {
 }
 
 func init() {
+	minio.MaxRetry = minioMaxRetry
+
 	RootCmd.AddCommand(sosCmd)
 	sosCmd.PersistentFlags().String("certs-file", "", "Path to file containing additional SOS API X.509 certificates")
 }
