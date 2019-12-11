@@ -1,5 +1,9 @@
 project_name: exoscale-cli
 
+before:
+  hooks:
+  - go mod tidy
+
 builds:
   - binary: exo
     env:
