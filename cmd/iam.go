@@ -8,5 +8,5 @@ var iamCmd = &cobra.Command{
 }
 
 func init() {
-	labCmd.AddCommand(iamCmd)
+	RootCmd.AddCommand(iamCmd)
 }
