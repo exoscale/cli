@@ -4,6 +4,8 @@
 <!-- MarkdownTOC -->
 
 - [Installing](#installing)
+    - [Binary Releases](#binary-releases)
+    - [Homebrew](#homebrew)
 - [Editor integration](#editor-integration)
 - [Supported linters](#supported-linters)
 - [Configuration file](#configuration-file)
@@ -45,11 +47,20 @@ It is intended for use with editor/IDE integration.
 
 ## Installing
 
+### Binary Releases
+
 To install the latest stable release:
 
-    curl https://git.io/vp6lP | sh
+    curl -L https://git.io/vp6lP | sh
 
 Alternatively you can install a specific version from the [releases](https://github.com/alecthomas/gometalinter/releases) list.
+
+### Homebrew
+
+```sh
+brew tap alecthomas/homebrew-tap
+brew install gometalinter
+```
 
 ## Editor integration
 
@@ -57,6 +68,7 @@ Alternatively you can install a specific version from the [releases](https://git
 - [Atom go-plus package](https://atom.io/packages/go-plus).
 - [Emacs Flycheck checker](https://github.com/favadi/flycheck-gometalinter).
 - [Go for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=lukehoban.Go).
+- [GoLand File Watcher](https://blog.jetbrains.com/go/2017/10/18/gogland-eap-16-file-watcher-tons-of-new-inspections-smarter-navigate-to-test-and-more/).
 - Vim/Neovim
     - [Neomake](https://github.com/neomake/neomake).
     - [Syntastic](https://github.com/scrooloose/syntastic/wiki/Go:---gometalinter) `let g:syntastic_go_checkers = ['gometalinter']`.
@@ -76,7 +88,7 @@ Alternatively you can install a specific version from the [releases](https://git
 - [structcheck](https://github.com/opennota/check) - Find unused struct fields.
 - [maligned](https://github.com/mdempsky/maligned) -  Detect structs that would take less memory if their fields were sorted.
 - [errcheck](https://github.com/kisielk/errcheck) - Check that error return values are used.
-- [megacheck](https://github.com/dominikh/go-tools/tree/master/cmd/megacheck) - Run staticcheck, gosimple and unused, sharing work.
+- [staticcheck](https://github.com/dominikh/go-tools/tree/master/cmd/staticcheck) - Statically detect bugs, both obvious and subtle ones.
 - [dupl](https://github.com/mibk/dupl) - Reports potentially duplicated code.
 - [ineffassign](https://github.com/gordonklaus/ineffassign) - Detect when assignments to *existing* variables are not used.
 - [interfacer](https://github.com/mvdan/interfacer) - Suggest narrower interfaces that can be used.
@@ -90,16 +102,13 @@ Disabled by default (enable with `--enable=<linter>`):
 - [test](http://golang.org/pkg/testing/) - Show location of test failures from the stdlib testing module.
 - [gofmt -s](https://golang.org/cmd/gofmt/) - Checks if the code is properly formatted and could not be further simplified.
 - [goimports](https://godoc.org/golang.org/x/tools/cmd/goimports) - Checks missing or unreferenced package imports.
-- [gosimple](https://github.com/dominikh/go-tools/tree/master/cmd/gosimple) - Report simplifications in code.
 - [gochecknoinits](https://4d63.com/gochecknoinits) - Report init functions, to reduce side effects in code.
 - [gochecknoglobals](https://4d63.com/gochecknoglobals) - Report global vars, to reduce side effects in code.
 - [lll](https://github.com/walle/lll) - Report long lines (see `--line-length=N`).
 - [misspell](https://github.com/client9/misspell) - Finds commonly misspelled English words.
 - [nakedret](https://github.com/alexkohler/nakedret) - Finds naked returns.
 - [unparam](https://github.com/mvdan/unparam) - Find unused function parameters.
-- [unused](https://github.com/dominikh/go-tools/tree/master/cmd/unused) - Find unused variables.
 - [safesql](https://github.com/stripe/safesql) - Finds potential SQL injection vulnerabilities.
-- [staticcheck](https://github.com/dominikh/go-tools/tree/master/cmd/staticcheck) - Statically detect bugs, both obvious and subtle ones.
 
 Additional linters can be added through the command line with `--linter=NAME:COMMAND:PATTERN` (see [below](#details)).
 
@@ -222,35 +231,6 @@ message for a file, that file is parsed for directives.
 
 Install gometalinter (see above).
 
-Install all known linters:
-
-```
-$ gometalinter --install
-Installing:
-  structcheck
-  maligned
-  nakedret
-  deadcode
-  gocyclo
-  ineffassign
-  dupl
-  golint
-  gotype
-  goimports
-  errcheck
-  varcheck
-  interfacer
-  goconst
-  gosimple
-  staticcheck
-  unparam
-  unused
-  misspell
-  lll
-  gosec
-  safesql
-```
-
 Run it:
 
 ```
@@ -270,7 +250,6 @@ stutter.go:27:6:warning: error return value not checked (doit()           // tes
 stutter.go:29::error: unreachable code (vet)
 stutter.go:26::error: missing argument for Printf("%d"): format reads arg 1, have only 0 args (vet)
 ```
-
 
 Gometalinter also supports the commonly seen `<path>/...` recursive path
 format. Note that this can be *very* slow, and you may need to increase the linter `--deadline` to allow linters to complete.
@@ -332,7 +311,7 @@ are three things to try in that case:
 
 #### 1. Update to the latest build of gometalinter and all linters
 
-    curl https://git.io/vp6lP | sh
+    curl -L https://git.io/vp6lP | sh
 
 If you're lucky, this will fix the problem.
 

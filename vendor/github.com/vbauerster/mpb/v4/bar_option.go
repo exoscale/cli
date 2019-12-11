@@ -1,37 +1,23 @@
 package mpb
 
 import (
+	"bytes"
+	"io"
+
 	"github.com/vbauerster/mpb/v4/decor"
 )
 
 // BarOption is a function option which changes the default behavior of a bar.
 type BarOption func(*bState)
 
-type merger interface {
-	CompoundDecorators() []decor.Decorator
-}
-
-func (s *bState) appendAmountReceiver(d decor.Decorator) {
-	if ar, ok := d.(decor.AmountReceiver); ok {
-		s.amountReceivers = append(s.amountReceivers, ar)
-	}
-}
-
-func (s *bState) appendShutdownListener(d decor.Decorator) {
-	if sl, ok := d.(decor.ShutdownListener); ok {
-		s.shutdownListeners = append(s.shutdownListeners, sl)
-	}
+type mergeWrapper interface {
+	MergeUnwrap() []decor.Decorator
 }
 
 func (s *bState) addDecorators(dest *[]decor.Decorator, decorators ...decor.Decorator) {
 	for _, decorator := range decorators {
-		s.appendAmountReceiver(decorator)
-		s.appendShutdownListener(decorator)
-		if m, ok := decorator.(merger); ok {
-			dd := m.CompoundDecorators()
-			s.appendAmountReceiver(dd[0])
-			s.appendShutdownListener(dd[0])
-			*dest = append(*dest, dd[1:]...)
+		if mw, ok := decorator.(mergeWrapper); ok {
+			*dest = append(*dest, mw.MergeUnwrap()...)
 		}
 		*dest = append(*dest, decorator)
 	}
@@ -65,15 +51,6 @@ func BarWidth(width int) BarOption {
 	}
 }
 
-// BarRemoveOnComplete removes whole bar line on complete event. Any
-// decorators attached to the bar, having OnComplete action will not
-// have a chance to run its OnComplete action, because of this option.
-func BarRemoveOnComplete() BarOption {
-	return func(s *bState) {
-		s.dropOnComplete = true
-	}
-}
-
 // BarReplaceOnComplete is deprecated. Use BarParkTo instead.
 func BarReplaceOnComplete(runningBar *Bar) BarOption {
 	return BarParkTo(runningBar)
@@ -90,11 +67,34 @@ func BarParkTo(runningBar *Bar) BarOption {
 	}
 }
 
-// BarClearOnComplete clears bar part of bar line on complete event.
-func BarClearOnComplete() BarOption {
+// BarRemoveOnComplete removes bar filler and decorators if any, on
+// complete event.
+func BarRemoveOnComplete() BarOption {
 	return func(s *bState) {
-		s.noBufBOnComplete = true
+		s.dropOnComplete = true
 	}
+}
+
+// BarClearOnComplete clears bar filler only, on complete event.
+func BarClearOnComplete() BarOption {
+	return BarOnComplete("")
+}
+
+// BarOnComplete replaces bar filler with message, on complete event.
+func BarOnComplete(message string) BarOption {
+	return func(s *bState) {
+		s.filler = makeBarOnCompleteFiller(s.baseF, message)
+	}
+}
+
+func makeBarOnCompleteFiller(filler Filler, message string) Filler {
+	return FillerFunc(func(w io.Writer, width int, st *decor.Statistics) {
+		if st.Completed {
+			io.WriteString(w, message)
+		} else {
+			filler.Fill(w, width, st)
+		}
+	})
 }
 
 // BarPriority sets bar's priority. Zero is highest priority, i.e. bar
@@ -109,8 +109,20 @@ func BarPriority(priority int) BarOption {
 // BarExtender is an option to extend bar to the next new line, with
 // arbitrary output.
 func BarExtender(extender Filler) BarOption {
+	if extender == nil {
+		return nil
+	}
 	return func(s *bState) {
-		s.extender = extender
+		s.extender = makeExtFunc(extender)
+	}
+}
+
+func makeExtFunc(extender Filler) extFunc {
+	buf := new(bytes.Buffer)
+	nl := []byte("\n")
+	return func(r io.Reader, tw int, st *decor.Statistics) (io.Reader, int) {
+		extender.Fill(buf, tw, st)
+		return io.MultiReader(r, buf), bytes.Count(buf.Bytes(), nl)
 	}
 }
 
@@ -121,50 +133,21 @@ func TrimSpace() BarOption {
 	}
 }
 
-// BarStyle sets custom bar style, default one is "[=>-]<+".
-//
-//	'[' left bracket rune
-//
-//	'=' fill rune
-//
-//	'>' tip rune
-//
-//	'-' empty rune
-//
-//	']' right bracket rune
-//
-//	'<' reverse tip rune, used when BarReverse option is set
-//
-//	'+' refill rune, used when *Bar.SetRefill(int64) is called
-//
-// It's ok to provide first five runes only, for example BarStyle("╢▌▌░╟").
-// To omit left and right bracket runes, either set style as " =>- "
-// or use BarNoBrackets option.
+// BarStyle overrides mpb.DefaultBarStyle, for example BarStyle("╢▌▌░╟").
+// If you need to override `reverse tip` and `refill rune` set 6th and
+// 7th rune respectively, for example BarStyle("[=>-]<+").
 func BarStyle(style string) BarOption {
-	chk := func(filler Filler) (interface{}, bool) {
-		if style == "" {
-			return nil, false
+	if style == "" {
+		return nil
+	}
+	type styleSetter interface {
+		SetStyle(string)
+	}
+	return func(s *bState) {
+		if t, ok := s.baseF.(styleSetter); ok {
+			t.SetStyle(style)
 		}
-		t, ok := filler.(*barFiller)
-		return t, ok
 	}
-	cb := func(t interface{}) {
-		t.(*barFiller).setStyle(style)
-	}
-	return MakeFillerTypeSpecificBarOption(chk, cb)
-}
-
-// BarNoBrackets omits left and right edge runes of the bar. Edges are
-// brackets in default bar style, hence the name of the option.
-func BarNoBrackets() BarOption {
-	chk := func(filler Filler) (interface{}, bool) {
-		t, ok := filler.(*barFiller)
-		return t, ok
-	}
-	cb := func(t interface{}) {
-		t.(*barFiller).noBrackets = true
-	}
-	return MakeFillerTypeSpecificBarOption(chk, cb)
 }
 
 // BarNoPop disables bar pop out of container. Effective when
@@ -177,23 +160,23 @@ func BarNoPop() BarOption {
 
 // BarReverse reverse mode, bar will progress from right to left.
 func BarReverse() BarOption {
-	chk := func(filler Filler) (interface{}, bool) {
-		t, ok := filler.(*barFiller)
-		return t, ok
+	type revSetter interface {
+		SetReverse(bool)
 	}
-	cb := func(t interface{}) {
-		t.(*barFiller).reverse = true
+	return func(s *bState) {
+		if t, ok := s.baseF.(revSetter); ok {
+			t.SetReverse(true)
+		}
 	}
-	return MakeFillerTypeSpecificBarOption(chk, cb)
 }
 
 // SpinnerStyle sets custom spinner style.
 // Effective when Filler type is spinner.
 func SpinnerStyle(frames []string) BarOption {
+	if len(frames) == 0 {
+		return nil
+	}
 	chk := func(filler Filler) (interface{}, bool) {
-		if len(frames) == 0 {
-			return nil, false
-		}
 		t, ok := filler.(*spinnerFiller)
 		return t, ok
 	}
@@ -211,7 +194,7 @@ func MakeFillerTypeSpecificBarOption(
 	cb func(interface{}),
 ) BarOption {
 	return func(s *bState) {
-		if t, ok := typeChecker(s.filler); ok {
+		if t, ok := typeChecker(s.baseF); ok {
 			cb(t)
 		}
 	}

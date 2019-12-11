@@ -324,6 +324,12 @@ func resolvePaths(paths, skip []string) []string {
 	for _, path := range paths {
 		if strings.HasSuffix(path, "/...") {
 			root := filepath.Dir(path)
+			if lstat, err := os.Lstat(root); err == nil && (lstat.Mode()&os.ModeSymlink) != 0 {
+				// if we have a symlink append os.PathSeparator to force a dereference of the symlink
+				// to workaround bug in filepath.Walk that won't dereference a root path that
+				// is a dir symlink
+				root = root + string(os.PathSeparator)
+			}
 			_ = filepath.Walk(root, func(p string, i os.FileInfo, err error) error {
 				if err != nil {
 					warning("invalid path %q: %s", p, err)
@@ -379,7 +385,6 @@ func relativePackagePath(dir string) string {
 
 func lintersFromConfig(config *Config) map[string]*Linter {
 	out := map[string]*Linter{}
-	config.Enable = replaceWithMegacheck(config.Enable, config.EnableAll)
 	for _, name := range config.Enable {
 		linter := getLinterByName(name, LinterConfig(config.Linters[name]))
 		if config.Fast && !linter.IsFast {
@@ -391,40 +396,6 @@ func lintersFromConfig(config *Config) map[string]*Linter {
 		delete(out, linter)
 	}
 	return out
-}
-
-// replaceWithMegacheck checks enabled linters if they duplicate megacheck and
-// returns a either a revised list removing those and adding megacheck or an
-// unchanged slice. Emits a warning if linters were removed and swapped with
-// megacheck.
-func replaceWithMegacheck(enabled []string, enableAll bool) []string {
-	var (
-		staticcheck,
-		gosimple,
-		unused bool
-		revised []string
-	)
-	for _, linter := range enabled {
-		switch linter {
-		case "staticcheck":
-			staticcheck = true
-		case "gosimple":
-			gosimple = true
-		case "unused":
-			unused = true
-		case "megacheck":
-			// Don't add to revised slice, we'll add it later
-		default:
-			revised = append(revised, linter)
-		}
-	}
-	if staticcheck && gosimple && unused {
-		if !enableAll {
-			warning("staticcheck, gosimple and unused are all set, using megacheck instead")
-		}
-		return append(revised, "megacheck")
-	}
-	return enabled
 }
 
 func findVendoredLinters() string {

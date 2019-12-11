@@ -36,6 +36,7 @@ func (r *remappingLexer) Tokenise(options *TokeniseOptions, text string) (Iterat
 	}, nil
 }
 
+// TypeMapping defines type maps for the TypeRemappingLexer.
 type TypeMapping []struct {
 	From, To TokenType
 	Words    []string
@@ -65,7 +66,6 @@ func TypeRemappingLexer(lexer Lexer, mapping TypeMapping) Lexer {
 				km[k] = rt.To
 			}
 		}
-
 	}
 	return RemappingLexer(lexer, func(t Token) []Token {
 		if k, ok := lut[t.Type]; ok {

@@ -43,7 +43,17 @@ func WithRefreshRate(d time.Duration) ContainerOption {
 // Refresh will occur upon receive value from provided ch.
 func WithManualRefresh(ch <-chan time.Time) ContainerOption {
 	return func(s *pState) {
-		s.manualRefreshCh = ch
+		s.refreshSrc = ch
+	}
+}
+
+// WithRenderDelay delays rendering. By default rendering starts as
+// soon as bar is added, with this option it's possible to delay
+// rendering process by keeping provided chan unclosed. In other words
+// rendering will start as soon as provided chan is closed.
+func WithRenderDelay(ch <-chan struct{}) ContainerOption {
+	return func(s *pState) {
+		s.renderDelay = ch
 	}
 }
 
@@ -55,13 +65,13 @@ func WithShutdownNotifier(ch chan struct{}) ContainerOption {
 	}
 }
 
-// WithOutput overrides default os.Stdout output. Setting it to nil will
-// effectively disable auto refresh rate and discard any output, usefull
-// if you want to disable progress bars with little overhead.
+// WithOutput overrides default os.Stdout output. Setting it to nil
+// will effectively disable auto refresh rate and discard any output,
+// useful if you want to disable progress bars with little overhead.
 func WithOutput(w io.Writer) ContainerOption {
 	return func(s *pState) {
 		if w == nil {
-			s.manualRefreshCh = make(chan time.Time)
+			s.refreshSrc = make(chan time.Time)
 			s.output = ioutil.Discard
 			return
 		}
@@ -71,10 +81,10 @@ func WithOutput(w io.Writer) ContainerOption {
 
 // WithDebugOutput sets debug output.
 func WithDebugOutput(w io.Writer) ContainerOption {
+	if w == nil {
+		return nil
+	}
 	return func(s *pState) {
-		if w == nil {
-			return
-		}
 		s.debugOut = w
 	}
 }

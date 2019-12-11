@@ -14,32 +14,47 @@ import (
 type Option func(f *Formatter)
 
 // Standalone configures the HTML formatter for generating a standalone HTML document.
-func Standalone() Option { return func(f *Formatter) { f.standalone = true } }
+func Standalone(b bool) Option { return func(f *Formatter) { f.standalone = b } }
 
 // ClassPrefix sets the CSS class prefix.
 func ClassPrefix(prefix string) Option { return func(f *Formatter) { f.prefix = prefix } }
 
 // WithClasses emits HTML using CSS classes, rather than inline styles.
-func WithClasses() Option { return func(f *Formatter) { f.Classes = true } }
+func WithClasses(b bool) Option { return func(f *Formatter) { f.Classes = b } }
 
 // TabWidth sets the number of characters for a tab. Defaults to 8.
 func TabWidth(width int) Option { return func(f *Formatter) { f.tabWidth = width } }
 
-// PreventSurroundingPre prevents the surrounding pre tags around the generated code
-func PreventSurroundingPre() Option { return func(f *Formatter) { f.preventSurroundingPre = true } }
+// PreventSurroundingPre prevents the surrounding pre tags around the generated code.
+func PreventSurroundingPre(b bool) Option {
+	return func(f *Formatter) {
+		if b {
+			f.preWrapper = nopPreWrapper
+		} else {
+			f.preWrapper = defaultPreWrapper
+		}
+	}
+}
+
+// WithPreWrapper allows control of the surrounding pre tags.
+func WithPreWrapper(wrapper PreWrapper) Option {
+	return func(f *Formatter) {
+		f.preWrapper = wrapper
+	}
+}
 
 // WithLineNumbers formats output with line numbers.
-func WithLineNumbers() Option {
+func WithLineNumbers(b bool) Option {
 	return func(f *Formatter) {
-		f.lineNumbers = true
+		f.lineNumbers = b
 	}
 }
 
 // LineNumbersInTable will, when combined with WithLineNumbers, separate the line numbers
 // and code in table td's, which make them copy-and-paste friendly.
-func LineNumbersInTable() Option {
+func LineNumbersInTable(b bool) Option {
 	return func(f *Formatter) {
-		f.lineNumbersInTable = true
+		f.lineNumbersInTable = b
 	}
 }
 
@@ -64,6 +79,7 @@ func BaseLineNumber(n int) Option {
 func New(options ...Option) *Formatter {
 	f := &Formatter{
 		baseLineNumber: 1,
+		preWrapper:     defaultPreWrapper,
 	}
 	for _, option := range options {
 		option(f)
@@ -71,17 +87,57 @@ func New(options ...Option) *Formatter {
 	return f
 }
 
+// PreWrapper defines the operations supported in WithPreWrapper.
+type PreWrapper interface {
+	// Start is called to write a start <pre> element.
+	// The code flag tells whether this block surrounds
+	// highlighted code. This will be false when surrounding
+	// line numbers.
+	Start(code bool, styleAttr string) string
+
+	// End is called to write the end </pre> element.
+	End(code bool) string
+}
+
+type preWrapper struct {
+	start func(code bool, styleAttr string) string
+	end   func(code bool) string
+}
+
+func (p preWrapper) Start(code bool, styleAttr string) string {
+	return p.start(code, styleAttr)
+}
+
+func (p preWrapper) End(code bool) string {
+	return p.end(code)
+}
+
+var (
+	nopPreWrapper = preWrapper{
+		start: func(code bool, styleAttr string) string { return "" },
+		end:   func(code bool) string { return "" },
+	}
+	defaultPreWrapper = preWrapper{
+		start: func(code bool, styleAttr string) string {
+			return fmt.Sprintf("<pre%s>", styleAttr)
+		},
+		end: func(code bool) string {
+			return "</pre>"
+		},
+	}
+)
+
 // Formatter that generates HTML.
 type Formatter struct {
-	standalone            bool
-	prefix                string
-	Classes               bool // Exported field to detect when classes are being used
-	preventSurroundingPre bool
-	tabWidth              int
-	lineNumbers           bool
-	lineNumbersInTable    bool
-	highlightRanges       highlightRanges
-	baseLineNumber        int
+	standalone         bool
+	prefix             string
+	Classes            bool // Exported field to detect when classes are being used
+	preWrapper         PreWrapper
+	tabWidth           int
+	lineNumbers        bool
+	lineNumbersInTable bool
+	highlightRanges    highlightRanges
+	baseLineNumber     int
 }
 
 type highlightRanges [][2]int
@@ -91,49 +147,13 @@ func (h highlightRanges) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
 func (h highlightRanges) Less(i, j int) bool { return h[i][0] < h[j][0] }
 
 func (f *Formatter) Format(w io.Writer, style *chroma.Style, iterator chroma.Iterator) (err error) {
-	defer func() {
-		if perr := recover(); perr != nil {
-			err = perr.(error)
-		}
-	}()
 	return f.writeHTML(w, style, iterator.Tokens())
-}
-
-func brightenOrDarken(colour chroma.Colour, factor float64) chroma.Colour {
-	if colour.Brightness() < 0.5 {
-		return colour.Brighten(factor)
-	}
-	return colour.Brighten(-factor)
-}
-
-// Ensure that style entries exist for highlighting, etc.
-func (f *Formatter) restyle(style *chroma.Style) (*chroma.Style, error) {
-	builder := style.Builder()
-	bg := builder.Get(chroma.Background)
-	// If we don't have a line highlight colour, make one that is 10% brighter/darker than the background.
-	if !style.Has(chroma.LineHighlight) {
-		highlight := chroma.StyleEntry{Background: bg.Background}
-		highlight.Background = brightenOrDarken(highlight.Background, 0.1)
-		builder.AddEntry(chroma.LineHighlight, highlight)
-	}
-	// If we don't have line numbers, use the text colour but 20% brighter/darker
-	if !style.Has(chroma.LineNumbers) {
-		text := chroma.StyleEntry{Colour: bg.Colour}
-		text.Colour = brightenOrDarken(text.Colour, 0.5)
-		builder.AddEntry(chroma.LineNumbers, text)
-		builder.AddEntry(chroma.LineNumbersTable, text)
-	}
-	return builder.Build()
 }
 
 // We deliberately don't use html/template here because it is two orders of magnitude slower (benchmarked).
 //
 // OTOH we need to be super careful about correct escaping...
 func (f *Formatter) writeHTML(w io.Writer, style *chroma.Style, tokens []chroma.Token) (err error) { // nolint: gocyclo
-	style, err = f.restyle(style)
-	if err != nil {
-		return err
-	}
 	css := f.styleToCSS(style)
 	if !f.Classes {
 		for t, style := range css {
@@ -144,7 +164,10 @@ func (f *Formatter) writeHTML(w io.Writer, style *chroma.Style, tokens []chroma.
 		fmt.Fprint(w, "<html>\n")
 		if f.Classes {
 			fmt.Fprint(w, "<style type=\"text/css\">\n")
-			f.WriteCSS(w, style)
+			err = f.WriteCSS(w, style)
+			if err != nil {
+				return err
+			}
 			fmt.Fprintf(w, "body { %s; }\n", css[chroma.Background])
 			fmt.Fprint(w, "</style>")
 		}
@@ -162,9 +185,7 @@ func (f *Formatter) writeHTML(w io.Writer, style *chroma.Style, tokens []chroma.
 		fmt.Fprintf(w, "<div%s>\n", f.styleAttr(css, chroma.Background))
 		fmt.Fprintf(w, "<table%s><tr>", f.styleAttr(css, chroma.LineTable))
 		fmt.Fprintf(w, "<td%s>\n", f.styleAttr(css, chroma.LineTableTD))
-		if !f.preventSurroundingPre {
-			fmt.Fprintf(w, "<pre%s>", f.styleAttr(css, chroma.Background))
-		}
+		fmt.Fprintf(w, f.preWrapper.Start(false, f.styleAttr(css, chroma.Background)))
 		for index := range lines {
 			line := f.baseLineNumber + index
 			highlight, next := f.shouldHighlight(highlightIndex, line)
@@ -181,16 +202,13 @@ func (f *Formatter) writeHTML(w io.Writer, style *chroma.Style, tokens []chroma.
 				fmt.Fprintf(w, "</span>")
 			}
 		}
-		if !f.preventSurroundingPre {
-			fmt.Fprint(w, "</pre>")
-		}
+		fmt.Fprint(w, f.preWrapper.End(false))
 		fmt.Fprint(w, "</td>\n")
-		fmt.Fprintf(w, "<td%s>\n", f.styleAttr(css, chroma.LineTableTD))
+		fmt.Fprintf(w, "<td%s>\n", f.styleAttr(css, chroma.LineTableTD, "width:100%"))
 	}
 
-	if !f.preventSurroundingPre {
-		fmt.Fprintf(w, "<pre%s>", f.styleAttr(css, chroma.Background))
-	}
+	fmt.Fprintf(w, f.preWrapper.Start(true, f.styleAttr(css, chroma.Background)))
+
 	highlightIndex = 0
 	for index, tokens := range lines {
 		// 1-based line number.
@@ -220,9 +238,7 @@ func (f *Formatter) writeHTML(w io.Writer, style *chroma.Style, tokens []chroma.
 		}
 	}
 
-	if !f.preventSurroundingPre {
-		fmt.Fprint(w, "</pre>")
-	}
+	fmt.Fprintf(w, f.preWrapper.End(true))
 
 	if wrapInTable {
 		fmt.Fprint(w, "</td></tr></table>\n")
@@ -268,13 +284,13 @@ func (f *Formatter) class(t chroma.TokenType) string {
 	return ""
 }
 
-func (f *Formatter) styleAttr(styles map[chroma.TokenType]string, tt chroma.TokenType) string {
+func (f *Formatter) styleAttr(styles map[chroma.TokenType]string, tt chroma.TokenType, extraCSS ...string) string {
 	if f.Classes {
 		cls := f.class(tt)
 		if cls == "" {
 			return ""
 		}
-		return string(fmt.Sprintf(` class="%s"`, cls))
+		return fmt.Sprintf(` class="%s"`, cls)
 	}
 	if _, ok := styles[tt]; !ok {
 		tt = tt.SubCategory()
@@ -285,7 +301,9 @@ func (f *Formatter) styleAttr(styles map[chroma.TokenType]string, tt chroma.Toke
 			}
 		}
 	}
-	return fmt.Sprintf(` style="%s"`, styles[tt])
+	css := []string{styles[tt]}
+	css = append(css, extraCSS...)
+	return fmt.Sprintf(` style="%s"`, strings.Join(css, ";"))
 }
 
 func (f *Formatter) tabWidthStyle() string {

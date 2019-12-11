@@ -26,9 +26,14 @@ builds:
       - darwin
       - windows
       - linux
+      - freebsd
+      - openbsd
+      - netbsd
     goarch: &goarch
       - amd64
       - i386
+      - arm64
+      - ppc64le
     env:
       - CGO_ENABLED=0
     main: ./
@@ -144,29 +149,11 @@ builds:
     env: *env
     main: ./_linters/src/golang.org/x/tools/cmd/gotype
 
-  - binary: gosimple
-    goos: *goos
-    goarch: *goarch
-    env: *env
-    main: ./_linters/src/honnef.co/go/tools/cmd/gosimple
-
-  - binary: megacheck
-    goos: *goos
-    goarch: *goarch
-    env: *env
-    main: ./_linters/src/honnef.co/go/tools/cmd/megacheck
-
   - binary: staticcheck
     goos: *goos
     goarch: *goarch
     env: *env
     main: ./_linters/src/honnef.co/go/tools/cmd/staticcheck
-
-  - binary: unused
-    goos: *goos
-    goarch: *goarch
-    env: *env
-    main: ./_linters/src/honnef.co/go/tools/cmd/unused
 
   - binary: interfacer
     goos: *goos

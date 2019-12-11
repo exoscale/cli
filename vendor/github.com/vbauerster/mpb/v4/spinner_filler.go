@@ -18,12 +18,25 @@ const (
 	SpinnerOnRight
 )
 
-var defaultSpinnerStyle = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
+// DefaultSpinnerStyle is applied when bar constructed with *Progress.AddSpinner method.
+var DefaultSpinnerStyle = []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 
 type spinnerFiller struct {
 	frames    []string
 	count     uint
 	alignment SpinnerAlignment
+}
+
+// NewSpinnerFiller constucts mpb.Filler, to be used with *Progress.Add method.
+func NewSpinnerFiller(style []string, alignment SpinnerAlignment) Filler {
+	if len(style) == 0 {
+		style = DefaultSpinnerStyle
+	}
+	filler := &spinnerFiller{
+		frames:    style,
+		alignment: alignment,
+	}
+	return filler
 }
 
 func (s *spinnerFiller) Fill(w io.Writer, width int, stat *decor.Statistics) {
