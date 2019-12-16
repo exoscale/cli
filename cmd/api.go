@@ -20,8 +20,6 @@ var apiCmd = &cobra.Command{
 	Short: "Exoscale api",
 }
 
-const userDocumentationURL = "http://cloudstack.apache.org/api/apidocs-4.4/user/%s.html"
-
 // global flags
 var apiDebug bool
 var apiDryRun bool
@@ -52,8 +50,6 @@ func buildCommands(methods []category) {
 			realName := cs.APIName(s.command)
 			description := cs.APIDescription(s.command)
 
-			url := userDocumentationURL
-
 			name := realName
 			if s.name != "" {
 				name = s.name
@@ -62,7 +58,7 @@ func buildCommands(methods []category) {
 			hiddenCMD := cobra.Command{
 				Use:    realName,
 				Short:  description,
-				Long:   fmt.Sprintf("%s <%s>", description, fmt.Sprintf(url, realName)),
+				Long:   fmt.Sprintf("%s (%s)", description, realName),
 				Hidden: true,
 			}
 
@@ -71,7 +67,7 @@ func buildCommands(methods []category) {
 			subCMD := cobra.Command{
 				Use:     name,
 				Short:   description,
-				Long:    fmt.Sprintf("%s <%s>", description, fmt.Sprintf(url, realName)),
+				Long:    fmt.Sprintf("%s (%s)", description, realName),
 				Aliases: append(s.alias, realName),
 				Hidden:  s.hidden,
 			}
