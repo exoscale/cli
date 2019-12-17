@@ -67,7 +67,12 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 		}
 	}
 
-	if err = c.setZone(defaultSOSZone); err != nil {
+	z := gCurrentAccount.DefaultZone
+	if z == "" {
+		z = defaultSOSZone
+	}
+
+	if err = c.setZone(z); err != nil {
 		return nil, err
 	}
 
