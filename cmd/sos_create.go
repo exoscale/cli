@@ -31,7 +31,9 @@ var sosCreateCmd = &cobra.Command{
 		}
 
 		if zone != "" {
-			sosClient.setZone(zone)
+			if err := sosClient.setZone(zone); err != nil {
+				return err
+			}
 		}
 
 		return createBucket(sosClient, bucket, zone)
