@@ -1,10 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
@@ -24,20 +20,6 @@ var sosCreateCmd = &cobra.Command{
 			return err
 		}
 
-		if zone != "" {
-			gCurrentAccount.DefaultZone = zone
-		}
-
-		if _, err := getZoneByName(zone); err != nil {
-			if apiErr, ok := err.(*egoscale.ErrorResponse); ok {
-				if strings.HasPrefix(apiErr.ErrorText, "not found") {
-					return fmt.Errorf("invalid zone %q", zone)
-				}
-				return err
-			}
-			return err
-		}
-
 		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
 			return err
@@ -46,6 +28,12 @@ var sosCreateCmd = &cobra.Command{
 		sosClient, err := newSOSClient(certsFile)
 		if err != nil {
 			return err
+		}
+
+		if zone != "" {
+			if err := sosClient.setZone(zone); err != nil {
+				return err
+			}
 		}
 
 		return createBucket(sosClient, bucket, zone)
@@ -58,5 +46,5 @@ func createBucket(sosClient *sosClient, name, zone string) error {
 
 func init() {
 	sosCmd.AddCommand(sosCreateCmd)
-	sosCreateCmd.Flags().StringP("zone", "z", defaultSOSZone, "Simple object storage zone")
+	sosCreateCmd.Flags().StringP("zone", "z", "", "Simple object storage zone")
 }
