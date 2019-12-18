@@ -1,3 +1,20 @@
+1.9.0
+-----
+
+### New
+
+* Add support for `exo iam` as a top-level entity instead of as a lab feature (#214)
+
+### Bug fixes
+
+* Fix bug when you use an API key with sos/* rights only (#217) 
+
+### Changes
+
+* Changes the number of requests to minio before returning an error in `exo sos` (#213) 
+* Improves the output of the `exo iam apikey operations` command (#212) 
+
+
 1.8.0
 -----
 
