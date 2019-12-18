@@ -20,11 +20,6 @@ builds:
     hooks:
       pre: make manpages completions
 
-signs:
-  - cmd: gpg
-    args: ["-u", "ops@exoscale.ch", "--detach-sign", "${artifact}"]
-    artifacts: all
-
 archives:
   - id: windows
     format_overrides:
