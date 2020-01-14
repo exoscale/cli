@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.23.0
+------
+
+- change: Add `Resources` field to `APIKey` (#420)
+
 0.22.0
 ------
 

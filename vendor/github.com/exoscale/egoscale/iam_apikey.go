@@ -16,6 +16,7 @@ type APIKey struct {
 	Key        string     `json:"key"`
 	Secret     string     `json:"secret,omitempty"`
 	Operations []string   `json:"operations,omitempty"`
+	Resources  []string   `json:"resources,omitempty"`
 	Type       APIKeyType `json:"type"`
 }
 
@@ -23,6 +24,7 @@ type APIKey struct {
 type CreateAPIKey struct {
 	Name       string `json:"name"`
 	Operations string `json:"operations,omitempty"`
+	Resources  string `json:"resources,omitempty"`
 	_          bool   `name:"createApiKey" description:"Create an API key."`
 }
 
