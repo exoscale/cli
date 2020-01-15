@@ -12,6 +12,7 @@ type apiKeyItem struct {
 	Name       string `json:"name"`
 	Key        string `json:"key"`
 	Operations string `json:"operations,omitempty"`
+	Resources  string `json:"resources,omitempty"`
 	Type       string `json:"type"`
 }
 
@@ -26,7 +27,7 @@ var apiKeyListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List API keys",
 	Long: fmt.Sprintf(`This command lists existing API keys.
-	
+
 	Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&apiKeyListItemOutput{}), ", ")),
 	Aliases: gListAlias,
@@ -44,6 +45,7 @@ var apiKeyListCmd = &cobra.Command{
 				Name:       i.Name,
 				Key:        i.Key,
 				Operations: strings.Join(i.Operations, ", "),
+				Resources:  strings.Join(i.Resources, ", "),
 				Type:       string(i.Type),
 			})
 		}

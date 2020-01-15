@@ -11,6 +11,7 @@ type apiKeyShowItemOutput struct {
 	Name       string   `json:"name"`
 	Key        string   `json:"key"`
 	Operations []string `json:"operations,omitempty"`
+	Resources  []string `json:"resources,omitempty"`
 	Type       string   `json:"type"`
 }
 
@@ -23,7 +24,7 @@ var apiKeyShowCmd = &cobra.Command{
 	Use:   "show <key | name>",
 	Short: "Show API key",
 	Long: fmt.Sprintf(`This command shows an API key details.
-	
+
 	Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&apiKeyShowItemOutput{}), ", ")),
 	Aliases: gShowAlias,
@@ -41,6 +42,7 @@ var apiKeyShowCmd = &cobra.Command{
 			Name:       apiKey.Name,
 			Key:        apiKey.Key,
 			Operations: apiKey.Operations,
+			Resources:  apiKey.Resources,
 			Type:       string(apiKey.Type),
 		}
 

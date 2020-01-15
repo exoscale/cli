@@ -1,4 +1,4 @@
 package egoscale
 
 // Version of the library
-const Version = "0.22.0"
+const Version = "0.23.0"

@@ -13,6 +13,7 @@ type apiKeyCreateItemOutput struct {
 	Key        string   `json:"key"`
 	Secret     string   `json:"secret,omitempty"`
 	Operations []string `json:"operations,omitempty"`
+	Resources  []string `json:"resources,omitempty"`
 	Type       string   `json:"type"`
 }
 
@@ -39,9 +40,15 @@ var apiKeyCreateCmd = &cobra.Command{
 			return err
 		}
 
+		res, err := cmd.Flags().GetStringSlice("resource")
+		if err != nil {
+			return err
+		}
+
 		resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAPIKey{
 			Name:       args[0],
 			Operations: strings.Join(ops, ","),
+			Resources:  strings.Join(res, ","),
 		})
 		if err != nil {
 			return err
@@ -55,6 +62,7 @@ var apiKeyCreateCmd = &cobra.Command{
 				Key:        apiKey.Key,
 				Secret:     apiKey.Secret,
 				Operations: apiKey.Operations,
+				Resources:  apiKey.Resources,
 				Type:       string(apiKey.Type),
 			}
 
@@ -75,5 +83,6 @@ var apiKeyCreateCmd = &cobra.Command{
 
 func init() {
 	apiKeyCreateCmd.Flags().StringSliceP("operation", "o", []string{}, "API key allowed operation")
+	apiKeyCreateCmd.Flags().StringSliceP("resource", "r", []string{}, "API key allowed resource")
 	apiKeyCmd.AddCommand(apiKeyCreateCmd)
 }
