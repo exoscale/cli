@@ -1,3 +1,10 @@
+1.10.0
+------
+
+### New
+
+* Add support for resource-level IAM API keys creation (#219)
+
 1.9.0
 -----
 
