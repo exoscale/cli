@@ -95,7 +95,7 @@ var configCmd = &cobra.Command{
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
 	var (
-		defaultAccountMark = promptui.Styler(promptui.FGBold, promptui.FGYellow)("*")
+		defaultAccountMark = promptui.Styler(promptui.FGYellow)("*")
 		newAccountLabel    = "<Configure a new account>"
 	)
 
