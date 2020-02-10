@@ -94,18 +94,22 @@ var configCmd = &cobra.Command{
 }
 
 func configCmdRun(cmd *cobra.Command, args []string) error {
-	var defaultAccountMark = "*"
+	var (
+		defaultAccountMark = promptui.Styler(promptui.FGYellow)("*")
+		newAccountLabel    = "<Configure a new account>"
+	)
 
 	if gConfigFilePath == "" && gCurrentAccount.Key != "" {
 		log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
 	}
 
 	if gConfigFilePath != "" && gCurrentAccount.Key != "" {
-		fmt.Println("To configure a new account, run `exo config add`")
-
+		accounts := listAccounts(defaultAccountMark)
+		accounts = append(accounts, newAccountLabel)
 		prompt := promptui.Select{
 			Label: fmt.Sprintf("Configured accounts (%s = default account)", defaultAccountMark),
-			Items: listAccounts(defaultAccountMark),
+			Items: accounts,
+			Size:  len(accounts),
 		}
 		_, selectedAccount, err := prompt.Run()
 		if err != nil {
@@ -117,13 +121,14 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 			}
 		}
 
-		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != gAllAccount.DefaultAccount {
-			viper.Set("defaultAccount", selectedAccount)
-			if err := saveConfig(viper.ConfigFileUsed(), nil); err != nil {
-				return err
-			}
+		if selectedAccount == newAccountLabel {
+			return addConfigAccount(false)
+		}
 
-			fmt.Printf("Default account set to [%s]\n", selectedAccount)
+		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != gAllAccount.DefaultAccount {
+			fmt.Printf("Setting default account to [%s]\n", selectedAccount)
+			viper.Set("defaultAccount", selectedAccount)
+			return saveConfig(viper.ConfigFileUsed(), nil)
 		}
 
 		return addConfigAccount(false)
@@ -514,6 +519,7 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 	prompt := promptui.Select{
 		Label: fmt.Sprintf("Choose the default zone for %q", accountName),
 		Items: zones,
+		Size:  len(zones),
 	}
 
 	_, result, err := prompt.Run()
@@ -521,8 +527,6 @@ func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("prompt failed %v", err)
 	}
-
-	fmt.Printf("You chose %q\n", result)
 
 	return result, nil
 }

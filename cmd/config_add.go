@@ -36,30 +36,34 @@ func init() {
 }
 
 func addConfigAccount(firstRun bool) error {
-	var config config
+	var (
+		config config
+		err    error
+	)
+
+	filePath := viper.ConfigFileUsed()
 
 	if firstRun {
-		filePath, err := createConfigFile(defaultConfigFileName)
-		if err != nil {
+		if filePath, err = createConfigFile(defaultConfigFileName); err != nil {
 			return err
 		}
 
 		viper.SetConfigFile(filePath)
-
-		newAccount, err := promptAccountInformation()
-		if err != nil {
-			return err
-		}
-		config.DefaultAccount = newAccount.Name
-		config.Accounts = []account{*newAccount}
-		viper.Set("defaultAccount", newAccount.Name)
 	}
+
+	newAccount, err := promptAccountInformation()
+	if err != nil {
+		return err
+	}
+	config.DefaultAccount = newAccount.Name
+	config.Accounts = []account{*newAccount}
+	viper.Set("defaultAccount", newAccount.Name)
 
 	if len(config.Accounts) == 0 {
 		return nil
 	}
 
-	return saveConfig(viper.ConfigFileUsed(), &config)
+	return saveConfig(filePath, &config)
 }
 
 func promptAccountInformation() (*account, error) {

@@ -276,8 +276,8 @@ func initConfig() {
 		}
 	}
 
-	if gCurrentAccount == nil {
-		log.Fatalf("could't find any account with name: %q", gAccountName)
+	if gCurrentAccount.Name == "" {
+		log.Fatalf("error: could't find any configured account named %q", gAccountName)
 	}
 
 	if gCurrentAccount.Endpoint == "" {
