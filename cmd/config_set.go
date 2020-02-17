@@ -29,7 +29,7 @@ var configSetCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println("Default profile set to", args[0])
+		fmt.Printf("Default profile set to [%s]\n", args[0])
 
 		return nil
 	},

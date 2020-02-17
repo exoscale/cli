@@ -378,7 +378,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 			csAccount.Name = name
 		}
 
-		defaultZone, err := chooseZone(csAccount.Name, csClient)
+		defaultZone, err := chooseZone(csClient, nil)
 		if err != nil {
 			return err
 		}
@@ -498,26 +498,27 @@ func getAccountByName(name string) *account {
 	return nil
 }
 
-func chooseZone(accountName string, cs *egoscale.Client) (string, error) {
-	zonesResp, err := cs.ListWithContext(gContext, &egoscale.Zone{})
-	if err != nil {
-		return "", err
-	}
+func chooseZone(cs *egoscale.Client, zones []string) (string, error) {
+	if zones == nil {
+		zonesResp, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+		if err != nil {
+			return "", err
+		}
 
-	if len(zonesResp) == 0 {
-		return "", fmt.Errorf("no zones were found")
-	}
+		if len(zonesResp) == 0 {
+			return "", fmt.Errorf("no zones were found")
+		}
 
-	zones := make([]string, len(zonesResp))
-
-	for i, z := range zonesResp {
-		zone := z.(*egoscale.Zone)
-		zName := strings.ToLower(zone.Name)
-		zones[i] = zName
+		zones = make([]string, len(zonesResp))
+		for i, z := range zonesResp {
+			zone := z.(*egoscale.Zone)
+			zName := strings.ToLower(zone.Name)
+			zones[i] = zName
+		}
 	}
 
 	prompt := promptui.Select{
-		Label: fmt.Sprintf("Choose the default zone for %q", accountName),
+		Label: "Default zone",
 		Items: zones,
 		Size:  len(zones),
 	}

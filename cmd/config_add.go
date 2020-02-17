@@ -12,13 +12,9 @@ import (
 
 func init() {
 	configCmd.AddCommand(&cobra.Command{
-		Use:   "add <account name>",
+		Use:   "add",
 		Short: "Add a new account to configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
-				return cmd.Usage()
-			}
-
 			newAccount, err := promptAccountInformation()
 			if err != nil {
 				return err
@@ -114,13 +110,13 @@ func promptAccountInformation() (*account, error) {
 		resp, err := client.GetWithContext(gContext, egoscale.Account{})
 		if err != nil {
 			if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
-				fmt.Print(`failure.
+				fmt.Print(`
 
-Please enter your account information.
+Unable to retrieve information, please enter your account details:
 
 `)
 				for {
-					acc, err := readInput(reader, "Account", account.Account)
+					acc, err := readInput(reader, "Account name", account.Account)
 					if err != nil {
 						return nil, err
 					}
@@ -169,11 +165,11 @@ Let's start over.
 		account.Name = name
 	}
 
-	account.DefaultZone, err = chooseZone(account.Name, client)
+	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
 		if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
 			for {
-				defaultZone, err := readInput(reader, "Zone", account.DefaultZone)
+				defaultZone, err := chooseZone(cs, zones)
 				if err != nil {
 					return nil, err
 				}
