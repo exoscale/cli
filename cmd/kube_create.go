@@ -24,7 +24,7 @@ const (
 	kubeDockerVersion = "18.06"
 
 	// kubeCalicoVersion is the version of Calico installed
-	kubeCalicoVersion = "3.6"
+	kubeCalicoVersion = "3.12.0"
 
 	// kubeDefaultTemplate is the template to install Kubernetes on.
 	kubeDefaultTemplate = defaultTemplate
@@ -176,9 +176,7 @@ sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
 		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml
 {{ else }}
 sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
-		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/etcd.yaml
-sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
-		-f https://docs.projectcalico.org/v{{ .CalicoVersion }}/getting-started/kubernetes/installation/hosted/calico.yaml
+        -f https://docs.projectcalico.org/manifests/calico-etcd.yaml
 {{ end }}`,
 	},
 }
