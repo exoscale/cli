@@ -8,8 +8,8 @@ import (
 )
 
 func init() {
-	firewallDeleteCmd.Flags().BoolP("force", "f", false, "Remove security group without prompting for confirmation and delete all rules inside")
-	firewallDeleteCmd.Flags().BoolP("all", "", false, "Remove all security group without default")
+	firewallDeleteCmd.Flags().BoolP("force", "f", false, "Delete security group without prompting for confirmation")
+	firewallDeleteCmd.Flags().BoolP("all", "", false, "Delete all security group and rules")
 	firewallCmd.AddCommand(firewallDeleteCmd)
 }
 
@@ -24,11 +24,20 @@ var firewallDeleteCmd = &cobra.Command{
 			return err
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
 		if len(args) < 1 && !all {
 			return cmd.Usage()
 		}
 
 		if all {
+			q := fmt.Sprintf("Are you sure you want to delete all security groups")
+			if !force && !askQuestion(q) {
+				return nil
+			}
 			r, err := cs.ListWithContext(gContext, &egoscale.SecurityGroup{})
 			if err != nil {
 				return err
@@ -37,15 +46,13 @@ var firewallDeleteCmd = &cobra.Command{
 			for _, s := range r {
 				sg := s.(*egoscale.SecurityGroup)
 				if sg.Name == "default" {
+					if err := removeAllRules(sg); err != nil {
+						return err
+					}
 					continue
 				}
 				args = append(args, sg.ID.String())
 			}
-		}
-
-		force, err := cmd.Flags().GetBool("force")
-		if err != nil {
-			return err
 		}
 
 		sgTasks := make([]task, 0, len(args))
@@ -57,27 +64,25 @@ var firewallDeleteCmd = &cobra.Command{
 			}
 
 			q := fmt.Sprintf("Are you sure you want to delete the security group: %q", sg.Name)
-			if !force && !askQuestion(q) {
+			if !all && !force && !askQuestion(q) {
 				continue
 			}
 
-			if force {
-				for _, r := range sg.IngressRule {
-					rulesTask = append(rulesTask, task{
-						&egoscale.RevokeSecurityGroupIngress{
-							ID: r.RuleID,
-						},
-						fmt.Sprintf("deleting %q rule from %q", r.RuleID, sg.Name),
-					})
-				}
-				for _, r := range sg.EgressRule {
-					rulesTask = append(rulesTask, task{
-						&egoscale.RevokeSecurityGroupEgress{
-							ID: r.RuleID,
-						},
-						fmt.Sprintf("deleting %q rule from %q", r.RuleID, sg.Name),
-					})
-				}
+			for _, r := range sg.IngressRule {
+				rulesTask = append(rulesTask, task{
+					&egoscale.RevokeSecurityGroupIngress{
+						ID: r.RuleID,
+					},
+					fmt.Sprintf("deleting %q rule from %q", r.RuleID, sg.Name),
+				})
+			}
+			for _, r := range sg.EgressRule {
+				rulesTask = append(rulesTask, task{
+					&egoscale.RevokeSecurityGroupEgress{
+						ID: r.RuleID,
+					},
+					fmt.Sprintf("deleting %q rule from %q", r.RuleID, sg.Name),
+				})
 			}
 
 			cmd := &egoscale.DeleteSecurityGroup{ID: sg.ID}
