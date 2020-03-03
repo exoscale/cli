@@ -10,7 +10,7 @@ ENV CGO_ENABLED=1
 RUN go build -mod vendor -o exo \
         -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${VCS_REF}"
 
-FROM ubuntu:cosmic
+FROM ubuntu:eoan
 
 ARG VERSION
 ARG VCS_REF
