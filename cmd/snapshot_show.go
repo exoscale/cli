@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
@@ -34,24 +35,22 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return output(showSnapshot(args[0]))
+			snapshot, err := getSnapshotWithNameOrID(args[0])
+			if err != nil {
+				return err
+			}
+
+			return output(showSnapshot(snapshot))
 		},
 	})
 }
 
-func showSnapshot(id string) (outputter, error) {
-	snapshot, err := getSnapshotWithNameOrID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	out := snapshotShowOutput{
+func showSnapshot(snapshot *egoscale.Snapshot) (outputter, error) {
+	return &snapshotShowOutput{
 		ID:       snapshot.ID.String(),
 		Instance: snapshotVMName(*snapshot),
 		Date:     snapshot.Created,
 		State:    snapshot.State,
 		Size:     humanize.IBytes(uint64(snapshot.Size)),
-	}
-
-	return &out, nil
+	}, nil
 }

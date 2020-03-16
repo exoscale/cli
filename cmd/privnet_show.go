@@ -34,17 +34,17 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return output(showPrivnet(args[0]))
+			privnet, err := getNetwork(args[0], nil)
+			if err != nil {
+				return err
+			}
+
+			return output(showPrivnet(privnet))
 		},
 	})
 }
 
-func showPrivnet(name string) (outputter, error) {
-	privnet, err := getNetwork(name, nil)
-	if err != nil {
-		return nil, err
-	}
-
+func showPrivnet(privnet *egoscale.Network) (outputter, error) {
 	out := privnetShowOutput{
 		ID:   privnet.ID.String(),
 		Name: privnet.Name,

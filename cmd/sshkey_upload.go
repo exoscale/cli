@@ -1,31 +1,47 @@
 package cmd
 
 import (
+	"fmt"
 	"io/ioutil"
-	"os"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// uploadCmd represents the upload command
-var uploadCmd = &cobra.Command{
-	Use:     "upload <name> <public key file>",
-	Short:   "Upload SSH key pair from given public key",
-	Aliases: gUploadAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 2 {
-			return cmd.Usage()
-		}
-		return uploadSSHKey(args[0], args[1])
-	},
+type sshkeyUploadOutput struct {
+	Name        string `json:"name"`
+	Fingerprint string `json:"fingerprint"`
 }
 
-func uploadSSHKey(name, publicKeyPath string) error {
+func (o *sshkeyUploadOutput) Type() string { return "SSH Key" }
+func (o *sshkeyUploadOutput) toJSON()      { outputJSON(o) }
+func (o *sshkeyUploadOutput) toText()      { outputText(o) }
+func (o *sshkeyUploadOutput) toTable()     { outputTable(o) }
+
+func init() {
+	sshkeyCmd.AddCommand(&cobra.Command{
+		Use:   "upload <name> <public key file>",
+		Short: "Upload SSH key",
+		Long: fmt.Sprintf(`This command uploads a locally existing SSH key.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&sshkeyUploadOutput{}), ", ")),
+		Aliases: gUploadAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 2 {
+				return cmd.Usage()
+			}
+
+			return output(uploadSSHKey(args[0], args[1]))
+		},
+	})
+}
+
+func uploadSSHKey(name, publicKeyPath string) (outputter, error) {
 	pbk, err := ioutil.ReadFile(publicKeyPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := cs.RequestWithContext(gContext, &egoscale.RegisterSSHKeyPair{
@@ -34,21 +50,17 @@ func uploadSSHKey(name, publicKeyPath string) error {
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	keyPair := resp.(*egoscale.SSHKeyPair)
 
 	if !gQuiet {
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Name", "Fingerprint"})
-		table.Append([]string{keyPair.Name, keyPair.Fingerprint})
-		table.Render()
+		return &sshkeyUploadOutput{
+			Name:        keyPair.Name,
+			Fingerprint: keyPair.Fingerprint,
+		}, nil
 	}
 
-	return nil
-}
-
-func init() {
-	sshkeyCmd.AddCommand(uploadCmd)
+	return nil, nil
 }

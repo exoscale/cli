@@ -34,17 +34,17 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return output(showAffinityGroup(args[0]))
+			ag, err := getAffinityGroupByName(args[0])
+			if err != nil {
+				return err
+			}
+
+			return output(showAffinityGroup(ag))
 		},
 	})
 }
 
-func showAffinityGroup(name string) (outputter, error) {
-	ag, err := getAffinityGroupByName(name)
-	if err != nil {
-		return nil, err
-	}
-
+func showAffinityGroup(ag *egoscale.AffinityGroup) (outputter, error) {
 	out := affinityGroupShowOutput{
 		ID:          ag.ID.String(),
 		Name:        ag.Name,
