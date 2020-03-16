@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -71,7 +72,7 @@ var apiKeyCreateCmd = &cobra.Command{
 			}
 		}
 
-		fmt.Print(`
+		fmt.Fprint(os.Stderr, `
 /!\  Ensure to save your API Secret somewhere,   /!\
 /!\ as there is no way to recover it afterwards. /!\
 

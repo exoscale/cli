@@ -2,33 +2,53 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// sshCreateCmd represents the create command
-var sshCreateCmd = &cobra.Command{
-	Use:     "create <name>",
-	Short:   "Create SSH key pair",
-	Aliases: gCreateAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return cmd.Usage()
-		}
-		keyPair, err := createSSHKey(args[0])
-		if err != nil {
-			return err
-		}
+type sshkeyCreateOutput struct {
+	Name        string `json:"name"`
+	Fingerprint string `json:"fingerprint"`
+	PrivateKey  string `json:"private_key"`
+}
 
-		if !gQuiet {
-			displayResult(keyPair)
-		}
+func (o *sshkeyCreateOutput) Type() string { return "SSH Key" }
+func (o *sshkeyCreateOutput) toJSON()      { outputJSON(o) }
+func (o *sshkeyCreateOutput) toText()      { outputText(o) }
+func (o *sshkeyCreateOutput) toTable()     { outputTable(o) }
 
-		return nil
-	},
+func init() {
+	sshkeyCmd.AddCommand(&cobra.Command{
+		Use:   "create <name>",
+		Short: "Create SSH key",
+		Long: fmt.Sprintf(`This command creates an SSH key.
+
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&sshkeyCreateOutput{}), ", ")),
+		Aliases: gCreateAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return cmd.Usage()
+			}
+
+			sshKey, err := createSSHKey(args[0])
+			if err != nil {
+				return err
+			}
+
+			if !gQuiet {
+				return output(&sshkeyCreateOutput{
+					Name:        sshKey.Name,
+					Fingerprint: sshKey.Fingerprint,
+					PrivateKey:  sshKey.PrivateKey,
+				}, err)
+			}
+
+			return nil
+		},
+	})
 }
 
 func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
@@ -45,17 +65,4 @@ func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
 	}
 
 	return sshKeyPair, nil
-}
-
-func displayResult(sshKeyPair *egoscale.SSHKeyPair) {
-	table := table.NewTable(os.Stdout)
-	table.SetHeader([]string{"Name", "Fingerprint"})
-	table.Append([]string{sshKeyPair.Name, sshKeyPair.Fingerprint})
-	table.Render()
-
-	fmt.Println(sshKeyPair.PrivateKey)
-}
-
-func init() {
-	sshkeyCmd.AddCommand(sshCreateCmd)
 }

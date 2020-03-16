@@ -1,20 +1,23 @@
 package cmd
 
 import (
-	"os"
+	"fmt"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
 var affinitygroupCreateCmd = &cobra.Command{
-	Use:     "create <name>",
-	Short:   "Create affinity group",
+	Use:   "create <name>",
+	Short: "Create Anti-Affinity Group",
+	Long: fmt.Sprintf(`This command creates an Anti-Affinity Group.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
+		if len(args) != 1 {
 			return cmd.Usage()
 		}
 
@@ -23,26 +26,25 @@ var affinitygroupCreateCmd = &cobra.Command{
 			return err
 		}
 
-		return createAffinityGroup(args[0], desc)
+		return output(createAffinityGroup(args[0], desc))
 	},
 }
 
-func createAffinityGroup(name, desc string) error {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{Name: name, Description: desc, Type: "host anti-affinity"})
+func createAffinityGroup(name, desc string) (outputter, error) {
+	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
+		Name:        name,
+		Description: desc,
+		Type:        "host anti-affinity",
+	})
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	affinityGroup := resp.(*egoscale.AffinityGroup)
 
 	if !gQuiet {
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Name", "Description", "ID"})
-		table.Append([]string{affinityGroup.Name, affinityGroup.Description, affinityGroup.ID.String()})
-		table.Render()
+		return showAffinityGroup(resp.(*egoscale.AffinityGroup))
 	}
 
-	return nil
+	return nil, nil
 }
 
 func init() {

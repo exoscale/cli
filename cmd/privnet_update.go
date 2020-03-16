@@ -3,10 +3,8 @@ package cmd
 import (
 	"fmt"
 	"net"
-	"os"
 	"strconv"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 
 	"github.com/spf13/cobra"
@@ -72,16 +70,16 @@ var privnetUpdateCmd = &cobra.Command{
 			netmask.IP = (*net.IP)(&ipmask)
 		}
 
-		newNet, err := privnetUpdate(id, name, desc, startIP.Value(), endIP.Value(), netmask.Value())
+		updatedPrivnet, err := updatePrivnet(id, name, desc, startIP.Value(), endIP.Value(), netmask.Value())
 		if err != nil {
 			return err
 		}
 
-		return privnetShow(*newNet)
+		return output(showPrivnet(updatedPrivnet))
 	},
 }
 
-func privnetUpdate(id, name, desc string, startIP, endIP, netmask net.IP) (*egoscale.Network, error) {
+func updatePrivnet(id, name, desc string, startIP, endIP, netmask net.IP) (*egoscale.Network, error) {
 	uuid, err := egoscale.ParseUUID(id)
 	if err != nil {
 		return nil, fmt.Errorf("update the network by ID, got %q", id)
@@ -100,27 +98,12 @@ func privnetUpdate(id, name, desc string, startIP, endIP, netmask net.IP) (*egos
 		Netmask:     netmask,
 	}
 
-	resp, err := asyncRequest(req, fmt.Sprintf("Updating the network %q ", id))
+	resp, err := asyncRequest(req, fmt.Sprintf("Updating the network %s", id))
 	if err != nil {
 		return nil, err
 	}
 
 	return resp.(*egoscale.Network), nil
-}
-
-func privnetShow(network egoscale.Network) error {
-	if !gQuiet {
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Name", "Description", "ID", "DHCP"})
-		table.Append([]string{
-			network.Name,
-			network.DisplayText,
-			network.ID.String(),
-			dhcpRange(network)})
-		table.Render()
-	}
-
-	return nil
 }
 
 func init() {

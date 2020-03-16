@@ -2,56 +2,59 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
-var snapshotCreateCmd = &cobra.Command{
-	Use:     "create <vm name | vm id>",
-	Short:   "Create a snapshot of an instance volume",
-	Aliases: gCreateAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return cmd.Usage()
-		}
+func init() {
+	snapshotCmd.AddCommand(&cobra.Command{
+		Use:   "create <vm name | vm id>",
+		Short: "Create a snapshot of a Compute instance volume",
+		Long: fmt.Sprintf(`This command creates a snapshot of a Compute instance volume.
 
-		vm, err := getVirtualMachineByNameOrID(args[0])
-		if err != nil {
-			return err
-		}
+Supported output template annotations: %s`,
+			strings.Join(outputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
+		Aliases: gCreateAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) != 1 {
+				return cmd.Usage()
+			}
 
-		query := &egoscale.Volume{
-			VirtualMachineID: vm.ID,
-			Type:             "ROOT",
-		}
-
-		resp, err := cs.GetWithContext(gContext, query)
-		if err != nil {
-			return err
-		}
-
-		createSnapshot := &egoscale.CreateSnapshot{
-			VolumeID: resp.(*egoscale.Volume).ID,
-		}
-
-		message := fmt.Sprintf("Creating snapshot of %q", vm.Name)
-
-		res, err := asyncRequest(createSnapshot, message)
-		if err != nil {
-			return err
-		}
-
-		result := res.(*egoscale.Snapshot)
-
-		log.Printf("Snapshot %q of %q successfully created", result.Name, vm.Name)
-
-		return nil
-	},
+			return output(createSnapshot(args[0]))
+		},
+	})
 }
 
-func init() {
-	snapshotCmd.AddCommand(snapshotCreateCmd)
+func createSnapshot(vmID string) (outputter, error) {
+	vm, err := getVirtualMachineByNameOrID(vmID)
+	if err != nil {
+		return nil, err
+	}
+
+	query := &egoscale.Volume{
+		VirtualMachineID: vm.ID,
+		Type:             "ROOT",
+	}
+
+	resp, err := cs.GetWithContext(gContext, query)
+	if err != nil {
+		return nil, err
+	}
+
+	createSnapshot := &egoscale.CreateSnapshot{
+		VolumeID: resp.(*egoscale.Volume).ID,
+	}
+
+	res, err := asyncRequest(createSnapshot, fmt.Sprintf("Creating snapshot of %q", vm.Name))
+	if err != nil {
+		return nil, err
+	}
+
+	if !gQuiet {
+		return showSnapshot(res.(*egoscale.Snapshot))
+	}
+
+	return nil, nil
 }

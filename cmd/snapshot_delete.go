@@ -33,7 +33,7 @@ var snapshotDeleteCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			t := task{egoscale.DeleteSnapshot{ID: volume.ID}, fmt.Sprintf("Deleting snapshot %q", volume.Name)}
+			t := task{egoscale.DeleteSnapshot{ID: volume.ID}, fmt.Sprintf("Deleting snapshot %s", volume.ID.String())}
 			tasks = append(tasks, t)
 		}
 
