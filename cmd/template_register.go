@@ -2,17 +2,20 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
 // templateRegisterCmd registers a template
 var templateRegisterCmd = &cobra.Command{
-	Use:     "register",
-	Short:   "register a custom template",
+	Use:   "register",
+	Short: "register a custom template",
+	Long: fmt.Sprintf(`This command registers a new Compute instance template.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&templateShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name, err := cmd.Flags().GetString("name")
@@ -80,34 +83,33 @@ var templateRegisterCmd = &cobra.Command{
 			req.Details["username"] = username
 		}
 
-		return templateRegister(req, zone)
+		return output(templateRegister(req, zone))
 	},
 }
 
-func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) error {
+func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) (outputter, error) {
 	z, err := getZoneByName(zone)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	registerTemplate.ZoneID = z.ID
 
 	resp, err := asyncRequest(registerTemplate, fmt.Sprintf("Registering the template"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	templates := resp.(*[]egoscale.Template)
+	if len(*templates) != 1 {
+		return nil, nil
+	}
+	template := (*templates)[0]
 
 	if !gQuiet {
-		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Zone", "Name", "ID"})
-		for _, template := range *templates {
-			table.Append([]string{template.ZoneName, template.Name, template.ID.String()})
-		}
-		table.Render()
+		return showTemplate(&template)
 	}
 
-	return nil
+	return nil, nil
 }
 
 func init() {

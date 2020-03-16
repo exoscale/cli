@@ -61,7 +61,12 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showTemplate(name, templateFilter, zone.ID))
+			template, err := getTemplateByName(zone.ID, name, templateFilter)
+			if err != nil {
+				return err
+			}
+
+			return output(showTemplate(template))
 		},
 	}
 
@@ -70,12 +75,7 @@ Supported output template annotations: %s`,
 	templateCmd.AddCommand(templateShowCmd)
 }
 
-func showTemplate(id, templateFilter string, zone *egoscale.UUID) (outputter, error) {
-	template, err := getTemplateByName(zone, id, templateFilter)
-	if err != nil {
-		return nil, err
-	}
-
+func showTemplate(template *egoscale.Template) (outputter, error) {
 	out := templateShowOutput{
 		ID:           template.ID.String(),
 		Name:         template.Name,
