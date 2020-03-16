@@ -94,7 +94,7 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 	}
 	registerTemplate.ZoneID = z.ID
 
-	resp, err := asyncRequest(registerTemplate, fmt.Sprintf("Registering the template"))
+	resp, err := asyncRequest(registerTemplate, "Registering the template")
 	if err != nil {
 		return nil, err
 	}
