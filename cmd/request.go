@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -65,7 +66,7 @@ func asyncTasks(tasks []task) []taskResponse {
 				// simple name decorator
 				decor.Name(task.string),
 			),
-			mpb.AppendDecorators(decor.OnComplete(decor.Elapsed(decor.ET_STYLE_GO), "done!")),
+			mpb.AppendDecorators(decor.OnComplete(decor.Elapsed(decor.ET_STYLE_GO), "done")),
 		)
 
 		//listen for bar progress
@@ -174,10 +175,14 @@ func execSyncTask(task task, id int, c chan taskStatus, resp *taskResponse, sem 
 func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 	response := cs.Response(cmd)
 
-	fmt.Print(msg)
+	if !gQuiet {
+		fmt.Fprint(os.Stderr, msg)
+	}
 	var errorReq error
 	cs.AsyncRequestWithContext(gContext, cmd, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-		fmt.Print(".")
+		if !gQuiet {
+			fmt.Fprint(os.Stderr, ".")
+		}
 
 		if err != nil {
 			errorReq = err
@@ -193,12 +198,15 @@ func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 			return false
 		}
 
-		fmt.Println(" success.")
+		if !gQuiet {
+			fmt.Fprintln(os.Stderr, " success")
+		}
+
 		return false
 	})
 
-	if errorReq != nil {
-		fmt.Println(" failure!")
+	if errorReq != nil && !gQuiet {
+		fmt.Fprintln(os.Stderr, " failure")
 	}
 
 	return response, errorReq
