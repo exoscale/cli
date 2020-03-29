@@ -16,6 +16,18 @@ builds:
 
     goarch:
       - amd64
+      - arm
+      - arm64
+
+    goarm:
+      - 6
+      - 7
+
+    ignore:
+      - goos: openbsd
+        goarch: arm
+      - goos: openbsd
+        goarch: arm64
 
     hooks:
       pre: make manpages completions
