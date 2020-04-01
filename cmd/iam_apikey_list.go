@@ -9,11 +9,9 @@ import (
 )
 
 type apiKeyItem struct {
-	Name       string `json:"name"`
-	Key        string `json:"key"`
-	Operations string `json:"operations,omitempty"`
-	Resources  string `json:"resources,omitempty"`
-	Type       string `json:"type"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 type apiKeyListItemOutput []apiKeyItem
@@ -42,11 +40,9 @@ var apiKeyListCmd = &cobra.Command{
 		o := make(apiKeyListItemOutput, 0, r.Count)
 		for _, i := range r.APIKeys {
 			o = append(o, apiKeyItem{
-				Name:       i.Name,
-				Key:        i.Key,
-				Operations: strings.Join(i.Operations, ", "),
-				Resources:  strings.Join(i.Resources, ", "),
-				Type:       string(i.Type),
+				Name: i.Name,
+				Key:  i.Key,
+				Type: string(i.Type),
 			})
 		}
 

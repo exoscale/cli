@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -56,6 +57,7 @@ var apiKeyCreateCmd = &cobra.Command{
 		}
 
 		apiKey := resp.(*egoscale.APIKey)
+		sort.Strings(apiKey.Operations)
 
 		if !gQuiet {
 			o := apiKeyCreateItemOutput{

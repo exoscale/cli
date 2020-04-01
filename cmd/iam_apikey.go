@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -49,6 +50,8 @@ func getAPIKeyByName(name string) (*egoscale.APIKey, error) {
 	case count > 1:
 		return nil, fmt.Errorf(`more than one element found: %d`, count)
 	}
+
+	sort.Strings(apiKeys[0].Operations)
 
 	return &apiKeys[0], nil
 }
