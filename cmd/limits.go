@@ -9,10 +9,10 @@ import (
 )
 
 type LimitsItemOutput struct {
-	Resource  string `json:resource`
-	Used      int    `json:used`
-	Available int    `json:available`
-	Max       int    `json:max`
+	Resource  string `json:"resource"`
+	Used      int    `json:"used"`
+	Available int    `json:"available"`
+	Max       int    `json:"max"`
 }
 
 type LimitsOutput []LimitsItemOutput
