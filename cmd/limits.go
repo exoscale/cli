@@ -9,10 +9,9 @@ import (
 )
 
 type LimitsItemOutput struct {
-	Resource  string `json:"resource"`
-	Used      int    `json:"used"`
-	Available int    `json:"available"`
-	Max       int    `json:"max"`
+	Resource string `json:"resource"`
+	Used     int    `json:"used"`
+	Max      int    `json:"max"`
 }
 
 type LimitsOutput []LimitsItemOutput
@@ -59,10 +58,9 @@ func listLimits() (outputter, error) {
 			}
 
 			out = append(out, LimitsItemOutput{
-				Resource:  display[limit.ResourceTypeName],
-				Max:       int(limit.Max),
-				Available: (int(limit.Max) - rUsed),
-				Used:      rUsed,
+				Resource: display[limit.ResourceTypeName],
+				Max:      int(limit.Max),
+				Used:     rUsed,
 			})
 		}
 	}
@@ -70,48 +68,48 @@ func listLimits() (outputter, error) {
 	return &out, nil
 }
 
-func fetchUsedResources(rType string) (int, error) {
-	var rUsed int
+func fetchUsedResources(resourceType string) (int, error) {
+	var resourceUsed int
 
-	switch rType {
+	switch resourceType {
 	case "user_vm":
 		instances, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{})
 		if err != nil {
 			return 0, err
 		}
 
-		rUsed = len(instances)
+		resourceUsed = len(instances)
 	case "snapshot":
 		snapshots, err := cs.ListWithContext(gContext, &egoscale.Snapshot{})
 		if err != nil {
 			return 0, err
 		}
 
-		rUsed = len(snapshots)
+		resourceUsed = len(snapshots)
 	case "template":
 		templates, err := cs.ListWithContext(gContext, &egoscale.Template{})
 		if err != nil {
 			return 0, err
 		}
 
-		rUsed = len(templates)
+		resourceUsed = len(templates)
 	case "network":
 		networks, err := cs.ListWithContext(gContext, &egoscale.Network{})
 		if err != nil {
 			return 0, err
 		}
 
-		rUsed = len(networks)
+		resourceUsed = len(networks)
 	case "public_elastic_ip":
 		eips, err := cs.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
 		if err != nil {
 			return 0, err
 		}
 
-		rUsed = len(eips)
+		resourceUsed = len(eips)
 	}
 
-	return rUsed, nil
+	return resourceUsed, nil
 }
 
 func init() {
