@@ -51,8 +51,7 @@ func listLimits() (outputter, error) {
 	for _, key := range limits {
 		limit := key.(*egoscale.ResourceLimit)
 
-		if display[limit.ResourceTypeName] != "" {
-			rUsed, err := fetchUsedResources(limit.ResourceTypeName)
+		if used, err := fetchUsedResources(limit.ResourceTypeName); used != -1 {
 			if err != nil {
 				return nil, err
 			}
@@ -60,7 +59,7 @@ func listLimits() (outputter, error) {
 			out = append(out, LimitsItemOutput{
 				Resource: display[limit.ResourceTypeName],
 				Max:      int(limit.Max),
-				Used:     rUsed,
+				Used:     used,
 			})
 		}
 	}
@@ -79,6 +78,7 @@ func fetchUsedResources(resourceType string) (int, error) {
 		}
 
 		resourceUsed = len(instances)
+
 	case "snapshot":
 		snapshots, err := cs.ListWithContext(gContext, &egoscale.Snapshot{})
 		if err != nil {
@@ -86,6 +86,7 @@ func fetchUsedResources(resourceType string) (int, error) {
 		}
 
 		resourceUsed = len(snapshots)
+
 	case "template":
 		templates, err := cs.ListWithContext(gContext, &egoscale.Template{})
 		if err != nil {
@@ -93,6 +94,7 @@ func fetchUsedResources(resourceType string) (int, error) {
 		}
 
 		resourceUsed = len(templates)
+
 	case "network":
 		networks, err := cs.ListWithContext(gContext, &egoscale.Network{})
 		if err != nil {
@@ -100,6 +102,7 @@ func fetchUsedResources(resourceType string) (int, error) {
 		}
 
 		resourceUsed = len(networks)
+
 	case "public_elastic_ip":
 		eips, err := cs.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
 		if err != nil {
@@ -107,6 +110,9 @@ func fetchUsedResources(resourceType string) (int, error) {
 		}
 
 		resourceUsed = len(eips)
+
+	default:
+		return -1, nil
 	}
 
 	return resourceUsed, nil
