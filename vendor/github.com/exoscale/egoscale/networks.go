@@ -43,7 +43,7 @@ type Network struct {
 	Tags                []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with network"`
 	TrafficType         string        `json:"traffictype,omitempty" doc:"the traffic type of the network"`
 	Type                string        `json:"type,omitempty" doc:"the type of the network"`
-	Vlan                string        `json:"vlan,omitemtpy" doc:"The vlan of the network. This parameter is visible to ROOT admins only"`
+	Vlan                string        `json:"vlan,omitempty" doc:"The vlan of the network. This parameter is visible to ROOT admins only"`
 	ZoneID              *UUID         `json:"zoneid,omitempty" doc:"zone id of the network"`
 	ZoneName            string        `json:"zonename,omitempty" doc:"the name of the zone the network belongs to"`
 	ZonesNetworkSpans   []Zone        `json:"zonesnetworkspans,omitempty" doc:"If a network is enabled for 'streched l2 subnet' then represents zones on which network currently spans"`
@@ -208,7 +208,7 @@ type ListNetworks struct {
 	RestartRequired   *bool         `json:"restartrequired,omitempty" doc:"List networks by restartRequired"`
 	SpecifyIPRanges   *bool         `json:"specifyipranges,omitempty" doc:"True if need to list only networks which support specifying ip ranges"`
 	SupportedServices []Service     `json:"supportedservices,omitempty" doc:"List networks supporting certain services"`
-	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
+	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs). Note: multiple tags are OR'ed, not AND'ed."`
 	TrafficType       string        `json:"traffictype,omitempty" doc:"Type of the traffic"`
 	Type              string        `json:"type,omitempty" doc:"The type of the network. Supported values are: Isolated and Shared"`
 	ZoneID            *UUID         `json:"zoneid,omitempty" doc:"The Zone ID of the network"`

@@ -169,7 +169,7 @@ type ListPublicIPAddresses struct {
 	Page                int           `json:"page,omitempty"`
 	PageSize            int           `json:"pagesize,omitempty"`
 	PhysicalNetworkID   *UUID         `json:"physicalnetworkid,omitempty" doc:"lists all public IP addresses by physical network id"`
-	Tags                []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
+	Tags                []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs). Note: multiple tags are OR'ed, not AND'ed."`
 	VlanID              *UUID         `json:"vlanid,omitempty" doc:"lists all public IP addresses by VLAN ID"`
 	ZoneID              *UUID         `json:"zoneid,omitempty" doc:"lists all public IP addresses by Zone ID"`
 	_                   bool          `name:"listPublicIpAddresses" description:"Lists all public ip addresses"`

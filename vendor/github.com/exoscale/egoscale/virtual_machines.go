@@ -520,7 +520,7 @@ type ListVirtualMachines struct {
 	PageSize          int           `json:"pagesize,omitempty"`
 	ServiceOfferindID *UUID         `json:"serviceofferingid,omitempty" doc:"list by the service offering"`
 	State             string        `json:"state,omitempty" doc:"state of the virtual machine"`
-	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
+	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs). Note: multiple tags are OR'ed, not AND'ed."`
 	TemplateID        *UUID         `json:"templateid,omitempty" doc:"list vms by template"`
 	ZoneID            *UUID         `json:"zoneid,omitempty" doc:"the availability zone ID"`
 	_                 bool          `name:"listVirtualMachines" description:"List the virtual machines owned by the account."`

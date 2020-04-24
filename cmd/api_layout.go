@@ -118,6 +118,7 @@ var methods = []category{
 			{command: &egoscale.DeleteSnapshot{}, name: "delete", alias: gDeleteAlias},
 			{command: &egoscale.ListSnapshots{}, name: "list", alias: gListAlias},
 			{command: &egoscale.RevertSnapshot{}, name: "revert"},
+			{command: &egoscale.ExportSnapshot{}, name: "export"},
 		},
 	},
 	{
