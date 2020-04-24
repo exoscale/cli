@@ -30,4 +30,4 @@ require (
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 )
 
-go 1.13
+go 1.14
