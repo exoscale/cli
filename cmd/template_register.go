@@ -83,33 +83,33 @@ Supported output template annotations: %s`,
 			req.Details["username"] = username
 		}
 
-		return output(templateRegister(req, zone))
+		return templateRegister(req, zone)
 	},
 }
 
-func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) (outputter, error) {
+func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) error {
 	z, err := getZoneByName(zone)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	registerTemplate.ZoneID = z.ID
 
 	resp, err := asyncRequest(registerTemplate, "Registering the template")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	templates := resp.(*[]egoscale.Template)
 	if len(*templates) != 1 {
-		return nil, nil
+		return nil
 	}
 	template := (*templates)[0]
 
 	if !gQuiet {
-		return showTemplate(&template)
+		return output(showTemplate(&template))
 	}
 
-	return nil, nil
+	return nil
 }
 
 func init() {

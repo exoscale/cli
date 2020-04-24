@@ -43,7 +43,7 @@ Supported output template annotations: %s`,
 					Name:        sshKey.Name,
 					Fingerprint: sshKey.Fingerprint,
 					PrivateKey:  sshKey.PrivateKey,
-				}, err)
+				}, nil)
 			}
 
 			return nil

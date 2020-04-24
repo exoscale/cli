@@ -26,25 +26,25 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		return output(createAffinityGroup(args[0], desc))
+		return createAffinityGroup(args[0], desc)
 	},
 }
 
-func createAffinityGroup(name, desc string) (outputter, error) {
+func createAffinityGroup(name, desc string) error {
 	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
 		Name:        name,
 		Description: desc,
 		Type:        "host anti-affinity",
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if !gQuiet {
-		return showAffinityGroup(resp.(*egoscale.AffinityGroup))
+		return output(showAffinityGroup(resp.(*egoscale.AffinityGroup)))
 	}
 
-	return nil, nil
+	return nil
 }
 
 func init() {

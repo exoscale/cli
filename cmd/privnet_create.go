@@ -71,7 +71,7 @@ var privnetCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		return output(createPrivnet(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value()))
+		return createPrivnet(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value())
 	},
 }
 
@@ -84,11 +84,11 @@ func isEmptyArgs(args ...string) bool {
 	return false
 }
 
-func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) (outputter, error) {
+func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) error {
 	zone, err := getZoneByName(zoneName)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if startIP != nil && endIP != nil && netmask == nil {
@@ -106,14 +106,14 @@ func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 
 	resp, err := cs.RequestWithContext(gContext, req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if !gQuiet {
-		return showPrivnet(resp.(*egoscale.Network))
+		return output(showPrivnet(resp.(*egoscale.Network)))
 	}
 
-	return nil, nil
+	return nil
 }
 
 func init() {

@@ -22,15 +22,15 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return output(createSnapshot(args[0]))
+			return createSnapshot(args[0])
 		},
 	})
 }
 
-func createSnapshot(vmID string) (outputter, error) {
+func createSnapshot(vmID string) error {
 	vm, err := getVirtualMachineByNameOrID(vmID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	query := &egoscale.Volume{
@@ -40,7 +40,7 @@ func createSnapshot(vmID string) (outputter, error) {
 
 	resp, err := cs.GetWithContext(gContext, query)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	createSnapshot := &egoscale.CreateSnapshot{
@@ -49,12 +49,12 @@ func createSnapshot(vmID string) (outputter, error) {
 
 	res, err := asyncRequest(createSnapshot, fmt.Sprintf("Creating snapshot of %q", vm.Name))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if !gQuiet {
-		return showSnapshot(res.(*egoscale.Snapshot))
+		return output(showSnapshot(res.(*egoscale.Snapshot)))
 	}
 
-	return nil, nil
+	return nil
 }
