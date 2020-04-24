@@ -21,7 +21,7 @@ func init() {
 	snapshotCmd.AddCommand(&cobra.Command{
 		Use:   "export <snapshotID>",
 		Short: "export snapshot",
-		Long: fmt.Sprintf(`This command export a volume snapshot.
+		Long: fmt.Sprintf(`This command exports a volume snapshot.
 
 Supported output template annotations: %s`,
 			strings.Join(outputterTemplateAnnotations(&snapshotExportOutput{}), ", ")),
