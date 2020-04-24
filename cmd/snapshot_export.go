@@ -19,7 +19,7 @@ func (o *snapshotExportOutput) toTable() { outputTable(o) }
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{
-		Use:   "export <snapshotID>",
+		Use:   "export <snapshot ID>",
 		Short: "export snapshot",
 		Long: fmt.Sprintf(`This command exports a volume snapshot.
 
@@ -41,7 +41,7 @@ func exportSnapshot(snapshotID string) (outputter, error) {
 		return nil, err
 	}
 
-	res, err := asyncRequest(&egoscale.ExportSnapshot{ID: id}, fmt.Sprintf("exporting snapshot of %q", id))
+	res, err := asyncRequest(&egoscale.ExportSnapshot{ID: id}, fmt.Sprintf("exporting snapshot %q", id))
 	if err != nil {
 		return nil, err
 	}
