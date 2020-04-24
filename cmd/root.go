@@ -44,6 +44,7 @@ var gRevokeAlias = []string{"rvk"}
 var gShowAlias = []string{"get"}
 var gCreateAlias = []string{"add"}
 var gUploadAlias = []string{"up"}
+var gSyncAlias = []string{"s"}
 var gDissociateAlias = []string{"disassociate", "dissoc"}
 var gAssociateAlias = []string{"assoc"}
 
