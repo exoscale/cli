@@ -49,14 +49,18 @@ github.com/client9/misspell/cmd/misspell
 github.com/cpuguy83/go-md2man/md2man
 # github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
 github.com/danwakefield/fnmatch
+# github.com/deepmap/oapi-codegen v1.3.7-0.20200311141508-ee90a3f9f1ae
+github.com/deepmap/oapi-codegen/pkg/runtime
+github.com/deepmap/oapi-codegen/pkg/types
 # github.com/dlclark/regexp2 v1.1.6
 github.com/dlclark/regexp2
 github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.23.0
+# github.com/exoscale/egoscale v0.23.1-0.20200424111941-4d52d69dbcd7
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
+github.com/exoscale/egoscale/internal/v2
 # github.com/fatih/camelcase v1.0.0
 github.com/fatih/camelcase
 # github.com/fsnotify/fsnotify v1.4.7
@@ -87,6 +91,11 @@ github.com/inconshreveable/mousetrap
 # github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
 github.com/juju/ansiterm
 github.com/juju/ansiterm/tabwriter
+# github.com/labstack/echo/v4 v4.1.11
+github.com/labstack/echo/v4
+# github.com/labstack/gommon v0.3.0
+github.com/labstack/gommon/color
+github.com/labstack/gommon/log
 # github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a
 github.com/lunixbochs/vtclean
 # github.com/magiconair/properties v1.8.0
@@ -95,9 +104,9 @@ github.com/magiconair/properties
 github.com/manifoldco/promptui
 github.com/manifoldco/promptui/list
 github.com/manifoldco/promptui/screenbuf
-# github.com/mattn/go-colorable v0.0.9
+# github.com/mattn/go-colorable v0.1.4
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.4
+# github.com/mattn/go-isatty v0.0.10
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.3
 github.com/mattn/go-runewidth
@@ -123,6 +132,8 @@ github.com/nicksnyder/go-i18n/i18n/translation
 github.com/olekukonko/tablewriter
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
+# github.com/pkg/errors v0.9.1
+github.com/pkg/errors
 # github.com/russross/blackfriday v1.5.2
 github.com/russross/blackfriday
 # github.com/spf13/afero v1.1.2
@@ -141,41 +152,47 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9
 github.com/tsenart/deadcode
+# github.com/valyala/bytebufferpool v1.0.0
+github.com/valyala/bytebufferpool
+# github.com/valyala/fasttemplate v1.1.0
+github.com/valyala/fasttemplate
 # github.com/vbauerster/mpb/v4 v4.8.4
 github.com/vbauerster/mpb/v4
 github.com/vbauerster/mpb/v4/cwriter
 github.com/vbauerster/mpb/v4/decor
 github.com/vbauerster/mpb/v4/internal
-# golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
+# golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
+golang.org/x/crypto/acme
+golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/argon2
 golang.org/x/crypto/blake2b
+golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20181026193005-c67002cb31c3
 golang.org/x/lint
-# golang.org/x/net v0.0.0-20190522155817-f3200d17e092
+# golang.org/x/net v0.0.0-20191112182307-2180aed22343
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.0.0-20190531175056-4c3a928424d2
+# golang.org/x/sys v0.0.0-20191115151921-52ab43148777
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.0
+# golang.org/x/text v0.3.2
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.0.0-20190328211700-ab21143f2384
+# golang.org/x/tools v0.0.0-20191125144606-a911d9008d1f
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/gcimporter
@@ -183,5 +200,5 @@ golang.org/x/tools/go/internal/gcimporter
 gopkg.in/alecthomas/kingpin.v3-unstable
 # gopkg.in/ini.v1 v1.42.0
 gopkg.in/ini.v1
-# gopkg.in/yaml.v2 v2.2.2
+# gopkg.in/yaml.v2 v2.2.5
 gopkg.in/yaml.v2

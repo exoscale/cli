@@ -12,6 +12,10 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+
+	v2 "github.com/exoscale/egoscale/internal/v2"
 )
 
 // UserAgent is the "User-Agent" HTTP request header added to outgoing HTTP requests.
@@ -61,6 +65,9 @@ type Client struct {
 	RetryStrategy RetryStrategyFunc
 	// Logger contains any log, plug your own
 	Logger *log.Logger
+
+	// API V2 secondary client
+	v2 *v2.ClientWithResponses
 }
 
 // RetryStrategyFunc represents a how much time to wait between two calls to the API
@@ -98,6 +105,22 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 	if prefix, ok := os.LookupEnv("EXOSCALE_TRACE"); ok {
 		client.Logger = log.New(os.Stderr, prefix, log.LstdFlags)
 		client.TraceOn()
+	}
+
+	exoSecurityProvider, err := v2.NewSecurityProviderExoscaleV2(client.APIKey, client.apiSecret)
+	if err != nil {
+		panic(errors.Wrap(err, "unable to initialize security provider"))
+	}
+	exoSecurityProvider.ReqExpire = client.Expiration
+
+	opts := []v2.ClientOption{
+		v2.WithHTTPClient(client.HTTPClient),
+		v2.WithBaseURL(client.Endpoint),
+		v2.WithRequestEditorFn(exoSecurityProvider.Intercept),
+	}
+
+	if client.v2, err = v2.NewClientWithResponses(client.Endpoint, opts...); err != nil {
+		panic(errors.Wrap(err, "unable to initialize API client"))
 	}
 
 	return client
