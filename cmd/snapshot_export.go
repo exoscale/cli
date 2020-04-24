@@ -30,30 +30,26 @@ Supported output template annotations: %s`,
 			if len(args) != 1 {
 				return cmd.Usage()
 			}
-			return exportSnapshot(args[0])
+			return output(exportSnapshot(args[0]))
 		},
 	})
 }
 
-func exportSnapshot(snapshotID string) error {
+func exportSnapshot(snapshotID string) (outputter, error) {
 	id, err := egoscale.ParseUUID(snapshotID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	res, err := asyncRequest(&egoscale.ExportSnapshot{ID: id}, fmt.Sprintf("exporting snapshot of %q", id))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	snapshot := res.(*egoscale.ExportSnapshotResponse)
 
-	if !gQuiet {
-		return output(&snapshotExportOutput{
-			URL:      snapshot.PresignedURL,
-			Checksum: snapshot.MD5sum,
-		}, err)
-	}
-
-	return nil
+	return &snapshotExportOutput{
+		URL:      snapshot.PresignedURL,
+		Checksum: snapshot.MD5sum,
+	}, nil
 }
