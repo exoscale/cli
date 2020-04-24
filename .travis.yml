@@ -8,7 +8,7 @@ go:
 cache: apt
 
 env:
-  - GO111MODULE=on HUGO_VERSION=0.58.3 GOLANGCI_LINT_VERSION=1.21.0
+  - HUGO_VERSION=0.58.3 GOLANGCI_LINT_VERSION=1.25.0
 
 script:
   - '[ "$(echo "$TRAVIS_GO_VERSION" | perl -pe "s/\\.[x\\d]+$//")" = "1.10" ] && go test -v ./... || go test -mod vendor -v ./...'
@@ -23,12 +23,6 @@ jobs:
         - GO111MODULE=off golangci-lint run ./...
         - go test -v -mod=vendor ./...
         - go build -mod=vendor
-    - stage: goreleaser
-      go: "1.13.x"
-      script:
-        - curl -sL https://git.io/goreleaser | head -n -2 | bash
-        - tar -xf /tmp/goreleaser.tar.gz -C $GOPATH/bin
-        - goreleaser --snapshot --skip-sign
     - stage: gh-pages
       go: "1.13.x"
       if: branch = master AND type = push
