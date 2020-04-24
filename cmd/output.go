@@ -33,6 +33,10 @@ func output(o outputter, err error) error {
 		return err
 	}
 
+	if o == nil {
+		return nil
+	}
+
 	switch gOutputFormat {
 	case "json":
 		o.toJSON()

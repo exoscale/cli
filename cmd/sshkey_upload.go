@@ -33,15 +33,15 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return uploadSSHKey(args[0], args[1])
+			return output(uploadSSHKey(args[0], args[1]))
 		},
 	})
 }
 
-func uploadSSHKey(name, publicKeyPath string) error {
+func uploadSSHKey(name, publicKeyPath string) (outputter, error) {
 	pbk, err := ioutil.ReadFile(publicKeyPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	resp, err := cs.RequestWithContext(gContext, &egoscale.RegisterSSHKeyPair{
@@ -50,17 +50,17 @@ func uploadSSHKey(name, publicKeyPath string) error {
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	keyPair := resp.(*egoscale.SSHKeyPair)
 
 	if !gQuiet {
-		return output(&sshkeyUploadOutput{
+		return &sshkeyUploadOutput{
 			Name:        keyPair.Name,
 			Fingerprint: keyPair.Fingerprint,
-		}, nil)
+		}, nil
 	}
 
-	return nil
+	return nil, nil
 }
