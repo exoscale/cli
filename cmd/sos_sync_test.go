@@ -6,25 +6,27 @@ import (
 	"time"
 )
 
-func SosSyncGetTestConfiguration() SosSyncConfiguration {
-	return SosSyncConfiguration{
-		RemoveDeleted: true,
+func sosSyncGetTestConfiguration() sosSyncConfiguration {
+	return sosSyncConfiguration{
+		RemoveDeleted:   true,
 		SourceDirectory: "/",
-		TargetBucket: "test",
-		TargetPath: "",
+		TargetBucket:    "test",
+		TargetPath:      "",
 	}
 }
 
 //region Tests
 func TestSosSyncDiffEmpty(t *testing.T) {
-	var objectList []SosSyncObject
-	var fileList []SosSyncFile
+	var objectList []sosSyncObject
+	var fileList []sosSyncFile
 
-	syncDiffChannel := NewSosSyncDiff(
-		NewSosSyncTestListObjects(objectList),
-		NewSosSyncTestGetFile(fileList),
-		NewSosSyncTestListFiles(fileList),
-	)(SosSyncGetTestConfiguration())
+	done := make(chan bool, 1)
+
+	syncDiffChannel := newSosSyncDiff(
+		newSosSyncTestListObjects(objectList),
+		newSosSyncTestGetFile(fileList),
+		newSosSyncTestListFiles(fileList),
+	)(sosSyncGetTestConfiguration(), done)
 
 	if len(syncDiffChannel) != 0 {
 		t.Errorf("Diffing an empty local directory and empty bucket resulted in %d items in a diff.", len(syncDiffChannel))
@@ -32,28 +34,30 @@ func TestSosSyncDiffEmpty(t *testing.T) {
 }
 
 func TestSosSyncDiffOneRemote(t *testing.T) {
-	var objectList []SosSyncObject
-	var fileList []SosSyncFile
+	var objectList []sosSyncObject
+	var fileList []sosSyncFile
 
-	objectList = append(objectList, SosSyncObject{
+	done := make(chan bool, 1)
+
+	objectList = append(objectList, sosSyncObject{
 		Key:          "test.txt",
 		LastModified: time.Now(),
 		ContentType:  "text/plain",
 		Size:         0,
 	})
 
-	syncDiffChannel := NewSosSyncDiff(
-		NewSosSyncTestListObjects(objectList),
-		NewSosSyncTestGetFile(fileList),
-		NewSosSyncTestListFiles(fileList),
-	)(SosSyncGetTestConfiguration())
+	syncDiffChannel := newSosSyncDiff(
+		newSosSyncTestListObjects(objectList),
+		newSosSyncTestGetFile(fileList),
+		newSosSyncTestListFiles(fileList),
+	)(sosSyncGetTestConfiguration(), done)
 
-	syncDiffFile := SosSyncTestTaskChannelToSlice(syncDiffChannel)
+	syncDiffFile := sosSyncTestTaskChannelToSlice(syncDiffChannel)
 
 	if len(syncDiffFile) != 1 {
 		t.Errorf("Diffing an empty local directory and bucket with one file resulted in %d items in a diff.", len(syncDiffFile))
 	} else {
-		if syncDiffFile[0].Action != SosSyncDeleteAction {
+		if syncDiffFile[0].Action != sosSyncDeleteAction {
 			t.Errorf("Diffing an empty local directory and bucket with one file in a non-delete action.")
 		}
 		if syncDiffFile[0].File != "test.txt" {
@@ -62,30 +66,30 @@ func TestSosSyncDiffOneRemote(t *testing.T) {
 	}
 }
 
-
 func TestSosSyncDiffOneLocal(t *testing.T) {
-	var objectList []SosSyncObject
-	var fileList []SosSyncFile
+	var objectList []sosSyncObject
+	var fileList []sosSyncFile
 
-	fileList = append(fileList, SosSyncFile{
-		Path:          "test.txt",
+	done := make(chan bool, 1)
+
+	fileList = append(fileList, sosSyncFile{
+		Path:         "test.txt",
 		LastModified: time.Now(),
-		ContentType:  "text/plain",
 		Size:         0,
 	})
 
-	syncDiffChannel := NewSosSyncDiff(
-		NewSosSyncTestListObjects(objectList),
-		NewSosSyncTestGetFile(fileList),
-		NewSosSyncTestListFiles(fileList),
-	)(SosSyncGetTestConfiguration())
+	syncDiffChannel := newSosSyncDiff(
+		newSosSyncTestListObjects(objectList),
+		newSosSyncTestGetFile(fileList),
+		newSosSyncTestListFiles(fileList),
+	)(sosSyncGetTestConfiguration(), done)
 
-	syncDiffFile := SosSyncTestTaskChannelToSlice(syncDiffChannel)
+	syncDiffFile := sosSyncTestTaskChannelToSlice(syncDiffChannel)
 
 	if len(syncDiffFile) != 1 {
 		t.Errorf("Diffing an empty bucket and a directory with one file resulted in %d items in a diff.", len(syncDiffFile))
 	} else {
-		if syncDiffFile[0].Action != SosSyncUploadAction {
+		if syncDiffFile[0].Action != sosSyncUploadAction {
 			t.Errorf("Diffing an empty bucket and a directory with one file resulted in a non-upload action.")
 		}
 		if syncDiffFile[0].File != "test.txt" {
@@ -95,32 +99,33 @@ func TestSosSyncDiffOneLocal(t *testing.T) {
 }
 
 func TestSosSyncDiffSameTimestampsAndSize(t *testing.T) {
-	var objectList []SosSyncObject
-	var fileList []SosSyncFile
+	var objectList []sosSyncObject
+	var fileList []sosSyncFile
+
+	done := make(chan bool, 1)
 
 	modified := time.Now()
 
-	fileList = append(fileList, SosSyncFile{
-		Path:          "test.txt",
+	fileList = append(fileList, sosSyncFile{
+		Path:         "test.txt",
 		LastModified: modified,
-		ContentType:  "text/plain",
 		Size:         0,
 	})
 
-	objectList = append(objectList, SosSyncObject{
+	objectList = append(objectList, sosSyncObject{
 		Key:          "test.txt",
 		LastModified: modified,
 		ContentType:  "text/plain",
 		Size:         0,
 	})
 
-	syncDiffChannel := NewSosSyncDiff(
-		NewSosSyncTestListObjects(objectList),
-		NewSosSyncTestGetFile(fileList),
-		NewSosSyncTestListFiles(fileList),
-	)(SosSyncGetTestConfiguration())
+	syncDiffChannel := newSosSyncDiff(
+		newSosSyncTestListObjects(objectList),
+		newSosSyncTestGetFile(fileList),
+		newSosSyncTestListFiles(fileList),
+	)(sosSyncGetTestConfiguration(), done)
 
-	syncDiffFile := SosSyncTestTaskChannelToSlice(syncDiffChannel)
+	syncDiffFile := sosSyncTestTaskChannelToSlice(syncDiffChannel)
 
 	if len(syncDiffFile) != 0 {
 		t.Errorf("Diffing an local directory and bucket with one file resulted in %d items in a diff.", len(syncDiffFile))
@@ -128,32 +133,33 @@ func TestSosSyncDiffSameTimestampsAndSize(t *testing.T) {
 }
 
 func TestSosSyncDiffLocalFileInThePast(t *testing.T) {
-	var objectList []SosSyncObject
-	var fileList []SosSyncFile
+	var objectList []sosSyncObject
+	var fileList []sosSyncFile
+
+	done := make(chan bool, 1)
 
 	modified := time.Now()
 
-	fileList = append(fileList, SosSyncFile{
-		Path:          "test.txt",
+	fileList = append(fileList, sosSyncFile{
+		Path:         "test.txt",
 		LastModified: modified.AddDate(0, 0, -1),
-		ContentType:  "text/plain",
 		Size:         0,
 	})
 
-	objectList = append(objectList, SosSyncObject{
+	objectList = append(objectList, sosSyncObject{
 		Key:          "test.txt",
 		LastModified: modified,
 		ContentType:  "text/plain",
 		Size:         0,
 	})
 
-	syncDiffChannel := NewSosSyncDiff(
-		NewSosSyncTestListObjects(objectList),
-		NewSosSyncTestGetFile(fileList),
-		NewSosSyncTestListFiles(fileList),
-	)(SosSyncGetTestConfiguration())
+	syncDiffChannel := newSosSyncDiff(
+		newSosSyncTestListObjects(objectList),
+		newSosSyncTestGetFile(fileList),
+		newSosSyncTestListFiles(fileList),
+	)(sosSyncGetTestConfiguration(), done)
 
-	syncDiffFile := SosSyncTestTaskChannelToSlice(syncDiffChannel)
+	syncDiffFile := sosSyncTestTaskChannelToSlice(syncDiffChannel)
 
 	if len(syncDiffFile) != 0 {
 		t.Errorf("Diffing an local directory and bucket with one file, local file in the past resulted in %d items in a diff.", len(syncDiffFile))
@@ -161,37 +167,38 @@ func TestSosSyncDiffLocalFileInThePast(t *testing.T) {
 }
 
 func TestSosSyncDiffRemoteFileInThePast(t *testing.T) {
-	var objectList []SosSyncObject
-	var fileList []SosSyncFile
+	var objectList []sosSyncObject
+	var fileList []sosSyncFile
+
+	done := make(chan bool, 1)
 
 	modified := time.Now()
 
-	fileList = append(fileList, SosSyncFile{
-		Path:          "test.txt",
+	fileList = append(fileList, sosSyncFile{
+		Path:         "test.txt",
 		LastModified: modified,
-		ContentType:  "text/plain",
 		Size:         0,
 	})
 
-	objectList = append(objectList, SosSyncObject{
+	objectList = append(objectList, sosSyncObject{
 		Key:          "test.txt",
 		LastModified: modified.AddDate(0, 0, -1),
 		ContentType:  "text/plain",
 		Size:         0,
 	})
 
-	syncDiffChannel := NewSosSyncDiff(
-		NewSosSyncTestListObjects(objectList),
-		NewSosSyncTestGetFile(fileList),
-		NewSosSyncTestListFiles(fileList),
-	)(SosSyncGetTestConfiguration())
+	syncDiffChannel := newSosSyncDiff(
+		newSosSyncTestListObjects(objectList),
+		newSosSyncTestGetFile(fileList),
+		newSosSyncTestListFiles(fileList),
+	)(sosSyncGetTestConfiguration(), done)
 
-	syncDiffFile := SosSyncTestTaskChannelToSlice(syncDiffChannel)
+	syncDiffFile := sosSyncTestTaskChannelToSlice(syncDiffChannel)
 
 	if len(syncDiffFile) != 1 {
 		t.Errorf("Diffing an local directory and bucket with one file, remote file in the past resulted in %d items in a diff.", len(syncDiffFile))
 	} else {
-		if syncDiffFile[0].Action != SosSyncUploadAction {
+		if syncDiffFile[0].Action != sosSyncUploadAction {
 			t.Errorf("Diffing an local directory and bucket with one file, remote file in the past resulted in a non-upload action.")
 		}
 		if syncDiffFile[0].File != "test.txt" {
@@ -200,38 +207,39 @@ func TestSosSyncDiffRemoteFileInThePast(t *testing.T) {
 	}
 }
 
-
 func TestSosSyncDiffDifferingFileSize(t *testing.T) {
-	var objectList []SosSyncObject
-	var fileList []SosSyncFile
+	var objectList []sosSyncObject
+	var fileList []sosSyncFile
+
+	done := make(chan bool, 1)
 
 	modified := time.Now()
 
-	fileList = append(fileList, SosSyncFile{
-		Path:          "test.txt",
+	fileList = append(fileList, sosSyncFile{
+		Path:         "test.txt",
 		LastModified: modified,
 		Size:         0,
 	})
 
-	objectList = append(objectList, SosSyncObject{
+	objectList = append(objectList, sosSyncObject{
 		Key:          "test.txt",
 		LastModified: modified,
 		ContentType:  "text/plain",
 		Size:         1,
 	})
 
-	syncDiffChannel := NewSosSyncDiff(
-		NewSosSyncTestListObjects(objectList),
-		NewSosSyncTestGetFile(fileList),
-		NewSosSyncTestListFiles(fileList),
-	)(SosSyncGetTestConfiguration())
+	syncDiffChannel := newSosSyncDiff(
+		newSosSyncTestListObjects(objectList),
+		newSosSyncTestGetFile(fileList),
+		newSosSyncTestListFiles(fileList),
+	)(sosSyncGetTestConfiguration(), done)
 
-	syncDiffFile := SosSyncTestTaskChannelToSlice(syncDiffChannel)
+	syncDiffFile := sosSyncTestTaskChannelToSlice(syncDiffChannel)
 
 	if len(syncDiffFile) != 1 {
 		t.Errorf("Diffing an local directory and bucket with one file with differing file size resulted in %d items in a diff.", len(syncDiffFile))
 	} else {
-		if syncDiffFile[0].Action != SosSyncUploadAction {
+		if syncDiffFile[0].Action != sosSyncUploadAction {
 			t.Errorf("Diffing an local directory and bucket with one file with differing file size resulted in a non-upload action.")
 		}
 		if syncDiffFile[0].File != "test.txt" {
@@ -239,12 +247,13 @@ func TestSosSyncDiffDifferingFileSize(t *testing.T) {
 		}
 	}
 }
+
 //endregion
 
 //region Mocks
-func NewSosSyncTestListObjects(objects []SosSyncObject) SosSyncListObjects {
-	return func(config SosSyncConfiguration) <-chan SosSyncObject {
-		result := make(chan SosSyncObject)
+func newSosSyncTestListObjects(objects []sosSyncObject) sosSyncListObjects {
+	return func(config sosSyncConfiguration) <-chan sosSyncObject {
+		result := make(chan sosSyncObject)
 
 		go func() {
 			for _, object := range objects {
@@ -257,9 +266,9 @@ func NewSosSyncTestListObjects(objects []SosSyncObject) SosSyncListObjects {
 	}
 }
 
-func NewSosSyncTestListFiles(objects []SosSyncFile) SosSyncListFiles {
-	return func(config SosSyncConfiguration) <-chan SosSyncFile {
-		result := make(chan SosSyncFile)
+func newSosSyncTestListFiles(objects []sosSyncFile) sosSyncListFiles {
+	return func(config sosSyncConfiguration) <-chan sosSyncFile {
+		result := make(chan sosSyncFile)
 
 		go func() {
 			for _, object := range objects {
@@ -272,21 +281,22 @@ func NewSosSyncTestListFiles(objects []SosSyncFile) SosSyncListFiles {
 	}
 }
 
-func NewSosSyncTestGetFile(objects []SosSyncFile) SosSyncGetFile {
-	return func(config SosSyncConfiguration, file string) (SosSyncFile, error) {
+func newSosSyncTestGetFile(objects []sosSyncFile) sosSyncGetFile {
+	return func(config sosSyncConfiguration, file string) (sosSyncFile, error) {
 		for _, object := range objects {
 			if object.Path == file {
 				return object, nil
 			}
 		}
-		return SosSyncFile{}, errors.New("File not found: " + file)
+		return sosSyncFile{}, errors.New("File not found: " + file)
 	}
 }
+
 //endregion
 
 //region Utilities
-func SosSyncTestTaskChannelToSlice(ch <- chan SosSyncTask) []SosSyncTask {
-	var result []SosSyncTask
+func sosSyncTestTaskChannelToSlice(ch <-chan sosSyncTask) []sosSyncTask {
+	var result []sosSyncTask
 	for object := range ch {
 		result = append(result, object)
 	}

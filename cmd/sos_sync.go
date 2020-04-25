@@ -23,38 +23,38 @@ const (
 //endregion
 
 //region Type definitions
-type SosSyncClientFactory = func(certsFile string) (*sosClient, error)
-type SosSyncListObjects = func(config SosSyncConfiguration) <-chan SosSyncObject
-type SosSyncListFiles = func(config SosSyncConfiguration) <-chan SosSyncFile
-type SosSyncGetFile = func(config SosSyncConfiguration, file string) (SosSyncFile, error)
-type SosSyncDiff = func(sosSyncConfiguration SosSyncConfiguration) <-chan SosSyncTask
-type SosSyncProcessTaskList = func(sosSyncConfiguration SosSyncConfiguration, tasks <- chan SosSyncTask) error
+type sosSyncClientFactory = func(certsFile string) (*sosClient, error)
+type sosSyncListObjects = func(config sosSyncConfiguration) <-chan sosSyncObject
+type sosSyncListFiles = func(config sosSyncConfiguration) <-chan sosSyncFile
+type sosSyncGetFile = func(config sosSyncConfiguration, file string) (sosSyncFile, error)
+type sosSyncDiff = func(sosSyncConfiguration sosSyncConfiguration, done chan bool) <-chan sosSyncTask
+type sosSyncProcessTaskList = func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, done chan bool) error
 
-type SosSyncConfiguration struct {
+type sosSyncConfiguration struct {
 	RemoveDeleted   bool
 	DryRun          bool
 	SourceDirectory string
 	TargetBucket    string
 	TargetPath      string
 }
-type SosSyncObject struct {
+type sosSyncObject struct {
 	Key          string
 	LastModified time.Time
 	ContentType  string
 	Size         int64
 }
-type SosSyncFile struct {
+type sosSyncFile struct {
 	Path         string
 	LastModified time.Time
 	Size         int64
 }
 
 const (
-	SosSyncUploadAction = 0
-	SosSyncDeleteAction = 1
+	sosSyncUploadAction = 0
+	sosSyncDeleteAction = 1
 )
 
-type SosSyncTask struct {
+type sosSyncTask struct {
 	Action int
 	File   string
 }
@@ -62,8 +62,8 @@ type SosSyncTask struct {
 //endregion
 
 //region Implementation
-func NewSosSyncCobraCommand(sosClientFactory SosSyncClientFactory) *cobra.Command {
-	runE := NewSosSyncRunE(sosClientFactory)
+func newSosSyncCobraCommand(sosClientFactory sosSyncClientFactory) *cobra.Command {
+	runE := newSosSyncRunE(sosClientFactory)
 	return &cobra.Command{
 		Use:     "sync <bucket name> <local path> <remote-path>",
 		Short:   "Sync a local folder with the object storage",
@@ -72,7 +72,7 @@ func NewSosSyncCobraCommand(sosClientFactory SosSyncClientFactory) *cobra.Comman
 	}
 }
 
-func NewSosSyncRunE(sosClientFactory SosSyncClientFactory) func(cmd *cobra.Command, args []string) error {
+func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
 		if err != nil {
@@ -127,7 +127,7 @@ func NewSosSyncRunE(sosClientFactory SosSyncClientFactory) func(cmd *cobra.Comma
 			return err
 		}
 
-		var config = SosSyncConfiguration{
+		var config = sosSyncConfiguration{
 			RemoveDeleted:   removeDeleted,
 			DryRun:          dryRun,
 			TargetBucket:    targetBucket,
@@ -135,14 +135,14 @@ func NewSosSyncRunE(sosClientFactory SosSyncClientFactory) func(cmd *cobra.Comma
 			TargetPath:      strings.Trim(targetPath, "/"),
 		}
 
-		err = SosSyncProcess(
+		err = sosSyncProcess(
 			config,
-			NewSosSyncDiff(
-				NewSosSyncListObjects(sosClient),
-				NewSosSyncGetFile(),
-				NewSosSyncListFiles(),
+			newSosSyncDiff(
+				newSosSyncListObjects(sosClient),
+				newSosSyncGetFile(),
+				newSosSyncListFiles(),
 			),
-			NewSosSyncProcessTaskList(
+			newSosSyncProcessTaskList(
 				sosClient,
 			),
 		)
@@ -154,15 +154,15 @@ func NewSosSyncRunE(sosClientFactory SosSyncClientFactory) func(cmd *cobra.Comma
 	}
 }
 
-func NewSosSyncListObjects(sosClient *sosClient) SosSyncListObjects {
-	return func(config SosSyncConfiguration) <-chan SosSyncObject {
-		result := make(chan SosSyncObject)
+func newSosSyncListObjects(sosClient *sosClient) sosSyncListObjects {
+	return func(config sosSyncConfiguration) <-chan sosSyncObject {
+		result := make(chan sosSyncObject)
 		go func() {
 			doneCh := make(chan struct{})
 			defer close(doneCh)
 			objects := sosClient.ListObjectsV2(config.TargetBucket, config.TargetPath, true, doneCh)
 			for object := range objects {
-				result <- SosSyncObject{
+				result <- sosSyncObject{
 					Key:          object.Key[len(config.TargetPath):],
 					Size:         object.Size,
 					LastModified: object.LastModified,
@@ -176,15 +176,15 @@ func NewSosSyncListObjects(sosClient *sosClient) SosSyncListObjects {
 	}
 }
 
-func NewSosSyncGetFile() SosSyncGetFile {
-	return func(config SosSyncConfiguration, file string) (SosSyncFile, error) {
+func newSosSyncGetFile() sosSyncGetFile {
+	return func(config sosSyncConfiguration, file string) (sosSyncFile, error) {
 		trimmedFile := strings.Trim(file, "/")
 		stat, err := os.Stat(config.SourceDirectory + "/" + trimmedFile)
 		if err != nil {
-			return SosSyncFile{}, err
+			return sosSyncFile{}, err
 		}
 
-		return SosSyncFile{
+		return sosSyncFile{
 			Path:         trimmedFile,
 			Size:         stat.Size(),
 			LastModified: stat.ModTime(),
@@ -192,11 +192,11 @@ func NewSosSyncGetFile() SosSyncGetFile {
 	}
 }
 
-func NewSosSyncListFiles() SosSyncListFiles {
-	return func(config SosSyncConfiguration) <-chan SosSyncFile {
-		result := make(chan SosSyncFile)
+func newSosSyncListFiles() sosSyncListFiles {
+	return func(config sosSyncConfiguration) <-chan sosSyncFile {
+		result := make(chan sosSyncFile)
 
-		//todo ignored error
+		//todo ignored error?
 		go func() error {
 			defer close(result)
 			err := filepath.Walk(config.SourceDirectory,
@@ -205,8 +205,8 @@ func NewSosSyncListFiles() SosSyncListFiles {
 						return err
 					}
 					if !info.IsDir() {
-						result <- SosSyncFile{
-							Path:         filepath.ToSlash(path[len(config.SourceDirectory) + 1:]),
+						result <- sosSyncFile{
+							Path:         filepath.ToSlash(path[len(config.SourceDirectory)+1:]),
 							LastModified: info.ModTime(),
 							Size:         info.Size(),
 						}
@@ -222,24 +222,24 @@ func NewSosSyncListFiles() SosSyncListFiles {
 	}
 }
 
-func NewSosSyncDiff(
-	sosSyncListObjects SosSyncListObjects,
-	sosSyncGetFile SosSyncGetFile,
-	sosSyncListFiles SosSyncListFiles,
-) SosSyncDiff {
-	return func(sosSyncConfiguration SosSyncConfiguration) <-chan SosSyncTask {
-		result := make(chan SosSyncTask)
+func newSosSyncDiff(
+	sosSyncListObjects sosSyncListObjects,
+	sosSyncGetFile sosSyncGetFile,
+	sosSyncListFiles sosSyncListFiles,
+) sosSyncDiff {
+	return func(sosSyncConfiguration sosSyncConfiguration, done chan bool) <-chan sosSyncTask {
+		result := make(chan sosSyncTask)
 
 		go func() {
-			remoteObjectsIndexed := map[string]SosSyncObject{}
+			remoteObjectsIndexed := map[string]sosSyncObject{}
 			remoteObjects := sosSyncListObjects(sosSyncConfiguration)
 			for remoteObject := range remoteObjects {
 				_, err := sosSyncGetFile(sosSyncConfiguration, remoteObject.Key)
 				if err != nil {
 					if sosSyncConfiguration.RemoveDeleted {
-						result <- SosSyncTask{
+						result <- sosSyncTask{
 							File:   remoteObject.Key,
-							Action: SosSyncDeleteAction,
+							Action: sosSyncDeleteAction,
 						}
 					}
 				} else {
@@ -249,42 +249,43 @@ func NewSosSyncDiff(
 			localFiles := sosSyncListFiles(sosSyncConfiguration)
 			for localFile := range localFiles {
 				if _, ok := remoteObjectsIndexed[localFile.Path]; ok != true {
-					result <- SosSyncTask{
+					result <- sosSyncTask{
 						File:   localFile.Path,
-						Action: SosSyncUploadAction,
+						Action: sosSyncUploadAction,
 					}
 				} else {
 					if remoteObjectsIndexed[localFile.Path].LastModified.Before(localFile.LastModified) ||
 						remoteObjectsIndexed[localFile.Path].Size != localFile.Size {
-						result <- SosSyncTask{
+						result <- sosSyncTask{
 							File:   localFile.Path,
-							Action: SosSyncUploadAction,
+							Action: sosSyncUploadAction,
 						}
 					}
 				}
 			}
 
 			defer close(result)
+			if done != nil {
+				done <- true
+			}
 		}()
 		return result
 	}
 }
 
 //todo add UI
-func NewSosSyncProcessTaskList(sosClient *sosClient) SosSyncProcessTaskList {
-	return func (sosSyncConfiguration SosSyncConfiguration, tasks <- chan SosSyncTask) error {
+func newSosSyncProcessTaskList(sosClient *sosClient) sosSyncProcessTaskList {
+	return func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, done chan bool) error {
 		var taskWG sync.WaitGroup
 		workerSem := make(chan int, parallelSosSync)
 		for task := range tasks {
-			//todo possible race condition if the channel can supply tasks slower than we can process them?
 			taskWG.Add(1)
 			task := task
 			go func() {
 				defer taskWG.Done()
 				workerSem <- 1
-				remotePath := strings.Trim(sosSyncConfiguration.TargetPath + "/" + task.File, "/")
-				//todo handle errors gracefully
-				if task.Action == SosSyncDeleteAction {
+				remotePath := strings.Trim(sosSyncConfiguration.TargetPath+"/"+task.File, "/")
+				if task.Action == sosSyncDeleteAction {
 					fmt.Printf("Deleting remote file: %s\n", remotePath)
 					err := sosClient.RemoveObject(sosSyncConfiguration.TargetBucket, remotePath)
 					if err != nil {
@@ -343,6 +344,9 @@ func NewSosSyncProcessTaskList(sosClient *sosClient) SosSyncProcessTaskList {
 			}()
 		}
 
+		//Wait for complete input before waiting for the task WG
+		<-done
+		close(done)
 		taskWG.Wait()
 		return nil
 	}
@@ -350,17 +354,23 @@ func NewSosSyncProcessTaskList(sosClient *sosClient) SosSyncProcessTaskList {
 
 //Takes a preconfigured object storage client for the target bucket, and a validated configuration
 //and synchronizes the local folder with the remote.
-func SosSyncProcess(
-	sosSyncConfiguration SosSyncConfiguration,
-	sosSyncDiff SosSyncDiff,
-	sosSyncProcessTaskList SosSyncProcessTaskList,
+func sosSyncProcess(
+	sosSyncConfiguration sosSyncConfiguration,
+	sosSyncDiff sosSyncDiff,
+	sosSyncProcessTaskList sosSyncProcessTaskList,
 ) error {
-	taskList := sosSyncDiff(sosSyncConfiguration)
+	var done chan bool
+	if !sosSyncConfiguration.DryRun {
+		done = make(chan bool, 1)
+	} else {
+		done = nil
+	}
+	taskList := sosSyncDiff(sosSyncConfiguration, done)
 
 	if sosSyncConfiguration.DryRun {
 		fmt.Println("Dry run enabled, only printing actions that would be taken.")
 		for task := range taskList {
-			if task.Action == SosSyncUploadAction {
+			if task.Action == sosSyncUploadAction {
 				fmt.Println(fmt.Sprintf("Uploading %s...", task.File))
 			} else {
 				fmt.Println(fmt.Sprintf("Deleting %s...", task.File))
@@ -368,7 +378,7 @@ func SosSyncProcess(
 		}
 		return nil
 	} else {
-		return sosSyncProcessTaskList(sosSyncConfiguration, taskList)
+		return sosSyncProcessTaskList(sosSyncConfiguration, taskList, done)
 	}
 }
 
@@ -384,7 +394,7 @@ func sosSyncLiveClientFactory(certsFile string) (*sosClient, error) {
 }
 
 func init() {
-	sosCmd.AddCommand(NewSosSyncCobraCommand(sosSyncLiveClientFactory))
+	sosCmd.AddCommand(newSosSyncCobraCommand(sosSyncLiveClientFactory))
 	sosCmd.Flags().StringP("log", "l", "", "Log sync transfer details to file")
 	//todo flags defined here seem to be ignored
 	sosCmd.Flags().BoolP("remove-deleted", "r", false, "Remove remote files not present locally")
