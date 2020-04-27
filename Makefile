@@ -22,13 +22,11 @@ manpage:
 manpages: manpage
 	$(GO) run -mod vendor doc/main.go --man-page
 
-contrib/completion/bash:
-	mkdir -p $@
-
 .PHONY: completions
-completions: contrib/completion/bash
+completions:
+	mkdir -p contrib/completion/bash
 	$(GO) run -mod vendor completion/main.go
-	mv bash_completion $</exo
+	mv bash_completion contrib/completion/bash/exo
 
 .PHONY: clean
 clean::
