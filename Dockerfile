@@ -1,4 +1,4 @@
-FROM golang:1.14-stretch as builder
+FROM golang:1.14-buster as builder
 
 ADD . /src
 WORKDIR /src
