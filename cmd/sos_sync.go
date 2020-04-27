@@ -24,11 +24,11 @@ const (
 
 //region Type definitions
 type sosSyncClientFactory = func(certsFile string) (*sosClient, error)
-type sosSyncListObjects = func(config sosSyncConfiguration) <-chan sosSyncObject
-type sosSyncListFiles = func(config sosSyncConfiguration) <-chan sosSyncFile
+type sosSyncListObjects = func(config sosSyncConfiguration, errors chan<- error) <-chan sosSyncObject
+type sosSyncListFiles = func(config sosSyncConfiguration, errors chan<- error) <-chan sosSyncFile
 type sosSyncGetFile = func(config sosSyncConfiguration, file string) (sosSyncFile, error)
-type sosSyncDiff = func(sosSyncConfiguration sosSyncConfiguration, done chan bool) <-chan sosSyncTask
-type sosSyncProcessTaskList = func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, done chan bool) error
+type sosSyncDiff = func(sosSyncConfiguration sosSyncConfiguration, done chan bool, errors chan<- error) <-chan sosSyncTask
+type sosSyncProcessTaskList = func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, done chan bool, errors chan<- error)
 
 type sosSyncConfiguration struct {
 	RemoveDeleted   bool
@@ -155,11 +155,13 @@ func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Comma
 }
 
 func newSosSyncListObjects(sosClient *sosClient) sosSyncListObjects {
-	return func(config sosSyncConfiguration) <-chan sosSyncObject {
+	return func(config sosSyncConfiguration, errorChannel chan<- error) <-chan sosSyncObject {
 		result := make(chan sosSyncObject)
+
 		go func() {
 			doneCh := make(chan struct{})
 			defer close(doneCh)
+			//todo how does ListObjectsV2 indicate errors?
 			objects := sosClient.ListObjectsV2(config.TargetBucket, config.TargetPath, true, doneCh)
 			for object := range objects {
 				result <- sosSyncObject{
@@ -193,13 +195,12 @@ func newSosSyncGetFile() sosSyncGetFile {
 }
 
 func newSosSyncListFiles() sosSyncListFiles {
-	return func(config sosSyncConfiguration) <-chan sosSyncFile {
+	return func(config sosSyncConfiguration, errorChannel chan<- error) <-chan sosSyncFile {
 		result := make(chan sosSyncFile)
 
-		//todo ignored error?
-		go func() error {
+		go func() {
 			defer close(result)
-			err := filepath.Walk(config.SourceDirectory,
+			walkErr := filepath.Walk(config.SourceDirectory,
 				func(path string, info os.FileInfo, err error) error {
 					if err != nil {
 						return err
@@ -213,10 +214,9 @@ func newSosSyncListFiles() sosSyncListFiles {
 					}
 					return nil
 				})
-			if err != nil {
-				return err
+			if walkErr != nil {
+				errorChannel <- walkErr
 			}
-			return nil
 		}()
 		return result
 	}
@@ -227,12 +227,14 @@ func newSosSyncDiff(
 	sosSyncGetFile sosSyncGetFile,
 	sosSyncListFiles sosSyncListFiles,
 ) sosSyncDiff {
-	return func(sosSyncConfiguration sosSyncConfiguration, done chan bool) <-chan sosSyncTask {
+	return func(sosSyncConfiguration sosSyncConfiguration, done chan bool, errorChannel chan<- error) <-chan sosSyncTask {
 		result := make(chan sosSyncTask)
 
 		go func() {
+			defer close(result)
+
 			remoteObjectsIndexed := map[string]sosSyncObject{}
-			remoteObjects := sosSyncListObjects(sosSyncConfiguration)
+			remoteObjects := sosSyncListObjects(sosSyncConfiguration, errorChannel)
 			for remoteObject := range remoteObjects {
 				_, err := sosSyncGetFile(sosSyncConfiguration, remoteObject.Key)
 				if err != nil {
@@ -246,7 +248,8 @@ func newSosSyncDiff(
 					remoteObjectsIndexed[remoteObject.Key] = remoteObject
 				}
 			}
-			localFiles := sosSyncListFiles(sosSyncConfiguration)
+
+			localFiles := sosSyncListFiles(sosSyncConfiguration, errorChannel)
 			for localFile := range localFiles {
 				if _, ok := remoteObjectsIndexed[localFile.Path]; ok != true {
 					result <- sosSyncTask{
@@ -264,7 +267,6 @@ func newSosSyncDiff(
 				}
 			}
 
-			defer close(result)
 			if done != nil {
 				done <- true
 			}
@@ -275,7 +277,7 @@ func newSosSyncDiff(
 
 //todo add UI
 func newSosSyncProcessTaskList(sosClient *sosClient) sosSyncProcessTaskList {
-	return func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, done chan bool) error {
+	return func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, done chan bool, errorChannel chan<- error) {
 		var taskWG sync.WaitGroup
 		workerSem := make(chan int, parallelSosSync)
 		for task := range tasks {
@@ -348,7 +350,6 @@ func newSosSyncProcessTaskList(sosClient *sosClient) sosSyncProcessTaskList {
 		<-done
 		close(done)
 		taskWG.Wait()
-		return nil
 	}
 }
 
@@ -365,7 +366,8 @@ func sosSyncProcess(
 	} else {
 		done = nil
 	}
-	taskList := sosSyncDiff(sosSyncConfiguration, done)
+	errorChannel := make(chan error)
+	taskList := sosSyncDiff(sosSyncConfiguration, done, errorChannel)
 
 	if sosSyncConfiguration.DryRun {
 		fmt.Println("Dry run enabled, only printing actions that would be taken.")
@@ -378,7 +380,27 @@ func sosSyncProcess(
 		}
 		return nil
 	} else {
-		return sosSyncProcessTaskList(sosSyncConfiguration, taskList, done)
+		sosSyncProcessTaskList(sosSyncConfiguration, taskList, done, errorChannel)
+		var err error = nil
+		for {
+			select {
+			case errChannelResult := <-errorChannel:
+				//noinspection GoUnhandledErrorResult
+				fmt.Fprintf(os.Stderr, "Error while processing: %s", errChannelResult)
+				err = errChannelResult
+			default:
+				err = nil
+			}
+			if err == nil {
+				break
+			}
+		}
+		if //noinspection GoNilness
+		err != nil {
+			return errors.New("one or more errors happened while processing your sync")
+		} else {
+			return nil
+		}
 	}
 }
 
