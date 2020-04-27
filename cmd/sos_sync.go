@@ -18,6 +18,7 @@ import (
 )
 
 //region Settings
+
 const (
 	defaultParallelSosSync = 10
 )
@@ -25,6 +26,7 @@ const (
 //endregion
 
 //region Type definitions
+
 type sosSyncClientFactory = func(certsFile string) (*sosClient, error)
 type sosSyncListObjects = func(config sosSyncConfiguration, errors chan<- error) <-chan sosSyncObject
 type sosSyncListFiles = func(config sosSyncConfiguration, errors chan<- error) <-chan sosSyncFile
@@ -36,7 +38,7 @@ type sosSyncFileUi struct {
 	error     func()
 	complete  func()
 }
-type sosSyncFileUiFactory = func(filename string, filesize int64) sosSyncFileUi
+type sosSyncFileUiFactory = func(task sosSyncTask) sosSyncFileUi
 type sosSyncUi = func(wg *sync.WaitGroup) sosSyncFileUiFactory
 
 type sosSyncConfiguration struct {
@@ -73,16 +75,10 @@ type sosSyncTask struct {
 //endregion
 
 //region Implementation
-func newSosSyncCobraCommand(sosClientFactory sosSyncClientFactory) *cobra.Command {
-	runE := newSosSyncRunE(sosClientFactory)
-	return &cobra.Command{
-		Use:     "sync <bucket name> <local path> <remote-path>",
-		Short:   "Sync a local folder with the object storage",
-		Aliases: gSyncAlias,
-		RunE:    runE,
-	}
-}
 
+//Creates the Cobra command structure
+
+//Creates the actual function that will be run when the command is executed
 func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		certsFile, err := cmd.Flags().GetString("certs-file")
@@ -117,7 +113,7 @@ func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Comma
 			return err
 		}
 
-		targetPath := strings.Trim(args[2], "/") + "/"
+		targetPath := strings.TrimLeft(args[2], "/") + "/"
 
 		sosClient, err := sosClientFactory(certsFile)
 		if err != nil {
@@ -151,7 +147,7 @@ func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Comma
 			DryRun:          dryRun,
 			TargetBucket:    targetBucket,
 			SourceDirectory: filepath.ToSlash(sourceDirectory),
-			TargetPath:      strings.Trim(targetPath, "/"),
+			TargetPath:      strings.TrimLeft(targetPath, "/"),
 			Concurrency:     concurrency,
 		}
 
@@ -175,6 +171,7 @@ func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Comma
 	}
 }
 
+//Creates the UI for the upload process
 func newSosSyncUi() sosSyncUi {
 	return func(wg *sync.WaitGroup) sosSyncFileUiFactory {
 		progress := mpb.NewWithContext(gContext,
@@ -185,8 +182,14 @@ func newSosSyncUi() sosSyncUi {
 			mpb.WithRefreshRate(180*time.Millisecond),
 			mpb.ContainerOptOnCond(mpb.WithOutput(nil), func() bool { return gQuiet }),
 		)
-		return func(filename string, filesize int64) sosSyncFileUi {
-			bar := progress.AddBar(filesize,
+		return func(task sosSyncTask) sosSyncFileUi {
+			var filename string
+			if task.Action == sosSyncDeleteAction {
+				filename = fmt.Sprintf("[D] %s", task.File)
+			} else {
+				filename = fmt.Sprintf("[U] %s", task.File)
+			}
+			bar := progress.AddBar(task.Size,
 				mpb.AppendDecorators(
 					// simple name decorator
 					decor.Name(filename, decor.WC{W: len(filename) + 1, C: decor.DidentRight}),
@@ -203,7 +206,7 @@ func newSosSyncUi() sosSyncUi {
 				},
 				complete: func() {
 					bar.Completed()
-					if filesize == 0 {
+					if task.Size == 0 {
 						bar.SetTotal(100, true)
 					}
 				},
@@ -215,6 +218,7 @@ func newSosSyncUi() sosSyncUi {
 	}
 }
 
+//Lists object storage buckets
 func newSosSyncListObjects(sosClient *sosClient) sosSyncListObjects {
 	return func(config sosSyncConfiguration, errorChannel chan<- error) <-chan sosSyncObject {
 		result := make(chan sosSyncObject)
@@ -239,9 +243,10 @@ func newSosSyncListObjects(sosClient *sosClient) sosSyncListObjects {
 	}
 }
 
+//Retrieves the details of a single local file
 func newSosSyncGetFile() sosSyncGetFile {
 	return func(config sosSyncConfiguration, file string) (sosSyncFile, error) {
-		trimmedFile := strings.Trim(file, "/")
+		trimmedFile := strings.TrimLeft(file, "/")
 		stat, err := os.Stat(config.SourceDirectory + "/" + trimmedFile)
 		if err != nil {
 			return sosSyncFile{}, err
@@ -255,6 +260,7 @@ func newSosSyncGetFile() sosSyncGetFile {
 	}
 }
 
+//Lists local files in a directory
 func newSosSyncListFiles() sosSyncListFiles {
 	return func(config sosSyncConfiguration, errorChannel chan<- error) <-chan sosSyncFile {
 		result := make(chan sosSyncFile)
@@ -283,6 +289,7 @@ func newSosSyncListFiles() sosSyncListFiles {
 	}
 }
 
+//Creates the task list by diffing the remote object list and the local file list
 func newSosSyncDiff(
 	sosSyncListObjects sosSyncListObjects,
 	sosSyncGetFile sosSyncGetFile,
@@ -350,8 +357,8 @@ func newSosSyncProcessTaskList(sosClient *sosClient, ui sosSyncUi) sosSyncProces
 			go func() {
 				defer taskWG.Done()
 				workerSem <- 1
-				taskUi := uploadUi(task.File, task.Size)
-				remotePath := strings.Trim(sosSyncConfiguration.TargetPath+"/"+task.File, "/")
+				taskUi := uploadUi(task)
+				remotePath := strings.TrimLeft(sosSyncConfiguration.TargetPath+"/"+task.File, "/")
 				if task.Action == sosSyncDeleteAction {
 					if sosSyncConfiguration.DryRun {
 						fmt.Printf("[Dry run] Pretending to delete remote file: %s\n", remotePath)
@@ -483,6 +490,8 @@ func sosSyncProcess(
 //endregion
 
 //region Wiring
+
+//Creates the live SOS client
 func sosSyncLiveClientFactory(certsFile string) (*sosClient, error) {
 	client, err := newSOSClient(certsFile)
 	if err != nil {
@@ -491,8 +500,15 @@ func sosSyncLiveClientFactory(certsFile string) (*sosClient, error) {
 	return client, err
 }
 
+//Initializes the sync command
 func init() {
-	cmd := newSosSyncCobraCommand(sosSyncLiveClientFactory)
+	runE := newSosSyncRunE(sosSyncLiveClientFactory)
+	cmd := &cobra.Command{
+		Use:     "sync <bucket name> <local path> <remote-path>",
+		Short:   "Sync a local folder with the object storage",
+		Aliases: gSyncAlias,
+		RunE:    runE,
+	}
 	cmd.Flags().BoolP("remove-deleted", "r", false, "Remove remote files not present locally")
 	cmd.Flags().BoolP("dry-run", "n", false, "Don't actually modify files")
 	cmd.Flags().Uint16P("concurrency", "c", defaultParallelSosSync, "Parallel threads to use for upload")
