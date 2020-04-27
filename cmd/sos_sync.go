@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/minio/minio-go/v6"
-	"log"
+	"github.com/vbauerster/mpb/v4"
+	"github.com/vbauerster/mpb/v4/decor"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,7 +19,7 @@ import (
 
 //region Settings
 const (
-	parallelSosSync = 10
+	defaultParallelSosSync = 10
 )
 
 //endregion
@@ -29,6 +31,13 @@ type sosSyncListFiles = func(config sosSyncConfiguration, errors chan<- error) <
 type sosSyncGetFile = func(config sosSyncConfiguration, file string) (sosSyncFile, error)
 type sosSyncDiff = func(sosSyncConfiguration sosSyncConfiguration, done chan bool, errors chan<- error) <-chan sosSyncTask
 type sosSyncProcessTaskList = func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, done chan bool, errors chan<- error)
+type sosSyncFileUi struct {
+	getReader func(r io.Reader) io.ReadCloser
+	error     func()
+	complete  func()
+}
+type sosSyncFileUiFactory = func(filename string, filesize int64) sosSyncFileUi
+type sosSyncUi = func(wg *sync.WaitGroup) sosSyncFileUiFactory
 
 type sosSyncConfiguration struct {
 	RemoveDeleted   bool
@@ -36,6 +45,7 @@ type sosSyncConfiguration struct {
 	SourceDirectory string
 	TargetBucket    string
 	TargetPath      string
+	Concurrency     uint16
 }
 type sosSyncObject struct {
 	Key          string
@@ -57,6 +67,7 @@ const (
 type sosSyncTask struct {
 	Action int
 	File   string
+	Size   int64
 }
 
 //endregion
@@ -74,18 +85,26 @@ func newSosSyncCobraCommand(sosClientFactory sosSyncClientFactory) *cobra.Comman
 
 func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
+		certsFile, err := cmd.Flags().GetString("certs-file")
 		if err != nil {
 			return err
 		}
 
-		removeDeleted, err := cmd.Parent().Flags().GetBool("remove-deleted")
+		removeDeleted, err := cmd.Flags().GetBool("remove-deleted")
 		if err != nil {
 			return err
 		}
-		dryRun, err := cmd.Parent().Flags().GetBool("dry-run")
+		dryRun, err := cmd.Flags().GetBool("dry-run")
 		if err != nil {
 			return err
+		}
+
+		concurrency, err := cmd.Flags().GetUint16("concurrency")
+		if err != nil {
+			return err
+		}
+		if concurrency < 1 {
+			return errors.New("concurrency cannot be less than 1")
 		}
 
 		if len(args) < 3 {
@@ -133,6 +152,7 @@ func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Comma
 			TargetBucket:    targetBucket,
 			SourceDirectory: filepath.ToSlash(sourceDirectory),
 			TargetPath:      strings.Trim(targetPath, "/"),
+			Concurrency:     concurrency,
 		}
 
 		err = sosSyncProcess(
@@ -144,6 +164,7 @@ func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Comma
 			),
 			newSosSyncProcessTaskList(
 				sosClient,
+				newSosSyncUi(),
 			),
 		)
 		if err != nil {
@@ -151,6 +172,46 @@ func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Comma
 		}
 
 		return nil
+	}
+}
+
+func newSosSyncUi() sosSyncUi {
+	return func(wg *sync.WaitGroup) sosSyncFileUiFactory {
+		progress := mpb.NewWithContext(gContext,
+			mpb.WithWaitGroup(wg),
+			// override default (80) width
+			mpb.WithWidth(64),
+			// override default 120ms refresh rate
+			mpb.WithRefreshRate(180*time.Millisecond),
+			mpb.ContainerOptOnCond(mpb.WithOutput(nil), func() bool { return gQuiet }),
+		)
+		return func(filename string, filesize int64) sosSyncFileUi {
+			bar := progress.AddBar(filesize,
+				mpb.AppendDecorators(
+					// simple name decorator
+					decor.Name(filename, decor.WC{W: len(filename) + 1, C: decor.DidentRight}),
+				),
+				mpb.PrependDecorators(
+					decor.OnComplete(decor.AverageETA(decor.ET_STYLE_GO), "done!"),
+					// decor.DSyncWidth bit enables column width synchronization
+					decor.Percentage(decor.WCSyncSpace),
+				),
+			)
+			return sosSyncFileUi{
+				getReader: func(r io.Reader) io.ReadCloser {
+					return bar.ProxyReader(r)
+				},
+				complete: func() {
+					bar.Completed()
+					if filesize == 0 {
+						bar.SetTotal(100, true)
+					}
+				},
+				error: func() {
+					bar.Abort(false)
+				},
+			}
+		}
 	}
 }
 
@@ -255,6 +316,7 @@ func newSosSyncDiff(
 					result <- sosSyncTask{
 						File:   localFile.Path,
 						Action: sosSyncUploadAction,
+						Size:   0,
 					}
 				} else {
 					if remoteObjectsIndexed[localFile.Path].LastModified.Before(localFile.LastModified) ||
@@ -262,6 +324,7 @@ func newSosSyncDiff(
 						result <- sosSyncTask{
 							File:   localFile.Path,
 							Action: sosSyncUploadAction,
+							Size:   localFile.Size,
 						}
 					}
 				}
@@ -275,30 +338,43 @@ func newSosSyncDiff(
 	}
 }
 
-//todo add UI
-func newSosSyncProcessTaskList(sosClient *sosClient) sosSyncProcessTaskList {
-	return func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, done chan bool, errorChannel chan<- error) {
+//todo this could probably do with a refactor
+func newSosSyncProcessTaskList(sosClient *sosClient, ui sosSyncUi) sosSyncProcessTaskList {
+	return func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, inputDone chan bool, errorChannel chan<- error) {
 		var taskWG sync.WaitGroup
-		workerSem := make(chan int, parallelSosSync)
+		workerSem := make(chan int, sosSyncConfiguration.Concurrency)
+		uploadUi := ui(&taskWG)
 		for task := range tasks {
 			taskWG.Add(1)
 			task := task
 			go func() {
 				defer taskWG.Done()
 				workerSem <- 1
+				taskUi := uploadUi(task.File, task.Size)
 				remotePath := strings.Trim(sosSyncConfiguration.TargetPath+"/"+task.File, "/")
 				if task.Action == sosSyncDeleteAction {
-					fmt.Printf("Deleting remote file: %s\n", remotePath)
-					err := sosClient.RemoveObject(sosSyncConfiguration.TargetBucket, remotePath)
-					if err != nil {
-						log.Fatal(err)
+					if sosSyncConfiguration.DryRun {
+						fmt.Printf("[Dry run] Pretending to delete remote file: %s\n", remotePath)
+					} else {
+						fmt.Printf("Deleting remote file: %s\n", remotePath)
+					}
+					if !sosSyncConfiguration.DryRun {
+						err := sosClient.RemoveObject(sosSyncConfiguration.TargetBucket, remotePath)
+						if err != nil {
+							taskUi.error()
+							errorChannel <- err
+						} else {
+							taskUi.complete()
+						}
+					} else {
+						taskUi.complete()
 					}
 				} else {
 					localPath := filepath.FromSlash(sosSyncConfiguration.SourceDirectory + "/" + task.File)
-					fmt.Printf("Uploading local file %s to remote path %s\n", localPath, remotePath)
-					fileInfo, err := os.Stat(localPath)
-					if err != nil {
-						log.Fatal(err)
+					if sosSyncConfiguration.DryRun {
+						fmt.Printf("[Dry run] Pretending to upload local file %s to remote path %s\n", localPath, remotePath)
+					} else {
+						fmt.Printf("Uploading local file %s to remote path %s\n", localPath, remotePath)
 					}
 
 					//region MIME type
@@ -306,40 +382,57 @@ func newSosSyncProcessTaskList(sosClient *sosClient) sosSyncProcessTaskList {
 					var bufferSize int64
 
 					// Only the first 512 bytes are used to sniff the content type.
-					if fileInfo.Size() >= 512 {
+					if task.Size >= 512 {
 						bufferSize = 512
 					} else {
-						bufferSize = fileInfo.Size()
+						bufferSize = task.Size
 					}
 
 					file, err := os.Open(localPath)
 					if err != nil {
-						log.Fatal(err)
-					}
-					buffer := make([]byte, bufferSize)
-					_, err = file.Read(buffer)
+						errorChannel <- err
+					} else {
+						buffer := make([]byte, bufferSize)
+						_, err = file.Read(buffer)
+						if err != nil {
+							taskUi.error()
+							errorChannel <- err
+						} else {
+							contentType = http.DetectContentType(buffer)
+							//endregion
 
-					contentType = http.DetectContentType(buffer)
-					//endregion
+							//region Upload
+							if !sosSyncConfiguration.DryRun {
+								f, err := os.Open(localPath)
+								if err != nil {
+									taskUi.error()
+									errorChannel <- err
+								} else {
+									//noinspection GoUnhandledErrorResult
+									defer f.Close()
 
-					f, err := os.Open(localPath)
-					if err != nil {
-						log.Fatal(err)
-					}
-					defer f.Close()
-
-					_, upErr := sosClient.PutObjectWithContext(
-						gContext,
-						sosSyncConfiguration.TargetBucket,
-						remotePath,
-						f,
-						fileInfo.Size(),
-						minio.PutObjectOptions{
-							ContentType: contentType,
-						},
-					)
-					if upErr != nil {
-						log.Fatal(upErr)
+									_, upErr := sosClient.PutObjectWithContext(
+										gContext,
+										sosSyncConfiguration.TargetBucket,
+										remotePath,
+										taskUi.getReader(f),
+										task.Size,
+										minio.PutObjectOptions{
+											ContentType: contentType,
+										},
+									)
+									if upErr != nil {
+										taskUi.error()
+										errorChannel <- upErr
+									} else {
+										taskUi.complete()
+									}
+								}
+							} else {
+								taskUi.complete()
+							}
+							//endregion
+						}
 					}
 				}
 				<-workerSem
@@ -347,8 +440,8 @@ func newSosSyncProcessTaskList(sosClient *sosClient) sosSyncProcessTaskList {
 		}
 
 		//Wait for complete input before waiting for the task WG
-		<-done
-		close(done)
+		<-inputDone
+		close(inputDone)
 		taskWG.Wait()
 	}
 }
@@ -360,47 +453,30 @@ func sosSyncProcess(
 	sosSyncDiff sosSyncDiff,
 	sosSyncProcessTaskList sosSyncProcessTaskList,
 ) error {
-	var done chan bool
-	if !sosSyncConfiguration.DryRun {
-		done = make(chan bool, 1)
-	} else {
-		done = nil
-	}
+	done := make(chan bool, 1)
 	errorChannel := make(chan error)
 	taskList := sosSyncDiff(sosSyncConfiguration, done, errorChannel)
 
-	if sosSyncConfiguration.DryRun {
-		fmt.Println("Dry run enabled, only printing actions that would be taken.")
-		for task := range taskList {
-			if task.Action == sosSyncUploadAction {
-				fmt.Println(fmt.Sprintf("Uploading %s...", task.File))
-			} else {
-				fmt.Println(fmt.Sprintf("Deleting %s...", task.File))
-			}
+	sosSyncProcessTaskList(sosSyncConfiguration, taskList, done, errorChannel)
+	var err error = nil
+	for {
+		select {
+		case errChannelResult := <-errorChannel:
+			//noinspection GoUnhandledErrorResult
+			fmt.Fprintf(os.Stderr, "Error while processing: %s", errChannelResult)
+			err = errChannelResult
+		default:
+			err = nil
 		}
-		return nil
+		if err == nil {
+			break
+		}
+	}
+	if //noinspection GoNilness
+	err != nil {
+		return errors.New("one or more errors happened while processing your sync")
 	} else {
-		sosSyncProcessTaskList(sosSyncConfiguration, taskList, done, errorChannel)
-		var err error = nil
-		for {
-			select {
-			case errChannelResult := <-errorChannel:
-				//noinspection GoUnhandledErrorResult
-				fmt.Fprintf(os.Stderr, "Error while processing: %s", errChannelResult)
-				err = errChannelResult
-			default:
-				err = nil
-			}
-			if err == nil {
-				break
-			}
-		}
-		if //noinspection GoNilness
-		err != nil {
-			return errors.New("one or more errors happened while processing your sync")
-		} else {
-			return nil
-		}
+		return nil
 	}
 }
 
@@ -416,11 +492,11 @@ func sosSyncLiveClientFactory(certsFile string) (*sosClient, error) {
 }
 
 func init() {
-	sosCmd.AddCommand(newSosSyncCobraCommand(sosSyncLiveClientFactory))
-	sosCmd.Flags().StringP("log", "l", "", "Log sync transfer details to file")
-	//todo flags defined here seem to be ignored
-	sosCmd.Flags().BoolP("remove-deleted", "r", false, "Remove remote files not present locally")
-	sosCmd.Flags().BoolP("dry-run", "n", false, "Don't actually modify files")
+	cmd := newSosSyncCobraCommand(sosSyncLiveClientFactory)
+	cmd.Flags().BoolP("remove-deleted", "r", false, "Remove remote files not present locally")
+	cmd.Flags().BoolP("dry-run", "n", false, "Don't actually modify files")
+	cmd.Flags().Uint16P("concurrency", "c", defaultParallelSosSync, "Parallel threads to use for upload")
+	sosCmd.AddCommand(cmd)
 }
 
 //endregion
