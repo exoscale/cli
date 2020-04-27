@@ -37,6 +37,11 @@ func output(o outputter, err error) error {
 		return nil
 	}
 
+	if gOutputTemplate != "" {
+		o.toText()
+		return nil
+	}
+
 	switch gOutputFormat {
 	case "json":
 		o.toJSON()
@@ -286,7 +291,7 @@ piped into jq):
 The "text" format prints a command's output in plain text according to a
 user-defined formatting template provided with the "--output-template" flag:
 
-	$ exo config list -O text --output-template '{{ .Name }}' | sort
+	$ exo config list --output-template '{{ .Name }}' | sort
 	alice
 	bob
 
@@ -294,8 +299,7 @@ The templating format is Go's text/template, which allows conditional
 formatting. For example to display a "*" next to the default configuration
 account:
 
-	$ exo config list -O text \
-		--output-template '{{ .Name }}{{ if .Default }}*{{ end }}'
+	$ exo config list --output-template '{{ .Name }}{{ if .Default }}*{{ end }}'
 	alice*
 	bob
 
