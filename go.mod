@@ -10,7 +10,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.23.1-0.20200424111941-4d52d69dbcd7
+	github.com/exoscale/egoscale v0.24.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.42.0
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
@@ -30,4 +30,4 @@ require (
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 )
 
-go 1.13
+go 1.14

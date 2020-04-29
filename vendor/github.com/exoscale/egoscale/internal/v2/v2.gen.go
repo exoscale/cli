@@ -8,14 +8,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
-	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
+	"github.com/pkg/errors"
 )
 
 // AntiAffinityGroup defines model for anti-affinity-group.
