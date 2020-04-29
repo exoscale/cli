@@ -65,7 +65,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.23.1-0.20200424111941-4d52d69dbcd7
+# github.com/exoscale/egoscale v0.24.0
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin

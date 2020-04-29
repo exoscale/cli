@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.24.0
+------
+
+- feature: Add export snapshot implementation (#427)
+- feature: Add support for public API V2 (#425)
+- change: Switch module to Go 1.14 (#429)
+- change: Travis CI: set minimum Go version to 1.13
+- doc: Annotate API doc regarding use of tags (#423)
+- tests: fix request client timeout handling (#422)
+
 0.23.0
 ------
 
