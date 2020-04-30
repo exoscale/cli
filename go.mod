@@ -10,7 +10,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/cpuguy83/go-md2man v1.0.8 // indirect
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.23.0
+	github.com/exoscale/egoscale v0.24.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/go-ini/ini v1.42.0
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
@@ -25,9 +25,9 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.1
 	github.com/vbauerster/mpb/v4 v4.8.4
-	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5
-	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
+	golang.org/x/crypto v0.0.0-20191112222119-e1110fd1c708
+	golang.org/x/net v0.0.0-20191112182307-2180aed22343
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 )
 
-go 1.13
+go 1.14

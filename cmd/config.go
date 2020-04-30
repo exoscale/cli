@@ -131,7 +131,7 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 			return saveConfig(viper.ConfigFileUsed(), nil)
 		}
 
-		return addConfigAccount(false)
+		return nil
 	}
 
 	fmt.Println("No Exoscale CLI configuration found")

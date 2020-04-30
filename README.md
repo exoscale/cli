@@ -19,12 +19,15 @@ This project is open source and may be modified, studied, and built at will. We 
 # clone it
 $ git clone https://github.com/exoscale/cli
 $ cd cli
+$ git submodule update --init --recursive go.mk
 
 # run it
 $ go run main.go
 
 # build it
 $ go build -mod vendor -o exo
+or
+$ make build
 ```
 
 ## Configuration

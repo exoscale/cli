@@ -77,7 +77,7 @@ type ListTemplates struct {
 	Page           int           `json:"page,omitempty"`
 	PageSize       int           `json:"pagesize,omitempty"`
 	ShowRemoved    *bool         `json:"showremoved,omitempty" doc:"Show removed templates as well"`
-	Tags           []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
+	Tags           []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs). Note: multiple tags are OR'ed, not AND'ed."`
 	ZoneID         *UUID         `json:"zoneid,omitempty" doc:"list templates by zoneid"`
 	_              bool          `name:"listTemplates" description:"List all public, private, and privileged templates."`
 }

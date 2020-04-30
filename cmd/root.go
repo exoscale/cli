@@ -109,7 +109,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&gAccountName, "use-account", "A", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
 	RootCmd.PersistentFlags().StringVarP(&gOutputFormat, "output-format", "O", "", "Output format (table|json|text), see \"exo output --help\" for more information")
 	RootCmd.PersistentFlags().StringVar(&gOutputTemplate, "output-template", "", "Template to use if output format is \"text\"")
-	RootCmd.PersistentFlags().BoolVarP(&gQuiet, "quiet", "Q", false, "Quiet mode (disable non-essential command output")
+	RootCmd.PersistentFlags().BoolVarP(&gQuiet, "quiet", "Q", false, "Quiet mode (disable non-essential command output)")
 	RootCmd.AddCommand(versionCmd)
 
 	cobra.OnInitialize(initConfig, buildClient)

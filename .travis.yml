@@ -17,20 +17,14 @@ script:
 jobs:
   include:
     - stage: golangci-lint
-      go: "1.13.x"
+      go: "1.14.x"
       script:
         - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v${GOLANGCI_LINT_VERSION}
         - GO111MODULE=off golangci-lint run ./...
         - go test -v -mod=vendor ./...
         - go build -mod=vendor
-    - stage: goreleaser
-      go: "1.13.x"
-      script:
-        - curl -sL https://git.io/goreleaser | head -n -2 | bash
-        - tar -xf /tmp/goreleaser.tar.gz -C $GOPATH/bin
-        - goreleaser --snapshot --skip-sign
     - stage: gh-pages
-      go: "1.13.x"
+      go: "1.14.x"
       if: branch = master AND type = push
       script: |
         cd website

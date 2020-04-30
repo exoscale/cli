@@ -1,31 +1,13 @@
-VERSION := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') 2> /dev/null | sed 's/^v//')
-ifndef VERSION
-	VERSION = dev
-endif
-COMMIT := $(shell git rev-parse HEAD)
-GO_BUILDOPTS := -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${COMMIT}"
-GO_FILES = $(shell find . -type f -name '*.go')
+include go.mk/init.mk
 
-.PHONY: all
-all: clean exo
-
-exo: $(GO_FILES)
-	go build ${GO_BUILDOPTS} -mod=vendor -o $@
-
-.PHONY: lint
-lint: $(GO_FILES)
-	golangci-lint run ./...
-
-.PHONY: test
-test: $(GO_FILES)
-	go test -v -mod=vendor ./...
+GO_BIN_OUTPUT_NAME := exo
 
 .PHONY: docker
-docker: Dockerfile $(GO_FILES)
+docker:
 	docker build -f $< \
 		-t exoscale/cli \
 		--build-arg VERSION="${VERSION}" \
-		--build-arg VCS_REF="${COMMIT}" \
+		--build-arg VCS_REF="${GIT_REVISION}" \
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%m:%SZ")" \
 		.
 	docker tag exoscale/cli:latest exoscale/cli:${VERSION}
@@ -37,18 +19,15 @@ manpage:
 	mkdir -p $@
 
 .PHONY: manpages
-manpages: manpage $(GO_FILES)
-	go run -mod vendor doc/main.go --man-page
-
-contrib/completion/bash:
-	mkdir -p $@
+manpages: manpage
+	$(GO) run -mod vendor doc/main.go --man-page
 
 .PHONY: completions
-completions: contrib/completion/bash $(GO_FILES)
-	go run -mod vendor completion/main.go
-	mv bash_completion $</exo
+completions:
+	mkdir -p contrib/completion/bash
+	$(GO) run -mod vendor completion/main.go
+	mv bash_completion contrib/completion/bash/exo
 
 .PHONY: clean
-clean:
-	go clean
-	rm -rf exo contrib/completion manpage
+clean::
+	rm -rf contrib/completion manpage

@@ -1,6 +1,26 @@
 # Changelog
 
 
+## 1.12.0
+
+### New
+
+* Add [`go.mk`](https://github.com/exoscale/go.mk) support for exo cli (#233)
+* Add `exo vm snapshot export` command to export an instant snapshot of a volume (#234)
+* Add `exo limits` command to show the safety limits currently enforced on your account (#232)
+* Add support to run `exo` binary on arm architecture 32/64 bits (#230)
+
+### Bug Fixes
+
+* Fix account selector in `exo config` (#241)
+* Fix panic when `--quiet` flag is used (#236)
+
+### Changes
+
+* The `--output-format|-O` flag is no longer required with the `--output-template` flag (#239)
+* Improve `apikey` commands output UX (#231)
+
+
 ## 1.11.0
 
 ### New
