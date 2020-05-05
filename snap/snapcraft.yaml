@@ -38,8 +38,12 @@ parts:
     plugin: make
     source: .
     artifacts:
-      - exo
+      - bin/exo
     build-snaps:
       - go
     build-packages:
       - git
+    make-parameters: [build]
+    override-build: |
+      git submodule update --init --recursive go.mk
+      snapcraftctl build
