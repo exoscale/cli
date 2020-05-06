@@ -17,15 +17,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//region Settings
-
 const (
 	defaultParallelSosSync = 10
 )
-
-//endregion
-
-//region Type definitions
 
 type sosSyncClientFactory = func(certsFile string) (*sosClient, error)
 type sosSyncListObjects = func(config sosSyncConfiguration, errors chan<- error) <-chan sosSyncObject
@@ -72,13 +66,6 @@ type sosSyncTask struct {
 	Size   int64
 }
 
-//endregion
-
-//region Implementation
-
-//Creates the Cobra command structure
-
-//Creates the actual function that will be run when the command is executed
 func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		certsFile, err := cmd.Flags().GetString("certs-file")
@@ -171,14 +158,11 @@ func newSosSyncRunE(sosClientFactory sosSyncClientFactory) func(cmd *cobra.Comma
 	}
 }
 
-//Creates the UI for the upload process
 func newSosSyncUi() sosSyncUi {
 	return func(wg *sync.WaitGroup) sosSyncFileUiFactory {
 		progress := mpb.NewWithContext(gContext,
 			mpb.WithWaitGroup(wg),
-			// override default (80) width
 			mpb.WithWidth(64),
-			// override default 120ms refresh rate
 			mpb.WithRefreshRate(180*time.Millisecond),
 			mpb.ContainerOptOnCond(mpb.WithOutput(nil), func() bool { return gQuiet }),
 		)
@@ -191,12 +175,10 @@ func newSosSyncUi() sosSyncUi {
 			}
 			bar := progress.AddBar(task.Size,
 				mpb.AppendDecorators(
-					// simple name decorator
 					decor.Name(filename, decor.WC{W: len(filename) + 1, C: decor.DidentRight}),
 				),
 				mpb.PrependDecorators(
 					decor.OnComplete(decor.AverageETA(decor.ET_STYLE_GO), "done!"),
-					// decor.DSyncWidth bit enables column width synchronization
 					decor.Percentage(decor.WCSyncSpace),
 				),
 			)
@@ -218,7 +200,6 @@ func newSosSyncUi() sosSyncUi {
 	}
 }
 
-//Lists object storage buckets
 func newSosSyncListObjects(sosClient *sosClient) sosSyncListObjects {
 	return func(config sosSyncConfiguration, errorChannel chan<- error) <-chan sosSyncObject {
 		result := make(chan sosSyncObject)
@@ -226,7 +207,6 @@ func newSosSyncListObjects(sosClient *sosClient) sosSyncListObjects {
 		go func() {
 			doneCh := make(chan struct{})
 			defer close(doneCh)
-			//todo how does ListObjectsV2 indicate errors?
 			objects := sosClient.ListObjectsV2(config.TargetBucket, config.TargetPath, true, doneCh)
 			for object := range objects {
 				result <- sosSyncObject{
@@ -243,7 +223,6 @@ func newSosSyncListObjects(sosClient *sosClient) sosSyncListObjects {
 	}
 }
 
-//Retrieves the details of a single local file
 func newSosSyncGetFile() sosSyncGetFile {
 	return func(config sosSyncConfiguration, file string) (sosSyncFile, error) {
 		trimmedFile := strings.TrimLeft(file, "/")
@@ -260,7 +239,6 @@ func newSosSyncGetFile() sosSyncGetFile {
 	}
 }
 
-//Lists local files in a directory
 func newSosSyncListFiles() sosSyncListFiles {
 	return func(config sosSyncConfiguration, errorChannel chan<- error) <-chan sosSyncFile {
 		result := make(chan sosSyncFile)
@@ -289,7 +267,6 @@ func newSosSyncListFiles() sosSyncListFiles {
 	}
 }
 
-//Creates the task list by diffing the remote object list and the local file list
 func newSosSyncDiff(
 	sosSyncListObjects sosSyncListObjects,
 	sosSyncGetFile sosSyncGetFile,
@@ -345,7 +322,6 @@ func newSosSyncDiff(
 	}
 }
 
-//todo this could probably do with a refactor
 func newSosSyncProcessTaskList(sosClient *sosClient, ui sosSyncUi) sosSyncProcessTaskList {
 	return func(sosSyncConfiguration sosSyncConfiguration, tasks <-chan sosSyncTask, inputDone chan bool, errorChannel chan<- error) {
 		var taskWG sync.WaitGroup
@@ -384,11 +360,9 @@ func newSosSyncProcessTaskList(sosClient *sosClient, ui sosSyncUi) sosSyncProces
 						fmt.Printf("Uploading local file %s to remote path %s\n", localPath, remotePath)
 					}
 
-					//region MIME type
 					var contentType string
 					var bufferSize int64
 
-					// Only the first 512 bytes are used to sniff the content type.
 					if task.Size >= 512 {
 						bufferSize = 512
 					} else {
@@ -406,16 +380,12 @@ func newSosSyncProcessTaskList(sosClient *sosClient, ui sosSyncUi) sosSyncProces
 							errorChannel <- err
 						} else {
 							contentType = http.DetectContentType(buffer)
-							//endregion
-
-							//region Upload
 							if !sosSyncConfiguration.DryRun {
 								f, err := os.Open(localPath)
 								if err != nil {
 									taskUi.error()
 									errorChannel <- err
 								} else {
-									//noinspection GoUnhandledErrorResult
 									defer f.Close()
 
 									_, upErr := sosClient.PutObjectWithContext(
@@ -438,7 +408,6 @@ func newSosSyncProcessTaskList(sosClient *sosClient, ui sosSyncUi) sosSyncProces
 							} else {
 								taskUi.complete()
 							}
-							//endregion
 						}
 					}
 				}
@@ -446,15 +415,12 @@ func newSosSyncProcessTaskList(sosClient *sosClient, ui sosSyncUi) sosSyncProces
 			}()
 		}
 
-		//Wait for complete input before waiting for the task WG
 		<-inputDone
 		close(inputDone)
 		taskWG.Wait()
 	}
 }
 
-//Takes a preconfigured object storage client for the target bucket, and a validated configuration
-//and synchronizes the local folder with the remote.
 func sosSyncProcess(
 	sosSyncConfiguration sosSyncConfiguration,
 	sosSyncDiff sosSyncDiff,
@@ -469,7 +435,6 @@ func sosSyncProcess(
 	for {
 		select {
 		case errChannelResult := <-errorChannel:
-			//noinspection GoUnhandledErrorResult
 			fmt.Fprintf(os.Stderr, "Error while processing: %s", errChannelResult)
 			err = errChannelResult
 		default:
@@ -479,19 +444,13 @@ func sosSyncProcess(
 			break
 		}
 	}
-	if //noinspection GoNilness
-	err != nil {
+	if err != nil {
 		return errors.New("one or more errors happened while processing your sync")
 	} else {
 		return nil
 	}
 }
 
-//endregion
-
-//region Wiring
-
-//Creates the live SOS client
 func sosSyncLiveClientFactory(certsFile string) (*sosClient, error) {
 	client, err := newSOSClient(certsFile)
 	if err != nil {
@@ -500,7 +459,6 @@ func sosSyncLiveClientFactory(certsFile string) (*sosClient, error) {
 	return client, err
 }
 
-//Initializes the sync command
 func init() {
 	runE := newSosSyncRunE(sosSyncLiveClientFactory)
 	cmd := &cobra.Command{
@@ -514,5 +472,3 @@ func init() {
 	cmd.Flags().Uint16P("concurrency", "c", defaultParallelSosSync, "Parallel threads to use for upload")
 	sosCmd.AddCommand(cmd)
 }
-
-//endregion
