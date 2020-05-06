@@ -15,6 +15,9 @@ docker:
 docker-push:
 	docker push exoscale/cli:latest && docker push exoscale/cli:${VERSION}
 
+certificates:
+    curl https://www.exoscale.com/static/files/sos-certs.pem --output sos-certs.pem
+
 manpage:
 	mkdir -p $@
 
