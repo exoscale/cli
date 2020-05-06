@@ -509,7 +509,7 @@ func init() {
 		Aliases: gSyncAlias,
 		RunE:    runE,
 	}
-	cmd.Flags().BoolP("remove-deleted", "r", false, "Remove remote files not present locally")
+	cmd.Flags().BoolP("remove-deleted", "d", false, "Delete remote files not present locally")
 	cmd.Flags().BoolP("dry-run", "n", false, "Don't actually modify files")
 	cmd.Flags().Uint16P("concurrency", "c", defaultParallelSosSync, "Parallel threads to use for upload")
 	sosCmd.AddCommand(cmd)
