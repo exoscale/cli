@@ -58,11 +58,14 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 	)
 
 	if certsFile == "" {
+		// Check if the directory of the "exo" executable contains a file named "sos-certs.pem"
+		// to load the certificate chain from. This is done to work around Golang issue #16736
+		// on Windows ( https://github.com/golang/go/issues/16736 )
 		path, err := os.Executable()
 		if err == nil {
 			dir, err := filepath.Abs(filepath.Dir(path))
 			if err == nil {
-				tmpCertsFile := filepath.FromSlash(dir + "/sos-certs.pem")
+				tmpCertsFile := filepath.Join(dir, "sos-certs.pem")
 				fmt.Println(tmpCertsFile)
 				stat, err := os.Stat(tmpCertsFile)
 				if err == nil && stat.IsDir() == false {
