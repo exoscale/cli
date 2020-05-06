@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -57,7 +58,7 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 		err error
 	)
 
-	if certsFile == "" {
+	if certsFile == "" && runtime.GOOS == "windows" {
 		// Check if the directory of the "exo" executable contains a file named "sos-certs.pem"
 		// to load the certificate chain from. This is done to work around Golang issue #16736
 		// on Windows ( https://github.com/golang/go/issues/16736 )
