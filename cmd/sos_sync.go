@@ -462,10 +462,9 @@ func sosSyncLiveClientFactory(certsFile string) (*sosClient, error) {
 func init() {
 	runE := newSosSyncRunE(sosSyncLiveClientFactory)
 	cmd := &cobra.Command{
-		Use:     "sync <bucket name> <local path> <remote-path>",
-		Short:   "Sync a local folder with the object storage",
-		Aliases: gSyncAlias,
-		RunE:    runE,
+		Use:   "sync <bucket name> <local path> <remote-path>",
+		Short: "Sync a local folder with the object storage",
+		RunE:  runE,
 	}
 	cmd.Flags().BoolP("remove-deleted", "d", false, "Delete remote files not present locally")
 	cmd.Flags().BoolP("dry-run", "n", false, "Don't actually modify files")
