@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -55,6 +56,21 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 		c   sosClient
 		err error
 	)
+
+	if certsFile == "" {
+		path, err := os.Executable()
+		if err == nil {
+			dir, err := filepath.Abs(filepath.Dir(path))
+			if err == nil {
+				tmpCertsFile := filepath.FromSlash(dir + "/sos-certs.pem")
+				fmt.Println(tmpCertsFile)
+				stat, err := os.Stat(tmpCertsFile)
+				if err == nil && stat.IsDir() == false {
+					certsFile = tmpCertsFile
+				}
+			}
+		}
+	}
 
 	if certsFile != "" {
 		c.certPool = x509.NewCertPool()
