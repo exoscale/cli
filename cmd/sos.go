@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -65,6 +66,8 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 		if !c.certPool.AppendCertsFromPEM(certs) {
 			return nil, errors.New("unable to load local certificates")
 		}
+	} else if runtime.GOOS == "windows" {
+		os.Stderr.WriteString("It looks like you are running on Windows and you didn't pass the --certs-file flag. Due to a bug in Golang this may not work.\n")
 	}
 
 	z := gCurrentAccount.DefaultZone
