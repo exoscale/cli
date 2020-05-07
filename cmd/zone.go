@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -33,6 +34,10 @@ func (o *zoneListOutput) toJSON()  { outputJSON(o) }
 func (o *zoneListOutput) toText()  { outputText(o) }
 func (o *zoneListOutput) toTable() { outputTable(o) }
 
+func (o zoneListOutput) Len() int           { return len(o) }
+func (o zoneListOutput) Swap(x, y int)      { o[x], o[y] = o[y], o[x] }
+func (o zoneListOutput) Less(x, y int) bool { return o[x].Name < o[y].Name }
+
 func init() {
 	RootCmd.AddCommand(&cobra.Command{
 		Use:   "zone",
@@ -63,6 +68,8 @@ func listZones() (outputter, error) {
 			Name: zone.Name,
 		})
 	}
+
+	sort.Sort(out)
 
 	return &out, nil
 }
