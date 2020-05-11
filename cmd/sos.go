@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"github.com/labstack/gommon/log"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -25,24 +26,36 @@ const (
 )
 
 // sosCmd represents the sos command
-var sosCmd = &cobra.Command{
-	Use:   "sos",
-	Short: "Simple Object Storage management",
-	Long: `Manage Exoscale Object Storage (SOS)
+var long = func() string {
+	var long = "Manage Exoscale Object Storage (SOS)"
 
+	if runtime.GOOS == "windows" {
+		long += `
 IMPORTANT: Due to a bug in the Microsoft Windows support in the Go
-programming language (https://github.com/golang/go/issues/16736), some
-security certificates such as Exoscale SOS API's one are not recognized as
-being signed by a trusted Certificate Authority. In order to work around this
-issue until the bug is fixed upstream, Windows users are required to use the
-"--certs-file" flag with a path to a local file containing Exoscale SOS API's
-certificate chain to the "exo sos" commands. This file can be downloaded from
-the following address:
+programming language ( https://github.com/golang/go/issues/16736 ) Windows
+users are required to extract the sos-certs.pem file next to their exo.exe
+file from the archive. You can obtain a fresh copy of the exo cli from
+this address:
+
+    https://github.com/exoscale/cli/releases
+
+The required file can also be obtained from the following address:
 
 	https://www.exoscale.com/static/files/sos-certs.pem
 
-We apologize for the inconvenience, however this issue is beyond our control.
-`,
+If you have located your certificate chain in a different location you
+can also use the '--certs-file' parameter to indicate the location.
+
+We apologize for the inconvenience.
+`
+	}
+	return long
+}
+
+var sosCmd = &cobra.Command{
+	Use:              "sos",
+	Short:            "Simple Object Storage management",
+	Long:             long(),
 	TraverseChildren: true,
 }
 
@@ -71,6 +84,11 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 				stat, err := os.Stat(tmpCertsFile)
 				if err == nil && stat.IsDir() == false {
 					certsFile = tmpCertsFile
+				} else {
+					log.Warn(
+						"It seems you are running on Windows and your sos-certs.pem file is missing.\n" +
+							"Please download and extract all files from the exo cli release, not just the executable.\n" +
+							"Please see the 'exo sos help' command for more details.")
 				}
 			}
 		}
