@@ -26,7 +26,7 @@ const (
 )
 
 // sosCmd represents the sos command
-var long = func() string {
+var sosCmdLongHelp = func() string {
 	var long = "Manage Exoscale Object Storage (SOS)"
 
 	if runtime.GOOS == "windows" {
