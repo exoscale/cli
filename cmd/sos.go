@@ -34,7 +34,7 @@ var sosCmdLongHelp = func() string {
 IMPORTANT: Due to a bug in the Microsoft Windows support in the Go
 programming language ( https://github.com/golang/go/issues/16736 ) Windows
 users are required to extract the sos-certs.pem file next to their exo.exe
-file from the archive. You can obtain a fresh copy of the exo cli from
+file from the archive. You can obtain a fresh copy of the exo CLI from
 this address:
 
     https://github.com/exoscale/cli/releases
