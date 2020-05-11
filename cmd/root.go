@@ -79,6 +79,8 @@ func Execute(version, commit string) {
 	gVersion = version
 	gCommit = commit
 
+	egoscale.UserAgent = fmt.Sprintf("Exoscale-CLI/%s (%s) %s", gVersion, gCommit, egoscale.UserAgent)
+
 	// trap Ctrl+C and call cancel on the context
 	ctx, cancel := context.WithCancel(context.Background())
 	c := make(chan os.Signal, 1)
@@ -312,8 +314,6 @@ func initConfig() {
 	gCurrentAccount.DNSEndpoint = strings.TrimRight(gCurrentAccount.DNSEndpoint, "/")
 	gCurrentAccount.SosEndpoint = strings.TrimRight(gCurrentAccount.SosEndpoint, "/")
 	gCurrentAccount.RunstatusEndpoint = strings.TrimRight(gCurrentAccount.RunstatusEndpoint, "/")
-
-	egoscale.UserAgent = fmt.Sprintf("Exoscale-CLI/%s (%s) %s", gVersion, gCommit, egoscale.UserAgent)
 }
 
 func isNonCredentialCmd(cmds ...string) bool {
