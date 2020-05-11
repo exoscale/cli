@@ -65,7 +65,7 @@ type sosClient struct {
 }
 
 func sosCmdWindowsCertFileError() {
-	fmt.Fprintln(os.Stderr,
+	_, _ = fmt.Fprintln(os.Stderr,
 		"*** WARNING ***\n"+
 			"It seems you are running on Windows and your sos-certs.pem file is missing.\n"+
 			"Please download and extract all files from the exo cli release, not just the executable.\n"+
@@ -81,15 +81,15 @@ func sosCmdGetWindowsCertFile(certsFile string) string {
 	}
 	path, err := os.Executable()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Could not determine executable path, continuing without cert path.")
-		fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, "Could not determine executable path, continuing without cert path.")
+		_, _ = fmt.Fprintln(os.Stderr, err)
 		return certsFile
 	}
 
 	dir, err := filepath.Abs(filepath.Dir(path))
 	if err != nil {
 		sosCmdWindowsCertFileError()
-		fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, err)
 		return certsFile
 	}
 
@@ -97,7 +97,7 @@ func sosCmdGetWindowsCertFile(certsFile string) string {
 	stat, err := os.Stat(tmpCertsFile)
 	if err != nil || stat.IsDir() != false {
 		sosCmdWindowsCertFileError()
-		fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, err)
 		return certsFile
 	}
 
