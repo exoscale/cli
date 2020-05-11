@@ -55,7 +55,7 @@ We apologize for the inconvenience.
 var sosCmd = &cobra.Command{
 	Use:              "sos",
 	Short:            "Simple Object Storage management",
-	Long:             long(),
+	Long:             sosCmdLongHelp(),
 	TraverseChildren: true,
 }
 
@@ -65,34 +65,52 @@ type sosClient struct {
 	certPool *x509.CertPool
 }
 
+func sosCmdWindowsCertFileError() {
+	log.Warn(
+		"It seems you are running on Windows and your sos-certs.pem file is missing.\n" +
+			"Please download and extract all files from the exo cli release, not just the executable.\n" +
+			"Please see the 'exo sos help' command for more details.")
+}
+
+func sosCmdGetWindowsCertFile(certsFile string) string {
+	// Check if the directory of the "exo" executable contains a file named "sos-certs.pem"
+	// to load the certificate chain from. This is done to work around Golang issue #16736
+	// on Windows (https://github.com/golang/go/issues/16736)
+	if certsFile != "" || runtime.GOOS != "windows" {
+		return certsFile
+	}
+	path, err := os.Executable()
+	if err != nil {
+		log.Warn("Could not determine executable path, continuing without cert path.")
+		log.Warn(err)
+		return certsFile
+	}
+
+	dir, err := filepath.Abs(filepath.Dir(path))
+	if err != nil {
+		sosCmdWindowsCertFileError()
+		log.Warn(err)
+		return certsFile
+	}
+
+	tmpCertsFile := filepath.Join(dir, "sos-certs.pem")
+	stat, err := os.Stat(tmpCertsFile)
+	if err != nil || stat.IsDir() != false {
+		sosCmdWindowsCertFileError()
+		log.Warn(err)
+		return certsFile
+	}
+
+	return tmpCertsFile
+}
+
 func newSOSClient(certsFile string) (*sosClient, error) {
 	var (
 		c   sosClient
 		err error
 	)
 
-	if certsFile == "" && runtime.GOOS == "windows" {
-		// Check if the directory of the "exo" executable contains a file named "sos-certs.pem"
-		// to load the certificate chain from. This is done to work around Golang issue #16736
-		// on Windows (https://github.com/golang/go/issues/16736)
-		path, err := os.Executable()
-		if err == nil {
-			dir, err := filepath.Abs(filepath.Dir(path))
-			if err == nil {
-				tmpCertsFile := filepath.Join(dir, "sos-certs.pem")
-				fmt.Println(tmpCertsFile)
-				stat, err := os.Stat(tmpCertsFile)
-				if err == nil && stat.IsDir() == false {
-					certsFile = tmpCertsFile
-				} else {
-					log.Warn(
-						"It seems you are running on Windows and your sos-certs.pem file is missing.\n" +
-							"Please download and extract all files from the exo cli release, not just the executable.\n" +
-							"Please see the 'exo sos help' command for more details.")
-				}
-			}
-		}
-	}
+	certsFile = sosCmdGetWindowsCertFile(certsFile)
 
 	if certsFile != "" {
 		c.certPool = x509.NewCertPool()
