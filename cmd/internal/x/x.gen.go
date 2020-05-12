@@ -68,9 +68,9 @@ func XIndex(params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	return resp, decoded, nil
 }
 
-// XListAntiAffinityGroups list-anti-affinity-groups
-func XListAntiAffinityGroups(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "list-anti-affinity-groups"
+// XCreateAntiAffinityGroup create-anti-affinity-group
+func XCreateAntiAffinityGroup(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-anti-affinity-group"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -82,7 +82,11 @@ func XListAntiAffinityGroups(params *viper.Viper) (*gentleman.Response, map[stri
 
 	url := server + "/anti-affinity-group"
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -109,9 +113,9 @@ func XListAntiAffinityGroups(params *viper.Viper) (*gentleman.Response, map[stri
 	return resp, decoded, nil
 }
 
-// XCreateAntiAffinityGroup create-anti-affinity-group
-func XCreateAntiAffinityGroup(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "create-anti-affinity-group"
+// XListAntiAffinityGroups list-anti-affinity-groups
+func XListAntiAffinityGroups(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-anti-affinity-groups"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -123,11 +127,7 @@ func XCreateAntiAffinityGroup(params *viper.Viper, body string) (*gentleman.Resp
 
 	url := server + "/anti-affinity-group"
 
-	req := cli.Client.Post().URL(url)
-
-	if body != "" {
-		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
-	}
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -284,9 +284,9 @@ func XListAntiAffinityGroupInstances(paramId string, params *viper.Viper) (*gent
 	return resp, decoded, nil
 }
 
-// XGenerateApiKey generate-api-key
-func XGenerateApiKey(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "generate-api-key"
+// XListApiKeys list-api-keys
+func XListApiKeys(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-api-keys"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -298,11 +298,7 @@ func XGenerateApiKey(params *viper.Viper, body string) (*gentleman.Response, map
 
 	url := server + "/api-key"
 
-	req := cli.Client.Post().URL(url)
-
-	if body != "" {
-		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
-	}
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -329,9 +325,9 @@ func XGenerateApiKey(params *viper.Viper, body string) (*gentleman.Response, map
 	return resp, decoded, nil
 }
 
-// XListApiKeys list-api-keys
-func XListApiKeys(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "list-api-keys"
+// XGenerateApiKey generate-api-key
+func XGenerateApiKey(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "generate-api-key"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -343,7 +339,11 @@ func XListApiKeys(params *viper.Viper) (*gentleman.Response, map[string]interfac
 
 	url := server + "/api-key"
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -630,9 +630,9 @@ func XAllocateElasticIp(params *viper.Viper, body string) (*gentleman.Response, 
 	return resp, decoded, nil
 }
 
-// XReleaseElasticIp release-elastic-ip
-func XReleaseElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "release-elastic-ip"
+// XElasticIp elastic-ip
+func XElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "elastic-ip"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -645,7 +645,7 @@ func XReleaseElasticIp(paramId string, params *viper.Viper) (*gentleman.Response
 	url := server + "/elastic-ip/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Delete().URL(url)
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -672,9 +672,9 @@ func XReleaseElasticIp(paramId string, params *viper.Viper) (*gentleman.Response
 	return resp, decoded, nil
 }
 
-// XElasticIp elastic-ip
-func XElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "elastic-ip"
+// XReleaseElasticIp release-elastic-ip
+func XReleaseElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "release-elastic-ip"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -687,7 +687,7 @@ func XElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[s
 	url := server + "/elastic-ip/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Delete().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -1389,9 +1389,9 @@ func XListInstanceTypes(params *viper.Viper) (*gentleman.Response, map[string]in
 	return resp, decoded, nil
 }
 
-// XDestroyInstance destroy-instance
-func XDestroyInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "destroy-instance"
+// XInstance instance
+func XInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "instance"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -1404,7 +1404,7 @@ func XDestroyInstance(paramId string, params *viper.Viper) (*gentleman.Response,
 	url := server + "/instance/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Delete().URL(url)
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -1431,9 +1431,9 @@ func XDestroyInstance(paramId string, params *viper.Viper) (*gentleman.Response,
 	return resp, decoded, nil
 }
 
-// XInstance instance
-func XInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "instance"
+// XDestroyInstance destroy-instance
+func XDestroyInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "destroy-instance"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -1446,7 +1446,7 @@ func XInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[st
 	url := server + "/instance/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Delete().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -3160,9 +3160,9 @@ func XListSnapshots(params *viper.Viper) (*gentleman.Response, map[string]interf
 	return resp, decoded, nil
 }
 
-// XDestroySnapshot destroy-snapshot
-func XDestroySnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "destroy-snapshot"
+// XSnapshot snapshot
+func XSnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "snapshot"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -3175,7 +3175,7 @@ func XDestroySnapshot(paramId string, params *viper.Viper) (*gentleman.Response,
 	url := server + "/snapshot/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Delete().URL(url)
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -3202,9 +3202,9 @@ func XDestroySnapshot(paramId string, params *viper.Viper) (*gentleman.Response,
 	return resp, decoded, nil
 }
 
-// XSnapshot snapshot
-func XSnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "snapshot"
+// XDestroySnapshot destroy-snapshot
+func XDestroySnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "destroy-snapshot"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -3217,7 +3217,7 @@ func XSnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[st
 	url := server + "/snapshot/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Delete().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -3655,14 +3655,18 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "list-anti-affinity-groups",
-			Short:   "list-anti-affinity-groups",
-			Long:    cli.Markdown("List Anti-Affinity Groups"),
+			Use:     "create-anti-affinity-group",
+			Short:   "create-anti-affinity-group",
+			Long:    cli.Markdown("Create Anti-Affinity Group\n## Request Schema (application/json)\n\nproperties:\n  command:\n    type: string\n  id:\n    format: uuid\n    type: string\n  link:\n    readOnly: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
 
-				_, decoded, err := XListAntiAffinityGroups(params)
+				_, decoded, err := XCreateAntiAffinityGroup(params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -3689,18 +3693,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "create-anti-affinity-group",
-			Short:   "create-anti-affinity-group",
-			Long:    cli.Markdown("Create Anti-Affinity Group\n## Request Schema (application/json)\n\nproperties:\n  command:\n    type: string\n  id:\n    format: uuid\n    type: string\n  link:\n    readOnly: true\n    type: string\ntype: object\n"),
+			Use:     "list-anti-affinity-groups",
+			Short:   "list-anti-affinity-groups",
+			Long:    cli.Markdown("List Anti-Affinity Groups"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
-				body, err := cli.GetBody("application/json", args[0:])
-				if err != nil {
-					log.Fatal().Err(err).Msg("Unable to get body")
-				}
 
-				_, decoded, err := XCreateAntiAffinityGroup(params, body)
+				_, decoded, err := XListAntiAffinityGroups(params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -3833,18 +3833,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "generate-api-key",
-			Short:   "generate-api-key",
-			Long:    cli.Markdown("Create API key\n## Request Schema (application/json)\n\nproperties:\n  created:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  key:\n    readOnly: true\n    type: string\n  operations:\n    items:\n      type: string\n    type: array\n  secret:\n    readOnly: true\n    type: string\n  tags:\n    additionalProperties:\n      type: string\n    type: object\ntype: object\n"),
+			Use:     "list-api-keys",
+			Short:   "list-api-keys",
+			Long:    cli.Markdown("List API keys"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
-				body, err := cli.GetBody("application/json", args[0:])
-				if err != nil {
-					log.Fatal().Err(err).Msg("Unable to get body")
-				}
 
-				_, decoded, err := XGenerateApiKey(params, body)
+				_, decoded, err := XListApiKeys(params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -3871,14 +3867,18 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "list-api-keys",
-			Short:   "list-api-keys",
-			Long:    cli.Markdown("List API keys"),
+			Use:     "generate-api-key",
+			Short:   "generate-api-key",
+			Long:    cli.Markdown("Create API key\n## Request Schema (application/json)\n\nproperties:\n  created:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  key:\n    readOnly: true\n    type: string\n  operations:\n    items:\n      type: string\n    type: array\n  secret:\n    readOnly: true\n    type: string\n  tags:\n    additionalProperties:\n      type: string\n    type: object\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
 
-				_, decoded, err := XListApiKeys(params)
+				_, decoded, err := XGenerateApiKey(params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4121,14 +4121,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "release-elastic-ip id",
-			Short:   "release-elastic-ip",
-			Long:    cli.Markdown("Release Elastic IP"),
+			Use:     "elastic-ip id",
+			Short:   "elastic-ip",
+			Long:    cli.Markdown("Get Elastic IP details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XReleaseElasticIp(args[0], params)
+				_, decoded, err := XElasticIp(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4155,14 +4155,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "elastic-ip id",
-			Short:   "elastic-ip",
-			Long:    cli.Markdown("Get Elastic IP details"),
+			Use:     "release-elastic-ip id",
+			Short:   "release-elastic-ip",
+			Long:    cli.Markdown("Release Elastic IP"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XElasticIp(args[0], params)
+				_, decoded, err := XReleaseElasticIp(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4738,14 +4738,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "destroy-instance id",
-			Short:   "destroy-instance",
-			Long:    cli.Markdown("Destroy Compute instance"),
+			Use:     "instance id",
+			Short:   "instance",
+			Long:    cli.Markdown("Show Compute instance details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XDestroyInstance(args[0], params)
+				_, decoded, err := XInstance(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4772,14 +4772,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "instance id",
-			Short:   "instance",
-			Long:    cli.Markdown("Show Compute instance details"),
+			Use:     "destroy-instance id",
+			Short:   "destroy-instance",
+			Long:    cli.Markdown("Destroy Compute instance"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XInstance(args[0], params)
+				_, decoded, err := XDestroyInstance(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -5448,7 +5448,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-load-balancer",
 			Short:   "create-load-balancer",
-			Long:    cli.Markdown("Create a new load balancer\n## Request Schema (application/json)\n\nproperties:\n  command:\n    type: string\n  id:\n    format: uuid\n    type: string\n  link:\n    readOnly: true\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Create a new load balancer\n## Request Schema (application/json)\n\nproperties:\n  createdAt:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  ip:\n    $ref: '#/components/schemas/resource'\n  name:\n    type: string\n  services:\n    items:\n      $ref: '#/components/schemas/load-balancer-service'\n    type: array\n  state:\n    enum:\n    - destroying\n    - creating\n    - running\n    - error\n    readOnly: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6192,14 +6192,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "destroy-snapshot id",
-			Short:   "destroy-snapshot",
-			Long:    cli.Markdown("Destroy snapshot"),
+			Use:     "snapshot id",
+			Short:   "snapshot",
+			Long:    cli.Markdown("Show compute snapshot details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XDestroySnapshot(args[0], params)
+				_, decoded, err := XSnapshot(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -6226,14 +6226,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "snapshot id",
-			Short:   "snapshot",
-			Long:    cli.Markdown("Show compute snapshot details"),
+			Use:     "destroy-snapshot id",
+			Short:   "destroy-snapshot",
+			Long:    cli.Markdown("Destroy snapshot"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XSnapshot(args[0], params)
+				_, decoded, err := XDestroySnapshot(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
