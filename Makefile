@@ -4,6 +4,19 @@ GO_BIN_OUTPUT_NAME := exo
 
 GORELEASER_EXTRA_ARGS ?=
 
+.PHONY:
+.ONESHELL:
+x-cmd:
+	@if [ ! -f "$(shell go env GOPATH)/bin/openapi-cli-generator" ]; then
+		echo "openapi-cli-generator tool not found, downloading"
+		go get -u github.com/danielgtaylor/openapi-cli-generator
+	fi
+	ln -s exoscale-v2.oas.yaml x.yaml
+	openapi-cli-generator generate x.yaml
+	rm -f x.yaml
+	sed -i -re "s/^package main$$/package x/" x.go
+	mv -f x.go cmd/internal/x/x.gen.go
+
 .PHONY: docker
 docker:
 	docker build -f $< \

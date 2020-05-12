@@ -38,7 +38,6 @@ func httpContentBlock(groups []string, lexer Lexer) Iterator {
 		{Generic, groups[0]},
 	}
 	return Literator(tokens...)
-
 }
 
 func httpHeaderBlock(groups []string, lexer Lexer) Iterator {
@@ -66,7 +65,7 @@ func httpBodyContentTypeLexer(lexer Lexer) Lexer { return &httpBodyContentTyper{
 
 type httpBodyContentTyper struct{ Lexer }
 
-func (d *httpBodyContentTyper) Tokenise(options *TokeniseOptions, text string) (Iterator, error) {
+func (d *httpBodyContentTyper) Tokenise(options *TokeniseOptions, text string) (Iterator, error) { // nolint: gocognit
 	var contentType string
 	var isContentType bool
 	var subIterator Iterator
@@ -77,56 +76,53 @@ func (d *httpBodyContentTyper) Tokenise(options *TokeniseOptions, text string) (
 	}
 
 	return func() Token {
-		for token := it(); token != EOF; token = it() {
-			switch {
-			case token.Type == Name && strings.ToLower(token.Value) == "content-type":
-				{
-					isContentType = true
-				}
-			case token.Type == Literal && isContentType:
-				{
-					isContentType = false
-					contentType = strings.TrimSpace(token.Value)
-					pos := strings.Index(contentType, ";")
-					if pos > 0 {
-						contentType = strings.TrimSpace(contentType[:pos])
-					}
-				}
-			case token.Type == Generic && contentType != "":
-				{
-					lexer := internal.MatchMimeType(contentType)
+		token := it()
 
-					// application/calendar+xml can be treated as application/xml
-					// if there's not a better match.
-					if lexer == nil && strings.Contains(contentType, "+") {
-						slashPos := strings.Index(contentType, "/")
-						plusPos := strings.LastIndex(contentType, "+")
-						contentType = contentType[:slashPos+1] + contentType[plusPos+1:]
-						lexer = internal.MatchMimeType(contentType)
-					}
-
-					if lexer == nil {
-						token.Type = Text
-					} else {
-						subIterator, err = lexer.Tokenise(nil, token.Value)
-						if err != nil {
-							panic(err)
-						}
-						return EOF
-					}
-				}
-
+		if token == EOF {
+			if subIterator != nil {
+				return subIterator()
 			}
-
-			return token
+			return EOF
 		}
 
-		if subIterator != nil {
-			for token := subIterator(); token != EOF; token = subIterator() {
-				return token
+		switch {
+		case token.Type == Name && strings.ToLower(token.Value) == "content-type":
+			{
+				isContentType = true
+			}
+		case token.Type == Literal && isContentType:
+			{
+				isContentType = false
+				contentType = strings.TrimSpace(token.Value)
+				pos := strings.Index(contentType, ";")
+				if pos > 0 {
+					contentType = strings.TrimSpace(contentType[:pos])
+				}
+			}
+		case token.Type == Generic && contentType != "":
+			{
+				lexer := internal.MatchMimeType(contentType)
+
+				// application/calendar+xml can be treated as application/xml
+				// if there's not a better match.
+				if lexer == nil && strings.Contains(contentType, "+") {
+					slashPos := strings.Index(contentType, "/")
+					plusPos := strings.LastIndex(contentType, "+")
+					contentType = contentType[:slashPos+1] + contentType[plusPos+1:]
+					lexer = internal.MatchMimeType(contentType)
+				}
+
+				if lexer == nil {
+					token.Type = Text
+				} else {
+					subIterator, err = lexer.Tokenise(nil, token.Value)
+					if err != nil {
+						panic(err)
+					}
+					return EOF
+				}
 			}
 		}
-		return EOF
-
+		return token
 	}, nil
 }
