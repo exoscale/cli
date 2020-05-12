@@ -30,7 +30,7 @@ builds:
         goarch: arm64
 
     hooks:
-      pre: make manpages completions
+      pre: make manpages completions sos-certificates
 
 archives:
   - id: windows
@@ -38,6 +38,7 @@ archives:
       - goos: windows
         format: zip
     files:
+      - sos-certs.pem
       - LICENSE
       - contrib/completion/**/*
       - manpage/*

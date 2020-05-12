@@ -2,6 +2,8 @@ include go.mk/init.mk
 
 GO_BIN_OUTPUT_NAME := exo
 
+GORELEASER_EXTRA_ARGS ?=
+
 .PHONY: docker
 docker:
 	docker build -f $< \
@@ -14,6 +16,14 @@ docker:
 
 docker-push:
 	docker push exoscale/cli:latest && docker push exoscale/cli:${VERSION}
+
+.PHONY: sos-certificates
+sos-certificates:
+	curl -sL --output sos-certs.pem https://www.exoscale.com/static/files/sos-certs.pem
+
+.PHONY: release
+release: sos-certificates
+	goreleaser run --rm-dist $(GORELEASER_EXTRA_ARGS)
 
 manpage:
 	mkdir -p $@
