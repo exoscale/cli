@@ -32,6 +32,7 @@ type account struct {
 	DNSEndpoint          string
 	SosEndpoint          string
 	RunstatusEndpoint    string
+	Environment          string
 	Key                  string
 	Secret               string
 	SecretCommand        []string
@@ -192,6 +193,7 @@ func saveConfig(filePath string, newAccounts *config) error {
 		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["key"] = acc.Key
 		accounts[i]["defaultZone"] = acc.DefaultZone
+		accounts[i]["environment"] = acc.Environment
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
 		}
@@ -220,6 +222,7 @@ func saveConfig(filePath string, newAccounts *config) error {
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
+			accounts[accountsSize+i]["environment"] = acc.Environment
 			if acc.DefaultSSHKey != "" {
 				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
 			}
