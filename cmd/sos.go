@@ -90,7 +90,7 @@ executable. Please run the "exo sos help" command for more information.`
 	}
 
 	tmpCertsFile := filepath.Join(dir, "sos-certs.pem")
-	if stat, err := os.Stat(tmpCertsFile); err != nil || stat.IsDir() != false {
+	if stat, err := os.Stat(tmpCertsFile); err != nil || stat.IsDir() {
 		_, _ = fmt.Fprintln(os.Stderr, warningMessage)
 		os.Exit(1)
 	}
