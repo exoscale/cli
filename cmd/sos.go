@@ -30,6 +30,7 @@ var sosCmdLongHelp = func() string {
 
 	if runtime.GOOS == "windows" {
 		long += `
+
 IMPORTANT: Due to a bug in the Microsoft Windows support in the Go
 programming language (https://github.com/golang/go/issues/16736) Windows
 users are required to extract the sos-certs.pem file next to their exo.exe
@@ -64,44 +65,37 @@ type sosClient struct {
 	certPool *x509.CertPool
 }
 
-func sosCmdWindowsCertFileError() {
-	_, _ = fmt.Fprintln(os.Stderr,
-		"*** WARNING ***\n"+
-			"It seems you are running on Windows and your sos-certs.pem file is missing.\n"+
-			"Please download and extract all files from the exo cli release, not just the executable.\n"+
-			"Please see the 'exo sos help' command for more details.")
-}
+// sosGetExternalCertsFile returns the path to an external certificates file on Windows platforms as a workaround
+// for Golang issue #16736 on Windows (https://github.com/golang/go/issues/16736).
+func sosGetExternalCertsFile(certsFile string) (string, error) {
+	var warningMessage = `error: missing SOS certificates file.
 
-func sosCmdGetWindowsCertFile(certsFile string) string {
-	// Check if the directory of the "exo" executable contains a file named "sos-certs.pem"
-	// to load the certificate chain from. This is done to work around Golang issue #16736
-	// on Windows (https://github.com/golang/go/issues/16736)
+It seems you are running on Windows and your "sos-certs.pem" file is missing.
+Please download and extract all files from the exo CLI release, not just the
+executable. Please run the "exo sos help" command for more information.`
+
 	if certsFile != "" || runtime.GOOS != "windows" {
-		return certsFile
+		return certsFile, nil
 	}
+
 	path, err := os.Executable()
 	if err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, "Could not determine executable path, continuing without cert path.")
-		_, _ = fmt.Fprintln(os.Stderr, err)
-		return certsFile
+		return "", fmt.Errorf("unable to retrieve the executable path: %s", err)
 	}
 
 	dir, err := filepath.Abs(filepath.Dir(path))
 	if err != nil {
-		sosCmdWindowsCertFileError()
-		_, _ = fmt.Fprintln(os.Stderr, err)
-		return certsFile
+		_, _ = fmt.Fprintln(os.Stderr, warningMessage)
+		os.Exit(1)
 	}
 
 	tmpCertsFile := filepath.Join(dir, "sos-certs.pem")
-	stat, err := os.Stat(tmpCertsFile)
-	if err != nil || stat.IsDir() != false {
-		sosCmdWindowsCertFileError()
-		_, _ = fmt.Fprintln(os.Stderr, err)
-		return certsFile
+	if stat, err := os.Stat(tmpCertsFile); err != nil || stat.IsDir() != false {
+		_, _ = fmt.Fprintln(os.Stderr, warningMessage)
+		os.Exit(1)
 	}
 
-	return tmpCertsFile
+	return tmpCertsFile, nil
 }
 
 func newSOSClient(certsFile string) (*sosClient, error) {
@@ -110,7 +104,10 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 		err error
 	)
 
-	certsFile = sosCmdGetWindowsCertFile(certsFile)
+	certsFile, err = sosGetExternalCertsFile(certsFile)
+	if err != nil {
+		return nil, err
+	}
 
 	if certsFile != "" {
 		c.certPool = x509.NewCertPool()

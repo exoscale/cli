@@ -30,7 +30,7 @@ builds:
         goarch: arm64
 
     hooks:
-      pre: make manpages completions certificates
+      pre: make manpages completions sos-certificates
 
 archives:
   - id: windows
