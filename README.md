@@ -1,58 +1,40 @@
----
-title: Exoscale CLI
-description: |
-    Manage easily your Exoscale infrastructure from the command-line with `exo`.
+[![Actions Status](https://github.com/exoscale/cli/workflows/CI/badge.svg)](https://github.com/exoscale/cli/actions?query=workflow%3ACI)
 
----
+# Exoscale CLI
 
-[![Build Status](https://travis-ci.com/exoscale/cli.svg?branch=master)](https://travis-ci.com/exoscale/cli) [![Go Report Card](https://goreportcard.com/badge/github.com/exoscale/cli)](https://goreportcard.com/report/github.com/exoscale/cli) [![Docker image](https://images.microbadger.com/badges/image/exoscale/cli.svg)](https://microbadger.com/images/exoscale/cli "Get your own image badge on microbadger.com")
+Manage easily your Exoscale infrastructure from the command-line with `exo`.
 
 ## Installation
 
-The easiest way is to follow [the tutorial on the Exoscale command-line interface][community].
+### Using pre-built releases (recommended)
 
-### Manual compilation
+You can find pre-built releases of the CLI [here][releases].
 
-This project is open source and may be modified, studied, and built at will. We use and recommend Go 1.11+
+### From sources
+
+To build `exo` from sources, a Go compiler >= 1.13 is required.
 
 ```shell
-# clone it
 $ git clone https://github.com/exoscale/cli
 $ cd cli
 $ git submodule update --init --recursive go.mk
-
-# run it
-$ go run main.go
-
-# build it
-$ go build -mod vendor -o exo
-or
 $ make build
 ```
 
+Upon successful compilation, the resulting `exo` binary is stored in the `bin/` directory.
+
 ## Configuration
 
-The CLI will guide you in the initial configuration.
+Running the `exo config` command will guide you through the initial configuration.
 
-You can find your credentials in our [Exoscale Console](https://portal.exoscale.com/account/profile/api) (having or creating an account is required).
+You can find your API credentials in the *Account* section of the [Exoscale Console](https://portal.exoscale.com/account/profile/api).
 
-```shell
-$ exo config
-```
-
-The configuration file and all assets created by any `exo` command will be saved in the `.exoscale` folder inside your home directory.
+The configuration file and all assets created during `exo` operations will be saved in the `.exoscale` folder inside your home directory.
 
 ## Usage
 
-```shell
-$ exo --help
-```
+The `exo` CLI contains documentation for all of its commands, you can explore them by running `exo help`.
+Additional information and tutorials are available [on Exoscale's community website][communitydoc].
 
-[community]: https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/
-
-## Powered by
-
-- [cobra](https://github.com/spf13/cobra), by Steve Francia :us:
-- [mpb](https://github.com/vbauerster/mpb), by Vladimir Bauer :ru:
-- [tablewriter](https://github.com/olekukonko/tablewriter), by Oleku Konku
-- [chroma](https://github.com/alecthomas/chroma), by Alec Thomas :australia:
+[releases]: https://github.com/exoscale/cli/releases
+[communitydoc]: https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/
