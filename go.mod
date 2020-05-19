@@ -15,6 +15,7 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/izumin5210/gentleman-logger v1.0.0
 	github.com/izumin5210/httplogger v1.0.0 // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/manifoldco/promptui v0.3.2
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/minio/minio-go/v6 v6.0.44

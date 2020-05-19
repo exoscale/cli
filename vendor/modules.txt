@@ -115,6 +115,9 @@ github.com/izumin5210/httplogger
 # github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
 github.com/juju/ansiterm
 github.com/juju/ansiterm/tabwriter
+# github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
+## explicit
+github.com/kballard/go-shellquote
 # github.com/labstack/echo/v4 v4.1.11
 github.com/labstack/echo/v4
 # github.com/labstack/gommon v0.3.0
