@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/exoscale/egoscale"
+	"github.com/kballard/go-shellquote"
 	"github.com/spf13/cobra"
 )
 
@@ -40,6 +41,12 @@ var sshCmd = &cobra.Command{
 			return err
 		}
 
+		sshOpts, err := cmd.Flags().GetString("ssh-options")
+		if err != nil {
+			return err
+		}
+		info.opts = sshOpts
+
 		if isConnectionSTR {
 			printSSHConnectSTR(info)
 			return nil
@@ -56,6 +63,7 @@ var sshCmd = &cobra.Command{
 type sshInfo struct {
 	sshKeys  string
 	userName string
+	opts     string
 	ip       net.IP
 	vmName   string
 	vmID     *egoscale.UUID
@@ -143,6 +151,15 @@ func connectSSH(info *sshInfo) error {
 		args = append(args, info.sshKeys)
 	}
 
+	if info.opts != "" {
+		opts, err := shellquote.Split(info.opts)
+		if err != nil {
+			return fmt.Errorf("invalid SSH options: %s", err)
+		}
+
+		args = append(args, opts...)
+	}
+
 	args = append(args, info.userName+"@"+info.ip.String())
 
 	cmd := exec.Command("ssh", args...)
@@ -155,6 +172,8 @@ func connectSSH(info *sshInfo) error {
 
 func init() {
 	sshCmd.Flags().BoolP("info", "i", false, "Print SSH config information")
+	sshCmd.Flags().StringP("ssh-options", "o", "",
+		"Additional options to pass to the `ssh` command (e.g. -o \"-l my-user -p 2222\"`)")
 	sshCmd.Flags().BoolP("print", "p", false, "Print SSH command")
 	sshCmd.Flags().BoolP("ipv6", "6", false, "Use IPv6 for SSH")
 	RootCmd.AddCommand(sshCmd)
