@@ -46,24 +46,18 @@ var downloadCmd = &cobra.Command{
 		}
 
 		// Verify if destination already exists.
-		st, err := os.Stat(localFilePath)
-		if err == nil {
-			// If the destination exists and is a directory.
-			if st.IsDir() {
-				localFilePath = path.Join(localFilePath, objectName)
-				_, err = os.Stat(localFilePath)
-				if err == nil {
-					return fmt.Errorf("file %q: already exists", localFilePath)
-				}
-			} else {
-				return fmt.Errorf("file %q: already exists", localFilePath)
-			}
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
 		}
 
-		// Proceed if file does not exist. return for all other errors.
-		if err != nil {
-			if !os.IsNotExist(err) {
+		if !force {
+			exists, err := destinationExists(localFilePath, objectName)
+			if err != nil {
 				return err
+			}
+			if exists {
+				return fmt.Errorf("file %q: already exists", localFilePath)
 			}
 		}
 
@@ -83,7 +77,7 @@ var downloadCmd = &cobra.Command{
 		}
 
 		// Issue Stat to get the current offset.
-		st, err = filePart.Stat()
+		st, err := filePart.Stat()
 		if err != nil {
 			return err
 		}
@@ -159,6 +153,32 @@ var downloadCmd = &cobra.Command{
 	},
 }
 
+// destinationExists verifies that the given destination does not exist
+func destinationExists(localFilePath string, objectName string) (bool, error) {
+	st, err := os.Stat(localFilePath)
+	if err == nil {
+		// If the destination exists and is a directory.
+		if st.IsDir() {
+			localFilePath = path.Join(localFilePath, objectName)
+			_, err = os.Stat(localFilePath)
+			if err == nil {
+				return true, nil
+			}
+		} else {
+			return true, nil
+		}
+	}
+
+	// Proceed if file does not exist. return for all other errors.
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return false, err
+		}
+	}
+	return false, nil
+}
+
 func init() {
 	sosCmd.AddCommand(downloadCmd)
+	downloadCmd.Flags().BoolP("force", "f", false, "Overwrite the destination if it already exists")
 }
