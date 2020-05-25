@@ -41,7 +41,7 @@ func (req RunstatusValidationErrorResponse) Error() string {
 		}
 		return fmt.Sprintf("Runstatus error: %s", strings.Join(errs, "; "))
 	}
-	return fmt.Sprintf("Runstatus error")
+	return "Runstatus error"
 }
 
 func (client *Client) runstatusRequest(ctx context.Context, uri string, structParam interface{}, method string) (json.RawMessage, error) {
