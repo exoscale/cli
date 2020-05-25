@@ -11,7 +11,6 @@ import (
 
 	humanize "github.com/dustin/go-humanize"
 	"github.com/exoscale/egoscale"
-	minio "github.com/minio/minio-go/v6"
 
 	"github.com/spf13/cobra"
 )
@@ -193,30 +192,6 @@ func displayBucket(sosClient *sosClient, isRecursive, isShort bool) error {
 		}
 	}
 	return table.Flush()
-}
-
-func listBucket(sosClient *sosClient) (map[string][]minio.BucketInfo, error) {
-	bucketInfos, err := sosClient.ListBuckets()
-	if err != nil {
-		return nil, err
-	}
-
-	res := map[string][]minio.BucketInfo{}
-
-	for _, bucketInfo := range bucketInfos {
-		bucketLocation, err := sosClient.GetBucketLocation(bucketInfo.Name)
-		if err != nil {
-			return nil, err
-		}
-		if _, ok := res[bucketLocation]; !ok {
-			res[bucketLocation] = []minio.BucketInfo{bucketInfo}
-			continue
-		}
-
-		res[bucketLocation] = append(res[bucketLocation], bucketInfo)
-
-	}
-	return res, nil
 }
 
 func isPrefix(prefix, file string) bool {
