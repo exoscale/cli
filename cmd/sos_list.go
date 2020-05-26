@@ -21,8 +21,11 @@ const (
 
 // sosListCmd represents the list command
 var sosListCmd = &cobra.Command{
-	Use:     "list [<bucket name>/path]",
-	Short:   "List file and folder",
+	Use:   "list [<bucket name>/path]",
+	Short: "List file and folder",
+	Long: `This command lists all your buckets or all the files inside one bucket.
+	
+Note: the buckets size reported is computed daily, it may not be the actual size at the time of listing.`,
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		isRecursive, err := cmd.Flags().GetBool("recursive")

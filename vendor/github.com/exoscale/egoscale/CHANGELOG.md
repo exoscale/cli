@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.25.0
+------
+
+- feature: Add support for `listBucketsUsage` (#431) 
+- change: Switch CI to Github Actions (#430)
+
 0.24.0
 ------
 
