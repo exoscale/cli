@@ -23,7 +23,7 @@ const (
 var sosListCmd = &cobra.Command{
 	Use:   "list [<bucket name>/path]",
 	Short: "List file and folder",
-	Long: `This command lists all your buckets or all the files inside one bucket.
+	Long: `This command lists all your buckets or all the files stored in the specified bucket.
 	
 Note: the buckets size reported is computed daily, it may not be the actual size at the time of listing.`,
 	Aliases: gListAlias,
