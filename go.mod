@@ -8,7 +8,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/danielgtaylor/openapi-cli-generator v0.0.0-20200228065623-fa97dc37f943
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.24.0
+	github.com/exoscale/egoscale v0.25.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-ini/ini v1.42.0

@@ -7,9 +7,10 @@ import (
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	humanize "github.com/dustin/go-humanize"
-	minio "github.com/minio/minio-go/v6"
+	"github.com/exoscale/egoscale"
 
 	"github.com/spf13/cobra"
 )
@@ -20,8 +21,11 @@ const (
 
 // sosListCmd represents the list command
 var sosListCmd = &cobra.Command{
-	Use:     "list [<bucket name>/path]",
-	Short:   "List file and folder",
+	Use:   "list [<bucket name>/path]",
+	Short: "List file and folder",
+	Long: `This command lists all your buckets or all the files stored in the specified bucket.
+	
+Note: the buckets size reported is computed daily, it may not be the actual size at the time of listing.`,
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		isRecursive, err := cmd.Flags().GetBool("recursive")
@@ -162,54 +166,35 @@ func listRecursively(sosClient *sosClient, bucket, prefix, zone string,
 }
 
 func displayBucket(sosClient *sosClient, isRecursive, isShort bool) error {
-	allBuckets, err := listBucket(sosClient)
+	resp, err := cs.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
 	if err != nil {
 		return err
 	}
 
+	buckets := resp.(*egoscale.ListBucketsUsageResponse)
+
 	table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 
-	for zoneName, buckets := range allBuckets {
-		for _, bucket := range buckets {
-			if isShort {
-				fmt.Fprintf(table, "%s/\n", bucket.Name) // nolint: errcheck
-			} else {
-				fmt.Fprintf(table,
-					"[%s]\t[%s]\t%6s \t%s/\n", bucket.CreationDate.Format(printDate), zoneName, humanize.IBytes(uint64(0)), bucket.Name) // nolint: errcheck
+	for _, b := range buckets.BucketsUsage {
+		if isShort {
+			fmt.Fprintf(table, "%s/\n", b.Name) // nolint: errcheck
+		} else {
+			t, err := time.Parse(time.RFC3339, b.Created)
+			if err != nil {
+				return err
 			}
-			if isRecursive {
-				if err = sosClient.setZone(zoneName); err != nil {
-					return err
-				}
-				listRecursively(sosClient, bucket.Name, "", zoneName, true, isShort, table)
+
+			fmt.Fprintf(table,
+				"[%s]\t[%s]\t%6s \t%s/\n", t.Format(printDate), b.Region, humanize.IBytes(uint64(b.Usage)), b.Name) // nolint: errcheck
+		}
+		if isRecursive {
+			if err = sosClient.setZone(b.Region); err != nil {
+				return err
 			}
+			listRecursively(sosClient, b.Name, "", b.Region, true, isShort, table)
 		}
 	}
 	return table.Flush()
-}
-
-func listBucket(sosClient *sosClient) (map[string][]minio.BucketInfo, error) {
-	bucketInfos, err := sosClient.ListBuckets()
-	if err != nil {
-		return nil, err
-	}
-
-	res := map[string][]minio.BucketInfo{}
-
-	for _, bucketInfo := range bucketInfos {
-		bucketLocation, err := sosClient.GetBucketLocation(bucketInfo.Name)
-		if err != nil {
-			return nil, err
-		}
-		if _, ok := res[bucketLocation]; !ok {
-			res[bucketLocation] = []minio.BucketInfo{bucketInfo}
-			continue
-		}
-
-		res[bucketLocation] = append(res[bucketLocation], bucketInfo)
-
-	}
-	return res, nil
 }
 
 func isPrefix(prefix, file string) bool {
