@@ -55,7 +55,7 @@ type ElasticIp struct {
 	Healthcheck *Healthcheck    `json:"healthcheck,omitempty"`
 	Id          *string         `json:"id,omitempty"`
 	Mode        *string         `json:"mode,omitempty"`
-	ReverseDns  *string         `json:"reverseDns,omitempty"`
+	ReverseDns  *string         `json:"reverse-dns,omitempty"`
 	State       *string         `json:"state,omitempty"`
 	Tags        *ElasticIp_Tags `json:"tags,omitempty"`
 }
@@ -82,40 +82,30 @@ type Event_Payload struct {
 
 // Healthcheck defines model for healthcheck.
 type Healthcheck struct {
-	Interval *struct {
-		// Embedded fields due to inline allOf schema
-		// Embedded fields due to inline allOf schema
-	} `json:"interval,omitempty"`
-	Mode        *string `json:"mode,omitempty"`
-	Port        *int64  `json:"port,omitempty"`
-	StrikesFail *int64  `json:"strikesFail,omitempty"`
-	StrikesOk   *int64  `json:"strikesOk,omitempty"`
-	Timeout     *struct {
-		// Embedded fields due to inline allOf schema
-		// Embedded fields due to inline allOf schema
-	} `json:"timeout,omitempty"`
-	Uri *string `json:"uri,omitempty"`
+	Interval *int64  `json:"interval,omitempty"`
+	Mode     *string `json:"mode,omitempty"`
+	Port     *int64  `json:"port,omitempty"`
+	Retries  *int64  `json:"retries,omitempty"`
+	Timeout  *int64  `json:"timeout,omitempty"`
+	Uri      *string `json:"uri,omitempty"`
 }
 
 // Instance defines model for instance.
 type Instance struct {
-	CreatedAt   *time.Time `json:"createdAt,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	DiskSize    *struct {
-		// Embedded fields due to inline allOf schema
-		// Embedded fields due to inline allOf schema
-	} `json:"diskSize,omitempty"`
+	CreatedAt      *time.Time     `json:"created-at,omitempty"`
+	Description    *string        `json:"description,omitempty"`
+	DiskSize       *interface{}   `json:"disk-size,omitempty"`
 	Id             *string        `json:"id,omitempty"`
-	InstanceType   *InstanceType  `json:"instanceType,omitempty"`
+	InstanceType   *InstanceType  `json:"instance-type,omitempty"`
 	Locks          *[]Lock        `json:"locks,omitempty"`
 	Name           *string        `json:"name,omitempty"`
-	SecurityGroups *[]Resource    `json:"securityGroups,omitempty"`
+	SecurityGroups *[]Resource    `json:"security-groups,omitempty"`
 	Snapshots      *[]Resource    `json:"snapshots,omitempty"`
-	SshKey         *string        `json:"sshKey,omitempty"`
+	SshKey         *string        `json:"ssh-key,omitempty"`
 	State          *InstanceState `json:"state,omitempty"`
 	Tags           *Instance_Tags `json:"tags,omitempty"`
 	Template       *TemplateSpec  `json:"template,omitempty"`
-	UserData       *string        `json:"userData,omitempty"`
+	UserData       *string        `json:"user-data,omitempty"`
 }
 
 // Instance_Tags defines model for Instance.Tags.
@@ -125,23 +115,20 @@ type Instance_Tags struct {
 
 // InstancePool defines model for instance-pool.
 type InstancePool struct {
-	CreatedAt   *time.Time `json:"createdAt,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	DiskSize    *struct {
-		// Embedded fields due to inline allOf schema
-		// Embedded fields due to inline allOf schema
-	} `json:"diskSize,omitempty"`
+	CreatedAt      *time.Time         `json:"created-at,omitempty"`
+	Description    *string            `json:"description,omitempty"`
+	DiskSize       *interface{}       `json:"disk-size,omitempty"`
 	Id             *string            `json:"id,omitempty"`
-	InstanceType   *InstanceType      `json:"instanceType,omitempty"`
+	InstanceType   *InstanceType      `json:"instance-type,omitempty"`
 	Locks          *[]Lock            `json:"locks,omitempty"`
 	Name           *string            `json:"name,omitempty"`
-	SecurityGroups *[]Resource        `json:"securityGroups,omitempty"`
-	SshKey         *string            `json:"sshKey,omitempty"`
+	SecurityGroups *[]Resource        `json:"security-groups,omitempty"`
+	SshKey         *string            `json:"ssh-key,omitempty"`
 	State          *string            `json:"state,omitempty"`
 	Tags           *InstancePool_Tags `json:"tags,omitempty"`
 	Template       *TemplateSpec      `json:"template,omitempty"`
 	Topology       *Topology          `json:"topology,omitempty"`
-	UserData       *string            `json:"userData,omitempty"`
+	UserData       *string            `json:"user-data,omitempty"`
 }
 
 // InstancePool_Tags defines model for InstancePool.Tags.
@@ -163,50 +150,48 @@ type InstanceType struct {
 
 // LoadBalancer defines model for load-balancer.
 type LoadBalancer struct {
-	CreatedAt *time.Time             `json:"createdAt,omitempty"`
-	Id        *string                `json:"id,omitempty"`
-	Ip        *Resource              `json:"ip,omitempty"`
-	Name      *string                `json:"name,omitempty"`
-	Services  *[]LoadBalancerService `json:"services,omitempty"`
-	Tags      *LoadBalancer_Tags     `json:"tags,omitempty"`
-}
-
-// LoadBalancer_Tags defines model for LoadBalancer.Tags.
-type LoadBalancer_Tags struct {
-	AdditionalProperties map[string]string `json:"-"`
+	CreatedAt   *time.Time             `json:"created-at,omitempty"`
+	Description *string                `json:"description,omitempty"`
+	Id          *string                `json:"id,omitempty"`
+	Ip          *string                `json:"ip,omitempty"`
+	Name        *string                `json:"name,omitempty"`
+	Services    *[]LoadBalancerService `json:"services,omitempty"`
+	State       *string                `json:"state,omitempty"`
 }
 
 // LoadBalancerServerStatus defines model for load-balancer-server-status.
 type LoadBalancerServerStatus struct {
-	HealthcheckStatus *string   `json:"healthcheckStatus,omitempty"`
-	Instance          *Resource `json:"instance,omitempty"`
+	PublicIp *string `json:"public-ip,omitempty"`
+	Status   *string `json:"status,omitempty"`
 }
 
 // LoadBalancerService defines model for load-balancer-service.
 type LoadBalancerService struct {
-	Healthcheck  *Healthcheck                `json:"healthcheck,omitempty"`
-	Id           *string                     `json:"id,omitempty"`
-	InstancePool *Resource                   `json:"instancePool,omitempty"`
-	Name         *string                     `json:"name,omitempty"`
-	Port         *int64                      `json:"port,omitempty"`
-	Protocol     *string                     `json:"protocol,omitempty"`
-	RealPort     *int64                      `json:"realPort,omitempty"`
-	RealServers  *[]LoadBalancerServerStatus `json:"realServers,omitempty"`
-	Strategy     *string                     `json:"strategy,omitempty"`
+	Description       *string                     `json:"description,omitempty"`
+	Healthcheck       *Healthcheck                `json:"healthcheck,omitempty"`
+	HealthcheckStatus *[]LoadBalancerServerStatus `json:"healthcheck-status,omitempty"`
+	Id                *string                     `json:"id,omitempty"`
+	InstancePool      *Resource                   `json:"instance-pool,omitempty"`
+	Name              *string                     `json:"name,omitempty"`
+	Port              *int64                      `json:"port,omitempty"`
+	Protocol          *string                     `json:"protocol,omitempty"`
+	State             *string                     `json:"state,omitempty"`
+	Strategy          *string                     `json:"strategy,omitempty"`
+	TargetPort        *int64                      `json:"target-port,omitempty"`
 }
 
 // Lock defines model for lock.
 type Lock struct {
 	Id           *string `json:"id,omitempty"`
-	ResourceId   *string `json:"resourceId,omitempty"`
-	ResourceType *string `json:"resourceType,omitempty"`
+	ResourceId   *string `json:"resource-id,omitempty"`
+	ResourceType *string `json:"resource-type,omitempty"`
 }
 
 // Resource defines model for resource.
 type Resource struct {
-	Id   *string `json:"id,omitempty"`
-	Link *string `json:"link,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Command *string `json:"command,omitempty"`
+	Id      *string `json:"id,omitempty"`
+	Link    *string `json:"link,omitempty"`
 }
 
 // Result defines model for result.
@@ -225,7 +210,7 @@ type ReverseDns struct {
 
 // SecurityGroup defines model for security-group.
 type SecurityGroup struct {
-	CreatedAt   *time.Time           `json:"createdAt,omitempty"`
+	CreatedAt   *time.Time           `json:"created-at,omitempty"`
 	Description *string              `json:"description,omitempty"`
 	Id          *string              `json:"id,omitempty"`
 	Name        *string              `json:"name,omitempty"`
@@ -250,12 +235,12 @@ type SecurityGroupRule struct {
 	Id             *string     `json:"id,omitempty"`
 	Ports          *string     `json:"ports,omitempty"`
 	Protocol       *string     `json:"protocol,omitempty"`
-	SecurityGroups *[]Resource `json:"securityGroups,omitempty"`
+	SecurityGroups *[]Resource `json:"security-groups,omitempty"`
 }
 
 // Snapshot defines model for snapshot.
 type Snapshot struct {
-	CreatedAt   *time.Time     `json:"createdAt,omitempty"`
+	CreatedAt   *time.Time     `json:"created-at,omitempty"`
 	Description *string        `json:"description,omitempty"`
 	Id          *string        `json:"id,omitempty"`
 	Instance    *Resource      `json:"instance,omitempty"`
@@ -271,12 +256,12 @@ type Snapshot_Tags struct {
 
 // SshKey defines model for ssh-key.
 type SshKey struct {
-	CreatedAt   *time.Time   `json:"createdAt,omitempty"`
+	CreatedAt   *time.Time   `json:"created-at,omitempty"`
 	Description *string      `json:"description,omitempty"`
 	Fingerprint *string      `json:"fingerprint,omitempty"`
 	Name        *string      `json:"name,omitempty"`
-	PrivateKey  *string      `json:"privateKey,omitempty"`
-	PublicKey   *string      `json:"publicKey,omitempty"`
+	PrivateKey  *string      `json:"private-key,omitempty"`
+	PublicKey   *string      `json:"public-key,omitempty"`
 	Tags        *SshKey_Tags `json:"tags,omitempty"`
 }
 
@@ -287,19 +272,20 @@ type SshKey_Tags struct {
 
 // Template defines model for template.
 type Template struct {
-	CreatedAt       *time.Time    `json:"createdAt,omitempty"`
-	DefaultUser     *string       `json:"defaultUser,omitempty"`
+	Build           *string       `json:"build,omitempty"`
+	CreatedAt       *time.Time    `json:"created-at,omitempty"`
+	DefaultUser     *string       `json:"default-user,omitempty"`
 	Description     *string       `json:"description,omitempty"`
 	Id              *string       `json:"id,omitempty"`
 	Name            *string       `json:"name,omitempty"`
 	Os              *TemplateSpec `json:"os,omitempty"`
-	PasswordEnabled *bool         `json:"passwordEnabled,omitempty"`
+	PasswordEnabled *bool         `json:"password-enabled,omitempty"`
 	Protocols       *struct {
 		Name *string `json:"name,omitempty"`
 		Port *string `json:"port,omitempty"`
 	} `json:"protocols,omitempty"`
 	Restrictions *struct {
-		InstanceTypes *[]InstanceType `json:"instanceTypes,omitempty"`
+		InstanceTypes *[]InstanceType `json:"instance-types,omitempty"`
 		Size          *struct {
 			Max *int64 `json:"max,omitempty"`
 			Min *int64 `json:"min,omitempty"`
@@ -399,12 +385,12 @@ type UpdateInstancePoolTopologyJSONBody Topology
 
 // UpdateInstancePoolUserDataJSONBody defines parameters for UpdateInstancePoolUserData.
 type UpdateInstancePoolUserDataJSONBody struct {
-	UserData *string `json:"userData,omitempty"`
+	UserData *string `json:"user-data,omitempty"`
 }
 
 // AttachElasticIpOnInstanceJSONBody defines parameters for AttachElasticIpOnInstance.
 type AttachElasticIpOnInstanceJSONBody struct {
-	ElasticIp *string `json:"elasticIp,omitempty"`
+	ElasticIp *string `json:"elastic-ip,omitempty"`
 }
 
 // UpdateInstanceDescriptionJSONBody defines parameters for UpdateInstanceDescription.
@@ -414,12 +400,12 @@ type UpdateInstanceDescriptionJSONBody struct {
 
 // DetachElasticIpFromInstanceJSONBody defines parameters for DetachElasticIpFromInstance.
 type DetachElasticIpFromInstanceJSONBody struct {
-	ElasticIp *string `json:"elasticIp,omitempty"`
+	ElasticIp *string `json:"elastic-ip,omitempty"`
 }
 
 // UpdateInstanceTypeJSONBody defines parameters for UpdateInstanceType.
 type UpdateInstanceTypeJSONBody struct {
-	InstanceType *InstanceType `json:"instanceType,omitempty"`
+	InstanceType *InstanceType `json:"instance-type,omitempty"`
 }
 
 // RestoreInstanceFromSnapshotJSONBody defines parameters for RestoreInstanceFromSnapshot.
@@ -434,7 +420,7 @@ type RestoreInstanceFromTemplateJSONBody struct {
 
 // UpdateInstanceReverseDnsJSONBody defines parameters for UpdateInstanceReverseDns.
 type UpdateInstanceReverseDnsJSONBody struct {
-	ReverseDns *string `json:"reverseDns,omitempty"`
+	ReverseDns *string `json:"reverse-dns,omitempty"`
 }
 
 // UpdateInstanceSecurityGroupsJSONBody defines parameters for UpdateInstanceSecurityGroups.
@@ -442,26 +428,40 @@ type UpdateInstanceSecurityGroupsJSONBody struct {
 	SecurityGroups *[]struct {
 		Id   *string `json:"id,omitempty"`
 		Name *string `json:"name,omitempty"`
-	} `json:"securityGroups,omitempty"`
+	} `json:"security-groups,omitempty"`
 }
 
 // StartInstanceParams defines parameters for StartInstance.
 type StartInstanceParams struct {
-	Rescue     *bool  `json:"rescue,omitempty"`
 	RemoveCpus *int64 `json:"remove-cpus,omitempty"`
 }
 
 // UpdateInstanceUserDataJSONBody defines parameters for UpdateInstanceUserData.
 type UpdateInstanceUserDataJSONBody struct {
-	UserData *string `json:"userData,omitempty"`
+	UserData *string `json:"user-data,omitempty"`
 }
 
 // CreateLoadBalancerJSONBody defines parameters for CreateLoadBalancer.
-type CreateLoadBalancerJSONBody Resource
+type CreateLoadBalancerJSONBody LoadBalancer
+
+// UpdateLoadBalancerJSONBody defines parameters for UpdateLoadBalancer.
+type UpdateLoadBalancerJSONBody struct {
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+}
 
 // AddServiceToLoadBalancerJSONBody defines parameters for AddServiceToLoadBalancer.
-type AddServiceToLoadBalancerJSONBody struct {
-	Service *LoadBalancerService `json:"service,omitempty"`
+type AddServiceToLoadBalancerJSONBody LoadBalancerService
+
+// UpdateLoadBalancerServiceJSONBody defines parameters for UpdateLoadBalancerService.
+type UpdateLoadBalancerServiceJSONBody struct {
+	Description *string      `json:"description,omitempty"`
+	Healthcheck *Healthcheck `json:"healthcheck,omitempty"`
+	Name        *string      `json:"name,omitempty"`
+	Port        *int64       `json:"port,omitempty"`
+	Protocol    *string      `json:"protocol,omitempty"`
+	Strategy    *string      `json:"strategy,omitempty"`
+	TargetPort  *int64       `json:"target-port,omitempty"`
 }
 
 // CreateSecurityGroupJSONBody defines parameters for CreateSecurityGroup.
@@ -570,8 +570,14 @@ type UpdateInstanceUserDataJSONRequestBody UpdateInstanceUserDataJSONBody
 // CreateLoadBalancerRequestBody defines body for CreateLoadBalancer for application/json ContentType.
 type CreateLoadBalancerJSONRequestBody CreateLoadBalancerJSONBody
 
+// UpdateLoadBalancerRequestBody defines body for UpdateLoadBalancer for application/json ContentType.
+type UpdateLoadBalancerJSONRequestBody UpdateLoadBalancerJSONBody
+
 // AddServiceToLoadBalancerRequestBody defines body for AddServiceToLoadBalancer for application/json ContentType.
 type AddServiceToLoadBalancerJSONRequestBody AddServiceToLoadBalancerJSONBody
+
+// UpdateLoadBalancerServiceRequestBody defines body for UpdateLoadBalancerService for application/json ContentType.
+type UpdateLoadBalancerServiceJSONRequestBody UpdateLoadBalancerServiceJSONBody
 
 // CreateSecurityGroupRequestBody defines body for CreateSecurityGroup for application/json ContentType.
 type CreateSecurityGroupJSONRequestBody CreateSecurityGroupJSONBody
@@ -909,59 +915,6 @@ func (a InstancePool_Tags) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
-// Getter for additional properties for LoadBalancer_Tags. Returns the specified
-// element and whether it was found
-func (a LoadBalancer_Tags) Get(fieldName string) (value string, found bool) {
-	if a.AdditionalProperties != nil {
-		value, found = a.AdditionalProperties[fieldName]
-	}
-	return
-}
-
-// Setter for additional properties for LoadBalancer_Tags
-func (a *LoadBalancer_Tags) Set(fieldName string, value string) {
-	if a.AdditionalProperties == nil {
-		a.AdditionalProperties = make(map[string]string)
-	}
-	a.AdditionalProperties[fieldName] = value
-}
-
-// Override default JSON handling for LoadBalancer_Tags to handle AdditionalProperties
-func (a *LoadBalancer_Tags) UnmarshalJSON(b []byte) error {
-	object := make(map[string]json.RawMessage)
-	err := json.Unmarshal(b, &object)
-	if err != nil {
-		return err
-	}
-
-	if len(object) != 0 {
-		a.AdditionalProperties = make(map[string]string)
-		for fieldName, fieldBuf := range object {
-			var fieldVal string
-			err := json.Unmarshal(fieldBuf, &fieldVal)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
-			}
-			a.AdditionalProperties[fieldName] = fieldVal
-		}
-	}
-	return nil
-}
-
-// Override default JSON handling for LoadBalancer_Tags to handle AdditionalProperties
-func (a LoadBalancer_Tags) MarshalJSON() ([]byte, error) {
-	var err error
-	object := make(map[string]json.RawMessage)
-
-	for fieldName, field := range a.AdditionalProperties {
-		object[fieldName], err = json.Marshal(field)
-		if err != nil {
-			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
-		}
-	}
-	return json.Marshal(object)
-}
-
 // Getter for additional properties for SecurityGroup_Tags. Returns the specified
 // element and whether it was found
 func (a SecurityGroup_Tags) Get(fieldName string) (value string, found bool) {
@@ -1214,6 +1167,10 @@ func NewClient(server string, opts ...ClientOption) (*Client, error) {
 			return nil, err
 		}
 	}
+	// ensure the server URL always has a trailing slash
+	if !strings.HasSuffix(client.Server, "/") {
+		client.Server += "/"
+	}
 	// create httpClient, if not already present
 	if client.Client == nil {
 		client.Client = http.DefaultClient
@@ -1274,8 +1231,8 @@ type ClientInterface interface {
 	// RevokeApiKey request
 	RevokeApiKey(ctx context.Context, key string) (*http.Response, error)
 
-	// GetApiKeyDetails request
-	GetApiKeyDetails(ctx context.Context, key string) (*http.Response, error)
+	// GetApiKey request
+	GetApiKey(ctx context.Context, key string) (*http.Response, error)
 
 	// GenerateSshKey request
 	GenerateSshKey(ctx context.Context) (*http.Response, error)
@@ -1296,8 +1253,8 @@ type ClientInterface interface {
 	// ReleaseElasticIp request
 	ReleaseElasticIp(ctx context.Context, id string) (*http.Response, error)
 
-	// GetElasticIpDetails request
-	GetElasticIpDetails(ctx context.Context, id string) (*http.Response, error)
+	// GetElasticIp request
+	GetElasticIp(ctx context.Context, id string) (*http.Response, error)
 
 	// UpdateElasticIpHealthcheck request  with any body
 	UpdateElasticIpHealthcheckWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
@@ -1316,9 +1273,6 @@ type ClientInterface interface {
 
 	// ListEvents request
 	ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error)
-
-	// Healthz request
-	Healthz(ctx context.Context) (*http.Response, error)
 
 	// ListInstances request
 	ListInstances(ctx context.Context, params *ListInstancesParams) (*http.Response, error)
@@ -1339,8 +1293,8 @@ type ClientInterface interface {
 	// DestroyInstancePool request
 	DestroyInstancePool(ctx context.Context, id string) (*http.Response, error)
 
-	// ShowInstancePoolDetails request
-	ShowInstancePoolDetails(ctx context.Context, id string) (*http.Response, error)
+	// GetInstancePool request
+	GetInstancePool(ctx context.Context, id string) (*http.Response, error)
 
 	// UpdateInstancePoolDescription request  with any body
 	UpdateInstancePoolDescriptionWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
@@ -1368,8 +1322,8 @@ type ClientInterface interface {
 	// DestroyInstance request
 	DestroyInstance(ctx context.Context, id string) (*http.Response, error)
 
-	// ShowInstanceDetails request
-	ShowInstanceDetails(ctx context.Context, id string) (*http.Response, error)
+	// GetInstance request
+	GetInstance(ctx context.Context, id string) (*http.Response, error)
 
 	// AllocateIpv6OnInstance request
 	AllocateIpv6OnInstance(ctx context.Context, id string) (*http.Response, error)
@@ -1378,6 +1332,9 @@ type ClientInterface interface {
 	AttachElasticIpOnInstanceWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
 
 	AttachElasticIpOnInstance(ctx context.Context, id string, body AttachElasticIpOnInstanceJSONRequestBody) (*http.Response, error)
+
+	// CreateSnapshot request
+	CreateSnapshot(ctx context.Context, id string) (*http.Response, error)
 
 	// UpdateInstanceDescription request  with any body
 	UpdateInstanceDescriptionWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
@@ -1445,19 +1402,29 @@ type ClientInterface interface {
 	// DestroyLoadBalancer request
 	DestroyLoadBalancer(ctx context.Context, id string) (*http.Response, error)
 
-	// ShowLoadBalancerDetails request
-	ShowLoadBalancerDetails(ctx context.Context, id string) (*http.Response, error)
+	// GetLoadBalancer request
+	GetLoadBalancer(ctx context.Context, id string) (*http.Response, error)
 
-	// ShowLoadBalancerServiceDetails request
-	ShowLoadBalancerServiceDetails(ctx context.Context, id string, serviceId string) (*http.Response, error)
+	// UpdateLoadBalancer request  with any body
+	UpdateLoadBalancerWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpdateLoadBalancer(ctx context.Context, id string, body UpdateLoadBalancerJSONRequestBody) (*http.Response, error)
 
 	// AddServiceToLoadBalancer request  with any body
 	AddServiceToLoadBalancerWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
 
 	AddServiceToLoadBalancer(ctx context.Context, id string, body AddServiceToLoadBalancerJSONRequestBody) (*http.Response, error)
 
-	// DeleteServiceFromLoadBalancer request
-	DeleteServiceFromLoadBalancer(ctx context.Context, id string, serviceId string) (*http.Response, error)
+	// DeleteLoadBalancerService request
+	DeleteLoadBalancerService(ctx context.Context, id string, serviceId string) (*http.Response, error)
+
+	// GetLoadBalancerService request
+	GetLoadBalancerService(ctx context.Context, id string, serviceId string) (*http.Response, error)
+
+	// UpdateLoadBalancerService request  with any body
+	UpdateLoadBalancerServiceWithBody(ctx context.Context, id string, serviceId string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpdateLoadBalancerService(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody) (*http.Response, error)
 
 	// Ping request
 	Ping(ctx context.Context) (*http.Response, error)
@@ -1478,6 +1445,9 @@ type ClientInterface interface {
 
 	// DestroySecurityGroup request
 	DestroySecurityGroup(ctx context.Context, id string) (*http.Response, error)
+
+	// GetSecurityGroup request
+	GetSecurityGroup(ctx context.Context, id string) (*http.Response, error)
 
 	// AddRuleToSecurityGroup request  with any body
 	AddRuleToSecurityGroupWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
@@ -1505,6 +1475,9 @@ type ClientInterface interface {
 
 	// DestroySnapshot request
 	DestroySnapshot(ctx context.Context, id string) (*http.Response, error)
+
+	// GetSnapshot request
+	GetSnapshot(ctx context.Context, id string) (*http.Response, error)
 
 	// UpdateSnapshotDescription request  with any body
 	UpdateSnapshotDescriptionWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
@@ -1715,8 +1688,8 @@ func (c *Client) RevokeApiKey(ctx context.Context, key string) (*http.Response, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetApiKeyDetails(ctx context.Context, key string) (*http.Response, error) {
-	req, err := NewGetApiKeyDetailsRequest(c.Server, key)
+func (c *Client) GetApiKey(ctx context.Context, key string) (*http.Response, error) {
+	req, err := NewGetApiKeyRequest(c.Server, key)
 	if err != nil {
 		return nil, err
 	}
@@ -1835,8 +1808,8 @@ func (c *Client) ReleaseElasticIp(ctx context.Context, id string) (*http.Respons
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetElasticIpDetails(ctx context.Context, id string) (*http.Response, error) {
-	req, err := NewGetElasticIpDetailsRequest(c.Server, id)
+func (c *Client) GetElasticIp(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetElasticIpRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -1955,21 +1928,6 @@ func (c *Client) ListEvents(ctx context.Context, params *ListEventsParams) (*htt
 	return c.Client.Do(req)
 }
 
-func (c *Client) Healthz(ctx context.Context) (*http.Response, error) {
-	req, err := NewHealthzRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) ListInstances(ctx context.Context, params *ListInstancesParams) (*http.Response, error) {
 	req, err := NewListInstancesRequest(c.Server, params)
 	if err != nil {
@@ -2075,8 +2033,8 @@ func (c *Client) DestroyInstancePool(ctx context.Context, id string) (*http.Resp
 	return c.Client.Do(req)
 }
 
-func (c *Client) ShowInstancePoolDetails(ctx context.Context, id string) (*http.Response, error) {
-	req, err := NewShowInstancePoolDetailsRequest(c.Server, id)
+func (c *Client) GetInstancePool(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetInstancePoolRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -2240,8 +2198,8 @@ func (c *Client) DestroyInstance(ctx context.Context, id string) (*http.Response
 	return c.Client.Do(req)
 }
 
-func (c *Client) ShowInstanceDetails(ctx context.Context, id string) (*http.Response, error) {
-	req, err := NewShowInstanceDetailsRequest(c.Server, id)
+func (c *Client) GetInstance(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetInstanceRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -2287,6 +2245,21 @@ func (c *Client) AttachElasticIpOnInstanceWithBody(ctx context.Context, id strin
 
 func (c *Client) AttachElasticIpOnInstance(ctx context.Context, id string, body AttachElasticIpOnInstanceJSONRequestBody) (*http.Response, error) {
 	req, err := NewAttachElasticIpOnInstanceRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSnapshot(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewCreateSnapshotRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -2675,8 +2648,8 @@ func (c *Client) DestroyLoadBalancer(ctx context.Context, id string) (*http.Resp
 	return c.Client.Do(req)
 }
 
-func (c *Client) ShowLoadBalancerDetails(ctx context.Context, id string) (*http.Response, error) {
-	req, err := NewShowLoadBalancerDetailsRequest(c.Server, id)
+func (c *Client) GetLoadBalancer(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetLoadBalancerRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -2690,8 +2663,23 @@ func (c *Client) ShowLoadBalancerDetails(ctx context.Context, id string) (*http.
 	return c.Client.Do(req)
 }
 
-func (c *Client) ShowLoadBalancerServiceDetails(ctx context.Context, id string, serviceId string) (*http.Response, error) {
-	req, err := NewShowLoadBalancerServiceDetailsRequest(c.Server, id, serviceId)
+func (c *Client) UpdateLoadBalancerWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpdateLoadBalancerRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateLoadBalancer(ctx context.Context, id string, body UpdateLoadBalancerJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpdateLoadBalancerRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2735,8 +2723,53 @@ func (c *Client) AddServiceToLoadBalancer(ctx context.Context, id string, body A
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteServiceFromLoadBalancer(ctx context.Context, id string, serviceId string) (*http.Response, error) {
-	req, err := NewDeleteServiceFromLoadBalancerRequest(c.Server, id, serviceId)
+func (c *Client) DeleteLoadBalancerService(ctx context.Context, id string, serviceId string) (*http.Response, error) {
+	req, err := NewDeleteLoadBalancerServiceRequest(c.Server, id, serviceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetLoadBalancerService(ctx context.Context, id string, serviceId string) (*http.Response, error) {
+	req, err := NewGetLoadBalancerServiceRequest(c.Server, id, serviceId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateLoadBalancerServiceWithBody(ctx context.Context, id string, serviceId string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpdateLoadBalancerServiceRequestWithBody(c.Server, id, serviceId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateLoadBalancerService(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpdateLoadBalancerServiceRequest(c.Server, id, serviceId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2842,6 +2875,21 @@ func (c *Client) CreateSecurityGroup(ctx context.Context, body CreateSecurityGro
 
 func (c *Client) DestroySecurityGroup(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewDestroySecurityGroupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSecurityGroup(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetSecurityGroupRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -2992,6 +3040,21 @@ func (c *Client) ListSnapshots(ctx context.Context) (*http.Response, error) {
 
 func (c *Client) DestroySnapshot(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewDestroySnapshotRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSnapshot(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetSnapshotRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -3462,8 +3525,8 @@ func NewRevokeApiKeyRequest(server string, key string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetApiKeyDetailsRequest generates requests for GetApiKeyDetails
-func NewGetApiKeyDetailsRequest(server string, key string) (*http.Request, error) {
+// NewGetApiKeyRequest generates requests for GetApiKey
+func NewGetApiKeyRequest(server string, key string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3662,8 +3725,8 @@ func NewReleaseElasticIpRequest(server string, id string) (*http.Request, error)
 	return req, nil
 }
 
-// NewGetElasticIpDetailsRequest generates requests for GetElasticIpDetails
-func NewGetElasticIpDetailsRequest(server string, id string) (*http.Request, error) {
+// NewGetElasticIpRequest generates requests for GetElasticIp
+func NewGetElasticIpRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3897,33 +3960,6 @@ func NewListEventsRequest(server string, params *ListEventsParams) (*http.Reques
 	return req, nil
 }
 
-// NewHealthzRequest generates requests for Healthz
-func NewHealthzRequest(server string) (*http.Request, error) {
-	var err error
-
-	queryUrl, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	basePath := fmt.Sprintf("/healthz")
-	if basePath[0] == '/' {
-		basePath = basePath[1:]
-	}
-
-	queryUrl, err = queryUrl.Parse(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryUrl.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewListInstancesRequest generates requests for ListInstances
 func NewListInstancesRequest(server string, params *ListInstancesParams) (*http.Request, error) {
 	var err error
@@ -4130,8 +4166,8 @@ func NewDestroyInstancePoolRequest(server string, id string) (*http.Request, err
 	return req, nil
 }
 
-// NewShowInstancePoolDetailsRequest generates requests for ShowInstancePoolDetails
-func NewShowInstancePoolDetailsRequest(server string, id string) (*http.Request, error) {
+// NewGetInstancePoolRequest generates requests for GetInstancePool
+func NewGetInstancePoolRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -4409,8 +4445,8 @@ func NewDestroyInstanceRequest(server string, id string) (*http.Request, error) 
 	return req, nil
 }
 
-// NewShowInstanceDetailsRequest generates requests for ShowInstanceDetails
-func NewShowInstanceDetailsRequest(server string, id string) (*http.Request, error) {
+// NewGetInstanceRequest generates requests for GetInstance
+func NewGetInstanceRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -4520,6 +4556,40 @@ func NewAttachElasticIpOnInstanceRequestWithBody(server string, id string, conte
 	}
 
 	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewCreateSnapshotRequest generates requests for CreateSnapshot
+func NewCreateSnapshotRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance/%s:create-snapshot", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
 	return req, nil
 }
 
@@ -4975,22 +5045,6 @@ func NewStartInstanceRequest(server string, id string, params *StartInstancePara
 
 	queryValues := queryUrl.Query()
 
-	if params.Rescue != nil {
-
-		if queryFrag, err := runtime.StyleParam("form", true, "rescue", *params.Rescue); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
-	}
-
 	if params.RemoveCpus != nil {
 
 		if queryFrag, err := runtime.StyleParam("form", true, "remove-cpus", *params.RemoveCpus); err != nil {
@@ -5197,8 +5251,8 @@ func NewDestroyLoadBalancerRequest(server string, id string) (*http.Request, err
 	return req, nil
 }
 
-// NewShowLoadBalancerDetailsRequest generates requests for ShowLoadBalancerDetails
-func NewShowLoadBalancerDetailsRequest(server string, id string) (*http.Request, error) {
+// NewGetLoadBalancerRequest generates requests for GetLoadBalancer
+func NewGetLoadBalancerRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5231,8 +5285,141 @@ func NewShowLoadBalancerDetailsRequest(server string, id string) (*http.Request,
 	return req, nil
 }
 
-// NewShowLoadBalancerServiceDetailsRequest generates requests for ShowLoadBalancerServiceDetails
-func NewShowLoadBalancerServiceDetailsRequest(server string, id string, serviceId string) (*http.Request, error) {
+// NewUpdateLoadBalancerRequest calls the generic UpdateLoadBalancer builder with application/json body
+func NewUpdateLoadBalancerRequest(server string, id string, body UpdateLoadBalancerJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateLoadBalancerRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateLoadBalancerRequestWithBody generates requests for UpdateLoadBalancer with any type of body
+func NewUpdateLoadBalancerRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/load-balancer/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewAddServiceToLoadBalancerRequest calls the generic AddServiceToLoadBalancer builder with application/json body
+func NewAddServiceToLoadBalancerRequest(server string, id string, body AddServiceToLoadBalancerJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddServiceToLoadBalancerRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewAddServiceToLoadBalancerRequestWithBody generates requests for AddServiceToLoadBalancer with any type of body
+func NewAddServiceToLoadBalancerRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/load-balancer/%s/service", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteLoadBalancerServiceRequest generates requests for DeleteLoadBalancerService
+func NewDeleteLoadBalancerServiceRequest(server string, id string, serviceId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "service-id", serviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/load-balancer/%s/service/%s", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetLoadBalancerServiceRequest generates requests for GetLoadBalancerService
+func NewGetLoadBalancerServiceRequest(server string, id string, serviceId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5272,54 +5459,19 @@ func NewShowLoadBalancerServiceDetailsRequest(server string, id string, serviceI
 	return req, nil
 }
 
-// NewAddServiceToLoadBalancerRequest calls the generic AddServiceToLoadBalancer builder with application/json body
-func NewAddServiceToLoadBalancerRequest(server string, id string, body AddServiceToLoadBalancerJSONRequestBody) (*http.Request, error) {
+// NewUpdateLoadBalancerServiceRequest calls the generic UpdateLoadBalancerService builder with application/json body
+func NewUpdateLoadBalancerServiceRequest(server string, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewAddServiceToLoadBalancerRequestWithBody(server, id, "application/json", bodyReader)
+	return NewUpdateLoadBalancerServiceRequestWithBody(server, id, serviceId, "application/json", bodyReader)
 }
 
-// NewAddServiceToLoadBalancerRequestWithBody generates requests for AddServiceToLoadBalancer with any type of body
-func NewAddServiceToLoadBalancerRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
-	if err != nil {
-		return nil, err
-	}
-
-	queryUrl, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	basePath := fmt.Sprintf("/load-balancer/%s/services", pathParam0)
-	if basePath[0] == '/' {
-		basePath = basePath[1:]
-	}
-
-	queryUrl, err = queryUrl.Parse(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PUT", queryUrl.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-	return req, nil
-}
-
-// NewDeleteServiceFromLoadBalancerRequest generates requests for DeleteServiceFromLoadBalancer
-func NewDeleteServiceFromLoadBalancerRequest(server string, id string, serviceId string) (*http.Request, error) {
+// NewUpdateLoadBalancerServiceRequestWithBody generates requests for UpdateLoadBalancerService with any type of body
+func NewUpdateLoadBalancerServiceRequestWithBody(server string, id string, serviceId string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5341,7 +5493,7 @@ func NewDeleteServiceFromLoadBalancerRequest(server string, id string, serviceId
 		return nil, err
 	}
 
-	basePath := fmt.Sprintf("/load-balancer/%s/services/%s", pathParam0, pathParam1)
+	basePath := fmt.Sprintf("/load-balancer/%s/service/%s", pathParam0, pathParam1)
 	if basePath[0] == '/' {
 		basePath = basePath[1:]
 	}
@@ -5351,11 +5503,12 @@ func NewDeleteServiceFromLoadBalancerRequest(server string, id string, serviceId
 		return nil, err
 	}
 
-	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
+	req.Header.Add("Content-Type", contentType)
 	return req, nil
 }
 
@@ -5540,6 +5693,40 @@ func NewDestroySecurityGroupRequest(server string, id string) (*http.Request, er
 	}
 
 	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSecurityGroupRequest generates requests for GetSecurityGroup
+func NewGetSecurityGroupRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -5814,6 +6001,40 @@ func NewDestroySnapshotRequest(server string, id string) (*http.Request, error) 
 	}
 
 	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSnapshotRequest generates requests for GetSnapshot
+func NewGetSnapshotRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/snapshot/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -6168,9 +6389,6 @@ func NewClientWithResponses(server string, opts ...ClientOption) (*ClientWithRes
 // WithBaseURL overrides the baseURL.
 func WithBaseURL(baseURL string) ClientOption {
 	return func(c *Client) error {
-		if !strings.HasSuffix(baseURL, "/") {
-			baseURL += "/"
-		}
 		newBaseURL, err := url.Parse(baseURL)
 		if err != nil {
 			return err
@@ -6180,14 +6398,326 @@ func WithBaseURL(baseURL string) ClientOption {
 	}
 }
 
-type indexResponse struct {
+// ClientWithResponsesInterface is the interface specification for the client with responses above.
+type ClientWithResponsesInterface interface {
+	// Index request
+	IndexWithResponse(ctx context.Context) (*IndexResponse, error)
+
+	// ListAntiAffinityGroups request
+	ListAntiAffinityGroupsWithResponse(ctx context.Context) (*ListAntiAffinityGroupsResponse, error)
+
+	// CreateAntiAffinityGroup request  with any body
+	CreateAntiAffinityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateAntiAffinityGroupResponse, error)
+
+	CreateAntiAffinityGroupWithResponse(ctx context.Context, body CreateAntiAffinityGroupJSONRequestBody) (*CreateAntiAffinityGroupResponse, error)
+
+	// DestroyAntiAffinityGroup request
+	DestroyAntiAffinityGroupWithResponse(ctx context.Context, id string) (*DestroyAntiAffinityGroupResponse, error)
+
+	// UpdateAntiAffinityGroupDescription request  with any body
+	UpdateAntiAffinityGroupDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateAntiAffinityGroupDescriptionResponse, error)
+
+	UpdateAntiAffinityGroupDescriptionWithResponse(ctx context.Context, id string, body UpdateAntiAffinityGroupDescriptionJSONRequestBody) (*UpdateAntiAffinityGroupDescriptionResponse, error)
+
+	// ListAntiAffinityGroupInstances request
+	ListAntiAffinityGroupInstancesWithResponse(ctx context.Context, id string) (*ListAntiAffinityGroupInstancesResponse, error)
+
+	// ListApiKeys request
+	ListApiKeysWithResponse(ctx context.Context) (*ListApiKeysResponse, error)
+
+	// GenerateApiKey request  with any body
+	GenerateApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*GenerateApiKeyResponse, error)
+
+	GenerateApiKeyWithResponse(ctx context.Context, body GenerateApiKeyJSONRequestBody) (*GenerateApiKeyResponse, error)
+
+	// RevokeApiKey request
+	RevokeApiKeyWithResponse(ctx context.Context, key string) (*RevokeApiKeyResponse, error)
+
+	// GetApiKey request
+	GetApiKeyWithResponse(ctx context.Context, key string) (*GetApiKeyResponse, error)
+
+	// GenerateSshKey request
+	GenerateSshKeyWithResponse(ctx context.Context) (*GenerateSshKeyResponse, error)
+
+	// ImportSshKey request  with any body
+	ImportSshKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*ImportSshKeyResponse, error)
+
+	ImportSshKeyWithResponse(ctx context.Context, body ImportSshKeyJSONRequestBody) (*ImportSshKeyResponse, error)
+
+	// ListElasticIps request
+	ListElasticIpsWithResponse(ctx context.Context) (*ListElasticIpsResponse, error)
+
+	// AllocateElasticIp request  with any body
+	AllocateElasticIpWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*AllocateElasticIpResponse, error)
+
+	AllocateElasticIpWithResponse(ctx context.Context, body AllocateElasticIpJSONRequestBody) (*AllocateElasticIpResponse, error)
+
+	// ReleaseElasticIp request
+	ReleaseElasticIpWithResponse(ctx context.Context, id string) (*ReleaseElasticIpResponse, error)
+
+	// GetElasticIp request
+	GetElasticIpWithResponse(ctx context.Context, id string) (*GetElasticIpResponse, error)
+
+	// UpdateElasticIpHealthcheck request  with any body
+	UpdateElasticIpHealthcheckWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateElasticIpHealthcheckResponse, error)
+
+	UpdateElasticIpHealthcheckWithResponse(ctx context.Context, id string, body UpdateElasticIpHealthcheckJSONRequestBody) (*UpdateElasticIpHealthcheckResponse, error)
+
+	// RemoveElasticIpReverseDns request  with any body
+	RemoveElasticIpReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*RemoveElasticIpReverseDnsResponse, error)
+
+	RemoveElasticIpReverseDnsWithResponse(ctx context.Context, id string, body RemoveElasticIpReverseDnsJSONRequestBody) (*RemoveElasticIpReverseDnsResponse, error)
+
+	// UpdateElasticIpReverseDns request  with any body
+	UpdateElasticIpReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateElasticIpReverseDnsResponse, error)
+
+	UpdateElasticIpReverseDnsWithResponse(ctx context.Context, id string, body UpdateElasticIpReverseDnsJSONRequestBody) (*UpdateElasticIpReverseDnsResponse, error)
+
+	// ListEvents request
+	ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error)
+
+	// ListInstances request
+	ListInstancesWithResponse(ctx context.Context, params *ListInstancesParams) (*ListInstancesResponse, error)
+
+	// CreateInstance request  with any body
+	CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*CreateInstanceResponse, error)
+
+	CreateInstanceWithResponse(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error)
+
+	// ListInstancePools request
+	ListInstancePoolsWithResponse(ctx context.Context) (*ListInstancePoolsResponse, error)
+
+	// CreateInstancePool request  with any body
+	CreateInstancePoolWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateInstancePoolResponse, error)
+
+	CreateInstancePoolWithResponse(ctx context.Context, body CreateInstancePoolJSONRequestBody) (*CreateInstancePoolResponse, error)
+
+	// DestroyInstancePool request
+	DestroyInstancePoolWithResponse(ctx context.Context, id string) (*DestroyInstancePoolResponse, error)
+
+	// GetInstancePool request
+	GetInstancePoolWithResponse(ctx context.Context, id string) (*GetInstancePoolResponse, error)
+
+	// UpdateInstancePoolDescription request  with any body
+	UpdateInstancePoolDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolDescriptionResponse, error)
+
+	UpdateInstancePoolDescriptionWithResponse(ctx context.Context, id string, body UpdateInstancePoolDescriptionJSONRequestBody) (*UpdateInstancePoolDescriptionResponse, error)
+
+	// UpdateInstancePoolTemplate request  with any body
+	UpdateInstancePoolTemplateWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolTemplateResponse, error)
+
+	UpdateInstancePoolTemplateWithResponse(ctx context.Context, id string, body UpdateInstancePoolTemplateJSONRequestBody) (*UpdateInstancePoolTemplateResponse, error)
+
+	// UpdateInstancePoolTopology request  with any body
+	UpdateInstancePoolTopologyWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolTopologyResponse, error)
+
+	UpdateInstancePoolTopologyWithResponse(ctx context.Context, id string, body UpdateInstancePoolTopologyJSONRequestBody) (*UpdateInstancePoolTopologyResponse, error)
+
+	// UpdateInstancePoolUserData request  with any body
+	UpdateInstancePoolUserDataWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolUserDataResponse, error)
+
+	UpdateInstancePoolUserDataWithResponse(ctx context.Context, id string, body UpdateInstancePoolUserDataJSONRequestBody) (*UpdateInstancePoolUserDataResponse, error)
+
+	// ListInstanceTypes request
+	ListInstanceTypesWithResponse(ctx context.Context) (*ListInstanceTypesResponse, error)
+
+	// DestroyInstance request
+	DestroyInstanceWithResponse(ctx context.Context, id string) (*DestroyInstanceResponse, error)
+
+	// GetInstance request
+	GetInstanceWithResponse(ctx context.Context, id string) (*GetInstanceResponse, error)
+
+	// AllocateIpv6OnInstance request
+	AllocateIpv6OnInstanceWithResponse(ctx context.Context, id string) (*AllocateIpv6OnInstanceResponse, error)
+
+	// AttachElasticIpOnInstance request  with any body
+	AttachElasticIpOnInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachElasticIpOnInstanceResponse, error)
+
+	AttachElasticIpOnInstanceWithResponse(ctx context.Context, id string, body AttachElasticIpOnInstanceJSONRequestBody) (*AttachElasticIpOnInstanceResponse, error)
+
+	// CreateSnapshot request
+	CreateSnapshotWithResponse(ctx context.Context, id string) (*CreateSnapshotResponse, error)
+
+	// UpdateInstanceDescription request  with any body
+	UpdateInstanceDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceDescriptionResponse, error)
+
+	UpdateInstanceDescriptionWithResponse(ctx context.Context, id string, body UpdateInstanceDescriptionJSONRequestBody) (*UpdateInstanceDescriptionResponse, error)
+
+	// DetachElasticIpFromInstance request  with any body
+	DetachElasticIpFromInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*DetachElasticIpFromInstanceResponse, error)
+
+	DetachElasticIpFromInstanceWithResponse(ctx context.Context, id string, body DetachElasticIpFromInstanceJSONRequestBody) (*DetachElasticIpFromInstanceResponse, error)
+
+	// UpdateInstanceType request  with any body
+	UpdateInstanceTypeWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceTypeResponse, error)
+
+	UpdateInstanceTypeWithResponse(ctx context.Context, id string, body UpdateInstanceTypeJSONRequestBody) (*UpdateInstanceTypeResponse, error)
+
+	// RebootInstance request
+	RebootInstanceWithResponse(ctx context.Context, id string) (*RebootInstanceResponse, error)
+
+	// ResetInstancePassword request
+	ResetInstancePasswordWithResponse(ctx context.Context, id string) (*ResetInstancePasswordResponse, error)
+
+	// RestoreInstanceFromSnapshot request  with any body
+	RestoreInstanceFromSnapshotWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*RestoreInstanceFromSnapshotResponse, error)
+
+	RestoreInstanceFromSnapshotWithResponse(ctx context.Context, id string, body RestoreInstanceFromSnapshotJSONRequestBody) (*RestoreInstanceFromSnapshotResponse, error)
+
+	// RestoreInstanceFromTemplate request  with any body
+	RestoreInstanceFromTemplateWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*RestoreInstanceFromTemplateResponse, error)
+
+	RestoreInstanceFromTemplateWithResponse(ctx context.Context, id string, body RestoreInstanceFromTemplateJSONRequestBody) (*RestoreInstanceFromTemplateResponse, error)
+
+	// RemoveInstanceReverseDns request
+	RemoveInstanceReverseDnsWithResponse(ctx context.Context, id string) (*RemoveInstanceReverseDnsResponse, error)
+
+	// UpdateInstanceReverseDns request  with any body
+	UpdateInstanceReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceReverseDnsResponse, error)
+
+	UpdateInstanceReverseDnsWithResponse(ctx context.Context, id string, body UpdateInstanceReverseDnsJSONRequestBody) (*UpdateInstanceReverseDnsResponse, error)
+
+	// UpdateInstanceSecurityGroups request  with any body
+	UpdateInstanceSecurityGroupsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceSecurityGroupsResponse, error)
+
+	UpdateInstanceSecurityGroupsWithResponse(ctx context.Context, id string, body UpdateInstanceSecurityGroupsJSONRequestBody) (*UpdateInstanceSecurityGroupsResponse, error)
+
+	// StartInstance request
+	StartInstanceWithResponse(ctx context.Context, id string, params *StartInstanceParams) (*StartInstanceResponse, error)
+
+	// StopInstance request
+	StopInstanceWithResponse(ctx context.Context, id string) (*StopInstanceResponse, error)
+
+	// UpdateInstanceUserData request  with any body
+	UpdateInstanceUserDataWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceUserDataResponse, error)
+
+	UpdateInstanceUserDataWithResponse(ctx context.Context, id string, body UpdateInstanceUserDataJSONRequestBody) (*UpdateInstanceUserDataResponse, error)
+
+	// ListLoadBalancers request
+	ListLoadBalancersWithResponse(ctx context.Context) (*ListLoadBalancersResponse, error)
+
+	// CreateLoadBalancer request  with any body
+	CreateLoadBalancerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateLoadBalancerResponse, error)
+
+	CreateLoadBalancerWithResponse(ctx context.Context, body CreateLoadBalancerJSONRequestBody) (*CreateLoadBalancerResponse, error)
+
+	// DestroyLoadBalancer request
+	DestroyLoadBalancerWithResponse(ctx context.Context, id string) (*DestroyLoadBalancerResponse, error)
+
+	// GetLoadBalancer request
+	GetLoadBalancerWithResponse(ctx context.Context, id string) (*GetLoadBalancerResponse, error)
+
+	// UpdateLoadBalancer request  with any body
+	UpdateLoadBalancerWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateLoadBalancerResponse, error)
+
+	UpdateLoadBalancerWithResponse(ctx context.Context, id string, body UpdateLoadBalancerJSONRequestBody) (*UpdateLoadBalancerResponse, error)
+
+	// AddServiceToLoadBalancer request  with any body
+	AddServiceToLoadBalancerWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AddServiceToLoadBalancerResponse, error)
+
+	AddServiceToLoadBalancerWithResponse(ctx context.Context, id string, body AddServiceToLoadBalancerJSONRequestBody) (*AddServiceToLoadBalancerResponse, error)
+
+	// DeleteLoadBalancerService request
+	DeleteLoadBalancerServiceWithResponse(ctx context.Context, id string, serviceId string) (*DeleteLoadBalancerServiceResponse, error)
+
+	// GetLoadBalancerService request
+	GetLoadBalancerServiceWithResponse(ctx context.Context, id string, serviceId string) (*GetLoadBalancerServiceResponse, error)
+
+	// UpdateLoadBalancerService request  with any body
+	UpdateLoadBalancerServiceWithBodyWithResponse(ctx context.Context, id string, serviceId string, contentType string, body io.Reader) (*UpdateLoadBalancerServiceResponse, error)
+
+	UpdateLoadBalancerServiceWithResponse(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody) (*UpdateLoadBalancerServiceResponse, error)
+
+	// Ping request
+	PingWithResponse(ctx context.Context) (*PingResponse, error)
+
+	// ListResults request
+	ListResultsWithResponse(ctx context.Context) (*ListResultsResponse, error)
+
+	// GetResult request
+	GetResultWithResponse(ctx context.Context, id string) (*GetResultResponse, error)
+
+	// ListSecurityGroups request
+	ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error)
+
+	// CreateSecurityGroup request  with any body
+	CreateSecurityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateSecurityGroupResponse, error)
+
+	CreateSecurityGroupWithResponse(ctx context.Context, body CreateSecurityGroupJSONRequestBody) (*CreateSecurityGroupResponse, error)
+
+	// DestroySecurityGroup request
+	DestroySecurityGroupWithResponse(ctx context.Context, id string) (*DestroySecurityGroupResponse, error)
+
+	// GetSecurityGroup request
+	GetSecurityGroupWithResponse(ctx context.Context, id string) (*GetSecurityGroupResponse, error)
+
+	// AddRuleToSecurityGroup request  with any body
+	AddRuleToSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AddRuleToSecurityGroupResponse, error)
+
+	AddRuleToSecurityGroupWithResponse(ctx context.Context, id string, body AddRuleToSecurityGroupJSONRequestBody) (*AddRuleToSecurityGroupResponse, error)
+
+	// DeleteRuleFromSecurityGroup request
+	DeleteRuleFromSecurityGroupWithResponse(ctx context.Context, id string, ruleId string) (*DeleteRuleFromSecurityGroupResponse, error)
+
+	// UpdateSecurityGroupDescription request  with any body
+	UpdateSecurityGroupDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSecurityGroupDescriptionResponse, error)
+
+	UpdateSecurityGroupDescriptionWithResponse(ctx context.Context, id string, body UpdateSecurityGroupDescriptionJSONRequestBody) (*UpdateSecurityGroupDescriptionResponse, error)
+
+	// ListSecurityGroupInstances request
+	ListSecurityGroupInstancesWithResponse(ctx context.Context, id string) (*ListSecurityGroupInstancesResponse, error)
+
+	// UpdateSecurityGroupRules request  with any body
+	UpdateSecurityGroupRulesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSecurityGroupRulesResponse, error)
+
+	UpdateSecurityGroupRulesWithResponse(ctx context.Context, id string, body UpdateSecurityGroupRulesJSONRequestBody) (*UpdateSecurityGroupRulesResponse, error)
+
+	// ListSnapshots request
+	ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error)
+
+	// DestroySnapshot request
+	DestroySnapshotWithResponse(ctx context.Context, id string) (*DestroySnapshotResponse, error)
+
+	// GetSnapshot request
+	GetSnapshotWithResponse(ctx context.Context, id string) (*GetSnapshotResponse, error)
+
+	// UpdateSnapshotDescription request  with any body
+	UpdateSnapshotDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSnapshotDescriptionResponse, error)
+
+	UpdateSnapshotDescriptionWithResponse(ctx context.Context, id string, body UpdateSnapshotDescriptionJSONRequestBody) (*UpdateSnapshotDescriptionResponse, error)
+
+	// ListSshKeys request
+	ListSshKeysWithResponse(ctx context.Context) (*ListSshKeysResponse, error)
+
+	// DeleteSshKey request
+	DeleteSshKeyWithResponse(ctx context.Context, name string) (*DeleteSshKeyResponse, error)
+
+	// ListTemplates request
+	ListTemplatesWithResponse(ctx context.Context, params *ListTemplatesParams) (*ListTemplatesResponse, error)
+
+	// RegisterTemplate request  with any body
+	RegisterTemplateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*RegisterTemplateResponse, error)
+
+	RegisterTemplateWithResponse(ctx context.Context, body RegisterTemplateJSONRequestBody) (*RegisterTemplateResponse, error)
+
+	// DestroyTemplate request
+	DestroyTemplateWithResponse(ctx context.Context, id string) (*DestroyTemplateResponse, error)
+
+	// Version request
+	VersionWithResponse(ctx context.Context) (*VersionResponse, error)
+
+	// ListZones request
+	ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error)
+}
+
+type IndexResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *string
 }
 
 // Status returns HTTPResponse.Status
-func (r indexResponse) Status() string {
+func (r IndexResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6195,23 +6725,23 @@ func (r indexResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r indexResponse) StatusCode() int {
+func (r IndexResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listAntiAffinityGroupsResponse struct {
+type ListAntiAffinityGroupsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		AntiAffinityGroups *[]AntiAffinityGroup `json:"antiAffinityGroups,omitempty"`
+		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 	}
 }
 
 // Status returns HTTPResponse.Status
-func (r listAntiAffinityGroupsResponse) Status() string {
+func (r ListAntiAffinityGroupsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6219,21 +6749,21 @@ func (r listAntiAffinityGroupsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listAntiAffinityGroupsResponse) StatusCode() int {
+func (r ListAntiAffinityGroupsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type createAntiAffinityGroupResponse struct {
+type CreateAntiAffinityGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *AntiAffinityGroup
 }
 
 // Status returns HTTPResponse.Status
-func (r createAntiAffinityGroupResponse) Status() string {
+func (r CreateAntiAffinityGroupResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6241,21 +6771,21 @@ func (r createAntiAffinityGroupResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r createAntiAffinityGroupResponse) StatusCode() int {
+func (r CreateAntiAffinityGroupResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type destroyAntiAffinityGroupResponse struct {
+type DestroyAntiAffinityGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r destroyAntiAffinityGroupResponse) Status() string {
+func (r DestroyAntiAffinityGroupResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6263,21 +6793,21 @@ func (r destroyAntiAffinityGroupResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r destroyAntiAffinityGroupResponse) StatusCode() int {
+func (r DestroyAntiAffinityGroupResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateAntiAffinityGroupDescriptionResponse struct {
+type UpdateAntiAffinityGroupDescriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *AntiAffinityGroup
 }
 
 // Status returns HTTPResponse.Status
-func (r updateAntiAffinityGroupDescriptionResponse) Status() string {
+func (r UpdateAntiAffinityGroupDescriptionResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6285,14 +6815,14 @@ func (r updateAntiAffinityGroupDescriptionResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateAntiAffinityGroupDescriptionResponse) StatusCode() int {
+func (r UpdateAntiAffinityGroupDescriptionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listAntiAffinityGroupInstancesResponse struct {
+type ListAntiAffinityGroupInstancesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -6301,7 +6831,7 @@ type listAntiAffinityGroupInstancesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listAntiAffinityGroupInstancesResponse) Status() string {
+func (r ListAntiAffinityGroupInstancesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6309,23 +6839,23 @@ func (r listAntiAffinityGroupInstancesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listAntiAffinityGroupInstancesResponse) StatusCode() int {
+func (r ListAntiAffinityGroupInstancesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listApiKeysResponse struct {
+type ListApiKeysResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		ApiKeys *[]ApiKey `json:"apiKeys,omitempty"`
+		ApiKeys *[]ApiKey `json:"api-keys,omitempty"`
 	}
 }
 
 // Status returns HTTPResponse.Status
-func (r listApiKeysResponse) Status() string {
+func (r ListApiKeysResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6333,21 +6863,21 @@ func (r listApiKeysResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listApiKeysResponse) StatusCode() int {
+func (r ListApiKeysResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type generateApiKeyResponse struct {
+type GenerateApiKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ApiKey
 }
 
 // Status returns HTTPResponse.Status
-func (r generateApiKeyResponse) Status() string {
+func (r GenerateApiKeyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6355,21 +6885,21 @@ func (r generateApiKeyResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r generateApiKeyResponse) StatusCode() int {
+func (r GenerateApiKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type revokeApiKeyResponse struct {
+type RevokeApiKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r revokeApiKeyResponse) Status() string {
+func (r RevokeApiKeyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6377,21 +6907,21 @@ func (r revokeApiKeyResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r revokeApiKeyResponse) StatusCode() int {
+func (r RevokeApiKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type getApiKeyDetailsResponse struct {
+type GetApiKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ApiKey
 }
 
 // Status returns HTTPResponse.Status
-func (r getApiKeyDetailsResponse) Status() string {
+func (r GetApiKeyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6399,21 +6929,21 @@ func (r getApiKeyDetailsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r getApiKeyDetailsResponse) StatusCode() int {
+func (r GetApiKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type generateSshKeyResponse struct {
+type GenerateSshKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SshKey
 }
 
 // Status returns HTTPResponse.Status
-func (r generateSshKeyResponse) Status() string {
+func (r GenerateSshKeyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6421,21 +6951,21 @@ func (r generateSshKeyResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r generateSshKeyResponse) StatusCode() int {
+func (r GenerateSshKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type importSshKeyResponse struct {
+type ImportSshKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SshKey
 }
 
 // Status returns HTTPResponse.Status
-func (r importSshKeyResponse) Status() string {
+func (r ImportSshKeyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6443,23 +6973,23 @@ func (r importSshKeyResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r importSshKeyResponse) StatusCode() int {
+func (r ImportSshKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listElasticIpsResponse struct {
+type ListElasticIpsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		ElasticIps *[]ElasticIp `json:"elasticIps,omitempty"`
+		ElasticIps *[]ElasticIp `json:"elastic-ips,omitempty"`
 	}
 }
 
 // Status returns HTTPResponse.Status
-func (r listElasticIpsResponse) Status() string {
+func (r ListElasticIpsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6467,21 +6997,21 @@ func (r listElasticIpsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listElasticIpsResponse) StatusCode() int {
+func (r ListElasticIpsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type allocateElasticIpResponse struct {
+type AllocateElasticIpResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r allocateElasticIpResponse) Status() string {
+func (r AllocateElasticIpResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6489,21 +7019,21 @@ func (r allocateElasticIpResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r allocateElasticIpResponse) StatusCode() int {
+func (r AllocateElasticIpResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type releaseElasticIpResponse struct {
+type ReleaseElasticIpResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r releaseElasticIpResponse) Status() string {
+func (r ReleaseElasticIpResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6511,21 +7041,21 @@ func (r releaseElasticIpResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r releaseElasticIpResponse) StatusCode() int {
+func (r ReleaseElasticIpResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type getElasticIpDetailsResponse struct {
+type GetElasticIpResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ElasticIp
 }
 
 // Status returns HTTPResponse.Status
-func (r getElasticIpDetailsResponse) Status() string {
+func (r GetElasticIpResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6533,21 +7063,21 @@ func (r getElasticIpDetailsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r getElasticIpDetailsResponse) StatusCode() int {
+func (r GetElasticIpResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateElasticIpHealthcheckResponse struct {
+type UpdateElasticIpHealthcheckResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ElasticIp
 }
 
 // Status returns HTTPResponse.Status
-func (r updateElasticIpHealthcheckResponse) Status() string {
+func (r UpdateElasticIpHealthcheckResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6555,21 +7085,21 @@ func (r updateElasticIpHealthcheckResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateElasticIpHealthcheckResponse) StatusCode() int {
+func (r UpdateElasticIpHealthcheckResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type removeElasticIpReverseDnsResponse struct {
+type RemoveElasticIpReverseDnsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ElasticIp
 }
 
 // Status returns HTTPResponse.Status
-func (r removeElasticIpReverseDnsResponse) Status() string {
+func (r RemoveElasticIpReverseDnsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6577,21 +7107,21 @@ func (r removeElasticIpReverseDnsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r removeElasticIpReverseDnsResponse) StatusCode() int {
+func (r RemoveElasticIpReverseDnsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateElasticIpReverseDnsResponse struct {
+type UpdateElasticIpReverseDnsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ElasticIp
 }
 
 // Status returns HTTPResponse.Status
-func (r updateElasticIpReverseDnsResponse) Status() string {
+func (r UpdateElasticIpReverseDnsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6599,14 +7129,14 @@ func (r updateElasticIpReverseDnsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateElasticIpReverseDnsResponse) StatusCode() int {
+func (r UpdateElasticIpReverseDnsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listEventsResponse struct {
+type ListEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -6615,7 +7145,7 @@ type listEventsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listEventsResponse) Status() string {
+func (r ListEventsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6623,36 +7153,14 @@ func (r listEventsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listEventsResponse) StatusCode() int {
+func (r ListEventsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type healthzResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *string
-}
-
-// Status returns HTTPResponse.Status
-func (r healthzResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r healthzResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type listInstancesResponse struct {
+type ListInstancesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -6661,7 +7169,7 @@ type listInstancesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listInstancesResponse) Status() string {
+func (r ListInstancesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6669,21 +7177,21 @@ func (r listInstancesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listInstancesResponse) StatusCode() int {
+func (r ListInstancesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type createInstanceResponse struct {
+type CreateInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r createInstanceResponse) Status() string {
+func (r CreateInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6691,23 +7199,23 @@ func (r createInstanceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r createInstanceResponse) StatusCode() int {
+func (r CreateInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listInstancePoolsResponse struct {
+type ListInstancePoolsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		InstancePools *[]InstancePool `json:"instancePools,omitempty"`
+		InstancePools *[]InstancePool `json:"instance-pools,omitempty"`
 	}
 }
 
 // Status returns HTTPResponse.Status
-func (r listInstancePoolsResponse) Status() string {
+func (r ListInstancePoolsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6715,21 +7223,21 @@ func (r listInstancePoolsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listInstancePoolsResponse) StatusCode() int {
+func (r ListInstancePoolsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type createInstancePoolResponse struct {
+type CreateInstancePoolResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *InstancePool
 }
 
 // Status returns HTTPResponse.Status
-func (r createInstancePoolResponse) Status() string {
+func (r CreateInstancePoolResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6737,21 +7245,21 @@ func (r createInstancePoolResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r createInstancePoolResponse) StatusCode() int {
+func (r CreateInstancePoolResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type destroyInstancePoolResponse struct {
+type DestroyInstancePoolResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r destroyInstancePoolResponse) Status() string {
+func (r DestroyInstancePoolResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6759,21 +7267,21 @@ func (r destroyInstancePoolResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r destroyInstancePoolResponse) StatusCode() int {
+func (r DestroyInstancePoolResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type showInstancePoolDetailsResponse struct {
+type GetInstancePoolResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *InstancePool
 }
 
 // Status returns HTTPResponse.Status
-func (r showInstancePoolDetailsResponse) Status() string {
+func (r GetInstancePoolResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6781,21 +7289,21 @@ func (r showInstancePoolDetailsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r showInstancePoolDetailsResponse) StatusCode() int {
+func (r GetInstancePoolResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstancePoolDescriptionResponse struct {
+type UpdateInstancePoolDescriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *InstancePool
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstancePoolDescriptionResponse) Status() string {
+func (r UpdateInstancePoolDescriptionResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6803,21 +7311,21 @@ func (r updateInstancePoolDescriptionResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstancePoolDescriptionResponse) StatusCode() int {
+func (r UpdateInstancePoolDescriptionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstancePoolTemplateResponse struct {
+type UpdateInstancePoolTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *InstancePool
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstancePoolTemplateResponse) Status() string {
+func (r UpdateInstancePoolTemplateResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6825,21 +7333,21 @@ func (r updateInstancePoolTemplateResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstancePoolTemplateResponse) StatusCode() int {
+func (r UpdateInstancePoolTemplateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstancePoolTopologyResponse struct {
+type UpdateInstancePoolTopologyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *InstancePool
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstancePoolTopologyResponse) Status() string {
+func (r UpdateInstancePoolTopologyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6847,21 +7355,21 @@ func (r updateInstancePoolTopologyResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstancePoolTopologyResponse) StatusCode() int {
+func (r UpdateInstancePoolTopologyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstancePoolUserDataResponse struct {
+type UpdateInstancePoolUserDataResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *InstancePool
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstancePoolUserDataResponse) Status() string {
+func (r UpdateInstancePoolUserDataResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6869,23 +7377,23 @@ func (r updateInstancePoolUserDataResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstancePoolUserDataResponse) StatusCode() int {
+func (r UpdateInstancePoolUserDataResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listInstanceTypesResponse struct {
+type ListInstanceTypesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		InstanceTypes *[]InstanceType `json:"instanceTypes,omitempty"`
+		InstanceTypes *[]InstanceType `json:"instance-types,omitempty"`
 	}
 }
 
 // Status returns HTTPResponse.Status
-func (r listInstanceTypesResponse) Status() string {
+func (r ListInstanceTypesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6893,21 +7401,21 @@ func (r listInstanceTypesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listInstanceTypesResponse) StatusCode() int {
+func (r ListInstanceTypesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type destroyInstanceResponse struct {
+type DestroyInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r destroyInstanceResponse) Status() string {
+func (r DestroyInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6915,14 +7423,14 @@ func (r destroyInstanceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r destroyInstanceResponse) StatusCode() int {
+func (r DestroyInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type showInstanceDetailsResponse struct {
+type GetInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Instance
@@ -6930,7 +7438,7 @@ type showInstanceDetailsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r showInstanceDetailsResponse) Status() string {
+func (r GetInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6938,14 +7446,14 @@ func (r showInstanceDetailsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r showInstanceDetailsResponse) StatusCode() int {
+func (r GetInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type allocateIpv6OnInstanceResponse struct {
+type AllocateIpv6OnInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
@@ -6953,7 +7461,7 @@ type allocateIpv6OnInstanceResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r allocateIpv6OnInstanceResponse) Status() string {
+func (r AllocateIpv6OnInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6961,21 +7469,21 @@ func (r allocateIpv6OnInstanceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r allocateIpv6OnInstanceResponse) StatusCode() int {
+func (r AllocateIpv6OnInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type attachElasticIpOnInstanceResponse struct {
+type AttachElasticIpOnInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r attachElasticIpOnInstanceResponse) Status() string {
+func (r AttachElasticIpOnInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6983,21 +7491,43 @@ func (r attachElasticIpOnInstanceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r attachElasticIpOnInstanceResponse) StatusCode() int {
+func (r AttachElasticIpOnInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstanceDescriptionResponse struct {
+type CreateSnapshotResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON202      *Result
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSnapshotResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSnapshotResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateInstanceDescriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Instance
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstanceDescriptionResponse) Status() string {
+func (r UpdateInstanceDescriptionResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7005,21 +7535,21 @@ func (r updateInstanceDescriptionResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstanceDescriptionResponse) StatusCode() int {
+func (r UpdateInstanceDescriptionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type detachElasticIpFromInstanceResponse struct {
+type DetachElasticIpFromInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r detachElasticIpFromInstanceResponse) Status() string {
+func (r DetachElasticIpFromInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7027,21 +7557,21 @@ func (r detachElasticIpFromInstanceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r detachElasticIpFromInstanceResponse) StatusCode() int {
+func (r DetachElasticIpFromInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstanceTypeResponse struct {
+type UpdateInstanceTypeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Instance
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstanceTypeResponse) Status() string {
+func (r UpdateInstanceTypeResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7049,21 +7579,21 @@ func (r updateInstanceTypeResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstanceTypeResponse) StatusCode() int {
+func (r UpdateInstanceTypeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type rebootInstanceResponse struct {
+type RebootInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r rebootInstanceResponse) Status() string {
+func (r RebootInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7071,21 +7601,21 @@ func (r rebootInstanceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r rebootInstanceResponse) StatusCode() int {
+func (r RebootInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type resetInstancePasswordResponse struct {
+type ResetInstancePasswordResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r resetInstancePasswordResponse) Status() string {
+func (r ResetInstancePasswordResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7093,21 +7623,21 @@ func (r resetInstancePasswordResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r resetInstancePasswordResponse) StatusCode() int {
+func (r ResetInstancePasswordResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type restoreInstanceFromSnapshotResponse struct {
+type RestoreInstanceFromSnapshotResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r restoreInstanceFromSnapshotResponse) Status() string {
+func (r RestoreInstanceFromSnapshotResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7115,21 +7645,21 @@ func (r restoreInstanceFromSnapshotResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r restoreInstanceFromSnapshotResponse) StatusCode() int {
+func (r RestoreInstanceFromSnapshotResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type restoreInstanceFromTemplateResponse struct {
+type RestoreInstanceFromTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r restoreInstanceFromTemplateResponse) Status() string {
+func (r RestoreInstanceFromTemplateResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7137,21 +7667,21 @@ func (r restoreInstanceFromTemplateResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r restoreInstanceFromTemplateResponse) StatusCode() int {
+func (r RestoreInstanceFromTemplateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type removeInstanceReverseDnsResponse struct {
+type RemoveInstanceReverseDnsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r removeInstanceReverseDnsResponse) Status() string {
+func (r RemoveInstanceReverseDnsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7159,21 +7689,21 @@ func (r removeInstanceReverseDnsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r removeInstanceReverseDnsResponse) StatusCode() int {
+func (r RemoveInstanceReverseDnsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstanceReverseDnsResponse struct {
+type UpdateInstanceReverseDnsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstanceReverseDnsResponse) Status() string {
+func (r UpdateInstanceReverseDnsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7181,21 +7711,21 @@ func (r updateInstanceReverseDnsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstanceReverseDnsResponse) StatusCode() int {
+func (r UpdateInstanceReverseDnsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstanceSecurityGroupsResponse struct {
+type UpdateInstanceSecurityGroupsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Instance
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstanceSecurityGroupsResponse) Status() string {
+func (r UpdateInstanceSecurityGroupsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7203,14 +7733,14 @@ func (r updateInstanceSecurityGroupsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstanceSecurityGroupsResponse) StatusCode() int {
+func (r UpdateInstanceSecurityGroupsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type startInstanceResponse struct {
+type StartInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
@@ -7218,7 +7748,7 @@ type startInstanceResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r startInstanceResponse) Status() string {
+func (r StartInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7226,14 +7756,14 @@ func (r startInstanceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r startInstanceResponse) StatusCode() int {
+func (r StartInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type stopInstanceResponse struct {
+type StopInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
@@ -7241,7 +7771,7 @@ type stopInstanceResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r stopInstanceResponse) Status() string {
+func (r StopInstanceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7249,21 +7779,21 @@ func (r stopInstanceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r stopInstanceResponse) StatusCode() int {
+func (r StopInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateInstanceUserDataResponse struct {
+type UpdateInstanceUserDataResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Instance
 }
 
 // Status returns HTTPResponse.Status
-func (r updateInstanceUserDataResponse) Status() string {
+func (r UpdateInstanceUserDataResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7271,23 +7801,23 @@ func (r updateInstanceUserDataResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateInstanceUserDataResponse) StatusCode() int {
+func (r UpdateInstanceUserDataResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listLoadBalancersResponse struct {
+type ListLoadBalancersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		LoadBalancers *[]LoadBalancer `json:"loadBalancers,omitempty"`
+		LoadBalancers *[]LoadBalancer `json:"load-balancers,omitempty"`
 	}
 }
 
 // Status returns HTTPResponse.Status
-func (r listLoadBalancersResponse) Status() string {
+func (r ListLoadBalancersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7295,21 +7825,21 @@ func (r listLoadBalancersResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listLoadBalancersResponse) StatusCode() int {
+func (r ListLoadBalancersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type createLoadBalancerResponse struct {
+type CreateLoadBalancerResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r createLoadBalancerResponse) Status() string {
+func (r CreateLoadBalancerResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7317,21 +7847,21 @@ func (r createLoadBalancerResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r createLoadBalancerResponse) StatusCode() int {
+func (r CreateLoadBalancerResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type destroyLoadBalancerResponse struct {
+type DestroyLoadBalancerResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r destroyLoadBalancerResponse) Status() string {
+func (r DestroyLoadBalancerResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7339,21 +7869,21 @@ func (r destroyLoadBalancerResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r destroyLoadBalancerResponse) StatusCode() int {
+func (r DestroyLoadBalancerResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type showLoadBalancerDetailsResponse struct {
+type GetLoadBalancerResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *LoadBalancer
 }
 
 // Status returns HTTPResponse.Status
-func (r showLoadBalancerDetailsResponse) Status() string {
+func (r GetLoadBalancerResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7361,21 +7891,87 @@ func (r showLoadBalancerDetailsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r showLoadBalancerDetailsResponse) StatusCode() int {
+func (r GetLoadBalancerResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type showLoadBalancerServiceDetailsResponse struct {
+type UpdateLoadBalancerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Result
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateLoadBalancerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateLoadBalancerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddServiceToLoadBalancerResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Result
+}
+
+// Status returns HTTPResponse.Status
+func (r AddServiceToLoadBalancerResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddServiceToLoadBalancerResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteLoadBalancerServiceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Result
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteLoadBalancerServiceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteLoadBalancerServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetLoadBalancerServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *LoadBalancerService
 }
 
 // Status returns HTTPResponse.Status
-func (r showLoadBalancerServiceDetailsResponse) Status() string {
+func (r GetLoadBalancerServiceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7383,21 +7979,21 @@ func (r showLoadBalancerServiceDetailsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r showLoadBalancerServiceDetailsResponse) StatusCode() int {
+func (r GetLoadBalancerServiceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type addServiceToLoadBalancerResponse struct {
+type UpdateLoadBalancerServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *LoadBalancer
+	JSON200      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r addServiceToLoadBalancerResponse) Status() string {
+func (r UpdateLoadBalancerServiceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7405,43 +8001,21 @@ func (r addServiceToLoadBalancerResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r addServiceToLoadBalancerResponse) StatusCode() int {
+func (r UpdateLoadBalancerServiceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type deleteServiceFromLoadBalancerResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *LoadBalancer
-}
-
-// Status returns HTTPResponse.Status
-func (r deleteServiceFromLoadBalancerResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r deleteServiceFromLoadBalancerResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type pingResponse struct {
+type PingResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *string
 }
 
 // Status returns HTTPResponse.Status
-func (r pingResponse) Status() string {
+func (r PingResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7449,14 +8023,14 @@ func (r pingResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r pingResponse) StatusCode() int {
+func (r PingResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listResultsResponse struct {
+type ListResultsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -7465,7 +8039,7 @@ type listResultsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listResultsResponse) Status() string {
+func (r ListResultsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7473,91 +8047,21 @@ func (r listResultsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listResultsResponse) StatusCode() int {
+func (r ListResultsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type getResultResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *struct {
-		Result *Result `json:"result,omitempty"`
-	}
-}
-
-// Status returns HTTPResponse.Status
-func (r getResultResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r getResultResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type listSecurityGroupsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *struct {
-		SecurityGroups *[]SecurityGroup `json:"securityGroups,omitempty"`
-	}
-}
-
-// Status returns HTTPResponse.Status
-func (r listSecurityGroupsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r listSecurityGroupsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type createSecurityGroupResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *SecurityGroup
-}
-
-// Status returns HTTPResponse.Status
-func (r createSecurityGroupResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r createSecurityGroupResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type destroySecurityGroupResponse struct {
+type GetResultResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r destroySecurityGroupResponse) Status() string {
+func (r GetResultResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7565,21 +8069,111 @@ func (r destroySecurityGroupResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r destroySecurityGroupResponse) StatusCode() int {
+func (r GetResultResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type addRuleToSecurityGroupResponse struct {
+type ListSecurityGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSecurityGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSecurityGroupsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SecurityGroup
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DestroySecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Result
+}
+
+// Status returns HTTPResponse.Status
+func (r DestroySecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DestroySecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SecurityGroup
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddRuleToSecurityGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SecurityGroupRule
 }
 
 // Status returns HTTPResponse.Status
-func (r addRuleToSecurityGroupResponse) Status() string {
+func (r AddRuleToSecurityGroupResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7587,21 +8181,21 @@ func (r addRuleToSecurityGroupResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r addRuleToSecurityGroupResponse) StatusCode() int {
+func (r AddRuleToSecurityGroupResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type deleteRuleFromSecurityGroupResponse struct {
+type DeleteRuleFromSecurityGroupResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SecurityGroup
 }
 
 // Status returns HTTPResponse.Status
-func (r deleteRuleFromSecurityGroupResponse) Status() string {
+func (r DeleteRuleFromSecurityGroupResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7609,21 +8203,21 @@ func (r deleteRuleFromSecurityGroupResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r deleteRuleFromSecurityGroupResponse) StatusCode() int {
+func (r DeleteRuleFromSecurityGroupResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateSecurityGroupDescriptionResponse struct {
+type UpdateSecurityGroupDescriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SecurityGroup
 }
 
 // Status returns HTTPResponse.Status
-func (r updateSecurityGroupDescriptionResponse) Status() string {
+func (r UpdateSecurityGroupDescriptionResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7631,14 +8225,14 @@ func (r updateSecurityGroupDescriptionResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateSecurityGroupDescriptionResponse) StatusCode() int {
+func (r UpdateSecurityGroupDescriptionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listSecurityGroupInstancesResponse struct {
+type ListSecurityGroupInstancesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -7647,7 +8241,7 @@ type listSecurityGroupInstancesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listSecurityGroupInstancesResponse) Status() string {
+func (r ListSecurityGroupInstancesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7655,21 +8249,21 @@ func (r listSecurityGroupInstancesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listSecurityGroupInstancesResponse) StatusCode() int {
+func (r ListSecurityGroupInstancesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateSecurityGroupRulesResponse struct {
+type UpdateSecurityGroupRulesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *SecurityGroup
 }
 
 // Status returns HTTPResponse.Status
-func (r updateSecurityGroupRulesResponse) Status() string {
+func (r UpdateSecurityGroupRulesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7677,14 +8271,14 @@ func (r updateSecurityGroupRulesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateSecurityGroupRulesResponse) StatusCode() int {
+func (r UpdateSecurityGroupRulesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listSnapshotsResponse struct {
+type ListSnapshotsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -7693,7 +8287,7 @@ type listSnapshotsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listSnapshotsResponse) Status() string {
+func (r ListSnapshotsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7701,21 +8295,21 @@ func (r listSnapshotsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listSnapshotsResponse) StatusCode() int {
+func (r ListSnapshotsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type destroySnapshotResponse struct {
+type DestroySnapshotResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r destroySnapshotResponse) Status() string {
+func (r DestroySnapshotResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7723,21 +8317,44 @@ func (r destroySnapshotResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r destroySnapshotResponse) StatusCode() int {
+func (r DestroySnapshotResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type updateSnapshotDescriptionResponse struct {
+type GetSnapshotResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Snapshot
+	JSON404      *Result
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSnapshotResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSnapshotResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateSnapshotDescriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Snapshot
 }
 
 // Status returns HTTPResponse.Status
-func (r updateSnapshotDescriptionResponse) Status() string {
+func (r UpdateSnapshotDescriptionResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7745,23 +8362,23 @@ func (r updateSnapshotDescriptionResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r updateSnapshotDescriptionResponse) StatusCode() int {
+func (r UpdateSnapshotDescriptionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listSshKeysResponse struct {
+type ListSshKeysResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		SshKeys *[]ApiKey `json:"sshKeys,omitempty"`
+		SshKeys *[]ApiKey `json:"ssh-keys,omitempty"`
 	}
 }
 
 // Status returns HTTPResponse.Status
-func (r listSshKeysResponse) Status() string {
+func (r ListSshKeysResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7769,21 +8386,21 @@ func (r listSshKeysResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listSshKeysResponse) StatusCode() int {
+func (r ListSshKeysResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type deleteSshKeyResponse struct {
+type DeleteSshKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r deleteSshKeyResponse) Status() string {
+func (r DeleteSshKeyResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7791,14 +8408,14 @@ func (r deleteSshKeyResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r deleteSshKeyResponse) StatusCode() int {
+func (r DeleteSshKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listTemplatesResponse struct {
+type ListTemplatesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -7807,7 +8424,7 @@ type listTemplatesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listTemplatesResponse) Status() string {
+func (r ListTemplatesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7815,21 +8432,21 @@ func (r listTemplatesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listTemplatesResponse) StatusCode() int {
+func (r ListTemplatesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type registerTemplateResponse struct {
+type RegisterTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r registerTemplateResponse) Status() string {
+func (r RegisterTemplateResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7837,21 +8454,21 @@ func (r registerTemplateResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r registerTemplateResponse) StatusCode() int {
+func (r RegisterTemplateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type destroyTemplateResponse struct {
+type DestroyTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON202      *Result
 }
 
 // Status returns HTTPResponse.Status
-func (r destroyTemplateResponse) Status() string {
+func (r DestroyTemplateResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7859,21 +8476,21 @@ func (r destroyTemplateResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r destroyTemplateResponse) StatusCode() int {
+func (r DestroyTemplateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type versionResponse struct {
+type VersionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *string
 }
 
 // Status returns HTTPResponse.Status
-func (r versionResponse) Status() string {
+func (r VersionResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7881,14 +8498,14 @@ func (r versionResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r versionResponse) StatusCode() int {
+func (r VersionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type listZonesResponse struct {
+type ListZonesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -7897,7 +8514,7 @@ type listZonesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r listZonesResponse) Status() string {
+func (r ListZonesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -7905,7 +8522,7 @@ func (r listZonesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r listZonesResponse) StatusCode() int {
+func (r ListZonesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7913,7 +8530,7 @@ func (r listZonesResponse) StatusCode() int {
 }
 
 // IndexWithResponse request returning *IndexResponse
-func (c *ClientWithResponses) IndexWithResponse(ctx context.Context) (*indexResponse, error) {
+func (c *ClientWithResponses) IndexWithResponse(ctx context.Context) (*IndexResponse, error) {
 	rsp, err := c.Index(ctx)
 	if err != nil {
 		return nil, err
@@ -7922,7 +8539,7 @@ func (c *ClientWithResponses) IndexWithResponse(ctx context.Context) (*indexResp
 }
 
 // ListAntiAffinityGroupsWithResponse request returning *ListAntiAffinityGroupsResponse
-func (c *ClientWithResponses) ListAntiAffinityGroupsWithResponse(ctx context.Context) (*listAntiAffinityGroupsResponse, error) {
+func (c *ClientWithResponses) ListAntiAffinityGroupsWithResponse(ctx context.Context) (*ListAntiAffinityGroupsResponse, error) {
 	rsp, err := c.ListAntiAffinityGroups(ctx)
 	if err != nil {
 		return nil, err
@@ -7931,7 +8548,7 @@ func (c *ClientWithResponses) ListAntiAffinityGroupsWithResponse(ctx context.Con
 }
 
 // CreateAntiAffinityGroupWithBodyWithResponse request with arbitrary body returning *CreateAntiAffinityGroupResponse
-func (c *ClientWithResponses) CreateAntiAffinityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*createAntiAffinityGroupResponse, error) {
+func (c *ClientWithResponses) CreateAntiAffinityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateAntiAffinityGroupResponse, error) {
 	rsp, err := c.CreateAntiAffinityGroupWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -7939,7 +8556,7 @@ func (c *ClientWithResponses) CreateAntiAffinityGroupWithBodyWithResponse(ctx co
 	return ParseCreateAntiAffinityGroupResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateAntiAffinityGroupWithResponse(ctx context.Context, body CreateAntiAffinityGroupJSONRequestBody) (*createAntiAffinityGroupResponse, error) {
+func (c *ClientWithResponses) CreateAntiAffinityGroupWithResponse(ctx context.Context, body CreateAntiAffinityGroupJSONRequestBody) (*CreateAntiAffinityGroupResponse, error) {
 	rsp, err := c.CreateAntiAffinityGroup(ctx, body)
 	if err != nil {
 		return nil, err
@@ -7948,7 +8565,7 @@ func (c *ClientWithResponses) CreateAntiAffinityGroupWithResponse(ctx context.Co
 }
 
 // DestroyAntiAffinityGroupWithResponse request returning *DestroyAntiAffinityGroupResponse
-func (c *ClientWithResponses) DestroyAntiAffinityGroupWithResponse(ctx context.Context, id string) (*destroyAntiAffinityGroupResponse, error) {
+func (c *ClientWithResponses) DestroyAntiAffinityGroupWithResponse(ctx context.Context, id string) (*DestroyAntiAffinityGroupResponse, error) {
 	rsp, err := c.DestroyAntiAffinityGroup(ctx, id)
 	if err != nil {
 		return nil, err
@@ -7957,7 +8574,7 @@ func (c *ClientWithResponses) DestroyAntiAffinityGroupWithResponse(ctx context.C
 }
 
 // UpdateAntiAffinityGroupDescriptionWithBodyWithResponse request with arbitrary body returning *UpdateAntiAffinityGroupDescriptionResponse
-func (c *ClientWithResponses) UpdateAntiAffinityGroupDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateAntiAffinityGroupDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateAntiAffinityGroupDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateAntiAffinityGroupDescriptionResponse, error) {
 	rsp, err := c.UpdateAntiAffinityGroupDescriptionWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -7965,7 +8582,7 @@ func (c *ClientWithResponses) UpdateAntiAffinityGroupDescriptionWithBodyWithResp
 	return ParseUpdateAntiAffinityGroupDescriptionResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateAntiAffinityGroupDescriptionWithResponse(ctx context.Context, id string, body UpdateAntiAffinityGroupDescriptionJSONRequestBody) (*updateAntiAffinityGroupDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateAntiAffinityGroupDescriptionWithResponse(ctx context.Context, id string, body UpdateAntiAffinityGroupDescriptionJSONRequestBody) (*UpdateAntiAffinityGroupDescriptionResponse, error) {
 	rsp, err := c.UpdateAntiAffinityGroupDescription(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -7974,7 +8591,7 @@ func (c *ClientWithResponses) UpdateAntiAffinityGroupDescriptionWithResponse(ctx
 }
 
 // ListAntiAffinityGroupInstancesWithResponse request returning *ListAntiAffinityGroupInstancesResponse
-func (c *ClientWithResponses) ListAntiAffinityGroupInstancesWithResponse(ctx context.Context, id string) (*listAntiAffinityGroupInstancesResponse, error) {
+func (c *ClientWithResponses) ListAntiAffinityGroupInstancesWithResponse(ctx context.Context, id string) (*ListAntiAffinityGroupInstancesResponse, error) {
 	rsp, err := c.ListAntiAffinityGroupInstances(ctx, id)
 	if err != nil {
 		return nil, err
@@ -7983,7 +8600,7 @@ func (c *ClientWithResponses) ListAntiAffinityGroupInstancesWithResponse(ctx con
 }
 
 // ListApiKeysWithResponse request returning *ListApiKeysResponse
-func (c *ClientWithResponses) ListApiKeysWithResponse(ctx context.Context) (*listApiKeysResponse, error) {
+func (c *ClientWithResponses) ListApiKeysWithResponse(ctx context.Context) (*ListApiKeysResponse, error) {
 	rsp, err := c.ListApiKeys(ctx)
 	if err != nil {
 		return nil, err
@@ -7992,7 +8609,7 @@ func (c *ClientWithResponses) ListApiKeysWithResponse(ctx context.Context) (*lis
 }
 
 // GenerateApiKeyWithBodyWithResponse request with arbitrary body returning *GenerateApiKeyResponse
-func (c *ClientWithResponses) GenerateApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*generateApiKeyResponse, error) {
+func (c *ClientWithResponses) GenerateApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*GenerateApiKeyResponse, error) {
 	rsp, err := c.GenerateApiKeyWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8000,7 +8617,7 @@ func (c *ClientWithResponses) GenerateApiKeyWithBodyWithResponse(ctx context.Con
 	return ParseGenerateApiKeyResponse(rsp)
 }
 
-func (c *ClientWithResponses) GenerateApiKeyWithResponse(ctx context.Context, body GenerateApiKeyJSONRequestBody) (*generateApiKeyResponse, error) {
+func (c *ClientWithResponses) GenerateApiKeyWithResponse(ctx context.Context, body GenerateApiKeyJSONRequestBody) (*GenerateApiKeyResponse, error) {
 	rsp, err := c.GenerateApiKey(ctx, body)
 	if err != nil {
 		return nil, err
@@ -8009,7 +8626,7 @@ func (c *ClientWithResponses) GenerateApiKeyWithResponse(ctx context.Context, bo
 }
 
 // RevokeApiKeyWithResponse request returning *RevokeApiKeyResponse
-func (c *ClientWithResponses) RevokeApiKeyWithResponse(ctx context.Context, key string) (*revokeApiKeyResponse, error) {
+func (c *ClientWithResponses) RevokeApiKeyWithResponse(ctx context.Context, key string) (*RevokeApiKeyResponse, error) {
 	rsp, err := c.RevokeApiKey(ctx, key)
 	if err != nil {
 		return nil, err
@@ -8017,17 +8634,17 @@ func (c *ClientWithResponses) RevokeApiKeyWithResponse(ctx context.Context, key 
 	return ParseRevokeApiKeyResponse(rsp)
 }
 
-// GetApiKeyDetailsWithResponse request returning *GetApiKeyDetailsResponse
-func (c *ClientWithResponses) GetApiKeyDetailsWithResponse(ctx context.Context, key string) (*getApiKeyDetailsResponse, error) {
-	rsp, err := c.GetApiKeyDetails(ctx, key)
+// GetApiKeyWithResponse request returning *GetApiKeyResponse
+func (c *ClientWithResponses) GetApiKeyWithResponse(ctx context.Context, key string) (*GetApiKeyResponse, error) {
+	rsp, err := c.GetApiKey(ctx, key)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetApiKeyDetailsResponse(rsp)
+	return ParseGetApiKeyResponse(rsp)
 }
 
 // GenerateSshKeyWithResponse request returning *GenerateSshKeyResponse
-func (c *ClientWithResponses) GenerateSshKeyWithResponse(ctx context.Context) (*generateSshKeyResponse, error) {
+func (c *ClientWithResponses) GenerateSshKeyWithResponse(ctx context.Context) (*GenerateSshKeyResponse, error) {
 	rsp, err := c.GenerateSshKey(ctx)
 	if err != nil {
 		return nil, err
@@ -8036,7 +8653,7 @@ func (c *ClientWithResponses) GenerateSshKeyWithResponse(ctx context.Context) (*
 }
 
 // ImportSshKeyWithBodyWithResponse request with arbitrary body returning *ImportSshKeyResponse
-func (c *ClientWithResponses) ImportSshKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*importSshKeyResponse, error) {
+func (c *ClientWithResponses) ImportSshKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*ImportSshKeyResponse, error) {
 	rsp, err := c.ImportSshKeyWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8044,7 +8661,7 @@ func (c *ClientWithResponses) ImportSshKeyWithBodyWithResponse(ctx context.Conte
 	return ParseImportSshKeyResponse(rsp)
 }
 
-func (c *ClientWithResponses) ImportSshKeyWithResponse(ctx context.Context, body ImportSshKeyJSONRequestBody) (*importSshKeyResponse, error) {
+func (c *ClientWithResponses) ImportSshKeyWithResponse(ctx context.Context, body ImportSshKeyJSONRequestBody) (*ImportSshKeyResponse, error) {
 	rsp, err := c.ImportSshKey(ctx, body)
 	if err != nil {
 		return nil, err
@@ -8053,7 +8670,7 @@ func (c *ClientWithResponses) ImportSshKeyWithResponse(ctx context.Context, body
 }
 
 // ListElasticIpsWithResponse request returning *ListElasticIpsResponse
-func (c *ClientWithResponses) ListElasticIpsWithResponse(ctx context.Context) (*listElasticIpsResponse, error) {
+func (c *ClientWithResponses) ListElasticIpsWithResponse(ctx context.Context) (*ListElasticIpsResponse, error) {
 	rsp, err := c.ListElasticIps(ctx)
 	if err != nil {
 		return nil, err
@@ -8062,7 +8679,7 @@ func (c *ClientWithResponses) ListElasticIpsWithResponse(ctx context.Context) (*
 }
 
 // AllocateElasticIpWithBodyWithResponse request with arbitrary body returning *AllocateElasticIpResponse
-func (c *ClientWithResponses) AllocateElasticIpWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*allocateElasticIpResponse, error) {
+func (c *ClientWithResponses) AllocateElasticIpWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*AllocateElasticIpResponse, error) {
 	rsp, err := c.AllocateElasticIpWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8070,7 +8687,7 @@ func (c *ClientWithResponses) AllocateElasticIpWithBodyWithResponse(ctx context.
 	return ParseAllocateElasticIpResponse(rsp)
 }
 
-func (c *ClientWithResponses) AllocateElasticIpWithResponse(ctx context.Context, body AllocateElasticIpJSONRequestBody) (*allocateElasticIpResponse, error) {
+func (c *ClientWithResponses) AllocateElasticIpWithResponse(ctx context.Context, body AllocateElasticIpJSONRequestBody) (*AllocateElasticIpResponse, error) {
 	rsp, err := c.AllocateElasticIp(ctx, body)
 	if err != nil {
 		return nil, err
@@ -8079,7 +8696,7 @@ func (c *ClientWithResponses) AllocateElasticIpWithResponse(ctx context.Context,
 }
 
 // ReleaseElasticIpWithResponse request returning *ReleaseElasticIpResponse
-func (c *ClientWithResponses) ReleaseElasticIpWithResponse(ctx context.Context, id string) (*releaseElasticIpResponse, error) {
+func (c *ClientWithResponses) ReleaseElasticIpWithResponse(ctx context.Context, id string) (*ReleaseElasticIpResponse, error) {
 	rsp, err := c.ReleaseElasticIp(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8087,17 +8704,17 @@ func (c *ClientWithResponses) ReleaseElasticIpWithResponse(ctx context.Context, 
 	return ParseReleaseElasticIpResponse(rsp)
 }
 
-// GetElasticIpDetailsWithResponse request returning *GetElasticIpDetailsResponse
-func (c *ClientWithResponses) GetElasticIpDetailsWithResponse(ctx context.Context, id string) (*getElasticIpDetailsResponse, error) {
-	rsp, err := c.GetElasticIpDetails(ctx, id)
+// GetElasticIpWithResponse request returning *GetElasticIpResponse
+func (c *ClientWithResponses) GetElasticIpWithResponse(ctx context.Context, id string) (*GetElasticIpResponse, error) {
+	rsp, err := c.GetElasticIp(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetElasticIpDetailsResponse(rsp)
+	return ParseGetElasticIpResponse(rsp)
 }
 
 // UpdateElasticIpHealthcheckWithBodyWithResponse request with arbitrary body returning *UpdateElasticIpHealthcheckResponse
-func (c *ClientWithResponses) UpdateElasticIpHealthcheckWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateElasticIpHealthcheckResponse, error) {
+func (c *ClientWithResponses) UpdateElasticIpHealthcheckWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateElasticIpHealthcheckResponse, error) {
 	rsp, err := c.UpdateElasticIpHealthcheckWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8105,7 +8722,7 @@ func (c *ClientWithResponses) UpdateElasticIpHealthcheckWithBodyWithResponse(ctx
 	return ParseUpdateElasticIpHealthcheckResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateElasticIpHealthcheckWithResponse(ctx context.Context, id string, body UpdateElasticIpHealthcheckJSONRequestBody) (*updateElasticIpHealthcheckResponse, error) {
+func (c *ClientWithResponses) UpdateElasticIpHealthcheckWithResponse(ctx context.Context, id string, body UpdateElasticIpHealthcheckJSONRequestBody) (*UpdateElasticIpHealthcheckResponse, error) {
 	rsp, err := c.UpdateElasticIpHealthcheck(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8114,7 +8731,7 @@ func (c *ClientWithResponses) UpdateElasticIpHealthcheckWithResponse(ctx context
 }
 
 // RemoveElasticIpReverseDnsWithBodyWithResponse request with arbitrary body returning *RemoveElasticIpReverseDnsResponse
-func (c *ClientWithResponses) RemoveElasticIpReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*removeElasticIpReverseDnsResponse, error) {
+func (c *ClientWithResponses) RemoveElasticIpReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*RemoveElasticIpReverseDnsResponse, error) {
 	rsp, err := c.RemoveElasticIpReverseDnsWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8122,7 +8739,7 @@ func (c *ClientWithResponses) RemoveElasticIpReverseDnsWithBodyWithResponse(ctx 
 	return ParseRemoveElasticIpReverseDnsResponse(rsp)
 }
 
-func (c *ClientWithResponses) RemoveElasticIpReverseDnsWithResponse(ctx context.Context, id string, body RemoveElasticIpReverseDnsJSONRequestBody) (*removeElasticIpReverseDnsResponse, error) {
+func (c *ClientWithResponses) RemoveElasticIpReverseDnsWithResponse(ctx context.Context, id string, body RemoveElasticIpReverseDnsJSONRequestBody) (*RemoveElasticIpReverseDnsResponse, error) {
 	rsp, err := c.RemoveElasticIpReverseDns(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8131,7 +8748,7 @@ func (c *ClientWithResponses) RemoveElasticIpReverseDnsWithResponse(ctx context.
 }
 
 // UpdateElasticIpReverseDnsWithBodyWithResponse request with arbitrary body returning *UpdateElasticIpReverseDnsResponse
-func (c *ClientWithResponses) UpdateElasticIpReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateElasticIpReverseDnsResponse, error) {
+func (c *ClientWithResponses) UpdateElasticIpReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateElasticIpReverseDnsResponse, error) {
 	rsp, err := c.UpdateElasticIpReverseDnsWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8139,7 +8756,7 @@ func (c *ClientWithResponses) UpdateElasticIpReverseDnsWithBodyWithResponse(ctx 
 	return ParseUpdateElasticIpReverseDnsResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateElasticIpReverseDnsWithResponse(ctx context.Context, id string, body UpdateElasticIpReverseDnsJSONRequestBody) (*updateElasticIpReverseDnsResponse, error) {
+func (c *ClientWithResponses) UpdateElasticIpReverseDnsWithResponse(ctx context.Context, id string, body UpdateElasticIpReverseDnsJSONRequestBody) (*UpdateElasticIpReverseDnsResponse, error) {
 	rsp, err := c.UpdateElasticIpReverseDns(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8148,7 +8765,7 @@ func (c *ClientWithResponses) UpdateElasticIpReverseDnsWithResponse(ctx context.
 }
 
 // ListEventsWithResponse request returning *ListEventsResponse
-func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*listEventsResponse, error) {
+func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error) {
 	rsp, err := c.ListEvents(ctx, params)
 	if err != nil {
 		return nil, err
@@ -8156,17 +8773,8 @@ func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params
 	return ParseListEventsResponse(rsp)
 }
 
-// HealthzWithResponse request returning *HealthzResponse
-func (c *ClientWithResponses) HealthzWithResponse(ctx context.Context) (*healthzResponse, error) {
-	rsp, err := c.Healthz(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return ParseHealthzResponse(rsp)
-}
-
 // ListInstancesWithResponse request returning *ListInstancesResponse
-func (c *ClientWithResponses) ListInstancesWithResponse(ctx context.Context, params *ListInstancesParams) (*listInstancesResponse, error) {
+func (c *ClientWithResponses) ListInstancesWithResponse(ctx context.Context, params *ListInstancesParams) (*ListInstancesResponse, error) {
 	rsp, err := c.ListInstances(ctx, params)
 	if err != nil {
 		return nil, err
@@ -8175,7 +8783,7 @@ func (c *ClientWithResponses) ListInstancesWithResponse(ctx context.Context, par
 }
 
 // CreateInstanceWithBodyWithResponse request with arbitrary body returning *CreateInstanceResponse
-func (c *ClientWithResponses) CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*createInstanceResponse, error) {
+func (c *ClientWithResponses) CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*CreateInstanceResponse, error) {
 	rsp, err := c.CreateInstanceWithBody(ctx, params, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8183,7 +8791,7 @@ func (c *ClientWithResponses) CreateInstanceWithBodyWithResponse(ctx context.Con
 	return ParseCreateInstanceResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateInstanceWithResponse(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*createInstanceResponse, error) {
+func (c *ClientWithResponses) CreateInstanceWithResponse(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error) {
 	rsp, err := c.CreateInstance(ctx, params, body)
 	if err != nil {
 		return nil, err
@@ -8192,7 +8800,7 @@ func (c *ClientWithResponses) CreateInstanceWithResponse(ctx context.Context, pa
 }
 
 // ListInstancePoolsWithResponse request returning *ListInstancePoolsResponse
-func (c *ClientWithResponses) ListInstancePoolsWithResponse(ctx context.Context) (*listInstancePoolsResponse, error) {
+func (c *ClientWithResponses) ListInstancePoolsWithResponse(ctx context.Context) (*ListInstancePoolsResponse, error) {
 	rsp, err := c.ListInstancePools(ctx)
 	if err != nil {
 		return nil, err
@@ -8201,7 +8809,7 @@ func (c *ClientWithResponses) ListInstancePoolsWithResponse(ctx context.Context)
 }
 
 // CreateInstancePoolWithBodyWithResponse request with arbitrary body returning *CreateInstancePoolResponse
-func (c *ClientWithResponses) CreateInstancePoolWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*createInstancePoolResponse, error) {
+func (c *ClientWithResponses) CreateInstancePoolWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateInstancePoolResponse, error) {
 	rsp, err := c.CreateInstancePoolWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8209,7 +8817,7 @@ func (c *ClientWithResponses) CreateInstancePoolWithBodyWithResponse(ctx context
 	return ParseCreateInstancePoolResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateInstancePoolWithResponse(ctx context.Context, body CreateInstancePoolJSONRequestBody) (*createInstancePoolResponse, error) {
+func (c *ClientWithResponses) CreateInstancePoolWithResponse(ctx context.Context, body CreateInstancePoolJSONRequestBody) (*CreateInstancePoolResponse, error) {
 	rsp, err := c.CreateInstancePool(ctx, body)
 	if err != nil {
 		return nil, err
@@ -8218,7 +8826,7 @@ func (c *ClientWithResponses) CreateInstancePoolWithResponse(ctx context.Context
 }
 
 // DestroyInstancePoolWithResponse request returning *DestroyInstancePoolResponse
-func (c *ClientWithResponses) DestroyInstancePoolWithResponse(ctx context.Context, id string) (*destroyInstancePoolResponse, error) {
+func (c *ClientWithResponses) DestroyInstancePoolWithResponse(ctx context.Context, id string) (*DestroyInstancePoolResponse, error) {
 	rsp, err := c.DestroyInstancePool(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8226,17 +8834,17 @@ func (c *ClientWithResponses) DestroyInstancePoolWithResponse(ctx context.Contex
 	return ParseDestroyInstancePoolResponse(rsp)
 }
 
-// ShowInstancePoolDetailsWithResponse request returning *ShowInstancePoolDetailsResponse
-func (c *ClientWithResponses) ShowInstancePoolDetailsWithResponse(ctx context.Context, id string) (*showInstancePoolDetailsResponse, error) {
-	rsp, err := c.ShowInstancePoolDetails(ctx, id)
+// GetInstancePoolWithResponse request returning *GetInstancePoolResponse
+func (c *ClientWithResponses) GetInstancePoolWithResponse(ctx context.Context, id string) (*GetInstancePoolResponse, error) {
+	rsp, err := c.GetInstancePool(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return ParseShowInstancePoolDetailsResponse(rsp)
+	return ParseGetInstancePoolResponse(rsp)
 }
 
 // UpdateInstancePoolDescriptionWithBodyWithResponse request with arbitrary body returning *UpdateInstancePoolDescriptionResponse
-func (c *ClientWithResponses) UpdateInstancePoolDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstancePoolDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateInstancePoolDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolDescriptionResponse, error) {
 	rsp, err := c.UpdateInstancePoolDescriptionWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8244,7 +8852,7 @@ func (c *ClientWithResponses) UpdateInstancePoolDescriptionWithBodyWithResponse(
 	return ParseUpdateInstancePoolDescriptionResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstancePoolDescriptionWithResponse(ctx context.Context, id string, body UpdateInstancePoolDescriptionJSONRequestBody) (*updateInstancePoolDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateInstancePoolDescriptionWithResponse(ctx context.Context, id string, body UpdateInstancePoolDescriptionJSONRequestBody) (*UpdateInstancePoolDescriptionResponse, error) {
 	rsp, err := c.UpdateInstancePoolDescription(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8253,7 +8861,7 @@ func (c *ClientWithResponses) UpdateInstancePoolDescriptionWithResponse(ctx cont
 }
 
 // UpdateInstancePoolTemplateWithBodyWithResponse request with arbitrary body returning *UpdateInstancePoolTemplateResponse
-func (c *ClientWithResponses) UpdateInstancePoolTemplateWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstancePoolTemplateResponse, error) {
+func (c *ClientWithResponses) UpdateInstancePoolTemplateWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolTemplateResponse, error) {
 	rsp, err := c.UpdateInstancePoolTemplateWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8261,7 +8869,7 @@ func (c *ClientWithResponses) UpdateInstancePoolTemplateWithBodyWithResponse(ctx
 	return ParseUpdateInstancePoolTemplateResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstancePoolTemplateWithResponse(ctx context.Context, id string, body UpdateInstancePoolTemplateJSONRequestBody) (*updateInstancePoolTemplateResponse, error) {
+func (c *ClientWithResponses) UpdateInstancePoolTemplateWithResponse(ctx context.Context, id string, body UpdateInstancePoolTemplateJSONRequestBody) (*UpdateInstancePoolTemplateResponse, error) {
 	rsp, err := c.UpdateInstancePoolTemplate(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8270,7 +8878,7 @@ func (c *ClientWithResponses) UpdateInstancePoolTemplateWithResponse(ctx context
 }
 
 // UpdateInstancePoolTopologyWithBodyWithResponse request with arbitrary body returning *UpdateInstancePoolTopologyResponse
-func (c *ClientWithResponses) UpdateInstancePoolTopologyWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstancePoolTopologyResponse, error) {
+func (c *ClientWithResponses) UpdateInstancePoolTopologyWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolTopologyResponse, error) {
 	rsp, err := c.UpdateInstancePoolTopologyWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8278,7 +8886,7 @@ func (c *ClientWithResponses) UpdateInstancePoolTopologyWithBodyWithResponse(ctx
 	return ParseUpdateInstancePoolTopologyResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstancePoolTopologyWithResponse(ctx context.Context, id string, body UpdateInstancePoolTopologyJSONRequestBody) (*updateInstancePoolTopologyResponse, error) {
+func (c *ClientWithResponses) UpdateInstancePoolTopologyWithResponse(ctx context.Context, id string, body UpdateInstancePoolTopologyJSONRequestBody) (*UpdateInstancePoolTopologyResponse, error) {
 	rsp, err := c.UpdateInstancePoolTopology(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8287,7 +8895,7 @@ func (c *ClientWithResponses) UpdateInstancePoolTopologyWithResponse(ctx context
 }
 
 // UpdateInstancePoolUserDataWithBodyWithResponse request with arbitrary body returning *UpdateInstancePoolUserDataResponse
-func (c *ClientWithResponses) UpdateInstancePoolUserDataWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstancePoolUserDataResponse, error) {
+func (c *ClientWithResponses) UpdateInstancePoolUserDataWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolUserDataResponse, error) {
 	rsp, err := c.UpdateInstancePoolUserDataWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8295,7 +8903,7 @@ func (c *ClientWithResponses) UpdateInstancePoolUserDataWithBodyWithResponse(ctx
 	return ParseUpdateInstancePoolUserDataResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstancePoolUserDataWithResponse(ctx context.Context, id string, body UpdateInstancePoolUserDataJSONRequestBody) (*updateInstancePoolUserDataResponse, error) {
+func (c *ClientWithResponses) UpdateInstancePoolUserDataWithResponse(ctx context.Context, id string, body UpdateInstancePoolUserDataJSONRequestBody) (*UpdateInstancePoolUserDataResponse, error) {
 	rsp, err := c.UpdateInstancePoolUserData(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8304,7 +8912,7 @@ func (c *ClientWithResponses) UpdateInstancePoolUserDataWithResponse(ctx context
 }
 
 // ListInstanceTypesWithResponse request returning *ListInstanceTypesResponse
-func (c *ClientWithResponses) ListInstanceTypesWithResponse(ctx context.Context) (*listInstanceTypesResponse, error) {
+func (c *ClientWithResponses) ListInstanceTypesWithResponse(ctx context.Context) (*ListInstanceTypesResponse, error) {
 	rsp, err := c.ListInstanceTypes(ctx)
 	if err != nil {
 		return nil, err
@@ -8313,7 +8921,7 @@ func (c *ClientWithResponses) ListInstanceTypesWithResponse(ctx context.Context)
 }
 
 // DestroyInstanceWithResponse request returning *DestroyInstanceResponse
-func (c *ClientWithResponses) DestroyInstanceWithResponse(ctx context.Context, id string) (*destroyInstanceResponse, error) {
+func (c *ClientWithResponses) DestroyInstanceWithResponse(ctx context.Context, id string) (*DestroyInstanceResponse, error) {
 	rsp, err := c.DestroyInstance(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8321,17 +8929,17 @@ func (c *ClientWithResponses) DestroyInstanceWithResponse(ctx context.Context, i
 	return ParseDestroyInstanceResponse(rsp)
 }
 
-// ShowInstanceDetailsWithResponse request returning *ShowInstanceDetailsResponse
-func (c *ClientWithResponses) ShowInstanceDetailsWithResponse(ctx context.Context, id string) (*showInstanceDetailsResponse, error) {
-	rsp, err := c.ShowInstanceDetails(ctx, id)
+// GetInstanceWithResponse request returning *GetInstanceResponse
+func (c *ClientWithResponses) GetInstanceWithResponse(ctx context.Context, id string) (*GetInstanceResponse, error) {
+	rsp, err := c.GetInstance(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return ParseShowInstanceDetailsResponse(rsp)
+	return ParseGetInstanceResponse(rsp)
 }
 
 // AllocateIpv6OnInstanceWithResponse request returning *AllocateIpv6OnInstanceResponse
-func (c *ClientWithResponses) AllocateIpv6OnInstanceWithResponse(ctx context.Context, id string) (*allocateIpv6OnInstanceResponse, error) {
+func (c *ClientWithResponses) AllocateIpv6OnInstanceWithResponse(ctx context.Context, id string) (*AllocateIpv6OnInstanceResponse, error) {
 	rsp, err := c.AllocateIpv6OnInstance(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8340,7 +8948,7 @@ func (c *ClientWithResponses) AllocateIpv6OnInstanceWithResponse(ctx context.Con
 }
 
 // AttachElasticIpOnInstanceWithBodyWithResponse request with arbitrary body returning *AttachElasticIpOnInstanceResponse
-func (c *ClientWithResponses) AttachElasticIpOnInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*attachElasticIpOnInstanceResponse, error) {
+func (c *ClientWithResponses) AttachElasticIpOnInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachElasticIpOnInstanceResponse, error) {
 	rsp, err := c.AttachElasticIpOnInstanceWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8348,7 +8956,7 @@ func (c *ClientWithResponses) AttachElasticIpOnInstanceWithBodyWithResponse(ctx 
 	return ParseAttachElasticIpOnInstanceResponse(rsp)
 }
 
-func (c *ClientWithResponses) AttachElasticIpOnInstanceWithResponse(ctx context.Context, id string, body AttachElasticIpOnInstanceJSONRequestBody) (*attachElasticIpOnInstanceResponse, error) {
+func (c *ClientWithResponses) AttachElasticIpOnInstanceWithResponse(ctx context.Context, id string, body AttachElasticIpOnInstanceJSONRequestBody) (*AttachElasticIpOnInstanceResponse, error) {
 	rsp, err := c.AttachElasticIpOnInstance(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8356,8 +8964,17 @@ func (c *ClientWithResponses) AttachElasticIpOnInstanceWithResponse(ctx context.
 	return ParseAttachElasticIpOnInstanceResponse(rsp)
 }
 
+// CreateSnapshotWithResponse request returning *CreateSnapshotResponse
+func (c *ClientWithResponses) CreateSnapshotWithResponse(ctx context.Context, id string) (*CreateSnapshotResponse, error) {
+	rsp, err := c.CreateSnapshot(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSnapshotResponse(rsp)
+}
+
 // UpdateInstanceDescriptionWithBodyWithResponse request with arbitrary body returning *UpdateInstanceDescriptionResponse
-func (c *ClientWithResponses) UpdateInstanceDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstanceDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceDescriptionResponse, error) {
 	rsp, err := c.UpdateInstanceDescriptionWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8365,7 +8982,7 @@ func (c *ClientWithResponses) UpdateInstanceDescriptionWithBodyWithResponse(ctx 
 	return ParseUpdateInstanceDescriptionResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstanceDescriptionWithResponse(ctx context.Context, id string, body UpdateInstanceDescriptionJSONRequestBody) (*updateInstanceDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceDescriptionWithResponse(ctx context.Context, id string, body UpdateInstanceDescriptionJSONRequestBody) (*UpdateInstanceDescriptionResponse, error) {
 	rsp, err := c.UpdateInstanceDescription(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8374,7 +8991,7 @@ func (c *ClientWithResponses) UpdateInstanceDescriptionWithResponse(ctx context.
 }
 
 // DetachElasticIpFromInstanceWithBodyWithResponse request with arbitrary body returning *DetachElasticIpFromInstanceResponse
-func (c *ClientWithResponses) DetachElasticIpFromInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*detachElasticIpFromInstanceResponse, error) {
+func (c *ClientWithResponses) DetachElasticIpFromInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*DetachElasticIpFromInstanceResponse, error) {
 	rsp, err := c.DetachElasticIpFromInstanceWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8382,7 +8999,7 @@ func (c *ClientWithResponses) DetachElasticIpFromInstanceWithBodyWithResponse(ct
 	return ParseDetachElasticIpFromInstanceResponse(rsp)
 }
 
-func (c *ClientWithResponses) DetachElasticIpFromInstanceWithResponse(ctx context.Context, id string, body DetachElasticIpFromInstanceJSONRequestBody) (*detachElasticIpFromInstanceResponse, error) {
+func (c *ClientWithResponses) DetachElasticIpFromInstanceWithResponse(ctx context.Context, id string, body DetachElasticIpFromInstanceJSONRequestBody) (*DetachElasticIpFromInstanceResponse, error) {
 	rsp, err := c.DetachElasticIpFromInstance(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8391,7 +9008,7 @@ func (c *ClientWithResponses) DetachElasticIpFromInstanceWithResponse(ctx contex
 }
 
 // UpdateInstanceTypeWithBodyWithResponse request with arbitrary body returning *UpdateInstanceTypeResponse
-func (c *ClientWithResponses) UpdateInstanceTypeWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstanceTypeResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceTypeWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceTypeResponse, error) {
 	rsp, err := c.UpdateInstanceTypeWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8399,7 +9016,7 @@ func (c *ClientWithResponses) UpdateInstanceTypeWithBodyWithResponse(ctx context
 	return ParseUpdateInstanceTypeResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstanceTypeWithResponse(ctx context.Context, id string, body UpdateInstanceTypeJSONRequestBody) (*updateInstanceTypeResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceTypeWithResponse(ctx context.Context, id string, body UpdateInstanceTypeJSONRequestBody) (*UpdateInstanceTypeResponse, error) {
 	rsp, err := c.UpdateInstanceType(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8408,7 +9025,7 @@ func (c *ClientWithResponses) UpdateInstanceTypeWithResponse(ctx context.Context
 }
 
 // RebootInstanceWithResponse request returning *RebootInstanceResponse
-func (c *ClientWithResponses) RebootInstanceWithResponse(ctx context.Context, id string) (*rebootInstanceResponse, error) {
+func (c *ClientWithResponses) RebootInstanceWithResponse(ctx context.Context, id string) (*RebootInstanceResponse, error) {
 	rsp, err := c.RebootInstance(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8417,7 +9034,7 @@ func (c *ClientWithResponses) RebootInstanceWithResponse(ctx context.Context, id
 }
 
 // ResetInstancePasswordWithResponse request returning *ResetInstancePasswordResponse
-func (c *ClientWithResponses) ResetInstancePasswordWithResponse(ctx context.Context, id string) (*resetInstancePasswordResponse, error) {
+func (c *ClientWithResponses) ResetInstancePasswordWithResponse(ctx context.Context, id string) (*ResetInstancePasswordResponse, error) {
 	rsp, err := c.ResetInstancePassword(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8426,7 +9043,7 @@ func (c *ClientWithResponses) ResetInstancePasswordWithResponse(ctx context.Cont
 }
 
 // RestoreInstanceFromSnapshotWithBodyWithResponse request with arbitrary body returning *RestoreInstanceFromSnapshotResponse
-func (c *ClientWithResponses) RestoreInstanceFromSnapshotWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*restoreInstanceFromSnapshotResponse, error) {
+func (c *ClientWithResponses) RestoreInstanceFromSnapshotWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*RestoreInstanceFromSnapshotResponse, error) {
 	rsp, err := c.RestoreInstanceFromSnapshotWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8434,7 +9051,7 @@ func (c *ClientWithResponses) RestoreInstanceFromSnapshotWithBodyWithResponse(ct
 	return ParseRestoreInstanceFromSnapshotResponse(rsp)
 }
 
-func (c *ClientWithResponses) RestoreInstanceFromSnapshotWithResponse(ctx context.Context, id string, body RestoreInstanceFromSnapshotJSONRequestBody) (*restoreInstanceFromSnapshotResponse, error) {
+func (c *ClientWithResponses) RestoreInstanceFromSnapshotWithResponse(ctx context.Context, id string, body RestoreInstanceFromSnapshotJSONRequestBody) (*RestoreInstanceFromSnapshotResponse, error) {
 	rsp, err := c.RestoreInstanceFromSnapshot(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8443,7 +9060,7 @@ func (c *ClientWithResponses) RestoreInstanceFromSnapshotWithResponse(ctx contex
 }
 
 // RestoreInstanceFromTemplateWithBodyWithResponse request with arbitrary body returning *RestoreInstanceFromTemplateResponse
-func (c *ClientWithResponses) RestoreInstanceFromTemplateWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*restoreInstanceFromTemplateResponse, error) {
+func (c *ClientWithResponses) RestoreInstanceFromTemplateWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*RestoreInstanceFromTemplateResponse, error) {
 	rsp, err := c.RestoreInstanceFromTemplateWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8451,7 +9068,7 @@ func (c *ClientWithResponses) RestoreInstanceFromTemplateWithBodyWithResponse(ct
 	return ParseRestoreInstanceFromTemplateResponse(rsp)
 }
 
-func (c *ClientWithResponses) RestoreInstanceFromTemplateWithResponse(ctx context.Context, id string, body RestoreInstanceFromTemplateJSONRequestBody) (*restoreInstanceFromTemplateResponse, error) {
+func (c *ClientWithResponses) RestoreInstanceFromTemplateWithResponse(ctx context.Context, id string, body RestoreInstanceFromTemplateJSONRequestBody) (*RestoreInstanceFromTemplateResponse, error) {
 	rsp, err := c.RestoreInstanceFromTemplate(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8460,7 +9077,7 @@ func (c *ClientWithResponses) RestoreInstanceFromTemplateWithResponse(ctx contex
 }
 
 // RemoveInstanceReverseDnsWithResponse request returning *RemoveInstanceReverseDnsResponse
-func (c *ClientWithResponses) RemoveInstanceReverseDnsWithResponse(ctx context.Context, id string) (*removeInstanceReverseDnsResponse, error) {
+func (c *ClientWithResponses) RemoveInstanceReverseDnsWithResponse(ctx context.Context, id string) (*RemoveInstanceReverseDnsResponse, error) {
 	rsp, err := c.RemoveInstanceReverseDns(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8469,7 +9086,7 @@ func (c *ClientWithResponses) RemoveInstanceReverseDnsWithResponse(ctx context.C
 }
 
 // UpdateInstanceReverseDnsWithBodyWithResponse request with arbitrary body returning *UpdateInstanceReverseDnsResponse
-func (c *ClientWithResponses) UpdateInstanceReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstanceReverseDnsResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceReverseDnsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceReverseDnsResponse, error) {
 	rsp, err := c.UpdateInstanceReverseDnsWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8477,7 +9094,7 @@ func (c *ClientWithResponses) UpdateInstanceReverseDnsWithBodyWithResponse(ctx c
 	return ParseUpdateInstanceReverseDnsResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstanceReverseDnsWithResponse(ctx context.Context, id string, body UpdateInstanceReverseDnsJSONRequestBody) (*updateInstanceReverseDnsResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceReverseDnsWithResponse(ctx context.Context, id string, body UpdateInstanceReverseDnsJSONRequestBody) (*UpdateInstanceReverseDnsResponse, error) {
 	rsp, err := c.UpdateInstanceReverseDns(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8486,7 +9103,7 @@ func (c *ClientWithResponses) UpdateInstanceReverseDnsWithResponse(ctx context.C
 }
 
 // UpdateInstanceSecurityGroupsWithBodyWithResponse request with arbitrary body returning *UpdateInstanceSecurityGroupsResponse
-func (c *ClientWithResponses) UpdateInstanceSecurityGroupsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstanceSecurityGroupsResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceSecurityGroupsWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceSecurityGroupsResponse, error) {
 	rsp, err := c.UpdateInstanceSecurityGroupsWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8494,7 +9111,7 @@ func (c *ClientWithResponses) UpdateInstanceSecurityGroupsWithBodyWithResponse(c
 	return ParseUpdateInstanceSecurityGroupsResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstanceSecurityGroupsWithResponse(ctx context.Context, id string, body UpdateInstanceSecurityGroupsJSONRequestBody) (*updateInstanceSecurityGroupsResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceSecurityGroupsWithResponse(ctx context.Context, id string, body UpdateInstanceSecurityGroupsJSONRequestBody) (*UpdateInstanceSecurityGroupsResponse, error) {
 	rsp, err := c.UpdateInstanceSecurityGroups(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8503,7 +9120,7 @@ func (c *ClientWithResponses) UpdateInstanceSecurityGroupsWithResponse(ctx conte
 }
 
 // StartInstanceWithResponse request returning *StartInstanceResponse
-func (c *ClientWithResponses) StartInstanceWithResponse(ctx context.Context, id string, params *StartInstanceParams) (*startInstanceResponse, error) {
+func (c *ClientWithResponses) StartInstanceWithResponse(ctx context.Context, id string, params *StartInstanceParams) (*StartInstanceResponse, error) {
 	rsp, err := c.StartInstance(ctx, id, params)
 	if err != nil {
 		return nil, err
@@ -8512,7 +9129,7 @@ func (c *ClientWithResponses) StartInstanceWithResponse(ctx context.Context, id 
 }
 
 // StopInstanceWithResponse request returning *StopInstanceResponse
-func (c *ClientWithResponses) StopInstanceWithResponse(ctx context.Context, id string) (*stopInstanceResponse, error) {
+func (c *ClientWithResponses) StopInstanceWithResponse(ctx context.Context, id string) (*StopInstanceResponse, error) {
 	rsp, err := c.StopInstance(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8521,7 +9138,7 @@ func (c *ClientWithResponses) StopInstanceWithResponse(ctx context.Context, id s
 }
 
 // UpdateInstanceUserDataWithBodyWithResponse request with arbitrary body returning *UpdateInstanceUserDataResponse
-func (c *ClientWithResponses) UpdateInstanceUserDataWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateInstanceUserDataResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceUserDataWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceUserDataResponse, error) {
 	rsp, err := c.UpdateInstanceUserDataWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8529,7 +9146,7 @@ func (c *ClientWithResponses) UpdateInstanceUserDataWithBodyWithResponse(ctx con
 	return ParseUpdateInstanceUserDataResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateInstanceUserDataWithResponse(ctx context.Context, id string, body UpdateInstanceUserDataJSONRequestBody) (*updateInstanceUserDataResponse, error) {
+func (c *ClientWithResponses) UpdateInstanceUserDataWithResponse(ctx context.Context, id string, body UpdateInstanceUserDataJSONRequestBody) (*UpdateInstanceUserDataResponse, error) {
 	rsp, err := c.UpdateInstanceUserData(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8538,7 +9155,7 @@ func (c *ClientWithResponses) UpdateInstanceUserDataWithResponse(ctx context.Con
 }
 
 // ListLoadBalancersWithResponse request returning *ListLoadBalancersResponse
-func (c *ClientWithResponses) ListLoadBalancersWithResponse(ctx context.Context) (*listLoadBalancersResponse, error) {
+func (c *ClientWithResponses) ListLoadBalancersWithResponse(ctx context.Context) (*ListLoadBalancersResponse, error) {
 	rsp, err := c.ListLoadBalancers(ctx)
 	if err != nil {
 		return nil, err
@@ -8547,7 +9164,7 @@ func (c *ClientWithResponses) ListLoadBalancersWithResponse(ctx context.Context)
 }
 
 // CreateLoadBalancerWithBodyWithResponse request with arbitrary body returning *CreateLoadBalancerResponse
-func (c *ClientWithResponses) CreateLoadBalancerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*createLoadBalancerResponse, error) {
+func (c *ClientWithResponses) CreateLoadBalancerWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateLoadBalancerResponse, error) {
 	rsp, err := c.CreateLoadBalancerWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8555,7 +9172,7 @@ func (c *ClientWithResponses) CreateLoadBalancerWithBodyWithResponse(ctx context
 	return ParseCreateLoadBalancerResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateLoadBalancerWithResponse(ctx context.Context, body CreateLoadBalancerJSONRequestBody) (*createLoadBalancerResponse, error) {
+func (c *ClientWithResponses) CreateLoadBalancerWithResponse(ctx context.Context, body CreateLoadBalancerJSONRequestBody) (*CreateLoadBalancerResponse, error) {
 	rsp, err := c.CreateLoadBalancer(ctx, body)
 	if err != nil {
 		return nil, err
@@ -8564,7 +9181,7 @@ func (c *ClientWithResponses) CreateLoadBalancerWithResponse(ctx context.Context
 }
 
 // DestroyLoadBalancerWithResponse request returning *DestroyLoadBalancerResponse
-func (c *ClientWithResponses) DestroyLoadBalancerWithResponse(ctx context.Context, id string) (*destroyLoadBalancerResponse, error) {
+func (c *ClientWithResponses) DestroyLoadBalancerWithResponse(ctx context.Context, id string) (*DestroyLoadBalancerResponse, error) {
 	rsp, err := c.DestroyLoadBalancer(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8572,26 +9189,34 @@ func (c *ClientWithResponses) DestroyLoadBalancerWithResponse(ctx context.Contex
 	return ParseDestroyLoadBalancerResponse(rsp)
 }
 
-// ShowLoadBalancerDetailsWithResponse request returning *ShowLoadBalancerDetailsResponse
-func (c *ClientWithResponses) ShowLoadBalancerDetailsWithResponse(ctx context.Context, id string) (*showLoadBalancerDetailsResponse, error) {
-	rsp, err := c.ShowLoadBalancerDetails(ctx, id)
+// GetLoadBalancerWithResponse request returning *GetLoadBalancerResponse
+func (c *ClientWithResponses) GetLoadBalancerWithResponse(ctx context.Context, id string) (*GetLoadBalancerResponse, error) {
+	rsp, err := c.GetLoadBalancer(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return ParseShowLoadBalancerDetailsResponse(rsp)
+	return ParseGetLoadBalancerResponse(rsp)
 }
 
-// ShowLoadBalancerServiceDetailsWithResponse request returning *ShowLoadBalancerServiceDetailsResponse
-func (c *ClientWithResponses) ShowLoadBalancerServiceDetailsWithResponse(ctx context.Context, id string, serviceId string) (*showLoadBalancerServiceDetailsResponse, error) {
-	rsp, err := c.ShowLoadBalancerServiceDetails(ctx, id, serviceId)
+// UpdateLoadBalancerWithBodyWithResponse request with arbitrary body returning *UpdateLoadBalancerResponse
+func (c *ClientWithResponses) UpdateLoadBalancerWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateLoadBalancerResponse, error) {
+	rsp, err := c.UpdateLoadBalancerWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
 	}
-	return ParseShowLoadBalancerServiceDetailsResponse(rsp)
+	return ParseUpdateLoadBalancerResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateLoadBalancerWithResponse(ctx context.Context, id string, body UpdateLoadBalancerJSONRequestBody) (*UpdateLoadBalancerResponse, error) {
+	rsp, err := c.UpdateLoadBalancer(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateLoadBalancerResponse(rsp)
 }
 
 // AddServiceToLoadBalancerWithBodyWithResponse request with arbitrary body returning *AddServiceToLoadBalancerResponse
-func (c *ClientWithResponses) AddServiceToLoadBalancerWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*addServiceToLoadBalancerResponse, error) {
+func (c *ClientWithResponses) AddServiceToLoadBalancerWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AddServiceToLoadBalancerResponse, error) {
 	rsp, err := c.AddServiceToLoadBalancerWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8599,7 +9224,7 @@ func (c *ClientWithResponses) AddServiceToLoadBalancerWithBodyWithResponse(ctx c
 	return ParseAddServiceToLoadBalancerResponse(rsp)
 }
 
-func (c *ClientWithResponses) AddServiceToLoadBalancerWithResponse(ctx context.Context, id string, body AddServiceToLoadBalancerJSONRequestBody) (*addServiceToLoadBalancerResponse, error) {
+func (c *ClientWithResponses) AddServiceToLoadBalancerWithResponse(ctx context.Context, id string, body AddServiceToLoadBalancerJSONRequestBody) (*AddServiceToLoadBalancerResponse, error) {
 	rsp, err := c.AddServiceToLoadBalancer(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8607,17 +9232,43 @@ func (c *ClientWithResponses) AddServiceToLoadBalancerWithResponse(ctx context.C
 	return ParseAddServiceToLoadBalancerResponse(rsp)
 }
 
-// DeleteServiceFromLoadBalancerWithResponse request returning *DeleteServiceFromLoadBalancerResponse
-func (c *ClientWithResponses) DeleteServiceFromLoadBalancerWithResponse(ctx context.Context, id string, serviceId string) (*deleteServiceFromLoadBalancerResponse, error) {
-	rsp, err := c.DeleteServiceFromLoadBalancer(ctx, id, serviceId)
+// DeleteLoadBalancerServiceWithResponse request returning *DeleteLoadBalancerServiceResponse
+func (c *ClientWithResponses) DeleteLoadBalancerServiceWithResponse(ctx context.Context, id string, serviceId string) (*DeleteLoadBalancerServiceResponse, error) {
+	rsp, err := c.DeleteLoadBalancerService(ctx, id, serviceId)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteServiceFromLoadBalancerResponse(rsp)
+	return ParseDeleteLoadBalancerServiceResponse(rsp)
+}
+
+// GetLoadBalancerServiceWithResponse request returning *GetLoadBalancerServiceResponse
+func (c *ClientWithResponses) GetLoadBalancerServiceWithResponse(ctx context.Context, id string, serviceId string) (*GetLoadBalancerServiceResponse, error) {
+	rsp, err := c.GetLoadBalancerService(ctx, id, serviceId)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetLoadBalancerServiceResponse(rsp)
+}
+
+// UpdateLoadBalancerServiceWithBodyWithResponse request with arbitrary body returning *UpdateLoadBalancerServiceResponse
+func (c *ClientWithResponses) UpdateLoadBalancerServiceWithBodyWithResponse(ctx context.Context, id string, serviceId string, contentType string, body io.Reader) (*UpdateLoadBalancerServiceResponse, error) {
+	rsp, err := c.UpdateLoadBalancerServiceWithBody(ctx, id, serviceId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateLoadBalancerServiceResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateLoadBalancerServiceWithResponse(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody) (*UpdateLoadBalancerServiceResponse, error) {
+	rsp, err := c.UpdateLoadBalancerService(ctx, id, serviceId, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateLoadBalancerServiceResponse(rsp)
 }
 
 // PingWithResponse request returning *PingResponse
-func (c *ClientWithResponses) PingWithResponse(ctx context.Context) (*pingResponse, error) {
+func (c *ClientWithResponses) PingWithResponse(ctx context.Context) (*PingResponse, error) {
 	rsp, err := c.Ping(ctx)
 	if err != nil {
 		return nil, err
@@ -8626,7 +9277,7 @@ func (c *ClientWithResponses) PingWithResponse(ctx context.Context) (*pingRespon
 }
 
 // ListResultsWithResponse request returning *ListResultsResponse
-func (c *ClientWithResponses) ListResultsWithResponse(ctx context.Context) (*listResultsResponse, error) {
+func (c *ClientWithResponses) ListResultsWithResponse(ctx context.Context) (*ListResultsResponse, error) {
 	rsp, err := c.ListResults(ctx)
 	if err != nil {
 		return nil, err
@@ -8635,7 +9286,7 @@ func (c *ClientWithResponses) ListResultsWithResponse(ctx context.Context) (*lis
 }
 
 // GetResultWithResponse request returning *GetResultResponse
-func (c *ClientWithResponses) GetResultWithResponse(ctx context.Context, id string) (*getResultResponse, error) {
+func (c *ClientWithResponses) GetResultWithResponse(ctx context.Context, id string) (*GetResultResponse, error) {
 	rsp, err := c.GetResult(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8644,7 +9295,7 @@ func (c *ClientWithResponses) GetResultWithResponse(ctx context.Context, id stri
 }
 
 // ListSecurityGroupsWithResponse request returning *ListSecurityGroupsResponse
-func (c *ClientWithResponses) ListSecurityGroupsWithResponse(ctx context.Context) (*listSecurityGroupsResponse, error) {
+func (c *ClientWithResponses) ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error) {
 	rsp, err := c.ListSecurityGroups(ctx)
 	if err != nil {
 		return nil, err
@@ -8653,7 +9304,7 @@ func (c *ClientWithResponses) ListSecurityGroupsWithResponse(ctx context.Context
 }
 
 // CreateSecurityGroupWithBodyWithResponse request with arbitrary body returning *CreateSecurityGroupResponse
-func (c *ClientWithResponses) CreateSecurityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*createSecurityGroupResponse, error) {
+func (c *ClientWithResponses) CreateSecurityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateSecurityGroupResponse, error) {
 	rsp, err := c.CreateSecurityGroupWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8661,7 +9312,7 @@ func (c *ClientWithResponses) CreateSecurityGroupWithBodyWithResponse(ctx contex
 	return ParseCreateSecurityGroupResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateSecurityGroupWithResponse(ctx context.Context, body CreateSecurityGroupJSONRequestBody) (*createSecurityGroupResponse, error) {
+func (c *ClientWithResponses) CreateSecurityGroupWithResponse(ctx context.Context, body CreateSecurityGroupJSONRequestBody) (*CreateSecurityGroupResponse, error) {
 	rsp, err := c.CreateSecurityGroup(ctx, body)
 	if err != nil {
 		return nil, err
@@ -8670,7 +9321,7 @@ func (c *ClientWithResponses) CreateSecurityGroupWithResponse(ctx context.Contex
 }
 
 // DestroySecurityGroupWithResponse request returning *DestroySecurityGroupResponse
-func (c *ClientWithResponses) DestroySecurityGroupWithResponse(ctx context.Context, id string) (*destroySecurityGroupResponse, error) {
+func (c *ClientWithResponses) DestroySecurityGroupWithResponse(ctx context.Context, id string) (*DestroySecurityGroupResponse, error) {
 	rsp, err := c.DestroySecurityGroup(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8678,8 +9329,17 @@ func (c *ClientWithResponses) DestroySecurityGroupWithResponse(ctx context.Conte
 	return ParseDestroySecurityGroupResponse(rsp)
 }
 
+// GetSecurityGroupWithResponse request returning *GetSecurityGroupResponse
+func (c *ClientWithResponses) GetSecurityGroupWithResponse(ctx context.Context, id string) (*GetSecurityGroupResponse, error) {
+	rsp, err := c.GetSecurityGroup(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSecurityGroupResponse(rsp)
+}
+
 // AddRuleToSecurityGroupWithBodyWithResponse request with arbitrary body returning *AddRuleToSecurityGroupResponse
-func (c *ClientWithResponses) AddRuleToSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*addRuleToSecurityGroupResponse, error) {
+func (c *ClientWithResponses) AddRuleToSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AddRuleToSecurityGroupResponse, error) {
 	rsp, err := c.AddRuleToSecurityGroupWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8687,7 +9347,7 @@ func (c *ClientWithResponses) AddRuleToSecurityGroupWithBodyWithResponse(ctx con
 	return ParseAddRuleToSecurityGroupResponse(rsp)
 }
 
-func (c *ClientWithResponses) AddRuleToSecurityGroupWithResponse(ctx context.Context, id string, body AddRuleToSecurityGroupJSONRequestBody) (*addRuleToSecurityGroupResponse, error) {
+func (c *ClientWithResponses) AddRuleToSecurityGroupWithResponse(ctx context.Context, id string, body AddRuleToSecurityGroupJSONRequestBody) (*AddRuleToSecurityGroupResponse, error) {
 	rsp, err := c.AddRuleToSecurityGroup(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8696,7 +9356,7 @@ func (c *ClientWithResponses) AddRuleToSecurityGroupWithResponse(ctx context.Con
 }
 
 // DeleteRuleFromSecurityGroupWithResponse request returning *DeleteRuleFromSecurityGroupResponse
-func (c *ClientWithResponses) DeleteRuleFromSecurityGroupWithResponse(ctx context.Context, id string, ruleId string) (*deleteRuleFromSecurityGroupResponse, error) {
+func (c *ClientWithResponses) DeleteRuleFromSecurityGroupWithResponse(ctx context.Context, id string, ruleId string) (*DeleteRuleFromSecurityGroupResponse, error) {
 	rsp, err := c.DeleteRuleFromSecurityGroup(ctx, id, ruleId)
 	if err != nil {
 		return nil, err
@@ -8705,7 +9365,7 @@ func (c *ClientWithResponses) DeleteRuleFromSecurityGroupWithResponse(ctx contex
 }
 
 // UpdateSecurityGroupDescriptionWithBodyWithResponse request with arbitrary body returning *UpdateSecurityGroupDescriptionResponse
-func (c *ClientWithResponses) UpdateSecurityGroupDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateSecurityGroupDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateSecurityGroupDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSecurityGroupDescriptionResponse, error) {
 	rsp, err := c.UpdateSecurityGroupDescriptionWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8713,7 +9373,7 @@ func (c *ClientWithResponses) UpdateSecurityGroupDescriptionWithBodyWithResponse
 	return ParseUpdateSecurityGroupDescriptionResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateSecurityGroupDescriptionWithResponse(ctx context.Context, id string, body UpdateSecurityGroupDescriptionJSONRequestBody) (*updateSecurityGroupDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateSecurityGroupDescriptionWithResponse(ctx context.Context, id string, body UpdateSecurityGroupDescriptionJSONRequestBody) (*UpdateSecurityGroupDescriptionResponse, error) {
 	rsp, err := c.UpdateSecurityGroupDescription(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8722,7 +9382,7 @@ func (c *ClientWithResponses) UpdateSecurityGroupDescriptionWithResponse(ctx con
 }
 
 // ListSecurityGroupInstancesWithResponse request returning *ListSecurityGroupInstancesResponse
-func (c *ClientWithResponses) ListSecurityGroupInstancesWithResponse(ctx context.Context, id string) (*listSecurityGroupInstancesResponse, error) {
+func (c *ClientWithResponses) ListSecurityGroupInstancesWithResponse(ctx context.Context, id string) (*ListSecurityGroupInstancesResponse, error) {
 	rsp, err := c.ListSecurityGroupInstances(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8731,7 +9391,7 @@ func (c *ClientWithResponses) ListSecurityGroupInstancesWithResponse(ctx context
 }
 
 // UpdateSecurityGroupRulesWithBodyWithResponse request with arbitrary body returning *UpdateSecurityGroupRulesResponse
-func (c *ClientWithResponses) UpdateSecurityGroupRulesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateSecurityGroupRulesResponse, error) {
+func (c *ClientWithResponses) UpdateSecurityGroupRulesWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSecurityGroupRulesResponse, error) {
 	rsp, err := c.UpdateSecurityGroupRulesWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8739,7 +9399,7 @@ func (c *ClientWithResponses) UpdateSecurityGroupRulesWithBodyWithResponse(ctx c
 	return ParseUpdateSecurityGroupRulesResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateSecurityGroupRulesWithResponse(ctx context.Context, id string, body UpdateSecurityGroupRulesJSONRequestBody) (*updateSecurityGroupRulesResponse, error) {
+func (c *ClientWithResponses) UpdateSecurityGroupRulesWithResponse(ctx context.Context, id string, body UpdateSecurityGroupRulesJSONRequestBody) (*UpdateSecurityGroupRulesResponse, error) {
 	rsp, err := c.UpdateSecurityGroupRules(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8748,7 +9408,7 @@ func (c *ClientWithResponses) UpdateSecurityGroupRulesWithResponse(ctx context.C
 }
 
 // ListSnapshotsWithResponse request returning *ListSnapshotsResponse
-func (c *ClientWithResponses) ListSnapshotsWithResponse(ctx context.Context) (*listSnapshotsResponse, error) {
+func (c *ClientWithResponses) ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error) {
 	rsp, err := c.ListSnapshots(ctx)
 	if err != nil {
 		return nil, err
@@ -8757,7 +9417,7 @@ func (c *ClientWithResponses) ListSnapshotsWithResponse(ctx context.Context) (*l
 }
 
 // DestroySnapshotWithResponse request returning *DestroySnapshotResponse
-func (c *ClientWithResponses) DestroySnapshotWithResponse(ctx context.Context, id string) (*destroySnapshotResponse, error) {
+func (c *ClientWithResponses) DestroySnapshotWithResponse(ctx context.Context, id string) (*DestroySnapshotResponse, error) {
 	rsp, err := c.DestroySnapshot(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8765,8 +9425,17 @@ func (c *ClientWithResponses) DestroySnapshotWithResponse(ctx context.Context, i
 	return ParseDestroySnapshotResponse(rsp)
 }
 
+// GetSnapshotWithResponse request returning *GetSnapshotResponse
+func (c *ClientWithResponses) GetSnapshotWithResponse(ctx context.Context, id string) (*GetSnapshotResponse, error) {
+	rsp, err := c.GetSnapshot(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSnapshotResponse(rsp)
+}
+
 // UpdateSnapshotDescriptionWithBodyWithResponse request with arbitrary body returning *UpdateSnapshotDescriptionResponse
-func (c *ClientWithResponses) UpdateSnapshotDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*updateSnapshotDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateSnapshotDescriptionWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSnapshotDescriptionResponse, error) {
 	rsp, err := c.UpdateSnapshotDescriptionWithBody(ctx, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8774,7 +9443,7 @@ func (c *ClientWithResponses) UpdateSnapshotDescriptionWithBodyWithResponse(ctx 
 	return ParseUpdateSnapshotDescriptionResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateSnapshotDescriptionWithResponse(ctx context.Context, id string, body UpdateSnapshotDescriptionJSONRequestBody) (*updateSnapshotDescriptionResponse, error) {
+func (c *ClientWithResponses) UpdateSnapshotDescriptionWithResponse(ctx context.Context, id string, body UpdateSnapshotDescriptionJSONRequestBody) (*UpdateSnapshotDescriptionResponse, error) {
 	rsp, err := c.UpdateSnapshotDescription(ctx, id, body)
 	if err != nil {
 		return nil, err
@@ -8783,7 +9452,7 @@ func (c *ClientWithResponses) UpdateSnapshotDescriptionWithResponse(ctx context.
 }
 
 // ListSshKeysWithResponse request returning *ListSshKeysResponse
-func (c *ClientWithResponses) ListSshKeysWithResponse(ctx context.Context) (*listSshKeysResponse, error) {
+func (c *ClientWithResponses) ListSshKeysWithResponse(ctx context.Context) (*ListSshKeysResponse, error) {
 	rsp, err := c.ListSshKeys(ctx)
 	if err != nil {
 		return nil, err
@@ -8792,7 +9461,7 @@ func (c *ClientWithResponses) ListSshKeysWithResponse(ctx context.Context) (*lis
 }
 
 // DeleteSshKeyWithResponse request returning *DeleteSshKeyResponse
-func (c *ClientWithResponses) DeleteSshKeyWithResponse(ctx context.Context, name string) (*deleteSshKeyResponse, error) {
+func (c *ClientWithResponses) DeleteSshKeyWithResponse(ctx context.Context, name string) (*DeleteSshKeyResponse, error) {
 	rsp, err := c.DeleteSshKey(ctx, name)
 	if err != nil {
 		return nil, err
@@ -8801,7 +9470,7 @@ func (c *ClientWithResponses) DeleteSshKeyWithResponse(ctx context.Context, name
 }
 
 // ListTemplatesWithResponse request returning *ListTemplatesResponse
-func (c *ClientWithResponses) ListTemplatesWithResponse(ctx context.Context, params *ListTemplatesParams) (*listTemplatesResponse, error) {
+func (c *ClientWithResponses) ListTemplatesWithResponse(ctx context.Context, params *ListTemplatesParams) (*ListTemplatesResponse, error) {
 	rsp, err := c.ListTemplates(ctx, params)
 	if err != nil {
 		return nil, err
@@ -8810,7 +9479,7 @@ func (c *ClientWithResponses) ListTemplatesWithResponse(ctx context.Context, par
 }
 
 // RegisterTemplateWithBodyWithResponse request with arbitrary body returning *RegisterTemplateResponse
-func (c *ClientWithResponses) RegisterTemplateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*registerTemplateResponse, error) {
+func (c *ClientWithResponses) RegisterTemplateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*RegisterTemplateResponse, error) {
 	rsp, err := c.RegisterTemplateWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
@@ -8818,7 +9487,7 @@ func (c *ClientWithResponses) RegisterTemplateWithBodyWithResponse(ctx context.C
 	return ParseRegisterTemplateResponse(rsp)
 }
 
-func (c *ClientWithResponses) RegisterTemplateWithResponse(ctx context.Context, body RegisterTemplateJSONRequestBody) (*registerTemplateResponse, error) {
+func (c *ClientWithResponses) RegisterTemplateWithResponse(ctx context.Context, body RegisterTemplateJSONRequestBody) (*RegisterTemplateResponse, error) {
 	rsp, err := c.RegisterTemplate(ctx, body)
 	if err != nil {
 		return nil, err
@@ -8827,7 +9496,7 @@ func (c *ClientWithResponses) RegisterTemplateWithResponse(ctx context.Context, 
 }
 
 // DestroyTemplateWithResponse request returning *DestroyTemplateResponse
-func (c *ClientWithResponses) DestroyTemplateWithResponse(ctx context.Context, id string) (*destroyTemplateResponse, error) {
+func (c *ClientWithResponses) DestroyTemplateWithResponse(ctx context.Context, id string) (*DestroyTemplateResponse, error) {
 	rsp, err := c.DestroyTemplate(ctx, id)
 	if err != nil {
 		return nil, err
@@ -8836,7 +9505,7 @@ func (c *ClientWithResponses) DestroyTemplateWithResponse(ctx context.Context, i
 }
 
 // VersionWithResponse request returning *VersionResponse
-func (c *ClientWithResponses) VersionWithResponse(ctx context.Context) (*versionResponse, error) {
+func (c *ClientWithResponses) VersionWithResponse(ctx context.Context) (*VersionResponse, error) {
 	rsp, err := c.Version(ctx)
 	if err != nil {
 		return nil, err
@@ -8845,7 +9514,7 @@ func (c *ClientWithResponses) VersionWithResponse(ctx context.Context) (*version
 }
 
 // ListZonesWithResponse request returning *ListZonesResponse
-func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*listZonesResponse, error) {
+func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error) {
 	rsp, err := c.ListZones(ctx)
 	if err != nil {
 		return nil, err
@@ -8854,14 +9523,14 @@ func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*listZ
 }
 
 // ParseIndexResponse parses an HTTP response from a IndexWithResponse call
-func ParseIndexResponse(rsp *http.Response) (*indexResponse, error) {
+func ParseIndexResponse(rsp *http.Response) (*IndexResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &indexResponse{
+	response := &IndexResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -8880,14 +9549,14 @@ func ParseIndexResponse(rsp *http.Response) (*indexResponse, error) {
 }
 
 // ParseListAntiAffinityGroupsResponse parses an HTTP response from a ListAntiAffinityGroupsWithResponse call
-func ParseListAntiAffinityGroupsResponse(rsp *http.Response) (*listAntiAffinityGroupsResponse, error) {
+func ParseListAntiAffinityGroupsResponse(rsp *http.Response) (*ListAntiAffinityGroupsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listAntiAffinityGroupsResponse{
+	response := &ListAntiAffinityGroupsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -8895,7 +9564,7 @@ func ParseListAntiAffinityGroupsResponse(rsp *http.Response) (*listAntiAffinityG
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			AntiAffinityGroups *[]AntiAffinityGroup `json:"antiAffinityGroups,omitempty"`
+			AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -8908,14 +9577,14 @@ func ParseListAntiAffinityGroupsResponse(rsp *http.Response) (*listAntiAffinityG
 }
 
 // ParseCreateAntiAffinityGroupResponse parses an HTTP response from a CreateAntiAffinityGroupWithResponse call
-func ParseCreateAntiAffinityGroupResponse(rsp *http.Response) (*createAntiAffinityGroupResponse, error) {
+func ParseCreateAntiAffinityGroupResponse(rsp *http.Response) (*CreateAntiAffinityGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &createAntiAffinityGroupResponse{
+	response := &CreateAntiAffinityGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -8934,14 +9603,14 @@ func ParseCreateAntiAffinityGroupResponse(rsp *http.Response) (*createAntiAffini
 }
 
 // ParseDestroyAntiAffinityGroupResponse parses an HTTP response from a DestroyAntiAffinityGroupWithResponse call
-func ParseDestroyAntiAffinityGroupResponse(rsp *http.Response) (*destroyAntiAffinityGroupResponse, error) {
+func ParseDestroyAntiAffinityGroupResponse(rsp *http.Response) (*DestroyAntiAffinityGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &destroyAntiAffinityGroupResponse{
+	response := &DestroyAntiAffinityGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -8960,14 +9629,14 @@ func ParseDestroyAntiAffinityGroupResponse(rsp *http.Response) (*destroyAntiAffi
 }
 
 // ParseUpdateAntiAffinityGroupDescriptionResponse parses an HTTP response from a UpdateAntiAffinityGroupDescriptionWithResponse call
-func ParseUpdateAntiAffinityGroupDescriptionResponse(rsp *http.Response) (*updateAntiAffinityGroupDescriptionResponse, error) {
+func ParseUpdateAntiAffinityGroupDescriptionResponse(rsp *http.Response) (*UpdateAntiAffinityGroupDescriptionResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateAntiAffinityGroupDescriptionResponse{
+	response := &UpdateAntiAffinityGroupDescriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -8986,14 +9655,14 @@ func ParseUpdateAntiAffinityGroupDescriptionResponse(rsp *http.Response) (*updat
 }
 
 // ParseListAntiAffinityGroupInstancesResponse parses an HTTP response from a ListAntiAffinityGroupInstancesWithResponse call
-func ParseListAntiAffinityGroupInstancesResponse(rsp *http.Response) (*listAntiAffinityGroupInstancesResponse, error) {
+func ParseListAntiAffinityGroupInstancesResponse(rsp *http.Response) (*ListAntiAffinityGroupInstancesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listAntiAffinityGroupInstancesResponse{
+	response := &ListAntiAffinityGroupInstancesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9014,14 +9683,14 @@ func ParseListAntiAffinityGroupInstancesResponse(rsp *http.Response) (*listAntiA
 }
 
 // ParseListApiKeysResponse parses an HTTP response from a ListApiKeysWithResponse call
-func ParseListApiKeysResponse(rsp *http.Response) (*listApiKeysResponse, error) {
+func ParseListApiKeysResponse(rsp *http.Response) (*ListApiKeysResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listApiKeysResponse{
+	response := &ListApiKeysResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9029,7 +9698,7 @@ func ParseListApiKeysResponse(rsp *http.Response) (*listApiKeysResponse, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			ApiKeys *[]ApiKey `json:"apiKeys,omitempty"`
+			ApiKeys *[]ApiKey `json:"api-keys,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9042,14 +9711,14 @@ func ParseListApiKeysResponse(rsp *http.Response) (*listApiKeysResponse, error) 
 }
 
 // ParseGenerateApiKeyResponse parses an HTTP response from a GenerateApiKeyWithResponse call
-func ParseGenerateApiKeyResponse(rsp *http.Response) (*generateApiKeyResponse, error) {
+func ParseGenerateApiKeyResponse(rsp *http.Response) (*GenerateApiKeyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &generateApiKeyResponse{
+	response := &GenerateApiKeyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9068,14 +9737,14 @@ func ParseGenerateApiKeyResponse(rsp *http.Response) (*generateApiKeyResponse, e
 }
 
 // ParseRevokeApiKeyResponse parses an HTTP response from a RevokeApiKeyWithResponse call
-func ParseRevokeApiKeyResponse(rsp *http.Response) (*revokeApiKeyResponse, error) {
+func ParseRevokeApiKeyResponse(rsp *http.Response) (*RevokeApiKeyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &revokeApiKeyResponse{
+	response := &RevokeApiKeyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9093,15 +9762,15 @@ func ParseRevokeApiKeyResponse(rsp *http.Response) (*revokeApiKeyResponse, error
 	return response, nil
 }
 
-// ParseGetApiKeyDetailsResponse parses an HTTP response from a GetApiKeyDetailsWithResponse call
-func ParseGetApiKeyDetailsResponse(rsp *http.Response) (*getApiKeyDetailsResponse, error) {
+// ParseGetApiKeyResponse parses an HTTP response from a GetApiKeyWithResponse call
+func ParseGetApiKeyResponse(rsp *http.Response) (*GetApiKeyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &getApiKeyDetailsResponse{
+	response := &GetApiKeyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9120,14 +9789,14 @@ func ParseGetApiKeyDetailsResponse(rsp *http.Response) (*getApiKeyDetailsRespons
 }
 
 // ParseGenerateSshKeyResponse parses an HTTP response from a GenerateSshKeyWithResponse call
-func ParseGenerateSshKeyResponse(rsp *http.Response) (*generateSshKeyResponse, error) {
+func ParseGenerateSshKeyResponse(rsp *http.Response) (*GenerateSshKeyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &generateSshKeyResponse{
+	response := &GenerateSshKeyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9146,14 +9815,14 @@ func ParseGenerateSshKeyResponse(rsp *http.Response) (*generateSshKeyResponse, e
 }
 
 // ParseImportSshKeyResponse parses an HTTP response from a ImportSshKeyWithResponse call
-func ParseImportSshKeyResponse(rsp *http.Response) (*importSshKeyResponse, error) {
+func ParseImportSshKeyResponse(rsp *http.Response) (*ImportSshKeyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &importSshKeyResponse{
+	response := &ImportSshKeyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9172,14 +9841,14 @@ func ParseImportSshKeyResponse(rsp *http.Response) (*importSshKeyResponse, error
 }
 
 // ParseListElasticIpsResponse parses an HTTP response from a ListElasticIpsWithResponse call
-func ParseListElasticIpsResponse(rsp *http.Response) (*listElasticIpsResponse, error) {
+func ParseListElasticIpsResponse(rsp *http.Response) (*ListElasticIpsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listElasticIpsResponse{
+	response := &ListElasticIpsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9187,7 +9856,7 @@ func ParseListElasticIpsResponse(rsp *http.Response) (*listElasticIpsResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			ElasticIps *[]ElasticIp `json:"elasticIps,omitempty"`
+			ElasticIps *[]ElasticIp `json:"elastic-ips,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9200,14 +9869,14 @@ func ParseListElasticIpsResponse(rsp *http.Response) (*listElasticIpsResponse, e
 }
 
 // ParseAllocateElasticIpResponse parses an HTTP response from a AllocateElasticIpWithResponse call
-func ParseAllocateElasticIpResponse(rsp *http.Response) (*allocateElasticIpResponse, error) {
+func ParseAllocateElasticIpResponse(rsp *http.Response) (*AllocateElasticIpResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &allocateElasticIpResponse{
+	response := &AllocateElasticIpResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9226,14 +9895,14 @@ func ParseAllocateElasticIpResponse(rsp *http.Response) (*allocateElasticIpRespo
 }
 
 // ParseReleaseElasticIpResponse parses an HTTP response from a ReleaseElasticIpWithResponse call
-func ParseReleaseElasticIpResponse(rsp *http.Response) (*releaseElasticIpResponse, error) {
+func ParseReleaseElasticIpResponse(rsp *http.Response) (*ReleaseElasticIpResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &releaseElasticIpResponse{
+	response := &ReleaseElasticIpResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9251,15 +9920,15 @@ func ParseReleaseElasticIpResponse(rsp *http.Response) (*releaseElasticIpRespons
 	return response, nil
 }
 
-// ParseGetElasticIpDetailsResponse parses an HTTP response from a GetElasticIpDetailsWithResponse call
-func ParseGetElasticIpDetailsResponse(rsp *http.Response) (*getElasticIpDetailsResponse, error) {
+// ParseGetElasticIpResponse parses an HTTP response from a GetElasticIpWithResponse call
+func ParseGetElasticIpResponse(rsp *http.Response) (*GetElasticIpResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &getElasticIpDetailsResponse{
+	response := &GetElasticIpResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9278,14 +9947,14 @@ func ParseGetElasticIpDetailsResponse(rsp *http.Response) (*getElasticIpDetailsR
 }
 
 // ParseUpdateElasticIpHealthcheckResponse parses an HTTP response from a UpdateElasticIpHealthcheckWithResponse call
-func ParseUpdateElasticIpHealthcheckResponse(rsp *http.Response) (*updateElasticIpHealthcheckResponse, error) {
+func ParseUpdateElasticIpHealthcheckResponse(rsp *http.Response) (*UpdateElasticIpHealthcheckResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateElasticIpHealthcheckResponse{
+	response := &UpdateElasticIpHealthcheckResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9304,14 +9973,14 @@ func ParseUpdateElasticIpHealthcheckResponse(rsp *http.Response) (*updateElastic
 }
 
 // ParseRemoveElasticIpReverseDnsResponse parses an HTTP response from a RemoveElasticIpReverseDnsWithResponse call
-func ParseRemoveElasticIpReverseDnsResponse(rsp *http.Response) (*removeElasticIpReverseDnsResponse, error) {
+func ParseRemoveElasticIpReverseDnsResponse(rsp *http.Response) (*RemoveElasticIpReverseDnsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &removeElasticIpReverseDnsResponse{
+	response := &RemoveElasticIpReverseDnsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9330,14 +9999,14 @@ func ParseRemoveElasticIpReverseDnsResponse(rsp *http.Response) (*removeElasticI
 }
 
 // ParseUpdateElasticIpReverseDnsResponse parses an HTTP response from a UpdateElasticIpReverseDnsWithResponse call
-func ParseUpdateElasticIpReverseDnsResponse(rsp *http.Response) (*updateElasticIpReverseDnsResponse, error) {
+func ParseUpdateElasticIpReverseDnsResponse(rsp *http.Response) (*UpdateElasticIpReverseDnsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateElasticIpReverseDnsResponse{
+	response := &UpdateElasticIpReverseDnsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9356,14 +10025,14 @@ func ParseUpdateElasticIpReverseDnsResponse(rsp *http.Response) (*updateElasticI
 }
 
 // ParseListEventsResponse parses an HTTP response from a ListEventsWithResponse call
-func ParseListEventsResponse(rsp *http.Response) (*listEventsResponse, error) {
+func ParseListEventsResponse(rsp *http.Response) (*ListEventsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listEventsResponse{
+	response := &ListEventsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9383,41 +10052,15 @@ func ParseListEventsResponse(rsp *http.Response) (*listEventsResponse, error) {
 	return response, nil
 }
 
-// ParseHealthzResponse parses an HTTP response from a HealthzWithResponse call
-func ParseHealthzResponse(rsp *http.Response) (*healthzResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &healthzResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest string
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseListInstancesResponse parses an HTTP response from a ListInstancesWithResponse call
-func ParseListInstancesResponse(rsp *http.Response) (*listInstancesResponse, error) {
+func ParseListInstancesResponse(rsp *http.Response) (*ListInstancesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listInstancesResponse{
+	response := &ListInstancesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9438,14 +10081,14 @@ func ParseListInstancesResponse(rsp *http.Response) (*listInstancesResponse, err
 }
 
 // ParseCreateInstanceResponse parses an HTTP response from a CreateInstanceWithResponse call
-func ParseCreateInstanceResponse(rsp *http.Response) (*createInstanceResponse, error) {
+func ParseCreateInstanceResponse(rsp *http.Response) (*CreateInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &createInstanceResponse{
+	response := &CreateInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9464,14 +10107,14 @@ func ParseCreateInstanceResponse(rsp *http.Response) (*createInstanceResponse, e
 }
 
 // ParseListInstancePoolsResponse parses an HTTP response from a ListInstancePoolsWithResponse call
-func ParseListInstancePoolsResponse(rsp *http.Response) (*listInstancePoolsResponse, error) {
+func ParseListInstancePoolsResponse(rsp *http.Response) (*ListInstancePoolsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listInstancePoolsResponse{
+	response := &ListInstancePoolsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9479,7 +10122,7 @@ func ParseListInstancePoolsResponse(rsp *http.Response) (*listInstancePoolsRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			InstancePools *[]InstancePool `json:"instancePools,omitempty"`
+			InstancePools *[]InstancePool `json:"instance-pools,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9492,14 +10135,14 @@ func ParseListInstancePoolsResponse(rsp *http.Response) (*listInstancePoolsRespo
 }
 
 // ParseCreateInstancePoolResponse parses an HTTP response from a CreateInstancePoolWithResponse call
-func ParseCreateInstancePoolResponse(rsp *http.Response) (*createInstancePoolResponse, error) {
+func ParseCreateInstancePoolResponse(rsp *http.Response) (*CreateInstancePoolResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &createInstancePoolResponse{
+	response := &CreateInstancePoolResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9518,14 +10161,14 @@ func ParseCreateInstancePoolResponse(rsp *http.Response) (*createInstancePoolRes
 }
 
 // ParseDestroyInstancePoolResponse parses an HTTP response from a DestroyInstancePoolWithResponse call
-func ParseDestroyInstancePoolResponse(rsp *http.Response) (*destroyInstancePoolResponse, error) {
+func ParseDestroyInstancePoolResponse(rsp *http.Response) (*DestroyInstancePoolResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &destroyInstancePoolResponse{
+	response := &DestroyInstancePoolResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9543,15 +10186,15 @@ func ParseDestroyInstancePoolResponse(rsp *http.Response) (*destroyInstancePoolR
 	return response, nil
 }
 
-// ParseShowInstancePoolDetailsResponse parses an HTTP response from a ShowInstancePoolDetailsWithResponse call
-func ParseShowInstancePoolDetailsResponse(rsp *http.Response) (*showInstancePoolDetailsResponse, error) {
+// ParseGetInstancePoolResponse parses an HTTP response from a GetInstancePoolWithResponse call
+func ParseGetInstancePoolResponse(rsp *http.Response) (*GetInstancePoolResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &showInstancePoolDetailsResponse{
+	response := &GetInstancePoolResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9570,14 +10213,14 @@ func ParseShowInstancePoolDetailsResponse(rsp *http.Response) (*showInstancePool
 }
 
 // ParseUpdateInstancePoolDescriptionResponse parses an HTTP response from a UpdateInstancePoolDescriptionWithResponse call
-func ParseUpdateInstancePoolDescriptionResponse(rsp *http.Response) (*updateInstancePoolDescriptionResponse, error) {
+func ParseUpdateInstancePoolDescriptionResponse(rsp *http.Response) (*UpdateInstancePoolDescriptionResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstancePoolDescriptionResponse{
+	response := &UpdateInstancePoolDescriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9596,14 +10239,14 @@ func ParseUpdateInstancePoolDescriptionResponse(rsp *http.Response) (*updateInst
 }
 
 // ParseUpdateInstancePoolTemplateResponse parses an HTTP response from a UpdateInstancePoolTemplateWithResponse call
-func ParseUpdateInstancePoolTemplateResponse(rsp *http.Response) (*updateInstancePoolTemplateResponse, error) {
+func ParseUpdateInstancePoolTemplateResponse(rsp *http.Response) (*UpdateInstancePoolTemplateResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstancePoolTemplateResponse{
+	response := &UpdateInstancePoolTemplateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9622,14 +10265,14 @@ func ParseUpdateInstancePoolTemplateResponse(rsp *http.Response) (*updateInstanc
 }
 
 // ParseUpdateInstancePoolTopologyResponse parses an HTTP response from a UpdateInstancePoolTopologyWithResponse call
-func ParseUpdateInstancePoolTopologyResponse(rsp *http.Response) (*updateInstancePoolTopologyResponse, error) {
+func ParseUpdateInstancePoolTopologyResponse(rsp *http.Response) (*UpdateInstancePoolTopologyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstancePoolTopologyResponse{
+	response := &UpdateInstancePoolTopologyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9648,14 +10291,14 @@ func ParseUpdateInstancePoolTopologyResponse(rsp *http.Response) (*updateInstanc
 }
 
 // ParseUpdateInstancePoolUserDataResponse parses an HTTP response from a UpdateInstancePoolUserDataWithResponse call
-func ParseUpdateInstancePoolUserDataResponse(rsp *http.Response) (*updateInstancePoolUserDataResponse, error) {
+func ParseUpdateInstancePoolUserDataResponse(rsp *http.Response) (*UpdateInstancePoolUserDataResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstancePoolUserDataResponse{
+	response := &UpdateInstancePoolUserDataResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9674,14 +10317,14 @@ func ParseUpdateInstancePoolUserDataResponse(rsp *http.Response) (*updateInstanc
 }
 
 // ParseListInstanceTypesResponse parses an HTTP response from a ListInstanceTypesWithResponse call
-func ParseListInstanceTypesResponse(rsp *http.Response) (*listInstanceTypesResponse, error) {
+func ParseListInstanceTypesResponse(rsp *http.Response) (*ListInstanceTypesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listInstanceTypesResponse{
+	response := &ListInstanceTypesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9689,7 +10332,7 @@ func ParseListInstanceTypesResponse(rsp *http.Response) (*listInstanceTypesRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			InstanceTypes *[]InstanceType `json:"instanceTypes,omitempty"`
+			InstanceTypes *[]InstanceType `json:"instance-types,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -9702,14 +10345,14 @@ func ParseListInstanceTypesResponse(rsp *http.Response) (*listInstanceTypesRespo
 }
 
 // ParseDestroyInstanceResponse parses an HTTP response from a DestroyInstanceWithResponse call
-func ParseDestroyInstanceResponse(rsp *http.Response) (*destroyInstanceResponse, error) {
+func ParseDestroyInstanceResponse(rsp *http.Response) (*DestroyInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &destroyInstanceResponse{
+	response := &DestroyInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9727,15 +10370,15 @@ func ParseDestroyInstanceResponse(rsp *http.Response) (*destroyInstanceResponse,
 	return response, nil
 }
 
-// ParseShowInstanceDetailsResponse parses an HTTP response from a ShowInstanceDetailsWithResponse call
-func ParseShowInstanceDetailsResponse(rsp *http.Response) (*showInstanceDetailsResponse, error) {
+// ParseGetInstanceResponse parses an HTTP response from a GetInstanceWithResponse call
+func ParseGetInstanceResponse(rsp *http.Response) (*GetInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &showInstanceDetailsResponse{
+	response := &GetInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9761,14 +10404,14 @@ func ParseShowInstanceDetailsResponse(rsp *http.Response) (*showInstanceDetailsR
 }
 
 // ParseAllocateIpv6OnInstanceResponse parses an HTTP response from a AllocateIpv6OnInstanceWithResponse call
-func ParseAllocateIpv6OnInstanceResponse(rsp *http.Response) (*allocateIpv6OnInstanceResponse, error) {
+func ParseAllocateIpv6OnInstanceResponse(rsp *http.Response) (*AllocateIpv6OnInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &allocateIpv6OnInstanceResponse{
+	response := &AllocateIpv6OnInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9794,14 +10437,40 @@ func ParseAllocateIpv6OnInstanceResponse(rsp *http.Response) (*allocateIpv6OnIns
 }
 
 // ParseAttachElasticIpOnInstanceResponse parses an HTTP response from a AttachElasticIpOnInstanceWithResponse call
-func ParseAttachElasticIpOnInstanceResponse(rsp *http.Response) (*attachElasticIpOnInstanceResponse, error) {
+func ParseAttachElasticIpOnInstanceResponse(rsp *http.Response) (*AttachElasticIpOnInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &attachElasticIpOnInstanceResponse{
+	response := &AttachElasticIpOnInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest Result
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSnapshotResponse parses an HTTP response from a CreateSnapshotWithResponse call
+func ParseCreateSnapshotResponse(rsp *http.Response) (*CreateSnapshotResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSnapshotResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9820,14 +10489,14 @@ func ParseAttachElasticIpOnInstanceResponse(rsp *http.Response) (*attachElasticI
 }
 
 // ParseUpdateInstanceDescriptionResponse parses an HTTP response from a UpdateInstanceDescriptionWithResponse call
-func ParseUpdateInstanceDescriptionResponse(rsp *http.Response) (*updateInstanceDescriptionResponse, error) {
+func ParseUpdateInstanceDescriptionResponse(rsp *http.Response) (*UpdateInstanceDescriptionResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstanceDescriptionResponse{
+	response := &UpdateInstanceDescriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9846,14 +10515,14 @@ func ParseUpdateInstanceDescriptionResponse(rsp *http.Response) (*updateInstance
 }
 
 // ParseDetachElasticIpFromInstanceResponse parses an HTTP response from a DetachElasticIpFromInstanceWithResponse call
-func ParseDetachElasticIpFromInstanceResponse(rsp *http.Response) (*detachElasticIpFromInstanceResponse, error) {
+func ParseDetachElasticIpFromInstanceResponse(rsp *http.Response) (*DetachElasticIpFromInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &detachElasticIpFromInstanceResponse{
+	response := &DetachElasticIpFromInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9872,14 +10541,14 @@ func ParseDetachElasticIpFromInstanceResponse(rsp *http.Response) (*detachElasti
 }
 
 // ParseUpdateInstanceTypeResponse parses an HTTP response from a UpdateInstanceTypeWithResponse call
-func ParseUpdateInstanceTypeResponse(rsp *http.Response) (*updateInstanceTypeResponse, error) {
+func ParseUpdateInstanceTypeResponse(rsp *http.Response) (*UpdateInstanceTypeResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstanceTypeResponse{
+	response := &UpdateInstanceTypeResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9898,14 +10567,14 @@ func ParseUpdateInstanceTypeResponse(rsp *http.Response) (*updateInstanceTypeRes
 }
 
 // ParseRebootInstanceResponse parses an HTTP response from a RebootInstanceWithResponse call
-func ParseRebootInstanceResponse(rsp *http.Response) (*rebootInstanceResponse, error) {
+func ParseRebootInstanceResponse(rsp *http.Response) (*RebootInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &rebootInstanceResponse{
+	response := &RebootInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9924,14 +10593,14 @@ func ParseRebootInstanceResponse(rsp *http.Response) (*rebootInstanceResponse, e
 }
 
 // ParseResetInstancePasswordResponse parses an HTTP response from a ResetInstancePasswordWithResponse call
-func ParseResetInstancePasswordResponse(rsp *http.Response) (*resetInstancePasswordResponse, error) {
+func ParseResetInstancePasswordResponse(rsp *http.Response) (*ResetInstancePasswordResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &resetInstancePasswordResponse{
+	response := &ResetInstancePasswordResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9950,14 +10619,14 @@ func ParseResetInstancePasswordResponse(rsp *http.Response) (*resetInstancePassw
 }
 
 // ParseRestoreInstanceFromSnapshotResponse parses an HTTP response from a RestoreInstanceFromSnapshotWithResponse call
-func ParseRestoreInstanceFromSnapshotResponse(rsp *http.Response) (*restoreInstanceFromSnapshotResponse, error) {
+func ParseRestoreInstanceFromSnapshotResponse(rsp *http.Response) (*RestoreInstanceFromSnapshotResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &restoreInstanceFromSnapshotResponse{
+	response := &RestoreInstanceFromSnapshotResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9976,14 +10645,14 @@ func ParseRestoreInstanceFromSnapshotResponse(rsp *http.Response) (*restoreInsta
 }
 
 // ParseRestoreInstanceFromTemplateResponse parses an HTTP response from a RestoreInstanceFromTemplateWithResponse call
-func ParseRestoreInstanceFromTemplateResponse(rsp *http.Response) (*restoreInstanceFromTemplateResponse, error) {
+func ParseRestoreInstanceFromTemplateResponse(rsp *http.Response) (*RestoreInstanceFromTemplateResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &restoreInstanceFromTemplateResponse{
+	response := &RestoreInstanceFromTemplateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10002,14 +10671,14 @@ func ParseRestoreInstanceFromTemplateResponse(rsp *http.Response) (*restoreInsta
 }
 
 // ParseRemoveInstanceReverseDnsResponse parses an HTTP response from a RemoveInstanceReverseDnsWithResponse call
-func ParseRemoveInstanceReverseDnsResponse(rsp *http.Response) (*removeInstanceReverseDnsResponse, error) {
+func ParseRemoveInstanceReverseDnsResponse(rsp *http.Response) (*RemoveInstanceReverseDnsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &removeInstanceReverseDnsResponse{
+	response := &RemoveInstanceReverseDnsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10028,14 +10697,14 @@ func ParseRemoveInstanceReverseDnsResponse(rsp *http.Response) (*removeInstanceR
 }
 
 // ParseUpdateInstanceReverseDnsResponse parses an HTTP response from a UpdateInstanceReverseDnsWithResponse call
-func ParseUpdateInstanceReverseDnsResponse(rsp *http.Response) (*updateInstanceReverseDnsResponse, error) {
+func ParseUpdateInstanceReverseDnsResponse(rsp *http.Response) (*UpdateInstanceReverseDnsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstanceReverseDnsResponse{
+	response := &UpdateInstanceReverseDnsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10054,14 +10723,14 @@ func ParseUpdateInstanceReverseDnsResponse(rsp *http.Response) (*updateInstanceR
 }
 
 // ParseUpdateInstanceSecurityGroupsResponse parses an HTTP response from a UpdateInstanceSecurityGroupsWithResponse call
-func ParseUpdateInstanceSecurityGroupsResponse(rsp *http.Response) (*updateInstanceSecurityGroupsResponse, error) {
+func ParseUpdateInstanceSecurityGroupsResponse(rsp *http.Response) (*UpdateInstanceSecurityGroupsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstanceSecurityGroupsResponse{
+	response := &UpdateInstanceSecurityGroupsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10080,14 +10749,14 @@ func ParseUpdateInstanceSecurityGroupsResponse(rsp *http.Response) (*updateInsta
 }
 
 // ParseStartInstanceResponse parses an HTTP response from a StartInstanceWithResponse call
-func ParseStartInstanceResponse(rsp *http.Response) (*startInstanceResponse, error) {
+func ParseStartInstanceResponse(rsp *http.Response) (*StartInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &startInstanceResponse{
+	response := &StartInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10113,14 +10782,14 @@ func ParseStartInstanceResponse(rsp *http.Response) (*startInstanceResponse, err
 }
 
 // ParseStopInstanceResponse parses an HTTP response from a StopInstanceWithResponse call
-func ParseStopInstanceResponse(rsp *http.Response) (*stopInstanceResponse, error) {
+func ParseStopInstanceResponse(rsp *http.Response) (*StopInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &stopInstanceResponse{
+	response := &StopInstanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10146,14 +10815,14 @@ func ParseStopInstanceResponse(rsp *http.Response) (*stopInstanceResponse, error
 }
 
 // ParseUpdateInstanceUserDataResponse parses an HTTP response from a UpdateInstanceUserDataWithResponse call
-func ParseUpdateInstanceUserDataResponse(rsp *http.Response) (*updateInstanceUserDataResponse, error) {
+func ParseUpdateInstanceUserDataResponse(rsp *http.Response) (*UpdateInstanceUserDataResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateInstanceUserDataResponse{
+	response := &UpdateInstanceUserDataResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10172,14 +10841,14 @@ func ParseUpdateInstanceUserDataResponse(rsp *http.Response) (*updateInstanceUse
 }
 
 // ParseListLoadBalancersResponse parses an HTTP response from a ListLoadBalancersWithResponse call
-func ParseListLoadBalancersResponse(rsp *http.Response) (*listLoadBalancersResponse, error) {
+func ParseListLoadBalancersResponse(rsp *http.Response) (*ListLoadBalancersResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listLoadBalancersResponse{
+	response := &ListLoadBalancersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10187,7 +10856,7 @@ func ParseListLoadBalancersResponse(rsp *http.Response) (*listLoadBalancersRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			LoadBalancers *[]LoadBalancer `json:"loadBalancers,omitempty"`
+			LoadBalancers *[]LoadBalancer `json:"load-balancers,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -10200,14 +10869,14 @@ func ParseListLoadBalancersResponse(rsp *http.Response) (*listLoadBalancersRespo
 }
 
 // ParseCreateLoadBalancerResponse parses an HTTP response from a CreateLoadBalancerWithResponse call
-func ParseCreateLoadBalancerResponse(rsp *http.Response) (*createLoadBalancerResponse, error) {
+func ParseCreateLoadBalancerResponse(rsp *http.Response) (*CreateLoadBalancerResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &createLoadBalancerResponse{
+	response := &CreateLoadBalancerResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10226,14 +10895,14 @@ func ParseCreateLoadBalancerResponse(rsp *http.Response) (*createLoadBalancerRes
 }
 
 // ParseDestroyLoadBalancerResponse parses an HTTP response from a DestroyLoadBalancerWithResponse call
-func ParseDestroyLoadBalancerResponse(rsp *http.Response) (*destroyLoadBalancerResponse, error) {
+func ParseDestroyLoadBalancerResponse(rsp *http.Response) (*DestroyLoadBalancerResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &destroyLoadBalancerResponse{
+	response := &DestroyLoadBalancerResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10251,15 +10920,15 @@ func ParseDestroyLoadBalancerResponse(rsp *http.Response) (*destroyLoadBalancerR
 	return response, nil
 }
 
-// ParseShowLoadBalancerDetailsResponse parses an HTTP response from a ShowLoadBalancerDetailsWithResponse call
-func ParseShowLoadBalancerDetailsResponse(rsp *http.Response) (*showLoadBalancerDetailsResponse, error) {
+// ParseGetLoadBalancerResponse parses an HTTP response from a GetLoadBalancerWithResponse call
+func ParseGetLoadBalancerResponse(rsp *http.Response) (*GetLoadBalancerResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &showLoadBalancerDetailsResponse{
+	response := &GetLoadBalancerResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10277,15 +10946,93 @@ func ParseShowLoadBalancerDetailsResponse(rsp *http.Response) (*showLoadBalancer
 	return response, nil
 }
 
-// ParseShowLoadBalancerServiceDetailsResponse parses an HTTP response from a ShowLoadBalancerServiceDetailsWithResponse call
-func ParseShowLoadBalancerServiceDetailsResponse(rsp *http.Response) (*showLoadBalancerServiceDetailsResponse, error) {
+// ParseUpdateLoadBalancerResponse parses an HTTP response from a UpdateLoadBalancerWithResponse call
+func ParseUpdateLoadBalancerResponse(rsp *http.Response) (*UpdateLoadBalancerResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &showLoadBalancerServiceDetailsResponse{
+	response := &UpdateLoadBalancerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Result
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddServiceToLoadBalancerResponse parses an HTTP response from a AddServiceToLoadBalancerWithResponse call
+func ParseAddServiceToLoadBalancerResponse(rsp *http.Response) (*AddServiceToLoadBalancerResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddServiceToLoadBalancerResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Result
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteLoadBalancerServiceResponse parses an HTTP response from a DeleteLoadBalancerServiceWithResponse call
+func ParseDeleteLoadBalancerServiceResponse(rsp *http.Response) (*DeleteLoadBalancerServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteLoadBalancerServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Result
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetLoadBalancerServiceResponse parses an HTTP response from a GetLoadBalancerServiceWithResponse call
+func ParseGetLoadBalancerServiceResponse(rsp *http.Response) (*GetLoadBalancerServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetLoadBalancerServiceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10303,48 +11050,22 @@ func ParseShowLoadBalancerServiceDetailsResponse(rsp *http.Response) (*showLoadB
 	return response, nil
 }
 
-// ParseAddServiceToLoadBalancerResponse parses an HTTP response from a AddServiceToLoadBalancerWithResponse call
-func ParseAddServiceToLoadBalancerResponse(rsp *http.Response) (*addServiceToLoadBalancerResponse, error) {
+// ParseUpdateLoadBalancerServiceResponse parses an HTTP response from a UpdateLoadBalancerServiceWithResponse call
+func ParseUpdateLoadBalancerServiceResponse(rsp *http.Response) (*UpdateLoadBalancerServiceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &addServiceToLoadBalancerResponse{
+	response := &UpdateLoadBalancerServiceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest LoadBalancer
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeleteServiceFromLoadBalancerResponse parses an HTTP response from a DeleteServiceFromLoadBalancerWithResponse call
-func ParseDeleteServiceFromLoadBalancerResponse(rsp *http.Response) (*deleteServiceFromLoadBalancerResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &deleteServiceFromLoadBalancerResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest LoadBalancer
+		var dest Result
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -10356,14 +11077,14 @@ func ParseDeleteServiceFromLoadBalancerResponse(rsp *http.Response) (*deleteServ
 }
 
 // ParsePingResponse parses an HTTP response from a PingWithResponse call
-func ParsePingResponse(rsp *http.Response) (*pingResponse, error) {
+func ParsePingResponse(rsp *http.Response) (*PingResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &pingResponse{
+	response := &PingResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10382,14 +11103,14 @@ func ParsePingResponse(rsp *http.Response) (*pingResponse, error) {
 }
 
 // ParseListResultsResponse parses an HTTP response from a ListResultsWithResponse call
-func ParseListResultsResponse(rsp *http.Response) (*listResultsResponse, error) {
+func ParseListResultsResponse(rsp *http.Response) (*ListResultsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listResultsResponse{
+	response := &ListResultsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10410,23 +11131,21 @@ func ParseListResultsResponse(rsp *http.Response) (*listResultsResponse, error) 
 }
 
 // ParseGetResultResponse parses an HTTP response from a GetResultWithResponse call
-func ParseGetResultResponse(rsp *http.Response) (*getResultResponse, error) {
+func ParseGetResultResponse(rsp *http.Response) (*GetResultResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &getResultResponse{
+	response := &GetResultResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Result *Result `json:"result,omitempty"`
-		}
+		var dest Result
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -10438,14 +11157,14 @@ func ParseGetResultResponse(rsp *http.Response) (*getResultResponse, error) {
 }
 
 // ParseListSecurityGroupsResponse parses an HTTP response from a ListSecurityGroupsWithResponse call
-func ParseListSecurityGroupsResponse(rsp *http.Response) (*listSecurityGroupsResponse, error) {
+func ParseListSecurityGroupsResponse(rsp *http.Response) (*ListSecurityGroupsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listSecurityGroupsResponse{
+	response := &ListSecurityGroupsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10453,7 +11172,7 @@ func ParseListSecurityGroupsResponse(rsp *http.Response) (*listSecurityGroupsRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			SecurityGroups *[]SecurityGroup `json:"securityGroups,omitempty"`
+			SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -10466,14 +11185,14 @@ func ParseListSecurityGroupsResponse(rsp *http.Response) (*listSecurityGroupsRes
 }
 
 // ParseCreateSecurityGroupResponse parses an HTTP response from a CreateSecurityGroupWithResponse call
-func ParseCreateSecurityGroupResponse(rsp *http.Response) (*createSecurityGroupResponse, error) {
+func ParseCreateSecurityGroupResponse(rsp *http.Response) (*CreateSecurityGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &createSecurityGroupResponse{
+	response := &CreateSecurityGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10492,14 +11211,14 @@ func ParseCreateSecurityGroupResponse(rsp *http.Response) (*createSecurityGroupR
 }
 
 // ParseDestroySecurityGroupResponse parses an HTTP response from a DestroySecurityGroupWithResponse call
-func ParseDestroySecurityGroupResponse(rsp *http.Response) (*destroySecurityGroupResponse, error) {
+func ParseDestroySecurityGroupResponse(rsp *http.Response) (*DestroySecurityGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &destroySecurityGroupResponse{
+	response := &DestroySecurityGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10517,15 +11236,41 @@ func ParseDestroySecurityGroupResponse(rsp *http.Response) (*destroySecurityGrou
 	return response, nil
 }
 
-// ParseAddRuleToSecurityGroupResponse parses an HTTP response from a AddRuleToSecurityGroupWithResponse call
-func ParseAddRuleToSecurityGroupResponse(rsp *http.Response) (*addRuleToSecurityGroupResponse, error) {
+// ParseGetSecurityGroupResponse parses an HTTP response from a GetSecurityGroupWithResponse call
+func ParseGetSecurityGroupResponse(rsp *http.Response) (*GetSecurityGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &addRuleToSecurityGroupResponse{
+	response := &GetSecurityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SecurityGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddRuleToSecurityGroupResponse parses an HTTP response from a AddRuleToSecurityGroupWithResponse call
+func ParseAddRuleToSecurityGroupResponse(rsp *http.Response) (*AddRuleToSecurityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddRuleToSecurityGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10544,14 +11289,14 @@ func ParseAddRuleToSecurityGroupResponse(rsp *http.Response) (*addRuleToSecurity
 }
 
 // ParseDeleteRuleFromSecurityGroupResponse parses an HTTP response from a DeleteRuleFromSecurityGroupWithResponse call
-func ParseDeleteRuleFromSecurityGroupResponse(rsp *http.Response) (*deleteRuleFromSecurityGroupResponse, error) {
+func ParseDeleteRuleFromSecurityGroupResponse(rsp *http.Response) (*DeleteRuleFromSecurityGroupResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &deleteRuleFromSecurityGroupResponse{
+	response := &DeleteRuleFromSecurityGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10570,14 +11315,14 @@ func ParseDeleteRuleFromSecurityGroupResponse(rsp *http.Response) (*deleteRuleFr
 }
 
 // ParseUpdateSecurityGroupDescriptionResponse parses an HTTP response from a UpdateSecurityGroupDescriptionWithResponse call
-func ParseUpdateSecurityGroupDescriptionResponse(rsp *http.Response) (*updateSecurityGroupDescriptionResponse, error) {
+func ParseUpdateSecurityGroupDescriptionResponse(rsp *http.Response) (*UpdateSecurityGroupDescriptionResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateSecurityGroupDescriptionResponse{
+	response := &UpdateSecurityGroupDescriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10596,14 +11341,14 @@ func ParseUpdateSecurityGroupDescriptionResponse(rsp *http.Response) (*updateSec
 }
 
 // ParseListSecurityGroupInstancesResponse parses an HTTP response from a ListSecurityGroupInstancesWithResponse call
-func ParseListSecurityGroupInstancesResponse(rsp *http.Response) (*listSecurityGroupInstancesResponse, error) {
+func ParseListSecurityGroupInstancesResponse(rsp *http.Response) (*ListSecurityGroupInstancesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listSecurityGroupInstancesResponse{
+	response := &ListSecurityGroupInstancesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10624,14 +11369,14 @@ func ParseListSecurityGroupInstancesResponse(rsp *http.Response) (*listSecurityG
 }
 
 // ParseUpdateSecurityGroupRulesResponse parses an HTTP response from a UpdateSecurityGroupRulesWithResponse call
-func ParseUpdateSecurityGroupRulesResponse(rsp *http.Response) (*updateSecurityGroupRulesResponse, error) {
+func ParseUpdateSecurityGroupRulesResponse(rsp *http.Response) (*UpdateSecurityGroupRulesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateSecurityGroupRulesResponse{
+	response := &UpdateSecurityGroupRulesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10650,14 +11395,14 @@ func ParseUpdateSecurityGroupRulesResponse(rsp *http.Response) (*updateSecurityG
 }
 
 // ParseListSnapshotsResponse parses an HTTP response from a ListSnapshotsWithResponse call
-func ParseListSnapshotsResponse(rsp *http.Response) (*listSnapshotsResponse, error) {
+func ParseListSnapshotsResponse(rsp *http.Response) (*ListSnapshotsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listSnapshotsResponse{
+	response := &ListSnapshotsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10678,14 +11423,14 @@ func ParseListSnapshotsResponse(rsp *http.Response) (*listSnapshotsResponse, err
 }
 
 // ParseDestroySnapshotResponse parses an HTTP response from a DestroySnapshotWithResponse call
-func ParseDestroySnapshotResponse(rsp *http.Response) (*destroySnapshotResponse, error) {
+func ParseDestroySnapshotResponse(rsp *http.Response) (*DestroySnapshotResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &destroySnapshotResponse{
+	response := &DestroySnapshotResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10703,15 +11448,48 @@ func ParseDestroySnapshotResponse(rsp *http.Response) (*destroySnapshotResponse,
 	return response, nil
 }
 
-// ParseUpdateSnapshotDescriptionResponse parses an HTTP response from a UpdateSnapshotDescriptionWithResponse call
-func ParseUpdateSnapshotDescriptionResponse(rsp *http.Response) (*updateSnapshotDescriptionResponse, error) {
+// ParseGetSnapshotResponse parses an HTTP response from a GetSnapshotWithResponse call
+func ParseGetSnapshotResponse(rsp *http.Response) (*GetSnapshotResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &updateSnapshotDescriptionResponse{
+	response := &GetSnapshotResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Snapshot
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest Result
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateSnapshotDescriptionResponse parses an HTTP response from a UpdateSnapshotDescriptionWithResponse call
+func ParseUpdateSnapshotDescriptionResponse(rsp *http.Response) (*UpdateSnapshotDescriptionResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateSnapshotDescriptionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10730,14 +11508,14 @@ func ParseUpdateSnapshotDescriptionResponse(rsp *http.Response) (*updateSnapshot
 }
 
 // ParseListSshKeysResponse parses an HTTP response from a ListSshKeysWithResponse call
-func ParseListSshKeysResponse(rsp *http.Response) (*listSshKeysResponse, error) {
+func ParseListSshKeysResponse(rsp *http.Response) (*ListSshKeysResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listSshKeysResponse{
+	response := &ListSshKeysResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10745,7 +11523,7 @@ func ParseListSshKeysResponse(rsp *http.Response) (*listSshKeysResponse, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			SshKeys *[]ApiKey `json:"sshKeys,omitempty"`
+			SshKeys *[]ApiKey `json:"ssh-keys,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -10758,14 +11536,14 @@ func ParseListSshKeysResponse(rsp *http.Response) (*listSshKeysResponse, error) 
 }
 
 // ParseDeleteSshKeyResponse parses an HTTP response from a DeleteSshKeyWithResponse call
-func ParseDeleteSshKeyResponse(rsp *http.Response) (*deleteSshKeyResponse, error) {
+func ParseDeleteSshKeyResponse(rsp *http.Response) (*DeleteSshKeyResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &deleteSshKeyResponse{
+	response := &DeleteSshKeyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10784,14 +11562,14 @@ func ParseDeleteSshKeyResponse(rsp *http.Response) (*deleteSshKeyResponse, error
 }
 
 // ParseListTemplatesResponse parses an HTTP response from a ListTemplatesWithResponse call
-func ParseListTemplatesResponse(rsp *http.Response) (*listTemplatesResponse, error) {
+func ParseListTemplatesResponse(rsp *http.Response) (*ListTemplatesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listTemplatesResponse{
+	response := &ListTemplatesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10812,14 +11590,14 @@ func ParseListTemplatesResponse(rsp *http.Response) (*listTemplatesResponse, err
 }
 
 // ParseRegisterTemplateResponse parses an HTTP response from a RegisterTemplateWithResponse call
-func ParseRegisterTemplateResponse(rsp *http.Response) (*registerTemplateResponse, error) {
+func ParseRegisterTemplateResponse(rsp *http.Response) (*RegisterTemplateResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &registerTemplateResponse{
+	response := &RegisterTemplateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10838,14 +11616,14 @@ func ParseRegisterTemplateResponse(rsp *http.Response) (*registerTemplateRespons
 }
 
 // ParseDestroyTemplateResponse parses an HTTP response from a DestroyTemplateWithResponse call
-func ParseDestroyTemplateResponse(rsp *http.Response) (*destroyTemplateResponse, error) {
+func ParseDestroyTemplateResponse(rsp *http.Response) (*DestroyTemplateResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &destroyTemplateResponse{
+	response := &DestroyTemplateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10864,14 +11642,14 @@ func ParseDestroyTemplateResponse(rsp *http.Response) (*destroyTemplateResponse,
 }
 
 // ParseVersionResponse parses an HTTP response from a VersionWithResponse call
-func ParseVersionResponse(rsp *http.Response) (*versionResponse, error) {
+func ParseVersionResponse(rsp *http.Response) (*VersionResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &versionResponse{
+	response := &VersionResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10890,14 +11668,14 @@ func ParseVersionResponse(rsp *http.Response) (*versionResponse, error) {
 }
 
 // ParseListZonesResponse parses an HTTP response from a ListZonesWithResponse call
-func ParseListZonesResponse(rsp *http.Response) (*listZonesResponse, error) {
+func ParseListZonesResponse(rsp *http.Response) (*ListZonesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &listZonesResponse{
+	response := &ListZonesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
