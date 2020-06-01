@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"reflect"
 	"runtime"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	apiv2 "github.com/exoscale/egoscale/api/v2"
 	v2 "github.com/exoscale/egoscale/internal/v2"
 )
 
@@ -107,7 +109,14 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 		client.TraceOn()
 	}
 
-	exoSecurityProvider, err := v2.NewSecurityProviderExoscaleV2(client.APIKey, client.apiSecret)
+	// Infer API V2 endpoint from V1 endpoint
+	endpointURL, err := url.Parse(client.Endpoint)
+	if err != nil {
+		panic(errors.Wrap(err, "unable to initialize API client"))
+	}
+	endpointURL = endpointURL.ResolveReference(&url.URL{Path: apiv2.APIPrefix})
+
+	exoSecurityProvider, err := apiv2.NewSecurityProviderExoscale(client.APIKey, client.apiSecret)
 	if err != nil {
 		panic(errors.Wrap(err, "unable to initialize security provider"))
 	}
@@ -115,11 +124,13 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 
 	opts := []v2.ClientOption{
 		v2.WithHTTPClient(client.HTTPClient),
-		v2.WithBaseURL(client.Endpoint),
-		v2.WithRequestEditorFn(exoSecurityProvider.Intercept),
+		v2.WithRequestEditorFn(v2.MultiRequestsEditor(
+			exoSecurityProvider.Intercept,
+			apiv2.SetEndpointFromContext),
+		),
 	}
 
-	if client.v2, err = v2.NewClientWithResponses(client.Endpoint, opts...); err != nil {
+	if client.v2, err = v2.NewClientWithResponses(endpointURL.String(), opts...); err != nil {
 		panic(errors.Wrap(err, "unable to initialize API client"))
 	}
 
@@ -404,6 +415,8 @@ type traceTransport struct {
 
 // RoundTrip executes a single HTTP transaction
 func (t *traceTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Add("User-Agent", UserAgent)
+
 	if dump, err := httputil.DumpRequest(req, true); err == nil {
 		t.logger.Printf("%s", dump)
 	}

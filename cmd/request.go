@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale"
+	"github.com/hashicorp/go-multierror"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 )
@@ -210,4 +211,19 @@ func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 	}
 
 	return response, errorReq
+}
+
+// forEachZone executes the function f in all the specified zones, and return a multierror.Error containing all
+// errors that may have occurred during execution.
+func forEachZone(zones []string, f func(string) error) error {
+	var meg = new(multierror.Group)
+
+	for _, zone := range zones {
+		zone := zone
+		meg.Go(func() error {
+			return f(zone)
+		})
+	}
+
+	return meg.Wait().ErrorOrNil()
 }
