@@ -138,21 +138,26 @@ func initConfig() {
 		}
 	}
 
-	envEndpoint := readFromEnv(
+	endpointFromEnv := readFromEnv(
 		"EXOSCALE_API_ENDPOINT",
 		"EXOSCALE_COMPUTE_API_ENDPOINT",
 		"EXOSCALE_ENDPOINT",
 		"EXOSCALE_COMPUTE_ENDPOINT",
 		"CLOUDSTACK_ENDPOINT")
 
-	envKey := readFromEnv(
+	sosEndpointFromEnv := readFromEnv(
+		"EXOSCALE_STORAGE_API_ENDPOINT",
+		"EXOSCALE_SOS_ENDPOINT",
+	)
+
+	apiKeyFromEnv := readFromEnv(
 		"EXOSCALE_API_KEY",
 		"EXOSCALE_KEY",
 		"CLOUDSTACK_KEY",
 		"CLOUDSTACK_API_KEY",
 	)
 
-	envSecret := readFromEnv(
+	apiSecretFromEnv := readFromEnv(
 		"EXOSCALE_API_SECRET",
 		"EXOSCALE_SECRET",
 		"EXOSCALE_SECRET_KEY",
@@ -160,23 +165,23 @@ func initConfig() {
 		"CLOUDSTACK_SECRET_KEY",
 	)
 
-	envSosEndpoint := readFromEnv(
-		"EXOSCALE_STORAGE_API_ENDPOINT",
-		"EXOSCALE_SOS_ENDPOINT",
-	)
+	apiEnvironmentFromEnv := readFromEnv("EXOSCALE_API_ENVIRONMENT")
 
-	if envKey != "" && envSecret != "" {
+	if apiKeyFromEnv != "" && apiSecretFromEnv != "" {
 		gCurrentAccount.Name = "<environment variables>"
 		gConfigFilePath = "<environment variables>"
 		gCurrentAccount.Account = "unknown"
-		gCurrentAccount.Key = envKey
-		gCurrentAccount.Secret = envSecret
+		gCurrentAccount.Key = apiKeyFromEnv
+		gCurrentAccount.Secret = apiSecretFromEnv
 
-		if envEndpoint != "" {
-			gCurrentAccount.Endpoint = envEndpoint
+		if apiEnvironmentFromEnv != "" {
+			gCurrentAccount.Environment = apiEnvironmentFromEnv
 		}
-		if envSosEndpoint != "" {
-			gCurrentAccount.SosEndpoint = envSosEndpoint
+		if endpointFromEnv != "" {
+			gCurrentAccount.Endpoint = endpointFromEnv
+		}
+		if sosEndpointFromEnv != "" {
+			gCurrentAccount.SosEndpoint = sosEndpointFromEnv
 		}
 		gCurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(gCurrentAccount.Endpoint)
 

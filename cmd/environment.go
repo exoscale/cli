@@ -30,6 +30,7 @@ and EXOSCALE_API_SECRET variables have to be set.
 			fmt.Printf("export EXOSCALE_API_KEY=%q\n", gCurrentAccount.Key)
 			fmt.Printf("export EXOSCALE_API_SECRET=%q\n", gCurrentAccount.Secret)
 			fmt.Printf("export EXOSCALE_API_ENDPOINT=%q\n", gCurrentAccount.Endpoint)
+			fmt.Printf("export EXOSCALE_API_ENVIRONMENT=%q\n", gCurrentAccount.Environment)
 		},
 	})
 }
