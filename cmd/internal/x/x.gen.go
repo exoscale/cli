@@ -68,9 +68,9 @@ func XIndex(params *viper.Viper) (*gentleman.Response, interface{}, error) {
 	return resp, decoded, nil
 }
 
-// XCreateAntiAffinityGroup create-anti-affinity-group
-func XCreateAntiAffinityGroup(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "create-anti-affinity-group"
+// XListAntiAffinityGroups list-anti-affinity-groups
+func XListAntiAffinityGroups(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-anti-affinity-groups"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -82,11 +82,7 @@ func XCreateAntiAffinityGroup(params *viper.Viper, body string) (*gentleman.Resp
 
 	url := server + "/anti-affinity-group"
 
-	req := cli.Client.Post().URL(url)
-
-	if body != "" {
-		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
-	}
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -113,9 +109,9 @@ func XCreateAntiAffinityGroup(params *viper.Viper, body string) (*gentleman.Resp
 	return resp, decoded, nil
 }
 
-// XListAntiAffinityGroups list-anti-affinity-groups
-func XListAntiAffinityGroups(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "list-anti-affinity-groups"
+// XCreateAntiAffinityGroup create-anti-affinity-group
+func XCreateAntiAffinityGroup(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-anti-affinity-group"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -127,7 +123,11 @@ func XListAntiAffinityGroups(params *viper.Viper) (*gentleman.Response, map[stri
 
 	url := server + "/anti-affinity-group"
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -412,9 +412,9 @@ func XRevokeApiKey(paramKey string, params *viper.Viper) (*gentleman.Response, m
 	return resp, decoded, nil
 }
 
-// XGetApiKeyDetails get-api-key-details
-func XGetApiKeyDetails(paramKey string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "get-api-key-details"
+// XGetApiKey get-api-key
+func XGetApiKey(paramKey string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-api-key"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -630,9 +630,9 @@ func XAllocateElasticIp(params *viper.Viper, body string) (*gentleman.Response, 
 	return resp, decoded, nil
 }
 
-// XElasticIp elastic-ip
-func XElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "elastic-ip"
+// XReleaseElasticIp release-elastic-ip
+func XReleaseElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "release-elastic-ip"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -645,7 +645,7 @@ func XElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[s
 	url := server + "/elastic-ip/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Delete().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -672,9 +672,9 @@ func XElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[s
 	return resp, decoded, nil
 }
 
-// XReleaseElasticIp release-elastic-ip
-func XReleaseElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "release-elastic-ip"
+// XGetElasticIp get-elastic-ip
+func XGetElasticIp(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-elastic-ip"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -687,7 +687,7 @@ func XReleaseElasticIp(paramId string, params *viper.Viper) (*gentleman.Response
 	url := server + "/elastic-ip/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Delete().URL(url)
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -898,9 +898,9 @@ func XListEvents(params *viper.Viper) (*gentleman.Response, map[string]interface
 	return resp, decoded, nil
 }
 
-// XListInstances list-instances
-func XListInstances(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "list-instances"
+// XCreateInstance create-instance
+func XCreateInstance(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-instance"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -912,11 +912,15 @@ func XListInstances(params *viper.Viper) (*gentleman.Response, map[string]interf
 
 	url := server + "/instance"
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Post().URL(url)
 
-	paramState := params.GetString("state")
-	if paramState != "" {
-		req = req.AddQuery("state", fmt.Sprintf("%v", paramState))
+	paramStart := params.GetBool("start")
+	if paramStart != false {
+		req = req.AddQuery("start", fmt.Sprintf("%v", paramStart))
+	}
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
 	}
 
 	cli.HandleBefore(handlerPath, params, req)
@@ -944,9 +948,9 @@ func XListInstances(params *viper.Viper) (*gentleman.Response, map[string]interf
 	return resp, decoded, nil
 }
 
-// XCreateInstance create-instance
-func XCreateInstance(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "create-instance"
+// XListInstances list-instances
+func XListInstances(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-instances"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -958,15 +962,11 @@ func XCreateInstance(params *viper.Viper, body string) (*gentleman.Response, map
 
 	url := server + "/instance"
 
-	req := cli.Client.Post().URL(url)
+	req := cli.Client.Get().URL(url)
 
-	paramStart := params.GetBool("start")
-	if paramStart != false {
-		req = req.AddQuery("start", fmt.Sprintf("%v", paramStart))
-	}
-
-	if body != "" {
-		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	paramState := params.GetString("state")
+	if paramState != "" {
+		req = req.AddQuery("state", fmt.Sprintf("%v", paramState))
 	}
 
 	cli.HandleBefore(handlerPath, params, req)
@@ -1122,9 +1122,9 @@ func XDestroyInstancePool(paramId string, params *viper.Viper) (*gentleman.Respo
 	return resp, decoded, nil
 }
 
-// XShowInstancePoolDetails show-instance-pool-details
-func XShowInstancePoolDetails(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "show-instance-pool-details"
+// XGetInstancePool get-instance-pool
+func XGetInstancePool(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-instance-pool"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -1389,9 +1389,9 @@ func XListInstanceTypes(params *viper.Viper) (*gentleman.Response, map[string]in
 	return resp, decoded, nil
 }
 
-// XInstance instance
-func XInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "instance"
+// XDestroyInstance destroy-instance
+func XDestroyInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "destroy-instance"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -1404,7 +1404,7 @@ func XInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[st
 	url := server + "/instance/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Delete().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -1431,9 +1431,9 @@ func XInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[st
 	return resp, decoded, nil
 }
 
-// XDestroyInstance destroy-instance
-func XDestroyInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "destroy-instance"
+// XGetInstance get-instance
+func XGetInstance(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-instance"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -1446,7 +1446,7 @@ func XDestroyInstance(paramId string, params *viper.Viper) (*gentleman.Response,
 	url := server + "/instance/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Delete().URL(url)
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -2210,47 +2210,6 @@ func XUpdateInstanceUserData(paramId string, params *viper.Viper, body string) (
 	return resp, decoded, nil
 }
 
-// XListLoadBalancers list-load-balancers
-func XListLoadBalancers(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "list-load-balancers"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/load-balancer"
-
-	req := cli.Client.Get().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
 // XCreateLoadBalancer create-load-balancer
 func XCreateLoadBalancer(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-load-balancer"
@@ -2296,9 +2255,9 @@ func XCreateLoadBalancer(params *viper.Viper, body string) (*gentleman.Response,
 	return resp, decoded, nil
 }
 
-// XDeleteLoadBalancerService delete-load-balancer-service
-func XDeleteLoadBalancerService(paramServiceId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "delete-load-balancer-service"
+// XListLoadBalancers list-load-balancers
+func XListLoadBalancers(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-load-balancers"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -2308,10 +2267,9 @@ func XDeleteLoadBalancerService(paramServiceId string, params *viper.Viper) (*ge
 		server = xServers()[viper.GetInt("server-index")]["url"]
 	}
 
-	url := server + "/load-balancer-service/{service-id}"
-	url = strings.Replace(url, "{service-id}", paramServiceId, 1)
+	url := server + "/load-balancer"
 
-	req := cli.Client.Delete().URL(url)
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -2338,9 +2296,9 @@ func XDeleteLoadBalancerService(paramServiceId string, params *viper.Viper) (*ge
 	return resp, decoded, nil
 }
 
-// XShowLoadBalancerServiceDetails show-load-balancer-service-details
-func XShowLoadBalancerServiceDetails(paramServiceId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "show-load-balancer-service-details"
+// XGetLoadBalancerService get-load-balancer-service
+func XGetLoadBalancerService(paramServiceId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-load-balancer-service"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -2426,9 +2384,9 @@ func XUpdateLoadBalancerService(paramServiceId string, params *viper.Viper, body
 	return resp, decoded, nil
 }
 
-// XDestroyLoadBalancer destroy-load-balancer
-func XDestroyLoadBalancer(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "destroy-load-balancer"
+// XDeleteLoadBalancerService delete-load-balancer-service
+func XDeleteLoadBalancerService(paramServiceId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-load-balancer-service"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -2438,52 +2396,10 @@ func XDestroyLoadBalancer(paramId string, params *viper.Viper) (*gentleman.Respo
 		server = xServers()[viper.GetInt("server-index")]["url"]
 	}
 
-	url := server + "/load-balancer/{id}"
-	url = strings.Replace(url, "{id}", paramId, 1)
+	url := server + "/load-balancer-service/{service-id}"
+	url = strings.Replace(url, "{service-id}", paramServiceId, 1)
 
 	req := cli.Client.Delete().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XShowLoadBalancerDetails show-load-balancer-details
-func XShowLoadBalancerDetails(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "show-load-balancer-details"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/load-balancer/{id}"
-	url = strings.Replace(url, "{id}", paramId, 1)
-
-	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -2530,6 +2446,90 @@ func XUpdateLoadBalancer(paramId string, params *viper.Viper, body string) (*gen
 	if body != "" {
 		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
 	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDestroyLoadBalancer destroy-load-balancer
+func XDestroyLoadBalancer(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "destroy-load-balancer"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/load-balancer/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetLoadBalancer get-load-balancer
+func XGetLoadBalancer(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-load-balancer"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/load-balancer/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -2854,9 +2854,9 @@ func XDestroySecurityGroup(paramId string, params *viper.Viper) (*gentleman.Resp
 	return resp, decoded, nil
 }
 
-// XSecurityGroup security-group
-func XSecurityGroup(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "security-group"
+// XGetSecurityGroup get-security-group
+func XGetSecurityGroup(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-security-group"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -3160,9 +3160,9 @@ func XListSnapshots(params *viper.Viper) (*gentleman.Response, map[string]interf
 	return resp, decoded, nil
 }
 
-// XSnapshot snapshot
-func XSnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "snapshot"
+// XDestroySnapshot destroy-snapshot
+func XDestroySnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "destroy-snapshot"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -3175,7 +3175,7 @@ func XSnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[st
 	url := server + "/snapshot/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Get().URL(url)
+	req := cli.Client.Delete().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -3202,9 +3202,9 @@ func XSnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[st
 	return resp, decoded, nil
 }
 
-// XDestroySnapshot destroy-snapshot
-func XDestroySnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "destroy-snapshot"
+// XGetSnapshot get-snapshot
+func XGetSnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-snapshot"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -3217,7 +3217,7 @@ func XDestroySnapshot(paramId string, params *viper.Viper) (*gentleman.Response,
 	url := server + "/snapshot/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
-	req := cli.Client.Delete().URL(url)
+	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -3655,18 +3655,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "create-anti-affinity-group",
-			Short:   "create-anti-affinity-group",
-			Long:    cli.Markdown("Create Anti-Affinity Group\n## Request Schema (application/json)\n\nproperties:\n  command:\n    type: string\n  id:\n    format: uuid\n    type: string\n  link:\n    readOnly: true\n    type: string\ntype: object\n"),
+			Use:     "list-anti-affinity-groups",
+			Short:   "list-anti-affinity-groups",
+			Long:    cli.Markdown("List Anti-Affinity Groups"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
-				body, err := cli.GetBody("application/json", args[0:])
-				if err != nil {
-					log.Fatal().Err(err).Msg("Unable to get body")
-				}
 
-				_, decoded, err := XCreateAntiAffinityGroup(params, body)
+				_, decoded, err := XListAntiAffinityGroups(params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -3693,14 +3689,18 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "list-anti-affinity-groups",
-			Short:   "list-anti-affinity-groups",
-			Long:    cli.Markdown("List Anti-Affinity Groups"),
+			Use:     "create-anti-affinity-group",
+			Short:   "create-anti-affinity-group",
+			Long:    cli.Markdown("Create Anti-Affinity Group\n## Request Schema (application/json)\n\nproperties:\n  command:\n    type: string\n  id:\n    format: uuid\n    type: string\n  link:\n    readOnly: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
 
-				_, decoded, err := XListAntiAffinityGroups(params)
+				_, decoded, err := XCreateAntiAffinityGroup(params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -3939,14 +3939,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "get-api-key-details key",
-			Short:   "get-api-key-details",
+			Use:     "get-api-key key",
+			Short:   "get-api-key",
 			Long:    cli.Markdown("Get API key details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XGetApiKeyDetails(args[0], params)
+				_, decoded, err := XGetApiKey(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4085,7 +4085,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "allocate-elastic-ip",
 			Short:   "allocate-elastic-ip",
-			Long:    cli.Markdown("Allocate Elastic IP\n## Request Schema (application/json)\n\nproperties:\n  created:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/healthcheck'\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  mode:\n    enum:\n    - raw\n    - managed\n    type: string\n  reverseDns:\n    type: string\n  state:\n    enum:\n    - detached\n    - attached\n    readOnly: true\n    type: string\n  tags:\n    additionalProperties:\n      type: string\n    type: object\ntype: object\n"),
+			Long:    cli.Markdown("Allocate Elastic IP\n## Request Schema (application/json)\n\nproperties:\n  created:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/healthcheck'\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  mode:\n    enum:\n    - raw\n    - managed\n    type: string\n  reverse-dns:\n    type: string\n  state:\n    enum:\n    - detached\n    - attached\n    readOnly: true\n    type: string\n  tags:\n    additionalProperties:\n      type: string\n    type: object\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -4095,40 +4095,6 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XAllocateElasticIp(params, body)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "elastic-ip id",
-			Short:   "elastic-ip",
-			Long:    cli.Markdown("Get Elastic IP details"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XElasticIp(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4189,9 +4155,43 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "get-elastic-ip id",
+			Short:   "get-elastic-ip",
+			Long:    cli.Markdown("Get Elastic IP details"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetElasticIp(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "update-elastic-ip-healthcheck id",
 			Short:   "update-elastic-ip-healthcheck",
-			Long:    cli.Markdown("Update Elastic IP healthcheck\n## Request Schema (application/json)\n\nproperties:\n  interval:\n    allOf:\n    - format: int64\n      type: integer\n    - format: int64\n      minimum: 5\n      type: integer\n  mode:\n    enum:\n    - tcp\n    - http\n    type: string\n  port:\n    format: int64\n    type: integer\n  retries:\n    format: int64\n    type: integer\n  timeout:\n    allOf:\n    - format: int64\n      type: integer\n    - format: int64\n      minimum: 5\n      type: integer\n  uri:\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Update Elastic IP healthcheck\n## Request Schema (application/json)\n\nproperties:\n  interval:\n    format: int64\n    type: integer\n  mode:\n    enum:\n    - tcp\n    - http\n    type: string\n  port:\n    format: int64\n    type: integer\n  retries:\n    format: int64\n    type: integer\n  timeout:\n    format: int64\n    type: integer\n  uri:\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -4336,45 +4336,9 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "list-instances",
-			Short:   "list-instances",
-			Long:    cli.Markdown("List instances"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(0),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XListInstances(params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-		root.AddCommand(cmd)
-
-		cmd.Flags().String("state", "", "")
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
 			Use:     "create-instance",
 			Short:   "create-instance",
-			Long:    cli.Markdown("Create Compute instance\n## Request Schema (application/json)\n\nproperties:\n  createdAt:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  diskSize:\n    allOf:\n    - format: int64\n      type: integer\n    - format: int64\n      minimum: 10\n      type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instanceType:\n    $ref: '#/components/schemas/instance-type'\n  locks:\n    items:\n      $ref: '#/components/schemas/lock'\n    readOnly: true\n    type: array\n  name:\n    type: string\n  securityGroups:\n    items:\n      $ref: '#/components/schemas/resource'\n    type: array\n  snapshots:\n    items:\n      $ref: '#/components/schemas/resource'\n    readOnly: true\n    type: array\n  sshKey:\n    type: string\n  state:\n    $ref: '#/components/schemas/instance-state'\n  tags:\n    additionalProperties:\n      type: string\n    type: object\n  template:\n    $ref: '#/components/schemas/template-spec'\n  userData:\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Create Compute instance\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  disk-size:\n    all-of:\n    - format: int64\n      type: integer\n    - exclusiveMinimum: false\n      format: int64\n      minimum: 10\n      type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  locks:\n    items:\n      $ref: '#/components/schemas/lock'\n    readOnly: true\n    type: array\n  name:\n    type: string\n  security-groups:\n    items:\n      $ref: '#/components/schemas/resource'\n    type: array\n  snapshots:\n    items:\n      $ref: '#/components/schemas/resource'\n    readOnly: true\n    type: array\n  ssh-key:\n    type: string\n  state:\n    $ref: '#/components/schemas/instance-state'\n  tags:\n    additionalProperties:\n      type: string\n    type: object\n  template:\n    $ref: '#/components/schemas/template-spec'\n  user-data:\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -4397,6 +4361,42 @@ func xRegister(subcommand bool) {
 		root.AddCommand(cmd)
 
 		cmd.Flags().String("start", "", "")
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-instances",
+			Short:   "list-instances",
+			Long:    cli.Markdown("List instances"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListInstances(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+		root.AddCommand(cmd)
+
+		cmd.Flags().String("state", "", "")
 
 		cli.SetCustomFlags(cmd)
 
@@ -4448,7 +4448,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-instance-pool",
 			Short:   "create-instance-pool",
-			Long:    cli.Markdown("Create Instance Pool\n## Request Schema (application/json)\n\nproperties:\n  createdAt:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  diskSize:\n    allOf:\n    - format: int64\n      type: integer\n    - format: int64\n      minimum: 10\n      type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instanceType:\n    $ref: '#/components/schemas/instance-type'\n  locks:\n    items:\n      $ref: '#/components/schemas/lock'\n    type: array\n  name:\n    type: string\n  securityGroups:\n    items:\n      $ref: '#/components/schemas/resource'\n    type: array\n  sshKey:\n    type: string\n  state:\n    enum:\n    - scaling-up\n    - scaling-down\n    - destroying\n    - creating\n    - running\n    - destroyed\n    readOnly: true\n    type: string\n  tags:\n    additionalProperties:\n      type: string\n    type: object\n  template:\n    $ref: '#/components/schemas/template-spec'\n  topology:\n    $ref: '#/components/schemas/topology'\n  userData:\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Create Instance Pool\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  disk-size:\n    all-of:\n    - format: int64\n      type: integer\n    - exclusiveMinimum: false\n      format: int64\n      minimum: 10\n      type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  locks:\n    items:\n      $ref: '#/components/schemas/lock'\n    type: array\n  name:\n    type: string\n  security-groups:\n    items:\n      $ref: '#/components/schemas/resource'\n    type: array\n  ssh-key:\n    type: string\n  state:\n    enum:\n    - scaling-up\n    - scaling-down\n    - destroying\n    - creating\n    - running\n    - destroyed\n    readOnly: true\n    type: string\n  tags:\n    additionalProperties:\n      type: string\n    type: object\n  template:\n    $ref: '#/components/schemas/template-spec'\n  topology:\n    $ref: '#/components/schemas/topology'\n  user-data:\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -4518,14 +4518,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "show-instance-pool-details id",
-			Short:   "show-instance-pool-details",
+			Use:     "get-instance-pool id",
+			Short:   "get-instance-pool",
 			Long:    cli.Markdown("Show Instance Pool details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XShowInstancePoolDetails(args[0], params)
+				_, decoded, err := XGetInstancePool(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4668,7 +4668,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-instance-pool-user-data id",
 			Short:   "update-instance-pool-user-data",
-			Long:    cli.Markdown("Update Instance Pool user-data for newly created machines\n## Request Schema (application/json)\n\nproperties:\n  userData:\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Update Instance Pool user-data for newly created machines\n## Request Schema (application/json)\n\nproperties:\n  user-data:\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -4738,14 +4738,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "instance id",
-			Short:   "instance",
-			Long:    cli.Markdown("Show Compute instance details"),
+			Use:     "destroy-instance id",
+			Short:   "destroy-instance",
+			Long:    cli.Markdown("Destroy Compute instance"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XInstance(args[0], params)
+				_, decoded, err := XDestroyInstance(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4772,14 +4772,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "destroy-instance id",
-			Short:   "destroy-instance",
-			Long:    cli.Markdown("Destroy Compute instance"),
+			Use:     "get-instance id",
+			Short:   "get-instance",
+			Long:    cli.Markdown("Show Compute instance details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XDestroyInstance(args[0], params)
+				_, decoded, err := XGetInstance(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -4846,7 +4846,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "attach-elastic-ip-on-instance id",
 			Short:   "attach-elastic-ip-on-instance",
-			Long:    cli.Markdown("Attach an Elastic IP on Compute instance\n## Request Schema (application/json)\n\nproperties:\n  elasticIp:\n    format: uuid\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Attach an Elastic IP on Compute instance\n## Request Schema (application/json)\n\nproperties:\n  elastic-ip:\n    format: uuid\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -4960,7 +4960,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "detach-elastic-ip-from-instance id",
 			Short:   "detach-elastic-ip-from-instance",
-			Long:    cli.Markdown("Detach an Elastic IP from Compute instance\n## Request Schema (application/json)\n\nproperties:\n  elasticIp:\n    format: uuid\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Detach an Elastic IP from Compute instance\n## Request Schema (application/json)\n\nproperties:\n  elastic-ip:\n    format: uuid\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -4998,7 +4998,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-instance-type id",
 			Short:   "update-instance-type",
-			Long:    cli.Markdown("Update Compute instance type\n## Request Schema (application/json)\n\nproperties:\n  instanceType:\n    $ref: '#/components/schemas/instance-type'\ntype: object\n"),
+			Long:    cli.Markdown("Update Compute instance type\n## Request Schema (application/json)\n\nproperties:\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -5222,7 +5222,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-instance-reverse-dns id",
 			Short:   "update-instance-reverse-dns",
-			Long:    cli.Markdown("Set reverse DNS record for Compute instance\n## Request Schema (application/json)\n\nproperties:\n  reverseDns:\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Set reverse DNS record for Compute instance\n## Request Schema (application/json)\n\nproperties:\n  reverse-dns:\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -5260,7 +5260,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-instance-security-groups id",
 			Short:   "update-instance-security-groups",
-			Long:    cli.Markdown("Update Compute instance Security Groups\n## Request Schema (application/json)\n\nproperties:\n  securityGroups:\n    items:\n      properties:\n        id:\n          format: uuid\n          type: string\n        name:\n          type: string\n      type: object\n    type: array\ntype: object\n"),
+			Long:    cli.Markdown("Update Compute instance Security Groups\n## Request Schema (application/json)\n\nproperties:\n  security-groups:\n    items:\n      properties:\n        id:\n          format: uuid\n          type: string\n        name:\n          type: string\n      type: object\n    type: array\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -5376,7 +5376,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-instance-user-data id",
 			Short:   "update-instance-user-data",
-			Long:    cli.Markdown("Update Compute instance user data\n## Request Schema (application/json)\n\nproperties:\n  userData:\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Update Compute instance user data\n## Request Schema (application/json)\n\nproperties:\n  user-data:\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -5386,6 +5386,44 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XUpdateInstanceUserData(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-load-balancer",
+			Short:   "create-load-balancer",
+			Long:    cli.Markdown("Create a new load balancer\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  ip:\n    format: ipv4\n    readOnly: true\n    type: string\n  name:\n    type: string\n  services:\n    items:\n      $ref: '#/components/schemas/load-balancer-service'\n    type: array\n  state:\n    enum:\n    - destroying\n    - creating\n    - running\n    - error\n    readOnly: true\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateLoadBalancer(params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -5446,86 +5484,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "create-load-balancer",
-			Short:   "create-load-balancer",
-			Long:    cli.Markdown("Create a new load balancer\n## Request Schema (application/json)\n\nproperties:\n  createdAt:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  ip:\n    $ref: '#/components/schemas/resource'\n  name:\n    type: string\n  services:\n    items:\n      $ref: '#/components/schemas/load-balancer-service'\n    type: array\n  state:\n    enum:\n    - destroying\n    - creating\n    - running\n    - error\n    readOnly: true\n    type: string\ntype: object\n"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(0),
-			Run: func(cmd *cobra.Command, args []string) {
-				body, err := cli.GetBody("application/json", args[0:])
-				if err != nil {
-					log.Fatal().Err(err).Msg("Unable to get body")
-				}
-
-				_, decoded, err := XCreateLoadBalancer(params, body)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "delete-load-balancer-service service-id",
-			Short:   "delete-load-balancer-service",
-			Long:    cli.Markdown("Delete a single load balancer service from a load balancer"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XDeleteLoadBalancerService(args[0], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "show-load-balancer-service-details service-id",
-			Short:   "show-load-balancer-service-details",
+			Use:     "get-load-balancer-service service-id",
+			Short:   "get-load-balancer-service",
 			Long:    cli.Markdown("Show load balancer service details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XShowLoadBalancerServiceDetails(args[0], params)
+				_, decoded, err := XGetLoadBalancerService(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -5554,7 +5520,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-load-balancer-service service-id",
 			Short:   "update-load-balancer-service",
-			Long:    cli.Markdown("Update a load balancer service name\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/healthcheck'\n  name:\n    type: string\n  port:\n    format: int64\n    type: integer\n  protocol:\n    enum:\n    - tcp\n    - udp\n    type: string\n  strategy:\n    enum:\n    - round-robin\n    - source-hash\n    type: string\n  targetPort:\n    format: int64\n    type: integer\ntype: object\n"),
+			Long:    cli.Markdown("Update a load balancer service name\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/healthcheck'\n  name:\n    type: string\n  port:\n    format: int64\n    type: integer\n  protocol:\n    enum:\n    - tcp\n    - udp\n    type: string\n  strategy:\n    enum:\n    - round-robin\n    - source-hash\n    type: string\n  target-port:\n    format: int64\n    type: integer\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -5590,48 +5556,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "destroy-load-balancer id",
-			Short:   "destroy-load-balancer",
-			Long:    cli.Markdown("Destroy a load balancer"),
+			Use:     "delete-load-balancer-service service-id",
+			Short:   "delete-load-balancer-service",
+			Long:    cli.Markdown("Delete a single load balancer service from a load balancer"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XDestroyLoadBalancer(args[0], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "show-load-balancer-details id",
-			Short:   "show-load-balancer-details",
-			Long:    cli.Markdown("Show load balancer details"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XShowLoadBalancerDetails(args[0], params)
+				_, decoded, err := XDeleteLoadBalancerService(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -5696,9 +5628,77 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "destroy-load-balancer id",
+			Short:   "destroy-load-balancer",
+			Long:    cli.Markdown("Destroy a load balancer"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDestroyLoadBalancer(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-load-balancer id",
+			Short:   "get-load-balancer",
+			Long:    cli.Markdown("Show load balancer details"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetLoadBalancer(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "add-service-to-load-balancer id",
 			Short:   "add-service-to-load-balancer",
-			Long:    cli.Markdown("Add a single service to a load balancer\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/healthcheck'\n  healthcheckStatus:\n    items:\n      $ref: '#/components/schemas/load-balancer-server-status'\n    readOnly: true\n    type: array\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instancePool:\n    $ref: '#/components/schemas/resource'\n  name:\n    type: string\n  port:\n    format: int64\n    type: integer\n  protocol:\n    enum:\n    - tcp\n    - udp\n    type: string\n  state:\n    enum:\n    - destroying\n    - creating\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  strategy:\n    enum:\n    - round-robin\n    - source-hash\n    type: string\n  targetPort:\n    format: int64\n    type: integer\ntype: object\n"),
+			Long:    cli.Markdown("Add a single service to a load balancer\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/healthcheck'\n  healthcheck-status:\n    items:\n      $ref: '#/components/schemas/load-balancer-server-status'\n    readOnly: true\n    type: array\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  name:\n    type: string\n  port:\n    format: int64\n    type: integer\n  protocol:\n    enum:\n    - tcp\n    - udp\n    type: string\n  state:\n    enum:\n    - destroying\n    - creating\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  strategy:\n    enum:\n    - round-robin\n    - source-hash\n    type: string\n  target-port:\n    format: int64\n    type: integer\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -5942,14 +5942,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "security-group id",
-			Short:   "security-group",
+			Use:     "get-security-group id",
+			Short:   "get-security-group",
 			Long:    cli.Markdown("Show Compute security group details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XSecurityGroup(args[0], params)
+				_, decoded, err := XGetSecurityGroup(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -6192,14 +6192,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "snapshot id",
-			Short:   "snapshot",
-			Long:    cli.Markdown("Show compute snapshot details"),
+			Use:     "destroy-snapshot id",
+			Short:   "destroy-snapshot",
+			Long:    cli.Markdown("Destroy snapshot"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XSnapshot(args[0], params)
+				_, decoded, err := XDestroySnapshot(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -6226,14 +6226,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "destroy-snapshot id",
-			Short:   "destroy-snapshot",
-			Long:    cli.Markdown("Destroy snapshot"),
+			Use:     "get-snapshot id",
+			Short:   "get-snapshot",
+			Long:    cli.Markdown("Show compute snapshot details"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XDestroySnapshot(args[0], params)
+				_, decoded, err := XGetSnapshot(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -6407,7 +6407,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "register-template",
 			Short:   "register-template",
-			Long:    cli.Markdown("Register a template\n## Request Schema (application/json)\n\nproperties:\n  createdAt:\n    format: date-time\n    readOnly: true\n    type: string\n  defaultUser:\n    type: string\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  os:\n    $ref: '#/components/schemas/template-spec'\n  passwordEnabled:\n    type: boolean\n  protocols:\n    properties:\n      name:\n        type: string\n      port:\n        type: string\n    type: object\n  restrictions:\n    properties:\n      instanceTypes:\n        items:\n          $ref: '#/components/schemas/instance-type'\n        type: array\n      size:\n        properties:\n          max:\n            format: int64\n            type: integer\n          min:\n            format: int64\n            type: integer\n        type: object\n    type: object\n  revision:\n    type: string\n  tags:\n    additionalProperties:\n      type: string\n    type: object\n  url:\n    type: string\n  visibility:\n    enum:\n    - official\n    - public\n    - custom\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("Register a template\n## Request Schema (application/json)\n\nproperties:\n  build:\n    type: string\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  default-user:\n    type: string\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  os:\n    $ref: '#/components/schemas/template-spec'\n  password-enabled:\n    type: boolean\n  protocols:\n    properties:\n      name:\n        type: string\n      port:\n        type: string\n    type: object\n  restrictions:\n    properties:\n      instance-types:\n        items:\n          $ref: '#/components/schemas/instance-type'\n        type: array\n      size:\n        properties:\n          max:\n            format: int64\n            type: integer\n          min:\n            format: int64\n            type: integer\n        type: object\n    type: object\n  tags:\n    additionalProperties:\n      type: string\n    type: object\n  url:\n    type: string\n  visibility:\n    enum:\n    - official\n    - public\n    - custom\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
