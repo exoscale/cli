@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
 
-type instancePoolItem struct {
+type instancePoolListItemOutput struct {
 	ID    string                     `json:"id"`
 	Name  string                     `json:"name"`
 	Zone  string                     `json:"zone"`
@@ -16,16 +17,11 @@ type instancePoolItem struct {
 	State egoscale.InstancePoolState `json:"state"`
 }
 
-type instancePoolListItemOutput []instancePoolItem
+type instancePoolListOutput []instancePoolListItemOutput
 
-func (o *instancePoolListItemOutput) toJSON()  { outputJSON(o) }
-func (o *instancePoolListItemOutput) toText()  { outputText(o) }
-func (o *instancePoolListItemOutput) toTable() { outputTable(o) }
-
-type instancePoolFetchResult struct {
-	instancePoolListItemOutput
-	error
-}
+func (o *instancePoolListOutput) toJSON()  { outputJSON(o) }
+func (o *instancePoolListOutput) toText()  { outputText(o) }
+func (o *instancePoolListOutput) toTable() { outputTable(o) }
 
 var instancePoolListCmd = &cobra.Command{
 	Use:   "list",
@@ -33,75 +29,77 @@ var instancePoolListCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command lists instance pools.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolItem{}), ", ")),
+		strings.Join(outputterTemplateAnnotations(&instancePoolListItemOutput{}), ", ")),
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		zoneFlag, err := cmd.Flags().GetString("zone")
+		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
 		}
-		zoneFlag = strings.ToLower(zoneFlag)
+		zone = strings.ToLower(zone)
 
-		var zones []egoscale.Zone
-		if zoneFlag == "" {
-			resp, err := cs.Request(egoscale.ListZones{})
-			if err != nil {
-				return err
-			}
-			zones = resp.(*egoscale.ListZonesResponse).Zone
-		} else {
-			zone, err := getZoneByName(zoneFlag)
-			if err != nil {
-				return err
-			}
-			zones = append(zones, *zone)
-		}
-
-		results := make(chan instancePoolFetchResult, len(zones))
-		defer close(results)
-
-		for _, zone := range zones {
-			go getInstancePool(results, zone)
-		}
-
-		o := make(instancePoolListItemOutput, 0, len(zones))
-		for range zones {
-			result := <-results
-			if result.error != nil {
-				return err
-			}
-
-			o = append(o, result.instancePoolListItemOutput...)
-		}
-
-		return output(&o, nil)
+		return output(listInstancePools(zone))
 	},
 }
 
-func getInstancePool(result chan instancePoolFetchResult, zone egoscale.Zone) {
-	resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePools{
-		ZoneID: zone.ID,
-	})
+func listInstancePools(zone string) (outputter, error) {
+	var (
+		zonesIndex        = make(map[string]egoscale.Zone)
+		instancePoolZones = make([]string, 0)
+	)
+
+	// We have to index existing zones per name in advance, as forEachZone()
+	// expects a zone name but we'll need the zone UUID to perform the CS-style
+	// calls in the callback function.
+	resp, err := cs.RequestWithContext(gContext, egoscale.ListZones{})
 	if err != nil {
-		result <- instancePoolFetchResult{nil, err}
-		return
+		return nil, err
 	}
-	r := resp.(*egoscale.ListInstancePoolsResponse)
-	output := make(instancePoolListItemOutput, 0, r.Count)
-	for _, i := range r.InstancePools {
-		output = append(output, instancePoolItem{
-			ID:    i.ID.String(),
-			Name:  i.Name,
-			Zone:  zone.Name,
-			Size:  i.Size,
-			State: i.State,
-		})
+	for _, z := range resp.(*egoscale.ListZonesResponse).Zone {
+		if zone != "" && z.Name != zone {
+			continue
+		}
+
+		zonesIndex[z.Name] = z
+		instancePoolZones = append(instancePoolZones, z.Name)
 	}
 
-	result <- instancePoolFetchResult{output, nil}
+	out := make(instancePoolListOutput, 0)
+	res := make(chan instancePoolListItemOutput)
+	defer close(res)
+
+	go func() {
+		for instancePool := range res {
+			out = append(out, instancePool)
+		}
+	}()
+	err = forEachZone(instancePoolZones, func(zone string) error {
+		resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePools{ZoneID: zonesIndex[zone].ID})
+		if err != nil {
+			return err
+		}
+
+		for _, i := range resp.(*egoscale.ListInstancePoolsResponse).InstancePools {
+			res <- instancePoolListItemOutput{
+				ID:    i.ID.String(),
+				Name:  i.Name,
+				Zone:  zone,
+				Size:  i.Size,
+				State: i.State,
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr,
+			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+	}
+
+	return &out, nil
 }
 
 func init() {
-	instancePoolListCmd.Flags().StringP("zone", "z", "", "List Instance pool by zone")
+	instancePoolListCmd.Flags().StringP("zone", "z", "", "Zone to filter results to")
 	instancePoolCmd.AddCommand(instancePoolListCmd)
 }
