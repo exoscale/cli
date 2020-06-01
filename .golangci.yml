@@ -4,7 +4,6 @@ linters-settings:
 
 linters:
   enable:
-    - goconst
     - gofmt
     - golint
     - megacheck

@@ -1,6 +1,21 @@
 Changelog
 =========
 
+0.26.2
+------
+
+- change: updated OpenAPI code-generated API V2 bindings
+
+0.26.1
+------
+
+- change: the `DisplayText` property of `RegisterCustomTemplate` is now optional (#433)
+
+0.26.0
+------
+
+- feature: Add support for Network Load Balancer resources (#432)
+
 0.25.0
 ------
 

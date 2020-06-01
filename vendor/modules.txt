@@ -70,7 +70,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.25.1-0.20200601073001-be348db2eb4e
+# github.com/exoscale/egoscale v0.26.2
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
@@ -236,8 +236,6 @@ golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
-# golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
-## explicit
 # golang.org/x/sys v0.0.0-20200523222454-059865788121
 ## explicit
 golang.org/x/sys/cpu

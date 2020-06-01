@@ -213,9 +213,9 @@ func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 	return response, errorReq
 }
 
-// forEachZone executes the function f in all the specified zones, and return a multierror.Error containing all
+// forEachZone executes the function f for each specified zone, and return a multierror.Error containing all
 // errors that may have occurred during execution.
-func forEachZone(zones []string, f func(string) error) error {
+func forEachZone(zones []string, f func(zone string) error) error {
 	var meg = new(multierror.Group)
 
 	for _, zone := range zones {

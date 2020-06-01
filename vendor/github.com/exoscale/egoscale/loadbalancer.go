@@ -2,6 +2,7 @@ package egoscale
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -17,25 +18,17 @@ type NetworkLoadBalancerServerStatus struct {
 	Status     string
 }
 
-func nlbServerStatusFromAPI(svc *v2.LoadBalancerService) []*NetworkLoadBalancerServerStatus {
-	serverStatus := make([]*NetworkLoadBalancerServerStatus, 0)
-
-	if svc.HealthcheckStatus != nil {
-		for _, st := range *svc.HealthcheckStatus {
-			serverStatus = append(serverStatus, &NetworkLoadBalancerServerStatus{
-				InstanceIP: net.ParseIP(optionalString(st.PublicIp)),
-				Status:     optionalString(st.Status),
-			})
-		}
+func nlbServerStatusFromAPI(st *v2.LoadBalancerServerStatus) *NetworkLoadBalancerServerStatus {
+	return &NetworkLoadBalancerServerStatus{
+		InstanceIP: net.ParseIP(optionalString(st.PublicIp)),
+		Status:     optionalString(st.Status),
 	}
-
-	return serverStatus
 }
 
 // NetworkLoadBalancerServiceHealthcheck represents a Network Load Balancer service healthcheck.
 type NetworkLoadBalancerServiceHealthcheck struct {
 	Mode     string
-	Port     int64
+	Port     uint16
 	Interval time.Duration
 	Timeout  time.Duration
 	Retries  int64
@@ -49,8 +42,8 @@ type NetworkLoadBalancerService struct {
 	Description       string
 	InstancePoolID    string
 	Protocol          string
-	Port              int64
-	TargetPort        int64
+	Port              uint16
+	TargetPort        uint16
 	Strategy          string
 	Healthcheck       NetworkLoadBalancerServiceHealthcheck
 	State             string
@@ -64,19 +57,30 @@ func nlbServiceFromAPI(svc *v2.LoadBalancerService) *NetworkLoadBalancerService 
 		Description:    optionalString(svc.Description),
 		InstancePoolID: optionalString(svc.InstancePool.Id),
 		Protocol:       optionalString(svc.Protocol),
-		Port:           optionalInt64(svc.Port),
-		TargetPort:     optionalInt64(svc.TargetPort),
+		Port:           uint16(optionalInt64(svc.Port)),
+		TargetPort:     uint16(optionalInt64(svc.TargetPort)),
 		Strategy:       optionalString(svc.Strategy),
 		Healthcheck: NetworkLoadBalancerServiceHealthcheck{
 			Mode:     optionalString(svc.Healthcheck.Mode),
-			Port:     optionalInt64(svc.Healthcheck.Port),
+			Port:     uint16(optionalInt64(svc.Healthcheck.Port)),
 			Interval: time.Duration(optionalInt64(svc.Healthcheck.Interval)) * time.Second,
 			Timeout:  time.Duration(optionalInt64(svc.Healthcheck.Timeout)) * time.Second,
 			Retries:  optionalInt64(svc.Healthcheck.Retries),
 			URI:      optionalString(svc.Healthcheck.Uri),
 		},
-		HealthcheckStatus: nlbServerStatusFromAPI(svc),
-		State:             optionalString(svc.State),
+		HealthcheckStatus: func() []*NetworkLoadBalancerServerStatus {
+			statuses := make([]*NetworkLoadBalancerServerStatus, 0)
+
+			if svc.HealthcheckStatus != nil {
+				for _, st := range *svc.HealthcheckStatus {
+					st := st
+					statuses = append(statuses, nlbServerStatusFromAPI(&st))
+				}
+			}
+
+			return statuses
+		}(),
+		State: optionalString(svc.State),
 	}
 }
 
@@ -118,11 +122,33 @@ func nlbFromAPI(nlb *v2.LoadBalancer) *NetworkLoadBalancer {
 }
 
 // AddService adds a service to the Network Load Balancer instance.
-func (nlb *NetworkLoadBalancer) AddService(ctx context.Context, svc *NetworkLoadBalancerService) error {
+// Note: this method is subject to a race condition in the case of where multiple services sharing
+// the same name are created in parallel, it can return a pointer to a service that isn't the one
+// actually created by the caller.
+func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
+	svc *NetworkLoadBalancerService) (*NetworkLoadBalancerService, error) {
 	var (
+		port                = int64(svc.Port)
+		targetPort          = int64(svc.TargetPort)
+		healthcheckPort     = int64(svc.Healthcheck.Port)
 		healthcheckInterval = int64(svc.Healthcheck.Interval.Seconds())
 		healthcheckTimeout  = int64(svc.Healthcheck.Timeout.Seconds())
 	)
+
+	// The API doesn't return the NLB service created directly, so in order to return a
+	// *NetworkLoadBalancerService corresponding to the new service we have to manually
+	// compare the list of services on the NLB instance before and after the service
+	// creation, and identify the service that wasn't there before.
+	// Note: in case of multiple services creation in parallel this technique is subject
+	// to race condition as we could return an unrelated service. To prevent this, we
+	// also compare the name of the new service to the name specified in the svc
+	// parameter, however since the API doesn't enforce resource name unicity we're not
+	// 100% guaranteed this will uniquely identify the actual NLB service created in the
+	// case a user creates multiple NLB services sharing a same name.
+	services := make(map[string]struct{})
+	for _, svc := range nlb.Services {
+		services[svc.ID] = struct{}{}
+	}
 
 	resp, err := nlb.c.v2.AddServiceToLoadBalancerWithResponse(
 		apiv2.WithZone(ctx, nlb.zone),
@@ -132,38 +158,58 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context, svc *NetworkLoad
 			Description: &svc.Description,
 			Healthcheck: &v2.Healthcheck{
 				Mode:     &svc.Healthcheck.Mode,
-				Port:     &svc.Healthcheck.Port,
+				Port:     &healthcheckPort,
 				Interval: &healthcheckInterval,
 				Timeout:  &healthcheckTimeout,
 				Retries:  &svc.Healthcheck.Retries,
-				Uri:      &svc.Healthcheck.URI,
+				Uri: func() *string {
+					if svc.Healthcheck.Mode == "http" {
+						return &svc.Healthcheck.URI
+					}
+					return nil
+				}(),
 			},
 			InstancePool: &v2.Resource{Id: &svc.InstancePoolID},
-			Port:         &svc.Port,
-			TargetPort:   &svc.TargetPort,
+			Port:         &port,
+			TargetPort:   &targetPort,
 			Protocol:     &svc.Protocol,
 			Strategy:     &svc.Strategy,
 		})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if resp.StatusCode() != http.StatusOK {
-		return fmt.Errorf("unexpected response from API: %s", resp.Status())
+		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
 	}
 
-	_, err = v2.NewPoller().
+	res, err := v2.NewPoller().
 		WithTimeout(nlb.c.Timeout).
 		Poll(ctx, nlb.c.v2.JobResultPoller(nlb.zone, *resp.JSON200.Id))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	nlbUpdated, err := nlb.c.GetNetworkLoadBalancer(ctx, nlb.zone, *res.(*v2.Resource).Id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Look for an unknown service: if we find one we hope it's the one we've just created.
+	for _, s := range nlbUpdated.Services {
+		if _, ok := services[svc.ID]; !ok && s.Name == svc.Name {
+			return s, nil
+		}
+	}
+
+	return nil, errors.New("unable to identify the service created")
 }
 
 // UpdateService updates the specified Network Load Balancer service.
 func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkLoadBalancerService) error {
 	var (
+		port                = int64(svc.Port)
+		targetPort          = int64(svc.TargetPort)
+		healthcheckPort     = int64(svc.Healthcheck.Port)
 		healthcheckInterval = int64(svc.Healthcheck.Interval.Seconds())
 		healthcheckTimeout  = int64(svc.Healthcheck.Timeout.Seconds())
 	)
@@ -175,13 +221,13 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 		v2.UpdateLoadBalancerServiceJSONRequestBody{
 			Name:        &svc.Name,
 			Description: &svc.Description,
-			Port:        &svc.Port,
-			TargetPort:  &svc.TargetPort,
+			Port:        &port,
+			TargetPort:  &targetPort,
 			Protocol:    &svc.Protocol,
 			Strategy:    &svc.Strategy,
 			Healthcheck: &v2.Healthcheck{
 				Mode:     &svc.Healthcheck.Mode,
-				Port:     &svc.Healthcheck.Port,
+				Port:     &healthcheckPort,
 				Interval: &healthcheckInterval,
 				Timeout:  &healthcheckTimeout,
 				Retries:  &svc.Healthcheck.Retries,
@@ -288,7 +334,13 @@ func (c *Client) GetNetworkLoadBalancer(ctx context.Context, zone, id string) (*
 		return nil, err
 	}
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
+		switch resp.StatusCode() {
+		case http.StatusNotFound:
+			return nil, ErrNotFound
+
+		default:
+			return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
+		}
 	}
 
 	nlb := nlbFromAPI(resp.JSON200)
@@ -312,7 +364,13 @@ func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string,
 		return nil, err
 	}
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
+		switch resp.StatusCode() {
+		case http.StatusNotFound:
+			return nil, ErrNotFound
+
+		default:
+			return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
+		}
 	}
 
 	res, err := v2.NewPoller().
@@ -327,9 +385,18 @@ func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string,
 
 // DeleteNetworkLoadBalancer deletes the specified Network Load Balancer instance in the specified zone.
 func (c *Client) DeleteNetworkLoadBalancer(ctx context.Context, zone, id string) error {
-	resp, err := c.v2.DestroyLoadBalancerWithResponse(apiv2.WithZone(ctx, zone), id)
+	resp, err := c.v2.DeleteLoadBalancerWithResponse(apiv2.WithZone(ctx, zone), id)
 	if err != nil {
 		return err
+	}
+	if resp.StatusCode() != http.StatusOK {
+		switch resp.StatusCode() {
+		case http.StatusNotFound:
+			return ErrNotFound
+
+		default:
+			return fmt.Errorf("unexpected response from API: %s", resp.Status())
+		}
 	}
 
 	_, err = v2.NewPoller().
