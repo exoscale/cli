@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
 	"strings"
 
@@ -32,7 +33,7 @@ func (o *vmShowOutput) toText()      { outputText(o) }
 func (o *vmShowOutput) toTable()     { outputTable(o) }
 
 func init() {
-	vmCmd.AddCommand(&cobra.Command{
+	vmShowCmd := &cobra.Command{
 		Use:   "show <name | id>",
 		Short: "Show a virtual machine details",
 		Long: fmt.Sprintf(`This command shows a Compute instance details.
@@ -45,9 +46,20 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
+			userDataOnly, err := cmd.Flags().GetBool("user-data")
+			if err != nil {
+				return err
+			}
+			if userDataOnly {
+				return showVMUserData(args[0])
+			}
+
 			return output(showVM(args[0]))
 		},
-	})
+	}
+
+	vmShowCmd.Flags().Bool("user-data", false, "Show current cloud-init user data configuration")
+	vmCmd.AddCommand(vmShowCmd)
 }
 
 func showVM(name string) (outputter, error) {
@@ -114,4 +126,27 @@ func showVM(name string) (outputter, error) {
 	}
 
 	return &out, nil
+}
+
+func showVMUserData(name string) error {
+	vm, err := getVirtualMachineByNameOrID(name)
+	if err != nil {
+		return err
+	}
+
+	resp, err := cs.SyncRequestWithContext(gContext, &egoscale.GetVirtualMachineUserData{
+		VirtualMachineID: vm.ID,
+	})
+	if err != nil {
+		return err
+	}
+
+	userData, err := base64.StdEncoding.DecodeString(resp.(*egoscale.VirtualMachineUserData).UserData)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(userData))
+
+	return nil
 }

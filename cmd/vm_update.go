@@ -7,9 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var vmEditCmd = &cobra.Command{
-	Use:   "edit <name|ID>",
-	Short: "Edit virtual machine properties",
+var vmUpdateCmd = &cobra.Command{
+	Use:   "update <name|ID>",
+	Short: "Update virtual machine properties",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
 			vmEdit egoscale.UpdateVirtualMachine
@@ -66,7 +66,7 @@ var vmEditCmd = &cobra.Command{
 }
 
 func init() {
-	vmEditCmd.Flags().String("name", "", "display name")
-	vmEditCmd.Flags().String("cloud-init-file", "", "path to a cloud-init user data file")
-	vmCmd.AddCommand(vmEditCmd)
+	vmUpdateCmd.Flags().String("name", "", "display name")
+	vmUpdateCmd.Flags().String("cloud-init-file", "", "path to a cloud-init user data file")
+	vmCmd.AddCommand(vmUpdateCmd)
 }
