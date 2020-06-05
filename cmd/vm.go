@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,6 +11,8 @@ import (
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
+
+const maxUserDataLength = 32768
 
 // vmCmd represents the vm command
 var vmCmd = &cobra.Command{
@@ -94,6 +97,20 @@ func deleteKeyPair(vmID egoscale.UUID) error {
 	}
 
 	return nil
+}
+
+func getUserDataFromFile(path string) (string, error) {
+	buf, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	userData := base64.StdEncoding.EncodeToString(buf)
+
+	if len(userData) >= maxUserDataLength {
+		return "", fmt.Errorf("user-data maximum allowed length is %d bytes", maxUserDataLength)
+	}
+
+	return userData, nil
 }
 
 func init() {

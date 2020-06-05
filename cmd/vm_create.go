@@ -1,17 +1,14 @@
 package cmd
 
 import (
-	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"strings"
 
-	"github.com/exoscale/cli/utils"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
-)
 
-const maxUserDataLength = 32768
+	"github.com/exoscale/cli/utils"
+)
 
 // vmCreateCmd represents the create command
 var vmCreateCmd = &cobra.Command{
@@ -31,21 +28,16 @@ var vmCreateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+
 		userDataPath, err := cmd.Flags().GetString("cloud-init-file")
 		if err != nil {
 			return err
 		}
-
 		userData := ""
-
 		if userDataPath != "" {
-			userData, err = getUserData(userDataPath)
+			userData, err = getUserDataFromFile(userDataPath)
 			if err != nil {
 				return err
-			}
-
-			if len(userData) >= maxUserDataLength {
-				return fmt.Errorf("user-data maximum allowed length is %d bytes", maxUserDataLength)
 			}
 		}
 
@@ -264,15 +256,6 @@ func getAffinityGroup(params []string) ([]egoscale.UUID, error) {
 	}
 
 	return ids, nil
-}
-
-func getUserData(userDataPath string) (string, error) {
-	buff, err := ioutil.ReadFile(userDataPath)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(buff), nil
 }
 
 func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachine, []error) {
