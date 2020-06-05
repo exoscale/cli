@@ -57,9 +57,11 @@ var vmEditCmd = &cobra.Command{
 			if !gQuiet {
 				fmt.Println("Virtual machine updated successfully")
 			}
+
+			return nil
 		}
 
-		return nil
+		return cmd.Usage()
 	},
 }
 
