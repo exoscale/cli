@@ -1,4 +1,4 @@
-FROM golang:1.14-buster as builder
+FROM golang:1.14-alpine as builder
 
 ADD . /src
 WORKDIR /src
@@ -10,7 +10,7 @@ ENV CGO_ENABLED=1
 RUN go build -mod vendor -o exo \
         -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${VCS_REF}"
 
-FROM ubuntu:eoan
+FROM alpine:3.12
 
 ARG VERSION
 ARG VCS_REF
@@ -26,14 +26,7 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.label-schema.url="https://exoscale.github.io/cli" \
       org.label-schema.schema-version="1.0"
 
-RUN set -xe \
- && apt-get update -q \
- && apt-get upgrade -q -y \
- && apt-get install -q -y \
-        ca-certificates \
- && apt-get autoremove -y \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /src/exo /
 ENTRYPOINT ["/exo"]
