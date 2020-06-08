@@ -113,13 +113,9 @@ Supported output template annotations: %s`,
 		userData := ""
 
 		if userDataPath != "" {
-			userData, err = getUserData(userDataPath)
+			userData, err = getUserDataFromFile(userDataPath)
 			if err != nil {
 				return err
-			}
-
-			if len(userData) >= maxUserDataLength {
-				return fmt.Errorf("user-data maximum allowed length is %d bytes", maxUserDataLength)
 			}
 		}
 
