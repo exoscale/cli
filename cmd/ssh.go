@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/exoscale/egoscale"
 	"github.com/kballard/go-shellquote"
@@ -26,17 +26,17 @@ var sshCmd = &cobra.Command{
 			return err
 		}
 
-		isInfo, err := cmd.Flags().GetBool("info")
+		printInfo, err := cmd.Flags().GetBool("info")
 		if err != nil {
 			return err
 		}
 
-		isConnectionSTR, err := cmd.Flags().GetBool("print")
+		printCmd, err := cmd.Flags().GetBool("print")
 		if err != nil {
 			return err
 		}
 
-		info, err := getSSHInfo(args[0], ipv6)
+		sshInfo, err := getSSHInfo(args[0], ipv6)
 		if err != nil {
 			return err
 		}
@@ -45,24 +45,27 @@ var sshCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		info.opts = sshOpts
+		sshInfo.opts = sshOpts
 
-		if isConnectionSTR {
-			printSSHConnectSTR(info)
+		if printInfo {
+			printSSHInfo(sshInfo)
 			return nil
 		}
 
-		if isInfo {
-			printSSHInfo(info)
+		sshCmd := buildSSHCommand(sshInfo)
+
+		if printCmd {
+			fmt.Println(strings.Join(sshCmd, " "))
 			return nil
 		}
-		return connectSSH(info)
+
+		return connectSSH(sshCmd[1:])
 	},
 }
 
 type sshInfo struct {
 	sshKeys  string
-	userName string
+	username string
 	opts     string
 	ip       net.IP
 	vmName   string
@@ -70,28 +73,31 @@ type sshInfo struct {
 }
 
 func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
+	var info sshInfo
+
 	vm, err := getVirtualMachineByNameOrID(name)
 	if err != nil {
 		return nil, err
 	}
+	info.vmID = vm.ID
+	info.vmName = vm.Name
 
-	sshKeyPath := getKeyPairPath(vm.ID.String())
+	info.sshKeys = getKeyPairPath(vm.ID.String())
 
 	nic := vm.DefaultNic()
 	if nic == nil {
 		return nil, fmt.Errorf("this instance %q has no default NIC", vm.ID)
 	}
 
-	vmIP := vm.IP()
-
+	info.ip = *vm.IP()
 	if isIpv6 {
 		if nic.IP6Address == nil {
 			return nil, fmt.Errorf("missing IPv6 address on the instance %q", vm.ID)
 		}
-		vmIP = &nic.IP6Address
+		info.ip = nic.IP6Address
 	}
 
-	if vmIP == nil {
+	if info.ip == nil {
 		return nil, fmt.Errorf("no valid IP address found")
 	}
 
@@ -107,61 +113,52 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 	}
 
 	template := resp.(*egoscale.Template)
-	tempUser, ok := template.Details["username"]
-	if !ok {
-		return nil, fmt.Errorf("missing username information in Template %q", template.ID)
+	username, ok := template.Details["username"]
+	if ok {
+		info.username = username
 	}
 
-	return &sshInfo{
-		sshKeys:  sshKeyPath,
-		userName: tempUser,
-		ip:       *vmIP,
-		vmName:   vm.Name,
-		vmID:     vm.ID,
-	}, nil
+	return &info, nil
 
 }
 
-func printSSHConnectSTR(info *sshInfo) {
-	sshArgs := ""
+func buildSSHCommand(info *sshInfo) []string {
+	cmd := []string{"ssh"}
 
 	if _, err := os.Stat(info.sshKeys); err == nil {
-		sshArgs = fmt.Sprintf("-i %q ", info.sshKeys)
+		cmd = append(cmd, "-i", fmt.Sprintf("%q", info.sshKeys))
 	}
 
-	fmt.Printf("ssh %s%s@%s\n", sshArgs, info.userName, info.ip)
+	if info.opts != "" {
+		opts, err := shellquote.Split(info.opts)
+		if err == nil {
+			cmd = append(cmd, opts...)
+		}
+	}
+
+	if info.username != "" {
+		cmd = append(cmd, "-l", info.username)
+	}
+
+	cmd = append(cmd, info.ip.String())
+
+	return cmd
 }
 
 func printSSHInfo(info *sshInfo) {
 	fmt.Println("Host", info.vmName)
 	fmt.Println("\tHostName", info.ip.String())
-	fmt.Println("\tUser", info.userName)
+
+	if info.username != "" {
+		fmt.Println("\tUser", info.username)
+	}
+
 	if _, err := os.Stat(info.sshKeys); err == nil {
 		fmt.Println("\tIdentityFile", info.sshKeys)
 	}
 }
 
-func connectSSH(info *sshInfo) error {
-	args := make([]string, 0, 3)
-
-	if _, err := os.Stat(info.sshKeys); os.IsNotExist(err) {
-		log.Printf("Warning: Identity file %s not found or not accessible.", info.sshKeys)
-	} else {
-		args = append(args, "-i")
-		args = append(args, info.sshKeys)
-	}
-
-	if info.opts != "" {
-		opts, err := shellquote.Split(info.opts)
-		if err != nil {
-			return fmt.Errorf("invalid SSH options: %s", err)
-		}
-
-		args = append(args, opts...)
-	}
-
-	args = append(args, info.userName+"@"+info.ip.String())
-
+func connectSSH(args []string) error {
 	cmd := exec.Command("ssh", args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stderr = os.Stderr

@@ -168,13 +168,13 @@ var vmCreateCmd = &cobra.Command{
 
 		if !gQuiet {
 			fmt.Printf(`
-What do now?
+What to do now?
 
 1. Connect to the machine
 
 > exo ssh %s
 `, r[0].Name)
-			printSSHConnectSTR(sshinfo)
+			fmt.Println(strings.Join(buildSSHCommand(sshinfo), " "))
 			fmt.Printf(`
 2. Put the SSH configuration into ".ssh/config"
 
