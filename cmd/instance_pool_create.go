@@ -32,6 +32,10 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		if zoneName == "" {
+			zoneName = gCurrentAccount.DefaultZone
+		}
+
 		zone, err := getZoneByName(zoneName)
 		if err != nil {
 			return err
@@ -153,11 +157,6 @@ Supported output template annotations: %s`,
 
 func init() {
 	// Required Flags
-	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	if err := instancePoolCreateCmd.MarkFlagRequired("zone"); err != nil {
-		log.Fatal(err)
-	}
-
 	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "", serviceOfferingHelp)
 	if err := instancePoolCreateCmd.MarkFlagRequired("service-offering"); err != nil {
 		log.Fatal(err)
@@ -168,6 +167,7 @@ func init() {
 		log.Fatal(err)
 	}
 
+	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
 	instancePoolCreateCmd.Flags().IntP("size", "", 3, "Number of instance in the pool")
 	instancePoolCreateCmd.Flags().IntP("disk", "d", 50, "Disk size")
 	instancePoolCreateCmd.Flags().StringP("description", "", "", "Instance pool description")

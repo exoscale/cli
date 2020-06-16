@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
@@ -53,6 +52,10 @@ Supported output template annotations: %s`,
 }
 
 func showInstancePool(name, zoneName string) error {
+	if zoneName == "" {
+		zoneName = gCurrentAccount.DefaultZone
+	}
+
 	zone, err := getZoneByName(zoneName)
 	if err != nil {
 		return err
@@ -121,11 +124,6 @@ func showInstancePool(name, zoneName string) error {
 }
 
 func init() {
-	// Required Flags
 	instancePoolShowCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	if err := instancePoolShowCmd.MarkFlagRequired("zone"); err != nil {
-		log.Fatal(err)
-	}
-
 	instancePoolCmd.AddCommand(instancePoolShowCmd)
 }
