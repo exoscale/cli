@@ -20,8 +20,7 @@ import (
 )
 
 const (
-	defaultSOSZone = "ch-dk-2"
-	minioMaxRetry  = 2
+	minioMaxRetry = 2
 )
 
 // sosCmd represents the sos command
@@ -121,9 +120,6 @@ func newSOSClient(certsFile string) (*sosClient, error) {
 	}
 
 	z := gCurrentAccount.DefaultZone
-	if z == "" {
-		z = defaultSOSZone
-	}
 
 	if err = c.setZone(z); err != nil {
 		return nil, err

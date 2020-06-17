@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
@@ -38,11 +37,16 @@ var instancePoolShowCmd = &cobra.Command{
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
 	Aliases: gShowAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return cmd.Usage()
+			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
+		cmdSetZoneFlagFromDefault(cmd)
+
+		return cmdCheckRequiredFlags(cmd, []string{"zone"})
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
@@ -121,11 +125,6 @@ func showInstancePool(name, zoneName string) error {
 }
 
 func init() {
-	// Required Flags
 	instancePoolShowCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	if err := instancePoolShowCmd.MarkFlagRequired("zone"); err != nil {
-		log.Fatal(err)
-	}
-
 	instancePoolCmd.AddCommand(instancePoolShowCmd)
 }

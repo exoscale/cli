@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -17,11 +16,19 @@ var instancePoolCreateCmd = &cobra.Command{
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
 	Aliases: gCreateAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return cmd.Usage()
+			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
+		cmdSetZoneFlagFromDefault(cmd)
+
+		return cmdCheckRequiredFlags(cmd, []string{
+			"service-offering",
+			"template",
+		})
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		description, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
@@ -153,21 +160,10 @@ Supported output template annotations: %s`,
 
 func init() {
 	// Required Flags
-	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	if err := instancePoolCreateCmd.MarkFlagRequired("zone"); err != nil {
-		log.Fatal(err)
-	}
-
 	instancePoolCreateCmd.Flags().StringP("service-offering", "o", "", serviceOfferingHelp)
-	if err := instancePoolCreateCmd.MarkFlagRequired("service-offering"); err != nil {
-		log.Fatal(err)
-	}
-
 	instancePoolCreateCmd.Flags().StringP("template", "t", "", "Instance pool template")
-	if err := instancePoolCreateCmd.MarkFlagRequired("template"); err != nil {
-		log.Fatal(err)
-	}
 
+	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
 	instancePoolCreateCmd.Flags().IntP("size", "", 3, "Number of instance in the pool")
 	instancePoolCreateCmd.Flags().IntP("disk", "d", 50, "Disk size")
 	instancePoolCreateCmd.Flags().StringP("description", "", "", "Instance pool description")

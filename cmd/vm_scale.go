@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/exoscale/egoscale"
@@ -14,11 +13,14 @@ import (
 var vmScaleCmd = &cobra.Command{
 	Use:   "scale <vm name> [vm name] ...",
 	Short: "Scale virtual machine",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return cmd.Usage()
+			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
+		return cmdCheckRequiredFlags(cmd, []string{"service-offering"})
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		so, err := cmd.Flags().GetString("service-offering")
 		if err != nil {
 			return err
@@ -59,7 +61,4 @@ var vmScaleCmd = &cobra.Command{
 func init() {
 	vmCmd.AddCommand(vmScaleCmd)
 	vmScaleCmd.Flags().StringP("service-offering", "o", "", "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan")
-	if err := vmScaleCmd.MarkFlagRequired("service-offering"); err != nil {
-		log.Fatal(err)
-	}
 }

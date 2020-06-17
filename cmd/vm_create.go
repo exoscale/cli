@@ -15,11 +15,16 @@ var vmCreateCmd = &cobra.Command{
 	Use:     "create <vm name>+",
 	Short:   "Create and deploy a virtual machine",
 	Aliases: gCreateAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return cmd.Usage()
+			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
+		cmdSetZoneFlagFromDefault(cmd)
+
+		return cmdCheckRequiredFlags(cmd, []string{"zone"})
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		templateFilterCmd, err := cmd.Flags().GetString("template-filter")
 		if err != nil {
 			return err
@@ -44,10 +49,6 @@ var vmCreateCmd = &cobra.Command{
 		zoneName, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
-		}
-
-		if zoneName == "" {
-			zoneName = gCurrentAccount.DefaultZone
 		}
 
 		zone, err := getZoneByName(zoneName)

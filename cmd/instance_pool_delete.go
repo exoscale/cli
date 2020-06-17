@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -12,22 +11,27 @@ var instancePoolDeleteCmd = &cobra.Command{
 	Use:     "delete <name | id>+",
 	Short:   "Delete an instance pool",
 	Aliases: gDeleteAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return cmd.Usage()
+			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
+		cmdSetZoneFlagFromDefault(cmd)
+
+		return cmdCheckRequiredFlags(cmd, []string{"zone"})
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		force, err := cmd.Flags().GetBool("force")
 		if err != nil {
 			return err
 		}
 
-		zoneflag, err := cmd.Flags().GetString("zone")
+		zoneName, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
 		}
 
-		zone, err := getZoneByName(zoneflag)
+		zone, err := getZoneByName(zoneName)
 		if err != nil {
 			return err
 		}
@@ -65,12 +69,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	// Required Flags
 	instancePoolDeleteCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	if err := instancePoolDeleteCmd.MarkFlagRequired("zone"); err != nil {
-		log.Fatal(err)
-	}
-
 	instancePoolDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove instance pool without prompting for confirmation")
 	instancePoolCmd.AddCommand(instancePoolDeleteCmd)
 }
