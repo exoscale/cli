@@ -167,6 +167,7 @@ func initConfig() {
 
 	if envKey != "" && envSecret != "" {
 		gCurrentAccount.Name = "<environment variables>"
+		gConfigFilePath = "<environment variables>"
 		gCurrentAccount.Account = "unknown"
 		gCurrentAccount.Key = envKey
 		gCurrentAccount.Secret = envSecret

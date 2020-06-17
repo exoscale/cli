@@ -16,6 +16,7 @@ type configShowOutput struct {
 	ComputeAPIEndpoint string `json:"compute_api_endpoint,omitempty"`
 	StorageAPIEndpoint string `json:"storage_api_endpoint,omitempty"`
 	DNSAPIEndpoint     string `json:"dns_api_endpoint,omitempty" outputLabel:"DNS API Endpoint"`
+	ConfigFile         string `json:"config_file" outputLabel:"Configuration File"`
 }
 
 func (o *configShowOutput) Type() string { return "Account" }
@@ -60,6 +61,7 @@ func showConfig(name string) (outputter, error) {
 
 	out := configShowOutput{
 		Name:               account.Name,
+		ConfigFile:         gConfigFilePath,
 		APIKey:             account.Key,
 		APISecret:          secret,
 		DefaultZone:        account.DefaultZone,
