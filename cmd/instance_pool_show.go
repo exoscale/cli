@@ -37,11 +37,16 @@ var instancePoolShowCmd = &cobra.Command{
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
 	Aliases: gShowAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return cmd.Usage()
+			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
+		cmdSetZoneFlagFromDefault(cmd)
+
+		return cmdCheckRequiredFlags(cmd, []string{"zone"})
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
@@ -52,10 +57,6 @@ Supported output template annotations: %s`,
 }
 
 func showInstancePool(name, zoneName string) error {
-	if zoneName == "" {
-		zoneName = gCurrentAccount.DefaultZone
-	}
-
 	zone, err := getZoneByName(zoneName)
 	if err != nil {
 		return err

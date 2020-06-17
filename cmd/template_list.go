@@ -38,16 +38,17 @@ var templateListCmd = &cobra.Command{
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&templateListOutput{}), ", ")),
 	Aliases: gListAlias,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		cmdSetZoneFlagFromDefault(cmd)
+
+		return cmdCheckRequiredFlags(cmd, []string{"zone"})
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var templateFilter string
 
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
-		}
-
-		if zone == "" {
-			zone = gCurrentAccount.DefaultZone
 		}
 
 		community, err := cmd.Flags().GetBool("community")

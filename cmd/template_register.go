@@ -17,42 +17,41 @@ var templateRegisterCmd = &cobra.Command{
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&templateShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		cmdSetZoneFlagFromDefault(cmd)
+
+		return cmdCheckRequiredFlags(cmd, []string{
+			"zone",
+			"name",
+			"description",
+			"url",
+			"checksum",
+		})
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		name, err := cmd.Flags().GetString("name")
 		if err != nil {
 			return err
-		} else if name == "" {
-			return fmt.Errorf("template name must be specified")
 		}
 
 		description, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
-		} else if description == "" {
-			return fmt.Errorf("template description must be specified")
 		}
 
 		url, err := cmd.Flags().GetString("url")
 		if err != nil {
 			return err
-		} else if url == "" {
-			return fmt.Errorf("template image URL must be specified")
 		}
 
 		checksum, err := cmd.Flags().GetString("checksum")
 		if err != nil {
 			return err
-		} else if checksum == "" {
-			return fmt.Errorf("template image file checksum must be specified")
 		}
 
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
-		}
-
-		if zone == "" {
-			zone = gCurrentAccount.DefaultZone
 		}
 
 		disablePassword, err := cmd.Flags().GetBool("disable-password")

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -12,11 +11,14 @@ import (
 var vmResizeCmd = &cobra.Command{
 	Use:   "resize <vm name> [vm name] ...",
 	Short: "resize disk virtual machine instance",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			return cmd.Usage()
+			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
+		return cmdCheckRequiredFlags(cmd, []string{"disk"})
+	},
+	RunE: func(cmd *cobra.Command, args []string) error {
 		diskValue, err := cmd.Flags().GetInt64("disk")
 		if err != nil {
 			return err
@@ -87,7 +89,4 @@ func init() {
 	vmCmd.AddCommand(vmResizeCmd)
 	vmResizeCmd.Flags().Int64P("disk", "d", 0, "Disk size in GB")
 	vmResizeCmd.Flags().BoolP("force", "f", false, "Attempt to resize vitual machine without prompting for confirmation")
-	if err := vmResizeCmd.MarkFlagRequired("disk"); err != nil {
-		log.Fatal(err)
-	}
 }

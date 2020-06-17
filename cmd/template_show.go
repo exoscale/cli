@@ -33,10 +33,16 @@ func init() {
 
 Supported output template annotations: %s`,
 			strings.Join(outputterTemplateAnnotations(&templateShowOutput{}), ", ")),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
-				return cmd.Usage()
+				cmdExitOnUsageError(cmd, "invalid arguments")
 			}
+
+			cmdSetZoneFlagFromDefault(cmd)
+
+			return cmdCheckRequiredFlags(cmd, []string{"zone"})
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
 
 			templateFilterCmd, err := cmd.Flags().GetString("template-filter")
@@ -51,9 +57,6 @@ Supported output template annotations: %s`,
 			zoneName, err := cmd.Flags().GetString("zone")
 			if err != nil {
 				return err
-			}
-			if zoneName == "" {
-				zoneName = gCurrentAccount.DefaultZone
 			}
 
 			zone, err := getZoneByName(zoneName)
