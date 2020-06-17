@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"os/user"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -245,7 +246,7 @@ func initConfig() {
 
 	// All the stored data (e.g. ssh keys) will be put next to the config file.
 	gConfigFilePath = viper.ConfigFileUsed()
-	gConfigFolder = path.Dir(gConfigFilePath)
+	gConfigFolder = filepath.Dir(gConfigFilePath)
 
 	if err := viper.Unmarshal(config); err != nil {
 		log.Fatal(fmt.Errorf("couldn't read config: %s", err))
