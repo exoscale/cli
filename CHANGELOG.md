@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.13.0
+
+### New
+
+* Add support for Network Load Balancer resources management (`exo nlb`)
+* Command `exo vm snapshot export` can now download exported snapshots with flag `--download` (#249)
+* Arbitrary SSH client options can now be passed to the `exo ssh` command with flag `--ssh-options` (#250)
+* `exo help environment` displays information about supported environment variables (#253)
+* New command `exo vm update` to allow Compute instance properties modification (#255)
+* `exo config show` now displays the path to the currently used configuration file (#257)
+* Command `exo sos download` can now overwrite the destination file with flag `--force`
+
+### Bug Fixes
+
+* Fixed Snapcraft packaging (#243)
+* Fixed client User Agent setting (#248)
+* Fixed handling issues with username-less templates (#257)
+* Fixed configuration file detection on Windows (#259)
+
+### Changes
+
+* Improved SOS certificates handling on Windows (#244)
+* `exo zones` now displays zones sorted alphabetically (#246)
+* `exo sos list` now returns the buckets size (#252)
+* Commands that require a zone to be specified now default to the current account's default zone setting (#258)
 
 ## 1.12.0
 
