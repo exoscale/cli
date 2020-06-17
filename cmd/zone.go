@@ -40,8 +40,9 @@ func (o zoneListOutput) Less(x, y int) bool { return o[x].Name < o[y].Name }
 
 func init() {
 	RootCmd.AddCommand(&cobra.Command{
-		Use:   "zone",
-		Short: "List all available zones",
+		Use:     "zone",
+		Aliases: []string{"zones"},
+		Short:   "List all available zones",
 		Long: fmt.Sprintf(`This command lists available Exoscale zones.
 
 Supported output template annotations: %s`,
