@@ -184,7 +184,7 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 
 	res, err := v2.NewPoller().
 		WithTimeout(nlb.c.Timeout).
-		Poll(ctx, nlb.c.v2.JobResultPoller(nlb.zone, *resp.JSON200.Id))
+		Poll(ctx, nlb.c.v2.OperationPoller(nlb.zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -248,7 +248,7 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 
 	_, err = v2.NewPoller().
 		WithTimeout(nlb.c.Timeout).
-		Poll(ctx, nlb.c.v2.JobResultPoller(nlb.zone, *resp.JSON200.Id))
+		Poll(ctx, nlb.c.v2.OperationPoller(nlb.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -269,7 +269,7 @@ func (nlb *NetworkLoadBalancer) DeleteService(ctx context.Context, svc *NetworkL
 
 	_, err = v2.NewPoller().
 		WithTimeout(nlb.c.Timeout).
-		Poll(ctx, nlb.c.v2.JobResultPoller(nlb.zone, *resp.JSON200.Id))
+		Poll(ctx, nlb.c.v2.OperationPoller(nlb.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -295,7 +295,7 @@ func (c *Client) CreateNetworkLoadBalancer(ctx context.Context, zone string,
 
 	res, err := v2.NewPoller().
 		WithTimeout(c.Timeout).
-		Poll(ctx, c.v2.JobResultPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, c.v2.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -375,7 +375,7 @@ func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string,
 
 	res, err := v2.NewPoller().
 		WithTimeout(c.Timeout).
-		Poll(ctx, c.v2.JobResultPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, c.v2.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -401,7 +401,7 @@ func (c *Client) DeleteNetworkLoadBalancer(ctx context.Context, zone, id string)
 
 	_, err = v2.NewPoller().
 		WithTimeout(c.Timeout).
-		Poll(ctx, c.v2.JobResultPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, c.v2.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}

@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	resultStatePending = "pending"
-	resultStateSuccess = "success"
-	resultStateFailure = "failure"
-	resultStateTimeout = "timeout"
+	operationStatePending = "pending"
+	operationStateSuccess = "success"
+	operationStateFailure = "failure"
+	operationStateTimeout = "timeout"
 
 	defaultPollingInterval = 3 * time.Second
 )
@@ -22,8 +22,8 @@ const (
 // PollFunc represents a function invoked periodically in a polling loop. It returns a boolean flag
 // true if the job is completed or false if polling must continue, and any error that occurred
 // during the polling (which interrupts the polling regardless of the boolean flag value).
-// Upon successful completion, an interface descring an opaque result can be returned to the caller,
-// which will have to perform type assertion depending on the PollFunc implementation.
+// Upon successful completion, an interface descring an opaque operation can be returned to the
+// caller, which will have to perform type assertion depending on the PollFunc implementation.
 type PollFunc func(ctx context.Context) (bool, interface{}, error)
 
 // Poller represents a poller instance.
@@ -59,7 +59,7 @@ func (p *Poller) WithTimeout(timeout time.Duration) *Poller {
 }
 
 // Poll starts the polling routine, executing the provided polling function at the configured
-// polling interval. Upon successful polling, an opaque result is returned to the caller, which
+// polling interval. Upon successful polling, an opaque operation is returned to the caller, which
 // actual type has to asserted depending on the PollFunc executed.
 func (p *Poller) Poll(ctx context.Context, pf PollFunc) (interface{}, error) {
 	if p.timeout > 0 {
@@ -94,12 +94,12 @@ func (p *Poller) Poll(ctx context.Context, pf PollFunc) (interface{}, error) {
 	}
 }
 
-// JobResultPoller returns a PollFunc function which queries the state of the specified job.
+// OperationPoller returns a PollFunc function which queries the state of the specified job.
 // Upon successful job completion, the type of the interface{} returned by the PollFunc is a
 // pointer to a Resource object (*Resource).
-func (c *ClientWithResponses) JobResultPoller(zone string, jobID string) PollFunc {
+func (c *ClientWithResponses) OperationPoller(zone string, jobID string) PollFunc {
 	return func(ctx context.Context) (bool, interface{}, error) {
-		resp, err := c.GetResultWithResponse(v2.WithZone(ctx, zone), jobID)
+		resp, err := c.GetOperationWithResponse(v2.WithZone(ctx, zone), jobID)
 		if err != nil {
 			return true, nil, err
 		}
@@ -108,16 +108,16 @@ func (c *ClientWithResponses) JobResultPoller(zone string, jobID string) PollFun
 		}
 
 		switch *resp.JSON200.State {
-		case resultStatePending:
+		case operationStatePending:
 			return false, nil, nil
 
-		case resultStateSuccess:
+		case operationStateSuccess:
 			return true, resp.JSON200.Reference, nil
 
-		case resultStateFailure:
+		case operationStateFailure:
 			return true, nil, errors.New("job failed")
 
-		case resultStateTimeout:
+		case operationStateTimeout:
 			return true, nil, errors.New("job timed out")
 
 		default:

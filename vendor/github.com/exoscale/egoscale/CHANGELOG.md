@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.26.4
+------
+
+- Fixing typo in previous release
+
+0.26.3
+------
+
+- change: updated API V2 async operation code (#434)
+
 0.26.2
 ------
 
