@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.13.1
+
+### Internal
+
+* Updated egoscale library following API V2 changes
+
 ## 1.13.0
 
 ### New
