@@ -19,7 +19,7 @@ x-cmd:
 
 .PHONY: docker
 docker:
-	docker build -f $< \
+	docker build  \
 		-t exoscale/cli \
 		--build-arg VERSION="${VERSION}" \
 		--build-arg VCS_REF="${GIT_REVISION}" \
