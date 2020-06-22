@@ -18,6 +18,7 @@ import (
 
 var gContext context.Context
 
+var gConfig *viper.Viper
 var gConfigFolder string
 var gConfigFilePath string
 
@@ -107,6 +108,8 @@ func Execute(version, commit string) {
 }
 
 func init() {
+	gConfig = viper.New()
+
 	RootCmd.PersistentFlags().StringVarP(&gConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
 	RootCmd.PersistentFlags().StringVarP(&gAccountName, "use-account", "A", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
 	RootCmd.PersistentFlags().StringVarP(&gOutputFormat, "output-format", "O", "", "Output format (table|json|text), see \"exo output --help\" for more information")
@@ -223,19 +226,19 @@ func initConfig() {
 
 	if gConfigFilePath != "" {
 		// Use config file from the flag.
-		viper.SetConfigFile(gConfigFilePath)
+		gConfig.SetConfigFile(gConfigFilePath)
 	} else {
-		viper.SetConfigName("exoscale")
-		viper.AddConfigPath(gConfigFolder)
+		gConfig.SetConfigName("exoscale")
+		gConfig.AddConfigPath(gConfigFolder)
 		// Retain backwards compatibility
-		viper.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
-		viper.AddConfigPath(usr.HomeDir)
-		viper.AddConfigPath(".")
+		gConfig.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
+		gConfig.AddConfigPath(usr.HomeDir)
+		gConfig.AddConfigPath(".")
 	}
 
 	nonCredentialCmds := []string{"config", "version", "status"}
 
-	if err := viper.ReadInConfig(); err != nil {
+	if err := gConfig.ReadInConfig(); err != nil {
 		if isNonCredentialCmd(nonCredentialCmds...) {
 			ignoreClientBuild = true
 			return
@@ -245,10 +248,10 @@ func initConfig() {
 	}
 
 	// All the stored data (e.g. ssh keys) will be put next to the config file.
-	gConfigFilePath = viper.ConfigFileUsed()
+	gConfigFilePath = gConfig.ConfigFileUsed()
 	gConfigFolder = filepath.Dir(gConfigFilePath)
 
-	if err := viper.Unmarshal(config); err != nil {
+	if err := gConfig.Unmarshal(config); err != nil {
 		log.Fatal(fmt.Errorf("couldn't read config: %s", err))
 	}
 
@@ -258,7 +261,7 @@ func initConfig() {
 			return
 		}
 
-		log.Fatalf("no accounts were found into %q", viper.ConfigFileUsed())
+		log.Fatalf("no accounts were found into %q", gConfig.ConfigFileUsed())
 		return
 	}
 

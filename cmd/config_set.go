@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // setCmd represents the set command
@@ -16,16 +15,16 @@ var configSetCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 		if gAllAccount == nil {
-			return fmt.Errorf("no accounts are defined")
+			return fmt.Errorf("no accounts configured")
 		}
 
 		if a := getAccountByName(args[0]); a == nil {
 			return fmt.Errorf("account %q does not exist", args[0])
 		}
 
-		viper.Set("defaultAccount", args[0])
+		gConfig.Set("defaultAccount", args[0])
 
-		if err := saveConfig(viper.ConfigFileUsed(), nil); err != nil {
+		if err := saveConfig(gConfig.ConfigFileUsed(), nil); err != nil {
 			return err
 		}
 
