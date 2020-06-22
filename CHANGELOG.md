@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.13.2
+
+### Bug Fixes
+
+* Fixed subcommand config settings leaking (#260)
+* Fixed unused configuration cache file generation (#261)
+
 ## 1.13.1
 
 ### Internal
