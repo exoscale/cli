@@ -7,7 +7,7 @@ ARG VERSION
 ARG VCS_REF
 
 ENV CGO_ENABLED=0
-RUN go build -mod vendor -o exo \
+RUN go build -a -mod vendor -o exo \
         -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${VCS_REF}"
 
 FROM alpine:3.12.0 as ca-certificates
