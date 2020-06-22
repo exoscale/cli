@@ -1,4 +1,4 @@
-FROM golang:1.14-buster as builder
+FROM golang:1.14.4-alpine as builder
 
 ADD . /src
 WORKDIR /src
@@ -10,7 +10,14 @@ ENV CGO_ENABLED=0
 RUN go build -mod vendor -o exo \
         -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${VCS_REF}"
 
-FROM linuxkit/ca-certificates:v0.8
+FROM alpine:3.12.0 as ca-certificates
+
+RUN apk add ca-certificates
+
+FROM scratch
+
+WORKDIR /
+COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ARG VERSION
 ARG VCS_REF
