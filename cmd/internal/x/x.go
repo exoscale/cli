@@ -2,6 +2,7 @@ package x
 
 import (
 	"os"
+	"path"
 
 	"github.com/danielgtaylor/openapi-cli-generator/cli"
 	apiv2 "github.com/exoscale/egoscale/api/v2"
@@ -23,6 +24,14 @@ func InitCommand() *cobra.Command {
 	}
 
 	xRegister(false)
+
+	// We attempts to clean up the unused configuration cache file "$HOME/.x/cache.json" created by
+	// cli.Init(). Since we don't report errors as the `exo x` command is not advertised, this is
+	// best effort.
+	cacheFile := cli.Cache.ConfigFileUsed()
+	if err := os.Remove(cacheFile); err == nil {
+		os.Remove(path.Dir(cacheFile)) // golint:noerr
+	}
 
 	return cli.Root
 }
