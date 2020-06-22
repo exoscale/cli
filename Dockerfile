@@ -1,4 +1,4 @@
-FROM golang:1.14.4-alpine as builder
+FROM golang:1.14-alpine as builder
 
 ADD . /src
 WORKDIR /src
@@ -12,7 +12,7 @@ RUN go build -a -mod vendor -o exo \
 
 FROM alpine:3.12.0 as ca-certificates
 
-RUN apk add ca-certificates
+RUN apk add --no-cache ca-certificates
 
 FROM scratch
 
