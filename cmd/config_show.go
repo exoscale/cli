@@ -35,7 +35,7 @@ Supported output template annotations: %s`,
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if gAllAccount == nil {
-				return fmt.Errorf("no accounts are defined")
+				return fmt.Errorf("no accounts configured")
 			}
 			name := gCurrentAccount.AccountName()
 

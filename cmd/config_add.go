@@ -7,7 +7,6 @@ import (
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func init() {
@@ -23,10 +22,10 @@ func init() {
 			config := &config{Accounts: []account{*newAccount}}
 			if askQuestion("Set [" + newAccount.Name + "] as default account?") {
 				config.DefaultAccount = newAccount.Name
-				viper.Set("defaultAccount", newAccount.Name)
+				gConfig.Set("defaultAccount", newAccount.Name)
 			}
 
-			return saveConfig(viper.ConfigFileUsed(), config)
+			return saveConfig(gConfig.ConfigFileUsed(), config)
 		},
 	})
 }
@@ -37,14 +36,14 @@ func addConfigAccount(firstRun bool) error {
 		err    error
 	)
 
-	filePath := viper.ConfigFileUsed()
+	filePath := gConfig.ConfigFileUsed()
 
 	if firstRun {
 		if filePath, err = createConfigFile(defaultConfigFileName); err != nil {
 			return err
 		}
 
-		viper.SetConfigFile(filePath)
+		gConfig.SetConfigFile(filePath)
 	}
 
 	newAccount, err := promptAccountInformation()
@@ -53,7 +52,7 @@ func addConfigAccount(firstRun bool) error {
 	}
 	config.DefaultAccount = newAccount.Name
 	config.Accounts = []account{*newAccount}
-	viper.Set("defaultAccount", newAccount.Name)
+	gConfig.Set("defaultAccount", newAccount.Name)
 
 	if len(config.Accounts) == 0 {
 		return nil

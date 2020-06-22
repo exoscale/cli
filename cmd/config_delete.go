@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // deleteCmd represents the delete command
@@ -48,7 +47,7 @@ var configDeleteCmd = &cobra.Command{
 
 		gAllAccount.Accounts = append(gAllAccount.Accounts[:pos], gAllAccount.Accounts[pos+1:]...)
 
-		if err := saveConfig(viper.ConfigFileUsed(), nil); err != nil {
+		if err := saveConfig(gConfig.ConfigFileUsed(), nil); err != nil {
 			return err
 		}
 

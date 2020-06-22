@@ -15,7 +15,6 @@ import (
 	"github.com/go-ini/ini"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 type config struct {
@@ -128,8 +127,8 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 
 		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != gAllAccount.DefaultAccount {
 			fmt.Printf("Setting default account to [%s]\n", selectedAccount)
-			viper.Set("defaultAccount", selectedAccount)
-			return saveConfig(viper.ConfigFileUsed(), nil)
+			gConfig.Set("defaultAccount", selectedAccount)
+			return saveConfig(gConfig.ConfigFileUsed(), nil)
 		}
 
 		return nil
@@ -234,16 +233,16 @@ func saveConfig(filePath string, newAccounts *config) error {
 		}
 	}
 
-	viper.SetConfigType("toml")
-	viper.SetConfigFile(filePath)
+	gConfig.SetConfigType("toml")
+	gConfig.SetConfigFile(filePath)
 
-	viper.Set("accounts", accounts)
+	gConfig.Set("accounts", accounts)
 
-	if err := viper.WriteConfig(); err != nil {
+	if err := gConfig.WriteConfig(); err != nil {
 		return err
 	}
 
-	conf.DefaultAccount = viper.Get("defaultAccount").(string)
+	conf.DefaultAccount = gConfig.Get("defaultAccount").(string)
 	gAllAccount = conf
 
 	return nil
@@ -330,7 +329,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 		if option == "some" {
 			if !askQuestion(fmt.Sprintf("Do you want to import [%s] %s?", acc.Name(), acc.Key("key").String())) {
-				if viper.Get("defaultAccount") == nil {
+				if gConfig.Get("defaultAccount") == nil {
 					setdefaultAccount = i + 1
 				}
 				continue
@@ -396,7 +395,7 @@ func importCloudstackINI(option, csPath, cfgPath string) error {
 
 		if i == setdefaultAccount || isDefault {
 			config.DefaultAccount = csAccount.Name
-			viper.Set("defaultAccount", csAccount.Name)
+			gConfig.Set("defaultAccount", csAccount.Name)
 		}
 		gAllAccount = config
 	}
@@ -414,7 +413,7 @@ func createConfigFile(fileName string) (string, error) {
 
 	filepath := path.Join(gConfigFolder, fileName+".toml")
 
-	if viper.ConfigFileUsed() == "" {
+	if gConfig.ConfigFileUsed() == "" {
 		if _, err := os.Stat(filepath); !os.IsNotExist(err) {
 			return "", fmt.Errorf("%q exists already", filepath)
 		}
