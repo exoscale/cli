@@ -126,7 +126,7 @@ func buildSSHCommand(info *sshInfo) []string {
 	cmd := []string{"ssh"}
 
 	if _, err := os.Stat(info.sshKeys); err == nil {
-		cmd = append(cmd, "-i", fmt.Sprintf("%q", info.sshKeys))
+		cmd = append(cmd, "-i", info.sshKeys)
 	}
 
 	if info.opts != "" {
