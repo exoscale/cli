@@ -10,14 +10,9 @@ ENV CGO_ENABLED=0
 RUN go build -a -mod vendor -o exo \
         -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${VCS_REF}"
 
-FROM alpine:3.12.0 as ca-certificates
-
-RUN apk add --no-cache ca-certificates
-
-FROM scratch
+FROM alpine:3.12
 
 WORKDIR /
-COPY --from=ca-certificates /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 ARG VERSION
 ARG VCS_REF
@@ -32,6 +27,8 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
       org.label-schema.description="Exoscale CLI" \
       org.label-schema.url="https://exoscale.github.io/cli" \
       org.label-schema.schema-version="1.0"
+
+RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /src/exo /
 ENTRYPOINT ["/exo"]
