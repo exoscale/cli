@@ -30,5 +30,5 @@ func lookupNLB(ctx context.Context, zone, ref string) (*egoscale.NetworkLoadBala
 		}
 	}
 
-	return nil, fmt.Errorf("Network Load Balancer %q not found", ref)
+	return nil, fmt.Errorf("Network Load Balancer %q not found", ref) // nolint:golint
 }
