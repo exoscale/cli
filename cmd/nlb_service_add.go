@@ -10,7 +10,7 @@ import (
 )
 
 var nlbServiceAddCmd = &cobra.Command{
-	Use:   "add <NLB ID> <name>",
+	Use:   "add <NLB name | ID> <service name>",
 	Short: "Add a service to a Network Load Balancer",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
@@ -32,8 +32,8 @@ var nlbServiceAddCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			nlbID = args[0]
-			name  = args[1]
+			nlbRef = args[0]
+			name   = args[1]
 		)
 
 		zone, err := cmd.Flags().GetString("zone")
@@ -107,8 +107,8 @@ var nlbServiceAddCmd = &cobra.Command{
 			return err
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, ""))
-		nlb, err := cs.GetNetworkLoadBalancer(ctx, zone, nlbID)
+		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		nlb, err := lookupNLB(ctx, zone, nlbRef)
 		if err != nil {
 			return err
 		}
@@ -135,7 +135,7 @@ var nlbServiceAddCmd = &cobra.Command{
 		}
 
 		if !gQuiet {
-			return output(showNLBService(nlbID, svc.ID, zone))
+			return output(showNLBService(zone, nlb.ID, svc.ID))
 		}
 
 		return nil

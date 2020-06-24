@@ -9,7 +9,7 @@ import (
 )
 
 var nlbServiceDeleteCmd = &cobra.Command{
-	Use:     "delete <NLB ID> <ID>",
+	Use:     "delete <NLB name | ID> <service name | ID>",
 	Short:   "Delete a Network Load Balancer service",
 	Aliases: gRemoveAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -23,8 +23,8 @@ var nlbServiceDeleteCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			nlbID = args[0]
-			svcID = args[1]
+			nlbRef = args[0]
+			svcRef = args[1]
 		)
 
 		zone, err := cmd.Flags().GetString("zone")
@@ -43,13 +43,14 @@ var nlbServiceDeleteCmd = &cobra.Command{
 			}
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, ""))
-		nlb, err := cs.GetNetworkLoadBalancer(ctx, zone, nlbID)
+		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		nlb, err := lookupNLB(ctx, zone, nlbRef)
 		if err != nil {
 			return err
 		}
+
 		for _, svc := range nlb.Services {
-			if svc.ID == svcID {
+			if svc.ID == svcRef || svc.Name == svcRef {
 				if err := nlb.DeleteService(ctx, svc); err != nil {
 					return err
 				}

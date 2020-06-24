@@ -85,7 +85,7 @@ func (o *nlbServiceShowOutput) toTable() {
 }
 
 var nlbServiceShowCmd = &cobra.Command{
-	Use:   "show <NLB ID> <ID>",
+	Use:   "show <NLB name | ID> <service name | ID>",
 	Short: "Show a Network Load Balancer service details",
 	Long: fmt.Sprintf(`This command shows a Network Load Balancer service details.
 
@@ -107,20 +107,21 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		return output(showNLBService(args[0], args[1], zone))
+		return output(showNLBService(zone, args[0], args[1]))
 	},
 }
 
-func showNLBService(nlbID, svcID, zone string) (outputter, error) {
+func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
 	var svc *egoscale.NetworkLoadBalancerService
 
-	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, ""))
-	nlb, err := cs.GetNetworkLoadBalancer(ctx, zone, nlbID)
+	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	nlb, err := lookupNLB(ctx, zone, nlbRef)
 	if err != nil {
 		return nil, err
 	}
+
 	for _, s := range nlb.Services {
-		if s.ID == svcID {
+		if s.ID == svcRef || s.Name == svcRef {
 			svc = s
 			break
 		}

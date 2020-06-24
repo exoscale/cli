@@ -11,7 +11,7 @@ import (
 )
 
 var nlbServiceUpdateCmd = &cobra.Command{
-	Use:   "update <NLB ID> <service ID>",
+	Use:   "update <NLB name | ID> <service name | ID>",
 	Short: "Update a Network Load Balancer service",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
@@ -24,9 +24,9 @@ var nlbServiceUpdateCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			svc   *egoscale.NetworkLoadBalancerService
-			nlbID = args[0]
-			svcID = args[1]
+			svc    *egoscale.NetworkLoadBalancerService
+			nlbRef = args[0]
+			svcRef = args[1]
 		)
 
 		zone, err := cmd.Flags().GetString("zone")
@@ -34,14 +34,14 @@ var nlbServiceUpdateCmd = &cobra.Command{
 			return err
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, ""))
-		nlb, err := cs.GetNetworkLoadBalancer(ctx, zone, nlbID)
+		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		nlb, err := lookupNLB(ctx, zone, nlbRef)
 		if err != nil {
 			return err
 		}
 
 		for _, s := range nlb.Services {
-			if s.ID == svcID {
+			if s.ID == svcRef || s.Name == svcRef {
 				svc = s
 				break
 			}
@@ -151,7 +151,7 @@ var nlbServiceUpdateCmd = &cobra.Command{
 		}
 
 		if !gQuiet {
-			return output(showNLBService(nlb.ID, svc.ID, zone))
+			return output(showNLBService(zone, nlb.ID, svc.ID))
 		}
 
 		return nil

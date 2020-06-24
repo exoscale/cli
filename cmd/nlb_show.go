@@ -55,7 +55,7 @@ func (o *nlbShowOutput) toTable() {
 }
 
 var nlbShowCmd = &cobra.Command{
-	Use:   "show <ID>",
+	Use:   "show <name | ID>",
 	Short: "Show a Network Load Balancer details",
 	Long: fmt.Sprintf(`This command shows a Network Load Balancer details.
 
@@ -77,13 +77,13 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		return output(showNLB(args[0], zone))
+		return output(showNLB(zone, args[0]))
 	},
 }
 
-func showNLB(id, zone string) (outputter, error) {
-	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, ""))
-	nlb, err := cs.GetNetworkLoadBalancer(ctx, zone, id)
+func showNLB(zone, ref string) (outputter, error) {
+	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	nlb, err := lookupNLB(ctx, zone, ref)
 	if err != nil {
 		return nil, err
 	}

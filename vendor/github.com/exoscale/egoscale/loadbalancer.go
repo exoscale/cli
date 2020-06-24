@@ -122,9 +122,6 @@ func nlbFromAPI(nlb *v2.LoadBalancer) *NetworkLoadBalancer {
 }
 
 // AddService adds a service to the Network Load Balancer instance.
-// Note: this method is subject to a race condition in the case of where multiple services sharing
-// the same name are created in parallel, it can return a pointer to a service that isn't the one
-// actually created by the caller.
 func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 	svc *NetworkLoadBalancerService) (*NetworkLoadBalancerService, error) {
 	var (
@@ -142,9 +139,7 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 	// Note: in case of multiple services creation in parallel this technique is subject
 	// to race condition as we could return an unrelated service. To prevent this, we
 	// also compare the name of the new service to the name specified in the svc
-	// parameter, however since the API doesn't enforce resource name unicity we're not
-	// 100% guaranteed this will uniquely identify the actual NLB service created in the
-	// case a user creates multiple NLB services sharing a same name.
+	// parameter.
 	services := make(map[string]struct{})
 	for _, svc := range nlb.Services {
 		services[svc.ID] = struct{}{}
@@ -317,9 +312,12 @@ func (c *Client) ListNetworkLoadBalancers(ctx context.Context, zone string) ([]*
 	}
 
 	if resp.JSON200.LoadBalancers != nil {
-		for _, nlb := range *resp.JSON200.LoadBalancers {
-			nlb := nlb
-			list = append(list, nlbFromAPI(&nlb))
+		for i := range *resp.JSON200.LoadBalancers {
+			nlb := nlbFromAPI(&(*resp.JSON200.LoadBalancers)[i])
+			nlb.c = c
+			nlb.zone = zone
+
+			list = append(list, nlb)
 		}
 	}
 
