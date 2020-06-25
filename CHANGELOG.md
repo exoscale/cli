@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.13.3
+
+### Bug Fixes
+
+* Fixed `exo ssh` command that didn't detect SSH private key file properly (#264)
+
+### Changes
+
+* `exo nlb` commands now accept a resource name as well as an ID (#265)
+
 ## 1.13.2
 
 ### Bug Fixes
