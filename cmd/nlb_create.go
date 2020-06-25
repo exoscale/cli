@@ -42,7 +42,7 @@ var nlbCreateCmd = &cobra.Command{
 		}
 
 		if !gQuiet {
-			return output(showNLB(nlb.ID, zone))
+			return output(showNLB(zone, nlb.ID))
 		}
 
 		return nil

@@ -8,7 +8,7 @@ import (
 )
 
 var nlbDeleteCmd = &cobra.Command{
-	Use:     "delete <ID>",
+	Use:     "delete <name | ID>",
 	Short:   "Delete a Network Load Balancer",
 	Aliases: gRemoveAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -21,8 +21,6 @@ var nlbDeleteCmd = &cobra.Command{
 		return cmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var nlbID = args[0]
-
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
@@ -33,14 +31,19 @@ var nlbDeleteCmd = &cobra.Command{
 			return err
 		}
 
+		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		nlb, err := lookupNLB(ctx, zone, args[0])
+		if err != nil {
+			return err
+		}
+
 		if !force {
-			if !askQuestion(fmt.Sprintf("Do you really want to delete Network Load Balancer %q?", nlbID)) {
+			if !askQuestion(fmt.Sprintf("Do you really want to delete Network Load Balancer %q?", args[0])) {
 				return nil
 			}
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, ""))
-		if err := cs.DeleteNetworkLoadBalancer(ctx, zone, nlbID); err != nil {
+		if err := cs.DeleteNetworkLoadBalancer(ctx, zone, nlb.ID); err != nil {
 			return fmt.Errorf("unable to delete Network Load Balancer: %s", err)
 		}
 

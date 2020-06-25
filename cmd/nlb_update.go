@@ -8,7 +8,7 @@ import (
 )
 
 var nlbUpdateCmd = &cobra.Command{
-	Use:   "update <ID>",
+	Use:   "update <name | ID>",
 	Short: "Update a Network Load Balancer",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -20,15 +20,13 @@ var nlbUpdateCmd = &cobra.Command{
 		return cmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var nlbID = args[0]
-
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, ""))
-		nlb, err := cs.GetNetworkLoadBalancer(ctx, zone, nlbID)
+		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		nlb, err := lookupNLB(ctx, zone, args[0])
 		if err != nil {
 			return err
 		}
@@ -54,7 +52,7 @@ var nlbUpdateCmd = &cobra.Command{
 		}
 
 		if !gQuiet {
-			return output(showNLB(nlb.ID, zone))
+			return output(showNLB(zone, nlb.ID))
 		}
 
 		return nil

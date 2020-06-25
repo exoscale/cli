@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.26.5
+------
+
+- fix: bug in the ListNetworkLoadBalancers call (#435)
+
 0.26.4
 ------
 

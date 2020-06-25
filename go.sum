@@ -88,8 +88,8 @@ github.com/dlclark/regexp2 v1.2.0 h1:8sAhBGEM0dRWogWqWyQeIJnxjWO6oIjl8FKqREDsGfk
 github.com/dlclark/regexp2 v1.2.0/go.mod h1:2pZnwuY/m+8K6iRw6wQdMtk+rH5tNGR1i55kozfMjCc=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
-github.com/exoscale/egoscale v0.26.4 h1:9jLDI4xCq1/HUJLgGhX1d26ZimvgNmNKBmbaP8Ykcxc=
-github.com/exoscale/egoscale v0.26.4/go.mod h1:WThejIJgwf32NoUfOhIHIH7GfD6ZU4QK9mC1s8inIaU=
+github.com/exoscale/egoscale v0.26.5 h1:DYtjAIb6ESbUZlUcjD0TxB5nZDkEvYM436yyN4QKkiI=
+github.com/exoscale/egoscale v0.26.5/go.mod h1:WThejIJgwf32NoUfOhIHIH7GfD6ZU4QK9mC1s8inIaU=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
