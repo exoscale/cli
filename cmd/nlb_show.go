@@ -13,14 +13,14 @@ import (
 )
 
 type nlbShowOutput struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	CreationDate string `json:"created_at"`
-	Zone         string `json:"zone"`
-	IPAddress    string `json:"ip_address"`
-	State        string `json:"state"`
-	Services     []nlbServiceShowOutput
+	ID           string                 `json:"id"`
+	Name         string                 `json:"name"`
+	Description  string                 `json:"description"`
+	CreationDate string                 `json:"created_at"`
+	Zone         string                 `json:"zone"`
+	IPAddress    string                 `json:"ip_address"`
+	State        string                 `json:"state"`
+	Services     []nlbServiceShowOutput `json:"services"`
 }
 
 func (o *nlbShowOutput) toJSON() { outputJSON(o) }
