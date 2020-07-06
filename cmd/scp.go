@@ -51,7 +51,7 @@ Example:
 			return err
 		}
 
-		replStr, err := cmd.Flags().GetString("replstr")
+		replStr, err := cmd.Flags().GetString("replace-str")
 		if err != nil {
 			return err
 		}
