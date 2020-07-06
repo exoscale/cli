@@ -5,7 +5,7 @@ type Template struct {
 	Account               string            `json:"account,omitempty" doc:"the account name to which the template belongs"`
 	AccountID             *UUID             `json:"accountid,omitempty" doc:"the account id to which the template belongs"`
 	Bootable              bool              `json:"bootable,omitempty" doc:"true if the ISO is bootable, false otherwise"`
-	BootMode              string            `json:"bootmode" doc:""`
+	BootMode              string            `json:"bootmode" doc:"the template boot mode (legacy/uefi)"`
 	Checksum              string            `json:"checksum,omitempty" doc:"checksum of the template"`
 	Created               string            `json:"created,omitempty" doc:"the date this template was created"`
 	CrossZones            bool              `json:"crossZones,omitempty" doc:"true if the template is managed across all Zones, false otherwise"`
@@ -142,7 +142,7 @@ func (DeleteTemplate) AsyncResponse() interface{} {
 // RegisterCustomTemplate registers a new template
 type RegisterCustomTemplate struct {
 	_               bool              `name:"registerCustomTemplate" description:"Register a new template."`
-	BootMode        string            `json:"bootmode" doc:""`
+	BootMode        string            `json:"bootmode" doc:"the template boot mode (legacy/uefi)"`
 	Checksum        string            `json:"checksum" doc:"the MD5 checksum value of this template"`
 	Details         map[string]string `json:"details,omitempty" doc:"Template details in key/value pairs"`
 	Displaytext     string            `json:"displaytext,omitempty" doc:"the display text of the template"`
