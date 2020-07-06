@@ -20,10 +20,11 @@ type scpInfo struct {
 var scpCmd = &cobra.Command{
 	Use:   "scp <instance name | ID> <source> <target>",
 	Short: "SCP files to/from a Compute instance",
-	Long: `This command executes the "scp" command to send or receive files to/from the specified Compute instance.
-The target (or source, depending on the direction of the transfer) must contain the "{}" marker which will be
-interpolated at run time by the actual Compute instance IP address, similar to xargs(1). This marker can be replaced
-by another string via the --replace-str|-i flag.
+	Long: `This command executes the "scp" command to send or receive files to/from the
+specified Compute instance. The target (or source, depending on the direction
+of the transfer) must contain the "{}" marker which will be interpolated at
+run time with the actual Compute instance IP address, similar to xargs(1).
+This marker can be replaced by another string via the --replace-str|-i flag.
 
 Example:
 
