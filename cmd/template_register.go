@@ -66,7 +66,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		bootmode, err := cmd.Flags().GetString("bootmode")
+		bootmode, err := cmd.Flags().GetString("boot-mode")
 		if err != nil {
 			return err
 		}
