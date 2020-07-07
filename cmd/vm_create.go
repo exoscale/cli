@@ -173,19 +173,15 @@ What to do now?
 
 1. Connect to the machine
 
-> exo ssh %s
+	exo ssh %s
 `, r[0].Name)
-			fmt.Println(strings.Join(buildSSHCommand(sshinfo), " "))
-			fmt.Printf(`
-2. Put the SSH configuration into ".ssh/config"
-
-> exo ssh %s --info
-`, r[0].Name)
+			fmt.Println(`
+2. Put the following SSH configuration into ".ssh/config"
+`)
 			printSSHInfo(sshinfo)
 			fmt.Print(`
 Tip of the day:
-	You're the sole owner of the private key.
-	Be cautious with it.
+	You're the sole owner of the private key. Be cautious with it.
 `)
 		}
 
