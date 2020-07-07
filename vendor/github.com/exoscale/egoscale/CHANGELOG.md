@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.26.6
+------
+
+- change: Add support for Compute instance templates boot mode (#436)
+
 0.26.5
 ------
 

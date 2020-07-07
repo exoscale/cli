@@ -66,6 +66,11 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		bootmode, err := cmd.Flags().GetString("boot-mode")
+		if err != nil {
+			return err
+		}
+
 		enableSSHKey := !(disableSSHKey)
 
 		req := egoscale.RegisterCustomTemplate{
@@ -75,6 +80,7 @@ Supported output template annotations: %s`,
 			Displaytext:     description,
 			PasswordEnabled: &enablePassword,
 			SSHKeyEnabled:   &enableSSHKey,
+			BootMode:        bootmode,
 		}
 
 		if username, _ := cmd.Flags().GetString("username"); username != "" {
@@ -120,6 +126,7 @@ func init() {
 	templateRegisterCmd.Flags().BoolP("disable-password", "", false, "true if the template does not support password authentication; default is false")
 	templateRegisterCmd.Flags().BoolP("disable-ssh-key", "", false, "true if the template does not support ssh key authentication; default is false")
 	templateRegisterCmd.Flags().StringP("username", "", "", "The default username of the template")
+	templateRegisterCmd.Flags().StringP("boot-mode", "", "legacy", "The template boot mode (legacy/uefi)")
 
 	templateCmd.AddCommand(templateRegisterCmd)
 }

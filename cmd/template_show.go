@@ -18,6 +18,7 @@ type templateShowOutput struct {
 	DiskSize     string `json:"disk_size"`
 	Username     string `json:"username"`
 	Password     bool   `json:"password" outputLabel:"Password?"`
+	BootMode     string `json:"boot_mode"`
 }
 
 func (o *templateShowOutput) Type() string { return "Template" }
@@ -87,6 +88,7 @@ func showTemplate(template *egoscale.Template) (outputter, error) {
 		Zone:         template.ZoneName,
 		DiskSize:     humanize.IBytes(uint64(template.Size)),
 		Password:     template.PasswordEnabled,
+		BootMode:     template.BootMode,
 	}
 
 	if username, ok := template.Details["username"]; ok {
