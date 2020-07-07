@@ -23,7 +23,6 @@ Supported output template annotations: %s`,
 		return cmdCheckRequiredFlags(cmd, []string{
 			"zone",
 			"name",
-			"description",
 			"url",
 			"checksum",
 		})
