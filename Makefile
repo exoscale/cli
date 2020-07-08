@@ -1,8 +1,8 @@
 include go.mk/init.mk
 
-GO_BIN_OUTPUT_NAME := exo
+PROJECT_URL = https://github.com/exoscale/cli
 
-GORELEASER_EXTRA_ARGS ?=
+GO_BIN_OUTPUT_NAME := exo
 
 .PHONY:
 .ONESHELL:
@@ -36,7 +36,7 @@ sos-certificates:
 
 .PHONY: release
 release: sos-certificates
-	goreleaser run --rm-dist $(GORELEASER_EXTRA_ARGS)
+	$(MAKE) PROJECT_URL=$(PROJECT_URL) -f go.mk/public.mk $@
 
 manpage:
 	mkdir -p $@

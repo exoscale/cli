@@ -1,6 +1,7 @@
 .git
 dist
 exo
+sos-certs.pem
 manpage
 contrib
 *.snap
