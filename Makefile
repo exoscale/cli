@@ -36,7 +36,7 @@ sos-certificates:
 
 .PHONY: release
 release: sos-certificates
-	$(MAKE) PROJECT_URL=$(PROJECT_URL) -f go.mk/public.mk $@
+	$(MAKE) PROJECT_URL=$(PROJECT_URL) VERSION=$(VERSION) -f go.mk/public.mk $@
 
 manpage:
 	mkdir -p $@
