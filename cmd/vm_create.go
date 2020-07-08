@@ -176,8 +176,8 @@ What to do now?
 	exo ssh %s
 `, r[0].Name)
 			fmt.Println(`
-2. Put the following SSH configuration into ".ssh/config"
-`)
+2. Put the following SSH configuration into ".ssh/config"`)
+			fmt.Println("")
 			printSSHInfo(sshinfo)
 			fmt.Print(`
 Tip of the day:
