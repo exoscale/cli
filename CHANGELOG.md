@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.14.0
+
+### New
+
+* `exo scp` command (#267)
+* `exo vm template register`: new flag `--boot-mode` to register UEFI-based custom templates (#266)
+
+### Changes
+
+* The `--description` flag is now optional in `exo vm template register`
+* `exo nlb show`: JSON output `services` key is now lowercase
+
 ## 1.13.3
 
 ### Bug Fixes
