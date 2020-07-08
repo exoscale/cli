@@ -12,6 +12,7 @@
 * The `--description` flag is now optional in `exo vm template register`
 * `exo nlb show`: JSON output `services` key is now lowercase
 
+
 ## 1.13.3
 
 ### Bug Fixes
@@ -22,6 +23,7 @@
 
 * `exo nlb` commands now accept a resource name as well as an ID (#265)
 
+
 ## 1.13.2
 
 ### Bug Fixes
@@ -29,11 +31,13 @@
 * Fixed subcommand config settings leaking (#260)
 * Fixed unused configuration cache file generation (#261)
 
+
 ## 1.13.1
 
 ### Internal
 
 * Updated egoscale library following API V2 changes
+
 
 ## 1.13.0
 
@@ -60,6 +64,7 @@
 * `exo zones` now displays zones sorted alphabetically (#246)
 * `exo sos list` now returns the buckets size (#252)
 * Commands that require a zone to be specified now default to the current account's default zone setting (#258)
+
 
 ## 1.12.0
 
