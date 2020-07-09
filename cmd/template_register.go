@@ -141,15 +141,15 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 }
 
 func init() {
-	templateRegisterCmd.Flags().StringP("checksum", "c", "", "the MD5 checksum value of the template")
-	templateRegisterCmd.Flags().StringP("description", "d", "", "the template description")
-	templateRegisterCmd.Flags().StringP("zone", "z", "", "the ID or name of the zone the template is to be hosted on")
-	templateRegisterCmd.Flags().StringP("username", "u", "", "The default username of the template")
-	templateRegisterCmd.Flags().String("url", "", "the URL of where the template is hosted")
-	templateRegisterCmd.Flags().String("boot-mode", "legacy", "The template boot mode (legacy/uefi)")
-	templateRegisterCmd.Flags().String("from-snapshot", "", "the ID of a snapshot to export it and then reuse the returned snapshot file URL and checksum to register a new custom template")
-	templateRegisterCmd.Flags().Bool("disable-password", false, "true if the template does not support password authentication; default is false")
-	templateRegisterCmd.Flags().Bool("disable-ssh-key", false, "true if the template does not support ssh key authentication; default is false")
+	templateRegisterCmd.Flags().StringP("checksum", "c", "", "MD5 checksum value of the template")
+	templateRegisterCmd.Flags().StringP("description", "d", "", "Template description")
+	templateRegisterCmd.Flags().StringP("zone", "z", "", "ID or name of the zone the template is to be hosted on")
+	templateRegisterCmd.Flags().StringP("username", "u", "", "Default username of the template")
+	templateRegisterCmd.Flags().String("url", "", "URL of where the template is hosted")
+	templateRegisterCmd.Flags().String("boot-mode", "legacy", "Template boot mode (legacy|uefi)")
+	templateRegisterCmd.Flags().String("from-snapshot", "", "ID of a Compute instance snapshot to register as a new template")
+	templateRegisterCmd.Flags().Bool("disable-password", false, "Disable password-based authentication")
+	templateRegisterCmd.Flags().Bool("disable-ssh-key", false, "Disable SSH key-based authentication")
 
 	templateCmd.AddCommand(templateRegisterCmd)
 }
