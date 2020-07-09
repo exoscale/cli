@@ -144,7 +144,7 @@ func init() {
 	templateRegisterCmd.Flags().StringP("username", "u", "", "The default username of the template")
 	templateRegisterCmd.Flags().String("url", "", "the URL of where the template is hosted")
 	templateRegisterCmd.Flags().String("boot-mode", "legacy", "The template boot mode (legacy/uefi)")
-	templateRegisterCmd.Flags().String("from-snapshot", "", "")
+	templateRegisterCmd.Flags().String("from-snapshot", "", "the ID of a snapshot to export it and then reuse the returned snapshot file URL and checksum to register a new custom template")
 	templateRegisterCmd.Flags().Bool("disable-password", false, "true if the template does not support password authentication; default is false")
 	templateRegisterCmd.Flags().Bool("disable-ssh-key", false, "true if the template does not support ssh key authentication; default is false")
 
