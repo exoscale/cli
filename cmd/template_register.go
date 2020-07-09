@@ -142,14 +142,14 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 
 func init() {
 	templateRegisterCmd.Flags().StringP("checksum", "c", "", "MD5 checksum value of the template")
-	templateRegisterCmd.Flags().StringP("description", "d", "", "Template description")
+	templateRegisterCmd.Flags().StringP("description", "d", "", "template description")
 	templateRegisterCmd.Flags().StringP("zone", "z", "", "ID or name of the zone the template is to be hosted on")
-	templateRegisterCmd.Flags().StringP("username", "u", "", "Default username of the template")
+	templateRegisterCmd.Flags().StringP("username", "u", "", "default username of the template")
 	templateRegisterCmd.Flags().String("url", "", "URL of where the template is hosted")
-	templateRegisterCmd.Flags().String("boot-mode", "legacy", "Template boot mode (legacy|uefi)")
+	templateRegisterCmd.Flags().String("boot-mode", "legacy", "template boot mode (legacy|uefi)")
 	templateRegisterCmd.Flags().String("from-snapshot", "", "ID of a Compute instance snapshot to register as a new template")
-	templateRegisterCmd.Flags().Bool("disable-password", false, "Disable password-based authentication")
-	templateRegisterCmd.Flags().Bool("disable-ssh-key", false, "Disable SSH key-based authentication")
+	templateRegisterCmd.Flags().Bool("disable-password", false, "disable password-based authentication")
+	templateRegisterCmd.Flags().Bool("disable-ssh-key", false, "disable SSH key-based authentication")
 
 	templateCmd.AddCommand(templateRegisterCmd)
 }
