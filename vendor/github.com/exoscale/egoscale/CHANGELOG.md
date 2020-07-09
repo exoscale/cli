@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.27.0
+------
+
+- feature: Add `evictInstancePoolMembers` call to Instance Pool (#437)
+
 0.26.6
 ------
 
