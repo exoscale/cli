@@ -249,6 +249,7 @@ var methods = []category{
 			{command: &egoscale.GetInstancePool{}, name: "get"},
 			{command: &egoscale.UpdateInstancePool{}, name: "update"},
 			{command: &egoscale.ScaleInstancePool{}, name: "scale"},
+			{command: &egoscale.EvictInstancePoolMembers{}, name: "evict"},
 		},
 	},
 	{
