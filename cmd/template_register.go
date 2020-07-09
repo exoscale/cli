@@ -10,7 +10,7 @@ import (
 
 // templateRegisterCmd registers a template
 var templateRegisterCmd = &cobra.Command{
-	Use:   "register",
+	Use:   "register <name>",
 	Short: "register a custom template",
 	Long: fmt.Sprintf(`This command registers a new Compute instance template.
 
@@ -18,21 +18,25 @@ Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&templateShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			cmdExitOnUsageError(cmd, "invalid arguments")
+		}
+
 		cmdSetZoneFlagFromDefault(cmd)
+
+		if !cmd.Flags().Changed("from-snapshot") {
+			return cmdCheckRequiredFlags(cmd, []string{
+				"zone",
+				"url",
+				"checksum",
+			})
+		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
 			"zone",
-			"name",
-			"url",
-			"checksum",
 		})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name, err := cmd.Flags().GetString("name")
-		if err != nil {
-			return err
-		}
-
 		description, err := cmd.Flags().GetString("description")
 		if err != nil {
 			return err
@@ -65,15 +69,20 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		enableSSHKey := !(disableSSHKey)
+
 		bootmode, err := cmd.Flags().GetString("boot-mode")
 		if err != nil {
 			return err
 		}
 
-		enableSSHKey := !(disableSSHKey)
+		snapshotID, err := cmd.Flags().GetString("from-snapshot")
+		if err != nil {
+			return err
+		}
 
 		req := egoscale.RegisterCustomTemplate{
-			Name:            name,
+			Name:            args[0],
 			URL:             url,
 			Checksum:        checksum,
 			Displaytext:     description,
@@ -86,6 +95,18 @@ Supported output template annotations: %s`,
 			req.Details = make(map[string]string)
 			req.Details["username"] = username
 		}
+
+		if snapshotID == "" {
+			return output(templateRegister(req, zone))
+		}
+
+		snapshot, err := exportSnapshot(snapshotID)
+		if err != nil {
+			return err
+		}
+
+		req.Checksum = snapshot.MD5sum
+		req.URL = snapshot.PresignedURL
 
 		return output(templateRegister(req, zone))
 	},
@@ -117,15 +138,15 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 }
 
 func init() {
-	templateRegisterCmd.Flags().StringP("checksum", "", "", "the MD5 checksum value of the template")
-	templateRegisterCmd.Flags().StringP("description", "", "", "the template description")
-	templateRegisterCmd.Flags().StringP("name", "", "", "the name of the template")
+	templateRegisterCmd.Flags().StringP("checksum", "c", "", "the MD5 checksum value of the template")
+	templateRegisterCmd.Flags().StringP("description", "d", "", "the template description")
 	templateRegisterCmd.Flags().StringP("zone", "z", "", "the ID or name of the zone the template is to be hosted on")
-	templateRegisterCmd.Flags().StringP("url", "", "", "the URL of where the template is hosted")
-	templateRegisterCmd.Flags().BoolP("disable-password", "", false, "true if the template does not support password authentication; default is false")
-	templateRegisterCmd.Flags().BoolP("disable-ssh-key", "", false, "true if the template does not support ssh key authentication; default is false")
-	templateRegisterCmd.Flags().StringP("username", "", "", "The default username of the template")
-	templateRegisterCmd.Flags().StringP("boot-mode", "", "legacy", "The template boot mode (legacy/uefi)")
+	templateRegisterCmd.Flags().StringP("username", "u", "", "The default username of the template")
+	templateRegisterCmd.Flags().String("url", "", "the URL of where the template is hosted")
+	templateRegisterCmd.Flags().String("boot-mode", "legacy", "The template boot mode (legacy/uefi)")
+	templateRegisterCmd.Flags().String("from-snapshot", "", "")
+	templateRegisterCmd.Flags().Bool("disable-password", false, "true if the template does not support password authentication; default is false")
+	templateRegisterCmd.Flags().Bool("disable-ssh-key", false, "true if the template does not support ssh key authentication; default is false")
 
 	templateCmd.AddCommand(templateRegisterCmd)
 }
