@@ -57,6 +57,11 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		username, err := cmd.Flags().GetString("username")
+		if err != nil {
+			return err
+		}
+
 		disablePassword, err := cmd.Flags().GetBool("disable-password")
 		if err != nil {
 			return err
@@ -91,22 +96,20 @@ Supported output template annotations: %s`,
 			BootMode:        bootmode,
 		}
 
-		if username, _ := cmd.Flags().GetString("username"); username != "" {
+		if username != "" {
 			req.Details = make(map[string]string)
 			req.Details["username"] = username
 		}
 
-		if snapshotID == "" {
-			return output(templateRegister(req, zone))
-		}
+		if snapshotID != "" {
+			snapshot, err := exportSnapshot(snapshotID)
+			if err != nil {
+				return err
+			}
 
-		snapshot, err := exportSnapshot(snapshotID)
-		if err != nil {
-			return err
+			req.Checksum = snapshot.MD5sum
+			req.URL = snapshot.PresignedURL
 		}
-
-		req.Checksum = snapshot.MD5sum
-		req.URL = snapshot.PresignedURL
 
 		return output(templateRegister(req, zone))
 	},
