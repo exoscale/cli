@@ -24,16 +24,16 @@ Supported output template annotations: %s`,
 
 		cmdSetZoneFlagFromDefault(cmd)
 
-		if !cmd.Flags().Changed("from-snapshot") {
+		if cmd.Flags().Changed("from-snapshot") {
 			return cmdCheckRequiredFlags(cmd, []string{
 				"zone",
-				"url",
-				"checksum",
 			})
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
 			"zone",
+			"url",
+			"checksum",
 		})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
