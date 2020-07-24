@@ -88,12 +88,10 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 	timeout := 60 * time.Second
 	expiration := 10 * time.Minute
 
-	httpClient := &http.Client{
-		Transport: http.DefaultTransport,
-	}
-
 	client := &Client{
-		HTTPClient:    httpClient,
+		HTTPClient: &http.Client{
+			Transport: &defaultTransport{transport: http.DefaultTransport},
+		},
 		Endpoint:      endpoint,
 		APIKey:        apiKey,
 		apiSecret:     apiSecret,
@@ -407,7 +405,24 @@ func (client *Client) TraceOff() {
 	}
 }
 
-// traceTransport  contains the original HTTP transport to enable it to be reverted
+// defaultTransport is the default HTTP client transport.
+type defaultTransport struct {
+	transport http.RoundTripper
+}
+
+// RoundTrip executes a single HTTP transaction while augmenting requests with custom headers.
+func (t *defaultTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Add("User-Agent", UserAgent)
+
+	resp, err := t.transport.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// traceTransport contains the original HTTP transport to enable it to be reverted
 type traceTransport struct {
 	transport http.RoundTripper
 	logger    *log.Logger

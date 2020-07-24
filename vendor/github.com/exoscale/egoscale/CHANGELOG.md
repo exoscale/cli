@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.28.0
+------
+
+- feature: add `Manager`/`ManagerID` fields to `VirtualMachine` structure (#438)
+- fix: HTTP request User Agent header handling (#439)
+
 0.27.0
 ------
 

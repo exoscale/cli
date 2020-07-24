@@ -73,6 +73,8 @@ type VirtualMachine struct {
 	IsoID               *UUID             `json:"isoid,omitempty" doc:"the ID of the ISO attached to the virtual machine"`
 	IsoName             string            `json:"isoname,omitempty" doc:"the name of the ISO attached to the virtual machine"`
 	KeyPair             string            `json:"keypair,omitempty" doc:"ssh key-pair"`
+	Manager             string            `json:"manager,omitempty" doc:"type of virtual machine manager"`
+	ManagerID           *UUID             `json:"managerid,omitempty" doc:"ID of the virtual machine manager"`
 	Memory              int               `json:"memory,omitempty" doc:"the memory allocated for the virtual machine"`
 	Name                string            `json:"name,omitempty" doc:"the name of the virtual machine"`
 	NetworkKbsRead      int64             `json:"networkkbsread,omitempty" doc:"the incoming network traffic on the vm"`
