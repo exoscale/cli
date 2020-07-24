@@ -1,6 +1,21 @@
 # Changelog
 
 
+## 1.15.0
+
+### New
+
+* `exo vm template register`: new flag `--from-snapshot` allowing registration of a custom template directly from a Compute instance snapshot (#268)
+
+### Bug Fixes
+
+* `exo lab kube create`: bumped outdated software versions
+
+### Changes
+
+* The `exo vm template register` command now expects the template name to be specified as positional argument instead of `--name` flag.
+
+
 ## 1.14.0
 
 ### New
