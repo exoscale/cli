@@ -13,22 +13,18 @@ builds:
       - darwin
       - linux
       - openbsd
-
     goarch:
       - amd64
       - arm
       - arm64
-
     goarm:
       - 6
       - 7
-
     ignore:
       - goos: openbsd
         goarch: arm
       - goos: openbsd
         goarch: arm64
-
     hooks:
       pre: make manpages completions sos-certificates
 
@@ -53,7 +49,7 @@ nfpms:
   - vendor: Exoscale
     homepage: https://www.exoscale.com/
     maintainer: Exoscale Support <support@exoscale.com>
-    description: Manage (almost) everything at Exoscale from the command line.
+    description: Manage easily your Exoscale infrastructure from the command-line.
     license: Apache 2.0
     formats:
       - deb
@@ -68,8 +64,24 @@ brews:
       name: homebrew-tap
     folder: Formula
     homepage: "https://exoscale.github.io/cli/"
-    description: Manage (almost) everything at Exoscale from the command line.
+    description: Manage easily your Exoscale infrastructure from the command-line.
     install: |
       bin.install "exo"
       man1.install Dir["manpage/exo*.1"]
       bash_completion.install "contrib/completion/bash/exo"
+
+dockers:
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - "exoscale/cli:latest"
+      - "exoscale/cli:{{ .Major }}"
+      - "exoscale/cli:{{ .Major }}.{{ .Minor }}"
+      - "exoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    dockerfile: Dockerfile.goreleaser
+    build_flag_templates:
+      - --pull
+      - --build-arg="VERSION={{.Version}}"
+      - --build-arg="VCS_REF={{.ShortCommit}}"
+      - --build-arg="BUILD_DATE={{.Date}}"
+    skip_push: auto
