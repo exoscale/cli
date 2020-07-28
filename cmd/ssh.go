@@ -14,8 +14,9 @@ import (
 
 // sshCmd represents the ssh command
 var sshCmd = &cobra.Command{
-	Use:   "ssh <vm name | id>",
-	Short: "SSH into a virtual machine instance",
+	Use:               "ssh <vm name | id>",
+	Short:             "SSH into a virtual machine instance",
+	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()

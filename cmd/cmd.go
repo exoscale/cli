@@ -57,3 +57,13 @@ func cmdExitOnUsageError(cmd *cobra.Command, reason string) {
 	cmd.Usage() // nolint:errcheck
 	os.Exit(1)
 }
+
+// completeVMNames is a Cobra Command.ValidArgsFunction that returns the list of Compute instance names belonging to
+// the current user for shell auto-completion.
+func completeVMNames(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	list, err := listVMs()
+	if err != nil {
+		return nil, cobra.ShellCompDirectiveError
+	}
+	return list.(*vmListOutput).names(), cobra.ShellCompDirectiveNoFileComp
+}

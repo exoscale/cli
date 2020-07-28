@@ -22,6 +22,14 @@ type vmListOutput []vmListItemOutput
 func (o *vmListOutput) toJSON()  { outputJSON(o) }
 func (o *vmListOutput) toText()  { outputText(o) }
 func (o *vmListOutput) toTable() { outputTable(o) }
+func (o *vmListOutput) names() []string {
+	names := make([]string, len(*o))
+	for i, item := range *o {
+		names[i] = item.Name
+	}
+
+	return names
+}
 
 func init() {
 	vmCmd.AddCommand(&cobra.Command{

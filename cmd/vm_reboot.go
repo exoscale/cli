@@ -10,8 +10,9 @@ import (
 
 // rebootCmd represents the reboot command
 var vmRebootCmd = &cobra.Command{
-	Use:   "reboot <vm name> [vm name] ...",
-	Short: "Reboot virtual machine instance",
+	Use:               "reboot <vm name | id>+",
+	Short:             "Reboot virtual machine instance",
+	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()

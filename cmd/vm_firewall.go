@@ -18,7 +18,7 @@ var vmFirewallCmd = &cobra.Command{
 
 // vmFirewallSetCmd represents the firewall set command
 var vmFirewallSetCmd = &cobra.Command{
-	Use:   "set <vm name> <SG name> [SG name] ...",
+	Use:   "set <vm name | id> <SG name | id>+",
 	Short: "set the security groups of a virtual machine",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -45,7 +45,7 @@ var vmFirewallSetCmd = &cobra.Command{
 
 // vmFirewallAddCmd represents the firewall add command
 var vmFirewallAddCmd = &cobra.Command{
-	Use:   "add <vm name> <SG name> [SG name] ...",
+	Use:   "add <vm name | id> <SG name | id>+",
 	Short: "add security groups to a virtual machine",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -85,7 +85,7 @@ var vmFirewallAddCmd = &cobra.Command{
 
 // vmFirewallRemoveCmd represents the firewall remove command
 var vmFirewallRemoveCmd = &cobra.Command{
-	Use:   "remove <vm name> <SG name> [SG name] ...",
+	Use:   "remove <vm name | id> <SG name | id>+",
 	Short: "remove security groups from a virtual machine",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {

@@ -8,8 +8,9 @@ import (
 )
 
 var vmUpdateCmd = &cobra.Command{
-	Use:   "update <name|ID>",
-	Short: "Update virtual machine properties",
+	Use:               "update <vm name | id>",
+	Short:             "Update virtual machine properties",
+	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
 			vmEdit egoscale.UpdateVirtualMachine
