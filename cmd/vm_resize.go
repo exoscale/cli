@@ -10,7 +10,7 @@ import (
 // vmResetCmd represents the stop command
 var vmResizeCmd = &cobra.Command{
 	Use:               "resize <vm name | id>+",
-	Short:             "resize disk virtual machine instance",
+	Short:             "Resize disk virtual machine instance",
 	ValidArgsFunction: completeVMNames,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
