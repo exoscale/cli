@@ -40,7 +40,8 @@ func init() {
 
 Supported output template annotations: %s`,
 			strings.Join(outputterTemplateAnnotations(&vmShowOutput{}), ", ")),
-		Aliases: gShowAlias,
+		Aliases:           gShowAlias,
+		ValidArgsFunction: completeVMNames,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return cmd.Usage()

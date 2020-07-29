@@ -10,8 +10,9 @@ import (
 
 // stopCmd represents the stop command
 var vmStopCmd = &cobra.Command{
-	Use:   "stop <vm name>+",
-	Short: "Stop virtual machine instance",
+	Use:               "stop <vm name | id>+",
+	Short:             "Stop virtual machine instance",
+	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()

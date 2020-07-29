@@ -11,8 +11,9 @@ import (
 
 // scaleCmd represents the scale command
 var vmScaleCmd = &cobra.Command{
-	Use:   "scale <vm name> [vm name] ...",
-	Short: "Scale virtual machine",
+	Use:               "scale <vm name | id>+",
+	Short:             "Scale virtual machine",
+	ValidArgsFunction: completeVMNames,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")

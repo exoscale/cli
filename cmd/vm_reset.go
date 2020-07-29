@@ -9,8 +9,9 @@ import (
 
 // vmResetCmd represents the stop command
 var vmResetCmd = &cobra.Command{
-	Use:   "reset <vm name> [vm name] ...",
-	Short: "Reset virtual machine instance",
+	Use:               "reset <vm name | id>+",
+	Short:             "Reset virtual machine instance",
+	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()

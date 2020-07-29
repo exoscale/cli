@@ -10,8 +10,9 @@ import (
 
 // startCmd represents the start command
 var vmStartCmd = &cobra.Command{
-	Use:   "start <vm name>+",
-	Short: "Start virtual machine",
+	Use:               "start <vm name | id>+",
+	Short:             "Start virtual machine",
+	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()
