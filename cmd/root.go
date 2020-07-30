@@ -28,6 +28,7 @@ var gCurrentAccount = &account{
 	DefaultZone:     defaultZone,
 	DefaultTemplate: defaultTemplate,
 	Endpoint:        defaultEndpoint,
+	Environment:     defaultEnvironment,
 	SosEndpoint:     defaultSosEndpoint,
 }
 
@@ -299,6 +300,10 @@ func initConfig() {
 		} else {
 			gCurrentAccount.Endpoint = defaultEndpoint
 		}
+	}
+
+	if gCurrentAccount.Environment == "" {
+		gCurrentAccount.Environment = defaultEnvironment
 	}
 
 	if gCurrentAccount.DefaultZone == "" {
