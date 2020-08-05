@@ -1,6 +1,17 @@
 # Changelog
 
 
+## 1.16.0
+
+### New
+
+* `exo vm *`/`exo ssh` commands now support instance names shell autocompletion (Bash only) (#273)
+
+### Changes
+
+* `exo vm snapshot show`: `Instance` field has been replaced by 2 fields `Instance Name`/`Instance ID`, and 2 new fields `Template Name`/`Template ID` have been added (#274)
+
+
 ## 1.15.0
 
 ### New
