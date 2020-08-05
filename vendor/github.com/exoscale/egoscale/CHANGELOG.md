@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.28.1
+------
+
+- fix: Fix `ListVolumes` call to allow searching by ID (#440)
+
 0.28.0
 ------
 
