@@ -10,11 +10,14 @@ import (
 )
 
 type snapshotShowOutput struct {
-	ID       string `json:"id"`
-	Date     string `json:"date"`
-	Instance string `json:"instance"`
-	State    string `json:"state"`
-	Size     string `json:"size"`
+	ID           string `json:"id"`
+	Date         string `json:"date"`
+	InstanceID   string `json:"instance_id"`
+	InstanceName string `json:"instance_name"`
+	State        string `json:"state"`
+	Size         string `json:"size"`
+	TemplateID   string `json:"template_id"`
+	TemplateName string `json:"template_name"`
 }
 
 func (o *snapshotShowOutput) Type() string { return "Snapshot" }
@@ -46,11 +49,20 @@ Supported output template annotations: %s`,
 }
 
 func showSnapshot(snapshot *egoscale.Snapshot) (outputter, error) {
+	resp, err := cs.GetWithContext(gContext, &egoscale.Volume{ID: snapshot.VolumeID})
+	if err != nil {
+		return nil, err
+	}
+	volume := resp.(*egoscale.Volume)
+
 	return &snapshotShowOutput{
-		ID:       snapshot.ID.String(),
-		Instance: snapshotVMName(*snapshot),
-		Date:     snapshot.Created,
-		State:    snapshot.State,
-		Size:     humanize.IBytes(uint64(snapshot.Size)),
+		ID:           snapshot.ID.String(),
+		InstanceID:   volume.VirtualMachineID.String(),
+		InstanceName: volume.VMName,
+		Date:         snapshot.Created,
+		State:        snapshot.State,
+		Size:         humanize.IBytes(uint64(snapshot.Size)),
+		TemplateID:   volume.TemplateID.String(),
+		TemplateName: volume.TemplateName,
 	}, nil
 }

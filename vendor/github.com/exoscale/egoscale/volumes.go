@@ -62,6 +62,7 @@ func (Volume) ResourceType() string {
 // ListRequest builds the ListVolumes request
 func (vol Volume) ListRequest() (ListCommand, error) {
 	req := &ListVolumes{
+		ID:               vol.ID,
 		Name:             vol.Name,
 		Type:             vol.Type,
 		VirtualMachineID: vol.VirtualMachineID,
