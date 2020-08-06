@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/exoscale/cli/utils"
 	"github.com/exoscale/egoscale"
@@ -18,6 +19,16 @@ import (
 var apiCmd = &cobra.Command{
 	Use:   "api",
 	Short: "Exoscale api",
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintf(os.Stderr, `/!\  WARNING  /!\  WARNING  /!\ WARNING  /!\ WARNING  /!\  WARNING  /!\
+/!\
+/!\    The "exo api" command is deprecated and will be removed in a near
+/!\    future, please stop using it and prefer CLI command equivalents.
+/!\
+/!\  WARNING  /!\  WARNING  /!\  WARNING  /!\  WARNING  /!\  WARNING  /!\
+`)
+		time.Sleep(3 * time.Second)
+	},
 }
 
 const userDocumentationURL = "http://cloudstack.apache.org/api/apidocs-4.4/user/%s.html"
