@@ -23,7 +23,7 @@ var apiCmd = &cobra.Command{
 		fmt.Fprintf(os.Stderr, `/!\  WARNING  /!\  WARNING  /!\ WARNING  /!\ WARNING  /!\  WARNING  /!\
 /!\
 /!\    The "exo api" command is deprecated and will be removed in a near
-/!\    future, please stop using it and prefer CLI command equivalents.
+/!\    future, please stop using it and prefer equivalent CLI commands.
 /!\
 /!\  WARNING  /!\  WARNING  /!\  WARNING  /!\  WARNING  /!\  WARNING  /!\
 `)
