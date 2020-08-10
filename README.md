@@ -29,7 +29,7 @@ Running the `exo config` command will guide you through the initial configuratio
 
 You can find your API credentials in the *Account* section of the [Exoscale Console](https://portal.exoscale.com/account/profile/api).
 
-The configuration file and all assets created during `exo` operations will be saved in the `.exoscale` folder inside your home directory.
+The configuration file and all assets created during `exo` operations will be saved in the `.config/exoscale` folder inside your home directory.
 
 ## Usage
 
