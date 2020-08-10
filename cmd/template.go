@@ -142,8 +142,6 @@ func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...stri
 		m := reSubMatchMap(reDate, t.DisplayText)
 		if m["date"] != "" {
 			t.Created = m["date"]
-		} else if len(t.Created) > 10 {
-			t.Created = t.Created[0:10]
 		}
 		templates[i] = *t
 	}
