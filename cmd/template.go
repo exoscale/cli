@@ -120,7 +120,7 @@ func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...stri
 		}
 
 		// In doubt, use it directly
-		allOS[template.Name] = template
+		allOS[template.ID.String()] = template
 		return true
 	})
 	if err != nil {
