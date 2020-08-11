@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -58,7 +59,25 @@ func getTemplateByName(zoneID *egoscale.UUID, name string, templateFilter string
 	if len(resp) == 1 {
 		return resp[0].(*egoscale.Template), nil
 	}
-	return nil, fmt.Errorf("multiple templates found for %q", name)
+
+	// Multiple results returned: we pick the most recent item from the list.
+	var (
+		template     *egoscale.Template
+		templateDate time.Time
+	)
+	for _, t := range resp {
+		ts, err := time.Parse("2006-01-02T15:04:05-0700", t.(*egoscale.Template).Created)
+		if err != nil {
+			return nil, fmt.Errorf("template creation date parsing error: %s", err)
+		}
+
+		if ts.After(templateDate) {
+			templateDate = ts
+			template = t.(*egoscale.Template)
+		}
+	}
+
+	return template, nil
 }
 
 func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...string) ([]egoscale.Template, error) {
