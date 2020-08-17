@@ -17,8 +17,9 @@ import (
 
 // apiCmd represents the api command
 var apiCmd = &cobra.Command{
-	Use:   "api",
-	Short: "Exoscale api",
+	Use:    "api",
+	Short:  "Exoscale API",
+	Hidden: true,
 	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		fmt.Fprintf(os.Stderr, `/!\  WARNING  /!\  WARNING  /!\ WARNING  /!\ WARNING  /!\  WARNING  /!\
 /!\
