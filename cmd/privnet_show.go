@@ -9,11 +9,12 @@ import (
 )
 
 type privnetShowOutput struct {
-	ID        string   `json:"id"`
-	Name      string   `json:"name"`
-	Zone      string   `json:"zone"`
-	DHCP      string   `json:"dhcp"`
-	Instances []string `json:"instances,omitempty"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Zone        string   `json:"zone"`
+	DHCP        string   `json:"dhcp"`
+	Instances   []string `json:"instances,omitempty"`
 }
 
 func (o *privnetShowOutput) Type() string { return "Private Network" }
@@ -46,10 +47,11 @@ Supported output template annotations: %s`,
 
 func showPrivnet(privnet *egoscale.Network) (outputter, error) {
 	out := privnetShowOutput{
-		ID:   privnet.ID.String(),
-		Name: privnet.Name,
-		Zone: privnet.ZoneName,
-		DHCP: dhcpRange(*privnet),
+		ID:          privnet.ID.String(),
+		Name:        privnet.Name,
+		Description: privnet.DisplayText,
+		Zone:        privnet.ZoneName,
+		DHCP:        dhcpRange(*privnet),
 	}
 
 	vms, err := privnetDetails(privnet)
