@@ -1,6 +1,18 @@
 # Changelog
 
 
+## 1.16.1
+
+### Bug Fixes
+
+* `vm template list`: don't de-dup custom templates (#277)
+
+### Changes
+
+* `vm template list`: report full creation date in output
+* Instead of returning an error when multiple templates match a same name, the CLI now uses the most recent template (#278)
+
+
 ## 1.16.0
 
 ### New
