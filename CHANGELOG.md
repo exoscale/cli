@@ -9,7 +9,8 @@
 
 ### Changes
 
-* `vm template list`: report full creation date in output
+* `privnet show` command now reports the Private Network description in output
+* `vm template list` command now reports the full creation date in output
 * Instead of returning an error when multiple templates match a same name, the CLI now uses the most recent template (#278)
 
 
