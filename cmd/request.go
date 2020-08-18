@@ -40,6 +40,7 @@ func asyncTasks(tasks []task) []taskResponse {
 	maximum := 1 << 30
 	var taskWG sync.WaitGroup
 	progress := mpb.NewWithContext(gContext,
+		mpb.WithOutput(os.Stderr),
 		mpb.WithWaitGroup(&taskWG),
 		mpb.ContainerOptOnCond(mpb.WithOutput(nil), func() bool { return gQuiet }),
 	)
