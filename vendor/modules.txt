@@ -60,7 +60,10 @@ github.com/danielgtaylor/openapi-cli-generator/cli
 github.com/danielgtaylor/openapi-cli-generator/shorthand
 # github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
 github.com/danwakefield/fnmatch
-# github.com/deepmap/oapi-codegen v1.3.11
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/deepmap/oapi-codegen v1.3.12
+## explicit
 github.com/deepmap/oapi-codegen/pkg/runtime
 github.com/deepmap/oapi-codegen/pkg/types
 # github.com/dlclark/regexp2 v1.2.0
@@ -69,7 +72,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.28.1
+# github.com/exoscale/egoscale v0.31.1
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
@@ -81,8 +84,6 @@ github.com/fatih/camelcase
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit
 github.com/fsnotify/fsnotify
-# github.com/getkin/kin-openapi v0.20.0
-## explicit
 # github.com/go-ini/ini v1.42.0
 ## explicit
 github.com/go-ini/ini
@@ -121,6 +122,8 @@ github.com/izumin5210/gentleman-logger
 # github.com/izumin5210/httplogger v1.0.0
 ## explicit
 github.com/izumin5210/httplogger
+# github.com/jarcoal/httpmock v1.0.6
+github.com/jarcoal/httpmock
 # github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
 github.com/juju/ansiterm
 github.com/juju/ansiterm/tabwriter
@@ -173,6 +176,8 @@ github.com/pelletier/go-toml
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/rs/zerolog v1.18.0
 ## explicit
 github.com/rs/zerolog
@@ -203,6 +208,12 @@ github.com/spf13/pflag
 # github.com/spf13/viper v1.7.0
 ## explicit
 github.com/spf13/viper
+# github.com/stretchr/objx v0.3.0
+## explicit
+github.com/stretchr/objx
+# github.com/stretchr/testify v1.6.1
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/mock
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9
@@ -275,4 +286,7 @@ gopkg.in/h2non/gentleman.v2/utils
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+## explicit
+gopkg.in/yaml.v3
 # gopkg.ini/ini.v1 => github.com/go-ini/ini v1.42.0

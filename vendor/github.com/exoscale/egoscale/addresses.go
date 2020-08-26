@@ -8,13 +8,15 @@ import (
 
 // Healthcheck represents an Healthcheck attached to an IP
 type Healthcheck struct {
-	Interval    int64  `json:"interval,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 10, minimum: 5"`
-	Mode        string `json:"mode,omitempty" doc:"healthcheck definition: healthcheck mode can be either 'tcp' or 'http'"`
-	Path        string `json:"path,omitempty" doc:"healthcheck definition: the path against which the 'http' healthcheck will be performed. Required if mode is 'http', ignored otherwise."`
-	Port        int64  `json:"port,omitempty" doc:"healthcheck definition: the port against which the healthcheck will be performed. Required if a 'mode' is provided."`
-	StrikesFail int64  `json:"strikes-fail,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'dead'. Default: 3"`
-	StrikesOk   int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
-	Timeout     int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
+	Interval      int64  `json:"interval,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 10, minimum: 5"`
+	Mode          string `json:"mode,omitempty" doc:"healthcheck definition: healthcheck mode can be either 'tcp' or 'http'"`
+	Path          string `json:"path,omitempty" doc:"healthcheck definition: the path against which the 'http' healthcheck will be performed. Required if mode is 'http', ignored otherwise."`
+	Port          int64  `json:"port,omitempty" doc:"healthcheck definition: the port against which the healthcheck will be performed. Required if a 'mode' is provided."`
+	StrikesFail   int64  `json:"strikes-fail,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'dead'. Default: 3"`
+	StrikesOk     int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
+	Timeout       int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
+	TLSSNI        string `json:"tls-sni,omitempty" doc:"healthcheck definition: server name to present for HTTPS checks"`
+	TLSSkipVerify bool   `json:"tls-skip-verify" doc:"healthcheck definition: bypass certificate chain verification for HTTPS checks"`
 }
 
 // IPAddress represents an IP Address
@@ -130,16 +132,18 @@ func (DisassociateIPAddress) AsyncResponse() interface{} {
 
 // UpdateIPAddress (Async) represents the IP modification
 type UpdateIPAddress struct {
-	Description            string `json:"description,omitempty" doc:"The IP address description."`
-	HealthcheckInterval    int64  `json:"interval,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 10, minimum: 5"`
-	HealthcheckMode        string `json:"mode,omitempty" doc:"healthcheck definition: healthcheck mode can be either 'tcp' or 'http'"`
-	HealthcheckPath        string `json:"path,omitempty" doc:"healthcheck definition: the path against which the 'http' healthcheck will be performed. Required if mode is 'http', ignored otherwise."`
-	HealthcheckPort        int64  `json:"port,omitempty" doc:"healthcheck definition: the port against which the healthcheck will be performed. Required if a 'mode' is provided."`
-	HealthcheckStrikesFail int64  `json:"strikes-fail,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'dead'. Default: 3"`
-	HealthcheckStrikesOk   int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
-	HealthcheckTimeout     int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
-	ID                     *UUID  `json:"id" doc:"the id of the public IP address to update"`
-	_                      bool   `name:"updateIpAddress" description:"Updates an IP address"`
+	Description              string `json:"description,omitempty" doc:"The IP address description."`
+	HealthcheckInterval      int64  `json:"interval,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 10, minimum: 5"`
+	HealthcheckMode          string `json:"mode,omitempty" doc:"healthcheck definition: healthcheck mode can be either 'tcp', 'http', or 'https'"`
+	HealthcheckPath          string `json:"path,omitempty" doc:"healthcheck definition: the path against which the 'http' healthcheck will be performed. Required if mode is 'http', ignored otherwise."`
+	HealthcheckPort          int64  `json:"port,omitempty" doc:"healthcheck definition: the port against which the healthcheck will be performed. Required if a 'mode' is provided."`
+	HealthcheckStrikesFail   int64  `json:"strikes-fail,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'dead'. Default: 3"`
+	HealthcheckStrikesOk     int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
+	HealthcheckTimeout       int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
+	HealthcheckTLSSNI        string `json:"tls-sni,omitempty" doc:"healthcheck definition: server name to present for HTTPS checks"`
+	HealthcheckTLSSkipVerify bool   `json:"tls-skip-verify" doc:"healthcheck definition: bypass certificate chain verification for HTTPS checks"`
+	ID                       *UUID  `json:"id" doc:"the id of the public IP address to update"`
+	_                        bool   `name:"updateIpAddress" description:"Updates an IP address"`
 }
 
 // Response returns the struct to unmarshal
