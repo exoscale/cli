@@ -68,6 +68,11 @@ Supported output template annotations: %s`,
 			}
 		}
 
+		ipv6, err := cmd.Flags().GetBool("ipv6")
+		if err != nil {
+			return err
+		}
+
 		userDataPath, err := cmd.Flags().GetString("cloud-init")
 		if err != nil {
 			return err
@@ -97,6 +102,7 @@ Supported output template annotations: %s`,
 			Name:        name,
 			Description: description,
 			TemplateID:  template.ID,
+			IPv6:        ipv6,
 			UserData:    userData,
 		})
 		if err != nil {
@@ -130,5 +136,6 @@ func init() {
 	instancePoolUpdateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	instancePoolUpdateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
 	instancePoolUpdateCmd.Flags().IntP("size", "s", 0, "Update instance pool size")
+	instancePoolUpdateCmd.Flags().BoolP("ipv6", "6", false, "Enable IPv6")
 	instancePoolCmd.AddCommand(instancePoolUpdateCmd)
 }
