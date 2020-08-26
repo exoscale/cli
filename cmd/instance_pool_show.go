@@ -18,6 +18,7 @@ type instancePoolItemOutput struct {
 	Zone            string                     `json:"zoneid"`
 	SecurityGroups  []string                   `json:"security_groups"`
 	PrivateNetworks []string                   `json:"private_networks"`
+	IPv6            bool                       `json:"ipv6" outputLabel:"IPv6"`
 	SSHKey          string                     `json:"ssh_key"`
 	Size            int                        `json:"size"`
 	DiskSize        string                     `json:"disk_size"`
@@ -92,6 +93,7 @@ func showInstancePool(name, zoneName string) error {
 		SSHKey:          instancePool.KeyPair,
 		Size:            instancePool.Size,
 		DiskSize:        humanize.IBytes(uint64(instancePool.RootDiskSize << 30)),
+		IPv6:            instancePool.IPv6,
 		State:           instancePool.State,
 	}
 	for _, vm := range instancePool.VirtualMachines {

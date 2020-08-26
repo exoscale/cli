@@ -112,6 +112,11 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		ipv6, err := cmd.Flags().GetBool("ipv6")
+		if err != nil {
+			return err
+		}
+
 		userDataPath, err := cmd.Flags().GetString("cloud-init")
 		if err != nil {
 			return err
@@ -139,6 +144,7 @@ Supported output template annotations: %s`,
 					RootDiskSize:      diskSize,
 					SecurityGroupIDs:  securityGroups,
 					NetworkIDs:        privnets,
+					IPv6:              ipv6,
 					UserData:          userData,
 				},
 				fmt.Sprintf("Creating instance pool %q", args[0]),
@@ -172,5 +178,6 @@ func init() {
 	instancePoolCreateCmd.Flags().StringP("keypair", "k", "", "Instance pool keypair")
 	instancePoolCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security groups <name | id, name | id, ...>")
 	instancePoolCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Privnets <name | id, name | id, ...>")
+	instancePoolCreateCmd.Flags().BoolP("ipv6", "6", false, "Enable IPv6")
 	instancePoolCmd.AddCommand(instancePoolCreateCmd)
 }
