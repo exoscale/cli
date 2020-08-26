@@ -126,6 +126,7 @@ func (vm VirtualMachine) ListRequest() (ListCommand, error) {
 	req := &ListVirtualMachines{
 		GroupID:    vm.GroupID,
 		ID:         vm.ID,
+		ManagerID:  vm.ManagerID,
 		Name:       vm.Name,
 		State:      vm.State,
 		TemplateID: vm.TemplateID,
@@ -516,6 +517,7 @@ type ListVirtualMachines struct {
 	IPAddress         net.IP        `json:"ipaddress,omitempty" doc:"an IP address to filter the result"`
 	IsoID             *UUID         `json:"isoid,omitempty" doc:"list vms by iso"`
 	Keyword           string        `json:"keyword,omitempty" doc:"List by keyword"`
+	ManagerID         *UUID         `json:"managerid,omitempty" doc:"list by manager id"`
 	Name              string        `json:"name,omitempty" doc:"name of the virtual machine"`
 	NetworkID         *UUID         `json:"networkid,omitempty" doc:"list by network id"`
 	Page              int           `json:"page,omitempty"`

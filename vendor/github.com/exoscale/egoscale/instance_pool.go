@@ -26,6 +26,7 @@ type InstancePool struct {
 	ZoneID            *UUID             `json:"zoneid"`
 	SecurityGroupIDs  []UUID            `json:"securitygroupids"`
 	NetworkIDs        []UUID            `json:"networkids"`
+	IPv6              bool              `json:"ipv6"`
 	KeyPair           string            `json:"keypair"`
 	UserData          string            `json:"userdata"`
 	Size              int               `json:"size"`
@@ -43,6 +44,7 @@ type CreateInstancePool struct {
 	ZoneID            *UUID  `json:"zoneid"`
 	SecurityGroupIDs  []UUID `json:"securitygroupids,omitempty"`
 	NetworkIDs        []UUID `json:"networkids,omitempty"`
+	IPv6              bool   `json:"ipv6,omitempty"`
 	KeyPair           string `json:"keypair,omitempty"`
 	UserData          string `json:"userdata,omitempty"`
 	Size              int    `json:"size"`
@@ -60,6 +62,7 @@ type CreateInstancePoolResponse struct {
 	ZoneID            *UUID             `json:"zoneid"`
 	SecurityGroupIDs  []UUID            `json:"securitygroupids"`
 	NetworkIDs        []UUID            `json:"networkids"`
+	IPv6              bool              `json:"ipv6"`
 	KeyPair           string            `json:"keypair"`
 	UserData          string            `json:"userdata"`
 	Size              int64             `json:"size"`
@@ -80,6 +83,7 @@ type UpdateInstancePool struct {
 	Description string `json:"description,omitempty"`
 	TemplateID  *UUID  `json:"templateid,omitempty"`
 	UserData    string `json:"userdata,omitempty"`
+	IPv6        bool   `json:"ipv6,omitempty"`
 	_           bool   `name:"updateInstancePool" description:"Update an Instance Pool"`
 }
 

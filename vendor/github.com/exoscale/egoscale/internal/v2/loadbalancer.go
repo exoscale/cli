@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-// UnmarshalJSON unmarshals a LoadBalancer resource into a temporary structure whose "CreatedAt" field of type
+// UnmarshalJSON unmarshals a LoadBalancer structure into a temporary structure whose "CreatedAt" field of type
 // string to be able to parse the original timestamp (ISO 8601) into a time.Time object, since json.Unmarshal()
-// only supports RFC3339 format.
+// only supports RFC 3339 format.
 func (lb *LoadBalancer) UnmarshalJSON(data []byte) error {
 	var raw = struct {
 		CreatedAt   string                 `json:"created-at,omitempty"`
@@ -37,4 +37,28 @@ func (lb *LoadBalancer) UnmarshalJSON(data []byte) error {
 	lb.State = raw.State
 
 	return nil
+}
+
+// MarshalJSON returns the JSON encoding of a LoadBalancer structure after having formatted the CreatedAt field
+// in the original timestamp (ISO 8601), since time.MarshalJSON() only supports RFC 3339 format.
+func (lb *LoadBalancer) MarshalJSON() ([]byte, error) {
+	var raw = struct {
+		CreatedAt   string                 `json:"created-at,omitempty"`
+		Description *string                `json:"description,omitempty"`
+		Id          *string                `json:"id,omitempty"` // nolint:golint
+		Ip          *string                `json:"ip,omitempty"` // nolint:golint
+		Name        *string                `json:"name,omitempty"`
+		Services    *[]LoadBalancerService `json:"services,omitempty"`
+		State       *string                `json:"state,omitempty"`
+	}{}
+
+	raw.CreatedAt = lb.CreatedAt.Format(iso8601Format)
+	raw.Description = lb.Description
+	raw.Id = lb.Id
+	raw.Ip = lb.Ip
+	raw.Name = lb.Name
+	raw.Services = lb.Services
+	raw.State = lb.State
+
+	return json.Marshal(raw)
 }

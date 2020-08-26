@@ -1,6 +1,29 @@
 Changelog
 =========
 
+0.31.1
+------
+
+- fix: Instance Pool IPv6 flag handling
+
+0.31.0
+------
+
+- feature: add support for IPv6 in Instance Pools (#446)
+
+0.30.0
+------
+
+- feature: add new TLS-specific parameters to managed EIP
+
+0.29.0
+------
+
+- feature: `ListVirtualMachines` call to allow searching by `ManagerID` (#442)
+- fix: remove duplicate `User-Agent` HTTP header in Runstatus calls
+- tests: `*NetworkLoadBalancer*` calls are now tested using HTTP mocks
+- codegen: `internal/v2` updated
+
 0.28.1
 ------
 
