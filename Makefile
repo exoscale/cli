@@ -43,7 +43,7 @@ manpage:
 
 .PHONY: manpages
 manpages: manpage
-	$(GO) run -mod vendor doc/main.go --man-page
+	$(GO) run -mod vendor docs/main.go --man-page
 
 .PHONY: completions
 completions:
