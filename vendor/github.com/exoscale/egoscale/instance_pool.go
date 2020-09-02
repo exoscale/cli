@@ -77,14 +77,15 @@ func (CreateInstancePool) Response() interface{} {
 
 // UpdateInstancePool represents an Instance Pool update API request.
 type UpdateInstancePool struct {
-	ID          *UUID  `json:"id"`
-	ZoneID      *UUID  `json:"zoneid"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-	TemplateID  *UUID  `json:"templateid,omitempty"`
-	UserData    string `json:"userdata,omitempty"`
-	IPv6        bool   `json:"ipv6,omitempty"`
-	_           bool   `name:"updateInstancePool" description:"Update an Instance Pool"`
+	ID           *UUID  `json:"id"`
+	ZoneID       *UUID  `json:"zoneid"`
+	Name         string `json:"name,omitempty"`
+	Description  string `json:"description,omitempty"`
+	TemplateID   *UUID  `json:"templateid,omitempty"`
+	RootDiskSize int    `json:"rootdisksize,omitempty"`
+	UserData     string `json:"userdata,omitempty"`
+	IPv6         bool   `json:"ipv6,omitempty"`
+	_            bool   `name:"updateInstancePool" description:"Update an Instance Pool"`
 }
 
 // Response returns an empty structure to unmarshal an Instance Pool update API response into.

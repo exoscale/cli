@@ -92,16 +92,18 @@ func (ipaddress IPAddress) Delete(ctx context.Context, client *Client) error {
 
 // AssociateIPAddress (Async) represents the IP creation
 type AssociateIPAddress struct {
-	Description            string `json:"description,omitempty" doc:"The IP address description."`
-	HealthcheckInterval    int64  `json:"interval,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 10, minimum: 5"`
-	HealthcheckMode        string `json:"mode,omitempty" doc:"healthcheck definition: healthcheck mode can be either 'tcp' or 'http'"`
-	HealthcheckPath        string `json:"path,omitempty" doc:"healthcheck definition: the path against which the 'http' healthcheck will be performed. Required if mode is 'http', ignored otherwise."`
-	HealthcheckPort        int64  `json:"port,omitempty" doc:"healthcheck definition: the port against which the healthcheck will be performed. Required if a 'mode' is provided."`
-	HealthcheckStrikesFail int64  `json:"strikes-fail,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'dead'. Default: 3"`
-	HealthcheckStrikesOk   int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
-	HealthcheckTimeout     int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
-	ZoneID                 *UUID  `json:"zoneid,omitempty" doc:"the ID of the availability zone you want to acquire a public IP address from"`
-	_                      bool   `name:"associateIpAddress" description:"Acquires and associates a public IP to an account."`
+	Description              string `json:"description,omitempty" doc:"The IP address description."`
+	HealthcheckInterval      int64  `json:"interval,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 10, minimum: 5"`
+	HealthcheckMode          string `json:"mode,omitempty" doc:"healthcheck definition: healthcheck mode can be either 'tcp', 'http', or 'https'"`
+	HealthcheckPath          string `json:"path,omitempty" doc:"healthcheck definition: the path against which the 'http' healthcheck will be performed. Required if mode is 'http' or 'https', ignored otherwise."`
+	HealthcheckPort          int64  `json:"port,omitempty" doc:"healthcheck definition: the port against which the healthcheck will be performed. Required if a 'mode' is provided."`
+	HealthcheckStrikesFail   int64  `json:"strikes-fail,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'dead'. Default: 3"`
+	HealthcheckStrikesOk     int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
+	HealthcheckTimeout       int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
+	HealthcheckTLSSkipVerify bool   `json:"tls-skip-verify,omitempty" doc:"healthcheck definition: skip TLS verification for HTTPS checks. Default: false"`
+	HealthcheckTLSSNI        string `json:"tls-sni,omitempty" doc:"healthcheck definition: server name to present for HTTPS checks. Default: no server name is presented"`
+	ZoneID                   *UUID  `json:"zoneid,omitempty" doc:"the ID of the availability zone you want to acquire a public IP address from"`
+	_                        bool   `name:"associateIpAddress" description:"Acquires and associates a public IP to an account."`
 }
 
 // Response returns the struct to unmarshal
