@@ -11,13 +11,15 @@ import (
 )
 
 type eipHealthcheckShowOutput struct {
-	Mode        string `json:"mode,omitempty"`
-	Path        string `json:"path,omitempty"`
-	Port        int64  `json:"port,omitempty"`
-	Interval    int64  `json:"interval,omitempty"`
-	Timeout     int64  `json:"timeout,omitempty"`
-	StrikesOk   int64  `json:"strikes_ok,omitempty"`
-	StrikesFail int64  `json:"strikes_fail,omitempty"`
+	Mode          string `json:"mode,omitempty"`
+	Path          string `json:"path,omitempty"`
+	Port          int64  `json:"port,omitempty"`
+	Interval      int64  `json:"interval,omitempty"`
+	Timeout       int64  `json:"timeout,omitempty"`
+	StrikesOk     int64  `json:"strikes_ok,omitempty"`
+	StrikesFail   int64  `json:"strikes_fail,omitempty"`
+	TLSSkipVerify bool   `json:"tls_skip_verify"`
+	TLSSNI        string `json:"tls_sni,omitempty"`
 }
 
 type eipShowOutput struct {
@@ -52,6 +54,10 @@ func (o *eipShowOutput) toTable() {
 		t.Append([]string{"Healthcheck Timeout", fmt.Sprint(o.Healthcheck.Timeout)})
 		t.Append([]string{"Healthcheck Strikes OK", fmt.Sprint(o.Healthcheck.StrikesOk)})
 		t.Append([]string{"Healthcheck Strikes Fail", fmt.Sprint(o.Healthcheck.StrikesFail)})
+		if o.Healthcheck.Mode == "https" {
+			t.Append([]string{"Healthcheck TLS Skip Verification", fmt.Sprintf("%t", o.Healthcheck.TLSSkipVerify)})
+			t.Append([]string{"Healthcheck TLS SNI", fmt.Sprint(o.Healthcheck.TLSSNI)})
+		}
 	}
 
 	if len(o.Instances) > 0 {
@@ -103,13 +109,15 @@ func showEIP(eip string) (outputter, error) {
 
 	if ip.Healthcheck != nil {
 		out.Healthcheck = &eipHealthcheckShowOutput{
-			Mode:        ip.Healthcheck.Mode,
-			Path:        ip.Healthcheck.Path,
-			Port:        ip.Healthcheck.Port,
-			Interval:    ip.Healthcheck.Interval,
-			Timeout:     ip.Healthcheck.Timeout,
-			StrikesOk:   ip.Healthcheck.StrikesOk,
-			StrikesFail: ip.Healthcheck.StrikesFail,
+			Mode:          ip.Healthcheck.Mode,
+			Path:          ip.Healthcheck.Path,
+			Port:          ip.Healthcheck.Port,
+			Interval:      ip.Healthcheck.Interval,
+			Timeout:       ip.Healthcheck.Timeout,
+			StrikesOk:     ip.Healthcheck.StrikesOk,
+			StrikesFail:   ip.Healthcheck.StrikesFail,
+			TLSSkipVerify: ip.Healthcheck.TLSSkipVerify,
+			TLSSNI:        ip.Healthcheck.TLSSNI,
 		}
 	}
 

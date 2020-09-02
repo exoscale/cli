@@ -53,16 +53,26 @@ var eipUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		tlsSNI, err := cmd.Flags().GetString("healthcheck-tls-sni")
+		if err != nil {
+			return err
+		}
+		tlsSkipVerify, err := cmd.Flags().GetBool("healthcheck-tls-skip-verify")
+		if err != nil {
+			return err
+		}
 		req := egoscale.UpdateIPAddress{
-			Description:            description,
-			HealthcheckInterval:    interval,
-			HealthcheckMode:        mode,
-			HealthcheckPath:        path,
-			HealthcheckPort:        port,
-			HealthcheckStrikesFail: strikesFail,
-			HealthcheckStrikesOk:   strikesOK,
-			HealthcheckTimeout:     timeout,
-			ID:                     id,
+			Description:              description,
+			HealthcheckInterval:      interval,
+			HealthcheckMode:          mode,
+			HealthcheckPath:          path,
+			HealthcheckPort:          port,
+			HealthcheckStrikesFail:   strikesFail,
+			HealthcheckStrikesOk:     strikesOK,
+			HealthcheckTimeout:       timeout,
+			HealthcheckTLSSNI:        tlsSNI,
+			HealthcheckTLSSkipVerify: tlsSkipVerify,
+			ID:                       id,
 		}
 
 		return updateIPAddress(req)
@@ -97,11 +107,13 @@ func updateIPAddress(associateIPAddress egoscale.UpdateIPAddress) error {
 func init() {
 	eipUpdateCmd.Flags().StringP("description", "", "", "the IP address description.")
 	eipUpdateCmd.Flags().Int64P("healthcheck-interval", "", 0, "the time in seconds to wait for between each healthcheck.")
-	eipUpdateCmd.Flags().StringP("healthcheck-mode", "", "", "the healthcheck type. Should be tcp or http.")
-	eipUpdateCmd.Flags().StringP("healthcheck-path", "", "", "the healthcheck path. Required if mode is http.")
+	eipUpdateCmd.Flags().StringP("healthcheck-mode", "", "", "the healthcheck type. Should be tcp, http, or https.")
+	eipUpdateCmd.Flags().StringP("healthcheck-path", "", "", "the healthcheck path. Required if mode is http(s).")
 	eipUpdateCmd.Flags().Int64P("healthcheck-port", "", 0, "the healthcheck port (e.g. 80 for http).")
 	eipUpdateCmd.Flags().Int64P("healthcheck-strikes-fail", "", 0, "the number of times to retry before declaring the IP dead.")
 	eipUpdateCmd.Flags().Int64P("healthcheck-strikes-ok", "", 0, "the number of times to retry before declaring the IP healthy.")
 	eipUpdateCmd.Flags().Int64P("healthcheck-timeout", "", 0, "the timeout in seconds to wait for each check (default is 2). Should be lower than the interval.")
+	eipUpdateCmd.Flags().BoolP("healthcheck-tls-skip-verify", "", false, "whether to bypass TLS verification for HTTPS checks")
+	eipUpdateCmd.Flags().StringP("healthcheck-tls-sni", "", "", "server name to present with SNI for HTTPS checks")
 	eipCmd.AddCommand(eipUpdateCmd)
 }

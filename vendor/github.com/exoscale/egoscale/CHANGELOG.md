@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.32.0
+------
+
+- feature: add support for Instance Pool root disk size update (#448)
+
+0.31.2
+------
+
+- fix: add missing TLS-specific parameters to `AssociateIPAddress`
+
 0.31.1
 ------
 
