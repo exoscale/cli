@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.17.0
+
+### New
+
+* `exo instancepool`: support for disk size updating (#282)
+* `exo instancepool`: support for IPv6 activation
+* `exo eip`: support for HTTP health checking
+
+### Changes
+
+* Operations progress info/messages is now output to `stderr` (#280)
+
 
 ## 1.16.1
 
