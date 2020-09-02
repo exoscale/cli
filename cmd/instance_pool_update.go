@@ -68,6 +68,11 @@ Supported output template annotations: %s`,
 			}
 		}
 
+		diskSize, err := cmd.Flags().GetInt("disk")
+		if err != nil {
+			return err
+		}
+
 		ipv6, err := cmd.Flags().GetBool("ipv6")
 		if err != nil {
 			return err
@@ -97,13 +102,14 @@ Supported output template annotations: %s`,
 		}
 
 		_, err = cs.RequestWithContext(gContext, &egoscale.UpdateInstancePool{
-			ID:          instancePool.ID,
-			ZoneID:      zone.ID,
-			Name:        name,
-			Description: description,
-			TemplateID:  template.ID,
-			IPv6:        ipv6,
-			UserData:    userData,
+			ID:           instancePool.ID,
+			ZoneID:       zone.ID,
+			Name:         name,
+			Description:  description,
+			TemplateID:   template.ID,
+			RootDiskSize: diskSize,
+			IPv6:         ipv6,
+			UserData:     userData,
 		})
 		if err != nil {
 			return err
@@ -136,6 +142,7 @@ func init() {
 	instancePoolUpdateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	instancePoolUpdateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
 	instancePoolUpdateCmd.Flags().IntP("size", "s", 0, "Update instance pool size")
+	instancePoolUpdateCmd.Flags().Int("disk", 0, "Disk size")
 	instancePoolUpdateCmd.Flags().BoolP("ipv6", "6", false, "Enable IPv6")
 	instancePoolCmd.AddCommand(instancePoolUpdateCmd)
 }
