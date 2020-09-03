@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/exoscale/egoscale"
@@ -113,6 +114,9 @@ var nlbServiceUpdateCmd = &cobra.Command{
 		if cmd.Flags().Changed("healthcheck-uri") {
 			svc.Healthcheck.URI = healthcheckURI
 		}
+		if strings.HasPrefix(healthcheckMode, "http") && healthcheckURI == "" {
+			return errors.New(`an healthcheck URI is required in "http(s)" mode`)
+		}
 
 		healthcheckPort, err := cmd.Flags().GetUint16("healthcheck-port")
 		if err != nil {
@@ -152,6 +156,9 @@ var nlbServiceUpdateCmd = &cobra.Command{
 		}
 		if cmd.Flags().Changed("healthcheck-tls-sni") {
 			svc.Healthcheck.TLSSNI = healthcheckTLSSNI
+		}
+		if healthcheckTLSSNI != "" && healthcheckMode != "https" {
+			return errors.New(`a healthcheck TLS SNI can only be specified in https mode`)
 		}
 
 		if err := nlb.UpdateService(ctx, svc); err != nil {

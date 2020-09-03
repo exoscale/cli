@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/exoscale/egoscale"
@@ -83,6 +85,9 @@ var nlbServiceAddCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		if strings.HasPrefix(healthcheckMode, "http") && healthcheckURI == "" {
+			return errors.New(`an healthcheck URI is required in "http(s)" mode`)
+		}
 
 		healthcheckPort, err := cmd.Flags().GetUint16("healthcheck-port")
 		if err != nil {
@@ -110,6 +115,9 @@ var nlbServiceAddCmd = &cobra.Command{
 		healthcheckTLSSNI, err := cmd.Flags().GetString("healthcheck-tls-sni")
 		if err != nil {
 			return err
+		}
+		if healthcheckTLSSNI != "" && healthcheckMode != "https" {
+			return errors.New(`a healthcheck TLS SNI can only be specified in https mode`)
 		}
 
 		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
