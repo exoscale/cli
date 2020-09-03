@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.33.1
+------
+
+- fix: `UpdateNetworkLoadBalancer` call panicking following a public API change
+
 0.33.0
 ------
 

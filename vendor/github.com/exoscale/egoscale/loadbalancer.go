@@ -393,7 +393,7 @@ func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string,
 		return nil, err
 	}
 
-	return c.GetNetworkLoadBalancer(ctx, zone, *res.(*v2.Resource).Id)
+	return c.GetNetworkLoadBalancer(ctx, zone, *res.(*v2.Reference).Id)
 }
 
 // DeleteNetworkLoadBalancer deletes the specified Network Load Balancer instance in the specified zone.
