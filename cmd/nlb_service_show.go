@@ -26,6 +26,7 @@ type nlbServiceHealthcheckShowOutput struct {
 	Timeout  time.Duration `json:"timeout"`
 	Retries  int64         `json:"retries"`
 	URI      string        `json:"uri"`
+	TLSSNI   string        `json:"tls_sni"`
 }
 
 type nlbServiceShowOutput struct {
@@ -59,12 +60,15 @@ func (o *nlbServiceShowOutput) toTable() {
 	t.Append([]string{"Strategy", o.Strategy})
 	t.Append([]string{"Healthcheck Mode", o.Healthcheck.Mode})
 	t.Append([]string{"Healthcheck Port", fmt.Sprint(o.Healthcheck.Port)})
-	if o.Healthcheck.Mode == "http" {
+	if strings.HasPrefix(o.Healthcheck.Mode, "http") {
 		t.Append([]string{"Healthcheck URI", o.Healthcheck.URI})
 	}
 	t.Append([]string{"Healthcheck Interval", fmt.Sprint(o.Healthcheck.Interval)})
 	t.Append([]string{"Healthcheck Timeout", fmt.Sprint(o.Healthcheck.Timeout)})
 	t.Append([]string{"Healthcheck Retries", fmt.Sprint(o.Healthcheck.Retries)})
+	if o.Healthcheck.Mode == "https" {
+		t.Append([]string{"Healthcheck TLS SNI", fmt.Sprint(o.Healthcheck.TLSSNI)})
+	}
 	t.Append([]string{"Healthcheck Status", func() string {
 		if len(o.HealthcheckStatus) > 0 {
 			return strings.Join(
@@ -148,6 +152,7 @@ func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
 			Timeout:  svc.Healthcheck.Timeout,
 			Retries:  svc.Healthcheck.Retries,
 			URI:      svc.Healthcheck.URI,
+			TLSSNI:   svc.Healthcheck.TLSSNI,
 		},
 
 		HealthcheckStatus: func() []nlbServerStatusShowOutput {

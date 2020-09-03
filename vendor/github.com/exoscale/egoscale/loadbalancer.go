@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	apiv2 "github.com/exoscale/egoscale/api/v2"
@@ -33,6 +34,7 @@ type NetworkLoadBalancerServiceHealthcheck struct {
 	Timeout  time.Duration
 	Retries  int64
 	URI      string
+	TLSSNI   string
 }
 
 // NetworkLoadBalancerService represents a Network Load Balancer service.
@@ -67,6 +69,7 @@ func nlbServiceFromAPI(svc *v2.LoadBalancerService) *NetworkLoadBalancerService 
 			Timeout:  time.Duration(optionalInt64(svc.Healthcheck.Timeout)) * time.Second,
 			Retries:  optionalInt64(svc.Healthcheck.Retries),
 			URI:      optionalString(svc.Healthcheck.Uri),
+			TLSSNI:   optionalString(svc.Healthcheck.TlsSni),
 		},
 		HealthcheckStatus: func() []*NetworkLoadBalancerServerStatus {
 			statuses := make([]*NetworkLoadBalancerServerStatus, 0)
@@ -158,8 +161,14 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 				Timeout:  &healthcheckTimeout,
 				Retries:  &svc.Healthcheck.Retries,
 				Uri: func() *string {
-					if svc.Healthcheck.Mode == "http" {
+					if strings.HasPrefix(svc.Healthcheck.Mode, "http") {
 						return &svc.Healthcheck.URI
+					}
+					return nil
+				}(),
+				TlsSni: func() *string {
+					if svc.Healthcheck.Mode == "https" {
+						return &svc.Healthcheck.TLSSNI
 					}
 					return nil
 				}(),
@@ -184,7 +193,7 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 		return nil, err
 	}
 
-	nlbUpdated, err := nlb.c.GetNetworkLoadBalancer(ctx, nlb.zone, *res.(*v2.Resource).Id)
+	nlbUpdated, err := nlb.c.GetNetworkLoadBalancer(ctx, nlb.zone, *res.(*v2.Reference).Id)
 	if err != nil {
 		return nil, err
 	}
@@ -227,8 +236,14 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 				Timeout:  &healthcheckTimeout,
 				Retries:  &svc.Healthcheck.Retries,
 				Uri: func() *string {
-					if svc.Healthcheck.Mode == "http" {
+					if strings.HasPrefix(svc.Healthcheck.Mode, "http") {
 						return &svc.Healthcheck.URI
+					}
+					return nil
+				}(),
+				TlsSni: func() *string {
+					if svc.Healthcheck.Mode == "https" {
+						return &svc.Healthcheck.TLSSNI
 					}
 					return nil
 				}(),
@@ -295,7 +310,7 @@ func (c *Client) CreateNetworkLoadBalancer(ctx context.Context, zone string,
 		return nil, err
 	}
 
-	return c.GetNetworkLoadBalancer(ctx, zone, *res.(*v2.Resource).Id)
+	return c.GetNetworkLoadBalancer(ctx, zone, *res.(*v2.Reference).Id)
 }
 
 // ListNetworkLoadBalancers returns the list of existing Network Load Balancers in the

@@ -146,6 +146,14 @@ var nlbServiceUpdateCmd = &cobra.Command{
 			svc.Healthcheck.Retries = healthcheckRetries
 		}
 
+		healthcheckTLSSNI, err := cmd.Flags().GetString("healthcheck-tls-sni")
+		if err != nil {
+			return err
+		}
+		if cmd.Flags().Changed("healthcheck-tls-sni") {
+			svc.Healthcheck.TLSSNI = healthcheckTLSSNI
+		}
+
 		if err := nlb.UpdateService(ctx, svc); err != nil {
 			return fmt.Errorf("unable to update service: %s", err)
 		}
@@ -166,11 +174,12 @@ func init() {
 	nlbServiceUpdateCmd.Flags().Uint16("port", 0, "service port")
 	nlbServiceUpdateCmd.Flags().Uint16("target-port", 0, "port to forward traffic to on target instances")
 	nlbServiceUpdateCmd.Flags().String("strategy", "", "load balancing strategy (round-robin|source-hash)")
-	nlbServiceUpdateCmd.Flags().String("healthcheck-mode", "", "service health checking mode (tcp|http)")
-	nlbServiceUpdateCmd.Flags().String("healthcheck-uri", "", "service health checking URI (required in http mode)")
+	nlbServiceUpdateCmd.Flags().String("healthcheck-mode", "", "service health checking mode (tcp|http|https)")
+	nlbServiceUpdateCmd.Flags().String("healthcheck-uri", "", "service health checking URI (required in http(s) mode)")
 	nlbServiceUpdateCmd.Flags().Uint16("healthcheck-port", 0, "service health checking port")
 	nlbServiceUpdateCmd.Flags().Int64("healthcheck-interval", 0, "service health checking interval in seconds")
 	nlbServiceUpdateCmd.Flags().Int64("healthcheck-timeout", 0, "service health checking timeout in seconds")
 	nlbServiceUpdateCmd.Flags().Int64("healthcheck-retries", 0, "service health checking retries")
+	nlbServiceUpdateCmd.Flags().String("healthcheck-tls-sni", "", "service health checking server name to present with SNI in https mode")
 	nlbServiceCmd.AddCommand(nlbServiceUpdateCmd)
 }

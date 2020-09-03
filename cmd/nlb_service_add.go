@@ -107,6 +107,11 @@ var nlbServiceAddCmd = &cobra.Command{
 			return err
 		}
 
+		healthcheckTLSSNI, err := cmd.Flags().GetString("healthcheck-tls-sni")
+		if err != nil {
+			return err
+		}
+
 		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		nlb, err := lookupNLB(ctx, zone, nlbRef)
 		if err != nil {
@@ -128,6 +133,7 @@ var nlbServiceAddCmd = &cobra.Command{
 				Interval: time.Duration(healthcheckInterval) * time.Second,
 				Timeout:  time.Duration(healthcheckTimeout) * time.Second,
 				Retries:  healthcheckRetries,
+				TLSSNI:   healthcheckTLSSNI,
 			},
 		})
 		if err != nil {
@@ -151,11 +157,12 @@ func init() {
 	nlbServiceAddCmd.Flags().Uint16("port", 0, "service port")
 	nlbServiceAddCmd.Flags().Uint16("target-port", 0, "port to forward traffic to on target instances (defaults to service port)")
 	nlbServiceAddCmd.Flags().String("strategy", "round-robin", "load balancing strategy (round-robin|source-hash)")
-	nlbServiceAddCmd.Flags().String("healthcheck-mode", "tcp", "service health checking mode (tcp|http)")
-	nlbServiceAddCmd.Flags().String("healthcheck-uri", "", "service health checking URI (required in http mode)")
+	nlbServiceAddCmd.Flags().String("healthcheck-mode", "tcp", "service health checking mode (tcp|http|https)")
+	nlbServiceAddCmd.Flags().String("healthcheck-uri", "", "service health checking URI (required in http(s) mode)")
 	nlbServiceAddCmd.Flags().Uint16("healthcheck-port", 0, "service health checking port (defaults to target port)")
 	nlbServiceAddCmd.Flags().Int64("healthcheck-interval", 10, "service health checking interval in seconds")
 	nlbServiceAddCmd.Flags().Int64("healthcheck-timeout", 5, "service health checking timeout in seconds")
 	nlbServiceAddCmd.Flags().Int64("healthcheck-retries", 1, "service health checking retries")
+	nlbServiceAddCmd.Flags().String("healthcheck-tls-sni", "", "service health checking server name to present with SNI in https mode")
 	nlbServiceCmd.AddCommand(nlbServiceAddCmd)
 }
