@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.33.1
+------
+
+- fix: `UpdateNetworkLoadBalancer` call panicking following a public API change
+
+0.33.0
+------
+
+- feature: add support for Network Load Balancer service HTTPS health checking (#449)
+
 0.32.0
 ------
 

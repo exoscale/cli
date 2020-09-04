@@ -47,7 +47,7 @@ func (o *eipShowOutput) toTable() {
 	if o.Healthcheck != nil {
 		t.Append([]string{"Healthcheck Mode", o.Healthcheck.Mode})
 		t.Append([]string{"Healthcheck Port", fmt.Sprint(o.Healthcheck.Port)})
-		if o.Healthcheck.Mode == "http" {
+		if strings.HasPrefix(o.Healthcheck.Mode, "http") {
 			t.Append([]string{"Healthcheck Path", o.Healthcheck.Path})
 		}
 		t.Append([]string{"Healthcheck Interval", fmt.Sprint(o.Healthcheck.Interval)})

@@ -17,6 +17,13 @@ import (
 	"time"
 )
 
+// CdnConfiguration defines model for cdn-configuration.
+type CdnConfiguration struct {
+	Bucket *string `json:"bucket,omitempty"`
+	Fqdn   *string `json:"fqdn,omitempty"`
+	Status *string `json:"status,omitempty"`
+}
+
 // Healthcheck defines model for healthcheck.
 type Healthcheck struct {
 	Interval *int64  `json:"interval,omitempty"`
@@ -24,7 +31,14 @@ type Healthcheck struct {
 	Port     *int64  `json:"port,omitempty"`
 	Retries  *int64  `json:"retries,omitempty"`
 	Timeout  *int64  `json:"timeout,omitempty"`
+	TlsSni   *string `json:"tls-sni,omitempty"`
 	Uri      *string `json:"uri,omitempty"`
+}
+
+// Instance defines model for instance.
+type Instance struct {
+	Id   *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 // InstanceType defines model for instance-type.
@@ -72,23 +86,103 @@ type LoadBalancerService struct {
 
 // Operation defines model for operation.
 type Operation struct {
-	Id        *string   `json:"id,omitempty"`
-	Message   *string   `json:"message,omitempty"`
-	Reason    *string   `json:"reason,omitempty"`
-	Reference *Resource `json:"reference,omitempty"`
-	State     *string   `json:"state,omitempty"`
+	Id        *string    `json:"id,omitempty"`
+	Message   *string    `json:"message,omitempty"`
+	Reason    *string    `json:"reason,omitempty"`
+	Reference *Reference `json:"reference,omitempty"`
+	State     *string    `json:"state,omitempty"`
 }
 
-// Resource defines model for resource.
-type Resource struct {
+// Reference defines model for reference.
+type Reference struct {
 	Command *string `json:"command,omitempty"`
 	Id      *string `json:"id,omitempty"`
 	Link    *string `json:"link,omitempty"`
 }
 
+// Resource defines model for resource.
+type Resource struct {
+	Id   *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
+}
+
+// SecurityGroup defines model for security-group.
+type SecurityGroup struct {
+	Description *string              `json:"description,omitempty"`
+	Id          *string              `json:"id,omitempty"`
+	Name        *string              `json:"name,omitempty"`
+	Rules       *[]SecurityGroupRule `json:"rules,omitempty"`
+}
+
+// SecurityGroupResource defines model for security-group-resource.
+type SecurityGroupResource struct {
+	Id   *string `json:"id,omitempty"`
+	Name *string `json:"name,omitempty"`
+}
+
+// SecurityGroupRule defines model for security-group-rule.
+type SecurityGroupRule struct {
+	Description   *string `json:"description,omitempty"`
+	EndPort       *int64  `json:"end-port,omitempty"`
+	FlowDirection *string `json:"flow-direction,omitempty"`
+	Icmp          *struct {
+		Code *int64 `json:"code,omitempty"`
+		Type *int64 `json:"type,omitempty"`
+	} `json:"icmp,omitempty"`
+	Id            *string                `json:"id,omitempty"`
+	Network       *string                `json:"network,omitempty"`
+	Protocol      *string                `json:"protocol,omitempty"`
+	SecurityGroup *SecurityGroupResource `json:"security-group,omitempty"`
+	StartPort     *int64                 `json:"start-port,omitempty"`
+}
+
+// Snapshot defines model for snapshot.
+type Snapshot struct {
+	CreatedAt   *time.Time `json:"created-at,omitempty"`
+	Description *string    `json:"description,omitempty"`
+	Id          *string    `json:"id,omitempty"`
+	Instance    *Instance  `json:"instance,omitempty"`
+	Name        *string    `json:"name,omitempty"`
+	State       *string    `json:"state,omitempty"`
+}
+
+// SnapshotExport defines model for snapshot-export.
+type SnapshotExport struct {
+	Id           *string `json:"id,omitempty"`
+	Md5sum       *string `json:"md5sum,omitempty"`
+	PresignedUrl *string `json:"presigned-url,omitempty"`
+}
+
+// Template defines model for template.
+type Template struct {
+	Build           *string    `json:"build,omitempty"`
+	CreatedAt       *time.Time `json:"created-at,omitempty"`
+	DefaultUser     *string    `json:"default-user,omitempty"`
+	Description     *string    `json:"description,omitempty"`
+	Family          *string    `json:"family,omitempty"`
+	Id              *string    `json:"id,omitempty"`
+	Name            *string    `json:"name,omitempty"`
+	PasswordEnabled *bool      `json:"password-enabled,omitempty"`
+	SshkeyEnabled   *bool      `json:"sshkey-enabled,omitempty"`
+	Url             *string    `json:"url,omitempty"`
+	Version         *string    `json:"version,omitempty"`
+	Visibility      *string    `json:"visibility,omitempty"`
+}
+
 // Zone defines model for zone.
 type Zone struct {
 	Name *string `json:"name,omitempty"`
+}
+
+// CreateCdnConfigurationJSONBody defines parameters for CreateCdnConfiguration.
+type CreateCdnConfigurationJSONBody CdnConfiguration
+
+// CreateInstanceJSONBody defines parameters for CreateInstance.
+type CreateInstanceJSONBody Instance
+
+// CreateInstanceParams defines parameters for CreateInstance.
+type CreateInstanceParams struct {
+	Start *bool `json:"start,omitempty"`
 }
 
 // CreateLoadBalancerJSONBody defines parameters for CreateLoadBalancer.
@@ -114,6 +208,18 @@ type UpdateLoadBalancerServiceJSONBody struct {
 	TargetPort  *int64       `json:"target-port,omitempty"`
 }
 
+// CreateSecurityGroupJSONBody defines parameters for CreateSecurityGroup.
+type CreateSecurityGroupJSONBody SecurityGroup
+
+// AddRuleToSecurityGroupJSONBody defines parameters for AddRuleToSecurityGroup.
+type AddRuleToSecurityGroupJSONBody SecurityGroupRule
+
+// CreateCdnConfigurationRequestBody defines body for CreateCdnConfiguration for application/json ContentType.
+type CreateCdnConfigurationJSONRequestBody CreateCdnConfigurationJSONBody
+
+// CreateInstanceRequestBody defines body for CreateInstance for application/json ContentType.
+type CreateInstanceJSONRequestBody CreateInstanceJSONBody
+
 // CreateLoadBalancerRequestBody defines body for CreateLoadBalancer for application/json ContentType.
 type CreateLoadBalancerJSONRequestBody CreateLoadBalancerJSONBody
 
@@ -125,6 +231,12 @@ type AddServiceToLoadBalancerJSONRequestBody AddServiceToLoadBalancerJSONBody
 
 // UpdateLoadBalancerServiceRequestBody defines body for UpdateLoadBalancerService for application/json ContentType.
 type UpdateLoadBalancerServiceJSONRequestBody UpdateLoadBalancerServiceJSONBody
+
+// CreateSecurityGroupRequestBody defines body for CreateSecurityGroup for application/json ContentType.
+type CreateSecurityGroupJSONRequestBody CreateSecurityGroupJSONBody
+
+// AddRuleToSecurityGroupRequestBody defines body for AddRuleToSecurityGroup for application/json ContentType.
+type AddRuleToSecurityGroupJSONRequestBody AddRuleToSecurityGroupJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -197,11 +309,30 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListCdnConfigurations request
+	ListCdnConfigurations(ctx context.Context) (*http.Response, error)
+
+	// CreateCdnConfiguration request  with any body
+	CreateCdnConfigurationWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateCdnConfiguration(ctx context.Context, body CreateCdnConfigurationJSONRequestBody) (*http.Response, error)
+
+	// DeleteCdnConfiguration request
+	DeleteCdnConfiguration(ctx context.Context, bucket string) (*http.Response, error)
+
+	// CreateInstance request  with any body
+	CreateInstanceWithBody(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateInstance(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*http.Response, error)
+
 	// ListInstanceTypes request
 	ListInstanceTypes(ctx context.Context) (*http.Response, error)
 
 	// GetInstanceType request
 	GetInstanceType(ctx context.Context, id string) (*http.Response, error)
+
+	// CreateSnapshot request
+	CreateSnapshot(ctx context.Context, id string) (*http.Response, error)
 
 	// ListLoadBalancers request
 	ListLoadBalancers(ctx context.Context) (*http.Response, error)
@@ -238,14 +369,147 @@ type ClientInterface interface {
 
 	UpdateLoadBalancerService(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody) (*http.Response, error)
 
-	// ListOperations request
-	ListOperations(ctx context.Context) (*http.Response, error)
-
 	// GetOperation request
 	GetOperation(ctx context.Context, id string) (*http.Response, error)
 
+	// Ping request
+	Ping(ctx context.Context) (*http.Response, error)
+
+	// ListSecurityGroups request
+	ListSecurityGroups(ctx context.Context) (*http.Response, error)
+
+	// CreateSecurityGroup request  with any body
+	CreateSecurityGroupWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateSecurityGroup(ctx context.Context, body CreateSecurityGroupJSONRequestBody) (*http.Response, error)
+
+	// DeleteSecurityGroup request
+	DeleteSecurityGroup(ctx context.Context, id string) (*http.Response, error)
+
+	// GetSecurityGroup request
+	GetSecurityGroup(ctx context.Context, id string) (*http.Response, error)
+
+	// AddRuleToSecurityGroup request  with any body
+	AddRuleToSecurityGroupWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	AddRuleToSecurityGroup(ctx context.Context, id string, body AddRuleToSecurityGroupJSONRequestBody) (*http.Response, error)
+
+	// DeleteRuleFromSecurityGroup request
+	DeleteRuleFromSecurityGroup(ctx context.Context, id string, ruleId string) (*http.Response, error)
+
+	// ListSnapshots request
+	ListSnapshots(ctx context.Context) (*http.Response, error)
+
+	// DeleteSnapshot request
+	DeleteSnapshot(ctx context.Context, id string) (*http.Response, error)
+
+	// GetSnapshot request
+	GetSnapshot(ctx context.Context, id string) (*http.Response, error)
+
+	// GetExportSnapshot request
+	GetExportSnapshot(ctx context.Context, id string) (*http.Response, error)
+
+	// ExportSnapshot request
+	ExportSnapshot(ctx context.Context, id string) (*http.Response, error)
+
+	// GetTemplate request
+	GetTemplate(ctx context.Context, id string) (*http.Response, error)
+
+	// Version request
+	Version(ctx context.Context) (*http.Response, error)
+
 	// ListZones request
 	ListZones(ctx context.Context) (*http.Response, error)
+}
+
+func (c *Client) ListCdnConfigurations(ctx context.Context) (*http.Response, error) {
+	req, err := NewListCdnConfigurationsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCdnConfigurationWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateCdnConfigurationRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCdnConfiguration(ctx context.Context, body CreateCdnConfigurationJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateCdnConfigurationRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCdnConfiguration(ctx context.Context, bucket string) (*http.Response, error) {
+	req, err := NewDeleteCdnConfigurationRequest(c.Server, bucket)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateInstanceWithBody(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateInstanceRequestWithBody(c.Server, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateInstance(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateInstanceRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) ListInstanceTypes(ctx context.Context) (*http.Response, error) {
@@ -265,6 +529,21 @@ func (c *Client) ListInstanceTypes(ctx context.Context) (*http.Response, error) 
 
 func (c *Client) GetInstanceType(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewGetInstanceTypeRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSnapshot(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewCreateSnapshotRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -473,8 +752,8 @@ func (c *Client) UpdateLoadBalancerService(ctx context.Context, id string, servi
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListOperations(ctx context.Context) (*http.Response, error) {
-	req, err := NewListOperationsRequest(c.Server)
+func (c *Client) GetOperation(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetOperationRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -488,8 +767,233 @@ func (c *Client) ListOperations(ctx context.Context) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetOperation(ctx context.Context, id string) (*http.Response, error) {
-	req, err := NewGetOperationRequest(c.Server, id)
+func (c *Client) Ping(ctx context.Context) (*http.Response, error) {
+	req, err := NewPingRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListSecurityGroups(ctx context.Context) (*http.Response, error) {
+	req, err := NewListSecurityGroupsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSecurityGroupWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateSecurityGroupRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSecurityGroup(ctx context.Context, body CreateSecurityGroupJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateSecurityGroupRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSecurityGroup(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeleteSecurityGroupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSecurityGroup(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetSecurityGroupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddRuleToSecurityGroupWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewAddRuleToSecurityGroupRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AddRuleToSecurityGroup(ctx context.Context, id string, body AddRuleToSecurityGroupJSONRequestBody) (*http.Response, error) {
+	req, err := NewAddRuleToSecurityGroupRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteRuleFromSecurityGroup(ctx context.Context, id string, ruleId string) (*http.Response, error) {
+	req, err := NewDeleteRuleFromSecurityGroupRequest(c.Server, id, ruleId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListSnapshots(ctx context.Context) (*http.Response, error) {
+	req, err := NewListSnapshotsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSnapshot(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeleteSnapshotRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSnapshot(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetSnapshotRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetExportSnapshot(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetExportSnapshotRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ExportSnapshot(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewExportSnapshotRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetTemplate(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetTemplateRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) Version(ctx context.Context) (*http.Response, error) {
+	req, err := NewVersionRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -516,6 +1020,165 @@ func (c *Client) ListZones(ctx context.Context) (*http.Response, error) {
 		}
 	}
 	return c.Client.Do(req)
+}
+
+// NewListCdnConfigurationsRequest generates requests for ListCdnConfigurations
+func NewListCdnConfigurationsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/cdn-configuration")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateCdnConfigurationRequest calls the generic CreateCdnConfiguration builder with application/json body
+func NewCreateCdnConfigurationRequest(server string, body CreateCdnConfigurationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateCdnConfigurationRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateCdnConfigurationRequestWithBody generates requests for CreateCdnConfiguration with any type of body
+func NewCreateCdnConfigurationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/cdn-configuration")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteCdnConfigurationRequest generates requests for DeleteCdnConfiguration
+func NewDeleteCdnConfigurationRequest(server string, bucket string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "bucket", bucket)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/cdn-configuration/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateInstanceRequest calls the generic CreateInstance builder with application/json body
+func NewCreateInstanceRequest(server string, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateInstanceRequestWithBody(server, params, "application/json", bodyReader)
+}
+
+// NewCreateInstanceRequestWithBody generates requests for CreateInstance with any type of body
+func NewCreateInstanceRequestWithBody(server string, params *CreateInstanceParams, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryUrl.Query()
+
+	if params.Start != nil {
+
+		if queryFrag, err := runtime.StyleParam("form", true, "start", *params.Start); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryUrl.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
 }
 
 // NewListInstanceTypesRequest generates requests for ListInstanceTypes
@@ -572,6 +1235,40 @@ func NewGetInstanceTypeRequest(server string, id string) (*http.Request, error) 
 	}
 
 	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateSnapshotRequest generates requests for CreateSnapshot
+func NewCreateSnapshotRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance/%s:create-snapshot", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -940,33 +1637,6 @@ func NewUpdateLoadBalancerServiceRequestWithBody(server string, id string, servi
 	return req, nil
 }
 
-// NewListOperationsRequest generates requests for ListOperations
-func NewListOperationsRequest(server string) (*http.Request, error) {
-	var err error
-
-	queryUrl, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	basePath := fmt.Sprintf("/operation")
-	if basePath[0] == '/' {
-		basePath = basePath[1:]
-	}
-
-	queryUrl, err = queryUrl.Parse(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryUrl.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewGetOperationRequest generates requests for GetOperation
 func NewGetOperationRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -984,6 +1654,478 @@ func NewGetOperationRequest(server string, id string) (*http.Request, error) {
 	}
 
 	basePath := fmt.Sprintf("/operation/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPingRequest generates requests for Ping
+func NewPingRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/ping")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListSecurityGroupsRequest generates requests for ListSecurityGroups
+func NewListSecurityGroupsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateSecurityGroupRequest calls the generic CreateSecurityGroup builder with application/json body
+func NewCreateSecurityGroupRequest(server string, body CreateSecurityGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSecurityGroupRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateSecurityGroupRequestWithBody generates requests for CreateSecurityGroup with any type of body
+func NewCreateSecurityGroupRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteSecurityGroupRequest generates requests for DeleteSecurityGroup
+func NewDeleteSecurityGroupRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSecurityGroupRequest generates requests for GetSecurityGroup
+func NewGetSecurityGroupRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewAddRuleToSecurityGroupRequest calls the generic AddRuleToSecurityGroup builder with application/json body
+func NewAddRuleToSecurityGroupRequest(server string, id string, body AddRuleToSecurityGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAddRuleToSecurityGroupRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewAddRuleToSecurityGroupRequestWithBody generates requests for AddRuleToSecurityGroup with any type of body
+func NewAddRuleToSecurityGroupRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group/%s/rules", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteRuleFromSecurityGroupRequest generates requests for DeleteRuleFromSecurityGroup
+func NewDeleteRuleFromSecurityGroupRequest(server string, id string, ruleId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "rule-id", ruleId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group/%s/rules/%s", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListSnapshotsRequest generates requests for ListSnapshots
+func NewListSnapshotsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/snapshot")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteSnapshotRequest generates requests for DeleteSnapshot
+func NewDeleteSnapshotRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/snapshot/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSnapshotRequest generates requests for GetSnapshot
+func NewGetSnapshotRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/snapshot/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetExportSnapshotRequest generates requests for GetExportSnapshot
+func NewGetExportSnapshotRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/snapshot/%s:export", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewExportSnapshotRequest generates requests for ExportSnapshot
+func NewExportSnapshotRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/snapshot/%s:export", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTemplateRequest generates requests for GetTemplate
+func NewGetTemplateRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/template/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewVersionRequest generates requests for Version
+func NewVersionRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/version")
 	if basePath[0] == '/' {
 		basePath = basePath[1:]
 	}
@@ -1057,11 +2199,30 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListCdnConfigurations request
+	ListCdnConfigurationsWithResponse(ctx context.Context) (*ListCdnConfigurationsResponse, error)
+
+	// CreateCdnConfiguration request  with any body
+	CreateCdnConfigurationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateCdnConfigurationResponse, error)
+
+	CreateCdnConfigurationWithResponse(ctx context.Context, body CreateCdnConfigurationJSONRequestBody) (*CreateCdnConfigurationResponse, error)
+
+	// DeleteCdnConfiguration request
+	DeleteCdnConfigurationWithResponse(ctx context.Context, bucket string) (*DeleteCdnConfigurationResponse, error)
+
+	// CreateInstance request  with any body
+	CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*CreateInstanceResponse, error)
+
+	CreateInstanceWithResponse(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error)
+
 	// ListInstanceTypes request
 	ListInstanceTypesWithResponse(ctx context.Context) (*ListInstanceTypesResponse, error)
 
 	// GetInstanceType request
 	GetInstanceTypeWithResponse(ctx context.Context, id string) (*GetInstanceTypeResponse, error)
+
+	// CreateSnapshot request
+	CreateSnapshotWithResponse(ctx context.Context, id string) (*CreateSnapshotResponse, error)
 
 	// ListLoadBalancers request
 	ListLoadBalancersWithResponse(ctx context.Context) (*ListLoadBalancersResponse, error)
@@ -1098,14 +2259,147 @@ type ClientWithResponsesInterface interface {
 
 	UpdateLoadBalancerServiceWithResponse(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody) (*UpdateLoadBalancerServiceResponse, error)
 
-	// ListOperations request
-	ListOperationsWithResponse(ctx context.Context) (*ListOperationsResponse, error)
-
 	// GetOperation request
 	GetOperationWithResponse(ctx context.Context, id string) (*GetOperationResponse, error)
 
+	// Ping request
+	PingWithResponse(ctx context.Context) (*PingResponse, error)
+
+	// ListSecurityGroups request
+	ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error)
+
+	// CreateSecurityGroup request  with any body
+	CreateSecurityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateSecurityGroupResponse, error)
+
+	CreateSecurityGroupWithResponse(ctx context.Context, body CreateSecurityGroupJSONRequestBody) (*CreateSecurityGroupResponse, error)
+
+	// DeleteSecurityGroup request
+	DeleteSecurityGroupWithResponse(ctx context.Context, id string) (*DeleteSecurityGroupResponse, error)
+
+	// GetSecurityGroup request
+	GetSecurityGroupWithResponse(ctx context.Context, id string) (*GetSecurityGroupResponse, error)
+
+	// AddRuleToSecurityGroup request  with any body
+	AddRuleToSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AddRuleToSecurityGroupResponse, error)
+
+	AddRuleToSecurityGroupWithResponse(ctx context.Context, id string, body AddRuleToSecurityGroupJSONRequestBody) (*AddRuleToSecurityGroupResponse, error)
+
+	// DeleteRuleFromSecurityGroup request
+	DeleteRuleFromSecurityGroupWithResponse(ctx context.Context, id string, ruleId string) (*DeleteRuleFromSecurityGroupResponse, error)
+
+	// ListSnapshots request
+	ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error)
+
+	// DeleteSnapshot request
+	DeleteSnapshotWithResponse(ctx context.Context, id string) (*DeleteSnapshotResponse, error)
+
+	// GetSnapshot request
+	GetSnapshotWithResponse(ctx context.Context, id string) (*GetSnapshotResponse, error)
+
+	// GetExportSnapshot request
+	GetExportSnapshotWithResponse(ctx context.Context, id string) (*GetExportSnapshotResponse, error)
+
+	// ExportSnapshot request
+	ExportSnapshotWithResponse(ctx context.Context, id string) (*ExportSnapshotResponse, error)
+
+	// GetTemplate request
+	GetTemplateWithResponse(ctx context.Context, id string) (*GetTemplateResponse, error)
+
+	// Version request
+	VersionWithResponse(ctx context.Context) (*VersionResponse, error)
+
 	// ListZones request
 	ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error)
+}
+
+type ListCdnConfigurationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		CdnConfigurations *[]CdnConfiguration `json:"cdn-configurations,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListCdnConfigurationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListCdnConfigurationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateCdnConfigurationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCdnConfigurationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCdnConfigurationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCdnConfigurationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCdnConfigurationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCdnConfigurationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type ListInstanceTypesResponse struct {
@@ -1148,6 +2442,28 @@ func (r GetInstanceTypeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetInstanceTypeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateSnapshotResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSnapshotResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSnapshotResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1354,30 +2670,6 @@ func (r UpdateLoadBalancerServiceResponse) StatusCode() int {
 	return 0
 }
 
-type ListOperationsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *struct {
-		Operations *[]Operation `json:"operations,omitempty"`
-	}
-}
-
-// Status returns HTTPResponse.Status
-func (r ListOperationsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r ListOperationsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type GetOperationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -1394,6 +2686,318 @@ func (r GetOperationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetOperationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PingResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *string
+}
+
+// Status returns HTTPResponse.Status
+func (r PingResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PingResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListSecurityGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSecurityGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSecurityGroupsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SecurityGroup
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AddRuleToSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r AddRuleToSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AddRuleToSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteRuleFromSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteRuleFromSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteRuleFromSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListSnapshotsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Snapshots *[]Snapshot `json:"snapshots,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSnapshotsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSnapshotsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteSnapshotResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSnapshotResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSnapshotResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSnapshotResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Snapshot
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSnapshotResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSnapshotResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetExportSnapshotResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SnapshotExport
+}
+
+// Status returns HTTPResponse.Status
+func (r GetExportSnapshotResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetExportSnapshotResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ExportSnapshotResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ExportSnapshotResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ExportSnapshotResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Template
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type VersionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *string
+}
+
+// Status returns HTTPResponse.Status
+func (r VersionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r VersionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1424,6 +3028,58 @@ func (r ListZonesResponse) StatusCode() int {
 	return 0
 }
 
+// ListCdnConfigurationsWithResponse request returning *ListCdnConfigurationsResponse
+func (c *ClientWithResponses) ListCdnConfigurationsWithResponse(ctx context.Context) (*ListCdnConfigurationsResponse, error) {
+	rsp, err := c.ListCdnConfigurations(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListCdnConfigurationsResponse(rsp)
+}
+
+// CreateCdnConfigurationWithBodyWithResponse request with arbitrary body returning *CreateCdnConfigurationResponse
+func (c *ClientWithResponses) CreateCdnConfigurationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateCdnConfigurationResponse, error) {
+	rsp, err := c.CreateCdnConfigurationWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCdnConfigurationResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateCdnConfigurationWithResponse(ctx context.Context, body CreateCdnConfigurationJSONRequestBody) (*CreateCdnConfigurationResponse, error) {
+	rsp, err := c.CreateCdnConfiguration(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCdnConfigurationResponse(rsp)
+}
+
+// DeleteCdnConfigurationWithResponse request returning *DeleteCdnConfigurationResponse
+func (c *ClientWithResponses) DeleteCdnConfigurationWithResponse(ctx context.Context, bucket string) (*DeleteCdnConfigurationResponse, error) {
+	rsp, err := c.DeleteCdnConfiguration(ctx, bucket)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCdnConfigurationResponse(rsp)
+}
+
+// CreateInstanceWithBodyWithResponse request with arbitrary body returning *CreateInstanceResponse
+func (c *ClientWithResponses) CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*CreateInstanceResponse, error) {
+	rsp, err := c.CreateInstanceWithBody(ctx, params, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateInstanceResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateInstanceWithResponse(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error) {
+	rsp, err := c.CreateInstance(ctx, params, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateInstanceResponse(rsp)
+}
+
 // ListInstanceTypesWithResponse request returning *ListInstanceTypesResponse
 func (c *ClientWithResponses) ListInstanceTypesWithResponse(ctx context.Context) (*ListInstanceTypesResponse, error) {
 	rsp, err := c.ListInstanceTypes(ctx)
@@ -1440,6 +3096,15 @@ func (c *ClientWithResponses) GetInstanceTypeWithResponse(ctx context.Context, i
 		return nil, err
 	}
 	return ParseGetInstanceTypeResponse(rsp)
+}
+
+// CreateSnapshotWithResponse request returning *CreateSnapshotResponse
+func (c *ClientWithResponses) CreateSnapshotWithResponse(ctx context.Context, id string) (*CreateSnapshotResponse, error) {
+	rsp, err := c.CreateSnapshot(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSnapshotResponse(rsp)
 }
 
 // ListLoadBalancersWithResponse request returning *ListLoadBalancersResponse
@@ -1555,15 +3220,6 @@ func (c *ClientWithResponses) UpdateLoadBalancerServiceWithResponse(ctx context.
 	return ParseUpdateLoadBalancerServiceResponse(rsp)
 }
 
-// ListOperationsWithResponse request returning *ListOperationsResponse
-func (c *ClientWithResponses) ListOperationsWithResponse(ctx context.Context) (*ListOperationsResponse, error) {
-	rsp, err := c.ListOperations(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return ParseListOperationsResponse(rsp)
-}
-
 // GetOperationWithResponse request returning *GetOperationResponse
 func (c *ClientWithResponses) GetOperationWithResponse(ctx context.Context, id string) (*GetOperationResponse, error) {
 	rsp, err := c.GetOperation(ctx, id)
@@ -1573,6 +3229,148 @@ func (c *ClientWithResponses) GetOperationWithResponse(ctx context.Context, id s
 	return ParseGetOperationResponse(rsp)
 }
 
+// PingWithResponse request returning *PingResponse
+func (c *ClientWithResponses) PingWithResponse(ctx context.Context) (*PingResponse, error) {
+	rsp, err := c.Ping(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePingResponse(rsp)
+}
+
+// ListSecurityGroupsWithResponse request returning *ListSecurityGroupsResponse
+func (c *ClientWithResponses) ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error) {
+	rsp, err := c.ListSecurityGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListSecurityGroupsResponse(rsp)
+}
+
+// CreateSecurityGroupWithBodyWithResponse request with arbitrary body returning *CreateSecurityGroupResponse
+func (c *ClientWithResponses) CreateSecurityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateSecurityGroupResponse, error) {
+	rsp, err := c.CreateSecurityGroupWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSecurityGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSecurityGroupWithResponse(ctx context.Context, body CreateSecurityGroupJSONRequestBody) (*CreateSecurityGroupResponse, error) {
+	rsp, err := c.CreateSecurityGroup(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSecurityGroupResponse(rsp)
+}
+
+// DeleteSecurityGroupWithResponse request returning *DeleteSecurityGroupResponse
+func (c *ClientWithResponses) DeleteSecurityGroupWithResponse(ctx context.Context, id string) (*DeleteSecurityGroupResponse, error) {
+	rsp, err := c.DeleteSecurityGroup(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSecurityGroupResponse(rsp)
+}
+
+// GetSecurityGroupWithResponse request returning *GetSecurityGroupResponse
+func (c *ClientWithResponses) GetSecurityGroupWithResponse(ctx context.Context, id string) (*GetSecurityGroupResponse, error) {
+	rsp, err := c.GetSecurityGroup(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSecurityGroupResponse(rsp)
+}
+
+// AddRuleToSecurityGroupWithBodyWithResponse request with arbitrary body returning *AddRuleToSecurityGroupResponse
+func (c *ClientWithResponses) AddRuleToSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AddRuleToSecurityGroupResponse, error) {
+	rsp, err := c.AddRuleToSecurityGroupWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddRuleToSecurityGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) AddRuleToSecurityGroupWithResponse(ctx context.Context, id string, body AddRuleToSecurityGroupJSONRequestBody) (*AddRuleToSecurityGroupResponse, error) {
+	rsp, err := c.AddRuleToSecurityGroup(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAddRuleToSecurityGroupResponse(rsp)
+}
+
+// DeleteRuleFromSecurityGroupWithResponse request returning *DeleteRuleFromSecurityGroupResponse
+func (c *ClientWithResponses) DeleteRuleFromSecurityGroupWithResponse(ctx context.Context, id string, ruleId string) (*DeleteRuleFromSecurityGroupResponse, error) {
+	rsp, err := c.DeleteRuleFromSecurityGroup(ctx, id, ruleId)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteRuleFromSecurityGroupResponse(rsp)
+}
+
+// ListSnapshotsWithResponse request returning *ListSnapshotsResponse
+func (c *ClientWithResponses) ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error) {
+	rsp, err := c.ListSnapshots(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListSnapshotsResponse(rsp)
+}
+
+// DeleteSnapshotWithResponse request returning *DeleteSnapshotResponse
+func (c *ClientWithResponses) DeleteSnapshotWithResponse(ctx context.Context, id string) (*DeleteSnapshotResponse, error) {
+	rsp, err := c.DeleteSnapshot(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSnapshotResponse(rsp)
+}
+
+// GetSnapshotWithResponse request returning *GetSnapshotResponse
+func (c *ClientWithResponses) GetSnapshotWithResponse(ctx context.Context, id string) (*GetSnapshotResponse, error) {
+	rsp, err := c.GetSnapshot(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSnapshotResponse(rsp)
+}
+
+// GetExportSnapshotWithResponse request returning *GetExportSnapshotResponse
+func (c *ClientWithResponses) GetExportSnapshotWithResponse(ctx context.Context, id string) (*GetExportSnapshotResponse, error) {
+	rsp, err := c.GetExportSnapshot(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetExportSnapshotResponse(rsp)
+}
+
+// ExportSnapshotWithResponse request returning *ExportSnapshotResponse
+func (c *ClientWithResponses) ExportSnapshotWithResponse(ctx context.Context, id string) (*ExportSnapshotResponse, error) {
+	rsp, err := c.ExportSnapshot(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseExportSnapshotResponse(rsp)
+}
+
+// GetTemplateWithResponse request returning *GetTemplateResponse
+func (c *ClientWithResponses) GetTemplateWithResponse(ctx context.Context, id string) (*GetTemplateResponse, error) {
+	rsp, err := c.GetTemplate(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTemplateResponse(rsp)
+}
+
+// VersionWithResponse request returning *VersionResponse
+func (c *ClientWithResponses) VersionWithResponse(ctx context.Context) (*VersionResponse, error) {
+	rsp, err := c.Version(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseVersionResponse(rsp)
+}
+
 // ListZonesWithResponse request returning *ListZonesResponse
 func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error) {
 	rsp, err := c.ListZones(ctx)
@@ -1580,6 +3378,112 @@ func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*ListZ
 		return nil, err
 	}
 	return ParseListZonesResponse(rsp)
+}
+
+// ParseListCdnConfigurationsResponse parses an HTTP response from a ListCdnConfigurationsWithResponse call
+func ParseListCdnConfigurationsResponse(rsp *http.Response) (*ListCdnConfigurationsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListCdnConfigurationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			CdnConfigurations *[]CdnConfiguration `json:"cdn-configurations,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateCdnConfigurationResponse parses an HTTP response from a CreateCdnConfigurationWithResponse call
+func ParseCreateCdnConfigurationResponse(rsp *http.Response) (*CreateCdnConfigurationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCdnConfigurationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCdnConfigurationResponse parses an HTTP response from a DeleteCdnConfigurationWithResponse call
+func ParseDeleteCdnConfigurationResponse(rsp *http.Response) (*DeleteCdnConfigurationResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCdnConfigurationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateInstanceResponse parses an HTTP response from a CreateInstanceWithResponse call
+func ParseCreateInstanceResponse(rsp *http.Response) (*CreateInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListInstanceTypesResponse parses an HTTP response from a ListInstanceTypesWithResponse call
@@ -1626,6 +3530,32 @@ func ParseGetInstanceTypeResponse(rsp *http.Response) (*GetInstanceTypeResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest InstanceType
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSnapshotResponse parses an HTTP response from a CreateSnapshotWithResponse call
+func ParseCreateSnapshotResponse(rsp *http.Response) (*CreateSnapshotResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSnapshotResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1872,34 +3802,6 @@ func ParseUpdateLoadBalancerServiceResponse(rsp *http.Response) (*UpdateLoadBala
 	return response, nil
 }
 
-// ParseListOperationsResponse parses an HTTP response from a ListOperationsWithResponse call
-func ParseListOperationsResponse(rsp *http.Response) (*ListOperationsResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &ListOperationsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Operations *[]Operation `json:"operations,omitempty"`
-		}
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseGetOperationResponse parses an HTTP response from a GetOperationWithResponse call
 func ParseGetOperationResponse(rsp *http.Response) (*GetOperationResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -1916,6 +3818,374 @@ func ParseGetOperationResponse(rsp *http.Response) (*GetOperationResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePingResponse parses an HTTP response from a PingWithResponse call
+func ParsePingResponse(rsp *http.Response) (*PingResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PingResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListSecurityGroupsResponse parses an HTTP response from a ListSecurityGroupsWithResponse call
+func ParseListSecurityGroupsResponse(rsp *http.Response) (*ListSecurityGroupsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListSecurityGroupsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSecurityGroupResponse parses an HTTP response from a CreateSecurityGroupWithResponse call
+func ParseCreateSecurityGroupResponse(rsp *http.Response) (*CreateSecurityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSecurityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSecurityGroupResponse parses an HTTP response from a DeleteSecurityGroupWithResponse call
+func ParseDeleteSecurityGroupResponse(rsp *http.Response) (*DeleteSecurityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSecurityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSecurityGroupResponse parses an HTTP response from a GetSecurityGroupWithResponse call
+func ParseGetSecurityGroupResponse(rsp *http.Response) (*GetSecurityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSecurityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SecurityGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAddRuleToSecurityGroupResponse parses an HTTP response from a AddRuleToSecurityGroupWithResponse call
+func ParseAddRuleToSecurityGroupResponse(rsp *http.Response) (*AddRuleToSecurityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AddRuleToSecurityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteRuleFromSecurityGroupResponse parses an HTTP response from a DeleteRuleFromSecurityGroupWithResponse call
+func ParseDeleteRuleFromSecurityGroupResponse(rsp *http.Response) (*DeleteRuleFromSecurityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteRuleFromSecurityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListSnapshotsResponse parses an HTTP response from a ListSnapshotsWithResponse call
+func ParseListSnapshotsResponse(rsp *http.Response) (*ListSnapshotsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListSnapshotsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Snapshots *[]Snapshot `json:"snapshots,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSnapshotResponse parses an HTTP response from a DeleteSnapshotWithResponse call
+func ParseDeleteSnapshotResponse(rsp *http.Response) (*DeleteSnapshotResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSnapshotResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSnapshotResponse parses an HTTP response from a GetSnapshotWithResponse call
+func ParseGetSnapshotResponse(rsp *http.Response) (*GetSnapshotResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSnapshotResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Snapshot
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetExportSnapshotResponse parses an HTTP response from a GetExportSnapshotWithResponse call
+func ParseGetExportSnapshotResponse(rsp *http.Response) (*GetExportSnapshotResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetExportSnapshotResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SnapshotExport
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseExportSnapshotResponse parses an HTTP response from a ExportSnapshotWithResponse call
+func ParseExportSnapshotResponse(rsp *http.Response) (*ExportSnapshotResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ExportSnapshotResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTemplateResponse parses an HTTP response from a GetTemplateWithResponse call
+func ParseGetTemplateResponse(rsp *http.Response) (*GetTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Template
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseVersionResponse parses an HTTP response from a VersionWithResponse call
+func ParseVersionResponse(rsp *http.Response) (*VersionResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &VersionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest string
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
