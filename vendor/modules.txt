@@ -124,12 +124,18 @@ github.com/izumin5210/gentleman-logger
 github.com/izumin5210/httplogger
 # github.com/jarcoal/httpmock v1.0.6
 github.com/jarcoal/httpmock
+# github.com/json-iterator/go v1.1.10
+## explicit
+github.com/json-iterator/go
 # github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a
 github.com/juju/ansiterm
 github.com/juju/ansiterm/tabwriter
 # github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 ## explicit
 github.com/kballard/go-shellquote
+# github.com/klauspost/cpuid v1.3.1
+## explicit
+github.com/klauspost/cpuid
 # github.com/lunixbochs/vtclean v0.0.0-20180621232353-2d01aacdc34a
 github.com/lunixbochs/vtclean
 # github.com/magiconair/properties v1.8.1
@@ -146,14 +152,17 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.9
 ## explicit
 github.com/mattn/go-runewidth
-# github.com/minio/minio-go/v6 v6.0.44
+# github.com/minio/md5-simd v1.1.0
+github.com/minio/md5-simd
+# github.com/minio/minio-go/v6 v6.0.57
 ## explicit
 github.com/minio/minio-go/v6
 github.com/minio/minio-go/v6/pkg/credentials
 github.com/minio/minio-go/v6/pkg/encrypt
-github.com/minio/minio-go/v6/pkg/s3signer
 github.com/minio/minio-go/v6/pkg/s3utils
 github.com/minio/minio-go/v6/pkg/set
+github.com/minio/minio-go/v6/pkg/signer
+github.com/minio/minio-go/v6/pkg/tags
 # github.com/minio/sha256-simd v0.1.1
 github.com/minio/sha256-simd
 # github.com/mitchellh/go-homedir v1.1.0
@@ -161,6 +170,10 @@ github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.3.0
 ## explicit
 github.com/mitchellh/mapstructure
+# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+github.com/modern-go/concurrent
+# github.com/modern-go/reflect2 v1.0.1
+github.com/modern-go/reflect2
 # github.com/nicksnyder/go-i18n v1.10.0
 ## explicit
 github.com/nicksnyder/go-i18n/i18n
@@ -224,7 +237,7 @@ github.com/vbauerster/mpb/v4
 github.com/vbauerster/mpb/v4/cwriter
 github.com/vbauerster/mpb/v4/decor
 github.com/vbauerster/mpb/v4/internal
-# golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
+# golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
 ## explicit
 golang.org/x/crypto/argon2
 golang.org/x/crypto/blake2b
@@ -240,7 +253,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20190930215403-16217165b5de
 golang.org/x/lint
-# golang.org/x/net v0.0.0-20200528225125-3c3fba18258b
+# golang.org/x/net v0.0.0-20200904194848-62affa334b73
 ## explicit
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
@@ -248,13 +261,14 @@ golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.0.0-20200523222454-059865788121
+# golang.org/x/sys v0.0.0-20200909081042-eff7692f9009
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.2
+# golang.org/x/text v0.3.3
+## explicit
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
@@ -281,7 +295,7 @@ gopkg.in/h2non/gentleman.v2/plugins/multipart
 gopkg.in/h2non/gentleman.v2/plugins/query
 gopkg.in/h2non/gentleman.v2/plugins/url
 gopkg.in/h2non/gentleman.v2/utils
-# gopkg.in/ini.v1 v1.56.0
+# gopkg.in/ini.v1 v1.61.0
 ## explicit
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.3.0
