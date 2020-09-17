@@ -75,7 +75,7 @@ func listZones() (outputter, error) {
 	return &out, nil
 }
 
-func getZoneByName(name string) (*egoscale.Zone, error) {
+func getZoneByNameOrID(name string) (*egoscale.Zone, error) {
 	zone := &egoscale.Zone{}
 
 	id, err := egoscale.ParseUUID(name)
@@ -87,6 +87,9 @@ func getZoneByName(name string) (*egoscale.Zone, error) {
 
 	resp, err := cs.GetWithContext(gContext, zone)
 	if err != nil {
+		if err == egoscale.ErrNotFound {
+			return nil, fmt.Errorf("invalid zone %q", name)
+		}
 		return nil, err
 	}
 

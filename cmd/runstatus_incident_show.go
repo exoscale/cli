@@ -102,7 +102,7 @@ func showRunstatusIncident(p, i string) (outputter, error) {
 		return nil, err
 	}
 
-	incident, err := getIncidentByNameOrID(*page, i)
+	incident, err := getRunstatusIncidentByNameOrID(*page, i)
 	if err != nil {
 		return nil, err
 	}

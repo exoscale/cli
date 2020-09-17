@@ -60,12 +60,12 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			zone, err := getZoneByName(zoneName)
+			zone, err := getZoneByNameOrID(zoneName)
 			if err != nil {
 				return err
 			}
 
-			template, err := getTemplateByName(zone.ID, name, templateFilter)
+			template, err := getTemplateByNameOrID(zone.ID, name, templateFilter)
 			if err != nil {
 				return err
 			}

@@ -58,27 +58,27 @@ Supported output template annotations: %s`,
 }
 
 func showInstancePool(name, zoneName string) error {
-	zone, err := getZoneByName(zoneName)
+	zone, err := getZoneByNameOrID(zoneName)
 	if err != nil {
 		return err
 	}
 
-	instancePool, err := getInstancePoolByName(name, zone.ID)
+	instancePool, err := getInstancePoolByNameOrID(name, zone.ID)
 	if err != nil {
 		return err
 	}
 
-	zone, err = getZoneByName(instancePool.ZoneID.String())
+	zone, err = getZoneByNameOrID(instancePool.ZoneID.String())
 	if err != nil {
 		return err
 	}
 
-	serviceOffering, err := getServiceOfferingByName(instancePool.ServiceOfferingID.String())
+	serviceOffering, err := getServiceOfferingByNameOrID(instancePool.ServiceOfferingID.String())
 	if err != nil {
 		return err
 	}
 
-	template, err := getTemplateByName(instancePool.ZoneID, instancePool.TemplateID.String(), "")
+	template, err := getTemplateByNameOrID(instancePool.ZoneID, instancePool.TemplateID.String(), "")
 	if err != nil {
 		return err
 	}

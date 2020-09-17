@@ -43,7 +43,7 @@ This is also used to close an maintenance`,
 			return err
 		}
 
-		maintenance, err := getMaintenanceByNameOrID(*runstatusPage, maintenanceName)
+		maintenance, err := getRunstatusMaintenanceByNameOrID(*runstatusPage, maintenanceName)
 		if err != nil {
 			return err
 		}

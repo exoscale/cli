@@ -76,7 +76,7 @@ func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, template
 	var template *egoscale.Template
 
 	if templateName != "" {
-		template, err = getTemplateByName(vm.ZoneID, templateName, templateFilter)
+		template, err = getTemplateByNameOrID(vm.ZoneID, templateName, templateFilter)
 		if err != nil {
 			return nil, err
 		}
@@ -101,7 +101,7 @@ func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, template
 		Type:             "ROOT",
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to retrieve Compute instance volume: %v", err)
 	}
 
 	volume := resp.(*egoscale.Volume)
@@ -111,7 +111,7 @@ func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, template
 
 	if diskValue.int64 != nil {
 		if template != nil && *diskValue.int64 < (template.Size>>30) {
-			return nil, fmt.Errorf("root disk size must be greater or equal than %dGB", template.Size>>30)
+			return nil, fmt.Errorf("root disk size must be equal or greater than %dGB", template.Size>>30)
 		}
 
 		rootDiskSize = *diskValue.int64

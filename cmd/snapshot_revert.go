@@ -23,7 +23,7 @@ var snapshotRevertCmd = &cobra.Command{
 
 		tasks := make([]task, 0, len(args))
 		for _, arg := range args {
-			snapshot, err := getSnapshotWithNameOrID(arg)
+			snapshot, err := getSnapshotByNameOrID(arg)
 			if err != nil {
 				return err
 			}

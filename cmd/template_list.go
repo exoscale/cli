@@ -74,7 +74,7 @@ Supported output template annotations: %s`,
 }
 
 func listTemplates(templateFilter, zone string, filters []string) (outputter, error) {
-	z, err := getZoneByName(zone)
+	z, err := getZoneByNameOrID(zone)
 	if err != nil {
 		return nil, err
 	}

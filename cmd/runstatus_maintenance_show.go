@@ -59,7 +59,7 @@ func showRunstatusMaintenance(p, m string) (outputter, error) {
 		return nil, err
 	}
 
-	maintenance, err := getMaintenanceByNameOrID(*page, m)
+	maintenance, err := getRunstatusMaintenanceByNameOrID(*page, m)
 	if err != nil {
 		return nil, err
 	}

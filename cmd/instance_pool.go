@@ -29,10 +29,10 @@ func getInstancePoolByID(id, zone *egoscale.UUID) (*egoscale.InstancePool, error
 	return &r.InstancePools[0], nil
 }
 
-func getInstancePoolByName(name string, zone *egoscale.UUID) (*egoscale.InstancePool, error) {
-	instancePools := []egoscale.InstancePool{}
+func getInstancePoolByNameOrID(v string, zone *egoscale.UUID) (*egoscale.InstancePool, error) {
+	instancePools := make([]egoscale.InstancePool, 0)
 
-	id, err := egoscale.ParseUUID(name)
+	id, err := egoscale.ParseUUID(v)
 	if err == nil {
 		return getInstancePoolByID(id, zone)
 	}
@@ -46,14 +46,14 @@ func getInstancePoolByName(name string, zone *egoscale.UUID) (*egoscale.Instance
 	r := resp.(*egoscale.ListInstancePoolsResponse)
 
 	for _, i := range r.InstancePools {
-		if i.Name == name {
+		if i.Name == v {
 			instancePools = append(instancePools, i)
 		}
 	}
 
 	switch count := len(instancePools); {
 	case count == 0:
-		return nil, fmt.Errorf("not found: %q", name)
+		return nil, fmt.Errorf("not found: %q", v)
 	case count > 1:
 		return nil, fmt.Errorf(`more than one element found: %d`, count)
 	}

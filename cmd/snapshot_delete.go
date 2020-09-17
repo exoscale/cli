@@ -29,7 +29,7 @@ var snapshotDeleteCmd = &cobra.Command{
 			if !force && !askQuestion(q) {
 				continue
 			}
-			volume, err := getSnapshotWithNameOrID(arg)
+			volume, err := getSnapshotByNameOrID(arg)
 			if err != nil {
 				return err
 			}

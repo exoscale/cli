@@ -110,7 +110,7 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 
 	resp, err := cs.GetWithContext(gContext, query)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to retrieve Compute instance template: %v", err)
 	}
 
 	template := resp.(*egoscale.Template)

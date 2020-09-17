@@ -11,7 +11,6 @@ import (
 	"os"
 	"reflect"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -150,38 +149,16 @@ func (client *Client) GetWithContext(ctx context.Context, ls Listable) (interfac
 		return nil, err
 	}
 
-	count := len(gs)
-	if count != 1 {
-		req, err := ls.ListRequest()
-		if err != nil {
-			return nil, err
-		}
-		params, err := client.Payload(req)
-		if err != nil {
-			return nil, err
-		}
+	switch len(gs) {
+	case 0:
+		return nil, ErrNotFound
 
-		// removing sensitive/useless informations
-		params.Del("expires")
-		params.Del("response")
-		params.Del("signature")
-		params.Del("signatureversion")
+	case 1:
+		return gs[0], nil
 
-		// formatting the query string nicely
-		payload := params.Encode()
-		payload = strings.Replace(payload, "&", ", ", -1)
-
-		if count == 0 {
-			return nil, &ErrorResponse{
-				CSErrorCode: ServerAPIException,
-				ErrorCode:   ParamError,
-				ErrorText:   fmt.Sprintf("not found, query: %s", payload),
-			}
-		}
-		return nil, fmt.Errorf("more than one element found: %s", payload)
+	default:
+		return nil, ErrTooManyFound
 	}
-
-	return gs[0], nil
 }
 
 // Delete removes the given resource of fails

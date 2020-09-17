@@ -34,7 +34,7 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			ag, err := getAffinityGroupByName(args[0])
+			ag, err := getAffinityGroupByNameOrID(args[0])
 			if err != nil {
 				return err
 			}

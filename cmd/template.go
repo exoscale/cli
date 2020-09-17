@@ -36,15 +36,15 @@ func validateTemplateFilter(templateFilter string) (string, error) {
 	return templateFilter, nil
 }
 
-func getTemplateByName(zoneID *egoscale.UUID, name string, templateFilter string) (*egoscale.Template, error) {
+func getTemplateByNameOrID(zoneID *egoscale.UUID, v string, templateFilter string) (*egoscale.Template, error) {
 	req := &egoscale.ListTemplates{
 		TemplateFilter: templateFilter,
 		ZoneID:         zoneID,
 	}
 
-	id, errUUID := egoscale.ParseUUID(name)
+	id, errUUID := egoscale.ParseUUID(v)
 	if errUUID != nil {
-		req.Name = name
+		req.Name = v
 	} else {
 		req.ID = id
 	}
@@ -53,8 +53,9 @@ func getTemplateByName(zoneID *egoscale.UUID, name string, templateFilter string
 	if err != nil {
 		return nil, err
 	}
+
 	if len(resp) == 0 {
-		return nil, fmt.Errorf("template %q not found", name)
+		return nil, fmt.Errorf("template %q not found", v)
 	}
 	if len(resp) == 1 {
 		return resp[0].(*egoscale.Template), nil

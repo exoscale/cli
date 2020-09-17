@@ -69,20 +69,28 @@ func listServiceOfferings() (outputter, error) {
 
 }
 
-func getServiceOfferingByName(name string) (*egoscale.ServiceOffering, error) {
+func getServiceOfferingByNameOrID(v string) (*egoscale.ServiceOffering, error) {
 	so := &egoscale.ServiceOffering{}
 
-	id, err := egoscale.ParseUUID(name)
+	id, err := egoscale.ParseUUID(v)
 	if err != nil {
-		so.Name = name
+		so.Name = v
 	} else {
 		so.ID = id
 	}
 
 	resp, err := cs.GetWithContext(gContext, so)
-	if err != nil {
+	switch err {
+	case nil:
+		return resp.(*egoscale.ServiceOffering), nil
+
+	case egoscale.ErrNotFound:
+		return nil, fmt.Errorf("unknown Service Offering %q", v)
+
+	case egoscale.ErrTooManyFound:
+		return nil, fmt.Errorf("multiple Service Offerings match %q", v)
+
+	default:
 		return nil, err
 	}
-
-	return resp.(*egoscale.ServiceOffering), nil
 }

@@ -39,7 +39,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		zone, err := getZoneByName(zoneName)
+		zone, err := getZoneByNameOrID(zoneName)
 		if err != nil {
 			return err
 		}
@@ -49,7 +49,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		servOffering, err := getServiceOfferingByName(so)
+		servOffering, err := getServiceOfferingByNameOrID(so)
 		if err != nil {
 			return err
 		}
@@ -68,7 +68,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		template, err := getTemplateByName(zone.ID, templateName, templateFilter)
+		template, err := getTemplateByNameOrID(zone.ID, templateName, templateFilter)
 		if err != nil {
 			return err
 		}

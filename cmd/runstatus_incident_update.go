@@ -45,7 +45,7 @@ passing a resolved status and flagging the services state as operational`,
 			return err
 		}
 
-		incident, err := getIncidentByNameOrID(*runstatusPage, incidentName)
+		incident, err := getRunstatusIncidentByNameOrID(*runstatusPage, incidentName)
 		if err != nil {
 			return err
 		}

@@ -13,7 +13,7 @@ var runstatusIncidentCmd = &cobra.Command{
 	Short: "Incident management",
 }
 
-func getIncidentByNameOrID(page egoscale.RunstatusPage, name string) (*egoscale.RunstatusIncident, error) {
+func getRunstatusIncidentByNameOrID(page egoscale.RunstatusPage, name string) (*egoscale.RunstatusIncident, error) {
 	i := egoscale.RunstatusIncident{PageURL: page.URL}
 
 	if id, err := strconv.Atoi(name); err == nil {

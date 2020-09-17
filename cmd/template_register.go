@@ -116,7 +116,7 @@ Supported output template annotations: %s`,
 }
 
 func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) (outputter, error) {
-	z, err := getZoneByName(zone)
+	z, err := getZoneByNameOrID(zone)
 	if err != nil {
 		return nil, err
 	}
