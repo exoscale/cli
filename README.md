@@ -30,16 +30,28 @@ Upon successful compilation, the resulting `exo` binary is stored in the `bin/` 
 
 Running the `exo config` command will guide you through the initial configuration.
 
-You can find your API credentials in the *Account* section of the [Exoscale Console](https://portal.exoscale.com/account/profile/api).
+You can create and find API credentials in the *IAM* section of the [Exoscale Console](https://portal.exoscale.com/iam/api-keys).
 
 The configuration file and all assets created during `exo` operations will be saved in the following location:
 
 | OS | Location |
 |:--|:--|
-| GNU/Linux, *BSD | `$HOME/.exoscale` |
-| macOS | `$HOME/Library/Application Support/exoscale` |
-| Windows | `%USERPROFILE%\.exoscale` |
+| GNU/Linux, *BSD | `$HOME/.config/exoscale/` |
+| macOS | `$HOME/.config/exoscale/` or `$HOME/Library/Application Support/exoscale/` |
+| Windows | `%USERPROFILE%\.config\exoscale\` |
 
+The configuration parameters are then saved in a `exoscale.toml` file with the following format:
+
+```
+defaultaccount = "account_name"
+
+[[accounts]]
+  account = "account_name"
+  endpoint = "https://api.exoscale.com/v1"
+  key = "API_KEY"
+  name = "account_name"
+  secret = "API_SECRET"
+```
 
 ## Usage
 
