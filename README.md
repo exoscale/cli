@@ -2,7 +2,7 @@
 
 # Exoscale CLI
 
-Manage easily your Exoscale infrastructure from the command-line with `exo`.
+Manage your Exoscale infrastructure easily from the command-line with `exo`.
 
 
 ## Installation
