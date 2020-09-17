@@ -37,10 +37,10 @@ The configuration file and all assets created during `exo` operations will be sa
 | OS | Location |
 |:--|:--|
 | GNU/Linux, *BSD | `$HOME/.config/exoscale/` |
-| macOS | `$HOME/.config/exoscale/` or `$HOME/Library/Application Support/exoscale/` |
-| Windows | `%USERPROFILE%\.config\exoscale\` |
+| macOS | `$HOME/Library/Application Support/exoscale/` |
+| Windows | `%USERPROFILE%\.exoscale\` |
 
-The configuration parameters are then saved in a `exoscale.toml` file with the following format:
+The configuration parameters are then saved in a `exoscale.toml` file with the following minimum format:
 
 ```
 defaultaccount = "account_name"
@@ -52,6 +52,8 @@ defaultaccount = "account_name"
   name = "account_name"
   secret = "API_SECRET"
 ```
+
+The current configuration and configuration file path can be shown with `exo config show`.
 
 ## Usage
 
