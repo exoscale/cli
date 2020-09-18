@@ -162,7 +162,7 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 Hi happy Exoscalian, some configuration is required to use exo.
 
 We now need some very important information, find them there.
-	<https://portal.exoscale.com/account/profile/api>
+	<https://portal.exoscale.com/iam/api-keys>
 
 `)
 	return addConfigAccount(true)
