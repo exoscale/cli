@@ -39,7 +39,7 @@ var runstatusIncidentRemoveCmd = &cobra.Command{
 			return err
 		}
 
-		incident, err := getIncidentByNameOrID(*runstatusPage, incidentName)
+		incident, err := getRunstatusIncidentByNameOrID(*runstatusPage, incidentName)
 		if err != nil {
 			return err
 		}

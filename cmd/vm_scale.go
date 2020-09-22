@@ -27,7 +27,7 @@ var vmScaleCmd = &cobra.Command{
 			return err
 		}
 
-		serviceoffering, err := getServiceOfferingByName(so)
+		serviceoffering, err := getServiceOfferingByNameOrID(so)
 		if err != nil {
 			return err
 		}

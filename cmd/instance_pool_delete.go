@@ -31,7 +31,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		zone, err := getZoneByName(zoneName)
+		zone, err := getZoneByNameOrID(zoneName)
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 				}
 			}
 
-			i, err := getInstancePoolByName(arg, zone.ID)
+			i, err := getInstancePoolByNameOrID(arg, zone.ID)
 			if err != nil {
 				return err
 			}

@@ -13,7 +13,7 @@ var runstatusMaintenanceCmd = &cobra.Command{
 	Short: "Maintenance management",
 }
 
-func getMaintenanceByNameOrID(page egoscale.RunstatusPage, name string) (*egoscale.RunstatusMaintenance, error) {
+func getRunstatusMaintenanceByNameOrID(page egoscale.RunstatusPage, name string) (*egoscale.RunstatusMaintenance, error) {
 	m := egoscale.RunstatusMaintenance{PageURL: page.URL}
 
 	if id, err := strconv.Atoi(name); err == nil {

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.33.2
+------
+
+- fix: make `GetWithContext` return more relevant errors (#450)
+
 0.33.1
 ------
 

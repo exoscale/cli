@@ -40,7 +40,7 @@ var runstatusMaintenanceRemoveCmd = &cobra.Command{
 			return err
 		}
 
-		maintenance, err := getMaintenanceByNameOrID(*runstatusPage, maintenanceName)
+		maintenance, err := getRunstatusMaintenanceByNameOrID(*runstatusPage, maintenanceName)
 		if err != nil {
 			return err
 		}

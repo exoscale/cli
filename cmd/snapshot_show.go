@@ -38,7 +38,7 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			snapshot, err := getSnapshotWithNameOrID(args[0])
+			snapshot, err := getSnapshotByNameOrID(args[0])
 			if err != nil {
 				return err
 			}

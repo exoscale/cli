@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -11,22 +13,30 @@ var snapshotCmd = &cobra.Command{
 	Short: "Snapshots allow you to save the volume of a machine in its current state",
 }
 
-func getSnapshotWithNameOrID(name string) (*egoscale.Snapshot, error) {
+func getSnapshotByNameOrID(v string) (*egoscale.Snapshot, error) {
 	snapshot := &egoscale.Snapshot{}
 
-	id, err := egoscale.ParseUUID(name)
+	id, err := egoscale.ParseUUID(v)
 	if err != nil {
-		snapshot.Name = name
+		snapshot.Name = v
 	} else {
 		snapshot.ID = id
 	}
 
 	resp, err := cs.GetWithContext(gContext, snapshot)
-	if err != nil {
+	switch err {
+	case nil:
+		return resp.(*egoscale.Snapshot), nil
+
+	case egoscale.ErrNotFound:
+		return nil, fmt.Errorf("unknown Snapshot %q", v)
+
+	case egoscale.ErrTooManyFound:
+		return nil, fmt.Errorf("multiple Snapshots match %q", v)
+
+	default:
 		return nil, err
 	}
-
-	return resp.(*egoscale.Snapshot), nil
 }
 
 func init() {

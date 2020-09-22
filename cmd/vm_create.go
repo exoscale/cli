@@ -51,7 +51,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		zone, err := getZoneByName(zoneName)
+		zone, err := getZoneByNameOrID(zoneName)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		template, err := getTemplateByName(zone.ID, templateName, templateFilter)
+		template, err := getTemplateByNameOrID(zone.ID, templateName, templateFilter)
 		if err != nil {
 			return err
 		}
@@ -114,7 +114,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		servOffering, err := getServiceOfferingByName(so)
+		servOffering, err := getServiceOfferingByNameOrID(so)
 		if err != nil {
 			return err
 		}
@@ -243,7 +243,7 @@ func getAffinityGroup(params []string) ([]egoscale.UUID, error) {
 	ids := make([]egoscale.UUID, len(params))
 
 	for i, aff := range params {
-		s, err := getAffinityGroupByName(aff)
+		s, err := getAffinityGroupByNameOrID(aff)
 
 		if err != nil {
 			return nil, err

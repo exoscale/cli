@@ -33,21 +33,16 @@ func createSnapshot(vmID string) (outputter, error) {
 		return nil, err
 	}
 
-	query := &egoscale.Volume{
+	resp, err := cs.GetWithContext(gContext, &egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
-	}
-
-	resp, err := cs.GetWithContext(gContext, query)
+	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to retrieve Compute instance volume: %v", err)
 	}
 
-	createSnapshot := &egoscale.CreateSnapshot{
-		VolumeID: resp.(*egoscale.Volume).ID,
-	}
-
-	res, err := asyncRequest(createSnapshot, fmt.Sprintf("Creating snapshot of %q", vm.Name))
+	createSnapshotReq := &egoscale.CreateSnapshot{VolumeID: resp.(*egoscale.Volume).ID}
+	res, err := asyncRequest(createSnapshotReq, fmt.Sprintf("Creating snapshot of %q", vm.Name))
 	if err != nil {
 		return nil, err
 	}

@@ -75,7 +75,7 @@ var eipCreateCmd = &cobra.Command{
 }
 
 func associateIPAddress(associateIPAddress egoscale.AssociateIPAddress, zone string) error {
-	z, err := getZoneByName(zone)
+	z, err := getZoneByNameOrID(zone)
 	if err != nil {
 		return err
 	}

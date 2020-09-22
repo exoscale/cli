@@ -54,23 +54,31 @@ func formatRulePort(rule egoscale.IngressRule) string {
 	return ports
 }
 
-func getSecurityGroupByNameOrID(name string) (*egoscale.SecurityGroup, error) {
+func getSecurityGroupByNameOrID(v string) (*egoscale.SecurityGroup, error) {
 	sg := &egoscale.SecurityGroup{}
 
-	id, err := egoscale.ParseUUID(name)
+	id, err := egoscale.ParseUUID(v)
 
 	if err != nil {
-		sg.Name = name
+		sg.Name = v
 	} else {
 		sg.ID = id
 	}
 
 	resp, err := cs.GetWithContext(gContext, sg)
-	if err != nil {
+	switch err {
+	case nil:
+		return resp.(*egoscale.SecurityGroup), nil
+
+	case egoscale.ErrNotFound:
+		return nil, fmt.Errorf("unknown Security Group %q", v)
+
+	case egoscale.ErrTooManyFound:
+		return nil, fmt.Errorf("multiple Security Groups match %q", v)
+
+	default:
 		return nil, err
 	}
-	return resp.(*egoscale.SecurityGroup), nil
-
 }
 
 func getMyCIDR(isIpv6 bool) (*egoscale.CIDR, error) {

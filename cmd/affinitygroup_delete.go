@@ -51,7 +51,7 @@ var affinitygroupDeleteCmd = &cobra.Command{
 }
 
 func prepareDeleteAffinityGroup(name string) (*egoscale.DeleteAffinityGroup, error) {
-	aff, err := getAffinityGroupByName(name)
+	aff, err := getAffinityGroupByNameOrID(name)
 	if err != nil {
 		return nil, err
 	}

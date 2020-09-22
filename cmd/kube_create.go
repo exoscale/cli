@@ -240,12 +240,12 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		size, err := getServiceOfferingByName(sizeOpt)
+		size, err := getServiceOfferingByNameOrID(sizeOpt)
 		if err != nil {
 			return err
 		}
 
-		zone, err := getZoneByName(gCurrentAccount.DefaultZone)
+		zone, err := getZoneByNameOrID(gCurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}
@@ -255,7 +255,7 @@ var kubeCreateCmd = &cobra.Command{
 			return err
 		}
 
-		template, err := getTemplateByName(zone.ID, kubeDefaultTemplate, kubeTemplateFilter)
+		template, err := getTemplateByNameOrID(zone.ID, kubeDefaultTemplate, kubeTemplateFilter)
 		if err != nil {
 			return err
 		}

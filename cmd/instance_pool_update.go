@@ -41,7 +41,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		zone, err := getZoneByName(zoneName)
+		zone, err := getZoneByNameOrID(zoneName)
 		if err != nil {
 			return err
 		}
@@ -62,7 +62,7 @@ Supported output template annotations: %s`,
 		}
 
 		if templateName != "" {
-			template, err = getTemplateByName(zone.ID, templateName, templateFilter)
+			template, err = getTemplateByNameOrID(zone.ID, templateName, templateFilter)
 			if err != nil {
 				return err
 			}
@@ -91,7 +91,7 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		instancePool, err := getInstancePoolByName(args[0], zone.ID)
+		instancePool, err := getInstancePoolByNameOrID(args[0], zone.ID)
 		if err != nil {
 			return err
 		}
