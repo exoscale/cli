@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.18.0
+
+### New
+
+* `exo nlb`: support for HTTP health checking (#284)
+
+### Bug Fixes
+
+* sos: fix bucket location inferring logic (#285)
+
+
 ## 1.17.0
 
 ### New
