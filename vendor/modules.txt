@@ -54,10 +54,6 @@ github.com/client9/misspell/cmd/misspell
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/danielgtaylor/go-jmespath-plus v0.0.0-20200228063638-e0b6f132acba
 github.com/danielgtaylor/go-jmespath-plus
-# github.com/danielgtaylor/openapi-cli-generator v0.0.0-20200228065623-fa97dc37f943
-## explicit
-github.com/danielgtaylor/openapi-cli-generator/cli
-github.com/danielgtaylor/openapi-cli-generator/shorthand
 # github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
 github.com/danwakefield/fnmatch
 # github.com/davecgh/go-spew v1.1.1
@@ -78,12 +74,18 @@ github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
 github.com/exoscale/egoscale/api/v2
 github.com/exoscale/egoscale/internal/v2
+# github.com/exoscale/openapi-cli-generator v1.0.0
+## explicit
+github.com/exoscale/openapi-cli-generator/cli
+github.com/exoscale/openapi-cli-generator/shorthand
 # github.com/fatih/camelcase v1.0.0
 ## explicit
 github.com/fatih/camelcase
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit
 github.com/fsnotify/fsnotify
+# github.com/getkin/kin-openapi v0.22.0
+## explicit
 # github.com/go-ini/ini v1.42.0
 ## explicit
 github.com/go-ini/ini

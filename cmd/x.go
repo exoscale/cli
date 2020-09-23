@@ -21,8 +21,8 @@ func init() {
 These commands are automatically generated using openapi-cli-generator[1],
 input parameters can be supplied either via stdin or using Shorthands[2].
 
-[1]: https://github.com/danielgtaylor/openapi-cli-generator
-[2]: https://github.com/danielgtaylor/openapi-cli-generator/tree/master/shorthand
+[1]: https://github.com/exoscale/openapi-cli-generator
+[2]: https://github.com/exoscale/openapi-cli-generator/tree/master/shorthand
 `
 
 	// This code being executed very early, at this point some information is not ready

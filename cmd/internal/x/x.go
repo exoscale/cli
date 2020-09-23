@@ -2,10 +2,9 @@ package x
 
 import (
 	"os"
-	"path"
 
-	"github.com/danielgtaylor/openapi-cli-generator/cli"
 	apiv2 "github.com/exoscale/egoscale/api/v2"
+	"github.com/exoscale/openapi-cli-generator/cli"
 	logger "github.com/izumin5210/gentleman-logger"
 	"github.com/spf13/cobra"
 	"gopkg.in/h2non/gentleman.v2/context"
@@ -15,7 +14,10 @@ import (
 // InitCommand initializes the code-generated CLI instance and returns the resulting Cobra command
 // to the caller so it can be added as subcommand to a higher level CLI.
 func InitCommand() *cobra.Command {
-	cli.Init(&cli.Config{AppName: "x"})
+	cli.Init(&cli.Config{
+		AppName: "x",
+		Caching: false,
+	})
 	cli.AddGlobalFlag("zone", "z", "Exoscale zone", "")
 	cli.AddGlobalFlag("environment", "e", "Exoscale API environment", "")
 
@@ -24,14 +26,6 @@ func InitCommand() *cobra.Command {
 	}
 
 	xRegister(false)
-
-	// We attempts to clean up the unused configuration cache file "$HOME/.x/cache.json" created by
-	// cli.Init(). Since we don't report errors as the `exo x` command is not advertised, this is
-	// best effort.
-	cacheFile := cli.Cache.ConfigFileUsed()
-	if err := os.Remove(cacheFile); err == nil {
-		os.Remove(path.Dir(cacheFile)) // golint:noerr
-	}
 
 	return cli.Root
 }

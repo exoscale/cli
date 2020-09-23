@@ -69,8 +69,6 @@ github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsr
 github.com/cyberdelia/templates v0.0.0-20141128023046-ca7fffd4298c/go.mod h1:GyV+0YP4qX0UQ7r2MoYZ+AvYDp12OF5yg4q8rGnyNh4=
 github.com/danielgtaylor/go-jmespath-plus v0.0.0-20200228063638-e0b6f132acba h1:COT94fQgUPh7CG42x3RTfab3V9jK9x4i2GLpubq7eZM=
 github.com/danielgtaylor/go-jmespath-plus v0.0.0-20200228063638-e0b6f132acba/go.mod h1:A57wu2YKZM9dwidFjak6swlRJPKbg+TfHsFm0py9/i8=
-github.com/danielgtaylor/openapi-cli-generator v0.0.0-20200228065623-fa97dc37f943 h1:hyA9bLbYi2tdA0HUwzhJZfc0mtu0qGM6OIgKVeIMtwU=
-github.com/danielgtaylor/openapi-cli-generator v0.0.0-20200228065623-fa97dc37f943/go.mod h1:G8uIrua49mG1cqN+wiXsDjl3uswJfRjhCyrk9+yXq08=
 github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 h1:y5HC9v93H5EPKqaS1UYVg1uYah5Xf51mBfIoWehClUQ=
 github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964/go.mod h1:Xd9hchkHSWYkEqJwUGisez3G1QY8Ryz0sdWrLPMGjLk=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -90,6 +88,8 @@ github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/exoscale/egoscale v0.33.2 h1:6Xu06ykYpaww4iaY6D49l9LfBgCmZTmrzWmgYFSoMng=
 github.com/exoscale/egoscale v0.33.2/go.mod h1:BFi2GNsnsrALev3+gFO/HIQADBQhqJ41S0QrNEB2GJw=
+github.com/exoscale/openapi-cli-generator v1.0.0 h1:nmiRLkmRfRo0BfqxUnVgqOYE1NmNvik8sMYjByRocHM=
+github.com/exoscale/openapi-cli-generator v1.0.0/go.mod h1:TXqLTIEdRbKRAHzi4inT3Cx9TMdts9XyXFZaz9VlFgI=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
 github.com/fatih/camelcase v1.0.0/go.mod h1:yN2Sb0lFhZJUdVvtELVWefmrXpuZESvPmqwoZc+/fpc=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
