@@ -6,7 +6,7 @@ GO_BIN_OUTPUT_NAME := exo
 
 .PHONY:
 .ONESHELL:
-x-cmd: ## Generates code for "exo x" experimental subsommands
+x-cmd: ## Generates code for "exo x" experimental subcommands
 	@if [ ! -f "$(shell go env GOPATH)/bin/openapi-cli-generator" ]; then
 		echo "openapi-cli-generator tool not found, downloading"
 		go get -u github.com/exoscale/openapi-cli-generator
