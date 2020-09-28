@@ -51,12 +51,17 @@ type Config struct {
 	AppName   string
 	EnvPrefix string
 	Version   string
+	Caching   bool
 }
 
 // Init will set up the CLI.
 func Init(config *Config) {
 	initConfig(config.AppName, config.EnvPrefix)
-	initCache(config.AppName)
+
+	if config.Caching {
+		initCache(config.AppName)
+	}
+
 	authInitialized = false
 
 	// Determine if we are using a TTY or colored output is forced-on.
@@ -147,12 +152,7 @@ func userHomeDir() string {
 }
 
 func initConfig(appName, envPrefix string) {
-	// One-time setup to ensure the path exists so we can write files into it
-	// later as needed.
 	configDir := path.Join(userHomeDir(), "."+appName)
-	if err := os.MkdirAll(configDir, 0700); err != nil {
-		panic(err)
-	}
 
 	// Load configuration from file(s) if provided.
 	viper.SetConfigName("config")
@@ -283,7 +283,7 @@ Both objects and arrays can use backreferences. An object backref starts with a 
 
 Use an ¬@¬ to load the contents of a file as the value, like ¬key: @filename¬. Use the ¬~¬ modifier to disable this behavior: ¬key:~ @user¬. By default structured data is loaded when recognized. Use the ¬~¬ filename modifier to force a string: ¬key: @~filename¬. Use the ¬%¬ modifier to load as base-64 data: ¬key: @%filename¬.
 
-See https://github.com/danielgtaylor/openapi-cli-generator/tree/master/shorthand#readme for more info.`
+See https://github.com/exoscale/openapi-cli-generator/tree/master/shorthand#readme for more info.`
 
 	fmt.Fprintln(Stdout, Markdown(strings.Replace(help, "¬", "`", -1)))
 }

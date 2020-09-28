@@ -6,10 +6,10 @@ require (
 	github.com/alecthomas/chroma v0.7.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cenkalti/backoff v2.0.0+incompatible
-	github.com/danielgtaylor/openapi-cli-generator v0.0.0-20200228065623-fa97dc37f943
 	github.com/deepmap/oapi-codegen v1.3.13 // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/exoscale/egoscale v0.33.2
+	github.com/exoscale/openapi-cli-generator v1.0.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-ini/ini v1.42.0
