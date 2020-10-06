@@ -48,16 +48,32 @@ func init() {
 
 // aclCmd represents the acl command
 var sosAddACLCmd = &cobra.Command{
-	Use:   "add <bucket name> <object name>",
-	Short: "Add ACL(s) to an object",
+	Use:   "add <bucket name> <object|prefix>",
+	Short: "Add ACL(s) to objects",
+	Long: `This commands adds ACL(s) to objects in a bucket. It is possible to
+set ACLs either on a single object, or recursively from a prefix
+using the flag "--recursive". To recurse across the whole bucket,
+specify "/" as prefix.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			return cmd.Usage()
 		}
 		bucket := args[0]
-		object := args[1]
+		path := args[1]
+
+		// The "/" path is just a trick for CLI users to signify they mean the bucket root:
+		// for SOS the actual bucket root is an empty prefix (i.e. ""), however passing
+		// an empty string as CLI option value has a different meaning.
+		if path == "/" {
+			path = ""
+		}
 
 		meta, err := getACL(cmd)
+		if err != nil {
+			return err
+		}
+
+		recursive, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
 			return err
 		}
@@ -89,58 +105,65 @@ var sosAddACLCmd = &cobra.Command{
 			return err
 		}
 
-		objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, object)
-		if err != nil {
-			return err
-		}
-
-		objInfo.Metadata.Add("content-type", objInfo.ContentType)
-
-		src := minio.NewSourceInfo(bucket, object, nil)
-
-		// When the Object acl is updated from Canned ACL(X-Amz-Acl) to
-		// Grant ACL(X-Amz-Grant), we have to remove Canned ACL before.
-		_, hasNewCannedACL := meta["X-Amz-Acl"]
-		_, hasCannedACL := objInfo.Metadata["X-Amz-Acl"]
-		if hasCannedACL && !hasNewCannedACL {
-			// Remove Canned ACL from the header to let Grant ACL take effect.
-			objInfo.Metadata.Del("X-Amz-Acl")
-			// This lets the object full control grantee to keep the control on the object,
-			// if the flag "--full-control" is not specified.
-			var fullControl string
-			for _, g := range objInfo.Grant {
-				if g.Permission == sosACLFullControl {
-					fullControl = g.Grantee.ID
-				}
+		for obj := range sosClient.ListObjects(bucket, path, recursive, gContext.Done()) {
+			// Skip "folders", as they don't support ACLs.
+			if strings.HasSuffix(obj.Key, "/") {
+				continue
 			}
-			if fullControl == "" {
-				return fmt.Errorf(`object %q has no "FULL_CONTROL" grantee`, object)
-			}
-			objInfo.Metadata.Add(manualFullControl, "id="+fullControl)
-		}
 
-		mergeHeader(src.Headers, objInfo.Metadata)
-
-		// Destination object
-		dst, err := minio.NewDestinationInfo(bucket, object, nil, meta)
-		if err != nil {
-			return err
-		}
-
-		// Copy object call
-		err = sosClient.CopyObject(dst, src)
-		if err != nil {
-			return err
-		}
-
-		if !gQuiet {
-			acl, err := getDefaultCannedACL(cmd)
+			objInfo, err := sosClient.GetObjectACLWithContext(gContext, bucket, obj.Key)
 			if err != nil {
 				return err
 			}
 
-			if acl == publicReadWrite || acl == publicRead {
-				fmt.Printf("https://sos-%s.exo.io/%s/%s\n", location, bucket, object)
+			objInfo.Metadata.Add("content-type", objInfo.ContentType)
+
+			src := minio.NewSourceInfo(bucket, objInfo.Key, nil)
+
+			// When the Object acl is updated from Canned ACL(X-Amz-Acl) to
+			// Grant ACL(X-Amz-Grant), we have to remove Canned ACL before.
+			_, hasNewCannedACL := meta["X-Amz-Acl"]
+			_, hasCannedACL := objInfo.Metadata["X-Amz-Acl"]
+			if hasCannedACL && !hasNewCannedACL {
+				// Remove Canned ACL from the header to let Grant ACL take effect.
+				objInfo.Metadata.Del("X-Amz-Acl")
+				// This lets the objInfo full control grantee to keep the control on the objInfo,
+				// if the flag "--full-control" is not specified.
+				var fullControl string
+				for _, g := range objInfo.Grant {
+					if g.Permission == sosACLFullControl {
+						fullControl = g.Grantee.ID
+					}
+				}
+				if fullControl == "" {
+					return fmt.Errorf(`objInfo %q has no "FULL_CONTROL" grantee`, objInfo)
+				}
+				objInfo.Metadata.Add(manualFullControl, "id="+fullControl)
+			}
+
+			mergeHeader(src.Headers, objInfo.Metadata)
+
+			// Destination objInfo
+			dst, err := minio.NewDestinationInfo(bucket, objInfo.Key, nil, meta)
+			if err != nil {
+				return err
+			}
+
+			// Copy objInfo call
+			err = sosClient.CopyObject(dst, src)
+			if err != nil {
+				return err
+			}
+
+			if !gQuiet && !recursive {
+				acl, err := getDefaultCannedACL(cmd)
+				if err != nil {
+					return err
+				}
+
+				if acl == publicReadWrite || acl == publicRead {
+					fmt.Printf("https://sos-%s.exo.io/%s/%s\n", location, bucket, objInfo.Key)
+				}
 			}
 		}
 
@@ -293,6 +316,7 @@ func getManualACL(cmd *cobra.Command) (map[string][]string, error) {
 func init() {
 	sosACLCmd.AddCommand(sosAddACLCmd)
 	sosAddACLCmd.Flags().SortFlags = false
+	sosAddACLCmd.Flags().Bool("recursive", false, "Set ACL recursively")
 
 	//Canned ACLs
 	sosAddACLCmd.Flags().BoolP(private, "p", false, "Canned ACL private")
