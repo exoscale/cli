@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.19.0
+
+### New
+
+* `exo sos acl add`: support for recursive ACL addition (#290)
+
+
 ## 1.18.0
 
 ### New
