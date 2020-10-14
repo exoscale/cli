@@ -74,7 +74,7 @@ github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
 github.com/exoscale/egoscale/api/v2
 github.com/exoscale/egoscale/internal/v2
-# github.com/exoscale/openapi-cli-generator v1.0.0
+# github.com/exoscale/openapi-cli-generator v1.1.0
 ## explicit
 github.com/exoscale/openapi-cli-generator/cli
 github.com/exoscale/openapi-cli-generator/shorthand

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -44,9 +45,10 @@ type ResponseFormatter interface {
 	Format(interface{}) error
 }
 
-// DefaultFormatter can apply JMESPath queries and can output prettyfied JSON
-// and YAML output. If Stdout is a TTY, then colorized output is provided. The
-// default formatter uses the `query` and `output-format` configuration
+// DefaultFormatter can apply JMESPath queries and can output prettified JSON
+// and YAML output. If Stdout is a TTY, then colorized/indented output is
+// provided unless the `--raw` flag is specified.
+// The default formatter uses the `query` and `output-format` configuration
 // values to perform JMESPath queries and set JSON (default) or YAML output.
 type DefaultFormatter struct {
 	tty bool
@@ -68,7 +70,6 @@ func (f *DefaultFormatter) Format(data interface{}) error {
 
 	if viper.GetString("query") != "" {
 		result, err := jmespath.Search(viper.GetString("query"), data)
-
 		if err != nil {
 			return err
 		}
@@ -127,11 +128,18 @@ func (f *DefaultFormatter) Format(data interface{}) error {
 
 			lexer = "yaml"
 		} else {
-			encoded, err = json.MarshalIndent(data, "", "  ")
+			buf := bytes.NewBuffer(nil)
 
-			if err != nil {
+			jsonEnc := json.NewEncoder(buf)
+			jsonEnc.SetEscapeHTML(false)
+			if !viper.GetBool("raw") {
+				jsonEnc.SetIndent("", "  ")
+			}
+
+			if err := jsonEnc.Encode(data); err != nil {
 				return err
 			}
+			encoded = buf.Bytes()
 
 			lexer = "json"
 		}
@@ -139,18 +147,16 @@ func (f *DefaultFormatter) Format(data interface{}) error {
 
 	// Make sure we end with a newline, otherwise things won't look right
 	// in the terminal.
-	if len(encoded) > 0 && encoded[len(encoded)-1] != '\n' {
+	if !viper.GetBool("raw") && (len(encoded) > 0 && encoded[len(encoded)-1] != '\n') {
 		encoded = append(encoded, '\n')
 	}
 
 	// Only colorize if we are a TTY.
-	if f.tty {
-		if err = quick.Highlight(Stdout, string(encoded), lexer, "terminal256", "cli-dark"); err != nil {
-			return err
-		}
-	} else {
-		fmt.Fprintln(Stdout, string(encoded))
+	if f.tty && !viper.GetBool("raw") {
+		return quick.Highlight(Stdout, string(encoded), lexer, "terminal256", "cli-dark")
 	}
+
+	_, _ = fmt.Fprint(Stdout, string(encoded))
 
 	return nil
 }

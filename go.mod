@@ -9,7 +9,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.3.13 // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/exoscale/egoscale v0.33.2
-	github.com/exoscale/openapi-cli-generator v1.0.0
+	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-ini/ini v1.42.0
