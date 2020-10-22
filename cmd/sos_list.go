@@ -81,8 +81,10 @@ func displayBuckets(sosClient *sosClient, isRecursive, isShort bool) error {
 			if err = sosClient.setZone(b.Region); err != nil {
 				return err
 			}
+
 			listObjects(sosClient, b.Name, "", isRecursive, isShort, table)
 		}
+
 		table.Flush()
 	}
 	return nil
@@ -93,9 +95,12 @@ func displayBucket(sosClient *sosClient, path string, isRecursive, isShort bool)
 	table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 
 	isDir := strings.HasSuffix(path, "/")
+
 	path = strings.Trim(filepath.ToSlash(path), "/")
 	splitPath := strings.Split(path, "/")
+
 	bucket := splitPath[0]
+
 	prefix := filepath.Join(splitPath[1:]...)
 	if isDir && len(prefix) > 1 {
 		prefix = prefix + "/"
