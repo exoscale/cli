@@ -130,7 +130,7 @@ func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isSho
 		}
 
 		if isShort {
-			fmt.Fprintf(table, "%s%s\n", bucket, object.Key) // nolint: errcheck
+			fmt.Fprintf(table, "%s/%s\n", bucket, object.Key) // nolint: errcheck
 
 			table.Flush()
 			continue
@@ -139,7 +139,7 @@ func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isSho
 		if object.LastModified.IsZero() {
 			fmt.Fprintf(table,
 				"%s\t%s\t%s/%s\n",
-				strings.Repeat(" ", 26),
+				strings.Repeat(" ", 25),
 				"DIR",
 				bucket, object.Key) // nolint: errcheck
 
