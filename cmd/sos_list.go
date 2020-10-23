@@ -122,17 +122,15 @@ func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isSho
 	table := tabwriter.NewWriter(os.Stdout, 10, 0, 1, ' ', tabwriter.TabIndent)
 
 	for object := range sosClient.ListObjectsV2(bucket, prefix, isRecursive, gContext.Done()) {
+		table.Flush()
+
 		if object.Err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", object.Err)
-
-			table.Flush()
 			continue
 		}
 
 		if isShort {
 			fmt.Fprintf(table, "%s/%s\n", bucket, object.Key) // nolint: errcheck
-
-			table.Flush()
 			continue
 		}
 
@@ -142,8 +140,6 @@ func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isSho
 				strings.Repeat(" ", 25),
 				"DIR",
 				bucket, object.Key) // nolint: errcheck
-
-			table.Flush()
 			continue
 		}
 
@@ -152,9 +148,9 @@ func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isSho
 			object.LastModified.Format(printDate),
 			humanize.IBytes(uint64(object.Size)),
 			bucket, object.Key) // nolint: errcheck
-
-		table.Flush()
 	}
+
+	table.Flush()
 }
 
 func init() {
