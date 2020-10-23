@@ -19,9 +19,9 @@ const (
 
 // sosListCmd represents the list command
 var sosListCmd = &cobra.Command{
-	Use:   "list  <bucketName/...> or NONE",
+	Use:   "list [<bucket name/...>]",
 	Short: "List file and folder",
-	Long: `This command lists all your buckets or all the objects stored in the specified bucket.
+	Long: `This command lists all your buckets or all the files stored in the specified bucket.
 	
 Note: the buckets size reported is computed daily, it may not be the actual size at the time of listing.`,
 	Aliases: gListAlias,
@@ -62,7 +62,7 @@ func displayBuckets(sosClient *sosClient, isRecursive, isShort bool) error {
 
 	buckets := resp.(*egoscale.ListBucketsUsageResponse)
 
-	table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
+	table := tabwriter.NewWriter(os.Stdout, 10, 0, 1, ' ', tabwriter.TabIndent)
 
 	for _, b := range buckets.BucketsUsage {
 		if isShort {
@@ -74,26 +74,24 @@ func displayBuckets(sosClient *sosClient, isRecursive, isShort bool) error {
 			}
 
 			fmt.Fprintf(table,
-				"[%s]\t[%s]\t%6s\t%s\n", t.Format(printDate), b.Region, humanize.IBytes(uint64(b.Usage)), b.Name) // nolint: errcheck
+				"[%s]\t[%s]\t%s\t%s\t\n", t.Format(printDate), b.Region, humanize.IBytes(uint64(b.Usage)), b.Name) // nolint: errcheck
 		}
+
+		table.Flush()
 
 		if isRecursive {
 			if err = sosClient.setZone(b.Region); err != nil {
 				return err
 			}
 
-			listObjects(sosClient, b.Name, "", isRecursive, isShort, table)
+			listObjects(sosClient, b.Name, "", isRecursive, isShort)
 		}
-
-		table.Flush()
 	}
 	return nil
 
 }
 
 func displayBucket(sosClient *sosClient, path string, isRecursive, isShort bool) error {
-	table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
-
 	isDir := strings.HasSuffix(path, "/")
 
 	path = strings.Trim(filepath.ToSlash(path), "/")
@@ -115,12 +113,14 @@ func displayBucket(sosClient *sosClient, path string, isRecursive, isShort bool)
 		return err
 	}
 
-	listObjects(sosClient, bucket, prefix, isRecursive, isShort, table)
+	listObjects(sosClient, bucket, prefix, isRecursive, isShort)
 
 	return nil
 }
 
-func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isShort bool, table *tabwriter.Writer) {
+func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isShort bool) {
+	table := tabwriter.NewWriter(os.Stdout, 10, 0, 1, ' ', tabwriter.TabIndent)
+
 	for object := range sosClient.ListObjectsV2(bucket, prefix, isRecursive, gContext.Done()) {
 		if object.Err != nil {
 			fmt.Fprintf(os.Stderr, "error: %s\n", object.Err)
@@ -138,7 +138,7 @@ func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isSho
 
 		if object.LastModified.IsZero() {
 			fmt.Fprintf(table,
-				"%s\t%s\t%s/%s\n",
+				"%s\t%s\t%s/%s\t\n",
 				strings.Repeat(" ", 25),
 				"DIR",
 				bucket, object.Key) // nolint: errcheck
@@ -148,7 +148,7 @@ func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isSho
 		}
 
 		fmt.Fprintf(table,
-			"[%s]\t%6s\t%s/%s\n",
+			"[%s]\t%s\t%s/%s\t\n",
 			object.LastModified.Format(printDate),
 			humanize.IBytes(uint64(object.Size)),
 			bucket, object.Key) // nolint: errcheck
