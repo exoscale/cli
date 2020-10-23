@@ -87,8 +87,8 @@ func displayBuckets(sosClient *sosClient, isRecursive, isShort bool) error {
 			listObjects(sosClient, b.Name, "", isRecursive, isShort)
 		}
 	}
-	return nil
 
+	return nil
 }
 
 func displayBucket(sosClient *sosClient, path string, isRecursive, isShort bool) error {
