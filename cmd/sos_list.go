@@ -19,7 +19,7 @@ const (
 
 // sosListCmd represents the list command
 var sosListCmd = &cobra.Command{
-	Use:   "list [<bucket name/...>]",
+	Use:   "list [<bucket name/path>]",
 	Short: "List file and folder",
 	Long: `This command lists all your buckets or all the files stored in the specified bucket.
 	
