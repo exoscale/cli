@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +10,6 @@ import (
 
 	humanize "github.com/dustin/go-humanize"
 	"github.com/exoscale/egoscale"
-
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +19,7 @@ const (
 
 // sosListCmd represents the list command
 var sosListCmd = &cobra.Command{
-	Use:   "list [<bucket name>/path]",
+	Use:   "list [<bucket name/path>]",
 	Short: "List file and folder",
 	Long: `This command lists all your buckets or all the files stored in the specified bucket.
 	
@@ -49,123 +47,14 @@ Note: the buckets size reported is computed daily, it may not be the actual size
 		}
 
 		if len(args) == 0 {
-			return displayBucket(sosClient, isRecursive, isShort)
+			return displayBuckets(sosClient, isRecursive, isShort)
 		}
 
-		path := filepath.ToSlash(args[0])
-		path = strings.Trim(path, "/")
-		p := splitPath(args[0])
-
-		if len(p) == 0 || p[0] == "" {
-			return displayBucket(sosClient, isRecursive, isShort)
-		}
-
-		var prefix string
-		if len(p) > 1 {
-			prefix = path[len(p[0]):]
-			prefix = strings.Trim(prefix, "/")
-		}
-
-		bucket := p[0]
-
-		location, err := sosClient.GetBucketLocation(bucket)
-		if err != nil {
-			return err
-		}
-
-		if err := sosClient.setZone(location); err != nil {
-			return err
-		}
-
-		table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
-
-		if isRecursive {
-			listRecursively(sosClient, bucket, prefix, "", false, isShort, table)
-			return table.Flush()
-		}
-
-		recursive := true
-
-		last := ""
-		for message := range sosClient.ListObjectsV2(bucket, prefix, recursive, gContext.Done()) {
-			if message.Err != nil {
-				fmt.Fprintf(os.Stderr, "error: %s\n", message.Err)
-				continue
-			}
-
-			sPrefix := splitPath(prefix)
-			sKey := splitPath(message.Key)
-
-			// dont display if prefix == object path or folder
-			if isPrefix(prefix, message.Key) {
-				continue
-			}
-
-			// skip if message key contain prefix and is not equal
-			if len(prefix) != len(strings.Join(sKey[:len(sPrefix)], "/")) {
-				continue
-			}
-
-			// detect all file in current work dir (keep folder using last var)
-			if len(sKey) > len(sPrefix)+1 && sKey[len(sPrefix)] == last {
-				last = sKey[len(sPrefix)]
-				continue
-			}
-			last = sKey[len(sPrefix)]
-
-			// if is a folder (format key)
-			if len(sKey) > len(sPrefix)+1 {
-				message.Key = strings.Join([]string{prefix, sKey[len(sPrefix)]}, "/") + "/"
-				message.Size = 0
-			}
-
-			lastModified := message.LastModified.Format(printDate)
-			key := filepath.ToSlash(message.Key)
-			key = strings.TrimLeft(key[len(prefix):], "/")
-
-			if isShort {
-				fmt.Fprintln(table, key) // nolint: errcheck
-				continue
-			}
-
-			fmt.Fprintf(table, "[%s]\t%6s \t%s\n", lastModified, humanize.IBytes(uint64(message.Size)), key) // nolint: errcheck
-		}
-
-		return table.Flush()
+		return displayBucket(sosClient, filepath.ToSlash(args[0]), isRecursive, isShort)
 	},
 }
 
-func listRecursively(sosClient *sosClient, bucket, prefix, zone string,
-	displayBucket, isShort bool, table io.Writer) {
-	for message := range sosClient.ListObjectsV2(bucket, prefix, true, gContext.Done()) {
-		if message.Err != nil {
-			fmt.Fprintf(os.Stderr, "error: %s\n", message.Err)
-			continue
-		}
-
-		sPrefix := splitPath(prefix)
-		sKey := splitPath(message.Key)
-		if len(prefix) != len(strings.Join(sKey[:len(sPrefix)], "/")) {
-			continue
-		}
-
-		lastModified := message.LastModified.Format(printDate)
-		var bucket string
-		var zoneFormat string
-		if displayBucket {
-			bucket = fmt.Sprintf("%s/", bucket)
-			zoneFormat = fmt.Sprintf("[%s]\t", zone)
-		}
-		if isShort {
-			fmt.Fprintf(table, "%s%s\n", bucket, message.Key) // nolint: errcheck
-			continue
-		}
-		fmt.Fprintf(table,
-			"[%s]\t%s%6s \t%s%s\n", lastModified, zoneFormat, humanize.IBytes(uint64(message.Size)), bucket, message.Key) // nolint: errcheck
-	}
-}
-
-func displayBucket(sosClient *sosClient, isRecursive, isShort bool) error {
+func displayBuckets(sosClient *sosClient, isRecursive, isShort bool) error {
 	resp, err := cs.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
 	if err != nil {
 		return err
@@ -173,11 +62,11 @@ func displayBucket(sosClient *sosClient, isRecursive, isShort bool) error {
 
 	buckets := resp.(*egoscale.ListBucketsUsageResponse)
 
-	table := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
+	table := tabwriter.NewWriter(os.Stdout, 10, 0, 1, ' ', tabwriter.TabIndent)
 
 	for _, b := range buckets.BucketsUsage {
 		if isShort {
-			fmt.Fprintf(table, "%s/\n", b.Name) // nolint: errcheck
+			fmt.Fprintf(table, "%s\n", b.Name) // nolint: errcheck
 		} else {
 			t, err := time.Parse(time.RFC3339, b.Created)
 			if err != nil {
@@ -185,31 +74,83 @@ func displayBucket(sosClient *sosClient, isRecursive, isShort bool) error {
 			}
 
 			fmt.Fprintf(table,
-				"[%s]\t[%s]\t%6s \t%s/\n", t.Format(printDate), b.Region, humanize.IBytes(uint64(b.Usage)), b.Name) // nolint: errcheck
+				"[%s]\t[%s]\t%s\t%s\t\n", t.Format(printDate), b.Region, humanize.IBytes(uint64(b.Usage)), b.Name) // nolint: errcheck
 		}
+
+		table.Flush()
+
 		if isRecursive {
 			if err = sosClient.setZone(b.Region); err != nil {
 				return err
 			}
-			listRecursively(sosClient, b.Name, "", b.Region, true, isShort, table)
+
+			listObjects(sosClient, b.Name, "", isRecursive, isShort)
 		}
 	}
-	return table.Flush()
+
+	return nil
 }
 
-func isPrefix(prefix, file string) bool {
-	prefix = strings.Trim(prefix, "/")
-	file = strings.Trim(file, "/")
-	return prefix == file
-}
+func displayBucket(sosClient *sosClient, path string, isRecursive, isShort bool) error {
+	isDir := strings.HasSuffix(path, "/")
 
-func splitPath(s string) []string {
-	path := filepath.ToSlash(s)
 	path = strings.Trim(path, "/")
-	if path == "" {
-		return nil
+	splitPath := strings.Split(path, "/")
+
+	bucket := splitPath[0]
+
+	prefix := filepath.Join(splitPath[1:]...)
+	if isDir && len(prefix) > 1 {
+		prefix = prefix + "/"
 	}
-	return strings.Split(path, "/")
+
+	zone, err := sosClient.GetBucketLocation(bucket)
+	if err != nil {
+		return err
+	}
+
+	if err := sosClient.setZone(zone); err != nil {
+		return err
+	}
+
+	listObjects(sosClient, bucket, prefix, isRecursive, isShort)
+
+	return nil
+}
+
+func listObjects(sosClient *sosClient, bucket, prefix string, isRecursive, isShort bool) {
+	table := tabwriter.NewWriter(os.Stdout, 10, 0, 1, ' ', tabwriter.TabIndent)
+
+	for object := range sosClient.ListObjectsV2(bucket, prefix, isRecursive, gContext.Done()) {
+		table.Flush()
+
+		if object.Err != nil {
+			fmt.Fprintf(os.Stderr, "error: %s\n", object.Err)
+			continue
+		}
+
+		if isShort {
+			fmt.Fprintf(table, "%s/%s\n", bucket, object.Key) // nolint: errcheck
+			continue
+		}
+
+		if object.LastModified.IsZero() {
+			fmt.Fprintf(table,
+				"%s\t%s\t%s/%s\t\n",
+				strings.Repeat(" ", 25),
+				"DIR",
+				bucket, object.Key) // nolint: errcheck
+			continue
+		}
+
+		fmt.Fprintf(table,
+			"[%s]\t%s\t%s/%s\t\n",
+			object.LastModified.Format(printDate),
+			humanize.IBytes(uint64(object.Size)),
+			bucket, object.Key) // nolint: errcheck
+	}
+
+	table.Flush()
 }
 
 func init() {
