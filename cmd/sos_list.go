@@ -50,7 +50,7 @@ Note: the buckets size reported is computed daily, it may not be the actual size
 			return displayBuckets(sosClient, isRecursive, isShort)
 		}
 
-		return displayBucket(sosClient, args[0], isRecursive, isShort)
+		return displayBucket(sosClient, filepath.ToSlash(args[0]), isRecursive, isShort)
 	},
 }
 
@@ -94,7 +94,7 @@ func displayBuckets(sosClient *sosClient, isRecursive, isShort bool) error {
 func displayBucket(sosClient *sosClient, path string, isRecursive, isShort bool) error {
 	isDir := strings.HasSuffix(path, "/")
 
-	path = strings.Trim(filepath.ToSlash(path), "/")
+	path = strings.Trim(path, "/")
 	splitPath := strings.Split(path, "/")
 
 	bucket := splitPath[0]
