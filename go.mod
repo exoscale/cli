@@ -45,7 +45,7 @@ require (
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/h2non/gentleman.v2 v2.0.4
 	gopkg.in/ini.v1 v1.61.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 )
 
 go 1.14

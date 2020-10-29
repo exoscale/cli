@@ -27,6 +27,56 @@ func xServers() []map[string]string {
 	}
 }
 
+// XListEvents List events
+func XListEvents(params *viper.Viper) (*gentleman.Response, interface{}, error) {
+	handlerPath := "list-events"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/event"
+
+	req := cli.Client.Get().URL(url)
+
+	paramFrom := params.GetString("from")
+	if paramFrom != "" {
+		req = req.AddQuery("from", fmt.Sprintf("%v", paramFrom))
+	}
+	paramTo := params.GetString("to")
+	if paramTo != "" {
+		req = req.AddQuery("to", fmt.Sprintf("%v", paramTo))
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateInstance Create a Compute instance
 func XCreateInstance(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-instance"
@@ -179,6 +229,52 @@ func XCreateSnapshot(paramId string, params *viper.Viper, body string) (*gentlem
 
 	if body != "" {
 		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XRevertInstanceToSnapshot revert-instance-to-snapshot
+func XRevertInstanceToSnapshot(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "revert-instance-to-snapshot"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/instance/{id}:revert-snapshot"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
 	}
 
 	cli.HandleBefore(handlerPath, params, req)
@@ -902,6 +998,536 @@ func XDeleteRuleFromSecurityGroup(paramId string, paramRuleId string, params *vi
 	return resp, decoded, nil
 }
 
+// XCreateSksCluster Create a SKS cluster
+func XCreateSksCluster(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-sks-cluster"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster"
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListSksClusters List SKS clusters
+func XListSksClusters(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-sks-clusters"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGenerateSksClusterKubeconfig Generate a new Kubeconfig file for a SKS cluster
+func XGenerateSksClusterKubeconfig(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "generate-sks-cluster-kubeconfig"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster-kubeconfig/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteSksCluster Delete a SKS cluster
+func XDeleteSksCluster(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-sks-cluster"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetSksCluster Retrieve a SKS cluster details
+func XGetSksCluster(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-sks-cluster"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateSksCluster Update a SKS cluster
+func XUpdateSksCluster(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-sks-cluster"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XCreateSksNodepool Create a new Nodepool
+func XCreateSksNodepool(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-sks-nodepool"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}/nodepool"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListSksClusterNodepools List a SKS cluster Nodepools
+func XListSksClusterNodepools(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-sks-cluster-nodepools"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}/nodepool"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteSksNodepool Delete a Nodepool
+func XDeleteSksNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-sks-nodepool"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}/nodepool/{sks-nodepool-id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+	url = strings.Replace(url, "{sks-nodepool-id}", paramSksNodepoolId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetSksClusterNodepool Retrieve a Nodepool details
+func XGetSksClusterNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-sks-cluster-nodepool"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}/nodepool/{sks-nodepool-id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+	url = strings.Replace(url, "{sks-nodepool-id}", paramSksNodepoolId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateSksNodepool Update a Nodepool
+func XUpdateSksNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-sks-nodepool"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}/nodepool/{sks-nodepool-id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+	url = strings.Replace(url, "{sks-nodepool-id}", paramSksNodepoolId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XScaleSksNodepool Scale a Nodepool
+func XScaleSksNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "scale-sks-nodepool"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}/nodepool/{sks-nodepool-id}:scale"
+	url = strings.Replace(url, "{id}", paramId, 1)
+	url = strings.Replace(url, "{sks-nodepool-id}", paramSksNodepoolId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XListSnapshots List snapshots
 func XListSnapshots(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-snapshots"
@@ -1047,48 +1673,6 @@ func XExportSnapshot(paramId string, params *viper.Viper, body string) (*gentlem
 	if body != "" {
 		req = req.AddHeader("Content-Type", "").BodyString(body)
 	}
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XGetExportSnapshot Retrieve an exported snapshot details
-func XGetExportSnapshot(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "get-export-snapshot"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/snapshot/{id}:export"
-	url = strings.Replace(url, "{id}", paramId, 1)
-
-	req := cli.Client.Get().URL(url)
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -1356,6 +1940,44 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "list-events",
+			Short:   "List events",
+			Long:    cli.Markdown("Retrieve events for a given date range. Defaults to retrieving events\n          for the current and previous day. Both a `from` and `to` arguments can\n          be passed specifying dates to start from and to"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListEvents(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cmd.Flags().String("from", "", "")
+		cmd.Flags().String("to", "", "")
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-instance",
 			Short:   "Create a Compute instance",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\ntype: object\n"),
@@ -1506,9 +2128,48 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "revert-instance-to-snapshot id",
+			Short:   "revert-instance-to-snapshot",
+			Long:    cli.Markdown("This operation reverts the snapshot to the Compute instance volume, restoring stored data as it was at the time of the snapshot.\nThe Compute instance must be previously stopped.\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  export:\n    properties:\n      md5sum:\n        type: string\n      presigned-url:\n        type: string\n    type: object\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance:\n    $ref: '#/components/schemas/instance'\n  name:\n    type: string\n  state:\n    enum:\n    - snapshotting\n    - deleted\n    - exporting\n    - ready\n    - deleting\n    - error\n    - exported\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XRevertInstanceToSnapshot(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-load-balancer",
 			Short:   "Create a new Load Balancer",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  ip:\n    format: ipv4\n    readOnly: true\n    type: string\n  name:\n    type: string\n  services:\n    items:\n      $ref: '#/components/schemas/load-balancer-service'\n    type: array\n  state:\n    enum:\n    - creating\n    - deleting\n    - running\n    - error\n    readOnly: true\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  ip:\n    format: ipv4\n    readOnly: true\n    type: string\n  name:\n    type: string\n  services:\n    items:\n      $ref: '#/components/schemas/load-balancer-service'\n    type: array\n  state:\n    enum:\n    - creating\n    - deleting\n    - running\n    - error\n    readOnly: true\n    type: string\nrequired:\n- name\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -1691,7 +2352,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "add-service-to-load-balancer id",
 			Short:   "Add a Load Balancer Service",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/healthcheck'\n  healthcheck-status:\n    items:\n      $ref: '#/components/schemas/load-balancer-server-status'\n    readOnly: true\n    type: array\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  name:\n    type: string\n  port:\n    format: int64\n    type: integer\n  protocol:\n    enum:\n    - tcp\n    - udp\n    type: string\n  state:\n    enum:\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  strategy:\n    enum:\n    - round-robin\n    - source-hash\n    type: string\n  target-port:\n    format: int64\n    type: integer\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/healthcheck'\n  healthcheck-status:\n    items:\n      $ref: '#/components/schemas/load-balancer-server-status'\n    readOnly: true\n    type: array\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  name:\n    type: string\n  port:\n    format: int64\n    type: integer\n  protocol:\n    enum:\n    - tcp\n    - udp\n    type: string\n  state:\n    enum:\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  strategy:\n    enum:\n    - round-robin\n    - source-hash\n    type: string\n  target-port:\n    format: int64\n    type: integer\nrequired:\n- name\n- instance-pool\n- protocol\n- strategy\n- port\n- target-port\n- healthcheck\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -1874,7 +2535,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-security-group",
 			Short:   "Create a Security Group",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  rules:\n    items:\n      $ref: '#/components/schemas/security-group-rule'\n    type: array\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  rules:\n    items:\n      $ref: '#/components/schemas/security-group-rule'\n    type: array\n    writeOnly: true\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -2090,6 +2751,450 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "create-sks-cluster",
+			Short:   "Create a SKS cluster",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  endpoint:\n    readOnly: true\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  sks-nodepools:\n    items:\n      $ref: '#/components/schemas/sks-nodepool'\n    readOnly: true\n    type: array\n  state:\n    enum:\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  version:\n    enum:\n    - 1.18.6\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateSksCluster(params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-sks-clusters",
+			Short:   "List SKS clusters",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListSksClusters(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "generate-sks-cluster-kubeconfig id",
+			Short:   "Generate a new Kubeconfig file for a SKS cluster",
+			Long:    cli.Markdown("This operation returns a Kubeconfig file encoded in base64.\n## Request Schema (application/json)\n\nproperties:\n  roles:\n    items:\n      type: string\n    type: array\n  ttl:\n    format: int64\n    type: integer\n  user:\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XGenerateSksClusterKubeconfig(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-sks-cluster id",
+			Short:   "Delete a SKS cluster",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteSksCluster(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-sks-cluster id",
+			Short:   "Retrieve a SKS cluster details",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetSksCluster(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-sks-cluster id",
+			Short:   "Update a SKS cluster",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  endpoint:\n    readOnly: true\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  sks-nodepools:\n    items:\n      $ref: '#/components/schemas/sks-nodepool'\n    readOnly: true\n    type: array\n  state:\n    enum:\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  version:\n    enum:\n    - 1.18.6\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateSksCluster(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-sks-nodepool id",
+			Short:   "Create a new Nodepool",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  disk-size:\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  name:\n    type: string\n  security-groups:\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n  size:\n    format: int64\n    type: integer\n  state:\n    enum:\n    - renewing-token\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  template:\n    $ref: '#/components/schemas/template'\n  version:\n    enum:\n    - 1.18.6\n    readOnly: true\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateSksNodepool(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-sks-cluster-nodepools id",
+			Short:   "List a SKS cluster Nodepools",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListSksClusterNodepools(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-sks-nodepool id sks-nodepool-id",
+			Short:   "Delete a Nodepool",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteSksNodepool(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-sks-cluster-nodepool id sks-nodepool-id",
+			Short:   "Retrieve a Nodepool details",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetSksClusterNodepool(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-sks-nodepool id sks-nodepool-id",
+			Short:   "Update a Nodepool",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  disk-size:\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  name:\n    type: string\n  security-groups:\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n  size:\n    format: int64\n    type: integer\n  state:\n    enum:\n    - renewing-token\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  template:\n    $ref: '#/components/schemas/template'\n  version:\n    enum:\n    - 1.18.6\n    readOnly: true\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateSksNodepool(args[0], args[1], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "scale-sks-nodepool id sks-nodepool-id",
+			Short:   "Scale a Nodepool",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  disk-size:\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  name:\n    type: string\n  security-groups:\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n  size:\n    format: int64\n    type: integer\n  state:\n    enum:\n    - renewing-token\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  template:\n    $ref: '#/components/schemas/template'\n  version:\n    enum:\n    - 1.18.6\n    readOnly: true\n    type: string\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XScaleSksNodepool(args[0], args[1], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "list-snapshots",
 			Short:   "List snapshots",
 			Long:    cli.Markdown(""),
@@ -2234,41 +3339,6 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "get-export-snapshot id",
-			Short:   "Retrieve an exported snapshot details",
-			Long:    cli.Markdown("This operation retrieves an exported snapshot details (the snapshot must already be exported).\nReturns transient data."),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XGetExportSnapshot(args[0], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
 			Use:     "list-templates",
 			Short:   "List templates",
 			Long:    cli.Markdown(""),
@@ -2309,7 +3379,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "register-template",
 			Short:   "Register a template",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  build:\n    readOnly: true\n    type: string\n  checksum:\n    type: string\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  default-user:\n    type: string\n  description:\n    type: string\n  family:\n    readOnly: true\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  password-enabled:\n    type: boolean\n  ssh-key-enabled:\n    type: boolean\n  url:\n    type: string\n  version:\n    readOnly: true\n    type: string\n  visibility:\n    enum:\n    - private\n    - public\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  boot-mode:\n    enum:\n    - legacy\n    - uefi\n    type: string\n  build:\n    readOnly: true\n    type: string\n  checksum:\n    type: string\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  default-user:\n    type: string\n  description:\n    type: string\n  family:\n    readOnly: true\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  password-enabled:\n    type: boolean\n  ssh-key-enabled:\n    type: boolean\n  url:\n    type: string\n  version:\n    readOnly: true\n    type: string\n  visibility:\n    enum:\n    - private\n    - public\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
