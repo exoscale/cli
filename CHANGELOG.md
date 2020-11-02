@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.20.0
+
+### New
+
+* `exo lab coi` command (#292)
+
+### Improvements
+
+* Improved `exo sos list` command performance with large buckets (#293)
+
+
 ## 1.19.0
 
 ### New
