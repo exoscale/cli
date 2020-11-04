@@ -35,6 +35,7 @@ func (o *nlbShowOutput) toTable() {
 	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"IP Address", o.IPAddress})
 	t.Append([]string{"Description", o.Description})
+	t.Append([]string{"Creation Date", o.CreationDate})
 	t.Append([]string{"Services", func() string {
 		if len(o.Services) > 0 {
 			return strings.Join(
