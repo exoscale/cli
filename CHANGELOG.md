@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.20.2
+
+### Changes
+
+- Command custom `--output text` mode doesn't add a trailing empty line anymore, since in a pipe usage this can generate bogus empty entries in line-based processing.
+
+
 ## 1.20.1
 
 ### Bug Fixes
