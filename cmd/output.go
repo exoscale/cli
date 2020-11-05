@@ -126,8 +126,6 @@ func outputText(o interface{}) {
 		fmt.Fprintf(os.Stderr, "error: unable to encode output using template: %s\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Println()
 }
 
 // outputTable prints a table-formatted rendering of o to the terminal.
