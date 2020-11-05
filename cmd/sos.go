@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	minio "github.com/minio/minio-go/v6"
@@ -136,7 +137,9 @@ func (s *sosClient) setZone(zone string) error {
 	// When a user wants to set the SOS zone to use for an operation, we actually have to re-create the
 	// underlying Minio S3 client to specify the zone-based endpoint.
 
-	endpoint := "sos-" + zone + ".exo.io"
+	endpoint := strings.TrimPrefix(
+		strings.Replace(gCurrentAccount.SosEndpoint, "{zone}", zone, 1),
+		"https://")
 	minioClient, err := minio.NewV4(endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret(), true)
 	if err != nil {
 		return err
