@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.20.1
+
+### Bug Fixes
+
+- sos: fix endpoint construction (#295)
+
+
 ## 1.20.0
 
 ### New
