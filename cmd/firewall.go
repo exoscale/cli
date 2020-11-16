@@ -9,8 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var defaultCIDR = egoscale.MustParseCIDR("0.0.0.0/0")
-var defaultCIDR6 = egoscale.MustParseCIDR("::/0")
+var (
+	defaultCIDR  = egoscale.MustParseCIDR("0.0.0.0/0")
+	defaultCIDR6 = egoscale.MustParseCIDR("::/0")
+)
 
 var firewallCmd = &cobra.Command{
 	Use:   "firewall",
@@ -79,6 +81,21 @@ func getSecurityGroupByNameOrID(v string) (*egoscale.SecurityGroup, error) {
 	default:
 		return nil, err
 	}
+}
+
+func getSecurityGroupIDs(params []string) ([]egoscale.UUID, error) {
+	ids := make([]egoscale.UUID, len(params))
+
+	for i, sg := range params {
+		s, err := getSecurityGroupByNameOrID(sg)
+		if err != nil {
+			return nil, err
+		}
+
+		ids[i] = *s.ID
+	}
+
+	return ids, nil
 }
 
 func getMyCIDR(isIpv6 bool) (*egoscale.CIDR, error) {

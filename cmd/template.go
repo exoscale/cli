@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	templateFilterHelp = "The template filter to use (mine,community,featured)"
+	templateFilterHelp = "template filter to use (featured|community|mine)"
 )
 
 // templateCmd represents the template command

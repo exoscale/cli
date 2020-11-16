@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -10,13 +11,16 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-// vmCreateCmd represents the create command
 var vmCreateCmd = &cobra.Command{
-	Use:     "create <vm name>+",
-	Short:   "Create and deploy a virtual machine",
+	Use:   "create <name>",
+	Short: "Deploy a virtual machine",
+	Long: fmt.Sprintf(`This command deploys a new virtual machine.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&vmShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
+		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
@@ -25,14 +29,7 @@ var vmCreateCmd = &cobra.Command{
 		return cmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		templateFilterCmd, err := cmd.Flags().GetString("template-filter")
-		if err != nil {
-			return err
-		}
-		templateFilter, err := validateTemplateFilter(templateFilterCmd)
-		if err != nil {
-			return err
-		}
+		vmName := args[0]
 
 		userDataPath, err := cmd.Flags().GetString("cloud-init-file")
 		if err != nil {
@@ -56,16 +53,15 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		templateName, err := cmd.Flags().GetString("template")
+		templateFilter, err := cmd.Flags().GetString("template-filter")
 		if err != nil {
 			return err
 		}
-
-		if templateName == "" {
-			templateName = gCurrentAccount.DefaultTemplate
+		if templateFilter, err = validateTemplateFilter(templateFilter); err != nil {
+			return err
 		}
 
-		diskSize, err := cmd.Flags().GetInt64("disk")
+		templateName, err := cmd.Flags().GetString("template")
 		if err != nil {
 			return err
 		}
@@ -75,11 +71,15 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		keypair, err := cmd.Flags().GetString("keypair")
+		diskSize, err := cmd.Flags().GetInt64("disk")
 		if err != nil {
 			return err
 		}
 
+		keypair, err := cmd.Flags().GetString("keypair")
+		if err != nil {
+			return err
+		}
 		if keypair == "" {
 			keypair = gCurrentAccount.DefaultSSHKey
 		}
@@ -89,7 +89,7 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		sgs, err := getSecurityGroups(sg)
+		sgs, err := getSecurityGroupIDs(sg)
 		if err != nil {
 			return err
 		}
@@ -99,12 +99,12 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		privnet, err := cmd.Flags().GetStringSlice("privnet")
+		privnets, err := cmd.Flags().GetStringSlice("privnet")
 		if err != nil {
 			return err
 		}
 
-		pvs, err := getPrivnetList(privnet, zone.ID)
+		pvs, err := getPrivnetIDs(privnets, zone.ID)
 		if err != nil {
 			return err
 		}
@@ -119,209 +119,95 @@ var vmCreateCmd = &cobra.Command{
 			return err
 		}
 
-		affinitygroup, err := cmd.Flags().GetStringSlice("anti-affinity-group")
+		antiAffinityGroups, err := cmd.Flags().GetStringSlice("anti-affinity-group")
 		if err != nil {
 			return err
 		}
 
-		affinitygroups, err := getAffinityGroup(affinitygroup)
+		aags, err := getAffinityGroupIDs(antiAffinityGroups)
 		if err != nil {
 			return err
 		}
 
-		tasks := make([]egoscale.DeployVirtualMachine, len(args))
-
-		for i, name := range args {
-			vmInfo := &egoscale.DeployVirtualMachine{
-				Name:              name,
-				UserData:          userData,
-				ZoneID:            zone.ID,
-				TemplateID:        template.ID,
-				RootDiskSize:      diskSize,
-				KeyPair:           keypair,
-				SecurityGroupIDs:  sgs,
-				IP6:               &ipv6,
-				NetworkIDs:        pvs,
-				ServiceOfferingID: servOffering.ID,
-				AffinityGroupIDs:  affinitygroups,
-			}
-
-			tasks[i] = *vmInfo
-
-		}
-
-		r, errs := createVM(tasks)
-		if len(errs) > 0 {
-			return errs[0]
-		}
-
-		if len(r) > 1 {
-			return nil
-		}
-
-		if r[0].ID == nil {
-			return fmt.Errorf("virtual machine ID is (nil)")
-		}
-		sshinfo, err := getSSHInfo(r[0].ID.String(), ipv6)
+		vm, err := createVM(&egoscale.DeployVirtualMachine{
+			Name:              vmName,
+			UserData:          userData,
+			ZoneID:            zone.ID,
+			TemplateID:        template.ID,
+			RootDiskSize:      diskSize,
+			KeyPair:           keypair,
+			SecurityGroupIDs:  sgs,
+			IP6:               &ipv6,
+			NetworkIDs:        pvs,
+			ServiceOfferingID: servOffering.ID,
+			AffinityGroupIDs:  aags,
+		})
 		if err != nil {
 			return err
 		}
 
 		if !gQuiet {
-			fmt.Printf(`
-What to do now?
-
-1. Connect to the machine
-
-	exo ssh %s
-`, r[0].Name)
-			fmt.Println(`
-2. Put the following SSH configuration into ".ssh/config"`)
-			fmt.Println("")
-			printSSHInfo(sshinfo)
-			fmt.Print(`
-Tip of the day:
-	You're the sole owner of the private key. Be cautious with it.
-`)
+			return output(showVM(vm.Name))
 		}
 
 		return nil
 	},
 }
 
-func getCommaflag(p string) []string {
-	if p == "" {
-		return nil
-	}
+func createVM(deployVM *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine, error) {
+	var (
+		sshKey          *egoscale.SSHKeyPair
+		singleUseSSHKey bool
+	)
 
-	p = strings.Trim(p, ",")
-	args := strings.Split(p, ",")
+	// If not SSH key is specified, create a single-use SSH key, store the private key locally
+	// and delete the public key from the API once the Instance has been deployed.
+	if deployVM.KeyPair == "" {
+		singleUseSSHKey = true
 
-	res := []string{}
-
-	for _, arg := range args {
-		if arg == "" {
-			continue
-		}
-		res = append(res, strings.TrimSpace(arg))
-	}
-
-	return res
-}
-
-func getSecurityGroups(params []string) ([]egoscale.UUID, error) {
-	ids := make([]egoscale.UUID, len(params))
-
-	for i, sg := range params {
-		s, err := getSecurityGroupByNameOrID(sg)
-		if err != nil {
-			return nil, err
-		}
-
-		ids[i] = *s.ID
-	}
-
-	return ids, nil
-}
-
-func getPrivnetList(params []string, zoneID *egoscale.UUID) ([]egoscale.UUID, error) {
-	ids := make([]egoscale.UUID, len(params))
-
-	for i, sg := range params {
-		n, err := getNetwork(sg, zoneID)
-		if err != nil {
-			return nil, err
-		}
-
-		ids[i] = *n.ID
-	}
-
-	return ids, nil
-}
-
-func getAffinityGroup(params []string) ([]egoscale.UUID, error) {
-	ids := make([]egoscale.UUID, len(params))
-
-	for i, aff := range params {
-		s, err := getAffinityGroupByNameOrID(aff)
-
-		if err != nil {
-			return nil, err
-		}
-
-		ids[i] = *s.ID
-	}
-
-	return ids, nil
-}
-
-func createVM(deploys []egoscale.DeployVirtualMachine) ([]egoscale.VirtualMachine, []error) {
-	isDefaultKeyPair := false
-	var keyPairs *egoscale.SSHKeyPair
-
-	var keypairsName string
-	if deploys[0].KeyPair == "" {
 		if !gQuiet {
-			fmt.Println("Creating private SSH key")
+			fmt.Fprintln(os.Stderr, "Creating single-use SSH key")
 		}
 
-		isDefaultKeyPair = true
-		sshKeyName, err := utils.RandStringBytes(64)
+		keyName, err := utils.RandStringBytes(64)
 		if err != nil {
-			return nil, []error{err}
+			return nil, err
 		}
-		keyPairs, err = createSSHKey(sshKeyName)
-		if err != nil {
-			r := err.(*egoscale.ErrorResponse)
-			if r.ErrorCode != egoscale.ParamError && r.CSErrorCode != egoscale.InvalidParameterValueException {
-				return nil, []error{err}
-			}
-			return nil, []error{fmt.Errorf("an SSH key with that name %q already exists, please choose a different name", sshKeyName)}
-		}
-		defer deleteSSHKey(keyPairs.Name) // nolint: errcheck
 
-		keypairsName = keyPairs.Name
+		sshKey, err = createSSHKey(keyName)
+		if err != nil {
+			return nil, fmt.Errorf("error creating single-use SSH keypair: %s", err)
+		}
+		deployVM.KeyPair = sshKey.Name
+
+		defer deleteSSHKey(sshKey.Name) // nolint: errcheck
 	}
 
-	tasks := make([]task, len(deploys))
-
-	for i := range deploys {
-		tasks[i].string = fmt.Sprintf("Deploying %q", deploys[i].Name)
-		if keypairsName != "" {
-			deploys[i].KeyPair = keypairsName
-		}
-		tasks[i].Command = deploys[i]
-	}
-
-	resps := asyncTasks(tasks)
-	errors := filterErrors(resps)
+	resp := asyncTasks([]task{{deployVM, fmt.Sprintf("Deploying %q", deployVM.Name)}})
+	errors := filterErrors(resp)
 	if len(errors) > 0 {
-		return nil, errors
+		return nil, errors[0]
+	}
+	vm := resp[0].resp.(*egoscale.VirtualMachine)
+
+	if singleUseSSHKey {
+		saveKeyPair(sshKey, *vm.ID)
 	}
 
-	vmResp := make([]egoscale.VirtualMachine, len(resps))
-
-	for i, vm := range resps {
-		v := vm.resp.(*egoscale.VirtualMachine)
-		vmResp[i] = *v
-		if isDefaultKeyPair {
-			saveKeyPair(keyPairs, *v.ID)
-		}
-	}
-	return vmResp, nil
+	return vm, nil
 }
 
 func init() {
-	vmCreateCmd.Flags().StringP("cloud-init-file", "f", "", "Deploy instance with a cloud-init file")
 	vmCreateCmd.Flags().StringP("zone", "z", "", zoneHelp)
-	vmCreateCmd.Flags().StringP("template", "t", "", fmt.Sprintf("<template name | id> (default: %s)", defaultTemplate))
+	vmCreateCmd.Flags().StringP("template", "t", defaultTemplate, "template <name | id>")
 	vmCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
-	vmCreateCmd.Flags().Int64P("disk", "d", 50, "<disk size>")
-	vmCreateCmd.Flags().StringP("keypair", "k", "", "<ssh keys name>")
-	vmCreateCmd.Flags().StringSliceP("security-group", "s", nil, "<name | id, name | id, ...>")
-	vmCreateCmd.Flags().StringSliceP("privnet", "p", nil, "<name | id, name | id, ...>")
-	vmCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "<name | id, name | id, ...>")
-	vmCreateCmd.Flags().BoolP("ipv6", "6", false, "enable ipv6")
 	vmCreateCmd.Flags().StringP("service-offering", "o", "medium", serviceOfferingHelp)
+	vmCreateCmd.Flags().Int64P("disk", "d", 50, "disk size")
+	vmCreateCmd.Flags().StringP("keypair", "k", "", "SSH keypair name. If not specified, a single-use SSH key will be created.")
+	vmCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security Group <name | id>. Can be specified multiple times.")
+	vmCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Private Network <name | id>. Can be specified multiple times.")
+	vmCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinity Group <name | id>. Can be specified multiple times.")
+	vmCreateCmd.Flags().StringP("cloud-init-file", "f", "", "cloud-init userdata")
+	vmCreateCmd.Flags().BoolP("ipv6", "6", false, "enable IPv6")
 	vmCmd.AddCommand(vmCreateCmd)
 }

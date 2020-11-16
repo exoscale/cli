@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	serviceOfferingHelp = "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)"
+	serviceOfferingHelp = "service offering <name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)"
 )
 
 type serviceOfferingListItemOutput struct {
@@ -66,7 +66,6 @@ func listServiceOfferings() (outputter, error) {
 	}
 
 	return &out, nil
-
 }
 
 func getServiceOfferingByNameOrID(v string) (*egoscale.ServiceOffering, error) {
