@@ -3,9 +3,10 @@ package cmd
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
 	"strings"
 
-	humanize "github.com/dustin/go-humanize"
+	"github.com/dustin/go-humanize"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -43,7 +44,7 @@ Supported output template annotations: %s`,
 		Aliases:           gShowAlias,
 		ValidArgsFunction: completeVMNames,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) < 1 {
+			if len(args) != 1 {
 				return cmd.Usage()
 			}
 
@@ -97,7 +98,7 @@ func showVM(name string) (outputter, error) {
 		Template:           vm.TemplateName,
 		Zone:               vm.ZoneName,
 		State:              vm.State,
-		DiskSize:           humanize.IBytes(uint64(volume.Size)),
+		DiskSize:           humanize.IBytes(volume.Size),
 		IPAddress:          vm.IP().String(),
 		Username:           "n/a",
 		SSHKey:             vm.KeyPair,
@@ -124,6 +125,13 @@ func showVM(name string) (outputter, error) {
 
 	if username, ok := template.Details["username"]; ok {
 		out.Username = username
+	}
+
+	// If a single-use SSH keypair has been created for this instance,
+	// report the private key file location instead of the API SSH key name.
+	sshKeyPath := getKeyPairPath(vm.ID.String())
+	if _, err := os.Stat(sshKeyPath); err == nil && out.SSHKey == "" {
+		out.SSHKey = sshKeyPath
 	}
 
 	return &out, nil

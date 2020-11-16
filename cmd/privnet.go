@@ -65,6 +65,21 @@ func getNetwork(net string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
 	return nil, fmt.Errorf("network %q not found", net)
 }
 
+func getPrivnetIDs(params []string, zoneID *egoscale.UUID) ([]egoscale.UUID, error) {
+	ids := make([]egoscale.UUID, len(params))
+
+	for i, sg := range params {
+		n, err := getNetwork(sg, zoneID)
+		if err != nil {
+			return nil, err
+		}
+
+		ids[i] = *n.ID
+	}
+
+	return ids, nil
+}
+
 func init() {
 	RootCmd.AddCommand(privnetCmd)
 }

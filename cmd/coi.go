@@ -86,7 +86,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		securityGroups, err := getSecurityGroups(sg)
+		securityGroups, err := getSecurityGroupIDs(sg)
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		privnets, err := getPrivnetList(privnet, zone.ID)
+		privnets, err := getPrivnetIDs(privnet, zone.ID)
 		if err != nil {
 			return err
 		}

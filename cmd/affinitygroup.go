@@ -39,6 +39,21 @@ func getAffinityGroupByNameOrID(v string) (*egoscale.AffinityGroup, error) {
 	}
 }
 
+func getAffinityGroupIDs(params []string) ([]egoscale.UUID, error) {
+	ids := make([]egoscale.UUID, len(params))
+
+	for i, aff := range params {
+		s, err := getAffinityGroupByNameOrID(aff)
+		if err != nil {
+			return nil, err
+		}
+
+		ids[i] = *s.ID
+	}
+
+	return ids, nil
+}
+
 func init() {
 	RootCmd.AddCommand(affinitygroupCmd)
 }

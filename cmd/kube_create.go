@@ -162,7 +162,8 @@ sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y kubelet=${PKG_VERSION}
 	kubeadm=${PKG_VERSION} \
 	kubectl=${PKG_VERSION}
 sudo apt-mark hold kubelet kubeadm kubectl`,
-	}, {
+	},
+	{
 		name: "Kubernetes cluster node initialization",
 		command: `\
 set -xe
@@ -265,20 +266,17 @@ var kubeCreateCmd = &cobra.Command{
 			return fmt.Errorf("cannot fetch username from template %q", defaultTemplate)
 		}
 
-		r, errs := createVM([]egoscale.DeployVirtualMachine{{
+		vm, err = createVM(&egoscale.DeployVirtualMachine{
 			Name:              clusterName,
 			ZoneID:            zone.ID,
 			ServiceOfferingID: size.ID,
 			TemplateID:        template.ID,
 			RootDiskSize:      10,
 			SecurityGroupIDs:  []egoscale.UUID{*sg.ID},
-		}})
-
-		if len(errs) > 0 {
-			return errs[0]
+		})
+		if err != nil {
+			return err
 		}
-
-		vm = &r[0]
 
 		if _, err := cs.Request(egoscale.CreateTags{
 			ResourceType: vm.ResourceType(),
@@ -368,7 +366,6 @@ func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
 		Name:        kubeSecurityGroup,
 		Description: "Created by exo CLI",
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -465,7 +462,7 @@ type sshClient struct {
 }
 
 func newSSHClient(host, hostUser, keyFile string) (*sshClient, error) {
-	var c = sshClient{
+	c := sshClient{
 		host: host + ":22",
 		user: hostUser,
 	}
@@ -537,7 +534,7 @@ func (c *sshClient) scp(src, dst string) error {
 		}
 	}
 
-	return ioutil.WriteFile(dst, buf.Bytes(), 0600)
+	return ioutil.WriteFile(dst, buf.Bytes(), 0o600)
 }
 
 // fetchKubernetesVersion fetches the latest stable version from the official
