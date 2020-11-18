@@ -257,7 +257,7 @@ func XCreateSnapshot(paramId string, params *viper.Viper, body string) (*gentlem
 }
 
 // XRevertInstanceToSnapshot revert-instance-to-snapshot
-func XRevertInstanceToSnapshot(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+func XRevertInstanceToSnapshot(paramInstanceId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "revert-instance-to-snapshot"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
@@ -268,8 +268,8 @@ func XRevertInstanceToSnapshot(paramId string, params *viper.Viper, body string)
 		server = xServers()[viper.GetInt("server-index")]["url"]
 	}
 
-	url := server + "/instance/{id}:revert-snapshot"
-	url = strings.Replace(url, "{id}", paramId, 1)
+	url := server + "/instance/{instance-id}:revert-snapshot"
+	url = strings.Replace(url, "{instance-id}", paramInstanceId, 1)
 
 	req := cli.Client.Post().URL(url)
 
@@ -1260,7 +1260,7 @@ func XUpdateSksCluster(paramId string, params *viper.Viper, body string) (*gentl
 	return resp, decoded, nil
 }
 
-// XCreateSksNodepool Create a new Nodepool
+// XCreateSksNodepool Create a new SKS Nodepool
 func XCreateSksNodepool(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-sks-nodepool"
 	if xSubcommand {
@@ -1306,49 +1306,7 @@ func XCreateSksNodepool(paramId string, params *viper.Viper, body string) (*gent
 	return resp, decoded, nil
 }
 
-// XListSksClusterNodepools List a SKS cluster Nodepools
-func XListSksClusterNodepools(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "list-sks-cluster-nodepools"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/sks-cluster/{id}/nodepool"
-	url = strings.Replace(url, "{id}", paramId, 1)
-
-	req := cli.Client.Get().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XDeleteSksNodepool Delete a Nodepool
+// XDeleteSksNodepool Delete a SKS Nodepool
 func XDeleteSksNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "delete-sks-nodepool"
 	if xSubcommand {
@@ -1391,9 +1349,9 @@ func XDeleteSksNodepool(paramId string, paramSksNodepoolId string, params *viper
 	return resp, decoded, nil
 }
 
-// XGetSksClusterNodepool Retrieve a Nodepool details
-func XGetSksClusterNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "get-sks-cluster-nodepool"
+// XGetSksNodepool Retrieve a SKS Nodepool details
+func XGetSksNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-sks-nodepool"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
 	}
@@ -1434,7 +1392,7 @@ func XGetSksClusterNodepool(paramId string, paramSksNodepoolId string, params *v
 	return resp, decoded, nil
 }
 
-// XUpdateSksNodepool Update a Nodepool
+// XUpdateSksNodepool Update a SKS Nodepool
 func XUpdateSksNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "update-sks-nodepool"
 	if xSubcommand {
@@ -1481,7 +1439,7 @@ func XUpdateSksNodepool(paramId string, paramSksNodepoolId string, params *viper
 	return resp, decoded, nil
 }
 
-// XScaleSksNodepool Scale a Nodepool
+// XScaleSksNodepool Scale a SKS Nodepool
 func XScaleSksNodepool(paramId string, paramSksNodepoolId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "scale-sks-nodepool"
 	if xSubcommand {
@@ -2128,7 +2086,7 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "revert-instance-to-snapshot id",
+			Use:     "revert-instance-to-snapshot instance-id",
 			Short:   "revert-instance-to-snapshot",
 			Long:    cli.Markdown("This operation reverts the snapshot to the Compute instance volume, restoring stored data as it was at the time of the snapshot.\nThe Compute instance must be previously stopped.\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  export:\n    properties:\n      md5sum:\n        type: string\n      presigned-url:\n        type: string\n    type: object\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance:\n    $ref: '#/components/schemas/instance'\n  name:\n    type: string\n  state:\n    enum:\n    - snapshotting\n    - deleted\n    - exporting\n    - ready\n    - deleting\n    - error\n    - exported\n    type: string\ntype: object\n"),
 			Example: examples,
@@ -2679,7 +2637,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "add-rule-to-security-group id",
 			Short:   "Create a Security Group rule",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  end-port:\n    exclusiveMaximum: true\n    exclusiveMinimum: true\n    format: int64\n    maximum: 65535\n    minimum: 0\n    type: integer\n  flow-direction:\n    enum:\n    - ingress\n    - egress\n    type: string\n  icmp:\n    properties:\n      code:\n        format: int64\n        maximum: 254\n        minimum: 0\n        type: integer\n      type:\n        format: int64\n        maximum: 254\n        minimum: 0\n        type: integer\n    type: object\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  network:\n    type: string\n  protocol:\n    enum:\n    - tcp\n    - esp\n    - icmp\n    - udp\n    - gre\n    - ah\n    - ipip\n    - icmpv6\n    type: string\n  security-group:\n    $ref: '#/components/schemas/security-group-resource'\n  start-port:\n    exclusiveMaximum: true\n    exclusiveMinimum: true\n    format: int64\n    maximum: 65535\n    minimum: 0\n    type: integer\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    type: string\n  end-port:\n    format: int64\n    maximum: 65535\n    minimum: 1\n    type: integer\n  flow-direction:\n    enum:\n    - ingress\n    - egress\n    type: string\n  icmp:\n    properties:\n      code:\n        format: int64\n        maximum: 254\n        minimum: 0\n        type: integer\n      type:\n        format: int64\n        maximum: 254\n        minimum: 0\n        type: integer\n    type: object\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  network:\n    type: string\n  protocol:\n    enum:\n    - tcp\n    - esp\n    - icmp\n    - udp\n    - gre\n    - ah\n    - ipip\n    - icmpv6\n    type: string\n  security-group:\n    $ref: '#/components/schemas/security-group-resource'\n  start-port:\n    format: int64\n    maximum: 65535\n    minimum: 1\n    type: integer\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -2974,7 +2932,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-sks-nodepool id",
-			Short:   "Create a new Nodepool",
+			Short:   "Create a new SKS Nodepool",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  disk-size:\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  name:\n    type: string\n  security-groups:\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n  size:\n    format: int64\n    type: integer\n  state:\n    enum:\n    - renewing-token\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  template:\n    $ref: '#/components/schemas/template'\n  version:\n    enum:\n    - 1.18.6\n    readOnly: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
@@ -3012,43 +2970,8 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "list-sks-cluster-nodepools id",
-			Short:   "List a SKS cluster Nodepools",
-			Long:    cli.Markdown(""),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XListSksClusterNodepools(args[0], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
 			Use:     "delete-sks-nodepool id sks-nodepool-id",
-			Short:   "Delete a Nodepool",
+			Short:   "Delete a SKS Nodepool",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -3082,14 +3005,14 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "get-sks-cluster-nodepool id sks-nodepool-id",
-			Short:   "Retrieve a Nodepool details",
+			Use:     "get-sks-nodepool id sks-nodepool-id",
+			Short:   "Retrieve a SKS Nodepool details",
 			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
 			Run: func(cmd *cobra.Command, args []string) {
 
-				_, decoded, err := XGetSksClusterNodepool(args[0], args[1], params)
+				_, decoded, err := XGetSksNodepool(args[0], args[1], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -3118,7 +3041,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "update-sks-nodepool id sks-nodepool-id",
-			Short:   "Update a Nodepool",
+			Short:   "Update a SKS Nodepool",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  disk-size:\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  name:\n    type: string\n  security-groups:\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n  size:\n    format: int64\n    type: integer\n  state:\n    enum:\n    - renewing-token\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  template:\n    $ref: '#/components/schemas/template'\n  version:\n    enum:\n    - 1.18.6\n    readOnly: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -3157,7 +3080,7 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "scale-sks-nodepool id sks-nodepool-id",
-			Short:   "Scale a Nodepool",
+			Short:   "Scale a SKS Nodepool",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  description:\n    type: string\n  disk-size:\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  instance-pool:\n    $ref: '#/components/schemas/resource'\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  name:\n    type: string\n  security-groups:\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n  size:\n    format: int64\n    type: integer\n  state:\n    enum:\n    - renewing-token\n    - creating\n    - deleting\n    - running\n    - updating\n    - error\n    readOnly: true\n    type: string\n  template:\n    $ref: '#/components/schemas/template'\n  version:\n    enum:\n    - 1.18.6\n    readOnly: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
@@ -3379,7 +3302,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "register-template",
 			Short:   "Register a template",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  boot-mode:\n    enum:\n    - legacy\n    - uefi\n    type: string\n  build:\n    readOnly: true\n    type: string\n  checksum:\n    type: string\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  default-user:\n    type: string\n  description:\n    type: string\n  family:\n    readOnly: true\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  password-enabled:\n    type: boolean\n  ssh-key-enabled:\n    type: boolean\n  url:\n    type: string\n  version:\n    readOnly: true\n    type: string\n  visibility:\n    enum:\n    - private\n    - public\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  boot-mode:\n    enum:\n    - legacy\n    - uefi\n    type: string\n  build:\n    readOnly: true\n    type: string\n  checksum:\n    type: string\n  created-at:\n    format: date-time\n    readOnly: true\n    type: string\n  default-user:\n    type: string\n  description:\n    type: string\n  family:\n    readOnly: true\n    type: string\n  id:\n    format: uuid\n    readOnly: true\n    type: string\n  name:\n    type: string\n  password-enabled:\n    type: boolean\n  size:\n    format: int64\n    type: integer\n  ssh-key-enabled:\n    type: boolean\n  url:\n    type: string\n  version:\n    readOnly: true\n    type: string\n  visibility:\n    enum:\n    - private\n    - public\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
