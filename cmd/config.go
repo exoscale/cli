@@ -77,7 +77,7 @@ func (a account) IsDefault() bool {
 const (
 	legacyAPIVersion         = "compute"
 	apiVersion               = "v1"
-	defaultEndpoint          = "https://api.exoscale.ch/" + apiVersion
+	defaultEndpoint          = "https://api.exoscale.com/" + apiVersion
 	defaultEnvironment       = "api"
 	defaultConfigFileName    = "exoscale"
 	defaultTemplate          = "Linux Ubuntu 20.04 LTS 64-bit"
