@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.21.0
+
+### Improvements
+
+- `exo vm create` now supports the global `-O|--output-format` flag (#297)
+
+### Changes
+
+- Switched default API endpoint to `https://api.exoscale.com/v1`
+
+
 ## 1.20.2
 
 ### Changes
