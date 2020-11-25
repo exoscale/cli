@@ -51,7 +51,6 @@ type Network struct {
 
 // ListRequest builds the ListNetworks request
 func (network Network) ListRequest() (ListCommand, error) {
-	//TODO add tags support
 	req := &ListNetworks{
 		ID:                network.ID,
 		Keyword:           network.Name, // this is a hack as listNetworks doesn't support to search by name.

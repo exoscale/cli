@@ -55,16 +55,16 @@ type NetworkLoadBalancerService struct {
 func nlbServiceFromAPI(svc *v2.LoadBalancerService) *NetworkLoadBalancerService {
 	return &NetworkLoadBalancerService{
 		ID:             optionalString(svc.Id),
-		Name:           optionalString(svc.Name),
+		Name:           svc.Name,
 		Description:    optionalString(svc.Description),
 		InstancePoolID: optionalString(svc.InstancePool.Id),
-		Protocol:       optionalString(svc.Protocol),
-		Port:           uint16(optionalInt64(svc.Port)),
-		TargetPort:     uint16(optionalInt64(svc.TargetPort)),
-		Strategy:       optionalString(svc.Strategy),
+		Protocol:       svc.Protocol,
+		Port:           uint16(svc.Port),
+		TargetPort:     uint16(svc.TargetPort),
+		Strategy:       svc.Strategy,
 		Healthcheck: NetworkLoadBalancerServiceHealthcheck{
-			Mode:     optionalString(svc.Healthcheck.Mode),
-			Port:     uint16(optionalInt64(svc.Healthcheck.Port)),
+			Mode:     svc.Healthcheck.Mode,
+			Port:     uint16(svc.Healthcheck.Port),
 			Interval: time.Duration(optionalInt64(svc.Healthcheck.Interval)) * time.Second,
 			Timeout:  time.Duration(optionalInt64(svc.Healthcheck.Timeout)) * time.Second,
 			Retries:  optionalInt64(svc.Healthcheck.Retries),
@@ -104,7 +104,7 @@ type NetworkLoadBalancer struct {
 func nlbFromAPI(nlb *v2.LoadBalancer) *NetworkLoadBalancer {
 	return &NetworkLoadBalancer{
 		ID:          optionalString(nlb.Id),
-		Name:        optionalString(nlb.Name),
+		Name:        nlb.Name,
 		Description: optionalString(nlb.Description),
 		CreatedAt:   *nlb.CreatedAt,
 		IPAddress:   net.ParseIP(optionalString(nlb.Ip)),
@@ -152,11 +152,11 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 		apiv2.WithZone(ctx, nlb.zone),
 		nlb.ID,
 		v2.AddServiceToLoadBalancerJSONRequestBody{
-			Name:        &svc.Name,
+			Name:        svc.Name,
 			Description: &svc.Description,
-			Healthcheck: &v2.Healthcheck{
-				Mode:     &svc.Healthcheck.Mode,
-				Port:     &healthcheckPort,
+			Healthcheck: v2.Healthcheck{
+				Mode:     svc.Healthcheck.Mode,
+				Port:     healthcheckPort,
 				Interval: &healthcheckInterval,
 				Timeout:  &healthcheckTimeout,
 				Retries:  &svc.Healthcheck.Retries,
@@ -173,11 +173,11 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 					return nil
 				}(),
 			},
-			InstancePool: &v2.Resource{Id: &svc.InstancePoolID},
-			Port:         &port,
-			TargetPort:   &targetPort,
-			Protocol:     &svc.Protocol,
-			Strategy:     &svc.Strategy,
+			InstancePool: v2.Resource{Id: &svc.InstancePoolID},
+			Port:         port,
+			TargetPort:   targetPort,
+			Protocol:     svc.Protocol,
+			Strategy:     svc.Strategy,
 		})
 	if err != nil {
 		return nil, err
@@ -230,8 +230,8 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 			Protocol:    &svc.Protocol,
 			Strategy:    &svc.Strategy,
 			Healthcheck: &v2.Healthcheck{
-				Mode:     &svc.Healthcheck.Mode,
-				Port:     &healthcheckPort,
+				Mode:     svc.Healthcheck.Mode,
+				Port:     healthcheckPort,
 				Interval: &healthcheckInterval,
 				Timeout:  &healthcheckTimeout,
 				Retries:  &svc.Healthcheck.Retries,
@@ -293,7 +293,7 @@ func (c *Client) CreateNetworkLoadBalancer(ctx context.Context, zone string,
 	resp, err := c.v2.CreateLoadBalancerWithResponse(
 		apiv2.WithZone(ctx, zone),
 		v2.CreateLoadBalancerJSONRequestBody{
-			Name:        &nlb.Name,
+			Name:        nlb.Name,
 			Description: &nlb.Description,
 		})
 	if err != nil {
@@ -316,7 +316,7 @@ func (c *Client) CreateNetworkLoadBalancer(ctx context.Context, zone string,
 // ListNetworkLoadBalancers returns the list of existing Network Load Balancers in the
 // specified zone.
 func (c *Client) ListNetworkLoadBalancers(ctx context.Context, zone string) ([]*NetworkLoadBalancer, error) {
-	var list = make([]*NetworkLoadBalancer, 0)
+	list := make([]*NetworkLoadBalancer, 0)
 
 	resp, err := c.v2.ListLoadBalancersWithResponse(apiv2.WithZone(ctx, zone))
 	if err != nil {
@@ -364,7 +364,7 @@ func (c *Client) GetNetworkLoadBalancer(ctx context.Context, zone, id string) (*
 }
 
 // UpdateNetworkLoadBalancer updates the specified Network Load Balancer instance in the specified zone.
-func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string,
+func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string, // nolint:dupl
 	nlb *NetworkLoadBalancer) (*NetworkLoadBalancer, error) {
 	resp, err := c.v2.UpdateLoadBalancerWithResponse(
 		apiv2.WithZone(ctx, zone),

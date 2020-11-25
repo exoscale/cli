@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
+	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -17,18 +18,22 @@ import (
 	"time"
 )
 
-// CdnConfiguration defines model for cdn-configuration.
-type CdnConfiguration struct {
-	Bucket *string `json:"bucket,omitempty"`
-	Fqdn   *string `json:"fqdn,omitempty"`
-	Status *string `json:"status,omitempty"`
+// Event defines model for event.
+type Event struct {
+	Payload   *Event_Payload `json:"payload,omitempty"`
+	Timestamp *time.Time     `json:"timestamp,omitempty"`
+}
+
+// Event_Payload defines model for Event.Payload.
+type Event_Payload struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // Healthcheck defines model for healthcheck.
 type Healthcheck struct {
 	Interval *int64  `json:"interval,omitempty"`
-	Mode     *string `json:"mode,omitempty"`
-	Port     *int64  `json:"port,omitempty"`
+	Mode     string  `json:"mode"`
+	Port     int64   `json:"port"`
 	Retries  *int64  `json:"retries,omitempty"`
 	Timeout  *int64  `json:"timeout,omitempty"`
 	TlsSni   *string `json:"tls-sni,omitempty"`
@@ -58,7 +63,7 @@ type LoadBalancer struct {
 	Description *string                `json:"description,omitempty"`
 	Id          *string                `json:"id,omitempty"`
 	Ip          *string                `json:"ip,omitempty"`
-	Name        *string                `json:"name,omitempty"`
+	Name        string                 `json:"name"`
 	Services    *[]LoadBalancerService `json:"services,omitempty"`
 	State       *string                `json:"state,omitempty"`
 }
@@ -72,16 +77,16 @@ type LoadBalancerServerStatus struct {
 // LoadBalancerService defines model for load-balancer-service.
 type LoadBalancerService struct {
 	Description       *string                     `json:"description,omitempty"`
-	Healthcheck       *Healthcheck                `json:"healthcheck,omitempty"`
+	Healthcheck       Healthcheck                 `json:"healthcheck"`
 	HealthcheckStatus *[]LoadBalancerServerStatus `json:"healthcheck-status,omitempty"`
 	Id                *string                     `json:"id,omitempty"`
-	InstancePool      *Resource                   `json:"instance-pool,omitempty"`
-	Name              *string                     `json:"name,omitempty"`
-	Port              *int64                      `json:"port,omitempty"`
-	Protocol          *string                     `json:"protocol,omitempty"`
+	InstancePool      Resource                    `json:"instance-pool"`
+	Name              string                      `json:"name"`
+	Port              int64                       `json:"port"`
+	Protocol          string                      `json:"protocol"`
 	State             *string                     `json:"state,omitempty"`
-	Strategy          *string                     `json:"strategy,omitempty"`
-	TargetPort        *int64                      `json:"target-port,omitempty"`
+	Strategy          string                      `json:"strategy"`
+	TargetPort        int64                       `json:"target-port"`
 }
 
 // Operation defines model for operation.
@@ -91,6 +96,16 @@ type Operation struct {
 	Reason    *string    `json:"reason,omitempty"`
 	Reference *Reference `json:"reference,omitempty"`
 	State     *string    `json:"state,omitempty"`
+}
+
+// PrivateNetwork defines model for private-network.
+type PrivateNetwork struct {
+	Description *string `json:"description,omitempty"`
+	EndIp       *string `json:"end-ip,omitempty"`
+	Id          *string `json:"id,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Netmask     *string `json:"netmask,omitempty"`
+	StartIp     *string `json:"start-ip,omitempty"`
 }
 
 // Reference defines model for reference.
@@ -117,7 +132,7 @@ type SecurityGroup struct {
 // SecurityGroupResource defines model for security-group-resource.
 type SecurityGroupResource struct {
 	Id   *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Name string  `json:"name"`
 }
 
 // SecurityGroupRule defines model for security-group-rule.
@@ -136,26 +151,60 @@ type SecurityGroupRule struct {
 	StartPort     *int64                 `json:"start-port,omitempty"`
 }
 
+// SksCluster defines model for sks-cluster.
+type SksCluster struct {
+	CreatedAt   *time.Time     `json:"created-at,omitempty"`
+	Description *string        `json:"description,omitempty"`
+	Endpoint    *string        `json:"endpoint,omitempty"`
+	Id          *string        `json:"id,omitempty"`
+	Name        *string        `json:"name,omitempty"`
+	Nodepools   *[]SksNodepool `json:"nodepools,omitempty"`
+	State       *string        `json:"state,omitempty"`
+	Version     *string        `json:"version,omitempty"`
+}
+
+// SksKubeconfigRequest defines model for sks-kubeconfig-request.
+type SksKubeconfigRequest struct {
+	Groups *[]string `json:"groups,omitempty"`
+	Ttl    *int64    `json:"ttl,omitempty"`
+	User   *string   `json:"user,omitempty"`
+}
+
+// SksNodepool defines model for sks-nodepool.
+type SksNodepool struct {
+	CreatedAt      *time.Time       `json:"created-at,omitempty"`
+	Description    *string          `json:"description,omitempty"`
+	DiskSize       *int64           `json:"disk-size,omitempty"`
+	Id             *string          `json:"id,omitempty"`
+	InstancePool   *Resource        `json:"instance-pool,omitempty"`
+	InstanceType   *InstanceType    `json:"instance-type,omitempty"`
+	Name           *string          `json:"name,omitempty"`
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+	Size           *int64           `json:"size,omitempty"`
+	State          *string          `json:"state,omitempty"`
+	Template       *Template        `json:"template,omitempty"`
+	Version        *string          `json:"version,omitempty"`
+}
+
 // Snapshot defines model for snapshot.
 type Snapshot struct {
 	CreatedAt   *time.Time `json:"created-at,omitempty"`
 	Description *string    `json:"description,omitempty"`
-	Id          *string    `json:"id,omitempty"`
-	Instance    *Instance  `json:"instance,omitempty"`
-	Name        *string    `json:"name,omitempty"`
-	State       *string    `json:"state,omitempty"`
-}
-
-// SnapshotExport defines model for snapshot-export.
-type SnapshotExport struct {
-	Id           *string `json:"id,omitempty"`
-	Md5sum       *string `json:"md5sum,omitempty"`
-	PresignedUrl *string `json:"presigned-url,omitempty"`
+	Export      *struct {
+		Md5sum       *string `json:"md5sum,omitempty"`
+		PresignedUrl *string `json:"presigned-url,omitempty"`
+	} `json:"export,omitempty"`
+	Id       *string   `json:"id,omitempty"`
+	Instance *Instance `json:"instance,omitempty"`
+	Name     *string   `json:"name,omitempty"`
+	State    *string   `json:"state,omitempty"`
 }
 
 // Template defines model for template.
 type Template struct {
+	BootMode        *string    `json:"boot-mode,omitempty"`
 	Build           *string    `json:"build,omitempty"`
+	Checksum        *string    `json:"checksum,omitempty"`
 	CreatedAt       *time.Time `json:"created-at,omitempty"`
 	DefaultUser     *string    `json:"default-user,omitempty"`
 	Description     *string    `json:"description,omitempty"`
@@ -163,7 +212,8 @@ type Template struct {
 	Id              *string    `json:"id,omitempty"`
 	Name            *string    `json:"name,omitempty"`
 	PasswordEnabled *bool      `json:"password-enabled,omitempty"`
-	SshkeyEnabled   *bool      `json:"sshkey-enabled,omitempty"`
+	Size            *int64     `json:"size,omitempty"`
+	SshKeyEnabled   *bool      `json:"ssh-key-enabled,omitempty"`
 	Url             *string    `json:"url,omitempty"`
 	Version         *string    `json:"version,omitempty"`
 	Visibility      *string    `json:"visibility,omitempty"`
@@ -174,8 +224,11 @@ type Zone struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// CreateCdnConfigurationJSONBody defines parameters for CreateCdnConfiguration.
-type CreateCdnConfigurationJSONBody CdnConfiguration
+// ListEventsParams defines parameters for ListEvents.
+type ListEventsParams struct {
+	From *time.Time `json:"from,omitempty"`
+	To   *time.Time `json:"to,omitempty"`
+}
 
 // CreateInstanceJSONBody defines parameters for CreateInstance.
 type CreateInstanceJSONBody Instance
@@ -184,6 +237,9 @@ type CreateInstanceJSONBody Instance
 type CreateInstanceParams struct {
 	Start *bool `json:"start,omitempty"`
 }
+
+// RevertInstanceToSnapshotJSONBody defines parameters for RevertInstanceToSnapshot.
+type RevertInstanceToSnapshotJSONBody Snapshot
 
 // CreateLoadBalancerJSONBody defines parameters for CreateLoadBalancer.
 type CreateLoadBalancerJSONBody LoadBalancer
@@ -208,17 +264,53 @@ type UpdateLoadBalancerServiceJSONBody struct {
 	TargetPort  *int64       `json:"target-port,omitempty"`
 }
 
+// CreatePrivateNetworkJSONBody defines parameters for CreatePrivateNetwork.
+type CreatePrivateNetworkJSONBody PrivateNetwork
+
+// UpdatePrivateNetworkJSONBody defines parameters for UpdatePrivateNetwork.
+type UpdatePrivateNetworkJSONBody PrivateNetwork
+
 // CreateSecurityGroupJSONBody defines parameters for CreateSecurityGroup.
 type CreateSecurityGroupJSONBody SecurityGroup
 
 // AddRuleToSecurityGroupJSONBody defines parameters for AddRuleToSecurityGroup.
 type AddRuleToSecurityGroupJSONBody SecurityGroupRule
 
-// CreateCdnConfigurationRequestBody defines body for CreateCdnConfiguration for application/json ContentType.
-type CreateCdnConfigurationJSONRequestBody CreateCdnConfigurationJSONBody
+// CreateSksClusterJSONBody defines parameters for CreateSksCluster.
+type CreateSksClusterJSONBody SksCluster
+
+// GenerateSksClusterKubeconfigJSONBody defines parameters for GenerateSksClusterKubeconfig.
+type GenerateSksClusterKubeconfigJSONBody SksKubeconfigRequest
+
+// UpdateSksClusterJSONBody defines parameters for UpdateSksCluster.
+type UpdateSksClusterJSONBody SksCluster
+
+// CreateSksNodepoolJSONBody defines parameters for CreateSksNodepool.
+type CreateSksNodepoolJSONBody SksNodepool
+
+// UpdateSksNodepoolJSONBody defines parameters for UpdateSksNodepool.
+type UpdateSksNodepoolJSONBody SksNodepool
+
+// EvictSksNodepoolMembersJSONBody defines parameters for EvictSksNodepoolMembers.
+type EvictSksNodepoolMembersJSONBody []Instance
+
+// ScaleSksNodepoolJSONBody defines parameters for ScaleSksNodepool.
+type ScaleSksNodepoolJSONBody SksNodepool
+
+// ListTemplatesParams defines parameters for ListTemplates.
+type ListTemplatesParams struct {
+	Visibility *string `json:"visibility,omitempty"`
+	Family     *string `json:"family,omitempty"`
+}
+
+// RegisterTemplateJSONBody defines parameters for RegisterTemplate.
+type RegisterTemplateJSONBody Template
 
 // CreateInstanceRequestBody defines body for CreateInstance for application/json ContentType.
 type CreateInstanceJSONRequestBody CreateInstanceJSONBody
+
+// RevertInstanceToSnapshotRequestBody defines body for RevertInstanceToSnapshot for application/json ContentType.
+type RevertInstanceToSnapshotJSONRequestBody RevertInstanceToSnapshotJSONBody
 
 // CreateLoadBalancerRequestBody defines body for CreateLoadBalancer for application/json ContentType.
 type CreateLoadBalancerJSONRequestBody CreateLoadBalancerJSONBody
@@ -232,11 +324,94 @@ type AddServiceToLoadBalancerJSONRequestBody AddServiceToLoadBalancerJSONBody
 // UpdateLoadBalancerServiceRequestBody defines body for UpdateLoadBalancerService for application/json ContentType.
 type UpdateLoadBalancerServiceJSONRequestBody UpdateLoadBalancerServiceJSONBody
 
+// CreatePrivateNetworkRequestBody defines body for CreatePrivateNetwork for application/json ContentType.
+type CreatePrivateNetworkJSONRequestBody CreatePrivateNetworkJSONBody
+
+// UpdatePrivateNetworkRequestBody defines body for UpdatePrivateNetwork for application/json ContentType.
+type UpdatePrivateNetworkJSONRequestBody UpdatePrivateNetworkJSONBody
+
 // CreateSecurityGroupRequestBody defines body for CreateSecurityGroup for application/json ContentType.
 type CreateSecurityGroupJSONRequestBody CreateSecurityGroupJSONBody
 
 // AddRuleToSecurityGroupRequestBody defines body for AddRuleToSecurityGroup for application/json ContentType.
 type AddRuleToSecurityGroupJSONRequestBody AddRuleToSecurityGroupJSONBody
+
+// CreateSksClusterRequestBody defines body for CreateSksCluster for application/json ContentType.
+type CreateSksClusterJSONRequestBody CreateSksClusterJSONBody
+
+// GenerateSksClusterKubeconfigRequestBody defines body for GenerateSksClusterKubeconfig for application/json ContentType.
+type GenerateSksClusterKubeconfigJSONRequestBody GenerateSksClusterKubeconfigJSONBody
+
+// UpdateSksClusterRequestBody defines body for UpdateSksCluster for application/json ContentType.
+type UpdateSksClusterJSONRequestBody UpdateSksClusterJSONBody
+
+// CreateSksNodepoolRequestBody defines body for CreateSksNodepool for application/json ContentType.
+type CreateSksNodepoolJSONRequestBody CreateSksNodepoolJSONBody
+
+// UpdateSksNodepoolRequestBody defines body for UpdateSksNodepool for application/json ContentType.
+type UpdateSksNodepoolJSONRequestBody UpdateSksNodepoolJSONBody
+
+// EvictSksNodepoolMembersRequestBody defines body for EvictSksNodepoolMembers for application/json ContentType.
+type EvictSksNodepoolMembersJSONRequestBody EvictSksNodepoolMembersJSONBody
+
+// ScaleSksNodepoolRequestBody defines body for ScaleSksNodepool for application/json ContentType.
+type ScaleSksNodepoolJSONRequestBody ScaleSksNodepoolJSONBody
+
+// RegisterTemplateRequestBody defines body for RegisterTemplate for application/json ContentType.
+type RegisterTemplateJSONRequestBody RegisterTemplateJSONBody
+
+// Getter for additional properties for Event_Payload. Returns the specified
+// element and whether it was found
+func (a Event_Payload) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for Event_Payload
+func (a *Event_Payload) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for Event_Payload to handle AdditionalProperties
+func (a *Event_Payload) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for Event_Payload to handle AdditionalProperties
+func (a Event_Payload) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -309,16 +484,8 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// ListCdnConfigurations request
-	ListCdnConfigurations(ctx context.Context) (*http.Response, error)
-
-	// CreateCdnConfiguration request  with any body
-	CreateCdnConfigurationWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
-
-	CreateCdnConfiguration(ctx context.Context, body CreateCdnConfigurationJSONRequestBody) (*http.Response, error)
-
-	// DeleteCdnConfiguration request
-	DeleteCdnConfiguration(ctx context.Context, bucket string) (*http.Response, error)
+	// ListEvents request
+	ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error)
 
 	// CreateInstance request  with any body
 	CreateInstanceWithBody(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*http.Response, error)
@@ -333,6 +500,11 @@ type ClientInterface interface {
 
 	// CreateSnapshot request
 	CreateSnapshot(ctx context.Context, id string) (*http.Response, error)
+
+	// RevertInstanceToSnapshot request  with any body
+	RevertInstanceToSnapshotWithBody(ctx context.Context, instanceId string, contentType string, body io.Reader) (*http.Response, error)
+
+	RevertInstanceToSnapshot(ctx context.Context, instanceId string, body RevertInstanceToSnapshotJSONRequestBody) (*http.Response, error)
 
 	// ListLoadBalancers request
 	ListLoadBalancers(ctx context.Context) (*http.Response, error)
@@ -372,8 +544,24 @@ type ClientInterface interface {
 	// GetOperation request
 	GetOperation(ctx context.Context, id string) (*http.Response, error)
 
-	// Ping request
-	Ping(ctx context.Context) (*http.Response, error)
+	// ListPrivateNetworks request
+	ListPrivateNetworks(ctx context.Context) (*http.Response, error)
+
+	// CreatePrivateNetwork request  with any body
+	CreatePrivateNetworkWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreatePrivateNetwork(ctx context.Context, body CreatePrivateNetworkJSONRequestBody) (*http.Response, error)
+
+	// DeletePrivateNetwork request
+	DeletePrivateNetwork(ctx context.Context, id string) (*http.Response, error)
+
+	// GetPrivateNetwork request
+	GetPrivateNetwork(ctx context.Context, id string) (*http.Response, error)
+
+	// UpdatePrivateNetwork request  with any body
+	UpdatePrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpdatePrivateNetwork(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody) (*http.Response, error)
 
 	// ListSecurityGroups request
 	ListSecurityGroups(ctx context.Context) (*http.Response, error)
@@ -397,6 +585,56 @@ type ClientInterface interface {
 	// DeleteRuleFromSecurityGroup request
 	DeleteRuleFromSecurityGroup(ctx context.Context, id string, ruleId string) (*http.Response, error)
 
+	// ListSksClusters request
+	ListSksClusters(ctx context.Context) (*http.Response, error)
+
+	// CreateSksCluster request  with any body
+	CreateSksClusterWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateSksCluster(ctx context.Context, body CreateSksClusterJSONRequestBody) (*http.Response, error)
+
+	// GenerateSksClusterKubeconfig request  with any body
+	GenerateSksClusterKubeconfigWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	GenerateSksClusterKubeconfig(ctx context.Context, id string, body GenerateSksClusterKubeconfigJSONRequestBody) (*http.Response, error)
+
+	// DeleteSksCluster request
+	DeleteSksCluster(ctx context.Context, id string) (*http.Response, error)
+
+	// GetSksCluster request
+	GetSksCluster(ctx context.Context, id string) (*http.Response, error)
+
+	// UpdateSksCluster request  with any body
+	UpdateSksClusterWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpdateSksCluster(ctx context.Context, id string, body UpdateSksClusterJSONRequestBody) (*http.Response, error)
+
+	// CreateSksNodepool request  with any body
+	CreateSksNodepoolWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateSksNodepool(ctx context.Context, id string, body CreateSksNodepoolJSONRequestBody) (*http.Response, error)
+
+	// DeleteSksNodepool request
+	DeleteSksNodepool(ctx context.Context, id string, sksNodepoolId string) (*http.Response, error)
+
+	// GetSksNodepool request
+	GetSksNodepool(ctx context.Context, id string, sksNodepoolId string) (*http.Response, error)
+
+	// UpdateSksNodepool request  with any body
+	UpdateSksNodepoolWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpdateSksNodepool(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*http.Response, error)
+
+	// EvictSksNodepoolMembers request  with any body
+	EvictSksNodepoolMembersWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
+
+	EvictSksNodepoolMembers(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Response, error)
+
+	// ScaleSksNodepool request  with any body
+	ScaleSksNodepoolWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
+
+	ScaleSksNodepool(ctx context.Context, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*http.Response, error)
+
 	// ListSnapshots request
 	ListSnapshots(ctx context.Context) (*http.Response, error)
 
@@ -406,69 +644,29 @@ type ClientInterface interface {
 	// GetSnapshot request
 	GetSnapshot(ctx context.Context, id string) (*http.Response, error)
 
-	// GetExportSnapshot request
-	GetExportSnapshot(ctx context.Context, id string) (*http.Response, error)
-
 	// ExportSnapshot request
 	ExportSnapshot(ctx context.Context, id string) (*http.Response, error)
 
+	// ListTemplates request
+	ListTemplates(ctx context.Context, params *ListTemplatesParams) (*http.Response, error)
+
+	// RegisterTemplate request  with any body
+	RegisterTemplateWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	RegisterTemplate(ctx context.Context, body RegisterTemplateJSONRequestBody) (*http.Response, error)
+
+	// DeleteTemplate request
+	DeleteTemplate(ctx context.Context, id string) (*http.Response, error)
+
 	// GetTemplate request
 	GetTemplate(ctx context.Context, id string) (*http.Response, error)
-
-	// Version request
-	Version(ctx context.Context) (*http.Response, error)
 
 	// ListZones request
 	ListZones(ctx context.Context) (*http.Response, error)
 }
 
-func (c *Client) ListCdnConfigurations(ctx context.Context) (*http.Response, error) {
-	req, err := NewListCdnConfigurationsRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateCdnConfigurationWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
-	req, err := NewCreateCdnConfigurationRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateCdnConfiguration(ctx context.Context, body CreateCdnConfigurationJSONRequestBody) (*http.Response, error) {
-	req, err := NewCreateCdnConfigurationRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteCdnConfiguration(ctx context.Context, bucket string) (*http.Response, error) {
-	req, err := NewDeleteCdnConfigurationRequest(c.Server, bucket)
+func (c *Client) ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error) {
+	req, err := NewListEventsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -544,6 +742,36 @@ func (c *Client) GetInstanceType(ctx context.Context, id string) (*http.Response
 
 func (c *Client) CreateSnapshot(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewCreateSnapshotRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RevertInstanceToSnapshotWithBody(ctx context.Context, instanceId string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewRevertInstanceToSnapshotRequestWithBody(c.Server, instanceId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RevertInstanceToSnapshot(ctx context.Context, instanceId string, body RevertInstanceToSnapshotJSONRequestBody) (*http.Response, error) {
+	req, err := NewRevertInstanceToSnapshotRequest(c.Server, instanceId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -767,8 +995,98 @@ func (c *Client) GetOperation(ctx context.Context, id string) (*http.Response, e
 	return c.Client.Do(req)
 }
 
-func (c *Client) Ping(ctx context.Context) (*http.Response, error) {
-	req, err := NewPingRequest(c.Server)
+func (c *Client) ListPrivateNetworks(ctx context.Context) (*http.Response, error) {
+	req, err := NewListPrivateNetworksRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreatePrivateNetworkWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreatePrivateNetworkRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreatePrivateNetwork(ctx context.Context, body CreatePrivateNetworkJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreatePrivateNetworkRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeletePrivateNetwork(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeletePrivateNetworkRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetPrivateNetwork(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetPrivateNetworkRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpdatePrivateNetworkRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePrivateNetwork(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpdatePrivateNetworkRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -902,6 +1220,291 @@ func (c *Client) DeleteRuleFromSecurityGroup(ctx context.Context, id string, rul
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListSksClusters(ctx context.Context) (*http.Response, error) {
+	req, err := NewListSksClustersRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSksClusterWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateSksClusterRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSksCluster(ctx context.Context, body CreateSksClusterJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateSksClusterRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateSksClusterKubeconfigWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewGenerateSksClusterKubeconfigRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GenerateSksClusterKubeconfig(ctx context.Context, id string, body GenerateSksClusterKubeconfigJSONRequestBody) (*http.Response, error) {
+	req, err := NewGenerateSksClusterKubeconfigRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSksCluster(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeleteSksClusterRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSksCluster(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetSksClusterRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateSksClusterWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpdateSksClusterRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateSksCluster(ctx context.Context, id string, body UpdateSksClusterJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpdateSksClusterRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSksNodepoolWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateSksNodepoolRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateSksNodepool(ctx context.Context, id string, body CreateSksNodepoolJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateSksNodepoolRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSksNodepool(ctx context.Context, id string, sksNodepoolId string) (*http.Response, error) {
+	req, err := NewDeleteSksNodepoolRequest(c.Server, id, sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSksNodepool(ctx context.Context, id string, sksNodepoolId string) (*http.Response, error) {
+	req, err := NewGetSksNodepoolRequest(c.Server, id, sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateSksNodepoolWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpdateSksNodepoolRequestWithBody(c.Server, id, sksNodepoolId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateSksNodepool(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpdateSksNodepoolRequest(c.Server, id, sksNodepoolId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EvictSksNodepoolMembersWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewEvictSksNodepoolMembersRequestWithBody(c.Server, id, sksNodepoolId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EvictSksNodepoolMembers(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Response, error) {
+	req, err := NewEvictSksNodepoolMembersRequest(c.Server, id, sksNodepoolId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ScaleSksNodepoolWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewScaleSksNodepoolRequestWithBody(c.Server, id, sksNodepoolId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ScaleSksNodepool(ctx context.Context, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*http.Response, error) {
+	req, err := NewScaleSksNodepoolRequest(c.Server, id, sksNodepoolId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListSnapshots(ctx context.Context) (*http.Response, error) {
 	req, err := NewListSnapshotsRequest(c.Server)
 	if err != nil {
@@ -947,8 +1550,8 @@ func (c *Client) GetSnapshot(ctx context.Context, id string) (*http.Response, er
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetExportSnapshot(ctx context.Context, id string) (*http.Response, error) {
-	req, err := NewGetExportSnapshotRequest(c.Server, id)
+func (c *Client) ExportSnapshot(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewExportSnapshotRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -962,8 +1565,53 @@ func (c *Client) GetExportSnapshot(ctx context.Context, id string) (*http.Respon
 	return c.Client.Do(req)
 }
 
-func (c *Client) ExportSnapshot(ctx context.Context, id string) (*http.Response, error) {
-	req, err := NewExportSnapshotRequest(c.Server, id)
+func (c *Client) ListTemplates(ctx context.Context, params *ListTemplatesParams) (*http.Response, error) {
+	req, err := NewListTemplatesRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RegisterTemplateWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewRegisterTemplateRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RegisterTemplate(ctx context.Context, body RegisterTemplateJSONRequestBody) (*http.Response, error) {
+	req, err := NewRegisterTemplateRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteTemplate(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeleteTemplateRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -992,21 +1640,6 @@ func (c *Client) GetTemplate(ctx context.Context, id string) (*http.Response, er
 	return c.Client.Do(req)
 }
 
-func (c *Client) Version(ctx context.Context) (*http.Response, error) {
-	req, err := NewVersionRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) ListZones(ctx context.Context) (*http.Response, error) {
 	req, err := NewListZonesRequest(c.Server)
 	if err != nil {
@@ -1022,8 +1655,8 @@ func (c *Client) ListZones(ctx context.Context) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
-// NewListCdnConfigurationsRequest generates requests for ListCdnConfigurations
-func NewListCdnConfigurationsRequest(server string) (*http.Request, error) {
+// NewListEventsRequest generates requests for ListEvents
+func NewListEventsRequest(server string, params *ListEventsParams) (*http.Request, error) {
 	var err error
 
 	queryUrl, err := url.Parse(server)
@@ -1031,7 +1664,7 @@ func NewListCdnConfigurationsRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	basePath := fmt.Sprintf("/cdn-configuration")
+	basePath := fmt.Sprintf("/event")
 	if basePath[0] == '/' {
 		basePath = basePath[1:]
 	}
@@ -1040,81 +1673,44 @@ func NewListCdnConfigurationsRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	queryValues := queryUrl.Query()
+
+	if params.From != nil {
+
+		if queryFrag, err := runtime.StyleParam("form", true, "from", *params.From); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.To != nil {
+
+		if queryFrag, err := runtime.StyleParam("form", true, "to", *params.To); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryUrl.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryUrl.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewCreateCdnConfigurationRequest calls the generic CreateCdnConfiguration builder with application/json body
-func NewCreateCdnConfigurationRequest(server string, body CreateCdnConfigurationJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateCdnConfigurationRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewCreateCdnConfigurationRequestWithBody generates requests for CreateCdnConfiguration with any type of body
-func NewCreateCdnConfigurationRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	queryUrl, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	basePath := fmt.Sprintf("/cdn-configuration")
-	if basePath[0] == '/' {
-		basePath = basePath[1:]
-	}
-
-	queryUrl, err = queryUrl.Parse(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryUrl.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-	return req, nil
-}
-
-// NewDeleteCdnConfigurationRequest generates requests for DeleteCdnConfiguration
-func NewDeleteCdnConfigurationRequest(server string, bucket string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParam("simple", false, "bucket", bucket)
-	if err != nil {
-		return nil, err
-	}
-
-	queryUrl, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	basePath := fmt.Sprintf("/cdn-configuration/%s", pathParam0)
-	if basePath[0] == '/' {
-		basePath = basePath[1:]
-	}
-
-	queryUrl, err = queryUrl.Parse(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -1273,6 +1869,52 @@ func NewCreateSnapshotRequest(server string, id string) (*http.Request, error) {
 		return nil, err
 	}
 
+	return req, nil
+}
+
+// NewRevertInstanceToSnapshotRequest calls the generic RevertInstanceToSnapshot builder with application/json body
+func NewRevertInstanceToSnapshotRequest(server string, instanceId string, body RevertInstanceToSnapshotJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRevertInstanceToSnapshotRequestWithBody(server, instanceId, "application/json", bodyReader)
+}
+
+// NewRevertInstanceToSnapshotRequestWithBody generates requests for RevertInstanceToSnapshot with any type of body
+func NewRevertInstanceToSnapshotRequestWithBody(server string, instanceId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "instance-id", instanceId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance/%s:revert-snapshot", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 	return req, nil
 }
 
@@ -1671,8 +2313,8 @@ func NewGetOperationRequest(server string, id string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewPingRequest generates requests for Ping
-func NewPingRequest(server string) (*http.Request, error) {
+// NewListPrivateNetworksRequest generates requests for ListPrivateNetworks
+func NewListPrivateNetworksRequest(server string) (*http.Request, error) {
 	var err error
 
 	queryUrl, err := url.Parse(server)
@@ -1680,7 +2322,7 @@ func NewPingRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
-	basePath := fmt.Sprintf("/ping")
+	basePath := fmt.Sprintf("/private-network")
 	if basePath[0] == '/' {
 		basePath = basePath[1:]
 	}
@@ -1695,6 +2337,159 @@ func NewPingRequest(server string) (*http.Request, error) {
 		return nil, err
 	}
 
+	return req, nil
+}
+
+// NewCreatePrivateNetworkRequest calls the generic CreatePrivateNetwork builder with application/json body
+func NewCreatePrivateNetworkRequest(server string, body CreatePrivateNetworkJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreatePrivateNetworkRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreatePrivateNetworkRequestWithBody generates requests for CreatePrivateNetwork with any type of body
+func NewCreatePrivateNetworkRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/private-network")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeletePrivateNetworkRequest generates requests for DeletePrivateNetwork
+func NewDeletePrivateNetworkRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/private-network/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetPrivateNetworkRequest generates requests for GetPrivateNetwork
+func NewGetPrivateNetworkRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/private-network/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdatePrivateNetworkRequest calls the generic UpdatePrivateNetwork builder with application/json body
+func NewUpdatePrivateNetworkRequest(server string, id string, body UpdatePrivateNetworkJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdatePrivateNetworkRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdatePrivateNetworkRequestWithBody generates requests for UpdatePrivateNetwork with any type of body
+func NewUpdatePrivateNetworkRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/private-network/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 	return req, nil
 }
 
@@ -1919,6 +2714,519 @@ func NewDeleteRuleFromSecurityGroupRequest(server string, id string, ruleId stri
 	return req, nil
 }
 
+// NewListSksClustersRequest generates requests for ListSksClusters
+func NewListSksClustersRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateSksClusterRequest calls the generic CreateSksCluster builder with application/json body
+func NewCreateSksClusterRequest(server string, body CreateSksClusterJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSksClusterRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateSksClusterRequestWithBody generates requests for CreateSksCluster with any type of body
+func NewCreateSksClusterRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewGenerateSksClusterKubeconfigRequest calls the generic GenerateSksClusterKubeconfig builder with application/json body
+func NewGenerateSksClusterKubeconfigRequest(server string, id string, body GenerateSksClusterKubeconfigJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewGenerateSksClusterKubeconfigRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewGenerateSksClusterKubeconfigRequestWithBody generates requests for GenerateSksClusterKubeconfig with any type of body
+func NewGenerateSksClusterKubeconfigRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster-kubeconfig/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteSksClusterRequest generates requests for DeleteSksCluster
+func NewDeleteSksClusterRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSksClusterRequest generates requests for GetSksCluster
+func NewGetSksClusterRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateSksClusterRequest calls the generic UpdateSksCluster builder with application/json body
+func NewUpdateSksClusterRequest(server string, id string, body UpdateSksClusterJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateSksClusterRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateSksClusterRequestWithBody generates requests for UpdateSksCluster with any type of body
+func NewUpdateSksClusterRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewCreateSksNodepoolRequest calls the generic CreateSksNodepool builder with application/json body
+func NewCreateSksNodepoolRequest(server string, id string, body CreateSksNodepoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateSksNodepoolRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewCreateSksNodepoolRequestWithBody generates requests for CreateSksNodepool with any type of body
+func NewCreateSksNodepoolRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteSksNodepoolRequest generates requests for DeleteSksNodepool
+func NewDeleteSksNodepoolRequest(server string, id string, sksNodepoolId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "sks-nodepool-id", sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool/%s", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSksNodepoolRequest generates requests for GetSksNodepool
+func NewGetSksNodepoolRequest(server string, id string, sksNodepoolId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "sks-nodepool-id", sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool/%s", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateSksNodepoolRequest calls the generic UpdateSksNodepool builder with application/json body
+func NewUpdateSksNodepoolRequest(server string, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateSksNodepoolRequestWithBody(server, id, sksNodepoolId, "application/json", bodyReader)
+}
+
+// NewUpdateSksNodepoolRequestWithBody generates requests for UpdateSksNodepool with any type of body
+func NewUpdateSksNodepoolRequestWithBody(server string, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "sks-nodepool-id", sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool/%s", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewEvictSksNodepoolMembersRequest calls the generic EvictSksNodepoolMembers builder with application/json body
+func NewEvictSksNodepoolMembersRequest(server string, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEvictSksNodepoolMembersRequestWithBody(server, id, sksNodepoolId, "application/json", bodyReader)
+}
+
+// NewEvictSksNodepoolMembersRequestWithBody generates requests for EvictSksNodepoolMembers with any type of body
+func NewEvictSksNodepoolMembersRequestWithBody(server string, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "sks-nodepool-id", sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool/%s:evict", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewScaleSksNodepoolRequest calls the generic ScaleSksNodepool builder with application/json body
+func NewScaleSksNodepoolRequest(server string, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewScaleSksNodepoolRequestWithBody(server, id, sksNodepoolId, "application/json", bodyReader)
+}
+
+// NewScaleSksNodepoolRequestWithBody generates requests for ScaleSksNodepool with any type of body
+func NewScaleSksNodepoolRequestWithBody(server string, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "sks-nodepool-id", sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool/%s:scale", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
 // NewListSnapshotsRequest generates requests for ListSnapshots
 func NewListSnapshotsRequest(server string) (*http.Request, error) {
 	var err error
@@ -2014,40 +3322,6 @@ func NewGetSnapshotRequest(server string, id string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetExportSnapshotRequest generates requests for GetExportSnapshot
-func NewGetExportSnapshotRequest(server string, id string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
-	if err != nil {
-		return nil, err
-	}
-
-	queryUrl, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	basePath := fmt.Sprintf("/snapshot/%s:export", pathParam0)
-	if basePath[0] == '/' {
-		basePath = basePath[1:]
-	}
-
-	queryUrl, err = queryUrl.Parse(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryUrl.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewExportSnapshotRequest generates requests for ExportSnapshot
 func NewExportSnapshotRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -2082,8 +3356,110 @@ func NewExportSnapshotRequest(server string, id string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetTemplateRequest generates requests for GetTemplate
-func NewGetTemplateRequest(server string, id string) (*http.Request, error) {
+// NewListTemplatesRequest generates requests for ListTemplates
+func NewListTemplatesRequest(server string, params *ListTemplatesParams) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/template")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	queryValues := queryUrl.Query()
+
+	if params.Visibility != nil {
+
+		if queryFrag, err := runtime.StyleParam("form", true, "visibility", *params.Visibility); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.Family != nil {
+
+		if queryFrag, err := runtime.StyleParam("form", true, "family", *params.Family); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryUrl.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewRegisterTemplateRequest calls the generic RegisterTemplate builder with application/json body
+func NewRegisterTemplateRequest(server string, body RegisterTemplateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRegisterTemplateRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRegisterTemplateRequestWithBody generates requests for RegisterTemplate with any type of body
+func NewRegisterTemplateRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/template")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteTemplateRequest generates requests for DeleteTemplate
+func NewDeleteTemplateRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2108,7 +3484,7 @@ func NewGetTemplateRequest(server string, id string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -2116,16 +3492,23 @@ func NewGetTemplateRequest(server string, id string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewVersionRequest generates requests for Version
-func NewVersionRequest(server string) (*http.Request, error) {
+// NewGetTemplateRequest generates requests for GetTemplate
+func NewGetTemplateRequest(server string, id string) (*http.Request, error) {
 	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
 
 	queryUrl, err := url.Parse(server)
 	if err != nil {
 		return nil, err
 	}
 
-	basePath := fmt.Sprintf("/version")
+	basePath := fmt.Sprintf("/template/%s", pathParam0)
 	if basePath[0] == '/' {
 		basePath = basePath[1:]
 	}
@@ -2199,16 +3582,8 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// ListCdnConfigurations request
-	ListCdnConfigurationsWithResponse(ctx context.Context) (*ListCdnConfigurationsResponse, error)
-
-	// CreateCdnConfiguration request  with any body
-	CreateCdnConfigurationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateCdnConfigurationResponse, error)
-
-	CreateCdnConfigurationWithResponse(ctx context.Context, body CreateCdnConfigurationJSONRequestBody) (*CreateCdnConfigurationResponse, error)
-
-	// DeleteCdnConfiguration request
-	DeleteCdnConfigurationWithResponse(ctx context.Context, bucket string) (*DeleteCdnConfigurationResponse, error)
+	// ListEvents request
+	ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error)
 
 	// CreateInstance request  with any body
 	CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*CreateInstanceResponse, error)
@@ -2223,6 +3598,11 @@ type ClientWithResponsesInterface interface {
 
 	// CreateSnapshot request
 	CreateSnapshotWithResponse(ctx context.Context, id string) (*CreateSnapshotResponse, error)
+
+	// RevertInstanceToSnapshot request  with any body
+	RevertInstanceToSnapshotWithBodyWithResponse(ctx context.Context, instanceId string, contentType string, body io.Reader) (*RevertInstanceToSnapshotResponse, error)
+
+	RevertInstanceToSnapshotWithResponse(ctx context.Context, instanceId string, body RevertInstanceToSnapshotJSONRequestBody) (*RevertInstanceToSnapshotResponse, error)
 
 	// ListLoadBalancers request
 	ListLoadBalancersWithResponse(ctx context.Context) (*ListLoadBalancersResponse, error)
@@ -2262,8 +3642,24 @@ type ClientWithResponsesInterface interface {
 	// GetOperation request
 	GetOperationWithResponse(ctx context.Context, id string) (*GetOperationResponse, error)
 
-	// Ping request
-	PingWithResponse(ctx context.Context) (*PingResponse, error)
+	// ListPrivateNetworks request
+	ListPrivateNetworksWithResponse(ctx context.Context) (*ListPrivateNetworksResponse, error)
+
+	// CreatePrivateNetwork request  with any body
+	CreatePrivateNetworkWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreatePrivateNetworkResponse, error)
+
+	CreatePrivateNetworkWithResponse(ctx context.Context, body CreatePrivateNetworkJSONRequestBody) (*CreatePrivateNetworkResponse, error)
+
+	// DeletePrivateNetwork request
+	DeletePrivateNetworkWithResponse(ctx context.Context, id string) (*DeletePrivateNetworkResponse, error)
+
+	// GetPrivateNetwork request
+	GetPrivateNetworkWithResponse(ctx context.Context, id string) (*GetPrivateNetworkResponse, error)
+
+	// UpdatePrivateNetwork request  with any body
+	UpdatePrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdatePrivateNetworkResponse, error)
+
+	UpdatePrivateNetworkWithResponse(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody) (*UpdatePrivateNetworkResponse, error)
 
 	// ListSecurityGroups request
 	ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error)
@@ -2287,6 +3683,56 @@ type ClientWithResponsesInterface interface {
 	// DeleteRuleFromSecurityGroup request
 	DeleteRuleFromSecurityGroupWithResponse(ctx context.Context, id string, ruleId string) (*DeleteRuleFromSecurityGroupResponse, error)
 
+	// ListSksClusters request
+	ListSksClustersWithResponse(ctx context.Context) (*ListSksClustersResponse, error)
+
+	// CreateSksCluster request  with any body
+	CreateSksClusterWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateSksClusterResponse, error)
+
+	CreateSksClusterWithResponse(ctx context.Context, body CreateSksClusterJSONRequestBody) (*CreateSksClusterResponse, error)
+
+	// GenerateSksClusterKubeconfig request  with any body
+	GenerateSksClusterKubeconfigWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*GenerateSksClusterKubeconfigResponse, error)
+
+	GenerateSksClusterKubeconfigWithResponse(ctx context.Context, id string, body GenerateSksClusterKubeconfigJSONRequestBody) (*GenerateSksClusterKubeconfigResponse, error)
+
+	// DeleteSksCluster request
+	DeleteSksClusterWithResponse(ctx context.Context, id string) (*DeleteSksClusterResponse, error)
+
+	// GetSksCluster request
+	GetSksClusterWithResponse(ctx context.Context, id string) (*GetSksClusterResponse, error)
+
+	// UpdateSksCluster request  with any body
+	UpdateSksClusterWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSksClusterResponse, error)
+
+	UpdateSksClusterWithResponse(ctx context.Context, id string, body UpdateSksClusterJSONRequestBody) (*UpdateSksClusterResponse, error)
+
+	// CreateSksNodepool request  with any body
+	CreateSksNodepoolWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*CreateSksNodepoolResponse, error)
+
+	CreateSksNodepoolWithResponse(ctx context.Context, id string, body CreateSksNodepoolJSONRequestBody) (*CreateSksNodepoolResponse, error)
+
+	// DeleteSksNodepool request
+	DeleteSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string) (*DeleteSksNodepoolResponse, error)
+
+	// GetSksNodepool request
+	GetSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string) (*GetSksNodepoolResponse, error)
+
+	// UpdateSksNodepool request  with any body
+	UpdateSksNodepoolWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*UpdateSksNodepoolResponse, error)
+
+	UpdateSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*UpdateSksNodepoolResponse, error)
+
+	// EvictSksNodepoolMembers request  with any body
+	EvictSksNodepoolMembersWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*EvictSksNodepoolMembersResponse, error)
+
+	EvictSksNodepoolMembersWithResponse(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*EvictSksNodepoolMembersResponse, error)
+
+	// ScaleSksNodepool request  with any body
+	ScaleSksNodepoolWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*ScaleSksNodepoolResponse, error)
+
+	ScaleSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*ScaleSksNodepoolResponse, error)
+
 	// ListSnapshots request
 	ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error)
 
@@ -2296,32 +3742,35 @@ type ClientWithResponsesInterface interface {
 	// GetSnapshot request
 	GetSnapshotWithResponse(ctx context.Context, id string) (*GetSnapshotResponse, error)
 
-	// GetExportSnapshot request
-	GetExportSnapshotWithResponse(ctx context.Context, id string) (*GetExportSnapshotResponse, error)
-
 	// ExportSnapshot request
 	ExportSnapshotWithResponse(ctx context.Context, id string) (*ExportSnapshotResponse, error)
 
+	// ListTemplates request
+	ListTemplatesWithResponse(ctx context.Context, params *ListTemplatesParams) (*ListTemplatesResponse, error)
+
+	// RegisterTemplate request  with any body
+	RegisterTemplateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*RegisterTemplateResponse, error)
+
+	RegisterTemplateWithResponse(ctx context.Context, body RegisterTemplateJSONRequestBody) (*RegisterTemplateResponse, error)
+
+	// DeleteTemplate request
+	DeleteTemplateWithResponse(ctx context.Context, id string) (*DeleteTemplateResponse, error)
+
 	// GetTemplate request
 	GetTemplateWithResponse(ctx context.Context, id string) (*GetTemplateResponse, error)
-
-	// Version request
-	VersionWithResponse(ctx context.Context) (*VersionResponse, error)
 
 	// ListZones request
 	ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error)
 }
 
-type ListCdnConfigurationsResponse struct {
+type ListEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		CdnConfigurations *[]CdnConfiguration `json:"cdn-configurations,omitempty"`
-	}
+	JSON200      *[]Event
 }
 
 // Status returns HTTPResponse.Status
-func (r ListCdnConfigurationsResponse) Status() string {
+func (r ListEventsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -2329,51 +3778,7 @@ func (r ListCdnConfigurationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r ListCdnConfigurationsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type CreateCdnConfigurationResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Operation
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateCdnConfigurationResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateCdnConfigurationResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteCdnConfigurationResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Operation
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteCdnConfigurationResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteCdnConfigurationResponse) StatusCode() int {
+func (r ListEventsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2464,6 +3869,28 @@ func (r CreateSnapshotResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateSnapshotResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RevertInstanceToSnapshotResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r RevertInstanceToSnapshotResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RevertInstanceToSnapshotResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2692,14 +4119,16 @@ func (r GetOperationResponse) StatusCode() int {
 	return 0
 }
 
-type PingResponse struct {
+type ListPrivateNetworksResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *string
+	JSON200      *struct {
+		PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
+	}
 }
 
 // Status returns HTTPResponse.Status
-func (r PingResponse) Status() string {
+func (r ListPrivateNetworksResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -2707,7 +4136,95 @@ func (r PingResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PingResponse) StatusCode() int {
+func (r ListPrivateNetworksResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreatePrivateNetworkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreatePrivateNetworkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreatePrivateNetworkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeletePrivateNetworkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeletePrivateNetworkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeletePrivateNetworkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetPrivateNetworkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PrivateNetwork
+}
+
+// Status returns HTTPResponse.Status
+func (r GetPrivateNetworkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetPrivateNetworkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdatePrivateNetworkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdatePrivateNetworkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdatePrivateNetworkResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2848,6 +4365,274 @@ func (r DeleteRuleFromSecurityGroupResponse) StatusCode() int {
 	return 0
 }
 
+type ListSksClustersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		SksClusters *[]SksCluster `json:"sks-clusters,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSksClustersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSksClustersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateSksClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSksClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSksClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GenerateSksClusterKubeconfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Kubeconfig *string `json:"kubeconfig,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GenerateSksClusterKubeconfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GenerateSksClusterKubeconfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteSksClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSksClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSksClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSksClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SksCluster
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSksClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSksClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateSksClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateSksClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateSksClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateSksNodepoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateSksNodepoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateSksNodepoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteSksNodepoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSksNodepoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSksNodepoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSksNodepoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SksNodepool
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSksNodepoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSksNodepoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateSksNodepoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateSksNodepoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateSksNodepoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EvictSksNodepoolMembersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r EvictSksNodepoolMembersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EvictSksNodepoolMembersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ScaleSksNodepoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ScaleSksNodepoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ScaleSksNodepoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListSnapshotsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2916,28 +4701,6 @@ func (r GetSnapshotResponse) StatusCode() int {
 	return 0
 }
 
-type GetExportSnapshotResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *SnapshotExport
-}
-
-// Status returns HTTPResponse.Status
-func (r GetExportSnapshotResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetExportSnapshotResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type ExportSnapshotResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2960,6 +4723,74 @@ func (r ExportSnapshotResponse) StatusCode() int {
 	return 0
 }
 
+type ListTemplatesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Templates *[]Template `json:"templates,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListTemplatesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListTemplatesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RegisterTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r RegisterTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RegisterTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetTemplateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2976,28 +4807,6 @@ func (r GetTemplateResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetTemplateResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type VersionResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *string
-}
-
-// Status returns HTTPResponse.Status
-func (r VersionResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r VersionResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3028,39 +4837,13 @@ func (r ListZonesResponse) StatusCode() int {
 	return 0
 }
 
-// ListCdnConfigurationsWithResponse request returning *ListCdnConfigurationsResponse
-func (c *ClientWithResponses) ListCdnConfigurationsWithResponse(ctx context.Context) (*ListCdnConfigurationsResponse, error) {
-	rsp, err := c.ListCdnConfigurations(ctx)
+// ListEventsWithResponse request returning *ListEventsResponse
+func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error) {
+	rsp, err := c.ListEvents(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListCdnConfigurationsResponse(rsp)
-}
-
-// CreateCdnConfigurationWithBodyWithResponse request with arbitrary body returning *CreateCdnConfigurationResponse
-func (c *ClientWithResponses) CreateCdnConfigurationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateCdnConfigurationResponse, error) {
-	rsp, err := c.CreateCdnConfigurationWithBody(ctx, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateCdnConfigurationResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateCdnConfigurationWithResponse(ctx context.Context, body CreateCdnConfigurationJSONRequestBody) (*CreateCdnConfigurationResponse, error) {
-	rsp, err := c.CreateCdnConfiguration(ctx, body)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateCdnConfigurationResponse(rsp)
-}
-
-// DeleteCdnConfigurationWithResponse request returning *DeleteCdnConfigurationResponse
-func (c *ClientWithResponses) DeleteCdnConfigurationWithResponse(ctx context.Context, bucket string) (*DeleteCdnConfigurationResponse, error) {
-	rsp, err := c.DeleteCdnConfiguration(ctx, bucket)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteCdnConfigurationResponse(rsp)
+	return ParseListEventsResponse(rsp)
 }
 
 // CreateInstanceWithBodyWithResponse request with arbitrary body returning *CreateInstanceResponse
@@ -3105,6 +4888,23 @@ func (c *ClientWithResponses) CreateSnapshotWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseCreateSnapshotResponse(rsp)
+}
+
+// RevertInstanceToSnapshotWithBodyWithResponse request with arbitrary body returning *RevertInstanceToSnapshotResponse
+func (c *ClientWithResponses) RevertInstanceToSnapshotWithBodyWithResponse(ctx context.Context, instanceId string, contentType string, body io.Reader) (*RevertInstanceToSnapshotResponse, error) {
+	rsp, err := c.RevertInstanceToSnapshotWithBody(ctx, instanceId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRevertInstanceToSnapshotResponse(rsp)
+}
+
+func (c *ClientWithResponses) RevertInstanceToSnapshotWithResponse(ctx context.Context, instanceId string, body RevertInstanceToSnapshotJSONRequestBody) (*RevertInstanceToSnapshotResponse, error) {
+	rsp, err := c.RevertInstanceToSnapshot(ctx, instanceId, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRevertInstanceToSnapshotResponse(rsp)
 }
 
 // ListLoadBalancersWithResponse request returning *ListLoadBalancersResponse
@@ -3229,13 +5029,65 @@ func (c *ClientWithResponses) GetOperationWithResponse(ctx context.Context, id s
 	return ParseGetOperationResponse(rsp)
 }
 
-// PingWithResponse request returning *PingResponse
-func (c *ClientWithResponses) PingWithResponse(ctx context.Context) (*PingResponse, error) {
-	rsp, err := c.Ping(ctx)
+// ListPrivateNetworksWithResponse request returning *ListPrivateNetworksResponse
+func (c *ClientWithResponses) ListPrivateNetworksWithResponse(ctx context.Context) (*ListPrivateNetworksResponse, error) {
+	rsp, err := c.ListPrivateNetworks(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePingResponse(rsp)
+	return ParseListPrivateNetworksResponse(rsp)
+}
+
+// CreatePrivateNetworkWithBodyWithResponse request with arbitrary body returning *CreatePrivateNetworkResponse
+func (c *ClientWithResponses) CreatePrivateNetworkWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreatePrivateNetworkResponse, error) {
+	rsp, err := c.CreatePrivateNetworkWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreatePrivateNetworkResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreatePrivateNetworkWithResponse(ctx context.Context, body CreatePrivateNetworkJSONRequestBody) (*CreatePrivateNetworkResponse, error) {
+	rsp, err := c.CreatePrivateNetwork(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreatePrivateNetworkResponse(rsp)
+}
+
+// DeletePrivateNetworkWithResponse request returning *DeletePrivateNetworkResponse
+func (c *ClientWithResponses) DeletePrivateNetworkWithResponse(ctx context.Context, id string) (*DeletePrivateNetworkResponse, error) {
+	rsp, err := c.DeletePrivateNetwork(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeletePrivateNetworkResponse(rsp)
+}
+
+// GetPrivateNetworkWithResponse request returning *GetPrivateNetworkResponse
+func (c *ClientWithResponses) GetPrivateNetworkWithResponse(ctx context.Context, id string) (*GetPrivateNetworkResponse, error) {
+	rsp, err := c.GetPrivateNetwork(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetPrivateNetworkResponse(rsp)
+}
+
+// UpdatePrivateNetworkWithBodyWithResponse request with arbitrary body returning *UpdatePrivateNetworkResponse
+func (c *ClientWithResponses) UpdatePrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdatePrivateNetworkResponse, error) {
+	rsp, err := c.UpdatePrivateNetworkWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePrivateNetworkResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdatePrivateNetworkWithResponse(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody) (*UpdatePrivateNetworkResponse, error) {
+	rsp, err := c.UpdatePrivateNetwork(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePrivateNetworkResponse(rsp)
 }
 
 // ListSecurityGroupsWithResponse request returning *ListSecurityGroupsResponse
@@ -3308,6 +5160,170 @@ func (c *ClientWithResponses) DeleteRuleFromSecurityGroupWithResponse(ctx contex
 	return ParseDeleteRuleFromSecurityGroupResponse(rsp)
 }
 
+// ListSksClustersWithResponse request returning *ListSksClustersResponse
+func (c *ClientWithResponses) ListSksClustersWithResponse(ctx context.Context) (*ListSksClustersResponse, error) {
+	rsp, err := c.ListSksClusters(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListSksClustersResponse(rsp)
+}
+
+// CreateSksClusterWithBodyWithResponse request with arbitrary body returning *CreateSksClusterResponse
+func (c *ClientWithResponses) CreateSksClusterWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateSksClusterResponse, error) {
+	rsp, err := c.CreateSksClusterWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSksClusterResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSksClusterWithResponse(ctx context.Context, body CreateSksClusterJSONRequestBody) (*CreateSksClusterResponse, error) {
+	rsp, err := c.CreateSksCluster(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSksClusterResponse(rsp)
+}
+
+// GenerateSksClusterKubeconfigWithBodyWithResponse request with arbitrary body returning *GenerateSksClusterKubeconfigResponse
+func (c *ClientWithResponses) GenerateSksClusterKubeconfigWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*GenerateSksClusterKubeconfigResponse, error) {
+	rsp, err := c.GenerateSksClusterKubeconfigWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateSksClusterKubeconfigResponse(rsp)
+}
+
+func (c *ClientWithResponses) GenerateSksClusterKubeconfigWithResponse(ctx context.Context, id string, body GenerateSksClusterKubeconfigJSONRequestBody) (*GenerateSksClusterKubeconfigResponse, error) {
+	rsp, err := c.GenerateSksClusterKubeconfig(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGenerateSksClusterKubeconfigResponse(rsp)
+}
+
+// DeleteSksClusterWithResponse request returning *DeleteSksClusterResponse
+func (c *ClientWithResponses) DeleteSksClusterWithResponse(ctx context.Context, id string) (*DeleteSksClusterResponse, error) {
+	rsp, err := c.DeleteSksCluster(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSksClusterResponse(rsp)
+}
+
+// GetSksClusterWithResponse request returning *GetSksClusterResponse
+func (c *ClientWithResponses) GetSksClusterWithResponse(ctx context.Context, id string) (*GetSksClusterResponse, error) {
+	rsp, err := c.GetSksCluster(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSksClusterResponse(rsp)
+}
+
+// UpdateSksClusterWithBodyWithResponse request with arbitrary body returning *UpdateSksClusterResponse
+func (c *ClientWithResponses) UpdateSksClusterWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSksClusterResponse, error) {
+	rsp, err := c.UpdateSksClusterWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateSksClusterResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateSksClusterWithResponse(ctx context.Context, id string, body UpdateSksClusterJSONRequestBody) (*UpdateSksClusterResponse, error) {
+	rsp, err := c.UpdateSksCluster(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateSksClusterResponse(rsp)
+}
+
+// CreateSksNodepoolWithBodyWithResponse request with arbitrary body returning *CreateSksNodepoolResponse
+func (c *ClientWithResponses) CreateSksNodepoolWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*CreateSksNodepoolResponse, error) {
+	rsp, err := c.CreateSksNodepoolWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSksNodepoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateSksNodepoolWithResponse(ctx context.Context, id string, body CreateSksNodepoolJSONRequestBody) (*CreateSksNodepoolResponse, error) {
+	rsp, err := c.CreateSksNodepool(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateSksNodepoolResponse(rsp)
+}
+
+// DeleteSksNodepoolWithResponse request returning *DeleteSksNodepoolResponse
+func (c *ClientWithResponses) DeleteSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string) (*DeleteSksNodepoolResponse, error) {
+	rsp, err := c.DeleteSksNodepool(ctx, id, sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSksNodepoolResponse(rsp)
+}
+
+// GetSksNodepoolWithResponse request returning *GetSksNodepoolResponse
+func (c *ClientWithResponses) GetSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string) (*GetSksNodepoolResponse, error) {
+	rsp, err := c.GetSksNodepool(ctx, id, sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSksNodepoolResponse(rsp)
+}
+
+// UpdateSksNodepoolWithBodyWithResponse request with arbitrary body returning *UpdateSksNodepoolResponse
+func (c *ClientWithResponses) UpdateSksNodepoolWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*UpdateSksNodepoolResponse, error) {
+	rsp, err := c.UpdateSksNodepoolWithBody(ctx, id, sksNodepoolId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateSksNodepoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*UpdateSksNodepoolResponse, error) {
+	rsp, err := c.UpdateSksNodepool(ctx, id, sksNodepoolId, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateSksNodepoolResponse(rsp)
+}
+
+// EvictSksNodepoolMembersWithBodyWithResponse request with arbitrary body returning *EvictSksNodepoolMembersResponse
+func (c *ClientWithResponses) EvictSksNodepoolMembersWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*EvictSksNodepoolMembersResponse, error) {
+	rsp, err := c.EvictSksNodepoolMembersWithBody(ctx, id, sksNodepoolId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEvictSksNodepoolMembersResponse(rsp)
+}
+
+func (c *ClientWithResponses) EvictSksNodepoolMembersWithResponse(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*EvictSksNodepoolMembersResponse, error) {
+	rsp, err := c.EvictSksNodepoolMembers(ctx, id, sksNodepoolId, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEvictSksNodepoolMembersResponse(rsp)
+}
+
+// ScaleSksNodepoolWithBodyWithResponse request with arbitrary body returning *ScaleSksNodepoolResponse
+func (c *ClientWithResponses) ScaleSksNodepoolWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*ScaleSksNodepoolResponse, error) {
+	rsp, err := c.ScaleSksNodepoolWithBody(ctx, id, sksNodepoolId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScaleSksNodepoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) ScaleSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*ScaleSksNodepoolResponse, error) {
+	rsp, err := c.ScaleSksNodepool(ctx, id, sksNodepoolId, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScaleSksNodepoolResponse(rsp)
+}
+
 // ListSnapshotsWithResponse request returning *ListSnapshotsResponse
 func (c *ClientWithResponses) ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error) {
 	rsp, err := c.ListSnapshots(ctx)
@@ -3335,15 +5351,6 @@ func (c *ClientWithResponses) GetSnapshotWithResponse(ctx context.Context, id st
 	return ParseGetSnapshotResponse(rsp)
 }
 
-// GetExportSnapshotWithResponse request returning *GetExportSnapshotResponse
-func (c *ClientWithResponses) GetExportSnapshotWithResponse(ctx context.Context, id string) (*GetExportSnapshotResponse, error) {
-	rsp, err := c.GetExportSnapshot(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetExportSnapshotResponse(rsp)
-}
-
 // ExportSnapshotWithResponse request returning *ExportSnapshotResponse
 func (c *ClientWithResponses) ExportSnapshotWithResponse(ctx context.Context, id string) (*ExportSnapshotResponse, error) {
 	rsp, err := c.ExportSnapshot(ctx, id)
@@ -3351,6 +5358,41 @@ func (c *ClientWithResponses) ExportSnapshotWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseExportSnapshotResponse(rsp)
+}
+
+// ListTemplatesWithResponse request returning *ListTemplatesResponse
+func (c *ClientWithResponses) ListTemplatesWithResponse(ctx context.Context, params *ListTemplatesParams) (*ListTemplatesResponse, error) {
+	rsp, err := c.ListTemplates(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListTemplatesResponse(rsp)
+}
+
+// RegisterTemplateWithBodyWithResponse request with arbitrary body returning *RegisterTemplateResponse
+func (c *ClientWithResponses) RegisterTemplateWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*RegisterTemplateResponse, error) {
+	rsp, err := c.RegisterTemplateWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegisterTemplateResponse(rsp)
+}
+
+func (c *ClientWithResponses) RegisterTemplateWithResponse(ctx context.Context, body RegisterTemplateJSONRequestBody) (*RegisterTemplateResponse, error) {
+	rsp, err := c.RegisterTemplate(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegisterTemplateResponse(rsp)
+}
+
+// DeleteTemplateWithResponse request returning *DeleteTemplateResponse
+func (c *ClientWithResponses) DeleteTemplateWithResponse(ctx context.Context, id string) (*DeleteTemplateResponse, error) {
+	rsp, err := c.DeleteTemplate(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTemplateResponse(rsp)
 }
 
 // GetTemplateWithResponse request returning *GetTemplateResponse
@@ -3362,15 +5404,6 @@ func (c *ClientWithResponses) GetTemplateWithResponse(ctx context.Context, id st
 	return ParseGetTemplateResponse(rsp)
 }
 
-// VersionWithResponse request returning *VersionResponse
-func (c *ClientWithResponses) VersionWithResponse(ctx context.Context) (*VersionResponse, error) {
-	rsp, err := c.Version(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return ParseVersionResponse(rsp)
-}
-
 // ListZonesWithResponse request returning *ListZonesResponse
 func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error) {
 	rsp, err := c.ListZones(ctx)
@@ -3380,76 +5413,22 @@ func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*ListZ
 	return ParseListZonesResponse(rsp)
 }
 
-// ParseListCdnConfigurationsResponse parses an HTTP response from a ListCdnConfigurationsWithResponse call
-func ParseListCdnConfigurationsResponse(rsp *http.Response) (*ListCdnConfigurationsResponse, error) {
+// ParseListEventsResponse parses an HTTP response from a ListEventsWithResponse call
+func ParseListEventsResponse(rsp *http.Response) (*ListEventsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ListCdnConfigurationsResponse{
+	response := &ListEventsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			CdnConfigurations *[]CdnConfiguration `json:"cdn-configurations,omitempty"`
-		}
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseCreateCdnConfigurationResponse parses an HTTP response from a CreateCdnConfigurationWithResponse call
-func ParseCreateCdnConfigurationResponse(rsp *http.Response) (*CreateCdnConfigurationResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateCdnConfigurationResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Operation
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeleteCdnConfigurationResponse parses an HTTP response from a DeleteCdnConfigurationWithResponse call
-func ParseDeleteCdnConfigurationResponse(rsp *http.Response) (*DeleteCdnConfigurationResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteCdnConfigurationResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Operation
+		var dest []Event
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -3549,6 +5528,32 @@ func ParseCreateSnapshotResponse(rsp *http.Response) (*CreateSnapshotResponse, e
 	}
 
 	response := &CreateSnapshotResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRevertInstanceToSnapshotResponse parses an HTTP response from a RevertInstanceToSnapshotWithResponse call
+func ParseRevertInstanceToSnapshotResponse(rsp *http.Response) (*RevertInstanceToSnapshotResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RevertInstanceToSnapshotResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -3828,22 +5833,128 @@ func ParseGetOperationResponse(rsp *http.Response) (*GetOperationResponse, error
 	return response, nil
 }
 
-// ParsePingResponse parses an HTTP response from a PingWithResponse call
-func ParsePingResponse(rsp *http.Response) (*PingResponse, error) {
+// ParseListPrivateNetworksResponse parses an HTTP response from a ListPrivateNetworksWithResponse call
+func ParseListPrivateNetworksResponse(rsp *http.Response) (*ListPrivateNetworksResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PingResponse{
+	response := &ListPrivateNetworksResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest string
+		var dest struct {
+			PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreatePrivateNetworkResponse parses an HTTP response from a CreatePrivateNetworkWithResponse call
+func ParseCreatePrivateNetworkResponse(rsp *http.Response) (*CreatePrivateNetworkResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreatePrivateNetworkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeletePrivateNetworkResponse parses an HTTP response from a DeletePrivateNetworkWithResponse call
+func ParseDeletePrivateNetworkResponse(rsp *http.Response) (*DeletePrivateNetworkResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeletePrivateNetworkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetPrivateNetworkResponse parses an HTTP response from a GetPrivateNetworkWithResponse call
+func ParseGetPrivateNetworkResponse(rsp *http.Response) (*GetPrivateNetworkResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetPrivateNetworkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PrivateNetwork
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdatePrivateNetworkResponse parses an HTTP response from a UpdatePrivateNetworkWithResponse call
+func ParseUpdatePrivateNetworkResponse(rsp *http.Response) (*UpdatePrivateNetworkResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdatePrivateNetworkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -4012,6 +6123,322 @@ func ParseDeleteRuleFromSecurityGroupResponse(rsp *http.Response) (*DeleteRuleFr
 	return response, nil
 }
 
+// ParseListSksClustersResponse parses an HTTP response from a ListSksClustersWithResponse call
+func ParseListSksClustersResponse(rsp *http.Response) (*ListSksClustersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListSksClustersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			SksClusters *[]SksCluster `json:"sks-clusters,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSksClusterResponse parses an HTTP response from a CreateSksClusterWithResponse call
+func ParseCreateSksClusterResponse(rsp *http.Response) (*CreateSksClusterResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSksClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGenerateSksClusterKubeconfigResponse parses an HTTP response from a GenerateSksClusterKubeconfigWithResponse call
+func ParseGenerateSksClusterKubeconfigResponse(rsp *http.Response) (*GenerateSksClusterKubeconfigResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GenerateSksClusterKubeconfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Kubeconfig *string `json:"kubeconfig,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSksClusterResponse parses an HTTP response from a DeleteSksClusterWithResponse call
+func ParseDeleteSksClusterResponse(rsp *http.Response) (*DeleteSksClusterResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSksClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSksClusterResponse parses an HTTP response from a GetSksClusterWithResponse call
+func ParseGetSksClusterResponse(rsp *http.Response) (*GetSksClusterResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSksClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SksCluster
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateSksClusterResponse parses an HTTP response from a UpdateSksClusterWithResponse call
+func ParseUpdateSksClusterResponse(rsp *http.Response) (*UpdateSksClusterResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateSksClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateSksNodepoolResponse parses an HTTP response from a CreateSksNodepoolWithResponse call
+func ParseCreateSksNodepoolResponse(rsp *http.Response) (*CreateSksNodepoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateSksNodepoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSksNodepoolResponse parses an HTTP response from a DeleteSksNodepoolWithResponse call
+func ParseDeleteSksNodepoolResponse(rsp *http.Response) (*DeleteSksNodepoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSksNodepoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSksNodepoolResponse parses an HTTP response from a GetSksNodepoolWithResponse call
+func ParseGetSksNodepoolResponse(rsp *http.Response) (*GetSksNodepoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSksNodepoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SksNodepool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateSksNodepoolResponse parses an HTTP response from a UpdateSksNodepoolWithResponse call
+func ParseUpdateSksNodepoolResponse(rsp *http.Response) (*UpdateSksNodepoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateSksNodepoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseEvictSksNodepoolMembersResponse parses an HTTP response from a EvictSksNodepoolMembersWithResponse call
+func ParseEvictSksNodepoolMembersResponse(rsp *http.Response) (*EvictSksNodepoolMembersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EvictSksNodepoolMembersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseScaleSksNodepoolResponse parses an HTTP response from a ScaleSksNodepoolWithResponse call
+func ParseScaleSksNodepoolResponse(rsp *http.Response) (*ScaleSksNodepoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ScaleSksNodepoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListSnapshotsResponse parses an HTTP response from a ListSnapshotsWithResponse call
 func ParseListSnapshotsResponse(rsp *http.Response) (*ListSnapshotsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -4092,22 +6519,22 @@ func ParseGetSnapshotResponse(rsp *http.Response) (*GetSnapshotResponse, error) 
 	return response, nil
 }
 
-// ParseGetExportSnapshotResponse parses an HTTP response from a GetExportSnapshotWithResponse call
-func ParseGetExportSnapshotResponse(rsp *http.Response) (*GetExportSnapshotResponse, error) {
+// ParseExportSnapshotResponse parses an HTTP response from a ExportSnapshotWithResponse call
+func ParseExportSnapshotResponse(rsp *http.Response) (*ExportSnapshotResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetExportSnapshotResponse{
+	response := &ExportSnapshotResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest SnapshotExport
+		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -4118,15 +6545,69 @@ func ParseGetExportSnapshotResponse(rsp *http.Response) (*GetExportSnapshotRespo
 	return response, nil
 }
 
-// ParseExportSnapshotResponse parses an HTTP response from a ExportSnapshotWithResponse call
-func ParseExportSnapshotResponse(rsp *http.Response) (*ExportSnapshotResponse, error) {
+// ParseListTemplatesResponse parses an HTTP response from a ListTemplatesWithResponse call
+func ParseListTemplatesResponse(rsp *http.Response) (*ListTemplatesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &ExportSnapshotResponse{
+	response := &ListTemplatesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Templates *[]Template `json:"templates,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRegisterTemplateResponse parses an HTTP response from a RegisterTemplateWithResponse call
+func ParseRegisterTemplateResponse(rsp *http.Response) (*RegisterTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RegisterTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTemplateResponse parses an HTTP response from a DeleteTemplateWithResponse call
+func ParseDeleteTemplateResponse(rsp *http.Response) (*DeleteTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTemplateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4160,32 +6641,6 @@ func ParseGetTemplateResponse(rsp *http.Response) (*GetTemplateResponse, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Template
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseVersionResponse parses an HTTP response from a VersionWithResponse call
-func ParseVersionResponse(rsp *http.Response) (*VersionResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &VersionResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest string
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-//RunstatusIncident is a runstatus incident
+// RunstatusIncident is a runstatus incident
 type RunstatusIncident struct {
 	EndDate    *time.Time       `json:"end_date,omitempty"`
 	Events     []RunstatusEvent `json:"events,omitempty"`
@@ -39,7 +39,7 @@ func (incident RunstatusIncident) Match(other RunstatusIncident) bool {
 	return false
 }
 
-//RunstatusIncidentList is a list of incident
+// RunstatusIncidentList is a list of incident
 type RunstatusIncidentList struct {
 	Next      string              `json:"next"`
 	Previous  string              `json:"previous"`

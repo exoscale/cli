@@ -12,7 +12,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const maxUserDataLength = 32768
+const (
+	defaultServiceOffering = "medium"
+	maxUserDataLength      = 32768
+)
 
 // vmCmd represents the vm command
 var vmCmd = &cobra.Command{
@@ -81,7 +84,7 @@ func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
 	}
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		if err := ioutil.WriteFile(filePath, []byte(keyPairs.PrivateKey), 0600); err != nil {
+		if err := ioutil.WriteFile(filePath, []byte(keyPairs.PrivateKey), 0o600); err != nil {
 			log.Fatalf("SSH private key could not be written: %s", err)
 		}
 	}

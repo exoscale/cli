@@ -14,13 +14,15 @@
 package runtime
 
 import (
-	"errors"
 	"fmt"
+	"net/url"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // Given an input value, such as a primitive type, array or object, turn it
@@ -132,7 +134,6 @@ func sortedKeys(strMap map[string]string) []string {
 	return keys
 }
 
-
 // This is a special case. The struct may be a time, in which case, marshal
 // it in RFC3339 format.
 func marshalTimeValue(value interface{}) (string, bool) {
@@ -149,7 +150,11 @@ func marshalTimeValue(value interface{}) (string, bool) {
 
 func styleStruct(style string, explode bool, paramName string, value interface{}) (string, error) {
 	if timeVal, ok := marshalTimeValue(value); ok {
-		return stylePrimitive(style, explode, paramName, timeVal)
+		styledVal, err := stylePrimitive(style, explode, paramName, url.QueryEscape(timeVal))
+		if err != nil {
+			return "", errors.Wrap(err, "failed to style time")
+		}
+		return styledVal, nil
 	}
 
 	if style == "deepObject" {
