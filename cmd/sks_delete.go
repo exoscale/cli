@@ -43,24 +43,26 @@ var sksDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		if len(cluster.Nodepools) > 0 && deleteNodepools {
+		if len(cluster.Nodepools) > 0 {
 			nodepoolsRemaining := len(cluster.Nodepools)
 
-			for _, nodepool := range cluster.Nodepools {
-				if !askQuestion(fmt.Sprintf("Do you really want to delete SKS cluster Nodepool %q?",
-					nodepool.Name)) {
-					continue
-				}
+			if deleteNodepools {
+				for _, nodepool := range cluster.Nodepools {
+					if !askQuestion(fmt.Sprintf("Do you really want to delete SKS cluster Nodepool %q?",
+						nodepool.Name)) {
+						continue
+					}
 
-				if err = cluster.DeleteNodepool(ctx, nodepool); err != nil {
-					return fmt.Errorf("error deleting Nodepool: %s", err)
+					if err = cluster.DeleteNodepool(ctx, nodepool); err != nil {
+						return fmt.Errorf("error deleting Nodepool: %s", err)
+					}
+					nodepoolsRemaining--
 				}
-				nodepoolsRemaining--
 			}
 
 			// It's not possible to delete a SKS cluster that still has Nodepools, no need to go further.
 			if nodepoolsRemaining > 0 {
-				return errors.New("impossible to delete the SKS cluster: Nodepools still exist")
+				return errors.New("impossible to delete the SKS cluster: Nodepools still present")
 			}
 		}
 
