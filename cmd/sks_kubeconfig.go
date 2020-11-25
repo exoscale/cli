@@ -74,7 +74,7 @@ safety measure. Please look up the API documentation for more information.
 			return err
 		}
 
-		b64Kubeconfig, err := cluster.RequestKubeconfig(user, groups, time.Duration(ttl)*time.Second)
+		b64Kubeconfig, err := cluster.RequestKubeconfig(ctx, user, groups, time.Duration(ttl)*time.Second)
 		if err != nil {
 			return fmt.Errorf("error retrieving kubeconfig: %s", err)
 		}

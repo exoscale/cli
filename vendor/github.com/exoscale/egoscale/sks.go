@@ -85,13 +85,14 @@ func sksClusterFromAPI(c *v2.SksCluster) *SKSCluster {
 // RequestKubeconfig returns a base64-encoded kubeconfig content for the specified user name,
 // optionally associated to specified groups for a duration d (default API-set TTL applies if not specified).
 // Fore more information: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
-func (c *SKSCluster) RequestKubeconfig(user string, groups []string, d time.Duration) (string, error) {
+func (c *SKSCluster) RequestKubeconfig(ctx context.Context, user string, groups []string,
+	d time.Duration) (string, error) {
 	if user == "" {
 		return "", errors.New("user not specified")
 	}
 
 	resp, err := c.c.v2.GenerateSksClusterKubeconfigWithResponse(
-		apiv2.WithZone(context.Background(), c.zone),
+		apiv2.WithZone(ctx, c.zone),
 		c.ID,
 		v2.GenerateSksClusterKubeconfigJSONRequestBody{
 			User:   &user,
@@ -132,8 +133,7 @@ func (c *SKSCluster) AddNodepool(ctx context.Context, np *SKSNodepool) (*SKSNode
 				}
 				return &sgs
 			}(),
-			Size:    &np.Size,
-			Version: &np.Version,
+			Size: &np.Size,
 		})
 	if err != nil {
 		return nil, err

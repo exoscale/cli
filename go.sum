@@ -92,6 +92,8 @@ github.com/exoscale/egoscale v0.33.2 h1:6Xu06ykYpaww4iaY6D49l9LfBgCmZTmrzWmgYFSo
 github.com/exoscale/egoscale v0.33.2/go.mod h1:BFi2GNsnsrALev3+gFO/HIQADBQhqJ41S0QrNEB2GJw=
 github.com/exoscale/egoscale v0.35.0 h1:pB0864C5XQRBi2NrQYfw/Kia43DZgoiFCy/1E4TvE7o=
 github.com/exoscale/egoscale v0.35.0/go.mod h1:BFi2GNsnsrALev3+gFO/HIQADBQhqJ41S0QrNEB2GJw=
+github.com/exoscale/egoscale v0.35.1 h1:Nsp0JXVwTsNBEszD1f+DgeL31X5TZXdEZc9+ineSnPo=
+github.com/exoscale/egoscale v0.35.1/go.mod h1:BFi2GNsnsrALev3+gFO/HIQADBQhqJ41S0QrNEB2GJw=
 github.com/exoscale/openapi-cli-generator v1.1.0 h1:fYjmPqHR5vxlOBrbvde7eo7bISNQIFxsGn4A5/acwKA=
 github.com/exoscale/openapi-cli-generator v1.1.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=

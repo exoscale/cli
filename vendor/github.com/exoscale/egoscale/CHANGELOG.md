@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.35.1
+------
+
+- fix: various SKS-related bugs (#454)
+
 0.35.0
 ------
 
