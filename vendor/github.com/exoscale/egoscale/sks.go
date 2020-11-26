@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	apiv2 "github.com/exoscale/egoscale/api/v2"
@@ -108,9 +107,6 @@ func (c *SKSCluster) RequestKubeconfig(ctx context.Context, user string, groups 
 	if err != nil {
 		return "", err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		return "", fmt.Errorf("unexpected response from API: %s", resp.Status())
-	}
 
 	return optionalString(resp.JSON200.Kubeconfig), nil
 }
@@ -137,9 +133,6 @@ func (c *SKSCluster) AddNodepool(ctx context.Context, np *SKSNodepool) (*SKSNode
 		})
 	if err != nil {
 		return nil, err
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
 	}
 
 	res, err := v2.NewPoller().
@@ -172,9 +165,6 @@ func (c *SKSCluster) UpdateNodepool(ctx context.Context, np *SKSNodepool) error 
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		return fmt.Errorf("unexpected response from API: %s", resp.Status())
-	}
 
 	_, err = v2.NewPoller().
 		WithTimeout(c.c.Timeout).
@@ -196,9 +186,6 @@ func (c *SKSCluster) ScaleNodepool(ctx context.Context, np *SKSNodepool, nodes i
 	)
 	if err != nil {
 		return err
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return fmt.Errorf("unexpected response from API: %s", resp.Status())
 	}
 
 	_, err = v2.NewPoller().
@@ -230,9 +217,6 @@ func (c *SKSCluster) EvictNodepoolMembers(ctx context.Context, np *SKSNodepool, 
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		return fmt.Errorf("unexpected response from API: %s", resp.Status())
-	}
 
 	_, err = v2.NewPoller().
 		WithTimeout(c.c.Timeout).
@@ -253,9 +237,6 @@ func (c *SKSCluster) DeleteNodepool(ctx context.Context, np *SKSNodepool) error 
 	)
 	if err != nil {
 		return err
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return fmt.Errorf("unexpected response from API: %s", resp.Status())
 	}
 
 	_, err = v2.NewPoller().
@@ -280,9 +261,6 @@ func (c *Client) CreateSKSCluster(ctx context.Context, zone string, cluster *SKS
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
-	}
 
 	res, err := v2.NewPoller().
 		WithTimeout(c.Timeout).
@@ -301,9 +279,6 @@ func (c *Client) ListSKSClusters(ctx context.Context, zone string) ([]*SKSCluste
 	resp, err := c.v2.ListSksClustersWithResponse(apiv2.WithZone(ctx, zone))
 	if err != nil {
 		return nil, err
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
 	}
 
 	if resp.JSON200.SksClusters != nil {
@@ -325,15 +300,6 @@ func (c *Client) GetSKSCluster(ctx context.Context, zone, id string) (*SKSCluste
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		switch resp.StatusCode() {
-		case http.StatusNotFound:
-			return nil, ErrNotFound
-
-		default:
-			return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
-		}
-	}
 
 	cluster := sksClusterFromAPI(resp.JSON200)
 	cluster.c = c
@@ -354,15 +320,6 @@ func (c *Client) UpdateSKSCluster(ctx context.Context, zone string, cluster *SKS
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		switch resp.StatusCode() {
-		case http.StatusNotFound:
-			return ErrNotFound
-
-		default:
-			return fmt.Errorf("unexpected response from API: %s", resp.Status())
-		}
-	}
 
 	_, err = v2.NewPoller().
 		WithTimeout(c.Timeout).
@@ -379,15 +336,6 @@ func (c *Client) DeleteSKSCluster(ctx context.Context, zone, id string) error {
 	resp, err := c.v2.DeleteSksClusterWithResponse(apiv2.WithZone(ctx, zone), id)
 	if err != nil {
 		return err
-	}
-	if resp.StatusCode() != http.StatusOK {
-		switch resp.StatusCode() {
-		case http.StatusNotFound:
-			return ErrNotFound
-
-		default:
-			return fmt.Errorf("unexpected response from API: %s", resp.Status())
-		}
 	}
 
 	_, err = v2.NewPoller().

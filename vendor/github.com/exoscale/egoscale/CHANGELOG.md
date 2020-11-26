@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.35.3
+------
+
+- Fix typo in version.go
+
+0.35.2
+------
+
+- Improve API v2 errors handling (#455)
+
 0.35.1
 ------
 

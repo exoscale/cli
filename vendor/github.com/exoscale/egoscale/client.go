@@ -2,6 +2,7 @@ package egoscale
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -120,7 +121,7 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 	exoSecurityProvider.ReqExpire = client.Expiration
 
 	opts := []v2.ClientOption{
-		v2.WithHTTPClient(client.HTTPClient),
+		v2.WithHTTPClient(client),
 		v2.WithRequestEditorFn(v2.MultiRequestsEditor(
 			exoSecurityProvider.Intercept,
 			apiv2.SetEndpointFromContext),
@@ -134,17 +135,61 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 	return client
 }
 
+// Do implemements the v2.HttpRequestDoer interface in order to intercept HTTP response before the
+// generated code closes its body, giving us a chance to return meaningful error messages from the API.
+// This is only relevant for API v2 operations.
+func (c *Client) Do(req *http.Request) (*http.Response, error) {
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		// If the request returned a Go error don't bother analyzing the response
+		// body, as there probably don't be any (e.g. connection timeout/refused).
+		return resp, err
+	}
+
+	if resp.StatusCode >= 400 && resp.StatusCode <= 599 {
+		var res struct {
+			Message string `json:"message"`
+		}
+
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("error reading response body: %s", err)
+		}
+
+		if json.Valid(data) {
+			if err = json.Unmarshal(data, &res); err != nil {
+				return nil, fmt.Errorf("error unmarshaling response: %s", err)
+			}
+		} else {
+			res.Message = string(data)
+		}
+
+		switch {
+		case resp.StatusCode == http.StatusNotFound:
+			return nil, ErrNotFound
+
+		case resp.StatusCode >= 400 && resp.StatusCode < 500:
+			return nil, fmt.Errorf("%w: %s", ErrInvalidRequest, res.Message)
+
+		case resp.StatusCode >= 500:
+			return nil, fmt.Errorf("%w: %s", ErrAPIError, res.Message)
+		}
+	}
+
+	return resp, nil
+}
+
 // Get populates the given resource or fails
-func (client *Client) Get(ls Listable) (interface{}, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+func (c *Client) Get(ls Listable) (interface{}, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
 	defer cancel()
 
-	return client.GetWithContext(ctx, ls)
+	return c.GetWithContext(ctx, ls)
 }
 
 // GetWithContext populates the given resource or fails
-func (client *Client) GetWithContext(ctx context.Context, ls Listable) (interface{}, error) {
-	gs, err := client.ListWithContext(ctx, ls)
+func (c *Client) GetWithContext(ctx context.Context, ls Listable) (interface{}, error) {
+	gs, err := c.ListWithContext(ctx, ls)
 	if err != nil {
 		return nil, err
 	}
@@ -162,28 +207,28 @@ func (client *Client) GetWithContext(ctx context.Context, ls Listable) (interfac
 }
 
 // Delete removes the given resource of fails
-func (client *Client) Delete(g Deletable) error {
-	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+func (c *Client) Delete(g Deletable) error {
+	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
 	defer cancel()
 
-	return client.DeleteWithContext(ctx, g)
+	return c.DeleteWithContext(ctx, g)
 }
 
 // DeleteWithContext removes the given resource of fails
-func (client *Client) DeleteWithContext(ctx context.Context, g Deletable) error {
-	return g.Delete(ctx, client)
+func (c *Client) DeleteWithContext(ctx context.Context, g Deletable) error {
+	return g.Delete(ctx, c)
 }
 
 // List lists the given resource (and paginate till the end)
-func (client *Client) List(g Listable) ([]interface{}, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+func (c *Client) List(g Listable) ([]interface{}, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
 	defer cancel()
 
-	return client.ListWithContext(ctx, g)
+	return c.ListWithContext(ctx, g)
 }
 
 // ListWithContext lists the given resources (and paginate till the end)
-func (client *Client) ListWithContext(ctx context.Context, g Listable) (s []interface{}, err error) {
+func (c *Client) ListWithContext(ctx context.Context, g Listable) (s []interface{}, err error) {
 	s = make([]interface{}, 0)
 
 	defer func() {
@@ -202,7 +247,7 @@ func (client *Client) ListWithContext(ctx context.Context, g Listable) (s []inte
 		err = e
 		return
 	}
-	client.PaginateWithContext(ctx, req, func(item interface{}, e error) bool {
+	c.PaginateWithContext(ctx, req, func(item interface{}, e error) bool {
 		if item != nil {
 			s = append(s, item)
 			return true
@@ -244,8 +289,8 @@ func (client *Client) ListWithContext(ctx context.Context, g Listable) (s []inte
 //		}
 //	}
 //
-func (client *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-chan interface{}, <-chan error) {
-	outChan := make(chan interface{}, client.PageSize)
+func (c *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-chan interface{}, <-chan error) {
+	outChan := make(chan interface{}, c.PageSize)
 	errChan := make(chan error)
 
 	go func() {
@@ -257,7 +302,7 @@ func (client *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-c
 			errChan <- err
 			return
 		}
-		client.PaginateWithContext(ctx, req, func(item interface{}, e error) bool {
+		c.PaginateWithContext(ctx, req, func(item interface{}, e error) bool {
 			if item != nil {
 				outChan <- item
 				return true
@@ -271,29 +316,29 @@ func (client *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-c
 }
 
 // Paginate runs the ListCommand and paginates
-func (client *Client) Paginate(g Listable, callback IterateItemFunc) {
-	ctx, cancel := context.WithTimeout(context.Background(), client.Timeout)
+func (c *Client) Paginate(g Listable, callback IterateItemFunc) {
+	ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
 	defer cancel()
 
-	client.PaginateWithContext(ctx, g, callback)
+	c.PaginateWithContext(ctx, g, callback)
 }
 
 // PaginateWithContext runs the ListCommand as long as the ctx is valid
-func (client *Client) PaginateWithContext(ctx context.Context, g Listable, callback IterateItemFunc) {
+func (c *Client) PaginateWithContext(ctx context.Context, g Listable, callback IterateItemFunc) {
 	req, err := g.ListRequest()
 	if err != nil {
 		callback(nil, err)
 		return
 	}
 
-	pageSize := client.PageSize
+	pageSize := c.PageSize
 
 	page := 1
 
 	for {
 		req.SetPage(page)
 		req.SetPageSize(pageSize)
-		resp, err := client.RequestWithContext(ctx, req)
+		resp, err := c.RequestWithContext(ctx, req)
 		if err != nil {
 			// in case of 431, the response is knowingly empty
 			if errResponse, ok := err.(*ErrorResponse); ok && page == 1 && errResponse.ErrorCode == ParamError {
@@ -331,7 +376,7 @@ func (client *Client) PaginateWithContext(ctx context.Context, g Listable, callb
 }
 
 // APIName returns the name of the given command
-func (client *Client) APIName(command Command) string {
+func (c *Client) APIName(command Command) string {
 	// This is due to a limitation of Go<=1.7
 	_, ok := command.(*AuthorizeSecurityGroupEgress)
 	_, okPtr := command.(AuthorizeSecurityGroupEgress)
@@ -347,7 +392,7 @@ func (client *Client) APIName(command Command) string {
 }
 
 // APIDescription returns the description of the given command
-func (client *Client) APIDescription(command Command) string {
+func (c *Client) APIDescription(command Command) string {
 	info, err := info(command)
 	if err != nil {
 		return "*missing description*"
@@ -356,7 +401,7 @@ func (client *Client) APIDescription(command Command) string {
 }
 
 // Response returns the response structure of the given command
-func (client *Client) Response(command Command) interface{} {
+func (c *Client) Response(command Command) interface{} {
 	switch c := command.(type) {
 	case AsyncCommand:
 		return c.AsyncResponse()
@@ -366,19 +411,19 @@ func (client *Client) Response(command Command) interface{} {
 }
 
 // TraceOn activates the HTTP tracer
-func (client *Client) TraceOn() {
-	if _, ok := client.HTTPClient.Transport.(*traceTransport); !ok {
-		client.HTTPClient.Transport = &traceTransport{
-			transport: client.HTTPClient.Transport,
-			logger:    client.Logger,
+func (c *Client) TraceOn() {
+	if _, ok := c.HTTPClient.Transport.(*traceTransport); !ok {
+		c.HTTPClient.Transport = &traceTransport{
+			transport: c.HTTPClient.Transport,
+			logger:    c.Logger,
 		}
 	}
 }
 
 // TraceOff deactivates the HTTP tracer
-func (client *Client) TraceOff() {
-	if rt, ok := client.HTTPClient.Transport.(*traceTransport); ok {
-		client.HTTPClient.Transport = rt.transport
+func (c *Client) TraceOff() {
+	if rt, ok := c.HTTPClient.Transport.(*traceTransport); ok {
+		c.HTTPClient.Transport = rt.transport
 	}
 }
 

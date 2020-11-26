@@ -3,9 +3,7 @@ package egoscale
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net"
-	"net/http"
 	"strings"
 	"time"
 
@@ -182,9 +180,6 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
-	}
 
 	res, err := v2.NewPoller().
 		WithTimeout(nlb.c.Timeout).
@@ -252,9 +247,6 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		return fmt.Errorf("unexpected response from API: %s", resp.Status())
-	}
 
 	_, err = v2.NewPoller().
 		WithTimeout(nlb.c.Timeout).
@@ -299,9 +291,6 @@ func (c *Client) CreateNetworkLoadBalancer(ctx context.Context, zone string,
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
-	}
 
 	res, err := v2.NewPoller().
 		WithTimeout(c.Timeout).
@@ -321,9 +310,6 @@ func (c *Client) ListNetworkLoadBalancers(ctx context.Context, zone string) ([]*
 	resp, err := c.v2.ListLoadBalancersWithResponse(apiv2.WithZone(ctx, zone))
 	if err != nil {
 		return nil, err
-	}
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
 	}
 
 	if resp.JSON200.LoadBalancers != nil {
@@ -346,15 +332,6 @@ func (c *Client) GetNetworkLoadBalancer(ctx context.Context, zone, id string) (*
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		switch resp.StatusCode() {
-		case http.StatusNotFound:
-			return nil, ErrNotFound
-
-		default:
-			return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
-		}
-	}
 
 	nlb := nlbFromAPI(resp.JSON200)
 	nlb.c = c
@@ -376,15 +353,6 @@ func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string, // 
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode() != http.StatusOK {
-		switch resp.StatusCode() {
-		case http.StatusNotFound:
-			return nil, ErrNotFound
-
-		default:
-			return nil, fmt.Errorf("unexpected response from API: %s", resp.Status())
-		}
-	}
 
 	res, err := v2.NewPoller().
 		WithTimeout(c.Timeout).
@@ -401,15 +369,6 @@ func (c *Client) DeleteNetworkLoadBalancer(ctx context.Context, zone, id string)
 	resp, err := c.v2.DeleteLoadBalancerWithResponse(apiv2.WithZone(ctx, zone), id)
 	if err != nil {
 		return err
-	}
-	if resp.StatusCode() != http.StatusOK {
-		switch resp.StatusCode() {
-		case http.StatusNotFound:
-			return ErrNotFound
-
-		default:
-			return fmt.Errorf("unexpected response from API: %s", resp.Status())
-		}
 	}
 
 	_, err = v2.NewPoller().
