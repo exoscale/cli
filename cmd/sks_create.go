@@ -91,7 +91,7 @@ var sksCreateCmd = &cobra.Command{
 			}
 
 			var nodepoolSecurityGroupIDs []egoscale.UUID
-			if len(nodepoolSecurityGroupIDs) > 0 {
+			if len(nodepoolSecurityGroups) > 0 {
 				nodepoolSecurityGroupIDs, err = getSecurityGroupIDs(nodepoolSecurityGroups)
 				if err != nil {
 					return err
