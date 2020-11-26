@@ -71,11 +71,6 @@ var sksCreateCmd = &cobra.Command{
 				return err
 			}
 
-			nodepoolVersion, err := cmd.Flags().GetString("nodepool-kubernetes-version")
-			if err != nil {
-				return err
-			}
-
 			nodepoolInstanceType, err := cmd.Flags().GetString("nodepool-instance-type")
 			if err != nil {
 				return err
@@ -107,7 +102,6 @@ var sksCreateCmd = &cobra.Command{
 				Name:           nodepoolName,
 				Description:    nodepoolDescription,
 				Size:           nodepoolSize,
-				Version:        nodepoolVersion,
 				InstanceTypeID: nodepoolServiceOffering.ID.String(),
 				DiskSize:       nodepoolDiskSize,
 				SecurityGroupIDs: func() []string {
@@ -147,7 +141,5 @@ func init() {
 		"default Nodepool Compute instances disk size")
 	sksCreateCmd.Flags().StringSlice("nodepool-security-group", nil,
 		"default Nodepool Security Group <name | id> (can be specified multiple times)")
-	sksCreateCmd.Flags().String("nodepool-kubernetes-version", "1.18.6",
-		"default Nodepool Kubernetes version")
 	sksCmd.AddCommand(sksCreateCmd)
 }
