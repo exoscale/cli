@@ -92,11 +92,19 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		sg, err := cmd.Flags().GetStringSlice("security-group")
+		aag, err := cmd.Flags().GetStringSlice("anti-affinity-group")
+		if err != nil {
+			return err
+		}
+		antiAffinityGroups, err := getAffinityGroupIDs(aag)
 		if err != nil {
 			return err
 		}
 
+		sg, err := cmd.Flags().GetStringSlice("security-group")
+		if err != nil {
+			return err
+		}
 		securityGroups, err := getSecurityGroupIDs(sg)
 		if err != nil {
 			return err
@@ -134,18 +142,19 @@ Supported output template annotations: %s`,
 		r := asyncTasks([]task{
 			{
 				egoscale.CreateInstancePool{
-					Name:              args[0],
-					Description:       description,
-					ZoneID:            zone.ID,
-					ServiceOfferingID: servOffering.ID,
-					TemplateID:        template.ID,
-					KeyPair:           keypair,
-					Size:              size,
-					RootDiskSize:      diskSize,
-					SecurityGroupIDs:  securityGroups,
-					NetworkIDs:        privnets,
-					IPv6:              ipv6,
-					UserData:          userData,
+					Name:                 args[0],
+					Description:          description,
+					ZoneID:               zone.ID,
+					ServiceOfferingID:    servOffering.ID,
+					TemplateID:           template.ID,
+					KeyPair:              keypair,
+					Size:                 size,
+					RootDiskSize:         diskSize,
+					AntiAffinityGroupIDs: antiAffinityGroups,
+					SecurityGroupIDs:     securityGroups,
+					NetworkIDs:           privnets,
+					IPv6:                 ipv6,
+					UserData:             userData,
 				},
 				fmt.Sprintf("Creating instance pool %q", args[0]),
 			},
@@ -176,8 +185,9 @@ func init() {
 	instancePoolCreateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
 	instancePoolCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	instancePoolCreateCmd.Flags().StringP("keypair", "k", "", "Instance pool keypair")
-	instancePoolCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security groups <name | id, name | id, ...>")
-	instancePoolCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Privnets <name | id, name | id, ...>")
+	instancePoolCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinity group <name | id>. Can be specified multiple times.")
+	instancePoolCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security Group <name | id>. Can be specified multiple times.")
+	instancePoolCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Private Network <name | id>. Can be specified multiple times.")
 	instancePoolCreateCmd.Flags().BoolP("ipv6", "6", false, "Enable IPv6")
 	instancePoolCmd.AddCommand(instancePoolCreateCmd)
 }

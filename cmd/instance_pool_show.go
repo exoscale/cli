@@ -10,20 +10,21 @@ import (
 )
 
 type instancePoolItemOutput struct {
-	ID              string                     `json:"id"`
-	Name            string                     `json:"name"`
-	Description     string                     `json:"description"`
-	ServiceOffering string                     `json:"service_offering"`
-	Template        string                     `json:"templateid"`
-	Zone            string                     `json:"zoneid"`
-	SecurityGroups  []string                   `json:"security_groups"`
-	PrivateNetworks []string                   `json:"private_networks"`
-	IPv6            bool                       `json:"ipv6" outputLabel:"IPv6"`
-	SSHKey          string                     `json:"ssh_key"`
-	Size            int                        `json:"size"`
-	DiskSize        string                     `json:"disk_size"`
-	State           egoscale.InstancePoolState `json:"state"`
-	Instances       []string                   `json:"instances"`
+	ID                 string                     `json:"id"`
+	Name               string                     `json:"name"`
+	Description        string                     `json:"description"`
+	ServiceOffering    string                     `json:"service_offering"`
+	Template           string                     `json:"templateid"`
+	Zone               string                     `json:"zoneid"`
+	AntiAffinityGroups []string                   `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
+	SecurityGroups     []string                   `json:"security_groups"`
+	PrivateNetworks    []string                   `json:"private_networks"`
+	IPv6               bool                       `json:"ipv6" outputLabel:"IPv6"`
+	SSHKey             string                     `json:"ssh_key"`
+	Size               int                        `json:"size"`
+	DiskSize           string                     `json:"disk_size"`
+	State              egoscale.InstancePoolState `json:"state"`
+	Instances          []string                   `json:"instances"`
 }
 
 func (o *instancePoolItemOutput) toJSON()  { outputJSON(o) }
@@ -98,6 +99,14 @@ func showInstancePool(name, zoneName string) error {
 	}
 	for _, vm := range instancePool.VirtualMachines {
 		o.Instances = append(o.Instances, vm.Name)
+	}
+
+	for _, a := range instancePool.AntiAffinityGroupIDs {
+		aag, err := getAffinityGroupByNameOrID(a.String())
+		if err != nil {
+			return err
+		}
+		o.AntiAffinityGroups = append(o.AntiAffinityGroups, aag.Name)
 	}
 
 	for _, s := range instancePool.SecurityGroupIDs {
