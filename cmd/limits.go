@@ -88,7 +88,7 @@ func fetchUsedResources(resourceType string) (int, error) {
 		resourceUsed = len(snapshots)
 
 	case "template":
-		templates, err := cs.ListWithContext(gContext, &egoscale.Template{})
+		templates, err := cs.ListWithContext(gContext, &egoscale.ListTemplates{TemplateFilter: "self"})
 		if err != nil {
 			return 0, err
 		}
