@@ -51,12 +51,12 @@ var sksNodepoolDeleteCmd = &cobra.Command{
 
 		for _, n := range cluster.Nodepools {
 			if n.ID == np || n.Name == np {
-				if err := cluster.DeleteNodepool(ctx, n); err != nil {
+				n := n
+				decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", np), func() {
+					err = cluster.DeleteNodepool(ctx, n)
+				})
+				if err != nil {
 					return err
-				}
-
-				if !gQuiet {
-					cmd.Println("Nodepool deleted successfully")
 				}
 
 				return nil

@@ -32,17 +32,17 @@ type taskResponse struct {
 }
 
 func asyncTasks(tasks []task) []taskResponse {
-	//init results
+	// init results
 	responses := make([]taskResponse, len(tasks))
 
-	//create task Progress
+	// create task Progress
 	taskBars := make([]*mpb.Bar, len(tasks))
 	maximum := 1 << 30
 	var taskWG sync.WaitGroup
 	progress := mpb.NewWithContext(gContext,
 		mpb.WithOutput(os.Stderr),
 		mpb.WithWaitGroup(&taskWG),
-		mpb.ContainerOptOnCond(mpb.WithOutput(nil), func() bool { return gQuiet }),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
 	)
 
 	taskWG.Add(len(tasks))
@@ -53,7 +53,7 @@ func asyncTasks(tasks []task) []taskResponse {
 
 	max := 50 * time.Millisecond
 
-	//exec task and init bars
+	// exec task and init bars
 	for i, task := range tasks {
 		c := make(chan taskStatus)
 		switch cmd := task.Command.(type) {
@@ -71,7 +71,7 @@ func asyncTasks(tasks []task) []taskResponse {
 			mpb.AppendDecorators(decor.OnComplete(decor.Elapsed(decor.ET_STYLE_GO), "done")),
 		)
 
-		//listen for bar progress
+		// listen for bar progress
 		go func(channel chan taskStatus, idx int) {
 			defer taskWG.Done()
 			defer close(channel)
@@ -217,7 +217,7 @@ func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 // forEachZone executes the function f for each specified zone, and return a multierror.Error containing all
 // errors that may have occurred during execution.
 func forEachZone(zones []string, f func(zone string) error) error {
-	var meg = new(multierror.Group)
+	meg := new(multierror.Group)
 
 	for _, zone := range zones {
 		zone := zone

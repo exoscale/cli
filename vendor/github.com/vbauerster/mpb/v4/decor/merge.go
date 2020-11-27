@@ -2,16 +2,18 @@ package decor
 
 import (
 	"fmt"
+	"strings"
 	"unicode/utf8"
 )
 
-// Merge helper func, provides a way to synchronize width of single
-// decorator with adjacent decorators of different bar, like so:
-//   +--------+---------+
-//   |     MERGE(D)     |
-//   +--------+---------+
-//   |   D1   |   D2    |
-//   +--------+---------+
+// Merge wraps its decorator argument with intention to sync width
+// with several decorators of another bar. Visual example:
+//
+//    +----+--------+---------+--------+
+//    | B1 |      MERGE(D, P1, Pn)     |
+//    +----+--------+---------+--------+
+//    | B2 |   D0   |   D1    |   Dn   |
+//    +----+--------+---------+--------+
 //
 func Merge(decorator Decorator, placeholders ...WC) Decorator {
 	if _, ok := decorator.Sync(); !ok || len(placeholders) == 0 {
@@ -19,15 +21,15 @@ func Merge(decorator Decorator, placeholders ...WC) Decorator {
 	}
 	md := &mergeDecorator{
 		Decorator:    decorator,
+		wc:           decorator.GetConf(),
 		placeHolders: make([]*placeHolderDecorator, len(placeholders)),
 	}
-	md.wc = decorator.SetConfig(md.wc)
+	decorator.SetConf(WC{})
 	for i, wc := range placeholders {
-		wc.Init()
-		md.placeHolders[i] = &placeHolderDecorator{
-			WC:    wc,
-			wsync: make(chan int),
+		if (wc.C & DSyncWidth) == 0 {
+			return decorator
 		}
+		md.placeHolders[i] = &placeHolderDecorator{wc.Init()}
 	}
 	return md
 }
@@ -38,45 +40,67 @@ type mergeDecorator struct {
 	placeHolders []*placeHolderDecorator
 }
 
-func (d *mergeDecorator) CompoundDecorators() []Decorator {
-	decorators := make([]Decorator, len(d.placeHolders)+1)
-	decorators[0] = d.Decorator
+func (d *mergeDecorator) GetConf() WC {
+	return d.wc
+}
+
+func (d *mergeDecorator) SetConf(conf WC) {
+	d.wc = conf.Init()
+}
+
+func (d *mergeDecorator) MergeUnwrap() []Decorator {
+	decorators := make([]Decorator, len(d.placeHolders))
 	for i, ph := range d.placeHolders {
-		decorators[i+1] = ph
+		decorators[i] = ph
 	}
 	return decorators
 }
 
-func (md *mergeDecorator) Sync() (chan int, bool) {
-	return md.wc.Sync()
+func (d *mergeDecorator) Sync() (chan int, bool) {
+	return d.wc.Sync()
 }
 
-func (d *mergeDecorator) Decor(st *Statistics) string {
-	msg := d.Decorator.Decor(st)
+func (d *mergeDecorator) Base() Decorator {
+	return d.Decorator
+}
+
+func (d *mergeDecorator) Decor(s *Statistics) string {
+	msg := d.Decorator.Decor(s)
 	msgLen := utf8.RuneCountInString(msg)
-
-	var pWidth int
-	for _, ph := range d.placeHolders {
-		pWidth += <-ph.wsync
-	}
-
-	d.wc.wsync <- msgLen - pWidth
-
-	max := <-d.wc.wsync
 	if (d.wc.C & DextraSpace) != 0 {
-		max++
+		msgLen++
 	}
-	return fmt.Sprintf(fmt.Sprintf(d.wc.dynFormat, max+pWidth), msg)
+
+	var total int
+	max := utf8.RuneCountInString(d.placeHolders[0].FormatMsg(""))
+	total += max
+	pw := (msgLen - max) / len(d.placeHolders)
+	rem := (msgLen - max) % len(d.placeHolders)
+
+	var diff int
+	for i := 1; i < len(d.placeHolders); i++ {
+		ph := d.placeHolders[i]
+		width := pw - diff
+		if (ph.WC.C & DextraSpace) != 0 {
+			width--
+			if width < 0 {
+				width = 0
+			}
+		}
+		max = utf8.RuneCountInString(ph.FormatMsg(strings.Repeat(" ", width)))
+		total += max
+		diff = max - pw
+	}
+
+	d.wc.wsync <- pw + rem
+	max = <-d.wc.wsync
+	return fmt.Sprintf(fmt.Sprintf(d.wc.dynFormat, max+total), msg)
 }
 
 type placeHolderDecorator struct {
 	WC
-	wsync chan int
 }
 
-func (d *placeHolderDecorator) Decor(st *Statistics) string {
-	go func() {
-		d.wsync <- utf8.RuneCountInString(d.FormatMsg(""))
-	}()
+func (d *placeHolderDecorator) Decor(*Statistics) string {
 	return ""
 }

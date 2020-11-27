@@ -25,8 +25,9 @@ var sksNodepoolAddCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			c    = args[0]
-			name = args[1]
+			c        = args[0]
+			name     = args[1]
+			nodepool *egoscale.SKSNodepool
 		)
 
 		z, err := cmd.Flags().GetString("zone")
@@ -68,7 +69,7 @@ var sksNodepoolAddCmd = &cobra.Command{
 		}
 
 		var securityGroupIDs []egoscale.UUID
-		if len(securityGroupIDs) > 0 {
+		if len(securityGroups) > 0 {
 			securityGroupIDs, err = getSecurityGroupIDs(securityGroups)
 			if err != nil {
 				return err
@@ -81,22 +82,24 @@ var sksNodepoolAddCmd = &cobra.Command{
 			return err
 		}
 
-		nodepool, err := cluster.AddNodepool(ctx, &egoscale.SKSNodepool{
-			Name:           name,
-			Description:    description,
-			Size:           size,
-			InstanceTypeID: serviceOffering.ID.String(),
-			DiskSize:       diskSize,
-			SecurityGroupIDs: func() []string {
-				sgs := make([]string, len(securityGroupIDs))
-				for i := range securityGroupIDs {
-					sgs[i] = securityGroupIDs[i].String()
-				}
-				return sgs
-			}(),
+		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", name), func() {
+			nodepool, err = cluster.AddNodepool(ctx, &egoscale.SKSNodepool{
+				Name:           name,
+				Description:    description,
+				Size:           size,
+				InstanceTypeID: serviceOffering.ID.String(),
+				DiskSize:       diskSize,
+				SecurityGroupIDs: func() []string {
+					sgs := make([]string, len(securityGroupIDs))
+					for i := range securityGroupIDs {
+						sgs[i] = securityGroupIDs[i].String()
+					}
+					return sgs
+				}(),
+			})
 		})
 		if err != nil {
-			return fmt.Errorf("error adding Nodepool to the SKS cluster: %s", err)
+			return err
 		}
 
 		if !gQuiet {

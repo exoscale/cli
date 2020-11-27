@@ -90,8 +90,11 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 			nodepool.DiskSize = diskSize
 		}
 
-		if err = cluster.UpdateNodepool(ctx, nodepool); err != nil {
-			return fmt.Errorf("error updating Nodepool: %s", err)
+		decorateAsyncOperation(fmt.Sprintf("Updating Nodepool %q...", np), func() {
+			err = cluster.UpdateNodepool(ctx, nodepool)
+		})
+		if err != nil {
+			return err
 		}
 
 		if !gQuiet {

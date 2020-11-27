@@ -49,8 +49,11 @@ var sksUpdateCmd = &cobra.Command{
 			cluster.Description = description
 		}
 
-		if err = cs.UpdateSKSCluster(ctx, zone, cluster); err != nil {
-			return fmt.Errorf("error updating SKS cluster: %s", err)
+		decorateAsyncOperation(fmt.Sprintf("Updating SKS cluster %q...", c), func() {
+			err = cs.UpdateSKSCluster(ctx, zone, cluster)
+		})
+		if err != nil {
+			return err
 		}
 
 		if !gQuiet {

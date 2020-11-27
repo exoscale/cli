@@ -25,7 +25,10 @@ var sksCreateCmd = &cobra.Command{
 		})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		name := args[0]
+		var (
+			name    = args[0]
+			cluster *egoscale.SKSCluster
+		)
 
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
@@ -43,13 +46,15 @@ var sksCreateCmd = &cobra.Command{
 		}
 
 		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		cluster, err := cs.CreateSKSCluster(ctx, zone, &egoscale.SKSCluster{
-			Name:        name,
-			Description: description,
-			Version:     version,
+		decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", name), func() {
+			cluster, err = cs.CreateSKSCluster(ctx, zone, &egoscale.SKSCluster{
+				Name:        name,
+				Description: description,
+				Version:     version,
+			})
 		})
 		if err != nil {
-			return fmt.Errorf("unable to create SKS cluster: %s", err)
+			return err
 		}
 
 		nodepoolSize, err := cmd.Flags().GetInt64("nodepool-size")
@@ -98,21 +103,24 @@ var sksCreateCmd = &cobra.Command{
 				}
 			}
 
-			if _, err = cluster.AddNodepool(ctx, &egoscale.SKSNodepool{
-				Name:           nodepoolName,
-				Description:    nodepoolDescription,
-				Size:           nodepoolSize,
-				InstanceTypeID: nodepoolServiceOffering.ID.String(),
-				DiskSize:       nodepoolDiskSize,
-				SecurityGroupIDs: func() []string {
-					sgs := make([]string, len(nodepoolSecurityGroupIDs))
-					for i := range nodepoolSecurityGroupIDs {
-						sgs[i] = nodepoolSecurityGroupIDs[i].String()
-					}
-					return sgs
-				}(),
-			}); err != nil {
-				return fmt.Errorf("error adding default Nodepool to the SKS cluster: %s", err)
+			decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolName), func() {
+				_, err = cluster.AddNodepool(ctx, &egoscale.SKSNodepool{
+					Name:           nodepoolName,
+					Description:    nodepoolDescription,
+					Size:           nodepoolSize,
+					InstanceTypeID: nodepoolServiceOffering.ID.String(),
+					DiskSize:       nodepoolDiskSize,
+					SecurityGroupIDs: func() []string {
+						sgs := make([]string, len(nodepoolSecurityGroupIDs))
+						for i := range nodepoolSecurityGroupIDs {
+							sgs[i] = nodepoolSecurityGroupIDs[i].String()
+						}
+						return sgs
+					}(),
+				})
+			})
+			if err != nil {
+				return err
 			}
 		}
 

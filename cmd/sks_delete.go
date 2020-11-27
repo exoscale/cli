@@ -48,13 +48,20 @@ var sksDeleteCmd = &cobra.Command{
 
 			if deleteNodepools {
 				for _, nodepool := range cluster.Nodepools {
-					if !askQuestion(fmt.Sprintf("Do you really want to delete SKS cluster Nodepool %q?",
-						nodepool.Name)) {
-						continue
+					nodepool := nodepool
+
+					if !force {
+						if !askQuestion(fmt.Sprintf("Do you really want to delete Nodepool %q?",
+							nodepool.Name)) {
+							continue
+						}
 					}
 
-					if err = cluster.DeleteNodepool(ctx, nodepool); err != nil {
-						return fmt.Errorf("error deleting Nodepool: %s", err)
+					decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", nodepool.Name), func() {
+						err = cluster.DeleteNodepool(ctx, nodepool)
+					})
+					if err != nil {
+						return err
 					}
 					nodepoolsRemaining--
 				}
@@ -72,12 +79,11 @@ var sksDeleteCmd = &cobra.Command{
 			}
 		}
 
-		if err := cs.DeleteSKSCluster(ctx, zone, cluster.ID); err != nil {
-			return fmt.Errorf("unable to delete SKS cluster: %s", err)
-		}
-
-		if !gQuiet {
-			cmd.Println("SKS cluster deleted successfully")
+		decorateAsyncOperation(fmt.Sprintf("Deleting SKS cluster %q...", cluster.Name), func() {
+			err = cs.DeleteSKSCluster(ctx, zone, cluster.ID)
+		})
+		if err != nil {
+			return err
 		}
 
 		return nil

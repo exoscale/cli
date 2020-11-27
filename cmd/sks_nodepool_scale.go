@@ -69,8 +69,11 @@ the pool rather than leaving the decision to the SKS manager.`,
 			return errors.New("Nodepool not found") // nolint:golint
 		}
 
-		if err = cluster.ScaleNodepool(ctx, nodepool, int64(size)); err != nil {
-			return fmt.Errorf("error updating Nodepool: %s", err)
+		decorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", np), func() {
+			err = cluster.ScaleNodepool(ctx, nodepool, int64(size))
+		})
+		if err != nil {
+			return err
 		}
 
 		if !gQuiet {

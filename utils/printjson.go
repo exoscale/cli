@@ -13,7 +13,7 @@ import (
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 const nocolorsTheme = "nocolors"
@@ -60,7 +60,7 @@ func highlight(w io.Writer, source, style string) error {
 
 // PrintJSON highlights the given string to stdout.
 func PrintJSON(out, theme string) {
-	if terminal.IsTerminal(syscall.Stdout) {
+	if term.IsTerminal(syscall.Stdout) {
 		if err := highlight(os.Stdout, out, theme); err != nil {
 			log.Fatal(err)
 		}

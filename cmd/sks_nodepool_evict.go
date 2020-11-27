@@ -57,8 +57,11 @@ var sksNodepoolEvictCmd = &cobra.Command{
 			return errors.New("Nodepool not found") // nolint:golint
 		}
 
-		if err = cluster.EvictNodepoolMembers(ctx, nodepool, members); err != nil {
-			return fmt.Errorf("error updating Nodepool: %s", err)
+		decorateAsyncOperation(fmt.Sprintf("Evicting members from Nodepool %q...", np), func() {
+			err = cluster.EvictNodepoolMembers(ctx, nodepool, members)
+		})
+		if err != nil {
+			return err
 		}
 
 		if !gQuiet {
