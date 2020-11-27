@@ -36,9 +36,21 @@ func sksNodepoolFromAPI(n *v2.SksNodepool) *SKSNodepool {
 		InstanceTypeID: optionalString(n.InstanceType.Id),
 		TemplateID:     optionalString(n.Template.Id),
 		DiskSize:       optionalInt64(n.DiskSize),
-		Version:        optionalString(n.Version),
-		Size:           optionalInt64(n.Size),
-		State:          optionalString(n.State),
+		SecurityGroupIDs: func() []string {
+			sgs := make([]string, 0)
+
+			if n.SecurityGroups != nil {
+				for _, sg := range *n.SecurityGroups {
+					sg := sg
+					sgs = append(sgs, *sg.Id)
+				}
+			}
+
+			return sgs
+		}(),
+		Version: optionalString(n.Version),
+		Size:    optionalInt64(n.Size),
+		State:   optionalString(n.State),
 	}
 }
 

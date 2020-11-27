@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.36.0
+------
+
+- feature: add support for Anti-Affinity Groups to Instance Pools
+- feature: add support for Security Groups to SKS Nodepools
+
 0.35.3
 ------
 

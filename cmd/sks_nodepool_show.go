@@ -11,18 +11,18 @@ import (
 )
 
 type sksNodepoolShowOutput struct {
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	CreationDate   string `json:"creation_date"`
-	InstancePoolID string `json:"instance_pool_id"`
-	InstanceType   string `json:"instance_type"`
-	Template       string `json:"template"`
-	DiskSize       int64  `json:"disk_size"`
-	// SecurityGroups []string `json:"security_groups"`
-	Version string `json:"version"`
-	Size    int64  `json:"size"`
-	State   string `json:"state"`
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Description    string   `json:"description"`
+	CreationDate   string   `json:"creation_date"`
+	InstancePoolID string   `json:"instance_pool_id"`
+	InstanceType   string   `json:"instance_type"`
+	Template       string   `json:"template"`
+	DiskSize       int64    `json:"disk_size"`
+	SecurityGroups []string `json:"security_groups"`
+	Version        string   `json:"version"`
+	Size           int64    `json:"size"`
+	State          string   `json:"state"`
 }
 
 func (o *sksNodepoolShowOutput) toJSON()      { outputJSON(o) }
@@ -91,7 +91,7 @@ func showSKSNodepool(zone *egoscale.Zone, c, np string) (outputter, error) {
 		Version:        nodepool.Version,
 		State:          nodepool.State,
 		Size:           nodepool.Size,
-		// SecurityGroups: make([]string, 0),
+		SecurityGroups: make([]string, 0),
 	}
 
 	serviceOffering, err := getServiceOfferingByNameOrID(nodepool.InstanceTypeID)
@@ -108,23 +108,22 @@ func showSKSNodepool(zone *egoscale.Zone, c, np string) (outputter, error) {
 	}
 	out.Template = template.Name
 
-	// TODO: the API doesn't return this information yet.
-	// if len(nodepool.SecurityGroupIDs) > 0 {
-	// 	allSecurityGroups, err := cs.ListWithContext(gContext, &egoscale.SecurityGroup{})
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf("error listing Security Groups: %s", err)
-	// 	}
-	//
-	// 	for _, s := range allSecurityGroups {
-	// 		sg := s.(*egoscale.SecurityGroup)
-	//
-	// 		for _, id := range nodepool.SecurityGroupIDs {
-	// 			if sg.ID.String() == id {
-	// 				out.SecurityGroups = append(out.SecurityGroups, sg.Name)
-	// 			}
-	// 		}
-	// 	}
-	// }
+	if len(nodepool.SecurityGroupIDs) > 0 {
+		allSecurityGroups, err := cs.ListWithContext(gContext, &egoscale.SecurityGroup{})
+		if err != nil {
+			return nil, fmt.Errorf("error listing Security Groups: %s", err)
+		}
+
+		for _, s := range allSecurityGroups {
+			sg := s.(*egoscale.SecurityGroup)
+
+			for _, id := range nodepool.SecurityGroupIDs {
+				if sg.ID.String() == id {
+					out.SecurityGroups = append(out.SecurityGroups, sg.Name)
+				}
+			}
+		}
+	}
 
 	return &out, nil
 }
