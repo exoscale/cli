@@ -150,7 +150,7 @@ var sosUploadCmd = &cobra.Command{
 			mpb.WithWidth(64),
 			// override default 120ms refresh rate
 			mpb.WithRefreshRate(180*time.Millisecond),
-			mpb.ContainerOptOnCond(mpb.WithOutput(nil), func() bool { return gQuiet }),
+			mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
 		)
 		taskWG.Add(lenFileToUpload)
 

@@ -6,9 +6,9 @@ require (
 	github.com/alecthomas/chroma v0.7.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cenkalti/backoff v2.0.0+incompatible
-	github.com/deepmap/oapi-codegen v1.3.13 // indirect
+	github.com/deepmap/oapi-codegen v1.4.1 // indirect
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.33.2
+	github.com/exoscale/egoscale v0.36.1
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -37,10 +37,11 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/objx v0.3.0 // indirect
-	github.com/vbauerster/mpb/v4 v4.8.4
-	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+	github.com/vbauerster/mpb/v4 v4.12.2
+	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73
-	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009 // indirect
+	golang.org/x/sys v0.0.0-20201126233918-771906719818 // indirect
+	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/h2non/gentleman.v2 v2.0.4

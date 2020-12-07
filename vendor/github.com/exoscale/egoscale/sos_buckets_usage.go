@@ -5,7 +5,7 @@ type BucketUsage struct {
 	Created string `json:"created"`
 	Name    string `json:"name"`
 	Region  string `json:"region"`
-	Usage   int    `json:"usage"`
+	Usage   int64  `json:"usage"`
 }
 
 // ListBucketsUsage represents a listBucketsUsage API request

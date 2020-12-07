@@ -2,24 +2,6 @@ package decor
 
 import (
 	"fmt"
-	"io"
-	"strconv"
-	"strings"
-)
-
-const (
-	_   = iota
-	KiB = 1 << (iota * 10)
-	MiB
-	GiB
-	TiB
-)
-
-const (
-	KB = 1000
-	MB = KB * 1000
-	GB = MB * 1000
-	TB = GB * 1000
 )
 
 const (
@@ -28,181 +10,58 @@ const (
 	UnitKB
 )
 
-type CounterKiB int64
-
-func (c CounterKiB) Format(st fmt.State, verb rune) {
-	prec, ok := st.Precision()
-
-	if verb == 'd' || !ok {
-		prec = 0
-	}
-	if verb == 'f' && !ok {
-		prec = 6
-	}
-	// retain old beahavior if s verb used
-	if verb == 's' {
-		prec = 1
-	}
-
-	var res, unit string
-	switch {
-	case c >= TiB:
-		unit = "TiB"
-		res = strconv.FormatFloat(float64(c)/TiB, 'f', prec, 64)
-	case c >= GiB:
-		unit = "GiB"
-		res = strconv.FormatFloat(float64(c)/GiB, 'f', prec, 64)
-	case c >= MiB:
-		unit = "MiB"
-		res = strconv.FormatFloat(float64(c)/MiB, 'f', prec, 64)
-	case c >= KiB:
-		unit = "KiB"
-		res = strconv.FormatFloat(float64(c)/KiB, 'f', prec, 64)
-	default:
-		unit = "b"
-		res = strconv.FormatInt(int64(c), 10)
-	}
-
-	if st.Flag(' ') {
-		res += " "
-	}
-	res += unit
-
-	if w, ok := st.Width(); ok {
-		if len(res) < w {
-			pad := strings.Repeat(" ", w-len(res))
-			if st.Flag(int('-')) {
-				res += pad
-			} else {
-				res = pad + res
-			}
-		}
-	}
-
-	io.WriteString(st, res)
-}
-
-type CounterKB int64
-
-func (c CounterKB) Format(st fmt.State, verb rune) {
-	prec, ok := st.Precision()
-
-	if verb == 'd' || !ok {
-		prec = 0
-	}
-	if verb == 'f' && !ok {
-		prec = 6
-	}
-	// retain old beahavior if s verb used
-	if verb == 's' {
-		prec = 1
-	}
-
-	var res, unit string
-	switch {
-	case c >= TB:
-		unit = "TB"
-		res = strconv.FormatFloat(float64(c)/TB, 'f', prec, 64)
-	case c >= GB:
-		unit = "GB"
-		res = strconv.FormatFloat(float64(c)/GB, 'f', prec, 64)
-	case c >= MB:
-		unit = "MB"
-		res = strconv.FormatFloat(float64(c)/MB, 'f', prec, 64)
-	case c >= KB:
-		unit = "kB"
-		res = strconv.FormatFloat(float64(c)/KB, 'f', prec, 64)
-	default:
-		unit = "b"
-		res = strconv.FormatInt(int64(c), 10)
-	}
-
-	if st.Flag(' ') {
-		res += " "
-	}
-	res += unit
-
-	if w, ok := st.Width(); ok {
-		if len(res) < w {
-			pad := strings.Repeat(" ", w-len(res))
-			if st.Flag(int('-')) {
-				res += pad
-			} else {
-				res = pad + res
-			}
-		}
-	}
-
-	io.WriteString(st, res)
-}
-
 // CountersNoUnit is a wrapper around Counters with no unit param.
-func CountersNoUnit(pairFormat string, wcc ...WC) Decorator {
-	return Counters(0, pairFormat, wcc...)
+func CountersNoUnit(pairFmt string, wcc ...WC) Decorator {
+	return Counters(0, pairFmt, wcc...)
 }
 
 // CountersKibiByte is a wrapper around Counters with predefined unit
 // UnitKiB (bytes/1024).
-func CountersKibiByte(pairFormat string, wcc ...WC) Decorator {
-	return Counters(UnitKiB, pairFormat, wcc...)
+func CountersKibiByte(pairFmt string, wcc ...WC) Decorator {
+	return Counters(UnitKiB, pairFmt, wcc...)
 }
 
 // CountersKiloByte is a wrapper around Counters with predefined unit
 // UnitKB (bytes/1000).
-func CountersKiloByte(pairFormat string, wcc ...WC) Decorator {
-	return Counters(UnitKB, pairFormat, wcc...)
+func CountersKiloByte(pairFmt string, wcc ...WC) Decorator {
+	return Counters(UnitKB, pairFmt, wcc...)
 }
 
 // Counters decorator with dynamic unit measure adjustment.
 //
 //	`unit` one of [0|UnitKiB|UnitKB] zero for no unit
 //
-//	`pairFormat` printf compatible verbs for current and total, like "%f" or "%d"
+//	`pairFmt` printf compatible verbs for current and total, like "%f" or "%d"
 //
 //	`wcc` optional WC config
 //
-// pairFormat example if UnitKB is chosen:
+// pairFmt example if unit=UnitKB:
 //
-//	"%.1f / %.1f" = "1.0MB / 12.0MB" or "% .1f / % .1f" = "1.0 MB / 12.0 MB"
-func Counters(unit int, pairFormat string, wcc ...WC) Decorator {
-	var wc WC
-	for _, widthConf := range wcc {
-		wc = widthConf
-	}
-	wc.Init()
-	d := &countersDecorator{
-		WC:         wc,
-		unit:       unit,
-		pairFormat: pairFormat,
-	}
-	return d
+//	pairFmt="%.1f / %.1f"   output: "1.0MB / 12.0MB"
+//	pairFmt="% .1f / % .1f" output: "1.0 MB / 12.0 MB"
+//	pairFmt="%d / %d"       output: "1MB / 12MB"
+//	pairFmt="% d / % d"     output: "1 MB / 12 MB"
+//
+func Counters(unit int, pairFmt string, wcc ...WC) Decorator {
+	return Any(chooseSizeProducer(unit, pairFmt), wcc...)
 }
 
-type countersDecorator struct {
-	WC
-	unit        int
-	pairFormat  string
-	completeMsg *string
-}
-
-func (d *countersDecorator) Decor(st *Statistics) string {
-	if st.Completed && d.completeMsg != nil {
-		return d.FormatMsg(*d.completeMsg)
+func chooseSizeProducer(unit int, format string) func(*Statistics) string {
+	if format == "" {
+		format = "%d / %d"
 	}
-
-	var str string
-	switch d.unit {
+	switch unit {
 	case UnitKiB:
-		str = fmt.Sprintf(d.pairFormat, CounterKiB(st.Current), CounterKiB(st.Total))
+		return func(s *Statistics) string {
+			return fmt.Sprintf(format, SizeB1024(s.Current), SizeB1024(s.Total))
+		}
 	case UnitKB:
-		str = fmt.Sprintf(d.pairFormat, CounterKB(st.Current), CounterKB(st.Total))
+		return func(s *Statistics) string {
+			return fmt.Sprintf(format, SizeB1000(s.Current), SizeB1000(s.Total))
+		}
 	default:
-		str = fmt.Sprintf(d.pairFormat, st.Current, st.Total)
+		return func(s *Statistics) string {
+			return fmt.Sprintf(format, s.Current, s.Total)
+		}
 	}
-
-	return d.FormatMsg(str)
-}
-
-func (d *countersDecorator) OnCompleteMessage(msg string) {
-	d.completeMsg = &msg
 }

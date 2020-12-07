@@ -201,7 +201,7 @@ func init() {
 	vmCreateCmd.Flags().StringP("zone", "z", "", zoneHelp)
 	vmCreateCmd.Flags().StringP("template", "t", defaultTemplate, "template <name | id>")
 	vmCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
-	vmCreateCmd.Flags().StringP("service-offering", "o", "medium", serviceOfferingHelp)
+	vmCreateCmd.Flags().StringP("service-offering", "o", defaultServiceOffering, serviceOfferingHelp)
 	vmCreateCmd.Flags().Int64P("disk", "d", 50, "disk size")
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "SSH keypair name. If not specified, a single-use SSH key will be created.")
 	vmCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security Group <name | id>. Can be specified multiple times.")

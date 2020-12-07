@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/olekukonko/tablewriter"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 // Table wraps tableWriter.Table
@@ -15,14 +15,13 @@ type Table struct {
 
 // NewTable instantiate New tableWriter
 func NewTable(fd *os.File) *Table {
-
 	t := &Table{tablewriter.NewWriter(fd)}
 
 	t.SetAlignment(tablewriter.ALIGN_LEFT)
 	t.SetAutoWrapText(false)
 
 	// Rich formatting
-	if terminal.IsTerminal(int(fd.Fd())) {
+	if term.IsTerminal(int(fd.Fd())) {
 		t.SetCenterSeparator("┼")
 		t.SetColumnSeparator("│")
 		t.SetRowSeparator("─")

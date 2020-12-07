@@ -37,7 +37,7 @@ func main() {
     name := "Single Bar:"
     // adding a single bar, which will inherit container's width
     bar := p.AddBar(int64(total),
-        // set custom bar style, default one is "[=>-]"
+        // override DefaultBarStyle, which is "[=>-]<+"
         mpb.BarStyle("╢▌▌░╟"),
         mpb.PrependDecorators(
             // display our name with one space on the right
@@ -55,8 +55,8 @@ func main() {
     for i := 0; i < total; i++ {
         start := time.Now()
         time.Sleep(time.Duration(rand.Intn(10)+1) * max / 10)
-        // ewma based decorators require work duration measurement
-        bar.IncrBy(1, time.Since(start))
+        // since ewma decorator is used, we need to pass time.Since(start)
+        bar.Increment(time.Since(start))
     }
     // wait for our bar to complete and flush
     p.Wait()
@@ -91,12 +91,13 @@ func main() {
         // simulating some work
         go func() {
             defer wg.Done()
+            rng := rand.New(rand.NewSource(time.Now().UnixNano()))
             max := 100 * time.Millisecond
             for i := 0; i < total; i++ {
                 start := time.Now()
-                time.Sleep(time.Duration(rand.Intn(10)+1) * max / 10)
-                // ewma based decorators require work duration measurement
-                bar.IncrBy(1, time.Since(start))
+                time.Sleep(time.Duration(rng.Intn(10)+1) * max / 10)
+                // since ewma decorator is used, we need to pass time.Since(start)
+                bar.Increment(time.Since(start))
             }
         }()
     }

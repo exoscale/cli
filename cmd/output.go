@@ -8,9 +8,12 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/exoscale/cli/table"
 	"github.com/fatih/camelcase"
 	"github.com/spf13/cobra"
+	"github.com/vbauerster/mpb/v4"
+	"github.com/vbauerster/mpb/v4/decor"
+
+	"github.com/exoscale/cli/table"
 )
 
 // outputter is an interface that must to be implemented by the commands output
@@ -93,7 +96,7 @@ func outputJSON(o interface{}) {
 // printed on a new line. If none is provided by the user, the default
 // template prints all fields separated by a tabulation character.
 func outputText(o interface{}) {
-	var tpl = gOutputTemplate
+	tpl := gOutputTemplate
 
 	if tpl == "" {
 		tplFields := outputterTemplateAnnotations(o)
@@ -261,6 +264,37 @@ func outputTable(o interface{}) {
 	tab.Render()
 }
 
+// decorateAsyncOperation is a cosmetic helper intended for wrapping long
+// asynchronous operations, outputting progress feedback to the user's
+// terminal.
+func decorateAsyncOperation(message string, fn func()) {
+	p := mpb.New(
+		mpb.WithWidth(1),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
+	)
+
+	spinner := p.AddSpinner(
+		1,
+		mpb.SpinnerOnLeft,
+		mpb.AppendDecorators(
+			decor.Name(message, decor.WC{W: len(message) + 1, C: decor.DidentRight}),
+			decor.Elapsed(decor.ET_STYLE_GO),
+		),
+		mpb.BarOnComplete("✔"),
+	)
+
+	done := make(chan struct{})
+	defer close(done)
+	go func(doneCh chan struct{}) {
+		fn()
+		doneCh <- struct{}{}
+	}(done)
+
+	<-done
+	spinner.Increment(1)
+	p.Wait()
+}
+
 func init() {
 	RootCmd.AddCommand(&cobra.Command{
 		Use:   "output",
@@ -313,6 +347,7 @@ necessary to range on iterable data types. Each entry is terminated by a line
 return character.
 
 For the complete Go templating reference, see https://godoc.org/text/template
-`},
+`,
+	},
 	)
 }

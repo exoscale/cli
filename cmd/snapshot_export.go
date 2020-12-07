@@ -116,7 +116,7 @@ func downloadExportedSnapshot(filePath, url string) (string, error) {
 		return "", err
 	}
 
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0600)
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return "", err
 	}
@@ -142,7 +142,7 @@ func downloadExportedSnapshot(filePath, url string) (string, error) {
 	progress := mpb.NewWithContext(gContext,
 		mpb.WithWidth(64),
 		mpb.WithRefreshRate(180*time.Millisecond),
-		mpb.ContainerOptOnCond(mpb.WithOutput(nil), func() bool { return gQuiet }),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
 	)
 
 	bar := progress.AddBar(

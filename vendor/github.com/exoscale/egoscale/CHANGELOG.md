@@ -1,6 +1,43 @@
 Changelog
 =========
 
+0.36.1
+------
+
+- feature: add support for Exoscale Cloud Controller in SKS clusters
+- fix: add missing tests for SKS Nodepools Security Groups
+
+0.36.0
+------
+
+- feature: add support for Anti-Affinity Groups to Instance Pools
+- feature: add support for Security Groups to SKS Nodepools
+
+0.35.3
+------
+
+- Fix typo in version.go
+
+0.35.2
+------
+
+- Improve API v2 errors handling (#455)
+
+0.35.1
+------
+
+- fix: various SKS-related bugs (#454)
+
+0.35.0
+------
+
+- feature: add support for SKS resources (#453)
+
+0.34.0
+------
+
+- change: `BucketUsage.Usage` is now an `int64` (#451)
+
 0.33.2
 ------
 

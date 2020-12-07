@@ -1,5 +1,7 @@
 # github.com/VividCortex/ewma v1.1.1
 github.com/VividCortex/ewma
+# github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
+github.com/acarl005/stripansi
 # github.com/alecthomas/chroma v0.7.3
 ## explicit
 github.com/alecthomas/chroma
@@ -58,7 +60,7 @@ github.com/danielgtaylor/go-jmespath-plus
 github.com/danwakefield/fnmatch
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/deepmap/oapi-codegen v1.3.13
+# github.com/deepmap/oapi-codegen v1.4.1
 ## explicit
 github.com/deepmap/oapi-codegen/pkg/runtime
 github.com/deepmap/oapi-codegen/pkg/types
@@ -68,7 +70,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.33.2
+# github.com/exoscale/egoscale v0.36.1
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
@@ -231,13 +233,13 @@ github.com/stretchr/testify/mock
 github.com/subosito/gotenv
 # github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9
 github.com/tsenart/deadcode
-# github.com/vbauerster/mpb/v4 v4.8.4
+# github.com/vbauerster/mpb/v4 v4.12.2
 ## explicit
 github.com/vbauerster/mpb/v4
 github.com/vbauerster/mpb/v4/cwriter
 github.com/vbauerster/mpb/v4/decor
 github.com/vbauerster/mpb/v4/internal
-# golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
+# golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392
 ## explicit
 golang.org/x/crypto/argon2
 golang.org/x/crypto/blake2b
@@ -261,12 +263,16 @@ golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.0.0-20200909081042-eff7692f9009
+# golang.org/x/sys v0.0.0-20201126233918-771906719818
 ## explicit
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
+## explicit
+golang.org/x/term
 # golang.org/x/text v0.3.3
 ## explicit
 golang.org/x/text/secure/bidirule
