@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/exoscale/egoscale"
 	apiv2 "github.com/exoscale/egoscale/api/v2"
@@ -11,6 +12,10 @@ import (
 var sksNodepoolAddCmd = &cobra.Command{
 	Use:   "add <cluster name | ID> <Nodepool name>",
 	Short: "Add a Nodepool to a SKS cluster",
+	Long: fmt.Sprintf(`This command adds a Nodepool to a SKS cluster.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", ")),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")

@@ -56,14 +56,15 @@ func sksNodepoolFromAPI(n *v2.SksNodepool) *SKSNodepool {
 
 // SKSCluster represents a SKS cluster.
 type SKSCluster struct {
-	ID          string
-	Name        string
-	Description string
-	CreatedAt   time.Time
-	Endpoint    string
-	Nodepools   []*SKSNodepool
-	Version     string
-	State       string
+	ID                             string
+	Name                           string
+	Description                    string
+	CreatedAt                      time.Time
+	Endpoint                       string
+	Nodepools                      []*SKSNodepool
+	Version                        string
+	ExoscaleCloudControllerEnabled bool
+	State                          string
 
 	c    *Client
 	zone string
@@ -88,8 +89,9 @@ func sksClusterFromAPI(c *v2.SksCluster) *SKSCluster {
 
 			return nodepools
 		}(),
-		Version: optionalString(c.Version),
-		State:   optionalString(c.State),
+		Version:                        optionalString(c.Version),
+		ExoscaleCloudControllerEnabled: optionalBool(c.EnableExoscaleCloudController),
+		State:                          optionalString(c.State),
 	}
 }
 
@@ -210,36 +212,6 @@ func (c *SKSCluster) ScaleNodepool(ctx context.Context, np *SKSNodepool, nodes i
 	return nil
 }
 
-// EvictNodepoolMembers evicts the specified members (identified by their Compute instance ID) from the
-// SKS cluster Nodepool.
-func (c *SKSCluster) EvictNodepoolMembers(ctx context.Context, np *SKSNodepool, members []string) error {
-	instances := make(v2.EvictSksNodepoolMembersJSONRequestBody, len(members))
-
-	for i := range members {
-		id := members[i]
-		instances[i] = v2.Instance{Id: &id}
-	}
-
-	resp, err := c.c.v2.EvictSksNodepoolMembersWithResponse(
-		apiv2.WithZone(ctx, c.zone),
-		c.ID,
-		np.ID,
-		instances,
-	)
-	if err != nil {
-		return err
-	}
-
-	_, err = v2.NewPoller().
-		WithTimeout(c.c.Timeout).
-		Poll(ctx, c.c.v2.OperationPoller(c.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // DeleteNodepool deletes the specified Nodepool from the SKS cluster.
 func (c *SKSCluster) DeleteNodepool(ctx context.Context, np *SKSNodepool) error {
 	resp, err := c.c.v2.DeleteSksNodepoolWithResponse(
@@ -266,9 +238,10 @@ func (c *Client) CreateSKSCluster(ctx context.Context, zone string, cluster *SKS
 	resp, err := c.v2.CreateSksClusterWithResponse(
 		apiv2.WithZone(ctx, zone),
 		v2.CreateSksClusterJSONRequestBody{
-			Name:        &cluster.Name,
-			Description: &cluster.Description,
-			Version:     &cluster.Version,
+			Name:                          &cluster.Name,
+			Description:                   &cluster.Description,
+			Version:                       &cluster.Version,
+			EnableExoscaleCloudController: &cluster.ExoscaleCloudControllerEnabled,
 		})
 	if err != nil {
 		return nil, err

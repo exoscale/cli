@@ -10,14 +10,15 @@ import (
 // only supports RFC 3339 format.
 func (c *SksCluster) UnmarshalJSON(data []byte) error {
 	raw := struct {
-		CreatedAt   *string        `json:"created-at,omitempty"`
-		Description *string        `json:"description,omitempty"`
-		Endpoint    *string        `json:"endpoint,omitempty"`
-		Id          *string        `json:"id,omitempty"` // nolint:golint
-		Name        *string        `json:"name,omitempty"`
-		Nodepools   *[]SksNodepool `json:"nodepools,omitempty"`
-		State       *string        `json:"state,omitempty"`
-		Version     *string        `json:"version,omitempty"`
+		CreatedAt                     *string        `json:"created-at,omitempty"`
+		Description                   *string        `json:"description,omitempty"`
+		EnableExoscaleCloudController *bool          `json:"enable-exoscale-cloud-controller,omitempty"`
+		Endpoint                      *string        `json:"endpoint,omitempty"`
+		Id                            *string        `json:"id,omitempty"` // nolint:golint
+		Name                          *string        `json:"name,omitempty"`
+		Nodepools                     *[]SksNodepool `json:"nodepools,omitempty"`
+		State                         *string        `json:"state,omitempty"`
+		Version                       *string        `json:"version,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &raw); err != nil {
@@ -33,6 +34,7 @@ func (c *SksCluster) UnmarshalJSON(data []byte) error {
 	}
 
 	c.Description = raw.Description
+	c.EnableExoscaleCloudController = raw.EnableExoscaleCloudController
 	c.Endpoint = raw.Endpoint
 	c.Id = raw.Id
 	c.Name = raw.Name
@@ -47,14 +49,15 @@ func (c *SksCluster) UnmarshalJSON(data []byte) error {
 // in the original timestamp (ISO 8601), since time.MarshalJSON() only supports RFC 3339 format.
 func (c *SksCluster) MarshalJSON() ([]byte, error) {
 	raw := struct {
-		CreatedAt   *string        `json:"created-at,omitempty"`
-		Description *string        `json:"description,omitempty"`
-		Id          *string        `json:"id,omitempty"` // nolint:golint
-		Name        *string        `json:"name,omitempty"`
-		Version     *string        `json:"version,omitempty"`
-		Nodepools   *[]SksNodepool `json:"nodepools,omitempty"`
-		Endpoint    *string        `json:"endpoint,omitempty"`
-		State       *string        `json:"state,omitempty"`
+		CreatedAt                     *string        `json:"created-at,omitempty"`
+		Description                   *string        `json:"description,omitempty"`
+		EnableExoscaleCloudController *bool          `json:"enable-exoscale-cloud-controller,omitempty"`
+		Endpoint                      *string        `json:"endpoint,omitempty"`
+		Id                            *string        `json:"id,omitempty"` // nolint:golint
+		Name                          *string        `json:"name,omitempty"`
+		Nodepools                     *[]SksNodepool `json:"nodepools,omitempty"`
+		State                         *string        `json:"state,omitempty"`
+		Version                       *string        `json:"version,omitempty"`
 	}{}
 
 	if c.CreatedAt != nil {
@@ -63,12 +66,13 @@ func (c *SksCluster) MarshalJSON() ([]byte, error) {
 	}
 
 	raw.Description = c.Description
+	raw.EnableExoscaleCloudController = c.EnableExoscaleCloudController
+	raw.Endpoint = c.Endpoint
 	raw.Id = c.Id
 	raw.Name = c.Name
-	raw.Version = c.Version
 	raw.Nodepools = c.Nodepools
-	raw.Endpoint = c.Endpoint
 	raw.State = c.State
+	raw.Version = c.Version
 
 	return json.Marshal(raw)
 }

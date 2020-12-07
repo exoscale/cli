@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.36.1
+------
+
+- feature: add support for Exoscale Cloud Controller in SKS clusters
+- fix: add missing tests for SKS Nodepools Security Groups
+
 0.36.0
 ------
 

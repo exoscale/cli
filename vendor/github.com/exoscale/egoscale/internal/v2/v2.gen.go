@@ -153,14 +153,15 @@ type SecurityGroupRule struct {
 
 // SksCluster defines model for sks-cluster.
 type SksCluster struct {
-	CreatedAt   *time.Time     `json:"created-at,omitempty"`
-	Description *string        `json:"description,omitempty"`
-	Endpoint    *string        `json:"endpoint,omitempty"`
-	Id          *string        `json:"id,omitempty"`
-	Name        *string        `json:"name,omitempty"`
-	Nodepools   *[]SksNodepool `json:"nodepools,omitempty"`
-	State       *string        `json:"state,omitempty"`
-	Version     *string        `json:"version,omitempty"`
+	CreatedAt                     *time.Time     `json:"created-at,omitempty"`
+	Description                   *string        `json:"description,omitempty"`
+	EnableExoscaleCloudController *bool          `json:"enable-exoscale-cloud-controller,omitempty"`
+	Endpoint                      *string        `json:"endpoint,omitempty"`
+	Id                            *string        `json:"id,omitempty"`
+	Name                          *string        `json:"name,omitempty"`
+	Nodepools                     *[]SksNodepool `json:"nodepools,omitempty"`
+	State                         *string        `json:"state,omitempty"`
+	Version                       *string        `json:"version,omitempty"`
 }
 
 // SksKubeconfigRequest defines model for sks-kubeconfig-request.
@@ -291,9 +292,6 @@ type CreateSksNodepoolJSONBody SksNodepool
 // UpdateSksNodepoolJSONBody defines parameters for UpdateSksNodepool.
 type UpdateSksNodepoolJSONBody SksNodepool
 
-// EvictSksNodepoolMembersJSONBody defines parameters for EvictSksNodepoolMembers.
-type EvictSksNodepoolMembersJSONBody []Instance
-
 // ScaleSksNodepoolJSONBody defines parameters for ScaleSksNodepool.
 type ScaleSksNodepoolJSONBody SksNodepool
 
@@ -350,9 +348,6 @@ type CreateSksNodepoolJSONRequestBody CreateSksNodepoolJSONBody
 
 // UpdateSksNodepoolRequestBody defines body for UpdateSksNodepool for application/json ContentType.
 type UpdateSksNodepoolJSONRequestBody UpdateSksNodepoolJSONBody
-
-// EvictSksNodepoolMembersRequestBody defines body for EvictSksNodepoolMembers for application/json ContentType.
-type EvictSksNodepoolMembersJSONRequestBody EvictSksNodepoolMembersJSONBody
 
 // ScaleSksNodepoolRequestBody defines body for ScaleSksNodepool for application/json ContentType.
 type ScaleSksNodepoolJSONRequestBody ScaleSksNodepoolJSONBody
@@ -624,11 +619,6 @@ type ClientInterface interface {
 	UpdateSksNodepoolWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
 
 	UpdateSksNodepool(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*http.Response, error)
-
-	// EvictSksNodepoolMembers request  with any body
-	EvictSksNodepoolMembersWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
-
-	EvictSksNodepoolMembers(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Response, error)
 
 	// ScaleSksNodepool request  with any body
 	ScaleSksNodepoolWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
@@ -1432,36 +1422,6 @@ func (c *Client) UpdateSksNodepoolWithBody(ctx context.Context, id string, sksNo
 
 func (c *Client) UpdateSksNodepool(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*http.Response, error) {
 	req, err := NewUpdateSksNodepoolRequest(c.Server, id, sksNodepoolId, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) EvictSksNodepoolMembersWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error) {
-	req, err := NewEvictSksNodepoolMembersRequestWithBody(c.Server, id, sksNodepoolId, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) EvictSksNodepoolMembers(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Response, error) {
-	req, err := NewEvictSksNodepoolMembersRequest(c.Server, id, sksNodepoolId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3121,59 +3081,6 @@ func NewUpdateSksNodepoolRequestWithBody(server string, id string, sksNodepoolId
 	return req, nil
 }
 
-// NewEvictSksNodepoolMembersRequest calls the generic EvictSksNodepoolMembers builder with application/json body
-func NewEvictSksNodepoolMembersRequest(server string, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewEvictSksNodepoolMembersRequestWithBody(server, id, sksNodepoolId, "application/json", bodyReader)
-}
-
-// NewEvictSksNodepoolMembersRequestWithBody generates requests for EvictSksNodepoolMembers with any type of body
-func NewEvictSksNodepoolMembersRequestWithBody(server string, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParam("simple", false, "sks-nodepool-id", sksNodepoolId)
-	if err != nil {
-		return nil, err
-	}
-
-	queryUrl, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool/%s:evict", pathParam0, pathParam1)
-	if basePath[0] == '/' {
-		basePath = basePath[1:]
-	}
-
-	queryUrl, err = queryUrl.Parse(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PUT", queryUrl.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-	return req, nil
-}
-
 // NewScaleSksNodepoolRequest calls the generic ScaleSksNodepool builder with application/json body
 func NewScaleSksNodepoolRequest(server string, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -3722,11 +3629,6 @@ type ClientWithResponsesInterface interface {
 	UpdateSksNodepoolWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*UpdateSksNodepoolResponse, error)
 
 	UpdateSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*UpdateSksNodepoolResponse, error)
-
-	// EvictSksNodepoolMembers request  with any body
-	EvictSksNodepoolMembersWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*EvictSksNodepoolMembersResponse, error)
-
-	EvictSksNodepoolMembersWithResponse(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*EvictSksNodepoolMembersResponse, error)
 
 	// ScaleSksNodepool request  with any body
 	ScaleSksNodepoolWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*ScaleSksNodepoolResponse, error)
@@ -4589,28 +4491,6 @@ func (r UpdateSksNodepoolResponse) StatusCode() int {
 	return 0
 }
 
-type EvictSksNodepoolMembersResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Operation
-}
-
-// Status returns HTTPResponse.Status
-func (r EvictSksNodepoolMembersResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r EvictSksNodepoolMembersResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type ScaleSksNodepoolResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5288,23 +5168,6 @@ func (c *ClientWithResponses) UpdateSksNodepoolWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseUpdateSksNodepoolResponse(rsp)
-}
-
-// EvictSksNodepoolMembersWithBodyWithResponse request with arbitrary body returning *EvictSksNodepoolMembersResponse
-func (c *ClientWithResponses) EvictSksNodepoolMembersWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*EvictSksNodepoolMembersResponse, error) {
-	rsp, err := c.EvictSksNodepoolMembersWithBody(ctx, id, sksNodepoolId, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	return ParseEvictSksNodepoolMembersResponse(rsp)
-}
-
-func (c *ClientWithResponses) EvictSksNodepoolMembersWithResponse(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*EvictSksNodepoolMembersResponse, error) {
-	rsp, err := c.EvictSksNodepoolMembers(ctx, id, sksNodepoolId, body)
-	if err != nil {
-		return nil, err
-	}
-	return ParseEvictSksNodepoolMembersResponse(rsp)
 }
 
 // ScaleSksNodepoolWithBodyWithResponse request with arbitrary body returning *ScaleSksNodepoolResponse
@@ -6370,32 +6233,6 @@ func ParseUpdateSksNodepoolResponse(rsp *http.Response) (*UpdateSksNodepoolRespo
 	}
 
 	response := &UpdateSksNodepoolResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Operation
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseEvictSksNodepoolMembersResponse parses an HTTP response from a EvictSksNodepoolMembersWithResponse call
-func ParseEvictSksNodepoolMembersResponse(rsp *http.Response) (*EvictSksNodepoolMembersResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &EvictSksNodepoolMembersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
