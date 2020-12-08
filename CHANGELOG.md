@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.22.0
+
+### New
+
+- Add support for SKS resources management (#299)
+- Add support for Anti-Affinity Groups to Instance Pools (#302)
+
+### Bug Fixes
+
+- `exo limits`: incorrect custom templates reporting (#300)
+
+
 ## 1.21.0
 
 ### Improvements
