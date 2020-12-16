@@ -195,7 +195,8 @@ var sosUploadCmd = &cobra.Command{
 					reader,
 					fileInfo.Size(),
 					minio.PutObjectOptions{
-						ContentType: fileToUP.contentType,
+						ContentType:    fileToUP.contentType,
+						SendContentMd5: true,
 					},
 				)
 				if upErr != nil {
