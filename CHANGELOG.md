@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.22.1
+
+### Bug Fixes
+
+- `exo eip`: fixed "Healthcheck TLS Skip Verify" property reset to `false` after update operation
+
+
 ## 1.22.0
 
 ### New
