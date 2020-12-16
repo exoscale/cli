@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.22.2
+
+### Improvements
+
+- `exo sos upload`: always send content md5 (#304)
+
+
 ## 1.22.1
 
 ### Bug Fixes
