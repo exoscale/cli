@@ -143,7 +143,7 @@ type UpdateIPAddress struct {
 	HealthcheckStrikesOk     int64  `json:"strikes-ok,omitempty" doc:"healthcheck definition: number of times to retry before declaring the healthcheck 'alive'. Default: 2"`
 	HealthcheckTimeout       int64  `json:"timeout,omitempty" doc:"healthcheck definition: time in seconds to wait for each check. Default: 2, cannot be greater than interval."`
 	HealthcheckTLSSNI        string `json:"tls-sni,omitempty" doc:"healthcheck definition: server name to present for HTTPS checks"`
-	HealthcheckTLSSkipVerify bool   `json:"tls-skip-verify" doc:"healthcheck definition: bypass certificate chain verification for HTTPS checks"`
+	HealthcheckTLSSkipVerify bool   `json:"tls-skip-verify,omitempty" doc:"healthcheck definition: bypass certificate chain verification for HTTPS checks"`
 	ID                       *UUID  `json:"id" doc:"the id of the public IP address to update"`
 	_                        bool   `name:"updateIpAddress" description:"Updates an IP address"`
 }

@@ -43,7 +43,7 @@ type CreateInstancePool struct {
 	ServiceOfferingID    *UUID  `json:"serviceofferingid"`
 	TemplateID           *UUID  `json:"templateid"`
 	ZoneID               *UUID  `json:"zoneid"`
-	AntiAffinityGroupIDs []UUID `json:"affinitygroupids"`
+	AntiAffinityGroupIDs []UUID `json:"affinitygroupids,omitempty"`
 	SecurityGroupIDs     []UUID `json:"securitygroupids,omitempty"`
 	NetworkIDs           []UUID `json:"networkids,omitempty"`
 	IPv6                 bool   `json:"ipv6,omitempty"`

@@ -20,6 +20,11 @@ import (
 	v2 "github.com/exoscale/egoscale/internal/v2"
 )
 
+const (
+	// DefaultTimeout represents the default API client HTTP request timeout.
+	DefaultTimeout = 60 * time.Second
+)
+
 // UserAgent is the "User-Agent" HTTP request header added to outgoing HTTP requests.
 var UserAgent = fmt.Sprintf("egoscale/%s (%s; %s/%s)",
 	Version,
@@ -81,13 +86,26 @@ type IterateItemFunc func(interface{}, error) bool
 // WaitAsyncJobResultFunc represents the callback to wait a results of an async request, if false stops
 type WaitAsyncJobResultFunc func(*AsyncJobResult, error) bool
 
-// NewClient creates an API client with default timeout (60)
-//
-// Timeout is set to both the HTTP client and the client itself.
-func NewClient(endpoint, apiKey, apiSecret string) *Client {
-	timeout := 60 * time.Second
-	expiration := 10 * time.Minute
+// ClientOpt represents a new Client option.
+type ClientOpt func(*Client)
 
+// WithHTTPClient overrides the Client's default HTTP client.
+func WithHTTPClient(hc *http.Client) ClientOpt {
+	return func(c *Client) { c.HTTPClient = hc }
+}
+
+// WithTimeout overrides the Client's default timeout value (DefaultTimeout).
+func WithTimeout(d time.Duration) ClientOpt {
+	return func(c *Client) { c.Timeout = d }
+}
+
+// WithTrace enables the Client's HTTP request tracing.
+func WithTrace() ClientOpt {
+	return func(c *Client) { c.TraceOn() }
+}
+
+// NewClient creates an Exoscale API client.
+func NewClient(endpoint, apiKey, apiSecret string, opts ...ClientOpt) *Client {
 	client := &Client{
 		HTTPClient: &http.Client{
 			Transport: &defaultTransport{transport: http.DefaultTransport},
@@ -96,10 +114,14 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 		APIKey:        apiKey,
 		apiSecret:     apiSecret,
 		PageSize:      50,
-		Timeout:       timeout,
-		Expiration:    expiration,
+		Timeout:       DefaultTimeout,
+		Expiration:    10 * time.Minute,
 		RetryStrategy: MonotonicRetryStrategyFunc(2),
 		Logger:        log.New(ioutil.Discard, "", 0),
+	}
+
+	for _, opt := range opts {
+		opt(client)
 	}
 
 	if prefix, ok := os.LookupEnv("EXOSCALE_TRACE"); ok {
@@ -120,7 +142,7 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 	}
 	exoSecurityProvider.ReqExpire = client.Expiration
 
-	opts := []v2.ClientOption{
+	v2Opts := []v2.ClientOption{
 		v2.WithHTTPClient(client),
 		v2.WithRequestEditorFn(v2.MultiRequestsEditor(
 			exoSecurityProvider.Intercept,
@@ -128,7 +150,7 @@ func NewClient(endpoint, apiKey, apiSecret string) *Client {
 		),
 	}
 
-	if client.v2, err = v2.NewClientWithResponses(endpointURL.String(), opts...); err != nil {
+	if client.v2, err = v2.NewClientWithResponses(endpointURL.String(), v2Opts...); err != nil {
 		panic(errors.Wrap(err, "unable to initialize API client"))
 	}
 

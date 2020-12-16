@@ -5,7 +5,7 @@ description: the Go library for Exoscale
 
 <a href="https://gopherize.me/gopher/9c1bc7cfe1d84cf43e477dbfc4aa86332065f1fd"><img src="gopher.png" align="right" alt=""></a>
 
-[![Actions Status](https://github.com/exoscale/egoscale/workflows/CI/badge.svg)](https://github.com/exoscale/egoscale/actions?query=workflow%3ACI)
+[![Actions Status](https://github.com/exoscale/egoscale/workflows/CI/badge.svg?branch=master)](https://github.com/exoscale/egoscale/actions?query=workflow%3ACI+branch%3Amaster)
 [![GoDoc](https://godoc.org/github.com/exoscale/egoscale?status.svg)](https://godoc.org/github.com/exoscale/egoscale) [![Go Report Card](https://goreportcard.com/badge/github.com/exoscale/egoscale)](https://goreportcard.com/report/github.com/exoscale/egoscale)
 
 A wrapper for the [Exoscale public cloud](https://www.exoscale.com) API.

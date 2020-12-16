@@ -165,7 +165,7 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 					return nil
 				}(),
 				TlsSni: func() *string {
-					if svc.Healthcheck.Mode == "https" {
+					if svc.Healthcheck.Mode == "https" && svc.Healthcheck.TLSSNI != "" {
 						return &svc.Healthcheck.TLSSNI
 					}
 					return nil
@@ -237,7 +237,7 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 					return nil
 				}(),
 				TlsSni: func() *string {
-					if svc.Healthcheck.Mode == "https" {
+					if svc.Healthcheck.Mode == "https" && svc.Healthcheck.TLSSNI != "" {
 						return &svc.Healthcheck.TLSSNI
 					}
 					return nil

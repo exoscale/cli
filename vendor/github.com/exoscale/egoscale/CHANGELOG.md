@@ -1,6 +1,22 @@
 Changelog
 =========
 
+0.37.1
+------
+
+- fix: `UpdateIPAddress.HealthcheckTLSSkipVerify` field always set to `false` (#462)
+
+0.37.0
+------
+
+- feature: `NewClient()` now accepts options (460)
+- fix: NLB service healthcheck TLS SNI bug (#461)
+
+0.36.2
+------
+
+- fix: `CreateInstancePool.AntiAffinityGroupIDs` field is optional (#459)
+
 0.36.1
 ------
 
