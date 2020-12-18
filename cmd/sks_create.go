@@ -11,7 +11,7 @@ import (
 
 var sksCreateCmd = &cobra.Command{
 	Use:   "create <name>",
-	Short: "Create a SKS clsuter",
+	Short: "Create a SKS cluster",
 	Long: fmt.Sprintf(`This command creates a SKS cluster.
 
 Note: SKS cluster Nodes' kubelet configuration is set to use the Exoscale
