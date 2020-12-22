@@ -22,6 +22,7 @@ plugs:
     write:
       - $HOME/.exoscale
       - $HOME/.cloudstack.ini
+      - $HOME/.config/exoscale
 
 apps:
   # The app has an alias to "exo" that was granted via forum post.
