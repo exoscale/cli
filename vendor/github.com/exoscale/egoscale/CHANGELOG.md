@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.38.0
+------
+
+- feature: add `SKSCluster.EvictNodepoolMembers()` and `ListSKSClusterVersions()` methods
+
 0.37.1
 ------
 

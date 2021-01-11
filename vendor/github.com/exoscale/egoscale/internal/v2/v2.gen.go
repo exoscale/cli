@@ -18,6 +18,14 @@ import (
 	"time"
 )
 
+// AntiAffinityGroup defines model for anti-affinity-group.
+type AntiAffinityGroup struct {
+	Description *string     `json:"description,omitempty"`
+	Id          *string     `json:"id,omitempty"`
+	Instances   *[]Instance `json:"instances,omitempty"`
+	Name        *string     `json:"name,omitempty"`
+}
+
 // Event defines model for event.
 type Event struct {
 	Payload   *Event_Payload `json:"payload,omitempty"`
@@ -173,18 +181,19 @@ type SksKubeconfigRequest struct {
 
 // SksNodepool defines model for sks-nodepool.
 type SksNodepool struct {
-	CreatedAt      *time.Time       `json:"created-at,omitempty"`
-	Description    *string          `json:"description,omitempty"`
-	DiskSize       *int64           `json:"disk-size,omitempty"`
-	Id             *string          `json:"id,omitempty"`
-	InstancePool   *Resource        `json:"instance-pool,omitempty"`
-	InstanceType   *InstanceType    `json:"instance-type,omitempty"`
-	Name           *string          `json:"name,omitempty"`
-	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
-	Size           *int64           `json:"size,omitempty"`
-	State          *string          `json:"state,omitempty"`
-	Template       *Template        `json:"template,omitempty"`
-	Version        *string          `json:"version,omitempty"`
+	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	CreatedAt          *time.Time           `json:"created-at,omitempty"`
+	Description        *string              `json:"description,omitempty"`
+	DiskSize           *int64               `json:"disk-size,omitempty"`
+	Id                 *string              `json:"id,omitempty"`
+	InstancePool       *Resource            `json:"instance-pool,omitempty"`
+	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
+	Name               *string              `json:"name,omitempty"`
+	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
+	Size               *int64               `json:"size,omitempty"`
+	State              *string              `json:"state,omitempty"`
+	Template           *Template            `json:"template,omitempty"`
+	Version            *string              `json:"version,omitempty"`
 }
 
 // Snapshot defines model for snapshot.
@@ -224,6 +233,9 @@ type Template struct {
 type Zone struct {
 	Name *string `json:"name,omitempty"`
 }
+
+// CreateAntiAffinityGroupJSONBody defines parameters for CreateAntiAffinityGroup.
+type CreateAntiAffinityGroupJSONBody AntiAffinityGroup
 
 // ListEventsParams defines parameters for ListEvents.
 type ListEventsParams struct {
@@ -292,6 +304,11 @@ type CreateSksNodepoolJSONBody SksNodepool
 // UpdateSksNodepoolJSONBody defines parameters for UpdateSksNodepool.
 type UpdateSksNodepoolJSONBody SksNodepool
 
+// EvictSksNodepoolMembersJSONBody defines parameters for EvictSksNodepoolMembers.
+type EvictSksNodepoolMembersJSONBody struct {
+	Instances *[]string `json:"instances,omitempty"`
+}
+
 // ScaleSksNodepoolJSONBody defines parameters for ScaleSksNodepool.
 type ScaleSksNodepoolJSONBody SksNodepool
 
@@ -303,6 +320,9 @@ type ListTemplatesParams struct {
 
 // RegisterTemplateJSONBody defines parameters for RegisterTemplate.
 type RegisterTemplateJSONBody Template
+
+// CreateAntiAffinityGroupRequestBody defines body for CreateAntiAffinityGroup for application/json ContentType.
+type CreateAntiAffinityGroupJSONRequestBody CreateAntiAffinityGroupJSONBody
 
 // CreateInstanceRequestBody defines body for CreateInstance for application/json ContentType.
 type CreateInstanceJSONRequestBody CreateInstanceJSONBody
@@ -348,6 +368,9 @@ type CreateSksNodepoolJSONRequestBody CreateSksNodepoolJSONBody
 
 // UpdateSksNodepoolRequestBody defines body for UpdateSksNodepool for application/json ContentType.
 type UpdateSksNodepoolJSONRequestBody UpdateSksNodepoolJSONBody
+
+// EvictSksNodepoolMembersRequestBody defines body for EvictSksNodepoolMembers for application/json ContentType.
+type EvictSksNodepoolMembersJSONRequestBody EvictSksNodepoolMembersJSONBody
 
 // ScaleSksNodepoolRequestBody defines body for ScaleSksNodepool for application/json ContentType.
 type ScaleSksNodepoolJSONRequestBody ScaleSksNodepoolJSONBody
@@ -479,6 +502,20 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListAntiAffinityGroups request
+	ListAntiAffinityGroups(ctx context.Context) (*http.Response, error)
+
+	// CreateAntiAffinityGroup request  with any body
+	CreateAntiAffinityGroupWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateAntiAffinityGroup(ctx context.Context, body CreateAntiAffinityGroupJSONRequestBody) (*http.Response, error)
+
+	// DeleteAntiAffinityGroup request
+	DeleteAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error)
+
+	// GetAntiAffinityGroup request
+	GetAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error)
+
 	// ListEvents request
 	ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error)
 
@@ -593,6 +630,9 @@ type ClientInterface interface {
 
 	GenerateSksClusterKubeconfig(ctx context.Context, id string, body GenerateSksClusterKubeconfigJSONRequestBody) (*http.Response, error)
 
+	// ListSksClusterVersions request
+	ListSksClusterVersions(ctx context.Context) (*http.Response, error)
+
 	// DeleteSksCluster request
 	DeleteSksCluster(ctx context.Context, id string) (*http.Response, error)
 
@@ -619,6 +659,11 @@ type ClientInterface interface {
 	UpdateSksNodepoolWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
 
 	UpdateSksNodepool(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*http.Response, error)
+
+	// EvictSksNodepoolMembers request  with any body
+	EvictSksNodepoolMembersWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
+
+	EvictSksNodepoolMembers(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Response, error)
 
 	// ScaleSksNodepool request  with any body
 	ScaleSksNodepoolWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
@@ -653,6 +698,81 @@ type ClientInterface interface {
 
 	// ListZones request
 	ListZones(ctx context.Context) (*http.Response, error)
+}
+
+func (c *Client) ListAntiAffinityGroups(ctx context.Context) (*http.Response, error) {
+	req, err := NewListAntiAffinityGroupsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAntiAffinityGroupWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateAntiAffinityGroupRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAntiAffinityGroup(ctx context.Context, body CreateAntiAffinityGroupJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateAntiAffinityGroupRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeleteAntiAffinityGroupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetAntiAffinityGroupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error) {
@@ -1285,6 +1405,21 @@ func (c *Client) GenerateSksClusterKubeconfig(ctx context.Context, id string, bo
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListSksClusterVersions(ctx context.Context) (*http.Response, error) {
+	req, err := NewListSksClusterVersionsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) DeleteSksCluster(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewDeleteSksClusterRequest(c.Server, id)
 	if err != nil {
@@ -1422,6 +1557,36 @@ func (c *Client) UpdateSksNodepoolWithBody(ctx context.Context, id string, sksNo
 
 func (c *Client) UpdateSksNodepool(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*http.Response, error) {
 	req, err := NewUpdateSksNodepoolRequest(c.Server, id, sksNodepoolId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EvictSksNodepoolMembersWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewEvictSksNodepoolMembersRequestWithBody(c.Server, id, sksNodepoolId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EvictSksNodepoolMembers(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Response, error) {
+	req, err := NewEvictSksNodepoolMembersRequest(c.Server, id, sksNodepoolId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1613,6 +1778,140 @@ func (c *Client) ListZones(ctx context.Context) (*http.Response, error) {
 		}
 	}
 	return c.Client.Do(req)
+}
+
+// NewListAntiAffinityGroupsRequest generates requests for ListAntiAffinityGroups
+func NewListAntiAffinityGroupsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/anti-affinity-group")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAntiAffinityGroupRequest calls the generic CreateAntiAffinityGroup builder with application/json body
+func NewCreateAntiAffinityGroupRequest(server string, body CreateAntiAffinityGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAntiAffinityGroupRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateAntiAffinityGroupRequestWithBody generates requests for CreateAntiAffinityGroup with any type of body
+func NewCreateAntiAffinityGroupRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/anti-affinity-group")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteAntiAffinityGroupRequest generates requests for DeleteAntiAffinityGroup
+func NewDeleteAntiAffinityGroupRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/anti-affinity-group/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAntiAffinityGroupRequest generates requests for GetAntiAffinityGroup
+func NewGetAntiAffinityGroupRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/anti-affinity-group/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewListEventsRequest generates requests for ListEvents
@@ -2786,6 +3085,33 @@ func NewGenerateSksClusterKubeconfigRequestWithBody(server string, id string, co
 	return req, nil
 }
 
+// NewListSksClusterVersionsRequest generates requests for ListSksClusterVersions
+func NewListSksClusterVersionsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster-version")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewDeleteSksClusterRequest generates requests for DeleteSksCluster
 func NewDeleteSksClusterRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -3063,6 +3389,59 @@ func NewUpdateSksNodepoolRequestWithBody(server string, id string, sksNodepoolId
 	}
 
 	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool/%s", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewEvictSksNodepoolMembersRequest calls the generic EvictSksNodepoolMembers builder with application/json body
+func NewEvictSksNodepoolMembersRequest(server string, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEvictSksNodepoolMembersRequestWithBody(server, id, sksNodepoolId, "application/json", bodyReader)
+}
+
+// NewEvictSksNodepoolMembersRequestWithBody generates requests for EvictSksNodepoolMembers with any type of body
+func NewEvictSksNodepoolMembersRequestWithBody(server string, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "sks-nodepool-id", sksNodepoolId)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/nodepool/%s:evict", pathParam0, pathParam1)
 	if basePath[0] == '/' {
 		basePath = basePath[1:]
 	}
@@ -3489,6 +3868,20 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListAntiAffinityGroups request
+	ListAntiAffinityGroupsWithResponse(ctx context.Context) (*ListAntiAffinityGroupsResponse, error)
+
+	// CreateAntiAffinityGroup request  with any body
+	CreateAntiAffinityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateAntiAffinityGroupResponse, error)
+
+	CreateAntiAffinityGroupWithResponse(ctx context.Context, body CreateAntiAffinityGroupJSONRequestBody) (*CreateAntiAffinityGroupResponse, error)
+
+	// DeleteAntiAffinityGroup request
+	DeleteAntiAffinityGroupWithResponse(ctx context.Context, id string) (*DeleteAntiAffinityGroupResponse, error)
+
+	// GetAntiAffinityGroup request
+	GetAntiAffinityGroupWithResponse(ctx context.Context, id string) (*GetAntiAffinityGroupResponse, error)
+
 	// ListEvents request
 	ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error)
 
@@ -3603,6 +3996,9 @@ type ClientWithResponsesInterface interface {
 
 	GenerateSksClusterKubeconfigWithResponse(ctx context.Context, id string, body GenerateSksClusterKubeconfigJSONRequestBody) (*GenerateSksClusterKubeconfigResponse, error)
 
+	// ListSksClusterVersions request
+	ListSksClusterVersionsWithResponse(ctx context.Context) (*ListSksClusterVersionsResponse, error)
+
 	// DeleteSksCluster request
 	DeleteSksClusterWithResponse(ctx context.Context, id string) (*DeleteSksClusterResponse, error)
 
@@ -3629,6 +4025,11 @@ type ClientWithResponsesInterface interface {
 	UpdateSksNodepoolWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*UpdateSksNodepoolResponse, error)
 
 	UpdateSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*UpdateSksNodepoolResponse, error)
+
+	// EvictSksNodepoolMembers request  with any body
+	EvictSksNodepoolMembersWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*EvictSksNodepoolMembersResponse, error)
+
+	EvictSksNodepoolMembersWithResponse(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*EvictSksNodepoolMembersResponse, error)
 
 	// ScaleSksNodepool request  with any body
 	ScaleSksNodepoolWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*ScaleSksNodepoolResponse, error)
@@ -3663,6 +4064,96 @@ type ClientWithResponsesInterface interface {
 
 	// ListZones request
 	ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error)
+}
+
+type ListAntiAffinityGroupsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAntiAffinityGroupsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAntiAffinityGroupsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAntiAffinityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAntiAffinityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAntiAffinityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteAntiAffinityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteAntiAffinityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteAntiAffinityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAntiAffinityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AntiAffinityGroup
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAntiAffinityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAntiAffinityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type ListEventsResponse struct {
@@ -4337,6 +4828,30 @@ func (r GenerateSksClusterKubeconfigResponse) StatusCode() int {
 	return 0
 }
 
+type ListSksClusterVersionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		SksClusterVersions *[]string `json:"sks-cluster-versions,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSksClusterVersionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSksClusterVersionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type DeleteSksClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4485,6 +5000,28 @@ func (r UpdateSksNodepoolResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateSksNodepoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EvictSksNodepoolMembersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r EvictSksNodepoolMembersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EvictSksNodepoolMembersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4715,6 +5252,50 @@ func (r ListZonesResponse) StatusCode() int {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
+}
+
+// ListAntiAffinityGroupsWithResponse request returning *ListAntiAffinityGroupsResponse
+func (c *ClientWithResponses) ListAntiAffinityGroupsWithResponse(ctx context.Context) (*ListAntiAffinityGroupsResponse, error) {
+	rsp, err := c.ListAntiAffinityGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAntiAffinityGroupsResponse(rsp)
+}
+
+// CreateAntiAffinityGroupWithBodyWithResponse request with arbitrary body returning *CreateAntiAffinityGroupResponse
+func (c *ClientWithResponses) CreateAntiAffinityGroupWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateAntiAffinityGroupResponse, error) {
+	rsp, err := c.CreateAntiAffinityGroupWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAntiAffinityGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAntiAffinityGroupWithResponse(ctx context.Context, body CreateAntiAffinityGroupJSONRequestBody) (*CreateAntiAffinityGroupResponse, error) {
+	rsp, err := c.CreateAntiAffinityGroup(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAntiAffinityGroupResponse(rsp)
+}
+
+// DeleteAntiAffinityGroupWithResponse request returning *DeleteAntiAffinityGroupResponse
+func (c *ClientWithResponses) DeleteAntiAffinityGroupWithResponse(ctx context.Context, id string) (*DeleteAntiAffinityGroupResponse, error) {
+	rsp, err := c.DeleteAntiAffinityGroup(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteAntiAffinityGroupResponse(rsp)
+}
+
+// GetAntiAffinityGroupWithResponse request returning *GetAntiAffinityGroupResponse
+func (c *ClientWithResponses) GetAntiAffinityGroupWithResponse(ctx context.Context, id string) (*GetAntiAffinityGroupResponse, error) {
+	rsp, err := c.GetAntiAffinityGroup(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAntiAffinityGroupResponse(rsp)
 }
 
 // ListEventsWithResponse request returning *ListEventsResponse
@@ -5083,6 +5664,15 @@ func (c *ClientWithResponses) GenerateSksClusterKubeconfigWithResponse(ctx conte
 	return ParseGenerateSksClusterKubeconfigResponse(rsp)
 }
 
+// ListSksClusterVersionsWithResponse request returning *ListSksClusterVersionsResponse
+func (c *ClientWithResponses) ListSksClusterVersionsWithResponse(ctx context.Context) (*ListSksClusterVersionsResponse, error) {
+	rsp, err := c.ListSksClusterVersions(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListSksClusterVersionsResponse(rsp)
+}
+
 // DeleteSksClusterWithResponse request returning *DeleteSksClusterResponse
 func (c *ClientWithResponses) DeleteSksClusterWithResponse(ctx context.Context, id string) (*DeleteSksClusterResponse, error) {
 	rsp, err := c.DeleteSksCluster(ctx, id)
@@ -5168,6 +5758,23 @@ func (c *ClientWithResponses) UpdateSksNodepoolWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseUpdateSksNodepoolResponse(rsp)
+}
+
+// EvictSksNodepoolMembersWithBodyWithResponse request with arbitrary body returning *EvictSksNodepoolMembersResponse
+func (c *ClientWithResponses) EvictSksNodepoolMembersWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*EvictSksNodepoolMembersResponse, error) {
+	rsp, err := c.EvictSksNodepoolMembersWithBody(ctx, id, sksNodepoolId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEvictSksNodepoolMembersResponse(rsp)
+}
+
+func (c *ClientWithResponses) EvictSksNodepoolMembersWithResponse(ctx context.Context, id string, sksNodepoolId string, body EvictSksNodepoolMembersJSONRequestBody) (*EvictSksNodepoolMembersResponse, error) {
+	rsp, err := c.EvictSksNodepoolMembers(ctx, id, sksNodepoolId, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEvictSksNodepoolMembersResponse(rsp)
 }
 
 // ScaleSksNodepoolWithBodyWithResponse request with arbitrary body returning *ScaleSksNodepoolResponse
@@ -5274,6 +5881,112 @@ func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*ListZ
 		return nil, err
 	}
 	return ParseListZonesResponse(rsp)
+}
+
+// ParseListAntiAffinityGroupsResponse parses an HTTP response from a ListAntiAffinityGroupsWithResponse call
+func ParseListAntiAffinityGroupsResponse(rsp *http.Response) (*ListAntiAffinityGroupsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAntiAffinityGroupsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAntiAffinityGroupResponse parses an HTTP response from a CreateAntiAffinityGroupWithResponse call
+func ParseCreateAntiAffinityGroupResponse(rsp *http.Response) (*CreateAntiAffinityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAntiAffinityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteAntiAffinityGroupResponse parses an HTTP response from a DeleteAntiAffinityGroupWithResponse call
+func ParseDeleteAntiAffinityGroupResponse(rsp *http.Response) (*DeleteAntiAffinityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteAntiAffinityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAntiAffinityGroupResponse parses an HTTP response from a GetAntiAffinityGroupWithResponse call
+func ParseGetAntiAffinityGroupResponse(rsp *http.Response) (*GetAntiAffinityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAntiAffinityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AntiAffinityGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseListEventsResponse parses an HTTP response from a ListEventsWithResponse call
@@ -6068,6 +6781,34 @@ func ParseGenerateSksClusterKubeconfigResponse(rsp *http.Response) (*GenerateSks
 	return response, nil
 }
 
+// ParseListSksClusterVersionsResponse parses an HTTP response from a ListSksClusterVersionsWithResponse call
+func ParseListSksClusterVersionsResponse(rsp *http.Response) (*ListSksClusterVersionsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListSksClusterVersionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			SksClusterVersions *[]string `json:"sks-cluster-versions,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseDeleteSksClusterResponse parses an HTTP response from a DeleteSksClusterWithResponse call
 func ParseDeleteSksClusterResponse(rsp *http.Response) (*DeleteSksClusterResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -6233,6 +6974,32 @@ func ParseUpdateSksNodepoolResponse(rsp *http.Response) (*UpdateSksNodepoolRespo
 	}
 
 	response := &UpdateSksNodepoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseEvictSksNodepoolMembersResponse parses an HTTP response from a EvictSksNodepoolMembersWithResponse call
+func ParseEvictSksNodepoolMembersResponse(rsp *http.Response) (*EvictSksNodepoolMembersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EvictSksNodepoolMembersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
