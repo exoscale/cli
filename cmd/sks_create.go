@@ -158,7 +158,7 @@ Supported output template annotations: %s`,
 func init() {
 	sksCreateCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
 	sksCreateCmd.Flags().String("description", "", "SKS cluster description")
-	sksCreateCmd.Flags().String("kubernetes-version", "1.18.6",
+	sksCreateCmd.Flags().String("kubernetes-version", "1.20.0",
 		"SKS cluster control plane Kubernetes version")
 	sksCreateCmd.Flags().Bool("no-exoscale-ccm", false,
 		"do not deploy the Exoscale Cloud Controller Manager in the Kubernetes control plane")
