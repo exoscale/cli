@@ -6,18 +6,19 @@ require (
 	github.com/alecthomas/chroma v0.7.3
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cenkalti/backoff v2.0.0+incompatible
-	github.com/deepmap/oapi-codegen v1.4.1 // indirect
+	github.com/deepmap/oapi-codegen v1.4.2 // indirect
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.37.1
+	github.com/exoscale/egoscale v0.38.0
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-ini/ini v1.42.0
-	github.com/gofrs/uuid v3.3.0+incompatible // indirect
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/izumin5210/gentleman-logger v1.0.0
 	github.com/izumin5210/httplogger v1.0.0 // indirect
+	github.com/jarcoal/httpmock v1.0.7 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/klauspost/cpuid v1.3.1 // indirect
@@ -46,7 +47,7 @@ require (
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/h2non/gentleman.v2 v2.0.4
 	gopkg.in/ini.v1 v1.61.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
 go 1.14
