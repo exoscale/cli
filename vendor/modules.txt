@@ -70,7 +70,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.38.0
+# github.com/exoscale/egoscale v0.39.1
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
@@ -228,7 +228,8 @@ github.com/spf13/viper
 # github.com/stretchr/objx v0.3.0
 ## explicit
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.6.1
+# github.com/stretchr/testify v1.7.0
+## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 # github.com/subosito/gotenv v1.2.0

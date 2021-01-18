@@ -8,7 +8,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/deepmap/oapi-codegen v1.4.2 // indirect
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.38.0
+	github.com/exoscale/egoscale v0.39.1
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -38,6 +38,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/objx v0.3.0 // indirect
+	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/vbauerster/mpb/v4 v4.12.2
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73

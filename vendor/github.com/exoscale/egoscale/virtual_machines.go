@@ -427,6 +427,23 @@ func (UpdateVirtualMachine) Response() interface{} {
 	return new(VirtualMachine)
 }
 
+// UpdateVirtualMachineSecurityGroups represents the update of the virtual machine security group membership
+type UpdateVirtualMachineSecurityGroups struct {
+	ID               *UUID  `json:"id" doc:"The ID of the virtual machine"`
+	SecurityGroupIDs []UUID `json:"securitygroupids,omitempty" doc:"list of security group ids to be applied on the virtual machine."`
+	_                bool   `name:"updateVirtualMachineSecurityGroups" description:"Updates a virtual machine Security Group membership'."`
+}
+
+// Response returns the struct to unmarshal
+func (UpdateVirtualMachineSecurityGroups) Response() interface{} {
+	return new(AsyncJobResult)
+}
+
+// AsyncResponse returns the struct to unmarshal the async job
+func (UpdateVirtualMachineSecurityGroups) AsyncResponse() interface{} {
+	return new(VirtualMachine)
+}
+
 // ExpungeVirtualMachine represents the annihilation of a VM
 type ExpungeVirtualMachine struct {
 	ID *UUID `json:"id" doc:"The ID of the virtual machine"`
