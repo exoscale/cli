@@ -5,9 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/table"
 )
 
 // vmFirewallCmd represents the vm firewall command
@@ -124,17 +125,12 @@ var vmFirewallRemoveCmd = &cobra.Command{
 
 // setVirtualMachineSecurityGroups sets a virtual machine instance security groups.
 func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale.SecurityGroup) error {
-	state := (string)(egoscale.VirtualMachineStopped)
-	if vm.State != state {
-		return fmt.Errorf("this operation is not permitted if your VM is not stopped")
-	}
-
 	ids := make([]egoscale.UUID, len(sgs))
 	for i := range sgs {
 		ids[i] = *sgs[i].ID
 	}
 
-	_, err := cs.RequestWithContext(gContext, &egoscale.UpdateVirtualMachine{
+	_, err := cs.RequestWithContext(gContext, &egoscale.UpdateVirtualMachineSecurityGroups{
 		ID:               vm.ID,
 		SecurityGroupIDs: ids,
 	})
