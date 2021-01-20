@@ -45,6 +45,10 @@ Supported output template annotations: %s`,
 		var (
 			name    = args[0]
 			cluster *egoscale.SKSCluster
+			cni     = "calico"
+			addOns  = map[string]struct{}{
+				"exoscale-cloud-controller": {},
+			}
 		)
 
 		zone, err := cmd.Flags().GetString("zone")
@@ -62,18 +66,42 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		level, err := cmd.Flags().GetString("service-level")
+		if err != nil {
+			return err
+		}
+
+		noCNI, err := cmd.Flags().GetBool("no-cni")
+		if err != nil {
+			return err
+		}
+		if noCNI {
+			cni = ""
+		}
+
 		noExoscaleCCM, err := cmd.Flags().GetBool("no-exoscale-ccm")
 		if err != nil {
 			return err
+		}
+		if noExoscaleCCM {
+			delete(addOns, "exoscale-cloud-controller")
 		}
 
 		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", name), func() {
 			cluster, err = cs.CreateSKSCluster(ctx, zone, &egoscale.SKSCluster{
-				Name:                           name,
-				Description:                    description,
-				Version:                        version,
-				ExoscaleCloudControllerEnabled: !noExoscaleCCM,
+				Name:        name,
+				Description: description,
+				Version:     version,
+				Level:       level,
+				CNI:         cni,
+				AddOns: func() []string {
+					list := make([]string, 0)
+					for k := range addOns {
+						list = append(list, k)
+					}
+					return list
+				}(),
 			})
 		})
 		if err != nil {
@@ -160,8 +188,12 @@ func init() {
 	sksCreateCmd.Flags().String("description", "", "SKS cluster description")
 	sksCreateCmd.Flags().String("kubernetes-version", "1.20.0",
 		"SKS cluster control plane Kubernetes version")
+	sksCreateCmd.Flags().String("service-level", "pro",
+		"SKS cluster control plane service level (starter|pro)")
+	sksCreateCmd.Flags().Bool("no-cni", false,
+		"do not deploy the default Container Network Interface plugin in the cluster control plane")
 	sksCreateCmd.Flags().Bool("no-exoscale-ccm", false,
-		"do not deploy the Exoscale Cloud Controller Manager in the Kubernetes control plane")
+		"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane")
 	sksCreateCmd.Flags().Int64("nodepool-size", 0,
 		"default Nodepool size (default: 0). If 0, no default Nodepool will be added to the cluster.")
 	sksCreateCmd.Flags().String("nodepool-name", "",

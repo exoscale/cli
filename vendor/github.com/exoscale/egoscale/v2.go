@@ -17,12 +17,3 @@ func optionalInt64(v *int64) int64 {
 
 	return 0
 }
-
-// optionalBool returns the dereferenced boolean value of v if not nil, otherwise false.
-func optionalBool(v *bool) bool {
-	if v != nil {
-		return *v
-	}
-
-	return false
-}
