@@ -13,16 +13,18 @@ import (
 )
 
 type sksShowOutput struct {
-	ID                             string                 `json:"id"`
-	Name                           string                 `json:"name"`
-	Description                    string                 `json:"description"`
-	CreationDate                   string                 `json:"creation_date"`
-	Zone                           string                 `json:"zone"`
-	Endpoint                       string                 `json:"endpoint"`
-	Version                        string                 `json:"version"`
-	ExoscaleCloudControllerEnabled bool                   `json:"exoscale_cloud_controller_enabled"`
-	State                          string                 `json:"state"`
-	Nodepools                      []nlbServiceShowOutput `json:"nodepools"`
+	ID           string                 `json:"id"`
+	Name         string                 `json:"name"`
+	Description  string                 `json:"description"`
+	CreationDate string                 `json:"creation_date"`
+	Zone         string                 `json:"zone"`
+	Endpoint     string                 `json:"endpoint"`
+	Version      string                 `json:"version"`
+	ServiceLevel string                 `json:"service_level"`
+	CNI          string                 `json:"cni"`
+	AddOns       []string               `json:"addons"`
+	State        string                 `json:"state"`
+	Nodepools    []nlbServiceShowOutput `json:"nodepools"`
 }
 
 func (o *sksShowOutput) toJSON() { outputJSON(o) }
@@ -39,7 +41,9 @@ func (o *sksShowOutput) toTable() {
 	t.Append([]string{"Creation Date", o.CreationDate})
 	t.Append([]string{"Endpoint", o.Endpoint})
 	t.Append([]string{"Version", o.Version})
-	t.Append([]string{"Exoscale Cloud Controller Enabled", fmt.Sprint(o.ExoscaleCloudControllerEnabled)})
+	t.Append([]string{"Service Level", o.ServiceLevel})
+	t.Append([]string{"CNI", o.CNI})
+	t.Append([]string{"Add-Ons", strings.Join(o.AddOns, "\n")})
 	t.Append([]string{"State", o.State})
 	t.Append([]string{"Nodepools", func() string {
 		if len(o.Nodepools) > 0 {
@@ -102,16 +106,18 @@ func showSKSCluster(zone, c string) (outputter, error) {
 	}
 
 	out := sksShowOutput{
-		ID:                             cluster.ID,
-		Name:                           cluster.Name,
-		Description:                    cluster.Description,
-		CreationDate:                   cluster.CreatedAt.String(),
-		Version:                        cluster.Version,
-		ExoscaleCloudControllerEnabled: cluster.ExoscaleCloudControllerEnabled,
-		Zone:                           zone,
-		Endpoint:                       cluster.Endpoint,
-		State:                          cluster.State,
-		Nodepools:                      sksNodepools,
+		ID:           cluster.ID,
+		Name:         cluster.Name,
+		Description:  cluster.Description,
+		CreationDate: cluster.CreatedAt.String(),
+		Version:      cluster.Version,
+		ServiceLevel: cluster.Level,
+		CNI:          cluster.CNI,
+		AddOns:       cluster.AddOns,
+		Zone:         zone,
+		Endpoint:     cluster.Endpoint,
+		State:        cluster.State,
+		Nodepools:    sksNodepools,
 	}
 
 	return &out, nil

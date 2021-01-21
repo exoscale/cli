@@ -171,7 +171,7 @@ func (nlb *NetworkLoadBalancer) AddService(ctx context.Context,
 					return nil
 				}(),
 			},
-			InstancePool: v2.Resource{Id: &svc.InstancePoolID},
+			InstancePool: v2.InstancePool{Id: &svc.InstancePoolID},
 			Port:         port,
 			TargetPort:   targetPort,
 			Protocol:     svc.Protocol,

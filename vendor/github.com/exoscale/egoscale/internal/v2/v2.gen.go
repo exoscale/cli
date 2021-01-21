@@ -54,6 +54,26 @@ type Instance struct {
 	Name *string `json:"name,omitempty"`
 }
 
+// InstancePool defines model for instance-pool.
+type InstancePool struct {
+	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	Description        *string              `json:"description,omitempty"`
+	DiskSize           *int64               `json:"disk-size,omitempty"`
+	Id                 *string              `json:"id,omitempty"`
+	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
+	Instances          *[]Instance          `json:"instances,omitempty"`
+	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
+	Manager            *Manager             `json:"manager,omitempty"`
+	Name               *string              `json:"name,omitempty"`
+	PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
+	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
+	Size               *int64               `json:"size,omitempty"`
+	SshKey             *SshKey              `json:"ssh-key,omitempty"`
+	State              *string              `json:"state,omitempty"`
+	Template           *Template            `json:"template,omitempty"`
+	UserData           *string              `json:"user-data,omitempty"`
+}
+
 // InstanceType defines model for instance-type.
 type InstanceType struct {
 	Authorized *bool   `json:"authorized,omitempty"`
@@ -88,13 +108,19 @@ type LoadBalancerService struct {
 	Healthcheck       Healthcheck                 `json:"healthcheck"`
 	HealthcheckStatus *[]LoadBalancerServerStatus `json:"healthcheck-status,omitempty"`
 	Id                *string                     `json:"id,omitempty"`
-	InstancePool      Resource                    `json:"instance-pool"`
+	InstancePool      InstancePool                `json:"instance-pool"`
 	Name              string                      `json:"name"`
 	Port              int64                       `json:"port"`
 	Protocol          string                      `json:"protocol"`
 	State             *string                     `json:"state,omitempty"`
 	Strategy          string                      `json:"strategy"`
 	TargetPort        int64                       `json:"target-port"`
+}
+
+// Manager defines model for manager.
+type Manager struct {
+	Id   *string `json:"id,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
 // Operation defines model for operation.
@@ -121,12 +147,6 @@ type Reference struct {
 	Command *string `json:"command,omitempty"`
 	Id      *string `json:"id,omitempty"`
 	Link    *string `json:"link,omitempty"`
-}
-
-// Resource defines model for resource.
-type Resource struct {
-	Id   *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
 }
 
 // SecurityGroup defines model for security-group.
@@ -161,15 +181,17 @@ type SecurityGroupRule struct {
 
 // SksCluster defines model for sks-cluster.
 type SksCluster struct {
-	CreatedAt                     *time.Time     `json:"created-at,omitempty"`
-	Description                   *string        `json:"description,omitempty"`
-	EnableExoscaleCloudController *bool          `json:"enable-exoscale-cloud-controller,omitempty"`
-	Endpoint                      *string        `json:"endpoint,omitempty"`
-	Id                            *string        `json:"id,omitempty"`
-	Name                          *string        `json:"name,omitempty"`
-	Nodepools                     *[]SksNodepool `json:"nodepools,omitempty"`
-	State                         *string        `json:"state,omitempty"`
-	Version                       *string        `json:"version,omitempty"`
+	Addons      *[]string      `json:"addons,omitempty"`
+	Cni         *string        `json:"cni,omitempty"`
+	CreatedAt   *time.Time     `json:"created-at,omitempty"`
+	Description *string        `json:"description,omitempty"`
+	Endpoint    *string        `json:"endpoint,omitempty"`
+	Id          *string        `json:"id,omitempty"`
+	Level       *string        `json:"level,omitempty"`
+	Name        *string        `json:"name,omitempty"`
+	Nodepools   *[]SksNodepool `json:"nodepools,omitempty"`
+	State       *string        `json:"state,omitempty"`
+	Version     *string        `json:"version,omitempty"`
 }
 
 // SksKubeconfigRequest defines model for sks-kubeconfig-request.
@@ -186,7 +208,7 @@ type SksNodepool struct {
 	Description        *string              `json:"description,omitempty"`
 	DiskSize           *int64               `json:"disk-size,omitempty"`
 	Id                 *string              `json:"id,omitempty"`
-	InstancePool       *Resource            `json:"instance-pool,omitempty"`
+	InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
 	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 	Name               *string              `json:"name,omitempty"`
 	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
@@ -208,6 +230,12 @@ type Snapshot struct {
 	Instance *Instance `json:"instance,omitempty"`
 	Name     *string   `json:"name,omitempty"`
 	State    *string   `json:"state,omitempty"`
+}
+
+// SshKey defines model for ssh-key.
+type SshKey struct {
+	Fingerprint *string `json:"fingerprint,omitempty"`
+	Name        *string `json:"name,omitempty"`
 }
 
 // Template defines model for template.
@@ -312,6 +340,9 @@ type EvictSksNodepoolMembersJSONBody struct {
 // ScaleSksNodepoolJSONBody defines parameters for ScaleSksNodepool.
 type ScaleSksNodepoolJSONBody SksNodepool
 
+// UpgradeSksClusterJSONBody defines parameters for UpgradeSksCluster.
+type UpgradeSksClusterJSONBody SksCluster
+
 // ListTemplatesParams defines parameters for ListTemplates.
 type ListTemplatesParams struct {
 	Visibility *string `json:"visibility,omitempty"`
@@ -374,6 +405,9 @@ type EvictSksNodepoolMembersJSONRequestBody EvictSksNodepoolMembersJSONBody
 
 // ScaleSksNodepoolRequestBody defines body for ScaleSksNodepool for application/json ContentType.
 type ScaleSksNodepoolJSONRequestBody ScaleSksNodepoolJSONBody
+
+// UpgradeSksClusterRequestBody defines body for UpgradeSksCluster for application/json ContentType.
+type UpgradeSksClusterJSONRequestBody UpgradeSksClusterJSONBody
 
 // RegisterTemplateRequestBody defines body for RegisterTemplate for application/json ContentType.
 type RegisterTemplateJSONRequestBody RegisterTemplateJSONBody
@@ -670,6 +704,11 @@ type ClientInterface interface {
 
 	ScaleSksNodepool(ctx context.Context, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*http.Response, error)
 
+	// UpgradeSksCluster request  with any body
+	UpgradeSksClusterWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpgradeSksCluster(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody) (*http.Response, error)
+
 	// ListSnapshots request
 	ListSnapshots(ctx context.Context) (*http.Response, error)
 
@@ -681,6 +720,9 @@ type ClientInterface interface {
 
 	// ExportSnapshot request
 	ExportSnapshot(ctx context.Context, id string) (*http.Response, error)
+
+	// GetSshKey request
+	GetSshKey(ctx context.Context, name string) (*http.Response, error)
 
 	// ListTemplates request
 	ListTemplates(ctx context.Context, params *ListTemplatesParams) (*http.Response, error)
@@ -1630,6 +1672,36 @@ func (c *Client) ScaleSksNodepool(ctx context.Context, id string, sksNodepoolId 
 	return c.Client.Do(req)
 }
 
+func (c *Client) UpgradeSksClusterWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpgradeSksClusterRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpgradeSksCluster(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpgradeSksClusterRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListSnapshots(ctx context.Context) (*http.Response, error) {
 	req, err := NewListSnapshotsRequest(c.Server)
 	if err != nil {
@@ -1677,6 +1749,21 @@ func (c *Client) GetSnapshot(ctx context.Context, id string) (*http.Response, er
 
 func (c *Client) ExportSnapshot(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewExportSnapshotRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSshKey(ctx context.Context, name string) (*http.Response, error) {
+	req, err := NewGetSshKeyRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -3513,6 +3600,52 @@ func NewScaleSksNodepoolRequestWithBody(server string, id string, sksNodepoolId 
 	return req, nil
 }
 
+// NewUpgradeSksClusterRequest calls the generic UpgradeSksCluster builder with application/json body
+func NewUpgradeSksClusterRequest(server string, id string, body UpgradeSksClusterJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpgradeSksClusterRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpgradeSksClusterRequestWithBody generates requests for UpgradeSksCluster with any type of body
+func NewUpgradeSksClusterRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/upgrade", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
 // NewListSnapshotsRequest generates requests for ListSnapshots
 func NewListSnapshotsRequest(server string) (*http.Request, error) {
 	var err error
@@ -3635,6 +3768,40 @@ func NewExportSnapshotRequest(server string, id string) (*http.Request, error) {
 	}
 
 	req, err := http.NewRequest("POST", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetSshKeyRequest generates requests for GetSshKey
+func NewGetSshKeyRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "name", name)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/ssh-key/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -4036,6 +4203,11 @@ type ClientWithResponsesInterface interface {
 
 	ScaleSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*ScaleSksNodepoolResponse, error)
 
+	// UpgradeSksCluster request  with any body
+	UpgradeSksClusterWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpgradeSksClusterResponse, error)
+
+	UpgradeSksClusterWithResponse(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody) (*UpgradeSksClusterResponse, error)
+
 	// ListSnapshots request
 	ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error)
 
@@ -4047,6 +4219,9 @@ type ClientWithResponsesInterface interface {
 
 	// ExportSnapshot request
 	ExportSnapshotWithResponse(ctx context.Context, id string) (*ExportSnapshotResponse, error)
+
+	// GetSshKey request
+	GetSshKeyWithResponse(ctx context.Context, name string) (*GetSshKeyResponse, error)
 
 	// ListTemplates request
 	ListTemplatesWithResponse(ctx context.Context, params *ListTemplatesParams) (*ListTemplatesResponse, error)
@@ -5050,6 +5225,28 @@ func (r ScaleSksNodepoolResponse) StatusCode() int {
 	return 0
 }
 
+type UpgradeSksClusterResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpgradeSksClusterResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpgradeSksClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListSnapshotsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5134,6 +5331,28 @@ func (r ExportSnapshotResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ExportSnapshotResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetSshKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SshKey
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSshKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSshKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5794,6 +6013,23 @@ func (c *ClientWithResponses) ScaleSksNodepoolWithResponse(ctx context.Context, 
 	return ParseScaleSksNodepoolResponse(rsp)
 }
 
+// UpgradeSksClusterWithBodyWithResponse request with arbitrary body returning *UpgradeSksClusterResponse
+func (c *ClientWithResponses) UpgradeSksClusterWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpgradeSksClusterResponse, error) {
+	rsp, err := c.UpgradeSksClusterWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpgradeSksClusterResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpgradeSksClusterWithResponse(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody) (*UpgradeSksClusterResponse, error) {
+	rsp, err := c.UpgradeSksCluster(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpgradeSksClusterResponse(rsp)
+}
+
 // ListSnapshotsWithResponse request returning *ListSnapshotsResponse
 func (c *ClientWithResponses) ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error) {
 	rsp, err := c.ListSnapshots(ctx)
@@ -5828,6 +6064,15 @@ func (c *ClientWithResponses) ExportSnapshotWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseExportSnapshotResponse(rsp)
+}
+
+// GetSshKeyWithResponse request returning *GetSshKeyResponse
+func (c *ClientWithResponses) GetSshKeyWithResponse(ctx context.Context, name string) (*GetSshKeyResponse, error) {
+	rsp, err := c.GetSshKey(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSshKeyResponse(rsp)
 }
 
 // ListTemplatesWithResponse request returning *ListTemplatesResponse
@@ -7043,6 +7288,32 @@ func ParseScaleSksNodepoolResponse(rsp *http.Response) (*ScaleSksNodepoolRespons
 	return response, nil
 }
 
+// ParseUpgradeSksClusterResponse parses an HTTP response from a UpgradeSksClusterWithResponse call
+func ParseUpgradeSksClusterResponse(rsp *http.Response) (*UpgradeSksClusterResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpgradeSksClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListSnapshotsResponse parses an HTTP response from a ListSnapshotsWithResponse call
 func ParseListSnapshotsResponse(rsp *http.Response) (*ListSnapshotsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -7139,6 +7410,32 @@ func ParseExportSnapshotResponse(rsp *http.Response) (*ExportSnapshotResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSshKeyResponse parses an HTTP response from a GetSshKeyWithResponse call
+func ParseGetSshKeyResponse(rsp *http.Response) (*GetSshKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSshKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SshKey
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

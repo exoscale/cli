@@ -14,7 +14,7 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 		Description    *string          `json:"description,omitempty"`
 		DiskSize       *int64           `json:"disk-size,omitempty"`
 		Id             *string          `json:"id,omitempty"` // nolint:golint
-		InstancePool   *Resource        `json:"instance-pool,omitempty"`
+		InstancePool   *InstancePool    `json:"instance-pool,omitempty"`
 		InstanceType   *InstanceType    `json:"instance-type,omitempty"`
 		Name           *string          `json:"name,omitempty"`
 		SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
@@ -59,7 +59,7 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 		Description    *string          `json:"description,omitempty"`
 		DiskSize       *int64           `json:"disk-size,omitempty"`
 		Id             *string          `json:"id,omitempty"` // nolint:golint
-		InstancePool   *Resource        `json:"instance-pool,omitempty"`
+		InstancePool   *InstancePool    `json:"instance-pool,omitempty"`
 		InstanceType   *InstanceType    `json:"instance-type,omitempty"`
 		Name           *string          `json:"name,omitempty"`
 		SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`

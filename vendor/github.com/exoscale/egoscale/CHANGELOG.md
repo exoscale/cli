@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.40.0
+------
+
+- feature: new method `UpgradeSKSCluster()`
+- feature: new fields `SKSCluster.Level` and `SKSCluster.CNI`
+- change: `SKSCluster.EnableExoscaleCloudController` replaced with `SKSCluster.AddOns`
+
 0.39.1
 ------
 

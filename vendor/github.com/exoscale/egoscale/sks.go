@@ -56,15 +56,17 @@ func sksNodepoolFromAPI(n *v2.SksNodepool) *SKSNodepool {
 
 // SKSCluster represents a SKS cluster.
 type SKSCluster struct {
-	ID                             string
-	Name                           string
-	Description                    string
-	CreatedAt                      time.Time
-	Endpoint                       string
-	Nodepools                      []*SKSNodepool
-	Version                        string
-	ExoscaleCloudControllerEnabled bool
-	State                          string
+	ID          string
+	Name        string
+	Description string
+	CreatedAt   time.Time
+	Endpoint    string
+	Nodepools   []*SKSNodepool
+	Version     string
+	Level       string
+	CNI         string
+	AddOns      []string
+	State       string
 
 	c    *Client
 	zone string
@@ -89,9 +91,17 @@ func sksClusterFromAPI(c *v2.SksCluster) *SKSCluster {
 
 			return nodepools
 		}(),
-		Version:                        optionalString(c.Version),
-		ExoscaleCloudControllerEnabled: optionalBool(c.EnableExoscaleCloudController),
-		State:                          optionalString(c.State),
+		Version: optionalString(c.Version),
+		Level:   optionalString(c.Level),
+		CNI:     optionalString(c.Cni),
+		AddOns: func() []string {
+			addOns := make([]string, 0)
+			if c.Addons != nil {
+				addOns = append(addOns, *c.Addons...)
+			}
+			return addOns
+		}(),
+		State: optionalString(c.State),
 	}
 }
 
@@ -261,10 +271,24 @@ func (c *Client) CreateSKSCluster(ctx context.Context, zone string, cluster *SKS
 	resp, err := c.v2.CreateSksClusterWithResponse(
 		apiv2.WithZone(ctx, zone),
 		v2.CreateSksClusterJSONRequestBody{
-			Name:                          &cluster.Name,
-			Description:                   &cluster.Description,
-			Version:                       &cluster.Version,
-			EnableExoscaleCloudController: &cluster.ExoscaleCloudControllerEnabled,
+			Name:        &cluster.Name,
+			Description: &cluster.Description,
+			Version:     &cluster.Version,
+			Level:       &cluster.Level,
+			Cni: func() *string {
+				var cni *string
+				if cluster.CNI != "" {
+					cni = &cluster.CNI
+				}
+				return cni
+			}(),
+			Addons: func() *[]string {
+				var addOns *[]string
+				if len(cluster.AddOns) > 0 {
+					addOns = &cluster.AddOns
+				}
+				return addOns
+			}(),
 		})
 	if err != nil {
 		return nil, err
@@ -344,6 +368,27 @@ func (c *Client) UpdateSKSCluster(ctx context.Context, zone string, cluster *SKS
 			Name:        &cluster.Name,
 			Description: &cluster.Description,
 		})
+	if err != nil {
+		return err
+	}
+
+	_, err = v2.NewPoller().
+		WithTimeout(c.Timeout).
+		Poll(ctx, c.v2.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpgradeSKSCluster upgrades the SKS cluster corresponding to the specified ID in the specified zone to the
+// requested Kubernetes version.
+func (c *Client) UpgradeSKSCluster(ctx context.Context, zone, id, version string) error {
+	resp, err := c.v2.UpgradeSksClusterWithResponse(
+		apiv2.WithZone(ctx, zone),
+		id,
+		v2.UpgradeSksClusterJSONRequestBody{Version: &version})
 	if err != nil {
 		return err
 	}
