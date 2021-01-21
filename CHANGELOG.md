@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.23.0
+
+### Features
+
+* New command `exo sks versions`
+* New command `exo sks upgrade`
+* New command `exo sks nodepool evict`
+
+### Improvements
+
+* `exo vm firewall` commands now update the Security Group memberships without requiring stopping the Compute instance (#308)
+
+
 ## 1.22.2
 
 ### Improvements
