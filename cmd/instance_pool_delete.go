@@ -36,6 +36,12 @@ var instancePoolDeleteCmd = &cobra.Command{
 			return err
 		}
 
+		// Ensure the Instance Pool is not attached to a NLB service.
+		nlbs, err := cs.ListNetworkLoadBalancers(gContext, zone.Name)
+		if err != nil {
+			return fmt.Errorf("unable to list Network Load Balancers: %v", err)
+		}
+
 		tasks := make([]task, 0, len(args))
 		for _, arg := range args {
 			if !force {
@@ -47,6 +53,15 @@ var instancePoolDeleteCmd = &cobra.Command{
 			i, err := getInstancePoolByNameOrID(arg, zone.ID)
 			if err != nil {
 				return err
+			}
+
+			for _, nlb := range nlbs {
+				for _, svc := range nlb.Services {
+					if svc.InstancePoolID == i.ID.String() {
+						return fmt.Errorf("instance pool %q is still referenced by NLB service %s/%s",
+							i.Name, nlb.Name, svc.Name)
+					}
+				}
 			}
 
 			tasks = append(tasks, task{
