@@ -21,7 +21,6 @@ plugs:
     interface: personal-files
     write:
       - $HOME/.exoscale
-      - $HOME/.cloudstack.ini
       - $HOME/.config/exoscale
 
 apps:

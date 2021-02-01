@@ -12,7 +12,6 @@ require (
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/go-ini/ini v1.42.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/hashicorp/go-multierror v1.1.0

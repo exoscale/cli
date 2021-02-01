@@ -6,13 +6,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"os/user"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	"github.com/go-ini/ini"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -94,7 +91,7 @@ var configCmd = &cobra.Command{
 	RunE:  configCmdRun,
 }
 
-func configCmdRun(cmd *cobra.Command, args []string) error {
+func configCmdRun(cmd *cobra.Command, _ []string) error {
 	var (
 		defaultAccountMark = promptui.Styler(promptui.FGYellow)("*")
 		newAccountLabel    = "<Configure a new account>"
@@ -137,32 +134,11 @@ func configCmdRun(cmd *cobra.Command, args []string) error {
 
 	fmt.Println("No Exoscale CLI configuration found")
 
-	csPath, ok := isCloudstackINIFileExist()
-	if ok {
-		resp, ok, err := askCloudstackINIMigration(csPath)
-		if err != nil {
-			return err
-		}
-		if !ok {
-			fmt.Println("Please provide Exoscale account information:")
-			return addConfigAccount(true)
-		}
-
-		cfgPath, err := createConfigFile(defaultConfigFileName)
-		if err != nil {
-			return err
-		}
-		if err := importCloudstackINI(resp, csPath, cfgPath); err != nil {
-			return err
-		}
-		return addConfigAccount(false)
-	}
-
 	fmt.Print(`
-Hi happy Exoscalian, some configuration is required to use exo.
+In order to set up your configuration profile, you will need to retrieve
+Exoscale API credentials from your organization's IAM:
 
-We now need some very important information, find them there.
-	<https://portal.exoscale.com/iam/api-keys>
+    https://portal.exoscale.com/iam/api-keys
 
 `)
 	return addConfigAccount(true)
@@ -247,162 +223,6 @@ func saveConfig(filePath string, newAccounts *config) error {
 	gAllAccount = conf
 
 	return nil
-}
-
-func isCloudstackINIFileExist() (string, bool) {
-	envConfigPath := os.Getenv("CLOUDSTACK_CONFIG")
-
-	usr, _ := user.Current()
-
-	localConfig, _ := filepath.Abs("cloudstack.ini")
-	inis := []string{
-		localConfig,
-		filepath.Join(usr.HomeDir, ".cloudstack.ini"),
-		filepath.Join(gConfigFolder, "cloudstack.ini"),
-		envConfigPath,
-	}
-
-	cfgPath := ""
-
-	for _, i := range inis {
-		if _, err := os.Stat(i); err != nil {
-			continue
-		}
-		cfgPath = i
-		break
-	}
-
-	if cfgPath == "" {
-		return "", false
-	}
-	return cfgPath, true
-}
-
-func askCloudstackINIMigration(csFilePath string) (string, bool, error) {
-	cfg, err := ini.LoadSources(ini.LoadOptions{IgnoreInlineComment: true}, csFilePath)
-	if err != nil {
-		return "", false, err
-	}
-
-	if len(cfg.Sections()) <= 0 {
-		return "", false, nil
-	}
-
-	fmt.Printf("We've found a %q configuration file with the following accounts:\n", "cloudstack.ini")
-	for i, acc := range cfg.Sections() {
-		if i == 0 {
-			continue
-		}
-		fmt.Printf("- [%s] %s\n", acc.Name(), acc.Key("key").String())
-	}
-	fmt.Println("")
-
-	reader := bufio.NewReader(os.Stdin)
-
-	resp, err := readInput(reader, "Which one should we import?", "All, some, none")
-	if err != nil {
-		return "", false, err
-	}
-
-	resp = strings.ToLower(resp)
-	if resp == "" {
-		resp = "all"
-	}
-
-	return resp, (resp == "all" || resp == "some"), nil
-}
-
-func importCloudstackINI(option, csPath, cfgPath string) error {
-	cfg, err := ini.LoadSources(ini.LoadOptions{IgnoreInlineComment: true}, csPath)
-	if err != nil {
-		return err
-	}
-
-	reader := bufio.NewReader(os.Stdin)
-
-	config := &config{}
-
-	setdefaultAccount := 1
-	for i, acc := range cfg.Sections() {
-		if i == 0 {
-			continue
-		}
-
-		if option == "some" {
-			if !askQuestion(fmt.Sprintf("Do you want to import [%s] %s?", acc.Name(), acc.Key("key").String())) {
-				if gConfig.Get("defaultAccount") == nil {
-					setdefaultAccount = i + 1
-				}
-				continue
-			}
-		}
-
-		csAccount := account{
-			Name:     acc.Name(),
-			Endpoint: acc.Key("endpoint").String(),
-			Key:      acc.Key("key").String(),
-			Secret:   acc.Key("secret").String(),
-		}
-
-		csClient := egoscale.NewClient(csAccount.Endpoint, csAccount.Key, csAccount.Secret)
-
-		fmt.Printf("Checking the credentials of %q (%s)...", csAccount.Key, csAccount.Endpoint)
-		resp, err := csClient.GetWithContext(gContext, egoscale.Account{})
-		if err != nil {
-			fmt.Println(" failure.")
-			if !askQuestion(fmt.Sprintf("Do you want to keep %s?", csAccount.Name)) {
-				continue
-			}
-		} else {
-			fmt.Println(" success!")
-			csAccount.Account = resp.(*egoscale.Account).Name
-		}
-		fmt.Println("")
-
-		name, err := readInput(reader, fmt.Sprintf("Name (org: %q)", csAccount.Account), csAccount.Name)
-		if err != nil {
-			return err
-		}
-		if name != "" {
-			csAccount.Name = name
-		}
-
-		for {
-			if a := getAccountByName(csAccount.Name); a == nil {
-				break
-			}
-
-			fmt.Printf("Account name [%s] already exist\n", csAccount.Name)
-			name, err = readInput(reader, fmt.Sprintf("Name (org: %q)", csAccount.Account), csAccount.Name)
-			if err != nil {
-				return err
-			}
-
-			csAccount.Name = name
-		}
-
-		defaultZone, err := chooseZone(csClient, nil)
-		if err != nil {
-			return err
-		}
-		csAccount.DefaultZone = defaultZone
-
-		isDefault := false
-		if askQuestion(fmt.Sprintf("Is %q your default account?", csAccount.Name)) {
-			isDefault = true
-		}
-
-		config.Accounts = append(config.Accounts, csAccount)
-
-		if i == setdefaultAccount || isDefault {
-			config.DefaultAccount = csAccount.Name
-			gConfig.Set("defaultAccount", csAccount.Name)
-		}
-		gAllAccount = config
-	}
-
-	gAllAccount = nil
-	return saveConfig(cfgPath, config)
 }
 
 func createConfigFile(fileName string) (string, error) {
