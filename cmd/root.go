@@ -245,6 +245,10 @@ func initConfig() {
 			return
 		}
 
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Fatal(`error: the exo CLI must be configured before usage, please run "exo config"`)
+		}
+
 		log.Fatal(err)
 	}
 
