@@ -19,7 +19,7 @@ Note: Kubernetes Nodes should be drained from their workload prior to being
 evicted from their Nodepool, e.g. using "kubectl drain".`,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) <= 3 {
+		if len(args) < 3 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
