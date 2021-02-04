@@ -11,18 +11,19 @@ import (
 )
 
 type sksNodepoolShowOutput struct {
-	ID             string   `json:"id"`
-	Name           string   `json:"name"`
-	Description    string   `json:"description"`
-	CreationDate   string   `json:"creation_date"`
-	InstancePoolID string   `json:"instance_pool_id"`
-	InstanceType   string   `json:"instance_type"`
-	Template       string   `json:"template"`
-	DiskSize       int64    `json:"disk_size"`
-	SecurityGroups []string `json:"security_groups"`
-	Version        string   `json:"version"`
-	Size           int64    `json:"size"`
-	State          string   `json:"state"`
+	ID                 string   `json:"id"`
+	Name               string   `json:"name"`
+	Description        string   `json:"description"`
+	CreationDate       string   `json:"creation_date"`
+	InstancePoolID     string   `json:"instance_pool_id"`
+	InstanceType       string   `json:"instance_type"`
+	Template           string   `json:"template"`
+	DiskSize           int64    `json:"disk_size"`
+	AntiAffinityGroups []string `json:"anti_affinity_groups"`
+	SecurityGroups     []string `json:"security_groups"`
+	Version            string   `json:"version"`
+	Size               int64    `json:"size"`
+	State              string   `json:"state"`
 }
 
 func (o *sksNodepoolShowOutput) toJSON()      { outputJSON(o) }
@@ -82,16 +83,17 @@ func showSKSNodepool(zone *egoscale.Zone, c, np string) (outputter, error) {
 	}
 
 	out := sksNodepoolShowOutput{
-		ID:             nodepool.ID,
-		Name:           nodepool.Name,
-		Description:    nodepool.Description,
-		CreationDate:   nodepool.CreatedAt.String(),
-		InstancePoolID: nodepool.InstancePoolID,
-		DiskSize:       nodepool.DiskSize,
-		Version:        nodepool.Version,
-		State:          nodepool.State,
-		Size:           nodepool.Size,
-		SecurityGroups: make([]string, 0),
+		ID:                 nodepool.ID,
+		Name:               nodepool.Name,
+		Description:        nodepool.Description,
+		CreationDate:       nodepool.CreatedAt.String(),
+		InstancePoolID:     nodepool.InstancePoolID,
+		DiskSize:           nodepool.DiskSize,
+		AntiAffinityGroups: make([]string, 0),
+		SecurityGroups:     make([]string, 0),
+		Version:            nodepool.Version,
+		Size:               nodepool.Size,
+		State:              nodepool.State,
 	}
 
 	serviceOffering, err := getServiceOfferingByNameOrID(nodepool.InstanceTypeID)
@@ -107,6 +109,23 @@ func showSKSNodepool(zone *egoscale.Zone, c, np string) (outputter, error) {
 		return nil, fmt.Errorf("error retrieving template: %s", err)
 	}
 	out.Template = template.Name
+
+	if len(nodepool.AntiAffinityGroupIDs) > 0 {
+		allAntiAffinityGroups, err := cs.ListWithContext(gContext, &egoscale.AffinityGroup{})
+		if err != nil {
+			return nil, fmt.Errorf("error listing Anti-Affinity Groups: %s", err)
+		}
+
+		for _, s := range allAntiAffinityGroups {
+			sg := s.(*egoscale.AffinityGroup)
+
+			for _, id := range nodepool.AntiAffinityGroupIDs {
+				if sg.ID.String() == id {
+					out.AntiAffinityGroups = append(out.AntiAffinityGroups, sg.Name)
+				}
+			}
+		}
+	}
 
 	if len(nodepool.SecurityGroupIDs) > 0 {
 		allSecurityGroups, err := cs.ListWithContext(gContext, &egoscale.SecurityGroup{})

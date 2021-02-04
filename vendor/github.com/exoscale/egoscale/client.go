@@ -164,7 +164,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		// If the request returned a Go error don't bother analyzing the response
-		// body, as there probably don't be any (e.g. connection timeout/refused).
+		// body, as there probably won't be any (e.g. connection timeout/refused).
 		return resp, err
 	}
 

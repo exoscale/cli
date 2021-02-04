@@ -60,7 +60,7 @@ github.com/danielgtaylor/go-jmespath-plus
 github.com/danwakefield/fnmatch
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/deepmap/oapi-codegen v1.4.2
+# github.com/deepmap/oapi-codegen v1.5.0
 ## explicit
 github.com/deepmap/oapi-codegen/pkg/runtime
 github.com/deepmap/oapi-codegen/pkg/types
@@ -70,7 +70,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.40.0
+# github.com/exoscale/egoscale v0.42.0
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
@@ -86,8 +86,6 @@ github.com/fatih/camelcase
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit
 github.com/fsnotify/fsnotify
-# github.com/go-ini/ini v1.42.0
-## explicit
 # github.com/gofrs/uuid v4.0.0+incompatible
 ## explicit
 github.com/gofrs/uuid
@@ -123,7 +121,7 @@ github.com/izumin5210/gentleman-logger
 # github.com/izumin5210/httplogger v1.0.0
 ## explicit
 github.com/izumin5210/httplogger
-# github.com/jarcoal/httpmock v1.0.7
+# github.com/jarcoal/httpmock v1.0.8
 ## explicit
 github.com/jarcoal/httpmock
 github.com/jarcoal/httpmock/internal
@@ -148,7 +146,7 @@ github.com/magiconair/properties
 github.com/manifoldco/promptui
 github.com/manifoldco/promptui/list
 github.com/manifoldco/promptui/screenbuf
-# github.com/mattn/go-colorable v0.1.6
+# github.com/mattn/go-colorable v0.1.8
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
@@ -225,10 +223,8 @@ github.com/spf13/pflag
 ## explicit
 github.com/spf13/viper
 # github.com/stretchr/objx v0.3.0
-## explicit
 github.com/stretchr/objx
 # github.com/stretchr/testify v1.7.0
-## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 # github.com/subosito/gotenv v1.2.0
@@ -241,7 +237,7 @@ github.com/vbauerster/mpb/v4
 github.com/vbauerster/mpb/v4/cwriter
 github.com/vbauerster/mpb/v4/decor
 github.com/vbauerster/mpb/v4/internal
-# golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392
+# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 ## explicit
 golang.org/x/crypto/argon2
 golang.org/x/crypto/blake2b
@@ -257,7 +253,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20190930215403-16217165b5de
 golang.org/x/lint
-# golang.org/x/net v0.0.0-20200904194848-62affa334b73
+# golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 ## explicit
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
@@ -265,8 +261,7 @@ golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.0.0-20201126233918-771906719818
-## explicit
+# golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -275,8 +270,7 @@ golang.org/x/sys/windows
 # golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 ## explicit
 golang.org/x/term
-# golang.org/x/text v0.3.3
-## explicit
+# golang.org/x/text v0.3.5
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi

@@ -23,6 +23,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
+	"github.com/deepmap/oapi-codegen/pkg/types"
 )
 
 // Given an input value, such as a primitive type, array or object, turn it
@@ -134,23 +136,31 @@ func sortedKeys(strMap map[string]string) []string {
 	return keys
 }
 
-// This is a special case. The struct may be a time, in which case, marshal
-// it in RFC3339 format.
-func marshalTimeValue(value interface{}) (string, bool) {
-	if timeVal, ok := value.(*time.Time); ok {
+// This is a special case. The struct may be a date or time, in
+// which case, marshal it in correct format.
+func marshalDateTimeValue(value interface{}) (string, bool) {
+	v := reflect.Indirect(reflect.ValueOf(value))
+	t := v.Type()
+
+	if t.ConvertibleTo(reflect.TypeOf(time.Time{})) {
+		tt := v.Convert(reflect.TypeOf(time.Time{}))
+		timeVal := tt.Interface().(time.Time)
 		return timeVal.Format(time.RFC3339Nano), true
 	}
 
-	if timeVal, ok := value.(time.Time); ok {
-		return timeVal.Format(time.RFC3339Nano), true
+	if t.ConvertibleTo(reflect.TypeOf(types.Date{})) {
+		d := v.Convert(reflect.TypeOf(types.Date{}))
+		dateVal := d.Interface().(types.Date)
+		return dateVal.Format(types.DateFormat), true
 	}
 
 	return "", false
 }
 
 func styleStruct(style string, explode bool, paramName string, value interface{}) (string, error) {
-	if timeVal, ok := marshalTimeValue(value); ok {
-		styledVal, err := stylePrimitive(style, explode, paramName, url.QueryEscape(timeVal))
+
+	if timeVal, ok := marshalDateTimeValue(value); ok {
+		styledVal, err := stylePrimitive(style, explode, paramName, timeVal)
 		if err != nil {
 			return "", errors.Wrap(err, "failed to style time")
 		}
@@ -309,7 +319,7 @@ func stylePrimitive(style string, explode bool, paramName string, value interfac
 	default:
 		return "", fmt.Errorf("unsupported style '%s'", style)
 	}
-	return prefix + strVal, nil
+	return prefix + url.QueryEscape(strVal), nil
 }
 
 // Converts a primitive value to a string. We need to do this based on the

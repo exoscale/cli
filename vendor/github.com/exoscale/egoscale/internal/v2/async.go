@@ -85,11 +85,7 @@ func (p *Poller) Poll(ctx context.Context, pf PollFunc) (interface{}, error) {
 			return res, nil
 
 		case <-ctx.Done():
-			err := ctx.Err()
-			if err == context.DeadlineExceeded {
-				return nil, errors.New("client time out")
-			}
-			return nil, err
+			return nil, ctx.Err()
 		}
 	}
 }

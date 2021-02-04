@@ -111,7 +111,7 @@ func showSKSCluster(zone, c string) (outputter, error) {
 		Description:  cluster.Description,
 		CreationDate: cluster.CreatedAt.String(),
 		Version:      cluster.Version,
-		ServiceLevel: cluster.Level,
+		ServiceLevel: cluster.ServiceLevel,
 		CNI:          cluster.CNI,
 		AddOns:       cluster.AddOns,
 		Zone:         zone,
