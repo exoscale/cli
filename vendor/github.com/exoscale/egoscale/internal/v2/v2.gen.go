@@ -26,6 +26,17 @@ type AntiAffinityGroup struct {
 	Name        *string     `json:"name,omitempty"`
 }
 
+// CopyTemplateInput defines model for copy-template-input.
+type CopyTemplateInput struct {
+	TargetZone *string `json:"target-zone,omitempty"`
+}
+
+// ElasticIp defines model for elastic-ip.
+type ElasticIp struct {
+	Id *string `json:"id,omitempty"`
+	Ip *string `json:"ip,omitempty"`
+}
+
 // Event defines model for event.
 type Event struct {
 	Payload   *Event_Payload `json:"payload,omitempty"`
@@ -59,6 +70,7 @@ type InstancePool struct {
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 	Description        *string              `json:"description,omitempty"`
 	DiskSize           *int64               `json:"disk-size,omitempty"`
+	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
 	Id                 *string              `json:"id,omitempty"`
 	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 	Instances          *[]Instance          `json:"instances,omitempty"`
@@ -279,6 +291,20 @@ type CreateInstanceParams struct {
 	Start *bool `json:"start,omitempty"`
 }
 
+// CreateInstancePoolJSONBody defines parameters for CreateInstancePool.
+type CreateInstancePoolJSONBody InstancePool
+
+// UpdateInstancePoolJSONBody defines parameters for UpdateInstancePool.
+type UpdateInstancePoolJSONBody InstancePool
+
+// EvictInstancePoolMembersJSONBody defines parameters for EvictInstancePoolMembers.
+type EvictInstancePoolMembersJSONBody struct {
+	Instances *[]string `json:"instances,omitempty"`
+}
+
+// ScaleInstancePoolJSONBody defines parameters for ScaleInstancePool.
+type ScaleInstancePoolJSONBody InstancePool
+
 // RevertInstanceToSnapshotJSONBody defines parameters for RevertInstanceToSnapshot.
 type RevertInstanceToSnapshotJSONBody Snapshot
 
@@ -352,11 +378,26 @@ type ListTemplatesParams struct {
 // RegisterTemplateJSONBody defines parameters for RegisterTemplate.
 type RegisterTemplateJSONBody Template
 
+// CopyTemplateJSONBody defines parameters for CopyTemplate.
+type CopyTemplateJSONBody CopyTemplateInput
+
 // CreateAntiAffinityGroupRequestBody defines body for CreateAntiAffinityGroup for application/json ContentType.
 type CreateAntiAffinityGroupJSONRequestBody CreateAntiAffinityGroupJSONBody
 
 // CreateInstanceRequestBody defines body for CreateInstance for application/json ContentType.
 type CreateInstanceJSONRequestBody CreateInstanceJSONBody
+
+// CreateInstancePoolRequestBody defines body for CreateInstancePool for application/json ContentType.
+type CreateInstancePoolJSONRequestBody CreateInstancePoolJSONBody
+
+// UpdateInstancePoolRequestBody defines body for UpdateInstancePool for application/json ContentType.
+type UpdateInstancePoolJSONRequestBody UpdateInstancePoolJSONBody
+
+// EvictInstancePoolMembersRequestBody defines body for EvictInstancePoolMembers for application/json ContentType.
+type EvictInstancePoolMembersJSONRequestBody EvictInstancePoolMembersJSONBody
+
+// ScaleInstancePoolRequestBody defines body for ScaleInstancePool for application/json ContentType.
+type ScaleInstancePoolJSONRequestBody ScaleInstancePoolJSONBody
 
 // RevertInstanceToSnapshotRequestBody defines body for RevertInstanceToSnapshot for application/json ContentType.
 type RevertInstanceToSnapshotJSONRequestBody RevertInstanceToSnapshotJSONBody
@@ -411,6 +452,9 @@ type UpgradeSksClusterJSONRequestBody UpgradeSksClusterJSONBody
 
 // RegisterTemplateRequestBody defines body for RegisterTemplate for application/json ContentType.
 type RegisterTemplateJSONRequestBody RegisterTemplateJSONBody
+
+// CopyTemplateRequestBody defines body for CopyTemplate for application/json ContentType.
+type CopyTemplateJSONRequestBody CopyTemplateJSONBody
 
 // Getter for additional properties for Event_Payload. Returns the specified
 // element and whether it was found
@@ -550,6 +594,9 @@ type ClientInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error)
 
+	// GetElasticIp request
+	GetElasticIp(ctx context.Context, id string) (*http.Response, error)
+
 	// ListEvents request
 	ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error)
 
@@ -557,6 +604,35 @@ type ClientInterface interface {
 	CreateInstanceWithBody(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*http.Response, error)
 
 	CreateInstance(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*http.Response, error)
+
+	// ListInstancePools request
+	ListInstancePools(ctx context.Context) (*http.Response, error)
+
+	// CreateInstancePool request  with any body
+	CreateInstancePoolWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateInstancePool(ctx context.Context, body CreateInstancePoolJSONRequestBody) (*http.Response, error)
+
+	// DeleteInstancePool request
+	DeleteInstancePool(ctx context.Context, id string) (*http.Response, error)
+
+	// GetInstancePool request
+	GetInstancePool(ctx context.Context, id string) (*http.Response, error)
+
+	// UpdateInstancePool request  with any body
+	UpdateInstancePoolWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpdateInstancePool(ctx context.Context, id string, body UpdateInstancePoolJSONRequestBody) (*http.Response, error)
+
+	// EvictInstancePoolMembers request  with any body
+	EvictInstancePoolMembersWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	EvictInstancePoolMembers(ctx context.Context, id string, body EvictInstancePoolMembersJSONRequestBody) (*http.Response, error)
+
+	// ScaleInstancePool request  with any body
+	ScaleInstancePoolWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	ScaleInstancePool(ctx context.Context, id string, body ScaleInstancePoolJSONRequestBody) (*http.Response, error)
 
 	// ListInstanceTypes request
 	ListInstanceTypes(ctx context.Context) (*http.Response, error)
@@ -738,6 +814,11 @@ type ClientInterface interface {
 	// GetTemplate request
 	GetTemplate(ctx context.Context, id string) (*http.Response, error)
 
+	// CopyTemplate request  with any body
+	CopyTemplateWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	CopyTemplate(ctx context.Context, id string, body CopyTemplateJSONRequestBody) (*http.Response, error)
+
 	// ListZones request
 	ListZones(ctx context.Context) (*http.Response, error)
 }
@@ -817,6 +898,21 @@ func (c *Client) GetAntiAffinityGroup(ctx context.Context, id string) (*http.Res
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetElasticIp(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetElasticIpRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error) {
 	req, err := NewListEventsRequest(c.Server, params)
 	if err != nil {
@@ -849,6 +945,171 @@ func (c *Client) CreateInstanceWithBody(ctx context.Context, params *CreateInsta
 
 func (c *Client) CreateInstance(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*http.Response, error) {
 	req, err := NewCreateInstanceRequest(c.Server, params, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListInstancePools(ctx context.Context) (*http.Response, error) {
+	req, err := NewListInstancePoolsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateInstancePoolWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateInstancePoolRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateInstancePool(ctx context.Context, body CreateInstancePoolJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateInstancePoolRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteInstancePool(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeleteInstancePoolRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetInstancePool(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetInstancePoolRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateInstancePoolWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpdateInstancePoolRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateInstancePool(ctx context.Context, id string, body UpdateInstancePoolJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpdateInstancePoolRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EvictInstancePoolMembersWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewEvictInstancePoolMembersRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) EvictInstancePoolMembers(ctx context.Context, id string, body EvictInstancePoolMembersJSONRequestBody) (*http.Response, error) {
+	req, err := NewEvictInstancePoolMembersRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ScaleInstancePoolWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewScaleInstancePoolRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ScaleInstancePool(ctx context.Context, id string, body ScaleInstancePoolJSONRequestBody) (*http.Response, error) {
+	req, err := NewScaleInstancePoolRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1852,6 +2113,36 @@ func (c *Client) GetTemplate(ctx context.Context, id string) (*http.Response, er
 	return c.Client.Do(req)
 }
 
+func (c *Client) CopyTemplateWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCopyTemplateRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CopyTemplate(ctx context.Context, id string, body CopyTemplateJSONRequestBody) (*http.Response, error) {
+	req, err := NewCopyTemplateRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListZones(ctx context.Context) (*http.Response, error) {
 	req, err := NewListZonesRequest(c.Server)
 	if err != nil {
@@ -2001,6 +2292,40 @@ func NewGetAntiAffinityGroupRequest(server string, id string) (*http.Request, er
 	return req, nil
 }
 
+// NewGetElasticIpRequest generates requests for GetElasticIp
+func NewGetElasticIpRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/elastic-ip/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListEventsRequest generates requests for ListEvents
 func NewListEventsRequest(server string, params *ListEventsParams) (*http.Request, error) {
 	var err error
@@ -2115,6 +2440,278 @@ func NewCreateInstanceRequestWithBody(server string, params *CreateInstanceParam
 	queryUrl.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewListInstancePoolsRequest generates requests for ListInstancePools
+func NewListInstancePoolsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance-pool")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateInstancePoolRequest calls the generic CreateInstancePool builder with application/json body
+func NewCreateInstancePoolRequest(server string, body CreateInstancePoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateInstancePoolRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateInstancePoolRequestWithBody generates requests for CreateInstancePool with any type of body
+func NewCreateInstancePoolRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance-pool")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteInstancePoolRequest generates requests for DeleteInstancePool
+func NewDeleteInstancePoolRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance-pool/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetInstancePoolRequest generates requests for GetInstancePool
+func NewGetInstancePoolRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance-pool/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateInstancePoolRequest calls the generic UpdateInstancePool builder with application/json body
+func NewUpdateInstancePoolRequest(server string, id string, body UpdateInstancePoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateInstancePoolRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateInstancePoolRequestWithBody generates requests for UpdateInstancePool with any type of body
+func NewUpdateInstancePoolRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance-pool/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewEvictInstancePoolMembersRequest calls the generic EvictInstancePoolMembers builder with application/json body
+func NewEvictInstancePoolMembersRequest(server string, id string, body EvictInstancePoolMembersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewEvictInstancePoolMembersRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewEvictInstancePoolMembersRequestWithBody generates requests for EvictInstancePoolMembers with any type of body
+func NewEvictInstancePoolMembersRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance-pool/%s:evict", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewScaleInstancePoolRequest calls the generic ScaleInstancePool builder with application/json body
+func NewScaleInstancePoolRequest(server string, id string, body ScaleInstancePoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewScaleInstancePoolRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewScaleInstancePoolRequestWithBody generates requests for ScaleInstancePool with any type of body
+func NewScaleInstancePoolRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance-pool/%s:scale", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -3979,6 +4576,52 @@ func NewGetTemplateRequest(server string, id string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewCopyTemplateRequest calls the generic CopyTemplate builder with application/json body
+func NewCopyTemplateRequest(server string, id string, body CopyTemplateJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCopyTemplateRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewCopyTemplateRequestWithBody generates requests for CopyTemplate with any type of body
+func NewCopyTemplateRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/template/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
 // NewListZonesRequest generates requests for ListZones
 func NewListZonesRequest(server string) (*http.Request, error) {
 	var err error
@@ -4049,6 +4692,9 @@ type ClientWithResponsesInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroupWithResponse(ctx context.Context, id string) (*GetAntiAffinityGroupResponse, error)
 
+	// GetElasticIp request
+	GetElasticIpWithResponse(ctx context.Context, id string) (*GetElasticIpResponse, error)
+
 	// ListEvents request
 	ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error)
 
@@ -4056,6 +4702,35 @@ type ClientWithResponsesInterface interface {
 	CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*CreateInstanceResponse, error)
 
 	CreateInstanceWithResponse(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error)
+
+	// ListInstancePools request
+	ListInstancePoolsWithResponse(ctx context.Context) (*ListInstancePoolsResponse, error)
+
+	// CreateInstancePool request  with any body
+	CreateInstancePoolWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateInstancePoolResponse, error)
+
+	CreateInstancePoolWithResponse(ctx context.Context, body CreateInstancePoolJSONRequestBody) (*CreateInstancePoolResponse, error)
+
+	// DeleteInstancePool request
+	DeleteInstancePoolWithResponse(ctx context.Context, id string) (*DeleteInstancePoolResponse, error)
+
+	// GetInstancePool request
+	GetInstancePoolWithResponse(ctx context.Context, id string) (*GetInstancePoolResponse, error)
+
+	// UpdateInstancePool request  with any body
+	UpdateInstancePoolWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolResponse, error)
+
+	UpdateInstancePoolWithResponse(ctx context.Context, id string, body UpdateInstancePoolJSONRequestBody) (*UpdateInstancePoolResponse, error)
+
+	// EvictInstancePoolMembers request  with any body
+	EvictInstancePoolMembersWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*EvictInstancePoolMembersResponse, error)
+
+	EvictInstancePoolMembersWithResponse(ctx context.Context, id string, body EvictInstancePoolMembersJSONRequestBody) (*EvictInstancePoolMembersResponse, error)
+
+	// ScaleInstancePool request  with any body
+	ScaleInstancePoolWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*ScaleInstancePoolResponse, error)
+
+	ScaleInstancePoolWithResponse(ctx context.Context, id string, body ScaleInstancePoolJSONRequestBody) (*ScaleInstancePoolResponse, error)
 
 	// ListInstanceTypes request
 	ListInstanceTypesWithResponse(ctx context.Context) (*ListInstanceTypesResponse, error)
@@ -4237,6 +4912,11 @@ type ClientWithResponsesInterface interface {
 	// GetTemplate request
 	GetTemplateWithResponse(ctx context.Context, id string) (*GetTemplateResponse, error)
 
+	// CopyTemplate request  with any body
+	CopyTemplateWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*CopyTemplateResponse, error)
+
+	CopyTemplateWithResponse(ctx context.Context, id string, body CopyTemplateJSONRequestBody) (*CopyTemplateResponse, error)
+
 	// ListZones request
 	ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error)
 }
@@ -4331,6 +5011,28 @@ func (r GetAntiAffinityGroupResponse) StatusCode() int {
 	return 0
 }
 
+type GetElasticIpResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *ElasticIp
+}
+
+// Status returns HTTPResponse.Status
+func (r GetElasticIpResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetElasticIpResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4369,6 +5071,162 @@ func (r CreateInstanceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r CreateInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListInstancePoolsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		InstancePools *[]InstancePool `json:"instance-pools,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListInstancePoolsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListInstancePoolsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateInstancePoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateInstancePoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateInstancePoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteInstancePoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteInstancePoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteInstancePoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetInstancePoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *InstancePool
+}
+
+// Status returns HTTPResponse.Status
+func (r GetInstancePoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetInstancePoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateInstancePoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateInstancePoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateInstancePoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type EvictInstancePoolMembersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r EvictInstancePoolMembersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r EvictInstancePoolMembersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ScaleInstancePoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ScaleInstancePoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ScaleInstancePoolResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5449,6 +6307,28 @@ func (r GetTemplateResponse) StatusCode() int {
 	return 0
 }
 
+type CopyTemplateResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CopyTemplateResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CopyTemplateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListZonesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5517,6 +6397,15 @@ func (c *ClientWithResponses) GetAntiAffinityGroupWithResponse(ctx context.Conte
 	return ParseGetAntiAffinityGroupResponse(rsp)
 }
 
+// GetElasticIpWithResponse request returning *GetElasticIpResponse
+func (c *ClientWithResponses) GetElasticIpWithResponse(ctx context.Context, id string) (*GetElasticIpResponse, error) {
+	rsp, err := c.GetElasticIp(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetElasticIpResponse(rsp)
+}
+
 // ListEventsWithResponse request returning *ListEventsResponse
 func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error) {
 	rsp, err := c.ListEvents(ctx, params)
@@ -5541,6 +6430,101 @@ func (c *ClientWithResponses) CreateInstanceWithResponse(ctx context.Context, pa
 		return nil, err
 	}
 	return ParseCreateInstanceResponse(rsp)
+}
+
+// ListInstancePoolsWithResponse request returning *ListInstancePoolsResponse
+func (c *ClientWithResponses) ListInstancePoolsWithResponse(ctx context.Context) (*ListInstancePoolsResponse, error) {
+	rsp, err := c.ListInstancePools(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListInstancePoolsResponse(rsp)
+}
+
+// CreateInstancePoolWithBodyWithResponse request with arbitrary body returning *CreateInstancePoolResponse
+func (c *ClientWithResponses) CreateInstancePoolWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateInstancePoolResponse, error) {
+	rsp, err := c.CreateInstancePoolWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateInstancePoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateInstancePoolWithResponse(ctx context.Context, body CreateInstancePoolJSONRequestBody) (*CreateInstancePoolResponse, error) {
+	rsp, err := c.CreateInstancePool(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateInstancePoolResponse(rsp)
+}
+
+// DeleteInstancePoolWithResponse request returning *DeleteInstancePoolResponse
+func (c *ClientWithResponses) DeleteInstancePoolWithResponse(ctx context.Context, id string) (*DeleteInstancePoolResponse, error) {
+	rsp, err := c.DeleteInstancePool(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteInstancePoolResponse(rsp)
+}
+
+// GetInstancePoolWithResponse request returning *GetInstancePoolResponse
+func (c *ClientWithResponses) GetInstancePoolWithResponse(ctx context.Context, id string) (*GetInstancePoolResponse, error) {
+	rsp, err := c.GetInstancePool(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetInstancePoolResponse(rsp)
+}
+
+// UpdateInstancePoolWithBodyWithResponse request with arbitrary body returning *UpdateInstancePoolResponse
+func (c *ClientWithResponses) UpdateInstancePoolWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstancePoolResponse, error) {
+	rsp, err := c.UpdateInstancePoolWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateInstancePoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateInstancePoolWithResponse(ctx context.Context, id string, body UpdateInstancePoolJSONRequestBody) (*UpdateInstancePoolResponse, error) {
+	rsp, err := c.UpdateInstancePool(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateInstancePoolResponse(rsp)
+}
+
+// EvictInstancePoolMembersWithBodyWithResponse request with arbitrary body returning *EvictInstancePoolMembersResponse
+func (c *ClientWithResponses) EvictInstancePoolMembersWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*EvictInstancePoolMembersResponse, error) {
+	rsp, err := c.EvictInstancePoolMembersWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEvictInstancePoolMembersResponse(rsp)
+}
+
+func (c *ClientWithResponses) EvictInstancePoolMembersWithResponse(ctx context.Context, id string, body EvictInstancePoolMembersJSONRequestBody) (*EvictInstancePoolMembersResponse, error) {
+	rsp, err := c.EvictInstancePoolMembers(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseEvictInstancePoolMembersResponse(rsp)
+}
+
+// ScaleInstancePoolWithBodyWithResponse request with arbitrary body returning *ScaleInstancePoolResponse
+func (c *ClientWithResponses) ScaleInstancePoolWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*ScaleInstancePoolResponse, error) {
+	rsp, err := c.ScaleInstancePoolWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScaleInstancePoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) ScaleInstancePoolWithResponse(ctx context.Context, id string, body ScaleInstancePoolJSONRequestBody) (*ScaleInstancePoolResponse, error) {
+	rsp, err := c.ScaleInstancePool(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScaleInstancePoolResponse(rsp)
 }
 
 // ListInstanceTypesWithResponse request returning *ListInstanceTypesResponse
@@ -6119,6 +7103,23 @@ func (c *ClientWithResponses) GetTemplateWithResponse(ctx context.Context, id st
 	return ParseGetTemplateResponse(rsp)
 }
 
+// CopyTemplateWithBodyWithResponse request with arbitrary body returning *CopyTemplateResponse
+func (c *ClientWithResponses) CopyTemplateWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*CopyTemplateResponse, error) {
+	rsp, err := c.CopyTemplateWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCopyTemplateResponse(rsp)
+}
+
+func (c *ClientWithResponses) CopyTemplateWithResponse(ctx context.Context, id string, body CopyTemplateJSONRequestBody) (*CopyTemplateResponse, error) {
+	rsp, err := c.CopyTemplate(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCopyTemplateResponse(rsp)
+}
+
 // ListZonesWithResponse request returning *ListZonesResponse
 func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error) {
 	rsp, err := c.ListZones(ctx)
@@ -6234,6 +7235,32 @@ func ParseGetAntiAffinityGroupResponse(rsp *http.Response) (*GetAntiAffinityGrou
 	return response, nil
 }
 
+// ParseGetElasticIpResponse parses an HTTP response from a GetElasticIpWithResponse call
+func ParseGetElasticIpResponse(rsp *http.Response) (*GetElasticIpResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetElasticIpResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ElasticIp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListEventsResponse parses an HTTP response from a ListEventsWithResponse call
 func ParseListEventsResponse(rsp *http.Response) (*ListEventsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -6269,6 +7296,190 @@ func ParseCreateInstanceResponse(rsp *http.Response) (*CreateInstanceResponse, e
 	}
 
 	response := &CreateInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListInstancePoolsResponse parses an HTTP response from a ListInstancePoolsWithResponse call
+func ParseListInstancePoolsResponse(rsp *http.Response) (*ListInstancePoolsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListInstancePoolsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			InstancePools *[]InstancePool `json:"instance-pools,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateInstancePoolResponse parses an HTTP response from a CreateInstancePoolWithResponse call
+func ParseCreateInstancePoolResponse(rsp *http.Response) (*CreateInstancePoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateInstancePoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteInstancePoolResponse parses an HTTP response from a DeleteInstancePoolWithResponse call
+func ParseDeleteInstancePoolResponse(rsp *http.Response) (*DeleteInstancePoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteInstancePoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetInstancePoolResponse parses an HTTP response from a GetInstancePoolWithResponse call
+func ParseGetInstancePoolResponse(rsp *http.Response) (*GetInstancePoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetInstancePoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest InstancePool
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateInstancePoolResponse parses an HTTP response from a UpdateInstancePoolWithResponse call
+func ParseUpdateInstancePoolResponse(rsp *http.Response) (*UpdateInstancePoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateInstancePoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseEvictInstancePoolMembersResponse parses an HTTP response from a EvictInstancePoolMembersWithResponse call
+func ParseEvictInstancePoolMembersResponse(rsp *http.Response) (*EvictInstancePoolMembersResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &EvictInstancePoolMembersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseScaleInstancePoolResponse parses an HTTP response from a ScaleInstancePoolWithResponse call
+func ParseScaleInstancePoolResponse(rsp *http.Response) (*ScaleInstancePoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ScaleInstancePoolResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -7542,6 +8753,32 @@ func ParseGetTemplateResponse(rsp *http.Response) (*GetTemplateResponse, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Template
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCopyTemplateResponse parses an HTTP response from a CopyTemplateWithResponse call
+func ParseCopyTemplateResponse(rsp *http.Response) (*CopyTemplateResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CopyTemplateResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -10,18 +10,19 @@ import (
 // only supports RFC 3339 format.
 func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 	raw := struct {
-		CreatedAt      *string          `json:"created-at,omitempty"`
-		Description    *string          `json:"description,omitempty"`
-		DiskSize       *int64           `json:"disk-size,omitempty"`
-		Id             *string          `json:"id,omitempty"` // nolint:golint
-		InstancePool   *InstancePool    `json:"instance-pool,omitempty"`
-		InstanceType   *InstanceType    `json:"instance-type,omitempty"`
-		Name           *string          `json:"name,omitempty"`
-		SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
-		Size           *int64           `json:"size,omitempty"`
-		State          *string          `json:"state,omitempty"`
-		Template       *Template        `json:"template,omitempty"`
-		Version        *string          `json:"version,omitempty"`
+		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+		CreatedAt          *string              `json:"created-at,omitempty"`
+		Description        *string              `json:"description,omitempty"`
+		DiskSize           *int64               `json:"disk-size,omitempty"`
+		Id                 *string              `json:"id,omitempty"` // nolint:golint
+		InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
+		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
+		Name               *string              `json:"name,omitempty"`
+		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
+		Size               *int64               `json:"size,omitempty"`
+		State              *string              `json:"state,omitempty"`
+		Template           *Template            `json:"template,omitempty"`
+		Version            *string              `json:"version,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &raw); err != nil {
@@ -36,6 +37,7 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 		n.CreatedAt = &createdAt
 	}
 
+	n.AntiAffinityGroups = raw.AntiAffinityGroups
 	n.Description = raw.Description
 	n.DiskSize = raw.DiskSize
 	n.Id = raw.Id
@@ -55,18 +57,19 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 // in the original timestamp (ISO 8601), since time.MarshalJSON() only supports RFC 3339 format.
 func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 	raw := struct {
-		CreatedAt      *string          `json:"created-at,omitempty"`
-		Description    *string          `json:"description,omitempty"`
-		DiskSize       *int64           `json:"disk-size,omitempty"`
-		Id             *string          `json:"id,omitempty"` // nolint:golint
-		InstancePool   *InstancePool    `json:"instance-pool,omitempty"`
-		InstanceType   *InstanceType    `json:"instance-type,omitempty"`
-		Name           *string          `json:"name,omitempty"`
-		SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
-		Size           *int64           `json:"size,omitempty"`
-		State          *string          `json:"state,omitempty"`
-		Template       *Template        `json:"template,omitempty"`
-		Version        *string          `json:"version,omitempty"`
+		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+		CreatedAt          *string              `json:"created-at,omitempty"`
+		Description        *string              `json:"description,omitempty"`
+		DiskSize           *int64               `json:"disk-size,omitempty"`
+		Id                 *string              `json:"id,omitempty"` // nolint:golint
+		InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
+		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
+		Name               *string              `json:"name,omitempty"`
+		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
+		Size               *int64               `json:"size,omitempty"`
+		State              *string              `json:"state,omitempty"`
+		Template           *Template            `json:"template,omitempty"`
+		Version            *string              `json:"version,omitempty"`
 	}{}
 
 	if n.CreatedAt != nil {
@@ -74,6 +77,7 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 		raw.CreatedAt = &createdAt
 	}
 
+	raw.AntiAffinityGroups = n.AntiAffinityGroups
 	raw.Description = n.Description
 	raw.DiskSize = n.DiskSize
 	raw.Id = n.Id

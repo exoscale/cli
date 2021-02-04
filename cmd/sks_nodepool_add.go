@@ -68,6 +68,19 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		antiAffinityGroups, err := cmd.Flags().GetStringSlice("anti-affinity-group")
+		if err != nil {
+			return err
+		}
+
+		var antiAffinityGroupIDs []egoscale.UUID
+		if len(antiAffinityGroups) > 0 {
+			antiAffinityGroupIDs, err = getAffinityGroupIDs(antiAffinityGroups)
+			if err != nil {
+				return err
+			}
+		}
+
 		securityGroups, err := cmd.Flags().GetStringSlice("security-group")
 		if err != nil {
 			return err
@@ -94,6 +107,13 @@ Supported output template annotations: %s`,
 				Size:           size,
 				InstanceTypeID: serviceOffering.ID.String(),
 				DiskSize:       diskSize,
+				AntiAffinityGroupIDs: func() []string {
+					aags := make([]string, len(antiAffinityGroups))
+					for i := range antiAffinityGroupIDs {
+						aags[i] = antiAffinityGroupIDs[i].String()
+					}
+					return aags
+				}(),
 				SecurityGroupIDs: func() []string {
 					sgs := make([]string, len(securityGroupIDs))
 					for i := range securityGroupIDs {
@@ -123,6 +143,8 @@ func init() {
 		"Nodepool Compute instances type")
 	sksNodepoolAddCmd.Flags().Int64("disk-size", 50,
 		"Nodepool Compute instances disk size")
+	sksNodepoolAddCmd.Flags().StringSlice("anti-affinity-group", nil,
+		"Nodepool Anti-Affinity Group <name | id> (can be specified multiple times)")
 	sksNodepoolAddCmd.Flags().StringSlice("security-group", nil,
 		"Nodepool Security Group <name | id> (can be specified multiple times)")
 	sksNodepoolCmd.AddCommand(sksNodepoolAddCmd)

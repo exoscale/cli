@@ -90,11 +90,11 @@ Supported output template annotations: %s`,
 		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", name), func() {
 			cluster, err = cs.CreateSKSCluster(ctx, zone, &egoscale.SKSCluster{
-				Name:        name,
-				Description: description,
-				Version:     version,
-				Level:       level,
-				CNI:         cni,
+				Name:         name,
+				Description:  description,
+				Version:      version,
+				ServiceLevel: level,
+				CNI:          cni,
 				AddOns: func() []string {
 					list := make([]string, 0)
 					for k := range addOns {
