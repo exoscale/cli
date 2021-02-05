@@ -45,6 +45,17 @@ evicted from their Nodepool, e.g. using "kubectl drain".`,
 			return fmt.Errorf("error retrieving zone: %s", err)
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
+		if !force {
+			if !askQuestion(fmt.Sprintf("Do you really want to evict %v from Nodepool %q?", args[2:], np)) {
+				return nil
+			}
+		}
+
 		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
 		cluster, err := lookupSKSCluster(ctx, zone.Name, c)
 		if err != nil {
@@ -86,6 +97,7 @@ evicted from their Nodepool, e.g. using "kubectl drain".`,
 }
 
 func init() {
+	sksNodepoolEvictCmd.Flags().BoolP("force", "f", false, "Attempt to evict without prompting for confirmation")
 	sksNodepoolEvictCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
 	sksNodepoolCmd.AddCommand(sksNodepoolEvictCmd)
 }
