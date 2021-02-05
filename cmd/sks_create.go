@@ -186,7 +186,7 @@ Supported output template annotations: %s`,
 func init() {
 	sksCreateCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
 	sksCreateCmd.Flags().String("description", "", "SKS cluster description")
-	sksCreateCmd.Flags().String("kubernetes-version", "1.20.0",
+	sksCreateCmd.Flags().String("kubernetes-version", "1.20.2",
 		"SKS cluster control plane Kubernetes version")
 	sksCreateCmd.Flags().String("service-level", "pro",
 		"SKS cluster control plane service level (starter|pro)")
