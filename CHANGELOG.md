@@ -1,16 +1,37 @@
 # Changelog
 
+## 1.24.0
+
+### Features
+
+- `exo sks nodepool`: add Anti-Affinity Groups support
+
+### Improvements
+
+- `exo sks nodepool`: prompt for confirmation before evict
+
+### Bug Fixes
+
+- `exo instancepool delete`: prevent deletion if still referenced (#310)
+- `exo sks evict`: fix arguments parsing issue (#312)
+
+### Changes
+
+- Drop support for CloudStack configuration (#311)
+- `exo sks create`: set default version to 1.20.2
+
+
 ## 1.23.0
 
 ### Features
 
-* New command `exo sks versions`
-* New command `exo sks upgrade`
-* New command `exo sks nodepool evict`
+- New command `exo sks versions`
+- New command `exo sks upgrade`
+- New command `exo sks nodepool evict`
 
 ### Improvements
 
-* `exo vm firewall` commands now update the Security Group memberships without requiring stopping the Compute instance (#308)
+- `exo vm firewall` commands now update the Security Group memberships without requiring stopping the Compute instance (#308)
 
 
 ## 1.22.2
