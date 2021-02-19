@@ -13,18 +13,18 @@ import (
 )
 
 type sksShowOutput struct {
-	ID           string                 `json:"id"`
-	Name         string                 `json:"name"`
-	Description  string                 `json:"description"`
-	CreationDate string                 `json:"creation_date"`
-	Zone         string                 `json:"zone"`
-	Endpoint     string                 `json:"endpoint"`
-	Version      string                 `json:"version"`
-	ServiceLevel string                 `json:"service_level"`
-	CNI          string                 `json:"cni"`
-	AddOns       []string               `json:"addons"`
-	State        string                 `json:"state"`
-	Nodepools    []nlbServiceShowOutput `json:"nodepools"`
+	ID           string                  `json:"id"`
+	Name         string                  `json:"name"`
+	Description  string                  `json:"description"`
+	CreationDate string                  `json:"creation_date"`
+	Zone         string                  `json:"zone"`
+	Endpoint     string                  `json:"endpoint"`
+	Version      string                  `json:"version"`
+	ServiceLevel string                  `json:"service_level"`
+	CNI          string                  `json:"cni"`
+	AddOns       []string                `json:"addons"`
+	State        string                  `json:"state"`
+	Nodepools    []sksNodepoolShowOutput `json:"nodepools"`
 }
 
 func (o *sksShowOutput) toJSON() { outputJSON(o) }
@@ -97,9 +97,9 @@ func showSKSCluster(zone, c string) (outputter, error) {
 		return nil, err
 	}
 
-	sksNodepools := make([]nlbServiceShowOutput, 0)
+	sksNodepools := make([]sksNodepoolShowOutput, 0)
 	for _, np := range cluster.Nodepools {
-		sksNodepools = append(sksNodepools, nlbServiceShowOutput{
+		sksNodepools = append(sksNodepools, sksNodepoolShowOutput{
 			ID:   np.ID,
 			Name: np.Name,
 		})

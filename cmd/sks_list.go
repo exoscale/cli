@@ -54,8 +54,8 @@ func listSKSClusters(zone string) outputter {
 	defer close(res)
 
 	go func() {
-		for nlb := range res {
-			out = append(out, nlb)
+		for cluster := range res {
+			out = append(out, cluster)
 		}
 	}()
 	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
@@ -65,10 +65,10 @@ func listSKSClusters(zone string) outputter {
 			return fmt.Errorf("unable to list SKS clusters in zone %s: %v", zone, err)
 		}
 
-		for _, nlb := range list {
+		for _, cluster := range list {
 			res <- sksClusterListItemOutput{
-				ID:   nlb.ID,
-				Name: nlb.Name,
+				ID:   cluster.ID,
+				Name: cluster.Name,
 				Zone: zone,
 			}
 		}
@@ -76,7 +76,7 @@ func listSKSClusters(zone string) outputter {
 		return nil
 	})
 	if err != nil {
-		fmt.Fprintf(os.Stderr,
+		_, _ = fmt.Fprintf(os.Stderr,
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
