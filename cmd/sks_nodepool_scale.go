@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +33,7 @@ the pool rather than leaving the decision to the SKS manager.`,
 			c  = args[0]
 			np = args[1]
 
-			nodepool *egoscale.SKSNodepool
+			nodepool *exov2.SKSNodepool
 		)
 
 		size, err := strconv.Atoi(args[2])
@@ -53,7 +53,7 @@ the pool rather than leaving the decision to the SKS manager.`,
 			return fmt.Errorf("error retrieving zone: %s", err)
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
 		cluster, err := lookupSKSCluster(ctx, zone.Name, c)
 		if err != nil {
 			return err

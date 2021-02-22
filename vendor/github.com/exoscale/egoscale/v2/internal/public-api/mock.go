@@ -1,4 +1,4 @@
-package v2
+package publicapi
 
 import (
 	"net/http"
@@ -14,15 +14,15 @@ type MockClient struct {
 }
 
 func NewMockClient() *MockClient {
-	var client MockClient
+	var c MockClient
 
-	client.MockTransport = httpmock.NewMockTransport()
+	c.MockTransport = httpmock.NewMockTransport()
 
-	return &client
+	return &c
 }
 
 func (c *MockClient) Do(req *http.Request) (*http.Response, error) {
-	var hc = http.Client{Transport: c.MockTransport}
+	hc := http.Client{Transport: c.MockTransport}
 
 	return hc.Do(req)
 }

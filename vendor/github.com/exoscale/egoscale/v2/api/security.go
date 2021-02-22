@@ -1,4 +1,4 @@
-package v2
+package api
 
 import (
 	"bytes"
@@ -15,7 +15,8 @@ import (
 	"time"
 )
 
-// SecurityProviderExoscale represents an Exoscale API V2 security provider.
+// SecurityProviderExoscale represents an Exoscale public API security
+// provider.
 type SecurityProviderExoscale struct {
 	// ReqExpire represents the request expiration duration.
 	ReqExpire time.Duration
@@ -24,9 +25,9 @@ type SecurityProviderExoscale struct {
 	apiSecret string
 }
 
-// NewSecurityProviderExoscaleV2 returns a new Exoscale API V2 security provider to sign API requests using the
-// specified API key/secret.
-func NewSecurityProviderExoscale(apiKey, apiSecret string) (*SecurityProviderExoscale, error) {
+// NewSecurityProvider returns a new Exoscale public API security
+// provider to sign API requests using the specified API key/secret.
+func NewSecurityProvider(apiKey, apiSecret string) (*SecurityProviderExoscale, error) {
 	if apiKey == "" {
 		return nil, errors.New("missing API key")
 	}
@@ -42,8 +43,8 @@ func NewSecurityProviderExoscale(apiKey, apiSecret string) (*SecurityProviderExo
 	}, nil
 }
 
-// Intercept is an HTTP middleware that intercepts and signs client requests before sending them to the API
-// endpoint.
+// Intercept is an HTTP middleware that intercepts and signs client requests
+// before sending them to the API endpoint.
 func (s *SecurityProviderExoscale) Intercept(_ context.Context, req *http.Request) error {
 	return s.signRequest(req, time.Now().UTC().Add(s.ReqExpire))
 }
@@ -102,8 +103,8 @@ func (s *SecurityProviderExoscale) signRequest(req *http.Request, expiration tim
 	return nil
 }
 
-// extractRequestParameters returns the list of request URL parameters names and a strings concatenating the
-// values of the parameters.
+// extractRequestParameters returns the list of request URL parameters names
+// and a strings concatenating the values of the parameters.
 func extractRequestParameters(req *http.Request) ([]string, string) {
 	var (
 		names  []string

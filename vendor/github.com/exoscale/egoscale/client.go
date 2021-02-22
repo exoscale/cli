@@ -8,16 +8,12 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"os"
 	"reflect"
 	"runtime"
 	"time"
 
-	"github.com/pkg/errors"
-
-	apiv2 "github.com/exoscale/egoscale/api/v2"
-	v2 "github.com/exoscale/egoscale/internal/v2"
+	v2 "github.com/exoscale/egoscale/v2"
 )
 
 const (
@@ -73,8 +69,11 @@ type Client struct {
 	// Logger contains any log, plug your own
 	Logger *log.Logger
 
-	// API V2 secondary client
-	v2 *v2.ClientWithResponses
+	// noV2 represents a flag disabling v2.Client embedding.
+	noV2 bool
+
+	// Public API secondary client
+	*v2.Client
 }
 
 // RetryStrategyFunc represents a how much time to wait between two calls to the API
@@ -104,11 +103,21 @@ func WithTrace() ClientOpt {
 	return func(c *Client) { c.TraceOn() }
 }
 
+// WithoutV2Client disables implicit v2.Client embedding.
+func WithoutV2Client() ClientOpt {
+	return func(c *Client) { c.noV2 = true }
+}
+
 // NewClient creates an Exoscale API client.
+// Note: unless the WithoutV2Client() ClientOpt is passed, this function
+// initializes a v2.Client embedded into the returned *Client struct
+// inheriting the Exoscale API credentials, endpoint and timeout value, but
+// not the custom http.Client. The 2 clients must not share the same
+// *http.Client, as it can cause middleware clashes.
 func NewClient(endpoint, apiKey, apiSecret string, opts ...ClientOpt) *Client {
 	client := &Client{
 		HTTPClient: &http.Client{
-			Transport: &defaultTransport{transport: http.DefaultTransport},
+			Transport: &defaultTransport{next: http.DefaultTransport},
 		},
 		Endpoint:      endpoint,
 		APIKey:        apiKey,
@@ -129,29 +138,21 @@ func NewClient(endpoint, apiKey, apiSecret string, opts ...ClientOpt) *Client {
 		client.TraceOn()
 	}
 
-	// Infer API V2 endpoint from V1 endpoint
-	endpointURL, err := url.Parse(client.Endpoint)
-	if err != nil {
-		panic(errors.Wrap(err, "unable to initialize API client"))
-	}
-	endpointURL = endpointURL.ResolveReference(&url.URL{Path: apiv2.APIPrefix})
+	if !client.noV2 {
+		v2Client, err := v2.NewClient(
+			client.APIKey,
+			client.apiSecret,
+			v2.ClientOptWithAPIEndpoint(client.Endpoint),
+			v2.ClientOptWithTimeout(client.Timeout),
 
-	exoSecurityProvider, err := apiv2.NewSecurityProviderExoscale(client.APIKey, client.apiSecret)
-	if err != nil {
-		panic(errors.Wrap(err, "unable to initialize security provider"))
-	}
-	exoSecurityProvider.ReqExpire = client.Expiration
-
-	v2Opts := []v2.ClientOption{
-		v2.WithHTTPClient(client),
-		v2.WithRequestEditorFn(v2.MultiRequestsEditor(
-			exoSecurityProvider.Intercept,
-			apiv2.SetEndpointFromContext),
-		),
-	}
-
-	if client.v2, err = v2.NewClientWithResponses(endpointURL.String(), v2Opts...); err != nil {
-		panic(errors.Wrap(err, "unable to initialize API client"))
+			// Don't use v2.ClientOptWithHTTPClient() with the root API client's http.Client, as the
+			// v2.Client uses HTTP middleware that can break callers that expect CS-compatible error
+			// responses.
+		)
+		if err != nil {
+			panic(fmt.Sprintf("unable to initialize API V2 client: %s", err))
+		}
+		client.Client = v2Client
 	}
 
 	return client
@@ -281,36 +282,6 @@ func (c *Client) ListWithContext(ctx context.Context, g Listable) (s []interface
 	return
 }
 
-// AsyncListWithContext lists the given resources (and paginate till the end)
-//
-//
-//	// NB: goroutine may leak if not read until the end. Create a proper context!
-//	ctx, cancel := context.WithCancel(context.Background())
-//	defer cancel()
-//
-//	outChan, errChan := client.AsyncListWithContext(ctx, new(egoscale.VirtualMachine))
-//
-//	for {
-//		select {
-//		case i, ok := <- outChan:
-//			if ok {
-//				vm := i.(egoscale.VirtualMachine)
-//				// ...
-//			} else {
-//				outChan = nil
-//			}
-//		case err, ok := <- errChan:
-//			if ok {
-//				// do something
-//			}
-//			// Once an error has been received, you can expect the channels to be closed.
-//			errChan = nil
-//		}
-//		if errChan == nil && outChan == nil {
-//			break
-//		}
-//	}
-//
 func (c *Client) AsyncListWithContext(ctx context.Context, g Listable) (<-chan interface{}, <-chan error) {
 	outChan := make(chan interface{}, c.PageSize)
 	errChan := make(chan error)
@@ -436,8 +407,8 @@ func (c *Client) Response(command Command) interface{} {
 func (c *Client) TraceOn() {
 	if _, ok := c.HTTPClient.Transport.(*traceTransport); !ok {
 		c.HTTPClient.Transport = &traceTransport{
-			transport: c.HTTPClient.Transport,
-			logger:    c.Logger,
+			next:   c.HTTPClient.Transport,
+			logger: c.Logger,
 		}
 	}
 }
@@ -445,20 +416,20 @@ func (c *Client) TraceOn() {
 // TraceOff deactivates the HTTP tracer
 func (c *Client) TraceOff() {
 	if rt, ok := c.HTTPClient.Transport.(*traceTransport); ok {
-		c.HTTPClient.Transport = rt.transport
+		c.HTTPClient.Transport = rt.next
 	}
 }
 
 // defaultTransport is the default HTTP client transport.
 type defaultTransport struct {
-	transport http.RoundTripper
+	next http.RoundTripper
 }
 
 // RoundTrip executes a single HTTP transaction while augmenting requests with custom headers.
 func (t *defaultTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("User-Agent", UserAgent)
 
-	resp, err := t.transport.RoundTrip(req)
+	resp, err := t.next.RoundTrip(req)
 	if err != nil {
 		return nil, err
 	}
@@ -466,10 +437,10 @@ func (t *defaultTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	return resp, nil
 }
 
-// traceTransport contains the original HTTP transport to enable it to be reverted
+// traceTransport is a client HTTP middleware that dumps HTTP requests and responses content to a logger.
 type traceTransport struct {
-	transport http.RoundTripper
-	logger    *log.Logger
+	logger *log.Logger
+	next   http.RoundTripper
 }
 
 // RoundTrip executes a single HTTP transaction
@@ -480,7 +451,7 @@ func (t *traceTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		t.logger.Printf("%s", dump)
 	}
 
-	resp, err := t.transport.RoundTrip(req)
+	resp, err := t.next.RoundTrip(req)
 	if err != nil {
 		return nil, err
 	}

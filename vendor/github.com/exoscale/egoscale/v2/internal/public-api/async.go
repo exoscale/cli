@@ -1,4 +1,4 @@
-package v2
+package publicapi
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	v2 "github.com/exoscale/egoscale/api/v2"
+	v2 "github.com/exoscale/egoscale/v2/api"
 )
 
 const (

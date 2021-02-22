@@ -6,7 +6,8 @@ import (
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -64,9 +65,9 @@ Supported output template annotations: %s`,
 }
 
 func showSKSNodepool(zone *egoscale.Zone, c, np string) (outputter, error) {
-	var nodepool *egoscale.SKSNodepool
+	var nodepool *exov2.SKSNodepool
 
-	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
 	cluster, err := lookupSKSCluster(ctx, zone.Name, c)
 	if err != nil {
 		return nil, err

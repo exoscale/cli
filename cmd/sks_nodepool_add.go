@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +33,7 @@ Supported output template annotations: %s`,
 		var (
 			c        = args[0]
 			name     = args[1]
-			nodepool *egoscale.SKSNodepool
+			nodepool *exov2.SKSNodepool
 		)
 
 		z, err := cmd.Flags().GetString("zone")
@@ -94,14 +95,14 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
 		cluster, err := lookupSKSCluster(ctx, zone.Name, c)
 		if err != nil {
 			return err
 		}
 
 		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", name), func() {
-			nodepool, err = cluster.AddNodepool(ctx, &egoscale.SKSNodepool{
+			nodepool, err = cluster.AddNodepool(ctx, &exov2.SKSNodepool{
 				Name:           name,
 				Description:    description,
 				Size:           size,

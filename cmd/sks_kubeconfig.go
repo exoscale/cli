@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -68,7 +68,7 @@ safety measure. Please look up the API documentation for more information.
 			return err
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		cluster, err := lookupSKSCluster(ctx, zone, c)
 		if err != nil {
 			return err

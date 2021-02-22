@@ -5,7 +5,8 @@ import (
 	"strings"
 
 	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -44,7 +45,7 @@ Supported output template annotations: %s`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
 			name    = args[0]
-			cluster *egoscale.SKSCluster
+			cluster *exov2.SKSCluster
 			cni     = "calico"
 			addOns  = map[string]struct{}{
 				"exoscale-cloud-controller": {},
@@ -87,9 +88,9 @@ Supported output template annotations: %s`,
 			delete(addOns, "exoscale-cloud-controller")
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", name), func() {
-			cluster, err = cs.CreateSKSCluster(ctx, zone, &egoscale.SKSCluster{
+			cluster, err = cs.CreateSKSCluster(ctx, zone, &exov2.SKSCluster{
 				Name:         name,
 				Description:  description,
 				Version:      version,
@@ -155,7 +156,7 @@ Supported output template annotations: %s`,
 			}
 
 			decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolName), func() {
-				_, err = cluster.AddNodepool(ctx, &egoscale.SKSNodepool{
+				_, err = cluster.AddNodepool(ctx, &exov2.SKSNodepool{
 					Name:           nodepoolName,
 					Description:    nodepoolDescription,
 					Size:           nodepoolSize,

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -47,7 +47,7 @@ Supported output template annotations: %s`,
 func listSKSVersions(zone string) (outputter, error) {
 	out := make(sksClusterVersionsOutput, 0)
 
-	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 	versions, err := cs.ListSKSClusterVersions(ctx)
 	if err != nil {
 		return nil, err

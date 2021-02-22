@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +26,7 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 			c  = args[0]
 			np = args[1]
 
-			nodepool *egoscale.SKSNodepool
+			nodepool *exov2.SKSNodepool
 		)
 
 		z, err := cmd.Flags().GetString("zone")
@@ -38,7 +38,7 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 			return fmt.Errorf("error retrieving zone: %s", err)
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
 		cluster, err := lookupSKSCluster(ctx, zone.Name, c)
 		if err != nil {
 			return err

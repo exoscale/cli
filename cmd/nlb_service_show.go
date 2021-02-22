@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/table"
@@ -116,9 +116,9 @@ Supported output template annotations: %s`,
 }
 
 func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
-	var svc *egoscale.NetworkLoadBalancerService
+	var svc *exov2.NetworkLoadBalancerService
 
-	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 	nlb, err := lookupNLB(ctx, zone, nlbRef)
 	if err != nil {
 		return nil, err
