@@ -62,6 +62,10 @@ safety measure. Please look up the API documentation for more information.
 		if err != nil {
 			return err
 		}
+		// We cannot use the flag's default here as it would be additive
+		if len(groups) == 0 {
+			groups = []string{"system:masters"}
+		}
 
 		ttl, err := cmd.Flags().GetInt64("ttl")
 		if err != nil {
@@ -93,7 +97,7 @@ safety measure. Please look up the API documentation for more information.
 func init() {
 	sksKubeconfigCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
 	sksKubeconfigCmd.Flags().StringSliceP("group", "g", nil,
-		"client certificate group. Can be specified multiple times.")
+		"client certificate group. Can be specified multiple times. Defaults to system:masters")
 	sksKubeconfigCmd.Flags().Int64P("ttl", "t", 0,
 		"client certificate validity duration in seconds")
 	sksCmd.AddCommand(sksKubeconfigCmd)
