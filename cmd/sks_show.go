@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 
 	"github.com/exoscale/cli/table"
 )
@@ -91,7 +91,7 @@ Supported output template annotations: %s`,
 }
 
 func showSKSCluster(zone, c string) (outputter, error) {
-	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 	cluster, err := lookupSKSCluster(ctx, zone, c)
 	if err != nil {
 		return nil, err

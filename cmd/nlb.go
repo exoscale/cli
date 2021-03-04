@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/exoscale/egoscale"
+	exov2 "github.com/exoscale/egoscale/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +18,7 @@ func init() {
 }
 
 // lookupNLB attempts to look up an NLB resource by name or ID.
-func lookupNLB(ctx context.Context, zone, ref string) (*egoscale.NetworkLoadBalancer, error) {
+func lookupNLB(ctx context.Context, zone, ref string) (*exov2.NetworkLoadBalancer, error) {
 	nlbs, err := cs.ListNetworkLoadBalancers(ctx, zone)
 	if err != nil {
 		return nil, fmt.Errorf("unable to list Network Load Balancers in zone %s: %v", zone, err)

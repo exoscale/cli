@@ -226,8 +226,6 @@ type PCIDevice struct {
 }
 
 // Password represents an encrypted password
-//
-// TODO: method to decrypt it, https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=34014652
 type Password struct {
 	EncryptedPassword string `json:"encryptedpassword"`
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +43,7 @@ var nlbServiceDeleteCmd = &cobra.Command{
 			}
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		nlb, err := lookupNLB(ctx, zone, nlbRef)
 		if err != nil {
 			return err

@@ -1,12 +1,14 @@
-package v2
+package api
 
 import (
 	"context"
 	"fmt"
-	"net/http"
 )
 
-const APIPrefix = "v2.alpha"
+const (
+	EndpointURL = "https://api.exoscale.com/"
+	Prefix      = "v2.alpha"
+)
 
 const defaultReqEndpointEnv = "api"
 
@@ -18,7 +20,7 @@ type ReqEndpoint struct {
 
 // NewReqEndpoint returns a new Exoscale API request endpoint from an environment and zone.
 func NewReqEndpoint(env, zone string) ReqEndpoint {
-	var re = ReqEndpoint{
+	re := ReqEndpoint{
 		env:  env,
 		zone: zone,
 	}
@@ -62,16 +64,4 @@ func WithZone(ctx context.Context, zone string) context.Context {
 	}
 
 	return WithEndpoint(ctx, NewReqEndpoint(env, zone))
-}
-
-// SetEndpointFromContext is an HTTP client request interceptor that overrides the "Host" header
-// with information from a request endpoint optionally set in the context instance. If none is
-// found, the request is left untouched.
-func SetEndpointFromContext(ctx context.Context, req *http.Request) error {
-	if v, ok := ctx.Value(ReqEndpoint{}).(ReqEndpoint); ok {
-		req.Host = v.Host()
-		req.URL.Host = v.Host()
-	}
-
-	return nil
 }

@@ -1,6 +1,17 @@
 Changelog
 =========
 
+0.43.1
+------
+
+- change: in `NewClient()`, the `v2.Client` embedded in the `Client` struct doesn't inherit the custom `http.Client` set using `WithHTTPClient()`.
+
+0.43.0
+------
+
+- change: [Exoscale API V2](https://openapi-v2.exoscale.com/) related code has been relocated under the `github.com/exoscale/egoscale/v2` package.
+  Note: `egoscale.Client` embeds a `v2.Client` initialized implicitly as a convenience.
+
 0.42.0
 ------
 

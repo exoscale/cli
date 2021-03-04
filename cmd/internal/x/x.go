@@ -3,7 +3,7 @@ package x
 import (
 	"os"
 
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/openapi-cli-generator/cli"
 	logger "github.com/izumin5210/gentleman-logger"
 	"github.com/spf13/cobra"
@@ -32,7 +32,7 @@ func InitCommand() *cobra.Command {
 
 // SetClientCredentials adds a pre-request hook to sign outgoing requests using specified API credentials.
 func SetClientCredentials(apiKey, apiSecret string) error {
-	security, err := apiv2.NewSecurityProviderExoscale(apiKey, apiSecret)
+	security, err := exoapi.NewSecurityProvider(apiKey, apiSecret)
 	if err != nil {
 		return err
 	}

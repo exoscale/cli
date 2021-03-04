@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +25,7 @@ var nlbServiceUpdateCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
-			svc    *egoscale.NetworkLoadBalancerService
+			svc    *exov2.NetworkLoadBalancerService
 			nlbRef = args[0]
 			svcRef = args[1]
 		)
@@ -35,7 +35,7 @@ var nlbServiceUpdateCmd = &cobra.Command{
 			return err
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		nlb, err := lookupNLB(ctx, zone, nlbRef)
 		if err != nil {
 			return err

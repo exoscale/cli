@@ -1,4 +1,4 @@
-package v2
+package publicapi
 
 import (
 	"encoding/json"
@@ -34,7 +34,7 @@ func (lb *LoadBalancer) UnmarshalJSON(data []byte) error {
 	lb.Description = raw.Description
 	lb.Id = raw.Id
 	lb.Ip = raw.Ip
-	lb.Name = optionalString(raw.Name)
+	lb.Name = raw.Name
 	lb.Services = raw.Services
 	lb.State = raw.State
 
@@ -62,7 +62,7 @@ func (lb *LoadBalancer) MarshalJSON() ([]byte, error) {
 	raw.Description = lb.Description
 	raw.Id = lb.Id
 	raw.Ip = lb.Ip
-	raw.Name = &lb.Name
+	raw.Name = lb.Name
 	raw.Services = lb.Services
 	raw.State = lb.State
 

@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -32,8 +32,8 @@ var nlbCreateCmd = &cobra.Command{
 			return err
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		nlb, err := cs.CreateNetworkLoadBalancer(ctx, zone, &egoscale.NetworkLoadBalancer{
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		nlb, err := cs.CreateNetworkLoadBalancer(ctx, zone, &exov2.NetworkLoadBalancer{
 			Name:        args[0],
 			Description: description,
 		})

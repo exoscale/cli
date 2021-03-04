@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -58,7 +58,7 @@ func listSKSClusters(zone string) outputter {
 			out = append(out, cluster)
 		}
 	}()
-	ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 	err := forEachZone(sksClusterZones, func(zone string) error {
 		list, err := cs.ListSKSClusters(ctx, zone)
 		if err != nil {

@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/egoscale"
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -120,13 +120,13 @@ var nlbServiceAddCmd = &cobra.Command{
 			return errors.New(`a healthcheck TLS SNI can only be specified in https mode`)
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		nlb, err := lookupNLB(ctx, zone, nlbRef)
 		if err != nil {
 			return err
 		}
 
-		svc, err := nlb.AddService(ctx, &egoscale.NetworkLoadBalancerService{
+		svc, err := nlb.AddService(ctx, &exov2.NetworkLoadBalancerService{
 			Name:           name,
 			Description:    description,
 			InstancePoolID: instancePoolID,
@@ -134,7 +134,7 @@ var nlbServiceAddCmd = &cobra.Command{
 			Port:           port,
 			TargetPort:     targetPort,
 			Strategy:       strategy,
-			Healthcheck: egoscale.NetworkLoadBalancerServiceHealthcheck{
+			Healthcheck: exov2.NetworkLoadBalancerServiceHealthcheck{
 				Mode:     healthcheckMode,
 				Port:     healthcheckPort,
 				URI:      healthcheckURI,

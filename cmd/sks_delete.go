@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	apiv2 "github.com/exoscale/egoscale/api/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +37,7 @@ var sksDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		ctx := apiv2.WithEndpoint(gContext, apiv2.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		cluster, err := lookupSKSCluster(ctx, zone, args[0])
 		if err != nil {
 			return err
