@@ -11,7 +11,7 @@ x-cmd: ## Generates code for "exo x" experimental subcommands
 		echo "openapi-cli-generator tool not found, downloading"
 		go get -u github.com/exoscale/openapi-cli-generator
 	fi
-	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go exoscale-v2.oas.yaml
+	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go public-api.json
 
 .PHONY: docker
 docker: ## Builds a Docker image containing the exo CLI
