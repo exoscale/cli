@@ -22,3 +22,12 @@ func OptionalInt64(v *int64) int64 {
 
 	return 0
 }
+
+// OptionalBool returns the dereferenced bool value of v if not nil, otherwise false.
+func OptionalBool(v *bool) bool {
+	if v != nil {
+		return *v
+	}
+
+	return false
+}

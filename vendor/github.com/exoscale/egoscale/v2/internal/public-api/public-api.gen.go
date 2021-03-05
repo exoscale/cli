@@ -29,8 +29,23 @@ type AntiAffinityGroup struct {
 
 // ElasticIp defines model for elastic-ip.
 type ElasticIp struct {
-	Id *string `json:"id,omitempty"`
-	Ip *string `json:"ip,omitempty"`
+	Description *string               `json:"description,omitempty"`
+	Healthcheck *ElasticIpHealthcheck `json:"healthcheck,omitempty"`
+	Id          *string               `json:"id,omitempty"`
+	Ip          *string               `json:"ip,omitempty"`
+}
+
+// ElasticIpHealthcheck defines model for elastic-ip-healthcheck.
+type ElasticIpHealthcheck struct {
+	Interval      int64   `json:"interval"`
+	Mode          string  `json:"mode"`
+	Port          int64   `json:"port"`
+	StrikesFail   int64   `json:"strikes-fail"`
+	StrikesOk     int64   `json:"strikes-ok"`
+	Timeout       int64   `json:"timeout"`
+	TlsSkipVerify *bool   `json:"tls-skip-verify,omitempty"`
+	TlsSni        *string `json:"tls-sni,omitempty"`
+	Uri           *string `json:"uri,omitempty"`
 }
 
 // Event defines model for event.
@@ -42,17 +57,6 @@ type Event struct {
 // Event_Payload defines model for Event.Payload.
 type Event_Payload struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
-}
-
-// Healthcheck defines model for healthcheck.
-type Healthcheck struct {
-	Interval *int64  `json:"interval,omitempty"`
-	Mode     string  `json:"mode"`
-	Port     int64   `json:"port"`
-	Retries  *int64  `json:"retries,omitempty"`
-	Timeout  *int64  `json:"timeout,omitempty"`
-	TlsSni   *string `json:"tls-sni,omitempty"`
-	Uri      *string `json:"uri,omitempty"`
 }
 
 // Instance defines model for instance.
@@ -112,17 +116,28 @@ type LoadBalancerServerStatus struct {
 
 // LoadBalancerService defines model for load-balancer-service.
 type LoadBalancerService struct {
-	Description       *string                     `json:"description,omitempty"`
-	Healthcheck       *Healthcheck                `json:"healthcheck,omitempty"`
-	HealthcheckStatus *[]LoadBalancerServerStatus `json:"healthcheck-status,omitempty"`
-	Id                *string                     `json:"id,omitempty"`
-	InstancePool      *InstancePool               `json:"instance-pool,omitempty"`
-	Name              *string                     `json:"name,omitempty"`
-	Port              *int64                      `json:"port,omitempty"`
-	Protocol          *string                     `json:"protocol,omitempty"`
-	State             *string                     `json:"state,omitempty"`
-	Strategy          *string                     `json:"strategy,omitempty"`
-	TargetPort        *int64                      `json:"target-port,omitempty"`
+	Description       *string                         `json:"description,omitempty"`
+	Healthcheck       *LoadBalancerServiceHealthcheck `json:"healthcheck,omitempty"`
+	HealthcheckStatus *[]LoadBalancerServerStatus     `json:"healthcheck-status,omitempty"`
+	Id                *string                         `json:"id,omitempty"`
+	InstancePool      *InstancePool                   `json:"instance-pool,omitempty"`
+	Name              *string                         `json:"name,omitempty"`
+	Port              *int64                          `json:"port,omitempty"`
+	Protocol          *string                         `json:"protocol,omitempty"`
+	State             *string                         `json:"state,omitempty"`
+	Strategy          *string                         `json:"strategy,omitempty"`
+	TargetPort        *int64                          `json:"target-port,omitempty"`
+}
+
+// LoadBalancerServiceHealthcheck defines model for load-balancer-service-healthcheck.
+type LoadBalancerServiceHealthcheck struct {
+	Interval int64   `json:"interval"`
+	Mode     string  `json:"mode"`
+	Port     int64   `json:"port"`
+	Retries  int64   `json:"retries"`
+	Timeout  int64   `json:"timeout"`
+	TlsSni   *string `json:"tls-sni,omitempty"`
+	Uri      *string `json:"uri,omitempty"`
 }
 
 // Manager defines model for manager.
@@ -276,6 +291,18 @@ type CreateAntiAffinityGroupJSONBody struct {
 	Name        string  `json:"name"`
 }
 
+// CreateElasticIpJSONBody defines parameters for CreateElasticIp.
+type CreateElasticIpJSONBody struct {
+	Description *string               `json:"description,omitempty"`
+	Healthcheck *ElasticIpHealthcheck `json:"healthcheck,omitempty"`
+}
+
+// UpdateElasticIpJSONBody defines parameters for UpdateElasticIp.
+type UpdateElasticIpJSONBody struct {
+	Description *string               `json:"description,omitempty"`
+	Healthcheck *ElasticIpHealthcheck `json:"healthcheck,omitempty"`
+}
+
 // ListEventsParams defines parameters for ListEvents.
 type ListEventsParams struct {
 	From *time.Time `json:"from,omitempty"`
@@ -352,25 +379,25 @@ type UpdateLoadBalancerJSONBody struct {
 
 // AddServiceToLoadBalancerJSONBody defines parameters for AddServiceToLoadBalancer.
 type AddServiceToLoadBalancerJSONBody struct {
-	Description  *string      `json:"description,omitempty"`
-	Healthcheck  Healthcheck  `json:"healthcheck"`
-	InstancePool InstancePool `json:"instance-pool"`
-	Name         string       `json:"name"`
-	Port         int64        `json:"port"`
-	Protocol     string       `json:"protocol"`
-	Strategy     string       `json:"strategy"`
-	TargetPort   int64        `json:"target-port"`
+	Description  *string                        `json:"description,omitempty"`
+	Healthcheck  LoadBalancerServiceHealthcheck `json:"healthcheck"`
+	InstancePool InstancePool                   `json:"instance-pool"`
+	Name         string                         `json:"name"`
+	Port         int64                          `json:"port"`
+	Protocol     string                         `json:"protocol"`
+	Strategy     string                         `json:"strategy"`
+	TargetPort   int64                          `json:"target-port"`
 }
 
 // UpdateLoadBalancerServiceJSONBody defines parameters for UpdateLoadBalancerService.
 type UpdateLoadBalancerServiceJSONBody struct {
-	Description *string      `json:"description,omitempty"`
-	Healthcheck *Healthcheck `json:"healthcheck,omitempty"`
-	Name        *string      `json:"name,omitempty"`
-	Port        *int64       `json:"port,omitempty"`
-	Protocol    *string      `json:"protocol,omitempty"`
-	Strategy    *string      `json:"strategy,omitempty"`
-	TargetPort  *int64       `json:"target-port,omitempty"`
+	Description *string                         `json:"description,omitempty"`
+	Healthcheck *LoadBalancerServiceHealthcheck `json:"healthcheck,omitempty"`
+	Name        *string                         `json:"name,omitempty"`
+	Port        *int64                          `json:"port,omitempty"`
+	Protocol    *string                         `json:"protocol,omitempty"`
+	Strategy    *string                         `json:"strategy,omitempty"`
+	TargetPort  *int64                          `json:"target-port,omitempty"`
 }
 
 // CreatePrivateNetworkJSONBody defines parameters for CreatePrivateNetwork.
@@ -498,6 +525,12 @@ type CopyTemplateJSONBody struct {
 
 // CreateAntiAffinityGroupRequestBody defines body for CreateAntiAffinityGroup for application/json ContentType.
 type CreateAntiAffinityGroupJSONRequestBody CreateAntiAffinityGroupJSONBody
+
+// CreateElasticIpRequestBody defines body for CreateElasticIp for application/json ContentType.
+type CreateElasticIpJSONRequestBody CreateElasticIpJSONBody
+
+// UpdateElasticIpRequestBody defines body for UpdateElasticIp for application/json ContentType.
+type UpdateElasticIpJSONRequestBody UpdateElasticIpJSONBody
 
 // CreateInstanceRequestBody defines body for CreateInstance for application/json ContentType.
 type CreateInstanceJSONRequestBody CreateInstanceJSONBody
@@ -711,8 +744,27 @@ type ClientInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error)
 
+	// ListElasticIps request
+	ListElasticIps(ctx context.Context) (*http.Response, error)
+
+	// CreateElasticIp request  with any body
+	CreateElasticIpWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateElasticIp(ctx context.Context, body CreateElasticIpJSONRequestBody) (*http.Response, error)
+
+	// DeleteElasticIp request
+	DeleteElasticIp(ctx context.Context, id string) (*http.Response, error)
+
 	// GetElasticIp request
 	GetElasticIp(ctx context.Context, id string) (*http.Response, error)
+
+	// UpdateElasticIp request  with any body
+	UpdateElasticIpWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpdateElasticIp(ctx context.Context, id string, body UpdateElasticIpJSONRequestBody) (*http.Response, error)
+
+	// ResetElasticIpField request
+	ResetElasticIpField(ctx context.Context, id string, field string) (*http.Response, error)
 
 	// ListEvents request
 	ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error)
@@ -741,8 +793,8 @@ type ClientInterface interface {
 
 	UpdateInstancePool(ctx context.Context, id string, body UpdateInstancePoolJSONRequestBody) (*http.Response, error)
 
-	// DeleteInstancePoolField request
-	DeleteInstancePoolField(ctx context.Context, id string, field string) (*http.Response, error)
+	// ResetInstancePoolField request
+	ResetInstancePoolField(ctx context.Context, id string, field string) (*http.Response, error)
 
 	// EvictInstancePoolMembers request  with any body
 	EvictInstancePoolMembersWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
@@ -825,9 +877,6 @@ type ClientInterface interface {
 
 	UpdatePrivateNetwork(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody) (*http.Response, error)
 
-	// DeletePrivateNetworkField request
-	DeletePrivateNetworkField(ctx context.Context, id string, field string) (*http.Response, error)
-
 	// ListSecurityGroups request
 	ListSecurityGroups(ctx context.Context) (*http.Response, error)
 
@@ -893,8 +942,8 @@ type ClientInterface interface {
 
 	UpdateSksNodepool(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*http.Response, error)
 
-	// DeleteSksNodepoolField request
-	DeleteSksNodepoolField(ctx context.Context, id string, sksNodepoolId string, field string) (*http.Response, error)
+	// ResetSksNodepoolField request
+	ResetSksNodepoolField(ctx context.Context, id string, sksNodepoolId string, field string) (*http.Response, error)
 
 	// EvictSksNodepoolMembers request  with any body
 	EvictSksNodepoolMembersWithBody(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*http.Response, error)
@@ -906,13 +955,16 @@ type ClientInterface interface {
 
 	ScaleSksNodepool(ctx context.Context, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*http.Response, error)
 
+	// RotateSksCcmCredentials request
+	RotateSksCcmCredentials(ctx context.Context, id string) (*http.Response, error)
+
 	// UpgradeSksCluster request  with any body
 	UpgradeSksClusterWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
 
 	UpgradeSksCluster(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody) (*http.Response, error)
 
-	// DeleteSksClusterField request
-	DeleteSksClusterField(ctx context.Context, id string, field string) (*http.Response, error)
+	// ResetSksClusterField request
+	ResetSksClusterField(ctx context.Context, id string, field string) (*http.Response, error)
 
 	// ListSnapshots request
 	ListSnapshots(ctx context.Context) (*http.Response, error)
@@ -1030,8 +1082,113 @@ func (c *Client) GetAntiAffinityGroup(ctx context.Context, id string) (*http.Res
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListElasticIps(ctx context.Context) (*http.Response, error) {
+	req, err := NewListElasticIpsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateElasticIpWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateElasticIpRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateElasticIp(ctx context.Context, body CreateElasticIpJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateElasticIpRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteElasticIp(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeleteElasticIpRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetElasticIp(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewGetElasticIpRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateElasticIpWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpdateElasticIpRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateElasticIp(ctx context.Context, id string, body UpdateElasticIpJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpdateElasticIpRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetElasticIpField(ctx context.Context, id string, field string) (*http.Response, error) {
+	req, err := NewResetElasticIpFieldRequest(c.Server, id, field)
 	if err != nil {
 		return nil, err
 	}
@@ -1195,8 +1352,8 @@ func (c *Client) UpdateInstancePool(ctx context.Context, id string, body UpdateI
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteInstancePoolField(ctx context.Context, id string, field string) (*http.Response, error) {
-	req, err := NewDeleteInstancePoolFieldRequest(c.Server, id, field)
+func (c *Client) ResetInstancePoolField(ctx context.Context, id string, field string) (*http.Response, error) {
+	req, err := NewResetInstancePoolFieldRequest(c.Server, id, field)
 	if err != nil {
 		return nil, err
 	}
@@ -1660,21 +1817,6 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, id string, body Updat
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeletePrivateNetworkField(ctx context.Context, id string, field string) (*http.Response, error) {
-	req, err := NewDeletePrivateNetworkFieldRequest(c.Server, id, field)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(ctx, req)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) ListSecurityGroups(ctx context.Context) (*http.Response, error) {
 	req, err := NewListSecurityGroupsRequest(c.Server)
 	if err != nil {
@@ -2035,8 +2177,8 @@ func (c *Client) UpdateSksNodepool(ctx context.Context, id string, sksNodepoolId
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteSksNodepoolField(ctx context.Context, id string, sksNodepoolId string, field string) (*http.Response, error) {
-	req, err := NewDeleteSksNodepoolFieldRequest(c.Server, id, sksNodepoolId, field)
+func (c *Client) ResetSksNodepoolField(ctx context.Context, id string, sksNodepoolId string, field string) (*http.Response, error) {
+	req, err := NewResetSksNodepoolFieldRequest(c.Server, id, sksNodepoolId, field)
 	if err != nil {
 		return nil, err
 	}
@@ -2110,6 +2252,21 @@ func (c *Client) ScaleSksNodepool(ctx context.Context, id string, sksNodepoolId 
 	return c.Client.Do(req)
 }
 
+func (c *Client) RotateSksCcmCredentials(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewRotateSksCcmCredentialsRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) UpgradeSksClusterWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
 	req, err := NewUpgradeSksClusterRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
@@ -2140,8 +2297,8 @@ func (c *Client) UpgradeSksCluster(ctx context.Context, id string, body UpgradeS
 	return c.Client.Do(req)
 }
 
-func (c *Client) DeleteSksClusterField(ctx context.Context, id string, field string) (*http.Response, error) {
-	req, err := NewDeleteSksClusterFieldRequest(c.Server, id, field)
+func (c *Client) ResetSksClusterField(ctx context.Context, id string, field string) (*http.Response, error) {
+	req, err := NewResetSksClusterFieldRequest(c.Server, id, field)
 	if err != nil {
 		return nil, err
 	}
@@ -2499,6 +2656,106 @@ func NewGetAntiAffinityGroupRequest(server string, id string) (*http.Request, er
 	return req, nil
 }
 
+// NewListElasticIpsRequest generates requests for ListElasticIps
+func NewListElasticIpsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/elastic-ip")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateElasticIpRequest calls the generic CreateElasticIp builder with application/json body
+func NewCreateElasticIpRequest(server string, body CreateElasticIpJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateElasticIpRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateElasticIpRequestWithBody generates requests for CreateElasticIp with any type of body
+func NewCreateElasticIpRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/elastic-ip")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDeleteElasticIpRequest generates requests for DeleteElasticIp
+func NewDeleteElasticIpRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/elastic-ip/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetElasticIpRequest generates requests for GetElasticIp
 func NewGetElasticIpRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -2526,6 +2783,93 @@ func NewGetElasticIpRequest(server string, id string) (*http.Request, error) {
 	}
 
 	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateElasticIpRequest calls the generic UpdateElasticIp builder with application/json body
+func NewUpdateElasticIpRequest(server string, id string, body UpdateElasticIpJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateElasticIpRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateElasticIpRequestWithBody generates requests for UpdateElasticIp with any type of body
+func NewUpdateElasticIpRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/elastic-ip/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewResetElasticIpFieldRequest generates requests for ResetElasticIpField
+func NewResetElasticIpFieldRequest(server string, id string, field string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "field", field)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/elastic-ip/%s/%s", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -2835,8 +3179,8 @@ func NewUpdateInstancePoolRequestWithBody(server string, id string, contentType 
 	return req, nil
 }
 
-// NewDeleteInstancePoolFieldRequest generates requests for DeleteInstancePoolField
-func NewDeleteInstancePoolFieldRequest(server string, id string, field string) (*http.Request, error) {
+// NewResetInstancePoolFieldRequest generates requests for ResetInstancePoolField
+func NewResetInstancePoolFieldRequest(server string, id string, field string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3684,47 +4028,6 @@ func NewUpdatePrivateNetworkRequestWithBody(server string, id string, contentTyp
 	return req, nil
 }
 
-// NewDeletePrivateNetworkFieldRequest generates requests for DeletePrivateNetworkField
-func NewDeletePrivateNetworkFieldRequest(server string, id string, field string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParam("simple", false, "field", field)
-	if err != nil {
-		return nil, err
-	}
-
-	queryUrl, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	basePath := fmt.Sprintf("/private-network/%s/%s", pathParam0, pathParam1)
-	if basePath[0] == '/' {
-		basePath = basePath[1:]
-	}
-
-	queryUrl, err = queryUrl.Parse(basePath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewListSecurityGroupsRequest generates requests for ListSecurityGroups
 func NewListSecurityGroupsRequest(server string) (*http.Request, error) {
 	var err error
@@ -4380,8 +4683,8 @@ func NewUpdateSksNodepoolRequestWithBody(server string, id string, sksNodepoolId
 	return req, nil
 }
 
-// NewDeleteSksNodepoolFieldRequest generates requests for DeleteSksNodepoolField
-func NewDeleteSksNodepoolFieldRequest(server string, id string, sksNodepoolId string, field string) (*http.Request, error) {
+// NewResetSksNodepoolFieldRequest generates requests for ResetSksNodepoolField
+func NewResetSksNodepoolFieldRequest(server string, id string, sksNodepoolId string, field string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -4534,6 +4837,40 @@ func NewScaleSksNodepoolRequestWithBody(server string, id string, sksNodepoolId 
 	return req, nil
 }
 
+// NewRotateSksCcmCredentialsRequest generates requests for RotateSksCcmCredentials
+func NewRotateSksCcmCredentialsRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/rotate-ccm-credentials", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewUpgradeSksClusterRequest calls the generic UpgradeSksCluster builder with application/json body
 func NewUpgradeSksClusterRequest(server string, id string, body UpgradeSksClusterJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -4580,8 +4917,8 @@ func NewUpgradeSksClusterRequestWithBody(server string, id string, contentType s
 	return req, nil
 }
 
-// NewDeleteSksClusterFieldRequest generates requests for DeleteSksClusterField
-func NewDeleteSksClusterFieldRequest(server string, id string, field string) (*http.Request, error) {
+// NewResetSksClusterFieldRequest generates requests for ResetSksClusterField
+func NewResetSksClusterFieldRequest(server string, id string, field string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5124,8 +5461,27 @@ type ClientWithResponsesInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroupWithResponse(ctx context.Context, id string) (*GetAntiAffinityGroupResponse, error)
 
+	// ListElasticIps request
+	ListElasticIpsWithResponse(ctx context.Context) (*ListElasticIpsResponse, error)
+
+	// CreateElasticIp request  with any body
+	CreateElasticIpWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateElasticIpResponse, error)
+
+	CreateElasticIpWithResponse(ctx context.Context, body CreateElasticIpJSONRequestBody) (*CreateElasticIpResponse, error)
+
+	// DeleteElasticIp request
+	DeleteElasticIpWithResponse(ctx context.Context, id string) (*DeleteElasticIpResponse, error)
+
 	// GetElasticIp request
 	GetElasticIpWithResponse(ctx context.Context, id string) (*GetElasticIpResponse, error)
+
+	// UpdateElasticIp request  with any body
+	UpdateElasticIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateElasticIpResponse, error)
+
+	UpdateElasticIpWithResponse(ctx context.Context, id string, body UpdateElasticIpJSONRequestBody) (*UpdateElasticIpResponse, error)
+
+	// ResetElasticIpField request
+	ResetElasticIpFieldWithResponse(ctx context.Context, id string, field string) (*ResetElasticIpFieldResponse, error)
 
 	// ListEvents request
 	ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error)
@@ -5154,8 +5510,8 @@ type ClientWithResponsesInterface interface {
 
 	UpdateInstancePoolWithResponse(ctx context.Context, id string, body UpdateInstancePoolJSONRequestBody) (*UpdateInstancePoolResponse, error)
 
-	// DeleteInstancePoolField request
-	DeleteInstancePoolFieldWithResponse(ctx context.Context, id string, field string) (*DeleteInstancePoolFieldResponse, error)
+	// ResetInstancePoolField request
+	ResetInstancePoolFieldWithResponse(ctx context.Context, id string, field string) (*ResetInstancePoolFieldResponse, error)
 
 	// EvictInstancePoolMembers request  with any body
 	EvictInstancePoolMembersWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*EvictInstancePoolMembersResponse, error)
@@ -5238,9 +5594,6 @@ type ClientWithResponsesInterface interface {
 
 	UpdatePrivateNetworkWithResponse(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody) (*UpdatePrivateNetworkResponse, error)
 
-	// DeletePrivateNetworkField request
-	DeletePrivateNetworkFieldWithResponse(ctx context.Context, id string, field string) (*DeletePrivateNetworkFieldResponse, error)
-
 	// ListSecurityGroups request
 	ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error)
 
@@ -5306,8 +5659,8 @@ type ClientWithResponsesInterface interface {
 
 	UpdateSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body UpdateSksNodepoolJSONRequestBody) (*UpdateSksNodepoolResponse, error)
 
-	// DeleteSksNodepoolField request
-	DeleteSksNodepoolFieldWithResponse(ctx context.Context, id string, sksNodepoolId string, field string) (*DeleteSksNodepoolFieldResponse, error)
+	// ResetSksNodepoolField request
+	ResetSksNodepoolFieldWithResponse(ctx context.Context, id string, sksNodepoolId string, field string) (*ResetSksNodepoolFieldResponse, error)
 
 	// EvictSksNodepoolMembers request  with any body
 	EvictSksNodepoolMembersWithBodyWithResponse(ctx context.Context, id string, sksNodepoolId string, contentType string, body io.Reader) (*EvictSksNodepoolMembersResponse, error)
@@ -5319,13 +5672,16 @@ type ClientWithResponsesInterface interface {
 
 	ScaleSksNodepoolWithResponse(ctx context.Context, id string, sksNodepoolId string, body ScaleSksNodepoolJSONRequestBody) (*ScaleSksNodepoolResponse, error)
 
+	// RotateSksCcmCredentials request
+	RotateSksCcmCredentialsWithResponse(ctx context.Context, id string) (*RotateSksCcmCredentialsResponse, error)
+
 	// UpgradeSksCluster request  with any body
 	UpgradeSksClusterWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpgradeSksClusterResponse, error)
 
 	UpgradeSksClusterWithResponse(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody) (*UpgradeSksClusterResponse, error)
 
-	// DeleteSksClusterField request
-	DeleteSksClusterFieldWithResponse(ctx context.Context, id string, field string) (*DeleteSksClusterFieldResponse, error)
+	// ResetSksClusterField request
+	ResetSksClusterFieldWithResponse(ctx context.Context, id string, field string) (*ResetSksClusterFieldResponse, error)
 
 	// ListSnapshots request
 	ListSnapshotsWithResponse(ctx context.Context) (*ListSnapshotsResponse, error)
@@ -5458,6 +5814,74 @@ func (r GetAntiAffinityGroupResponse) StatusCode() int {
 	return 0
 }
 
+type ListElasticIpsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		ElasticIps *[]ElasticIp `json:"elastic-ips,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListElasticIpsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListElasticIpsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateElasticIpResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateElasticIpResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateElasticIpResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteElasticIpResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteElasticIpResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteElasticIpResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetElasticIpResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5474,6 +5898,50 @@ func (r GetElasticIpResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetElasticIpResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateElasticIpResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateElasticIpResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateElasticIpResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ResetElasticIpFieldResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ResetElasticIpFieldResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResetElasticIpFieldResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5636,14 +6104,14 @@ func (r UpdateInstancePoolResponse) StatusCode() int {
 	return 0
 }
 
-type DeleteInstancePoolFieldResponse struct {
+type ResetInstancePoolFieldResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Operation
 }
 
 // Status returns HTTPResponse.Status
-func (r DeleteInstancePoolFieldResponse) Status() string {
+func (r ResetInstancePoolFieldResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -5651,7 +6119,7 @@ func (r DeleteInstancePoolFieldResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeleteInstancePoolFieldResponse) StatusCode() int {
+func (r ResetInstancePoolFieldResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6126,28 +6594,6 @@ func (r UpdatePrivateNetworkResponse) StatusCode() int {
 	return 0
 }
 
-type DeletePrivateNetworkFieldResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Operation
-}
-
-// Status returns HTTPResponse.Status
-func (r DeletePrivateNetworkFieldResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeletePrivateNetworkFieldResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type ListSecurityGroupsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -6530,14 +6976,14 @@ func (r UpdateSksNodepoolResponse) StatusCode() int {
 	return 0
 }
 
-type DeleteSksNodepoolFieldResponse struct {
+type ResetSksNodepoolFieldResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Operation
 }
 
 // Status returns HTTPResponse.Status
-func (r DeleteSksNodepoolFieldResponse) Status() string {
+func (r ResetSksNodepoolFieldResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6545,7 +6991,7 @@ func (r DeleteSksNodepoolFieldResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeleteSksNodepoolFieldResponse) StatusCode() int {
+func (r ResetSksNodepoolFieldResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6596,6 +7042,28 @@ func (r ScaleSksNodepoolResponse) StatusCode() int {
 	return 0
 }
 
+type RotateSksCcmCredentialsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r RotateSksCcmCredentialsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RotateSksCcmCredentialsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type UpgradeSksClusterResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -6618,14 +7086,14 @@ func (r UpgradeSksClusterResponse) StatusCode() int {
 	return 0
 }
 
-type DeleteSksClusterFieldResponse struct {
+type ResetSksClusterFieldResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Operation
 }
 
 // Status returns HTTPResponse.Status
-func (r DeleteSksClusterFieldResponse) Status() string {
+func (r ResetSksClusterFieldResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -6633,7 +7101,7 @@ func (r DeleteSksClusterFieldResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DeleteSksClusterFieldResponse) StatusCode() int {
+func (r ResetSksClusterFieldResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6956,6 +7424,41 @@ func (c *ClientWithResponses) GetAntiAffinityGroupWithResponse(ctx context.Conte
 	return ParseGetAntiAffinityGroupResponse(rsp)
 }
 
+// ListElasticIpsWithResponse request returning *ListElasticIpsResponse
+func (c *ClientWithResponses) ListElasticIpsWithResponse(ctx context.Context) (*ListElasticIpsResponse, error) {
+	rsp, err := c.ListElasticIps(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListElasticIpsResponse(rsp)
+}
+
+// CreateElasticIpWithBodyWithResponse request with arbitrary body returning *CreateElasticIpResponse
+func (c *ClientWithResponses) CreateElasticIpWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateElasticIpResponse, error) {
+	rsp, err := c.CreateElasticIpWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateElasticIpResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateElasticIpWithResponse(ctx context.Context, body CreateElasticIpJSONRequestBody) (*CreateElasticIpResponse, error) {
+	rsp, err := c.CreateElasticIp(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateElasticIpResponse(rsp)
+}
+
+// DeleteElasticIpWithResponse request returning *DeleteElasticIpResponse
+func (c *ClientWithResponses) DeleteElasticIpWithResponse(ctx context.Context, id string) (*DeleteElasticIpResponse, error) {
+	rsp, err := c.DeleteElasticIp(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteElasticIpResponse(rsp)
+}
+
 // GetElasticIpWithResponse request returning *GetElasticIpResponse
 func (c *ClientWithResponses) GetElasticIpWithResponse(ctx context.Context, id string) (*GetElasticIpResponse, error) {
 	rsp, err := c.GetElasticIp(ctx, id)
@@ -6963,6 +7466,32 @@ func (c *ClientWithResponses) GetElasticIpWithResponse(ctx context.Context, id s
 		return nil, err
 	}
 	return ParseGetElasticIpResponse(rsp)
+}
+
+// UpdateElasticIpWithBodyWithResponse request with arbitrary body returning *UpdateElasticIpResponse
+func (c *ClientWithResponses) UpdateElasticIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateElasticIpResponse, error) {
+	rsp, err := c.UpdateElasticIpWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateElasticIpResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateElasticIpWithResponse(ctx context.Context, id string, body UpdateElasticIpJSONRequestBody) (*UpdateElasticIpResponse, error) {
+	rsp, err := c.UpdateElasticIp(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateElasticIpResponse(rsp)
+}
+
+// ResetElasticIpFieldWithResponse request returning *ResetElasticIpFieldResponse
+func (c *ClientWithResponses) ResetElasticIpFieldWithResponse(ctx context.Context, id string, field string) (*ResetElasticIpFieldResponse, error) {
+	rsp, err := c.ResetElasticIpField(ctx, id, field)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetElasticIpFieldResponse(rsp)
 }
 
 // ListEventsWithResponse request returning *ListEventsResponse
@@ -7052,13 +7581,13 @@ func (c *ClientWithResponses) UpdateInstancePoolWithResponse(ctx context.Context
 	return ParseUpdateInstancePoolResponse(rsp)
 }
 
-// DeleteInstancePoolFieldWithResponse request returning *DeleteInstancePoolFieldResponse
-func (c *ClientWithResponses) DeleteInstancePoolFieldWithResponse(ctx context.Context, id string, field string) (*DeleteInstancePoolFieldResponse, error) {
-	rsp, err := c.DeleteInstancePoolField(ctx, id, field)
+// ResetInstancePoolFieldWithResponse request returning *ResetInstancePoolFieldResponse
+func (c *ClientWithResponses) ResetInstancePoolFieldWithResponse(ctx context.Context, id string, field string) (*ResetInstancePoolFieldResponse, error) {
+	rsp, err := c.ResetInstancePoolField(ctx, id, field)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteInstancePoolFieldResponse(rsp)
+	return ParseResetInstancePoolFieldResponse(rsp)
 }
 
 // EvictInstancePoolMembersWithBodyWithResponse request with arbitrary body returning *EvictInstancePoolMembersResponse
@@ -7322,15 +7851,6 @@ func (c *ClientWithResponses) UpdatePrivateNetworkWithResponse(ctx context.Conte
 	return ParseUpdatePrivateNetworkResponse(rsp)
 }
 
-// DeletePrivateNetworkFieldWithResponse request returning *DeletePrivateNetworkFieldResponse
-func (c *ClientWithResponses) DeletePrivateNetworkFieldWithResponse(ctx context.Context, id string, field string) (*DeletePrivateNetworkFieldResponse, error) {
-	rsp, err := c.DeletePrivateNetworkField(ctx, id, field)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeletePrivateNetworkFieldResponse(rsp)
-}
-
 // ListSecurityGroupsWithResponse request returning *ListSecurityGroupsResponse
 func (c *ClientWithResponses) ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error) {
 	rsp, err := c.ListSecurityGroups(ctx)
@@ -7540,13 +8060,13 @@ func (c *ClientWithResponses) UpdateSksNodepoolWithResponse(ctx context.Context,
 	return ParseUpdateSksNodepoolResponse(rsp)
 }
 
-// DeleteSksNodepoolFieldWithResponse request returning *DeleteSksNodepoolFieldResponse
-func (c *ClientWithResponses) DeleteSksNodepoolFieldWithResponse(ctx context.Context, id string, sksNodepoolId string, field string) (*DeleteSksNodepoolFieldResponse, error) {
-	rsp, err := c.DeleteSksNodepoolField(ctx, id, sksNodepoolId, field)
+// ResetSksNodepoolFieldWithResponse request returning *ResetSksNodepoolFieldResponse
+func (c *ClientWithResponses) ResetSksNodepoolFieldWithResponse(ctx context.Context, id string, sksNodepoolId string, field string) (*ResetSksNodepoolFieldResponse, error) {
+	rsp, err := c.ResetSksNodepoolField(ctx, id, sksNodepoolId, field)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteSksNodepoolFieldResponse(rsp)
+	return ParseResetSksNodepoolFieldResponse(rsp)
 }
 
 // EvictSksNodepoolMembersWithBodyWithResponse request with arbitrary body returning *EvictSksNodepoolMembersResponse
@@ -7583,6 +8103,15 @@ func (c *ClientWithResponses) ScaleSksNodepoolWithResponse(ctx context.Context, 
 	return ParseScaleSksNodepoolResponse(rsp)
 }
 
+// RotateSksCcmCredentialsWithResponse request returning *RotateSksCcmCredentialsResponse
+func (c *ClientWithResponses) RotateSksCcmCredentialsWithResponse(ctx context.Context, id string) (*RotateSksCcmCredentialsResponse, error) {
+	rsp, err := c.RotateSksCcmCredentials(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRotateSksCcmCredentialsResponse(rsp)
+}
+
 // UpgradeSksClusterWithBodyWithResponse request with arbitrary body returning *UpgradeSksClusterResponse
 func (c *ClientWithResponses) UpgradeSksClusterWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpgradeSksClusterResponse, error) {
 	rsp, err := c.UpgradeSksClusterWithBody(ctx, id, contentType, body)
@@ -7600,13 +8129,13 @@ func (c *ClientWithResponses) UpgradeSksClusterWithResponse(ctx context.Context,
 	return ParseUpgradeSksClusterResponse(rsp)
 }
 
-// DeleteSksClusterFieldWithResponse request returning *DeleteSksClusterFieldResponse
-func (c *ClientWithResponses) DeleteSksClusterFieldWithResponse(ctx context.Context, id string, field string) (*DeleteSksClusterFieldResponse, error) {
-	rsp, err := c.DeleteSksClusterField(ctx, id, field)
+// ResetSksClusterFieldWithResponse request returning *ResetSksClusterFieldResponse
+func (c *ClientWithResponses) ResetSksClusterFieldWithResponse(ctx context.Context, id string, field string) (*ResetSksClusterFieldResponse, error) {
+	rsp, err := c.ResetSksClusterField(ctx, id, field)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDeleteSksClusterFieldResponse(rsp)
+	return ParseResetSksClusterFieldResponse(rsp)
 }
 
 // ListSnapshotsWithResponse request returning *ListSnapshotsResponse
@@ -7839,6 +8368,86 @@ func ParseGetAntiAffinityGroupResponse(rsp *http.Response) (*GetAntiAffinityGrou
 	return response, nil
 }
 
+// ParseListElasticIpsResponse parses an HTTP response from a ListElasticIpsWithResponse call
+func ParseListElasticIpsResponse(rsp *http.Response) (*ListElasticIpsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListElasticIpsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			ElasticIps *[]ElasticIp `json:"elastic-ips,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateElasticIpResponse parses an HTTP response from a CreateElasticIpWithResponse call
+func ParseCreateElasticIpResponse(rsp *http.Response) (*CreateElasticIpResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateElasticIpResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteElasticIpResponse parses an HTTP response from a DeleteElasticIpWithResponse call
+func ParseDeleteElasticIpResponse(rsp *http.Response) (*DeleteElasticIpResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteElasticIpResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetElasticIpResponse parses an HTTP response from a GetElasticIpWithResponse call
 func ParseGetElasticIpResponse(rsp *http.Response) (*GetElasticIpResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -7855,6 +8464,58 @@ func ParseGetElasticIpResponse(rsp *http.Response) (*GetElasticIpResponse, error
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest ElasticIp
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateElasticIpResponse parses an HTTP response from a UpdateElasticIpWithResponse call
+func ParseUpdateElasticIpResponse(rsp *http.Response) (*UpdateElasticIpResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateElasticIpResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseResetElasticIpFieldResponse parses an HTTP response from a ResetElasticIpFieldWithResponse call
+func ParseResetElasticIpFieldResponse(rsp *http.Response) (*ResetElasticIpFieldResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResetElasticIpFieldResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -8049,15 +8710,15 @@ func ParseUpdateInstancePoolResponse(rsp *http.Response) (*UpdateInstancePoolRes
 	return response, nil
 }
 
-// ParseDeleteInstancePoolFieldResponse parses an HTTP response from a DeleteInstancePoolFieldWithResponse call
-func ParseDeleteInstancePoolFieldResponse(rsp *http.Response) (*DeleteInstancePoolFieldResponse, error) {
+// ParseResetInstancePoolFieldResponse parses an HTTP response from a ResetInstancePoolFieldWithResponse call
+func ParseResetInstancePoolFieldResponse(rsp *http.Response) (*ResetInstancePoolFieldResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteInstancePoolFieldResponse{
+	response := &ResetInstancePoolFieldResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -8627,32 +9288,6 @@ func ParseUpdatePrivateNetworkResponse(rsp *http.Response) (*UpdatePrivateNetwor
 	return response, nil
 }
 
-// ParseDeletePrivateNetworkFieldResponse parses an HTTP response from a DeletePrivateNetworkFieldWithResponse call
-func ParseDeletePrivateNetworkFieldResponse(rsp *http.Response) (*DeletePrivateNetworkFieldResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer rsp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeletePrivateNetworkFieldResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Operation
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseListSecurityGroupsResponse parses an HTTP response from a ListSecurityGroupsWithResponse call
 func ParseListSecurityGroupsResponse(rsp *http.Response) (*ListSecurityGroupsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -9103,15 +9738,15 @@ func ParseUpdateSksNodepoolResponse(rsp *http.Response) (*UpdateSksNodepoolRespo
 	return response, nil
 }
 
-// ParseDeleteSksNodepoolFieldResponse parses an HTTP response from a DeleteSksNodepoolFieldWithResponse call
-func ParseDeleteSksNodepoolFieldResponse(rsp *http.Response) (*DeleteSksNodepoolFieldResponse, error) {
+// ParseResetSksNodepoolFieldResponse parses an HTTP response from a ResetSksNodepoolFieldWithResponse call
+func ParseResetSksNodepoolFieldResponse(rsp *http.Response) (*ResetSksNodepoolFieldResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteSksNodepoolFieldResponse{
+	response := &ResetSksNodepoolFieldResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -9181,6 +9816,32 @@ func ParseScaleSksNodepoolResponse(rsp *http.Response) (*ScaleSksNodepoolRespons
 	return response, nil
 }
 
+// ParseRotateSksCcmCredentialsResponse parses an HTTP response from a RotateSksCcmCredentialsWithResponse call
+func ParseRotateSksCcmCredentialsResponse(rsp *http.Response) (*RotateSksCcmCredentialsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RotateSksCcmCredentialsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseUpgradeSksClusterResponse parses an HTTP response from a UpgradeSksClusterWithResponse call
 func ParseUpgradeSksClusterResponse(rsp *http.Response) (*UpgradeSksClusterResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -9207,15 +9868,15 @@ func ParseUpgradeSksClusterResponse(rsp *http.Response) (*UpgradeSksClusterRespo
 	return response, nil
 }
 
-// ParseDeleteSksClusterFieldResponse parses an HTTP response from a DeleteSksClusterFieldWithResponse call
-func ParseDeleteSksClusterFieldResponse(rsp *http.Response) (*DeleteSksClusterFieldResponse, error) {
+// ParseResetSksClusterFieldResponse parses an HTTP response from a ResetSksClusterFieldWithResponse call
+func ParseResetSksClusterFieldResponse(rsp *http.Response) (*ResetSksClusterFieldResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DeleteSksClusterFieldResponse{
+	response := &ResetSksClusterFieldResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

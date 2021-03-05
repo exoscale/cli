@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.44.0
+------
+
+- feature: v2: add request tracing middleware (#474)
+- feature: v2: add support for field resetting (#476)
+- feature: v2: add support for Instance Pools management (#471)
+- feature: v2: add support for Private Networks management (#472)
+- feature: v2: add support for Anti-Affinity Groups management (#473)
+- feature: v2: add support for Security Groups management (#475)
+
 0.43.1
 ------
 
