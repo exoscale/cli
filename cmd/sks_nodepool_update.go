@@ -90,6 +90,44 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 			nodepool.DiskSize = diskSize
 		}
 
+		if cmd.Flags().Changed("anti-affinity-group") {
+			antiAffinityGroups, err := cmd.Flags().GetStringSlice("anti-affinity-group")
+			if err != nil {
+				return err
+			}
+
+			antiAffinityGroupIDs, err := getAffinityGroupIDs(antiAffinityGroups)
+			if err != nil {
+				return err
+			}
+			nodepool.AntiAffinityGroupIDs = func() []string {
+				ids := make([]string, len(antiAffinityGroups))
+				for i := range antiAffinityGroupIDs {
+					ids[i] = antiAffinityGroupIDs[i].String()
+				}
+				return ids
+			}()
+		}
+
+		if cmd.Flags().Changed("security-group") {
+			securityGroups, err := cmd.Flags().GetStringSlice("security-group")
+			if err != nil {
+				return err
+			}
+
+			securityGroupIDs, err := getSecurityGroupIDs(securityGroups)
+			if err != nil {
+				return err
+			}
+			nodepool.SecurityGroupIDs = func() []string {
+				ids := make([]string, len(securityGroups))
+				for i := range securityGroupIDs {
+					ids[i] = securityGroupIDs[i].String()
+				}
+				return ids
+			}()
+		}
+
 		decorateAsyncOperation(fmt.Sprintf("Updating Nodepool %q...", np), func() {
 			err = cluster.UpdateNodepool(ctx, nodepool)
 		})
@@ -111,5 +149,11 @@ func init() {
 	sksNodepoolUpdateCmd.Flags().String("description", "", "description")
 	sksNodepoolUpdateCmd.Flags().String("instance-type", "", "Nodepool Compute instances type")
 	sksNodepoolUpdateCmd.Flags().Int64("disk-size", 0, "Nodepool Compute instances disk size")
+	sksNodepoolUpdateCmd.Flags().StringSlice("anti-affinity-group", nil,
+		"Nodepool Anti-Affinity Group <name | id> (can be specified multiple times). "+
+			"Note: this replaces the current value, it is not cumulative.")
+	sksNodepoolUpdateCmd.Flags().StringSlice("security-group", nil,
+		"Nodepool Security Group <name | id> (can be specified multiple times)"+
+			"Note: this replaces the current value, it is not cumulative.")
 	sksNodepoolCmd.AddCommand(sksNodepoolUpdateCmd)
 }
