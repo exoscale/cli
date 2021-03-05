@@ -17,7 +17,8 @@ const defaultTimeout = 60 * time.Second
 // ClientOpt represents a function setting Exoscale API client option.
 type ClientOpt func(*Client) error
 
-// ClientOptWithAPIEndpoint returns a ClientOpt overriding the default Exoscale API endpoint.
+// ClientOptWithAPIEndpoint returns a ClientOpt overriding the default Exoscale
+// API endpoint.
 func ClientOptWithAPIEndpoint(v string) ClientOpt {
 	return func(c *Client) error {
 		endpointURL, err := url.Parse(v)
@@ -45,6 +46,24 @@ func ClientOptWithTimeout(v time.Duration) ClientOpt {
 	}
 }
 
+// ClientOptWithTrace returns a ClientOpt enabling HTTP request/reponse tracing.
+func ClientOptWithTrace() ClientOpt {
+	return func(c *Client) error {
+		c.trace = true
+		return nil
+	}
+}
+
+// ClientOptCond returns the specified ClientOpt if the fc function bool result
+// evaluates to true, otherwise returns a no-op ClientOpt.
+func ClientOptCond(fc func() bool, opt ClientOpt) ClientOpt {
+	if fc() {
+		return opt
+	}
+
+	return func(*Client) error { return nil }
+}
+
 // ClientOptWithHTTPClient returns a ClientOpt overriding the default http.Client.
 // Note: the Exoscale API client will chain additional middleware
 // (http.RoundTripper) on the HTTP client internally, which can alter the HTTP
@@ -65,6 +84,7 @@ type Client struct {
 	apiSecret   string
 	apiEndpoint string
 	timeout     time.Duration
+	trace       bool
 	httpClient  *http.Client
 
 	*papi.ClientWithResponses
@@ -100,6 +120,12 @@ func NewClient(apiKey, apiSecret string, opts ...ClientOpt) (*Client, error) {
 		return nil, fmt.Errorf("unable to initialize API client: %s", err)
 	}
 	apiURL = apiURL.ResolveReference(&url.URL{Path: api.Prefix})
+
+	// Tracing must be performed before API error handling in the middleware chain,
+	// otherwise the response won't be dumped in case of an API error.
+	if client.trace {
+		client.httpClient.Transport = api.NewTraceMiddleware(client.httpClient.Transport)
+	}
 
 	client.httpClient.Transport = api.NewAPIErrorHandlerMiddleware(client.httpClient.Transport)
 

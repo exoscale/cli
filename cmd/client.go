@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/exoscale/egoscale"
 	exov2 "github.com/exoscale/egoscale/v2"
@@ -75,6 +76,12 @@ func buildClient() {
 			}
 			return hc
 		}()),
+		exov2.ClientOptCond(func() bool {
+			if v := os.Getenv("EXOSCALE_TRACE"); v != "" {
+				return true
+			}
+			return false
+		}, exov2.ClientOptWithTrace()),
 	)
 	if err != nil {
 		panic(fmt.Sprintf("unable to initialize Exoscale API V2 client: %v", err))

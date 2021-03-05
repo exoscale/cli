@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
+	"os"
 )
 
 type Middleware interface {
@@ -60,6 +62,37 @@ func (m *ErrorHandlerMiddleware) RoundTrip(req *http.Request) (*http.Response, e
 
 		case resp.StatusCode >= 500:
 			return nil, fmt.Errorf("%w: %s", ErrAPIError, res.Message)
+		}
+	}
+
+	return resp, err
+}
+
+// TraceMiddleware is a client HTTP middleware that dumps HTTP requests and responses content.
+type TraceMiddleware struct {
+	next http.RoundTripper
+}
+
+func NewTraceMiddleware(next http.RoundTripper) Middleware {
+	if next == nil {
+		next = http.DefaultTransport
+	}
+
+	return &TraceMiddleware{next: next}
+}
+
+func (t *TraceMiddleware) RoundTrip(req *http.Request) (*http.Response, error) {
+	if dump, err := httputil.DumpRequest(req, true); err == nil {
+		fmt.Fprintf(os.Stderr, ">>> %s\n", dump)
+	}
+
+	fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------")
+
+	resp, err := t.next.RoundTrip(req)
+
+	if resp != nil {
+		if dump, err := httputil.DumpResponse(resp, true); err == nil {
+			fmt.Fprintf(os.Stderr, "<<< %s\n", dump)
 		}
 	}
 
