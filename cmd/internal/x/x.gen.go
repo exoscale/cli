@@ -2297,6 +2297,49 @@ func XUpdateSksCluster(paramId string, params *viper.Viper, body string) (*gentl
 	return resp, decoded, nil
 }
 
+// XGetSksClusterAuthorityCert Get the certificate for a SKS cluster authority
+func XGetSksClusterAuthorityCert(paramId string, paramAuthority string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-sks-cluster-authority-cert"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/sks-cluster/{id}/authority/{authority}/cert"
+	url = strings.Replace(url, "{id}", paramId, 1)
+	url = strings.Replace(url, "{authority}", paramAuthority, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateSksNodepool Create a new SKS Nodepool
 func XCreateSksNodepool(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-sks-nodepool"
@@ -5178,6 +5221,41 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XUpdateSksCluster(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-sks-cluster-authority-cert id authority",
+			Short:   "Get the certificate for a SKS cluster authority",
+			Long:    cli.Markdown("This operation returns the certificate for the given SKS cluster authority encoded in base64."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetSksClusterAuthorityCert(args[0], args[1], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
