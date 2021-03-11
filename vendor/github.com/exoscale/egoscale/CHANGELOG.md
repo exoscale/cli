@@ -1,6 +1,23 @@
 Changelog
 =========
 
+0.46.0
+------
+
+- feature: SKS: add SKSCluster.RotateCCMCredentials() method (#481)
+- feature: SKS: add SKSCluster.AuthorityCert() method (#480)
+
+0.45.1
+------
+
+- Fix typo in version.go
+
+0.45.0
+------
+
+- feature: v2: add support for Elastic IP management
+- fix: v2: InstancePool.ManagerID resolution (#479)
+
 0.44.0
 ------
 

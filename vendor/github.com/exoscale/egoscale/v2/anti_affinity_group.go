@@ -56,9 +56,7 @@ func (c *Client) ListAntiAffinityGroups(ctx context.Context, zone string) ([]*An
 
 	if resp.JSON200.AntiAffinityGroups != nil {
 		for i := range *resp.JSON200.AntiAffinityGroups {
-			cluster := antiAffinityGroupFromAPI(&(*resp.JSON200.AntiAffinityGroups)[i])
-
-			list = append(list, cluster)
+			list = append(list, antiAffinityGroupFromAPI(&(*resp.JSON200.AntiAffinityGroups)[i]))
 		}
 	}
 
@@ -72,9 +70,7 @@ func (c *Client) GetAntiAffinityGroup(ctx context.Context, zone, id string) (*An
 		return nil, err
 	}
 
-	antiAffinityGroup := antiAffinityGroupFromAPI(resp.JSON200)
-
-	return antiAffinityGroup, nil
+	return antiAffinityGroupFromAPI(resp.JSON200), nil
 }
 
 // DeleteAntiAffinityGroup deletes the specified Anti-Affinity Group in the specified zone.

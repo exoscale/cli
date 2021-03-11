@@ -112,6 +112,27 @@ func sksClusterFromAPI(c *papi.SksCluster) *SKSCluster {
 	}
 }
 
+// RotateCCMCredentials rotates the Exoscale IAM credentials managed by the SKS control plane for the
+// Kubernetes Exoscale Cloud Controller Manager.
+func (c *SKSCluster) RotateCCMCredentials(ctx context.Context) error {
+	_, err := c.c.RotateSksCcmCredentialsWithResponse(apiv2.WithZone(ctx, c.zone), c.ID)
+	return err
+}
+
+// AuthorityCert returns the SKS cluster base64-encoded certificate content for the specified authority.
+func (c *SKSCluster) AuthorityCert(ctx context.Context, authority string) (string, error) {
+	if authority == "" {
+		return "", errors.New("authority not specified")
+	}
+
+	resp, err := c.c.GetSksClusterAuthorityCertWithResponse(apiv2.WithZone(ctx, c.zone), c.ID, authority)
+	if err != nil {
+		return "", err
+	}
+
+	return papi.OptionalString(resp.JSON200.Cacert), nil
+}
+
 // RequestKubeconfig returns a base64-encoded kubeconfig content for the specified user name,
 // optionally associated to specified groups for a duration d (default API-set TTL applies if not specified).
 // Fore more information: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/

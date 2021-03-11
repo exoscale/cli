@@ -926,6 +926,9 @@ type ClientInterface interface {
 
 	UpdateSksCluster(ctx context.Context, id string, body UpdateSksClusterJSONRequestBody) (*http.Response, error)
 
+	// GetSksClusterAuthorityCert request
+	GetSksClusterAuthorityCert(ctx context.Context, id string, authority string) (*http.Response, error)
+
 	// CreateSksNodepool request  with any body
 	CreateSksNodepoolWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
 
@@ -2074,6 +2077,21 @@ func (c *Client) UpdateSksClusterWithBody(ctx context.Context, id string, conten
 
 func (c *Client) UpdateSksCluster(ctx context.Context, id string, body UpdateSksClusterJSONRequestBody) (*http.Response, error) {
 	req, err := NewUpdateSksClusterRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetSksClusterAuthorityCert(ctx context.Context, id string, authority string) (*http.Response, error) {
+	req, err := NewGetSksClusterAuthorityCertRequest(c.Server, id, authority)
 	if err != nil {
 		return nil, err
 	}
@@ -4502,6 +4520,47 @@ func NewUpdateSksClusterRequestWithBody(server string, id string, contentType st
 	return req, nil
 }
 
+// NewGetSksClusterAuthorityCertRequest generates requests for GetSksClusterAuthorityCert
+func NewGetSksClusterAuthorityCertRequest(server string, id string, authority string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParam("simple", false, "authority", authority)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/sks-cluster/%s/authority/%s/cert", pathParam0, pathParam1)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateSksNodepoolRequest calls the generic CreateSksNodepool builder with application/json body
 func NewCreateSksNodepoolRequest(server string, id string, body CreateSksNodepoolJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -5642,6 +5701,9 @@ type ClientWithResponsesInterface interface {
 	UpdateSksClusterWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateSksClusterResponse, error)
 
 	UpdateSksClusterWithResponse(ctx context.Context, id string, body UpdateSksClusterJSONRequestBody) (*UpdateSksClusterResponse, error)
+
+	// GetSksClusterAuthorityCert request
+	GetSksClusterAuthorityCertWithResponse(ctx context.Context, id string, authority string) (*GetSksClusterAuthorityCertResponse, error)
 
 	// CreateSksNodepool request  with any body
 	CreateSksNodepoolWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*CreateSksNodepoolResponse, error)
@@ -6888,6 +6950,30 @@ func (r UpdateSksClusterResponse) StatusCode() int {
 	return 0
 }
 
+type GetSksClusterAuthorityCertResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Cacert *string `json:"cacert,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetSksClusterAuthorityCertResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetSksClusterAuthorityCertResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSksNodepoolResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -8006,6 +8092,15 @@ func (c *ClientWithResponses) UpdateSksClusterWithResponse(ctx context.Context, 
 		return nil, err
 	}
 	return ParseUpdateSksClusterResponse(rsp)
+}
+
+// GetSksClusterAuthorityCertWithResponse request returning *GetSksClusterAuthorityCertResponse
+func (c *ClientWithResponses) GetSksClusterAuthorityCertWithResponse(ctx context.Context, id string, authority string) (*GetSksClusterAuthorityCertResponse, error) {
+	rsp, err := c.GetSksClusterAuthorityCert(ctx, id, authority)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetSksClusterAuthorityCertResponse(rsp)
 }
 
 // CreateSksNodepoolWithBodyWithResponse request with arbitrary body returning *CreateSksNodepoolResponse
@@ -9624,6 +9719,34 @@ func ParseUpdateSksClusterResponse(rsp *http.Response) (*UpdateSksClusterRespons
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetSksClusterAuthorityCertResponse parses an HTTP response from a GetSksClusterAuthorityCertWithResponse call
+func ParseGetSksClusterAuthorityCertResponse(rsp *http.Response) (*GetSksClusterAuthorityCertResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetSksClusterAuthorityCertResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Cacert *string `json:"cacert,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
