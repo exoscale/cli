@@ -42,10 +42,7 @@ safety measure. Please look up the API documentation for more information.
 
 		cmdSetZoneFlagFromDefault(cmd)
 
-		return cmdCheckRequiredFlags(cmd, []string{
-			"user",
-			"zone",
-		})
+		return cmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
@@ -88,7 +85,7 @@ safety measure. Please look up the API documentation for more information.
 			return fmt.Errorf("error decoding kubeconfig content: %s", err)
 		}
 
-		fmt.Println(string(kubeconfig))
+		fmt.Print(string(kubeconfig))
 
 		return nil
 	},
