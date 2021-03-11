@@ -84,9 +84,7 @@ func (c *Client) ListPrivateNetworks(ctx context.Context, zone string) ([]*Priva
 
 	if resp.JSON200.PrivateNetworks != nil {
 		for i := range *resp.JSON200.PrivateNetworks {
-			cluster := privateNetworkFromAPI(&(*resp.JSON200.PrivateNetworks)[i])
-
-			list = append(list, cluster)
+			list = append(list, privateNetworkFromAPI(&(*resp.JSON200.PrivateNetworks)[i]))
 		}
 	}
 
@@ -100,9 +98,7 @@ func (c *Client) GetPrivateNetwork(ctx context.Context, zone, id string) (*Priva
 		return nil, err
 	}
 
-	privateNetwork := privateNetworkFromAPI(resp.JSON200)
-
-	return privateNetwork, nil
+	return privateNetworkFromAPI(resp.JSON200), nil
 }
 
 // UpdatePrivateNetwork updates the specified Private Network in the specified zone.

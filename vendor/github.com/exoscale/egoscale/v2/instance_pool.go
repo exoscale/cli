@@ -74,8 +74,13 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 			return ids
 		}(),
 		InstanceTypeID: papi.OptionalString(i.InstanceType.Id),
-		ManagerID:      papi.OptionalString(i.Manager.Id),
-		Name:           papi.OptionalString(i.Name),
+		ManagerID: func() string {
+			if i.Manager != nil {
+				return papi.OptionalString(i.Manager.Id)
+			}
+			return ""
+		}(),
+		Name: papi.OptionalString(i.Name),
 		PrivateNetworkIDs: func() []string {
 			ids := make([]string, 0)
 
@@ -274,11 +279,11 @@ func (c *Client) ListInstancePools(ctx context.Context, zone string) ([]*Instanc
 
 	if resp.JSON200.InstancePools != nil {
 		for i := range *resp.JSON200.InstancePools {
-			cluster := instancePoolFromAPI(&(*resp.JSON200.InstancePools)[i])
-			cluster.c = c
-			cluster.zone = zone
+			instancePool := instancePoolFromAPI(&(*resp.JSON200.InstancePools)[i])
+			instancePool.c = c
+			instancePool.zone = zone
 
-			list = append(list, cluster)
+			list = append(list, instancePool)
 		}
 	}
 
