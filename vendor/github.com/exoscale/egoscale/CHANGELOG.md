@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.46.1
+------
+
+- fix: v2: make SKSCluster.RotateCCMCredentials() synchronous (#484)
+
 0.46.0
 ------
 
