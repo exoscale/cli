@@ -115,8 +115,19 @@ func sksClusterFromAPI(c *papi.SksCluster) *SKSCluster {
 // RotateCCMCredentials rotates the Exoscale IAM credentials managed by the SKS control plane for the
 // Kubernetes Exoscale Cloud Controller Manager.
 func (c *SKSCluster) RotateCCMCredentials(ctx context.Context) error {
-	_, err := c.c.RotateSksCcmCredentialsWithResponse(apiv2.WithZone(ctx, c.zone), c.ID)
-	return err
+	resp, err := c.c.RotateSksCcmCredentialsWithResponse(apiv2.WithZone(ctx, c.zone), c.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.c.timeout).
+		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // AuthorityCert returns the SKS cluster base64-encoded certificate content for the specified authority.
