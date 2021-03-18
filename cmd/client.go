@@ -28,6 +28,9 @@ func newCLIRoundTripper(next http.RoundTripper, headers map[string]string) cliRo
 		roundTripper.next = next
 	}
 
+	roundTripper.reqHeaders.Add("User-Agent", fmt.Sprintf("Exoscale-CLI/%s (%s) %s",
+		gVersion, gCommit, egoscale.UserAgent))
+
 	for k, v := range headers {
 		roundTripper.reqHeaders.Add(k, v)
 	}
@@ -49,10 +52,7 @@ func buildClient() {
 		return
 	}
 
-	httpClient := &http.Client{Transport: http.DefaultTransport}
-	if gCurrentAccount.CustomHeaders != nil {
-		httpClient.Transport = newCLIRoundTripper(cs.HTTPClient.Transport, gCurrentAccount.CustomHeaders)
-	}
+	httpClient := &http.Client{Transport: newCLIRoundTripper(http.DefaultTransport, gCurrentAccount.CustomHeaders)}
 
 	cs = egoscale.NewClient(
 		gCurrentAccount.Endpoint,
