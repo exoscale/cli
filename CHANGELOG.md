@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.25.0
+
+### Features
+
+- `exo sks`: add `authority-cert` command
+- `exo sks`: add `rotate-ccm-credentials` command
+- `exo sks nodepool`: add `list` command (#314)
+
+### Improvements
+
+- `exo sks nodepool`: support Nodepools Security Groups/Anti-Affinity Groups updating
+
+### Changes
+
+- `exo sks kubeconfig`: use group `system:masters` by default if no groups are specified
+
+
 ## 1.24.0
 
 ### Features
