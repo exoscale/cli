@@ -6,6 +6,7 @@ builds:
       - CGO_ENABLED=0
     flags:
       - -mod=vendor
+      - -trimpath
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
     goos:
@@ -54,12 +55,14 @@ nfpms:
     formats:
       - deb
       - rpm
-    files:
-      "./manpage/exo*.1": "/usr/share/man/man1"
-      "./contrib/completion/bash/exo": "/etc/bash_completion.d/exo"
+    contents:
+      - src: "./manpage/exo*.1"
+        dst: "/usr/share/man/man1"
+      - src: "./contrib/completion/bash/exo"
+        dst: "/etc/bash_completion.d/exo"
 
 brews:
-  - github:
+  - tap:
       owner: exoscale
       name: homebrew-tap
     folder: Formula
