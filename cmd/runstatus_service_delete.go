@@ -8,9 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runstatusServiceDeleteCmd represents the delete command
 var runstatusServiceDeleteCmd = &cobra.Command{
-	Use:     "delete [page name] <service name>",
+	Use:     "delete [PAGE] SERVICE-NAME",
 	Short:   "Delete a service",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -45,7 +44,7 @@ var runstatusServiceDeleteCmd = &cobra.Command{
 		}
 
 		// TODO: add "--force" flag
-		if !askQuestion(fmt.Sprintf("sure you want to delete %q service", serviceName)) {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to delete service %q?", serviceName)) {
 			return nil
 		}
 

@@ -11,7 +11,7 @@ import (
 )
 
 var sksNodepoolAddCmd = &cobra.Command{
-	Use:   "add <cluster name | ID> <Nodepool name>",
+	Use:   "add CLUSTER-NAME|ID NODEPOOL-NAME",
 	Short: "Add a Nodepool to a SKS cluster",
 	Long: fmt.Sprintf(`This command adds a Nodepool to a SKS cluster.
 
@@ -145,8 +145,8 @@ func init() {
 	sksNodepoolAddCmd.Flags().Int64("disk-size", 50,
 		"Nodepool Compute instances disk size")
 	sksNodepoolAddCmd.Flags().StringSlice("anti-affinity-group", nil,
-		"Nodepool Anti-Affinity Group <name | id> (can be specified multiple times)")
+		"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)")
 	sksNodepoolAddCmd.Flags().StringSlice("security-group", nil,
-		"Nodepool Security Group <name | id> (can be specified multiple times)")
+		"Nodepool Security Group NAME|ID (can be specified multiple times)")
 	sksNodepoolCmd.AddCommand(sksNodepoolAddCmd)
 }

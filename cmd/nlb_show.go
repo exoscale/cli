@@ -56,7 +56,7 @@ func (o *nlbShowOutput) toTable() {
 }
 
 var nlbShowCmd = &cobra.Command{
-	Use:   "show <name | ID>",
+	Use:   "show NAME|ID",
 	Short: "Show a Network Load Balancer details",
 	Long: fmt.Sprintf(`This command shows a Network Load Balancer details.
 

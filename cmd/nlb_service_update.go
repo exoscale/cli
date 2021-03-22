@@ -12,7 +12,7 @@ import (
 )
 
 var nlbServiceUpdateCmd = &cobra.Command{
-	Use:   "update <NLB name | ID> <service name | ID>",
+	Use:   "update NLB-NAME|ID SERVICE-NAME|ID",
 	Short: "Update a Network Load Balancer service",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {

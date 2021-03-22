@@ -7,9 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// sosDeleteCmd represents the delete command
 var sosDeleteCmd = &cobra.Command{
-	Use:     "delete <name>",
+	Use:     "delete NAME",
 	Short:   "Delete a bucket",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

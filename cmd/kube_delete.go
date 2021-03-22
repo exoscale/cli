@@ -7,9 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// kubeDeleteCmd represents the delete command
 var kubeDeleteCmd = &cobra.Command{
-	Use:   "delete <cluster name>",
+	Use:   "delete NAME",
 	Short: "Delete a standalone Kubernetes cluster instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -28,7 +27,7 @@ var kubeDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q cluster instance", vm.Name)) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete Kubernetes cluster instance %q?", vm.Name)) {
 				return nil
 			}
 		}
@@ -51,6 +50,6 @@ var kubeDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	kubeDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove cluster instance without prompting for confirmation")
+	kubeDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	kubeCmd.AddCommand(kubeDeleteCmd)
 }

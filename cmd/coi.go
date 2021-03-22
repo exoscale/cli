@@ -16,7 +16,7 @@ import (
 const coiTemplateName = "Container-Optimized Instance"
 
 var coiCmd = &cobra.Command{
-	Use:   "coi <name>",
+	Use:   "coi NAME",
 	Short: "Deploy a Container-Optimized Instance",
 	Long: fmt.Sprintf(`This command creates a Compute instance running one or several Docker
 containers based on the Docker image specified or a Docker Compose
@@ -239,7 +239,7 @@ func init() {
 	coiCmd.Flags().StringP("docker-compose", "c", "",
 		"Docker Compose configuration file (local path/URL)")
 	coiCmd.Flags().StringSliceP("port", "p", nil,
-		"publish container port(s) (format \"[<host port>:]<container port>\")")
+		"publish container port(s) (format \"[HOST-PORT:]CONTAINER-PORT\")")
 	coiCmd.Flags().StringP("ssh-key", "k", "", "SSH key name")
 	coiCmd.Flags().StringSlice("private-network", nil, "Private Network name/ID")
 	coiCmd.Flags().StringSlice("security-group", nil, "Security Group name/ID")

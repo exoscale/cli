@@ -69,7 +69,7 @@ func (o *eipShowOutput) toTable() {
 
 func init() {
 	eipCmd.AddCommand(&cobra.Command{
-		Use:   "show <ip address | eip id>",
+		Use:   "show IP-ADDRESS|ID",
 		Short: "Show an Elastic IP details",
 		Long: fmt.Sprintf(`This command shows an Elastic IP details.
 
@@ -131,7 +131,7 @@ func showEIP(eip string) (outputter, error) {
 }
 
 func eipDetails(eip *egoscale.UUID) (*egoscale.IPAddress, []egoscale.VirtualMachine, error) {
-	var eipID = eip
+	eipID := eip
 
 	query := &egoscale.IPAddress{ID: eipID, IsElastic: true}
 	resp, err := cs.GetWithContext(gContext, query)

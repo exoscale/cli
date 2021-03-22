@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// labCmd represents the lab command
 var labCmd = &cobra.Command{
 	Use:   "lab",
 	Short: "Experimental commands",

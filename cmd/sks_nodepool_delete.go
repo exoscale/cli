@@ -9,7 +9,7 @@ import (
 )
 
 var sksNodepoolDeleteCmd = &cobra.Command{
-	Use:     "delete <cluster name | ID> <Nodepool name | ID>",
+	Use:     "delete CLUSTER-NAME|ID NODEPOOL-NAME|ID",
 	Short:   "Delete a SKS cluster Nodepool",
 	Aliases: gRemoveAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -38,7 +38,7 @@ var sksNodepoolDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Do you really want to delete Nodepool %q?", args[1])) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete Nodepool %q?", args[1])) {
 				return nil
 			}
 		}
@@ -68,7 +68,7 @@ var sksNodepoolDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	sksNodepoolDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to delete without prompting for confirmation")
+	sksNodepoolDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	sksNodepoolDeleteCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
 	sksNodepoolCmd.AddCommand(sksNodepoolDeleteCmd)
 }

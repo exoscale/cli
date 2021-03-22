@@ -23,7 +23,6 @@ const (
 	minioMaxRetry = 2
 )
 
-// sosCmd represents the sos command
 var sosCmdLongHelp = func() string {
 	var long = "Manage Exoscale Object Storage (SOS)"
 

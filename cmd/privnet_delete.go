@@ -7,10 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
 var privnetDeleteCmd = &cobra.Command{
-	Use:     "delete <name | id>+",
-	Short:   "Delete private network",
+	Use:     "delete NAME|ID",
+	Short:   "Delete a Private Network",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -30,14 +29,14 @@ var privnetDeleteCmd = &cobra.Command{
 			}
 
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to delete %q private network", arg)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to delete Private Network %q?", arg)) {
 					continue
 				}
 			}
 
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("delete %q privnet", cmd.ID.String()),
+				fmt.Sprintf("Deleting Private Network %q", cmd.ID.String()),
 			})
 		}
 
@@ -62,6 +61,6 @@ func deletePrivnet(name string) (*egoscale.DeleteNetwork, error) {
 }
 
 func init() {
-	privnetDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove private network without prompting for confirmation")
+	privnetDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	privnetCmd.AddCommand(privnetDeleteCmd)
 }

@@ -29,7 +29,6 @@ var supportedHeaders = []string{
 	"expires",
 }
 
-// headersCmd represents the headers command
 var sosHeadersCmd = &cobra.Command{
 	Use:   "header",
 	Short: "Object headers management",
@@ -39,9 +38,8 @@ func init() {
 	sosCmd.AddCommand(sosHeadersCmd)
 }
 
-// headersCmd represents the headers command
 var sosAddHeadersCmd = &cobra.Command{
-	Use:   "add <bucket name> <object name>",
+	Use:   "add BUCKET OBJECT",
 	Short: "Add an header key/value to an object",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -130,12 +128,10 @@ func init() {
 			supportedHeaders[i],
 			"",
 			"",
-			fmt.Sprintf("Add %s with <key>", strings.Replace(supportedHeaders[i], "-", " ", -1)))
+			fmt.Sprintf("Add %s with KEY", strings.Replace(supportedHeaders[i], "-", " ", -1)))
 	}
-
 }
 
-// headersCmd represents the headers command
 var sosRemoveHeadersCmd = &cobra.Command{
 	Use:     "remove",
 	Short:   "Remove an header key/value from an object",
@@ -229,13 +225,12 @@ func init() {
 			supportedHeaders[i],
 			"",
 			false,
-			fmt.Sprintf("Remove %s with <key>", strings.Replace(supportedHeaders[i], "-", " ", -1)))
+			fmt.Sprintf("Remove %s with KEY", strings.Replace(supportedHeaders[i], "-", " ", -1)))
 	}
 }
 
-// headersCmd represents the headers command
 var sosShowHeadersCmd = &cobra.Command{
-	Use:     "list <bucket name> <object name>",
+	Use:     "list BUCKET OBJECT",
 	Short:   "list object headers",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

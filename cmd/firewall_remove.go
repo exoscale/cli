@@ -7,18 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	firewallRemoveCmd.Flags().BoolP("force", "f", false, "Attempt to remove firewall rule without prompting for confirmation")
-	firewallRemoveCmd.Flags().BoolP("ipv6", "6", false, "Remove rule with any IPv6 source")
-	firewallRemoveCmd.Flags().BoolP("my-ip", "m", false, "Remove rule with my IP as a source")
-	firewallRemoveCmd.Flags().BoolP("all", "", false, "Remove all rules")
-	firewallCmd.AddCommand(firewallRemoveCmd)
-}
-
-// removeCmd represents the remove command
 var firewallRemoveCmd = &cobra.Command{
-	Use:     "remove <security group name | id> <rule id | default rule name> [flags]\n  exo firewall remove <security group name | id> [flags]",
-	Short:   "Remove a rule from a security group",
+	Use:     "remove SECURITY-GROUP-NAME|ID RULE-ID|DEFAULT-RULE-NAME",
+	Short:   "Remove a rule from a Security Group",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -181,4 +172,12 @@ func prepareDefaultRemove(sg *egoscale.SecurityGroup, ruleName string, rule *ego
 		return in.RuleID, nil
 	}
 	return nil, fmt.Errorf("missing rule %q", ruleName)
+}
+
+func init() {
+	firewallRemoveCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
+	firewallRemoveCmd.Flags().BoolP("ipv6", "6", false, "Remove rule with any IPv6 source")
+	firewallRemoveCmd.Flags().BoolP("my-ip", "m", false, "Remove rule with my IP as a source")
+	firewallRemoveCmd.Flags().BoolP("all", "a", false, "Remove all rules")
+	firewallCmd.AddCommand(firewallRemoveCmd)
 }

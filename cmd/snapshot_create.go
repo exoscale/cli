@@ -10,7 +10,7 @@ import (
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{
-		Use:   "create <vm name | vm id>",
+		Use:   "create INSTANCE-NAME|ID",
 		Short: "Create a snapshot of a Compute instance volume",
 		Long: fmt.Sprintf(`This command creates a snapshot of a Compute instance volume.
 

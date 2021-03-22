@@ -9,10 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
 var vmDeleteCmd = &cobra.Command{
-	Use:               "delete <vm name | id>+",
-	Short:             "Delete virtual machine instance(s)",
+	Use:               "delete NAME|ID",
+	Short:             "Delete a Compute instance",
 	Aliases:           gDeleteAlias,
 	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -38,7 +37,7 @@ var vmDeleteCmd = &cobra.Command{
 			if ok := prepareDeleteVM(vm, force); ok {
 				tasks = append(tasks, task{
 					&egoscale.DestroyVirtualMachine{ID: vm.ID},
-					fmt.Sprintf("Destroying %q ", vm.Name),
+					fmt.Sprintf("Destroying Compute instance %q", vm.Name),
 				})
 			}
 		}
@@ -69,7 +68,7 @@ var vmDeleteCmd = &cobra.Command{
 
 func prepareDeleteVM(vm *egoscale.VirtualMachine, force bool) bool {
 	if !force {
-		if !askQuestion(fmt.Sprintf("sure you want to delete %q virtual machine", vm.Name)) {
+		if !askQuestion(fmt.Sprintf("Are you you want to delete Compute instance %q?", vm.Name)) {
 			return false
 		}
 	}
@@ -78,6 +77,6 @@ func prepareDeleteVM(vm *egoscale.VirtualMachine, force bool) bool {
 }
 
 func init() {
-	vmDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove vitual machine without prompting for confirmation")
+	vmDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	vmCmd.AddCommand(vmDeleteCmd)
 }

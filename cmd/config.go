@@ -84,7 +84,6 @@ const (
 	defaultOutputFormat      = "table"
 )
 
-// configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Exoscale CLI configuration management",

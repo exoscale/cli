@@ -8,10 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// eipCmd represents the eip command
 var eipCmd = &cobra.Command{
 	Use:   "eip",
-	Short: "Elastic IPs management",
+	Short: "Elastic IP management",
 }
 
 func getEIPIDByIP(ipAddr string) (*egoscale.UUID, error) {
@@ -32,7 +31,7 @@ func getEIPIDByIP(ipAddr string) (*egoscale.UUID, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("elastic IP %q not found", ipAddr)
+	return nil, fmt.Errorf("Elastic IP %q not found", ipAddr) // nolint
 }
 
 func init() {

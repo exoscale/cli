@@ -8,10 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
 var eipCreateCmd = &cobra.Command{
-	Use:     "create [zone name | zone id]",
-	Short:   "Create EIP",
+	Use:     "create [ZONE]",
+	Short:   "Create an Elastic IP",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		zone := gCurrentAccount.DefaultZone
@@ -95,7 +94,8 @@ func associateIPAddress(associateIPAddress egoscale.AssociateIPAddress, zone str
 			ipResp.ID.String(),
 			ipResp.IPAddress.String(),
 			ipResp.Description,
-			ipResp.ZoneName})
+			ipResp.ZoneName,
+		})
 		table.Render()
 	}
 

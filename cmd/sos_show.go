@@ -92,9 +92,8 @@ func (o *sosShowOutput) toTable() {
 	t.Render()
 }
 
-// sosShowCmd represents the show command
 var sosShowCmd = &cobra.Command{
-	Use:     "show <bucket name> <object name>",
+	Use:     "show BUCKET OBJECT",
 	Short:   "show file and folder",
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

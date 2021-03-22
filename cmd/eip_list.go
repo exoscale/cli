@@ -24,9 +24,9 @@ func (o *eipListOutput) toText()  { outputText(o) }
 func (o *eipListOutput) toTable() { outputTable(o) }
 
 func init() {
-	var eipListCmd = &cobra.Command{
+	eipListCmd := &cobra.Command{
 		Use:   "list",
-		Short: "List elastic IP",
+		Short: "List Elastic IP addresses",
 		Long: fmt.Sprintf(`This command lists existing Elastic IP addresses.
 
 Supported output template annotations: %s`,

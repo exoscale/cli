@@ -11,16 +11,14 @@ import (
 	"github.com/exoscale/cli/table"
 )
 
-// vmFirewallCmd represents the vm firewall command
 var vmFirewallCmd = &cobra.Command{
 	Use:   "firewall",
 	Short: "Virtual machines firewall management",
 }
 
-// vmFirewallSetCmd represents the firewall set command
 var vmFirewallSetCmd = &cobra.Command{
-	Use:   "set <vm name | id> <SG name | id>+",
-	Short: "Set the security groups of a virtual machine",
+	Use:   "set INSTANCE-NAME|ID SECURITY-GROUP-NAME|ID...",
+	Short: "Set the Security Groups for a Compute instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			return cmd.Usage()
@@ -44,10 +42,9 @@ var vmFirewallSetCmd = &cobra.Command{
 	},
 }
 
-// vmFirewallAddCmd represents the firewall add command
 var vmFirewallAddCmd = &cobra.Command{
-	Use:   "add <vm name | id> <SG name | id>+",
-	Short: "Add security groups to a virtual machine",
+	Use:   "add INSTANCE-NAME|ID SECURITY-GROUP-NAME|ID...",
+	Short: "Add Security Groups to a Compute instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			return cmd.Usage()
@@ -66,7 +63,7 @@ var vmFirewallAddCmd = &cobra.Command{
 		sgToAdd := make([]egoscale.SecurityGroup, 0)
 
 	next:
-		// Check if requested security groups are not already set to the VM instance
+		// Check if requested Security Groups are not already set to the VM instance
 		for i := range sgs {
 			for j := range vm.SecurityGroup {
 				if sgs[i].ID.Equal(*vm.SecurityGroup[j].ID) {
@@ -84,10 +81,9 @@ var vmFirewallAddCmd = &cobra.Command{
 	},
 }
 
-// vmFirewallRemoveCmd represents the firewall remove command
 var vmFirewallRemoveCmd = &cobra.Command{
-	Use:   "remove <vm name | id> <SG name | id>+",
-	Short: "Remove security groups from a virtual machine",
+	Use:   "remove INSTANCE-NAME|ID SECURITY-GROUP-NAME|ID...",
+	Short: "Remove Security Groups from a Compute instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			return cmd.Usage()
@@ -123,7 +119,7 @@ var vmFirewallRemoveCmd = &cobra.Command{
 	},
 }
 
-// setVirtualMachineSecurityGroups sets a virtual machine instance security groups.
+// setVirtualMachineSecurityGroups sets a Compute instance Security Groups.
 func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale.SecurityGroup) error {
 	ids := make([]egoscale.UUID, len(sgs))
 	for i := range sgs {
@@ -141,7 +137,7 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 	return nil
 }
 
-// printVirtualMachineSecurityGroups prints a virtual machine instance security groups to standard output.
+// printVirtualMachineSecurityGroups prints a Compute instance Security Groups to standard output.
 func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) error {
 	if !gQuiet {
 		// Refresh the vm object to ensure its properties are up-to-date
@@ -164,13 +160,13 @@ func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) error {
 	return nil
 }
 
-// getSecurityGroupsByNameOrID tries to retrieve a list of security groups by their name or ID.
+// getSecurityGroupsByNameOrID tries to retrieve a list of Security Groups by their name or ID.
 func getSecurityGroupsByNameOrID(sgs []string) ([]egoscale.SecurityGroup, error) {
 	res := make([]egoscale.SecurityGroup, len(sgs))
 	for i, s := range sgs {
 		sg, err := getSecurityGroupByNameOrID(s)
 		if err != nil {
-			return nil, fmt.Errorf("unable to retrieve security group %q: %s", s, err)
+			return nil, fmt.Errorf("unable to retrieve Security Group %q: %s", s, err)
 		}
 		res[i] = *sg
 	}

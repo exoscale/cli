@@ -8,10 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
 var eipDeleteCmd = &cobra.Command{
-	Use:     "delete <ip | eip id>",
-	Short:   "Delete EIP",
+	Use:     "delete IP-ADDRESS|ID",
+	Short:   "Delete an Elastic IP",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -32,14 +31,14 @@ var eipDeleteCmd = &cobra.Command{
 			}
 
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to delete %q EIP", cmd.ID.String())) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to delete Elastic IP %q?", cmd.ID.String())) {
 					continue
 				}
 			}
 
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("Remove %q EIP", cmd.ID.String()),
+				fmt.Sprintf("Deleting Elastic IP %q", cmd.ID.String()),
 			})
 		}
 
@@ -78,6 +77,6 @@ func prepareDeleteEip(ip string) (*egoscale.DisassociateIPAddress, error) {
 }
 
 func init() {
-	eipDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove EIP without prompting for confirmation")
+	eipDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	eipCmd.AddCommand(eipDeleteCmd)
 }

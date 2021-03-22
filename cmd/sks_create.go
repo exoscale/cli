@@ -11,7 +11,7 @@ import (
 )
 
 var sksCreateCmd = &cobra.Command{
-	Use:   "create <name>",
+	Use:   "create NAME",
 	Short: "Create a SKS cluster",
 	Long: fmt.Sprintf(`This command creates a SKS cluster.
 
@@ -206,6 +206,6 @@ func init() {
 	sksCreateCmd.Flags().Int64("nodepool-disk-size", 50,
 		"default Nodepool Compute instances disk size")
 	sksCreateCmd.Flags().StringSlice("nodepool-security-group", nil,
-		"default Nodepool Security Group <name | id> (can be specified multiple times)")
+		"default Nodepool Security Group NAME|ID (can be specified multiple times)")
 	sksCmd.AddCommand(sksCreateCmd)
 }

@@ -89,7 +89,7 @@ func (o *nlbServiceShowOutput) toTable() {
 }
 
 var nlbServiceShowCmd = &cobra.Command{
-	Use:   "show <NLB name | ID> <service name | ID>",
+	Use:   "show NLB-NAME|ID SERVICE-NAME|ID",
 	Short: "Show a Network Load Balancer service details",
 	Long: fmt.Sprintf(`This command shows a Network Load Balancer service details.
 

@@ -6,9 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dnsDeleteCmd represents the delete command
 var dnsDeleteCmd = &cobra.Command{
-	Use:     "delete <domain name>",
+	Use:     "delete DOMAIN",
 	Short:   "Delete a domain",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -22,7 +21,7 @@ var dnsDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %q domain", args[0])) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %q domain?", args[0])) {
 				return nil
 			}
 		}
@@ -45,5 +44,5 @@ func deleteDomain(domainName string) error {
 
 func init() {
 	dnsCmd.AddCommand(dnsDeleteCmd)
-	dnsDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to delete without prompting for confirmation")
+	dnsDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 }

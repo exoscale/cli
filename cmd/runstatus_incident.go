@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runstatusIncidentCmd represents the incident command
 var runstatusIncidentCmd = &cobra.Command{
 	Use:   "incident",
 	Short: "Incident management",

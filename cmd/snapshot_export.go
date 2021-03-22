@@ -29,7 +29,7 @@ func (o *snapshotExportOutput) toText()  { outputText(o) }
 func (o *snapshotExportOutput) toTable() { outputTable(o) }
 
 var snapshotExportCmd = &cobra.Command{
-	Use:   "export <snapshot ID>",
+	Use:   "export ID",
 	Short: "Export snapshot",
 	Long: fmt.Sprintf(`This command exports a volume snapshot.
 

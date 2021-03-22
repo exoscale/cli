@@ -6,9 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// kubeStartCmd represents the start command
 var kubeStartCmd = &cobra.Command{
-	Use:   "start <cluster name>",
+	Use:   "start CLUSTER-NAME",
 	Short: "Start a stopped standalone Kubernetes cluster instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -27,7 +26,7 @@ var kubeStartCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("sure you want to stop %q cluster instance", vm.Name)) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to stop Kubernetes cluster instance %q?", vm.Name)) {
 				return nil
 			}
 		}
@@ -42,6 +41,6 @@ var kubeStartCmd = &cobra.Command{
 }
 
 func init() {
-	kubeStartCmd.Flags().BoolP("force", "f", false, "Attempt to start cluster instance without prompting for confirmation")
+	kubeStartCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	kubeCmd.AddCommand(kubeStartCmd)
 }

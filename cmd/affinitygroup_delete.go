@@ -7,10 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
 var affinitygroupDeleteCmd = &cobra.Command{
-	Use:     "delete <name | id>+",
-	Short:   "Delete affinity group",
+	Use:     "delete NAME|ID",
+	Short:   "Delete an Affinity-Affinity Group",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -30,14 +29,14 @@ var affinitygroupDeleteCmd = &cobra.Command{
 			}
 
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to delete %q affinity group", arg)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to delete Anti-Affinity Group %q?", arg)) {
 					continue
 				}
 			}
 
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("deleting %q affinity group", cmd.Name),
+				fmt.Sprintf("Deleting Anti-Affinity Group %q", cmd.Name),
 			})
 		}
 
@@ -51,7 +50,7 @@ var affinitygroupDeleteCmd = &cobra.Command{
 }
 
 func prepareDeleteAffinityGroup(name string) (*egoscale.DeleteAffinityGroup, error) {
-	aff, err := getAffinityGroupByNameOrID(name)
+	aff, err := getAntiAffinityGroupByNameOrID(name)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +59,6 @@ func prepareDeleteAffinityGroup(name string) (*egoscale.DeleteAffinityGroup, err
 }
 
 func init() {
-	affinitygroupDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove affinity group without prompting for confirmation")
+	affinitygroupDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	affinitygroupCmd.AddCommand(affinitygroupDeleteCmd)
 }

@@ -16,7 +16,7 @@ var (
 
 var firewallCmd = &cobra.Command{
 	Use:   "firewall",
-	Short: "Security groups management",
+	Short: "Security Groups management",
 }
 
 func init() {

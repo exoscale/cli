@@ -25,7 +25,7 @@ func (o *runstatusMaintenanceListOutput) toTable() { outputTable(o) }
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(&cobra.Command{
-		Use:   "list [page name ...]",
+		Use:   "list [PAGE]...",
 		Short: "List maintenance from page(s)",
 		Long: fmt.Sprintf(`This command lists existing runstat.us maintenances.
 

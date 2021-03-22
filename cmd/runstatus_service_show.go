@@ -21,7 +21,7 @@ func (o *runstatusServiceShowOutput) toTable()     { outputTable(o) }
 
 func init() {
 	runstatusServiceCmd.AddCommand(&cobra.Command{
-		Use:   "show [page name] <service name>",
+		Use:   "show [PAGE] SERVICE-NAME",
 		Short: "Show a service details",
 		Long: fmt.Sprintf(`This command shows a runstat.us page details.
 

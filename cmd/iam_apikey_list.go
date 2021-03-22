@@ -20,7 +20,6 @@ func (o *apiKeyListItemOutput) toJSON()  { outputJSON(o) }
 func (o *apiKeyListItemOutput) toText()  { outputText(o) }
 func (o *apiKeyListItemOutput) toTable() { outputTable(o) }
 
-// apiKeyListCmd represents the API keys listing command
 var apiKeyListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List API keys",

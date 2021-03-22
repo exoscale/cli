@@ -9,10 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// associateCmd represents the associate command
 var eipAssociateCmd = &cobra.Command{
-	Use:     "associate <IP address> <instance name | instance id> [instance name | instance id] [...]",
-	Short:   "Associate an IP to instance(s)",
+	Use:     "associate IP-ADDRESS INSTANCE-NAME|ID",
+	Short:   "Associate an Elastic IP to a Compute instance",
 	Aliases: gAssociateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -39,7 +38,7 @@ var eipAssociateCmd = &cobra.Command{
 			}
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("associate %q EIP", cmd.IPAddress.String()),
+				fmt.Sprintf("Associating Elastic IP %s to %s", cmd.IPAddress.String(), vm.Name),
 			})
 		}
 		resps := asyncTasks(tasks)
@@ -54,7 +53,7 @@ var eipAssociateCmd = &cobra.Command{
 func prepareAssociateIP(vm *egoscale.VirtualMachine, ip net.IP) (*egoscale.AddIPToNic, error) {
 	defaultNic := vm.DefaultNic()
 	if defaultNic == nil {
-		return nil, fmt.Errorf("the instance %q has not default NIC", vm.ID)
+		return nil, fmt.Errorf("the Compute instance %q has no default NIC", vm.ID)
 	}
 
 	return &egoscale.AddIPToNic{NicID: defaultNic.ID, IPAddress: ip}, nil

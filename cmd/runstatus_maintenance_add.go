@@ -14,9 +14,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// addCmd represents the add command
 var runstatusMaintenanceAddCmd = &cobra.Command{
-	Use:   "add [page name]",
+	Use:   "add [PAGE]",
 	Short: "Add a maintenance to a runstat.us page",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 0 {
@@ -130,7 +129,7 @@ var runstatusMaintenanceAddCmd = &cobra.Command{
 			return err
 		}
 
-		if !askQuestion("sure you want to add this maintenance") {
+		if !askQuestion("Are you sure you want to add this maintenance?") {
 			return nil
 		}
 
@@ -202,11 +201,11 @@ func readNumberInput(reader *bufio.Reader, text, value string) (int, error) {
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(runstatusMaintenanceAddCmd)
-	//required
-	runstatusMaintenanceAddCmd.Flags().StringSliceP(runstatusFlagServices, "", []string{}, "The list of services affected by the maintenance. e.g: <service1,service2,...>")
-	runstatusMaintenanceAddCmd.Flags().StringP(runstatusFlagTitle, "t", "", "Title for the maintenance")
-	runstatusMaintenanceAddCmd.Flags().StringP(runstatusFlagDescription, "d", "", "Description for the maintenance")
-	runstatusMaintenanceAddCmd.Flags().StringP(runstatusFlagStatus, "", "", "<scheduled | in-progress | completed>")
-	runstatusMaintenanceAddCmd.Flags().StringP("start-date", "s", "", "The planned start date for the maintenance, in UTC format e.g. 2016-05-31T21:11:32.378Z")
-	runstatusMaintenanceAddCmd.Flags().StringP("end-date", "e", "", "End date, in UTC format e.g. 2016-05-31T21:11:32.378Z")
+	// required
+	runstatusMaintenanceAddCmd.Flags().StringSliceP(runstatusFlagServices, "", []string{}, "service affected by the maintenance (can be specified multiple times)")
+	runstatusMaintenanceAddCmd.Flags().StringP(runstatusFlagTitle, "t", "", "maintenance title")
+	runstatusMaintenanceAddCmd.Flags().StringP(runstatusFlagDescription, "d", "", "maintenance description")
+	runstatusMaintenanceAddCmd.Flags().StringP(runstatusFlagStatus, "", "", "maintenance status (scheduled|in-progress|completed)")
+	runstatusMaintenanceAddCmd.Flags().StringP("start-date", "s", "", `maintenance start date in UTC format (e.g. "2016-05-31T21:11:32.378Z")`)
+	runstatusMaintenanceAddCmd.Flags().StringP("end-date", "e", "", `maintenance end date in UTC format (e.g. "2016-05-31T21:11:32.378Z")`)
 }

@@ -10,9 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// removeCmd represents the remove command
 var removeCmd = &cobra.Command{
-	Use:     "remove <bucket name> [object name]+",
+	Use:     "remove BUCKET [OBJECT]...",
 	Short:   "Remove object(s) from a bucket",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

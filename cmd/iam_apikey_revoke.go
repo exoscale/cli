@@ -7,10 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// apiKeyRevokeCmd represents an API key revocation command
 var apiKeyRevokeCmd = &cobra.Command{
-	Use:     "revoke <key | name>+",
-	Short:   "Revoke API keys",
+	Use:     "revoke KEY|NAME",
+	Short:   "Revoke an API key",
 	Aliases: gRevokeAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -25,7 +24,7 @@ var apiKeyRevokeCmd = &cobra.Command{
 		tasks := make([]task, 0, len(args))
 		for _, arg := range args {
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to revoke %q", arg)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to revoke API key %q?", arg)) {
 					return nil
 				}
 			}
@@ -53,6 +52,6 @@ var apiKeyRevokeCmd = &cobra.Command{
 }
 
 func init() {
-	apiKeyRevokeCmd.Flags().BoolP("force", "f", false, "Attempt to revoke API keys without prompting for confirmation")
+	apiKeyRevokeCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	apiKeyCmd.AddCommand(apiKeyRevokeCmd)
 }

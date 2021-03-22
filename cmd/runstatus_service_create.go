@@ -9,9 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runstatusServiceCreateCmd represents the create command
 var runstatusServiceCreateCmd = &cobra.Command{
-	Use:     "create [page name] <name>",
+	Use:     "create [PAGE] SERVICE-NAME",
 	Short:   "Create a service",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

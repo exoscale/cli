@@ -8,10 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rebootCmd represents the reboot command
 var vmRebootCmd = &cobra.Command{
-	Use:               "reboot <vm name | id>+",
-	Short:             "Reboot virtual machine instance",
+	Use:               "reboot NAME|ID",
+	Short:             "Reboot a Compute instance",
 	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -26,7 +25,7 @@ var vmRebootCmd = &cobra.Command{
 		tasks := make([]task, 0, len(args))
 		for _, v := range args {
 			if !force {
-				if !askQuestion(fmt.Sprintf("Are you sure you want to reboot virtual machine %q?", v)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to reboot Compute instance %q?", v)) {
 					continue
 				}
 			}
@@ -59,6 +58,6 @@ var vmRebootCmd = &cobra.Command{
 }
 
 func init() {
-	vmRebootCmd.Flags().BoolP("force", "f", false, "Attempt to reboot virtual machine without prompting for confirmation")
+	vmRebootCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	vmCmd.AddCommand(vmRebootCmd)
 }

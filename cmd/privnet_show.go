@@ -24,8 +24,8 @@ func (o *privnetShowOutput) toTable()     { outputTable(o) }
 
 func init() {
 	privnetCmd.AddCommand(&cobra.Command{
-		Use:   "show <privnet name | id>",
-		Short: "Show a private network details",
+		Use:   "show NAME|ID",
+		Short: "Show a Private Network details",
 		Long: fmt.Sprintf(`This command shows a Private Network details.
 
 Supported output template annotations: %s`,

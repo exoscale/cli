@@ -26,8 +26,8 @@ func (o *snapshotListOutput) toTable() { outputTable(o) }
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{
-		Use:   "list [vm name | vm id]+",
-		Short: "List snapshot",
+		Use:   "list",
+		Short: "List snapshots",
 		Long: fmt.Sprintf(`This command lists existing Compute instance disk snapshots.
 
 Supported output template annotations: %s`,

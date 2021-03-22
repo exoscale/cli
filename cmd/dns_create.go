@@ -7,9 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dnsCreateCmd represents the create command
 var dnsCreateCmd = &cobra.Command{
-	Use:     "create <domain name>",
+	Use:     "create DOMAIN",
 	Short:   "Create a domain",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

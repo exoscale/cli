@@ -20,9 +20,8 @@ const (
 	runstatusFlagServices    = "services"
 )
 
-// addCmd represents the add command
 var runstatusIncidentAddCmd = &cobra.Command{
-	Use:   "add [page name]",
+	Use:   "add PAGE",
 	Short: "Add an incident to a runstat.us page",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 0 {
@@ -125,7 +124,7 @@ var runstatusIncidentAddCmd = &cobra.Command{
 			return err
 		}
 
-		if !askQuestion("sure you want to add this incident") {
+		if !askQuestion("Are you sure you want to add this incident?") {
 			return nil
 		}
 
@@ -190,10 +189,10 @@ func promptGetService(page egoscale.RunstatusPage) ([]string, error) {
 func init() {
 	runstatusIncidentCmd.AddCommand(runstatusIncidentAddCmd)
 
-	//required
-	runstatusIncidentAddCmd.Flags().StringSliceP(runstatusFlagServices, "", []string{}, "List of strings with the services impacted. e.g: <service1,service2,...>")
-	runstatusIncidentAddCmd.Flags().StringP(runstatusFlagTitle, "t", "", "Title of the incident")
-	runstatusIncidentAddCmd.Flags().StringP(runstatusFlagDescription, "d", "", "Description for the initial creation event")
-	runstatusIncidentAddCmd.Flags().StringP(runstatusFlagStatus, "", "", "<investigating | identified | monitoring>")
-	runstatusIncidentAddCmd.Flags().StringP(runstatusFlagState, "s", "", "<major_outage | partial_outage | degraded_performance | operational")
+	// required
+	runstatusIncidentAddCmd.Flags().StringSliceP(runstatusFlagServices, "", []string{}, "List of strings with the services impacted. e.g: service1,service2,...")
+	runstatusIncidentAddCmd.Flags().StringP(runstatusFlagTitle, "t", "", "incident title")
+	runstatusIncidentAddCmd.Flags().StringP(runstatusFlagDescription, "d", "", "incident initial event description")
+	runstatusIncidentAddCmd.Flags().StringP(runstatusFlagStatus, "", "", "incident status (investigating|identified|monitoring)")
+	runstatusIncidentAddCmd.Flags().StringP(runstatusFlagState, "s", "", "incident state (major_outage|partial_outage|degraded_performance|operational)")
 }

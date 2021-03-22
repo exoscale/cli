@@ -8,8 +8,8 @@ import (
 )
 
 var instancePoolDeleteCmd = &cobra.Command{
-	Use:     "delete <name | id>+",
-	Short:   "Delete an instance pool",
+	Use:     "delete NAME|ID",
+	Short:   "Delete an Instance Pool",
 	Aliases: gDeleteAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -45,7 +45,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 		tasks := make([]task, 0, len(args))
 		for _, arg := range args {
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to delete %q", arg)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to delete Instance Pool %q?", arg)) {
 					continue
 				}
 			}
@@ -58,7 +58,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 			for _, nlb := range nlbs {
 				for _, svc := range nlb.Services {
 					if svc.InstancePoolID == i.ID.String() {
-						return fmt.Errorf("instance pool %q is still referenced by NLB service %s/%s",
+						return fmt.Errorf("Instance Pool %q is still referenced by NLB service %s/%s", // nolint
 							i.Name, nlb.Name, svc.Name)
 					}
 				}
@@ -69,7 +69,7 @@ var instancePoolDeleteCmd = &cobra.Command{
 					ID:     i.ID,
 					ZoneID: zone.ID,
 				},
-				fmt.Sprintf("Deleting instance pool %q", args[0]),
+				fmt.Sprintf("Deleting Instance Pool %q", args[0]),
 			})
 		}
 
@@ -85,6 +85,6 @@ var instancePoolDeleteCmd = &cobra.Command{
 
 func init() {
 	instancePoolDeleteCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	instancePoolDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove instance pool without prompting for confirmation")
+	instancePoolDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	instancePoolCmd.AddCommand(instancePoolDeleteCmd)
 }

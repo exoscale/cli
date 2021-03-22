@@ -12,10 +12,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// sshCmd represents the ssh command
 var sshCmd = &cobra.Command{
-	Use:               "ssh <vm name | id>",
-	Short:             "SSH into a virtual machine instance",
+	Use:               "ssh INSTANCE-NAME|ID",
+	Short:             "SSH into a Compute instance",
 	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -120,7 +119,6 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 	}
 
 	return &info, nil
-
 }
 
 func buildSSHCommand(info *sshInfo) []string {

@@ -9,10 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// eipUpdateCmd represents the update command
 var eipUpdateCmd = &cobra.Command{
-	Use:   "update [eip ID]",
-	Short: "update EIP",
+	Use:   "update IP-ADDRESS|ID",
+	Short: "Update an Elastic IP",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return cmd.Usage()
@@ -23,8 +22,12 @@ var eipUpdateCmd = &cobra.Command{
 		}
 		id, err := egoscale.ParseUUID(args[0])
 		if err != nil {
-			return err
+			id, err = getEIPIDByIP(args[0])
+			if err != nil {
+				return err
+			}
 		}
+
 		interval, err := cmd.Flags().GetInt64("healthcheck-interval")
 		if err != nil {
 			return err
@@ -97,7 +100,8 @@ func updateIPAddress(associateIPAddress egoscale.UpdateIPAddress) error {
 			ip.ZoneName,
 			ip.IPAddress.String(),
 			ip.Description,
-			ip.ID.String()})
+			ip.ID.String(),
+		})
 		table.Render()
 	}
 

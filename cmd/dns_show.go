@@ -27,8 +27,8 @@ func (o *dnsShowOutput) toText()  { outputText(o) }
 func (o *dnsShowOutput) toTable() { outputTable(o) }
 
 func init() {
-	var dnsShowCmd = &cobra.Command{
-		Use:   "show <domain name | id> [type ...]",
+	dnsShowCmd := &cobra.Command{
+		Use:   "show DOMAIN-NAME|ID [RECORD-TYPE]...",
 		Short: "Show the domain records",
 		Long: fmt.Sprintf(`This command shows a DNS Domain records.
 

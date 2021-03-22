@@ -35,8 +35,8 @@ func (o *vmShowOutput) toTable()     { outputTable(o) }
 
 func init() {
 	vmShowCmd := &cobra.Command{
-		Use:   "show <name | id>",
-		Short: "Show a virtual machine details",
+		Use:   "show NAME|ID",
+		Short: "Show a Compute instance details",
 		Long: fmt.Sprintf(`This command shows a Compute instance details.
 
 Supported output template annotations: %s`,

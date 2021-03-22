@@ -24,7 +24,7 @@ func (o *affinityGroupListOutput) toTable() { outputTable(o) }
 func init() {
 	affinitygroupCmd.AddCommand(&cobra.Command{
 		Use:   "list",
-		Short: "List affinity group",
+		Short: "List Anti-Affinity Groups",
 		Long: fmt.Sprintf(`This command lists existing Anti-Affinity Groups.
 
 Supported output template annotations: %s`,

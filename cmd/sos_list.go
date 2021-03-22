@@ -17,10 +17,9 @@ const (
 	printDate = "2006-01-02 15:04:05 MST"
 )
 
-// sosListCmd represents the list command
 var sosListCmd = &cobra.Command{
-	Use:   "list [<bucket name/path>]",
-	Short: "List file and folder",
+	Use:   "list [BUCKET/PATH]",
+	Short: "List buckets and files",
 	Long: `This command lists all your buckets or all the files stored in the specified bucket.
 	
 Note: the buckets size reported is computed daily, it may not be the actual size at the time of listing.`,

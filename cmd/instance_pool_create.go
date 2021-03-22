@@ -9,9 +9,9 @@ import (
 )
 
 var instancePoolCreateCmd = &cobra.Command{
-	Use:   "create <name>",
-	Short: "Create an instance pool",
-	Long: fmt.Sprintf(`This command creates an instance pool.
+	Use:   "create NAME",
+	Short: "Create an Instance Pool",
+	Long: fmt.Sprintf(`This command creates an Instance Pool.
 
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
@@ -156,7 +156,7 @@ Supported output template annotations: %s`,
 					IPv6:                 ipv6,
 					UserData:             userData,
 				},
-				fmt.Sprintf("Creating instance pool %q", args[0]),
+				fmt.Sprintf("Creating Instance Pool %q", args[0]),
 			},
 		})
 		errs := filterErrors(r)
@@ -185,9 +185,9 @@ func init() {
 	instancePoolCreateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init file path")
 	instancePoolCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	instancePoolCreateCmd.Flags().StringP("keypair", "k", "", "Instance pool keypair")
-	instancePoolCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinity group <name | id>. Can be specified multiple times.")
-	instancePoolCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security Group <name | id>. Can be specified multiple times.")
-	instancePoolCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Private Network <name | id>. Can be specified multiple times.")
+	instancePoolCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinity group NAME|ID|NAME|ID. Can be specified multiple times.")
+	instancePoolCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security Group NAME|ID|NAME|ID. Can be specified multiple times.")
+	instancePoolCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Private Network NAME|ID|NAME|ID. Can be specified multiple times.")
 	instancePoolCreateCmd.Flags().BoolP("ipv6", "6", false, "Enable IPv6")
 	instancePoolCmd.AddCommand(instancePoolCreateCmd)
 }

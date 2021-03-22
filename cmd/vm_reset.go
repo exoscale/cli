@@ -7,10 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// vmResetCmd represents the stop command
 var vmResetCmd = &cobra.Command{
-	Use:               "reset <vm name | id>+",
-	Short:             "Reset virtual machine instance",
+	Use:               "reset NAME|ID",
+	Short:             "Reset (reinstall) a Compute instance",
 	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -44,7 +43,7 @@ var vmResetCmd = &cobra.Command{
 		tasks := make([]task, 0, len(args))
 		for _, v := range args {
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to reset %q virtual machine", v)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to reset Compute instance %q?", v)) {
 					continue
 				}
 			}
@@ -86,7 +85,6 @@ func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, template
 			ID:         vm.TemplateID,
 			ZoneID:     vm.ZoneID,
 		})
-
 		if err != nil {
 			return nil, err
 		}
@@ -138,7 +136,7 @@ func init() {
 	vmCmd.AddCommand(vmResetCmd)
 	diskSizeVarP := new(int64PtrValue)
 	vmResetCmd.Flags().VarP(diskSizeVarP, "disk", "d", "New disk size after reset in GB")
-	vmResetCmd.Flags().StringP("template", "t", "", fmt.Sprintf("<template name | id> (default: %s)", defaultTemplate))
+	vmResetCmd.Flags().StringP("template", "t", "", fmt.Sprintf("template NAME|ID (default: %s)", defaultTemplate))
 	vmResetCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
-	vmResetCmd.Flags().BoolP("force", "f", false, "Attempt to reset vitual machine without prompting for confirmation")
+	vmResetCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 }

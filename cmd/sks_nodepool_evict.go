@@ -10,7 +10,7 @@ import (
 )
 
 var sksNodepoolEvictCmd = &cobra.Command{
-	Use:   "evict <cluster name | ID> <Nodepool name | ID> <Node name | ID> [Node name | ID ...]",
+	Use:   "evict CLUSTER-NAME|ID NODEPOOL-NAME|ID NODE-NAME|ID...",
 	Short: "Evict SKS cluster Nodepool members",
 	Long: `This command evicts specific members from a SKS cluster Nodepool, effectively
 shrinking down the Nodepool similar to the "exo sks nodepool scale" command.
@@ -51,7 +51,7 @@ evicted from their Nodepool, e.g. using "kubectl drain".`,
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Do you really want to evict %v from Nodepool %q?", args[2:], np)) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to evict %v from Nodepool %q?", args[2:], np)) {
 				return nil
 			}
 		}
@@ -97,7 +97,7 @@ evicted from their Nodepool, e.g. using "kubectl drain".`,
 }
 
 func init() {
-	sksNodepoolEvictCmd.Flags().BoolP("force", "f", false, "Attempt to evict without prompting for confirmation")
+	sksNodepoolEvictCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	sksNodepoolEvictCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
 	sksNodepoolCmd.AddCommand(sksNodepoolEvictCmd)
 }

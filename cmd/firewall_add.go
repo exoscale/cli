@@ -21,10 +21,10 @@ func init() {
 	firewallAddCmd.Flags().BoolP("egress", "e", false, "By default rule is INGRESS (set --egress to have EGRESS rule)")
 	firewallAddCmd.Flags().StringP("protocol", "p", "", "Rule Protocol available [tcp, udp, icmp, icmpv6, ah, esp, gre]")
 	firewallAddCmd.Flags().StringP("cidr", "c", "", "Rule Cidr [CIDR 0.0.0.0/0,::/0,...]")
-	firewallAddCmd.Flags().StringP("security-group", "s", "", "Rule security group [name or id ex: sg1,sg2...]")
+	firewallAddCmd.Flags().StringP("security-group", "s", "", "Rule Security Group [NAME|ID ex: sg1,sg2...]")
 	firewallAddCmd.Flags().StringP("port", "P", "", "Rule port range [80-80,443,22-22]")
 
-	//Flag for icmp
+	// Flag for icmp
 	icmpTypeVarP := new(uint8PtrValue)
 	icmpCodeVarP := new(uint8PtrValue)
 
@@ -36,24 +36,23 @@ func init() {
 	firewallCmd.AddCommand(firewallAddCmd)
 }
 
-// firewallAddCmd represents the add command
 var firewallAddCmd = &cobra.Command{
-	Use:   "add <security group name | id>  [ssh | telnet | rdp | ...] (default preset rules)",
-	Short: "Add rule to a security group",
+	Use:   "add SECURITY-GROUP-NAME|ID [ping|ssh|rdp]",
+	Short: "Add a rule to a Security Group",
 	Long: `
 No arguments create a IPv4 wide open rule.
 
 For ICMP rules, specify the icmp-code and icmp-type.
 
-	firewall add <security group> --protocol icmp --icmp-type 8 --icmp-code 0
+	firewall add <Security Group> --protocol icmp --icmp-type 8 --icmp-code 0
 
 For the other protocols specify the port ranges.
 
-	firewall add <security group> --protocol tcp --port 8000-8080
+	firewall add <Security Group> --protocol tcp --port 8000-8080
 
-A set of predefined commands exists, such a ssh, ping or minecraft.
+A set of predefined commands exists: ping, ssh, rdp.
 
-	firewall add <security group> ssh
+	firewall add <Security Group> ssh
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {

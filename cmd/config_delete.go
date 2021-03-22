@@ -6,9 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
 var configDeleteCmd = &cobra.Command{
-	Use:     "delete <account name>",
+	Use:     "delete NAME",
 	Short:   "Delete an account from configuration",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -32,7 +31,7 @@ var configDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Do you really want to delete the config for %q?", args[0])) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete the account %q from configuration?", args[0])) {
 				return nil
 			}
 		}
@@ -57,6 +56,6 @@ var configDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	configDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove an account without prompting for confirmation")
+	configDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	configCmd.AddCommand(configDeleteCmd)
 }

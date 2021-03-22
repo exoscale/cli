@@ -15,7 +15,7 @@ var sksAuthorityCertAuthorities = []string{
 }
 
 var sksAuthorityCertCmd = &cobra.Command{
-	Use:   "authority-cert <cluster name | ID> <authority>",
+	Use:   "authority-cert CLUSTER-NAME|ID AUTHORITY",
 	Short: "Retrieve an authority certificate for a SKS cluster",
 	Long: fmt.Sprintf(`This command retrieves the certificate content for the specified Kubernetes
 cluster authority. Supported authorities:

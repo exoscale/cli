@@ -12,9 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runstatusIncidentEventCmd represents the event command
 var runstatusIncidentUpdateCmd = &cobra.Command{
-	Use:   "update [page name] <incident name | id>",
+	Use:   "update [PAGE] INCIDENT-NAME|ID",
 	Short: "update an existing incident",
 	Long: `Update an incident.
 This is also used to close an incident,
@@ -109,7 +108,7 @@ passing a resolved status and flagging the services state as operational`,
 			return err
 		}
 
-		if !askQuestion("sure you want to update this incident") {
+		if !askQuestion("Are you sure you want to update this incident?") {
 			return nil
 		}
 
@@ -129,8 +128,8 @@ passing a resolved status and flagging the services state as operational`,
 func init() {
 	runstatusIncidentCmd.AddCommand(runstatusIncidentUpdateCmd)
 
-	//required
-	runstatusIncidentUpdateCmd.Flags().StringP(runstatusFlagDescription, "d", "", "Description  the incident")
-	runstatusIncidentUpdateCmd.Flags().StringP(runstatusFlagStatus, "s", "", "<investigating | identified | monitoring | resolved>")
-	runstatusIncidentUpdateCmd.Flags().StringP(runstatusFlagState, "t", "", "<major_outage | partial_outage | degraded_performance | operational>")
+	// required
+	runstatusIncidentUpdateCmd.Flags().StringP(runstatusFlagDescription, "d", "", "incident description")
+	runstatusIncidentUpdateCmd.Flags().StringP(runstatusFlagStatus, "s", "", "incident status (investigating|identified|monitoring|resolved)")
+	runstatusIncidentUpdateCmd.Flags().StringP(runstatusFlagState, "t", "", "incident state (major_outage|partial_outage|degraded_performance|operational)")
 }
