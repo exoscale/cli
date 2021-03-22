@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/pflag"
 )
 
+const cmdFlagForceHelp = "attempt to perform the operation without prompting for confirmation"
+
 // cmdCheckRequiredFlags evaluates the specified flags as parsed in the cobra.Command flagset to check that
 // their value is unset (i.e. null/empty/zero, depending on the type), and returns a multierror listing all
 // flags missing a required value.

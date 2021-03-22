@@ -23,9 +23,9 @@ func (o *privnetListOutput) toText()  { outputText(o) }
 func (o *privnetListOutput) toTable() { outputTable(o) }
 
 func init() {
-	var privnetListCmd = &cobra.Command{
+	privnetListCmd := &cobra.Command{
 		Use:   "list",
-		Short: "List private networks",
+		Short: "List Private Networks",
 		Long: fmt.Sprintf(`This command lists existing Private Networks.
 
 Supported output template annotations: %s`,

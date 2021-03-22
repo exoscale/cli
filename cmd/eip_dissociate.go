@@ -8,10 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dissociateCmd represents the dissociate command
 var eipDissociateCmd = &cobra.Command{
-	Use:     "dissociate <IP address> <instance name | instance id> [instance name | instance id] [...]",
-	Short:   "Dissociate an IP from instance(s)",
+	Use:     "dissociate IP-ADDRESS INSTANCE-NAME|ID",
+	Short:   "Dissociate an Elastic IP from a Compute instance",
 	Aliases: gDissociateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -38,7 +37,7 @@ var eipDissociateCmd = &cobra.Command{
 			}
 
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to dissociate %q EIP from %q", ip.String(), vm.Name)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to dissociate %q EIP from %q?", ip.String(), vm.Name)) {
 					continue
 				}
 			}
@@ -83,10 +82,10 @@ func getSecondaryIP(nic *egoscale.Nic, ip net.IP) (*egoscale.UUID, error) {
 			return sIP.ID, nil
 		}
 	}
-	return nil, fmt.Errorf("elastic IP %q not found", ip)
+	return nil, fmt.Errorf("Elastic IP %q not found", ip) // nolint
 }
 
 func init() {
-	eipDissociateCmd.Flags().BoolP("force", "f", false, "Attempt to dissociate EIP without prompting for confirmation")
+	eipDissociateCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	eipCmd.AddCommand(eipDissociateCmd)
 }

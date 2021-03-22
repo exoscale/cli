@@ -133,7 +133,7 @@ var methods = []category{
 	{
 		"security-group",
 		[]string{"sg"},
-		"Security group management",
+		"Security Group management",
 		[]cmd{
 			{command: &egoscale.AuthorizeSecurityGroupEgress{}, name: "authorizeEgress"},
 			{command: &egoscale.AuthorizeSecurityGroupIngress{}, name: "authorizeIngress"},

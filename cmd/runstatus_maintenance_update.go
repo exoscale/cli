@@ -11,9 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// updateCmd represents the update command
 var runstatusMaintenanceUpdateCmd = &cobra.Command{
-	Use:   "update [page name] <maintenance name>",
+	Use:   "update [PAGE] MAINTENANCE-NAME",
 	Short: "update a maintenance",
 	Long: `Update a maintenance.
 This is also used to close an maintenance`,
@@ -88,7 +87,7 @@ This is also used to close an maintenance`,
 			return err
 		}
 
-		if !askQuestion("sure you want to update this maintenance") {
+		if !askQuestion("Are you sure you want to update this maintenance?") {
 			return nil
 		}
 
@@ -106,6 +105,6 @@ This is also used to close an maintenance`,
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(runstatusMaintenanceUpdateCmd)
-	runstatusMaintenanceUpdateCmd.Flags().StringP(runstatusFlagDescription, "d", "", "Description of the maintenance")
-	runstatusMaintenanceUpdateCmd.Flags().StringP(runstatusFlagStatus, "s", "", "<scheduled | in-progress | completed>")
+	runstatusMaintenanceUpdateCmd.Flags().StringP(runstatusFlagDescription, "d", "", "maintenance description")
+	runstatusMaintenanceUpdateCmd.Flags().StringP(runstatusFlagStatus, "s", "", "maintenance status (scheduled|in-progress|completed)")
 }

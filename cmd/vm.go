@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -17,10 +18,9 @@ const (
 	maxUserDataLength      = 32768
 )
 
-// vmCmd represents the vm command
 var vmCmd = &cobra.Command{
 	Use:   "vm",
-	Short: "Virtual machines management",
+	Short: "Compute instances management",
 }
 
 func getVirtualMachineByNameOrID(name string) (*egoscale.VirtualMachine, error) {
@@ -40,7 +40,7 @@ func getVirtualMachineByNameOrID(name string) (*egoscale.VirtualMachine, error) 
 	var vm *egoscale.VirtualMachine
 	switch len(vms) {
 	case 0:
-		return nil, fmt.Errorf("no VMs has been found")
+		return nil, fmt.Errorf("Compute instance %q not found", name) // nolint
 	case 1:
 		vm = vms[0].(*egoscale.VirtualMachine)
 	default:
@@ -59,11 +59,7 @@ func getVirtualMachineByNameOrID(name string) (*egoscale.VirtualMachine, error) 
 			break
 		}
 
-		fmt.Println("More than one VM has been found, use the ID instead:")
-		for _, name := range names {
-			fmt.Println(name)
-		}
-		return nil, fmt.Errorf("abort vm name %q is ambiguous", vmQuery.Name)
+		return nil, errors.New("multiple Compute instances found, specify an ID instead")
 	}
 
 	return vm, nil

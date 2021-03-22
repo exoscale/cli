@@ -8,9 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// removeCmd represents the remove command
 var runstatusMaintenanceRemoveCmd = &cobra.Command{
-	Use:     "remove [page name] <maintenance name>",
+	Use:     "remove [PAGE] MAINTENANCE-NAME",
 	Short:   "Remove maintenance from a runstat.us page",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

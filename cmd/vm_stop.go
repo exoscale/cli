@@ -8,10 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// stopCmd represents the stop command
 var vmStopCmd = &cobra.Command{
-	Use:               "stop <vm name | id>+",
-	Short:             "Stop virtual machine instance",
+	Use:               "stop NAME|ID",
+	Short:             "Stop a running Compute instance",
 	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -26,7 +25,7 @@ var vmStopCmd = &cobra.Command{
 		tasks := make([]task, 0, len(args))
 		for _, v := range args {
 			if !force {
-				if !askQuestion(fmt.Sprintf("Are you sure you want to stop virtual machine %q?", v)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to stop Compute instance %q?", v)) {
 					continue
 				}
 			}
@@ -74,6 +73,6 @@ func stopVirtualMachine(vmName string) error {
 }
 
 func init() {
-	vmStopCmd.Flags().BoolP("force", "f", false, "Attempt to stop virtual machine without prompting for confirmation")
+	vmStopCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	vmCmd.AddCommand(vmStopCmd)
 }

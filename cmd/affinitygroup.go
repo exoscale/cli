@@ -7,13 +7,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// affinitygroupCmd represents the affinitygroup command
 var affinitygroupCmd = &cobra.Command{
-	Use:   "affinitygroup",
-	Short: "Affinity groups management",
+	Use:     "anti-affinity-group",
+	Aliases: []string{"aag", "affinitygroup"},
+	Short:   "Anti-Affinity Groups management",
 }
 
-func getAffinityGroupByNameOrID(v string) (*egoscale.AffinityGroup, error) {
+func getAntiAffinityGroupByNameOrID(v string) (*egoscale.AffinityGroup, error) {
 	aff := &egoscale.AffinityGroup{}
 
 	id, err := egoscale.ParseUUID(v)
@@ -29,10 +29,10 @@ func getAffinityGroupByNameOrID(v string) (*egoscale.AffinityGroup, error) {
 		return resp.(*egoscale.AffinityGroup), nil
 
 	case egoscale.ErrNotFound:
-		return nil, fmt.Errorf("unknown Affinity Group %q", v)
+		return nil, fmt.Errorf("unknown Anti-Affinity Group %q", v)
 
 	case egoscale.ErrTooManyFound:
-		return nil, fmt.Errorf("multiple Affinity Groups match %q", v)
+		return nil, fmt.Errorf("multiple Anti-Affinity Groups match %q", v)
 
 	default:
 		return nil, err
@@ -43,7 +43,7 @@ func getAffinityGroupIDs(params []string) ([]egoscale.UUID, error) {
 	ids := make([]egoscale.UUID, len(params))
 
 	for i, aff := range params {
-		s, err := getAffinityGroupByNameOrID(aff)
+		s, err := getAntiAffinityGroupByNameOrID(aff)
 		if err != nil {
 			return nil, err
 		}

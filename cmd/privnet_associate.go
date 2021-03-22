@@ -11,10 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// privnetAssociateCmd represents the associate command
 var privnetAssociateCmd = &cobra.Command{
-	Use:     "associate <privnet name | id> <vm name | vm id> [<ip>] [<vm name | vm id> [<ip>]] [...]",
-	Short:   "Associate a private network to instance(s)",
+	Use:     "associate NETWORK-NAME|ID INSTANCE-NAME|ID [IP-ADDRESS]",
+	Short:   "Associate a Private Network to a Compute instance",
 	Aliases: gAssociateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
@@ -36,7 +35,7 @@ var privnetAssociateCmd = &cobra.Command{
 		// FIXME: this implementation mixes side effects with user reporting,
 		// this is not great and should be split.
 		table := table.NewTable(os.Stdout)
-		table.SetHeader([]string{"Virtual Machine", "IP Address"})
+		table.SetHeader([]string{"Compute instance", "IP Address"})
 		for i := 1; i < len(args); i++ {
 			name := args[i]
 			if i != len(args)-1 {
@@ -49,7 +48,8 @@ var privnetAssociateCmd = &cobra.Command{
 					}
 					table.Append([]string{
 						vm.DisplayName,
-						nicIP(*nic)})
+						nicIP(*nic),
+					})
 					i = i + 1
 					continue
 				}
@@ -60,7 +60,8 @@ var privnetAssociateCmd = &cobra.Command{
 			}
 			table.Append([]string{
 				vm.DisplayName,
-				nicIP(*nic)})
+				nicIP(*nic),
+			})
 		}
 		w.Flush() // nolint: errcheck
 
@@ -86,11 +87,10 @@ func associatePrivNet(privnet *egoscale.Network, vmName string, ip net.IP) (*ego
 
 	nic := resp.(*egoscale.VirtualMachine).NicByNetworkID(*privnet.ID)
 	if nic == nil {
-		return nil, nil, fmt.Errorf("no nics found for network %q", privnet.ID)
+		return nil, nil, fmt.Errorf("no NIC found for network %q", privnet.ID)
 	}
 
 	return nic, vm, nil
-
 }
 
 func init() {

@@ -7,15 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	firewallDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove security group without prompting for confirmation")
-	firewallCmd.AddCommand(firewallDeleteCmd)
-}
-
-// deleteCmd represents the delete command
 var firewallDeleteCmd = &cobra.Command{
-	Use:     "delete <security group name | id>+",
-	Short:   "Delete security group",
+	Use:     "delete NAME|ID",
+	Short:   "Delete a Security Group",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -34,7 +28,7 @@ var firewallDeleteCmd = &cobra.Command{
 				return err
 			}
 
-			q := fmt.Sprintf("Are you sure you want to delete the security group: %q", sg.Name)
+			q := fmt.Sprintf("Are you sure you want to delete the Security Group %q?", sg.Name)
 			if !force && !askQuestion(q) {
 				continue
 			}
@@ -42,7 +36,7 @@ var firewallDeleteCmd = &cobra.Command{
 			cmd := &egoscale.DeleteSecurityGroup{ID: sg.ID}
 			tasks = append(tasks, task{
 				cmd,
-				fmt.Sprintf("delete %q SG", sg.Name),
+				fmt.Sprintf("Deleting Security Group %q", sg.Name),
 			})
 		}
 
@@ -53,4 +47,9 @@ var firewallDeleteCmd = &cobra.Command{
 		}
 		return nil
 	},
+}
+
+func init() {
+	firewallDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
+	firewallCmd.AddCommand(firewallDeleteCmd)
 }

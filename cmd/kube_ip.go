@@ -6,9 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// kubeEnvCmd represents the env command
 var kubeIPCmd = &cobra.Command{
-	Use:   "ip <cluster name>",
+	Use:   "ip CLUSTER-NAME",
 	Short: "Print a standalone Kubernetes cluster's IP address",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {

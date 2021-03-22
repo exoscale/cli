@@ -10,8 +10,8 @@ import (
 )
 
 var vmUpdateIPCmd = &cobra.Command{
-	Use:   "updateip <vm name|id> <network name|id> [flags]",
-	Short: "Update the static DHCP lease of an instance",
+	Use:   "updateip INSTANCE-NAME|ID NETWORK-NAME|ID",
+	Short: "Update the static DHCP lease of a Compute instance",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
 			return cmd.Usage()
@@ -29,7 +29,7 @@ var vmUpdateIPCmd = &cobra.Command{
 		}
 		nic := vm.NicByNetworkID(*network.ID)
 		if nic == nil {
-			return fmt.Errorf("the virtual machine %s is not associated to the network %s", vm.DisplayName, network.Name)
+			return fmt.Errorf("the Compute instance %s is not associated to the Private Network %s", vm.DisplayName, network.Name)
 		}
 
 		ipAddress, err := getIPValue(cmd, "ip")
@@ -39,9 +39,9 @@ var vmUpdateIPCmd = &cobra.Command{
 
 		var msg string
 		if ipAddress.IP != nil {
-			msg = fmt.Sprintf("setting the static lease to %q, network %q: %s", vmName, netName, ipAddress.IP.String())
+			msg = fmt.Sprintf("assigning the static lease to %q in Private Network %q: %s", vmName, netName, ipAddress.IP.String())
 		} else {
-			msg = fmt.Sprintf("removing the static lease from %q, network %q", vmName, netName)
+			msg = fmt.Sprintf("removing the static lease from %q in Private Network %q", vmName, netName)
 		}
 
 		req := &egoscale.UpdateVMNicIP{

@@ -14,9 +14,8 @@ import (
 	"github.com/vbauerster/mpb/v4/decor"
 )
 
-// downloadCmd represents the download command
 var downloadCmd = &cobra.Command{
-	Use:   "download <bucket name> <object name> <file path>",
+	Use:   "download BUCKET OBJECT DESTINATION",
 	Short: "Download an object from a bucket",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 3 {
@@ -71,7 +70,7 @@ var downloadCmd = &cobra.Command{
 		filePartPath := localFilePath + objectStat.ETag + ".part.minio"
 
 		// If exists, open in append mode. If not create it as a part file.
-		filePart, err := os.OpenFile(filePartPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+		filePart, err := os.OpenFile(filePartPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
 		if err != nil {
 			return err
 		}

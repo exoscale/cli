@@ -27,10 +27,9 @@ type fileToUpload struct {
 	contentType string
 }
 
-// uploadCmd represents the upload command
 var sosUploadCmd = &cobra.Command{
-	Use:     "upload <bucket name> <local file path>+",
-	Short:   "Upload an object into a bucket",
+	Use:     "upload BUCKET FILE...",
+	Short:   "Upload a file into a bucket",
 	Aliases: gUploadAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {

@@ -19,9 +19,8 @@ func (o *apiKeyShowItemOutput) toJSON()  { outputJSON(o) }
 func (o *apiKeyShowItemOutput) toText()  { outputText(o) }
 func (o *apiKeyShowItemOutput) toTable() { outputTable(o) }
 
-// apiKeyShowCmd represents the API key showing command
 var apiKeyShowCmd = &cobra.Command{
-	Use:   "show <key | name>",
+	Use:   "show KEY|NAME",
 	Short: "Show API key",
 	Long: fmt.Sprintf(`This command shows an API key details.
 

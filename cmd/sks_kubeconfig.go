@@ -10,7 +10,7 @@ import (
 )
 
 var sksKubeconfigCmd = &cobra.Command{
-	Use:     "kubeconfig <cluster name | ID> <user>",
+	Use:     "kubeconfig CLUSTER-NAME|ID USER",
 	Aliases: []string{"kc"},
 	Short:   "Generate a Kubernetes kubeconfig file for a SKS cluster",
 	Long: `This command generates a kubeconfig file to be used for authenticating to a SKS

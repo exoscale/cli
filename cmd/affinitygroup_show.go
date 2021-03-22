@@ -22,7 +22,7 @@ func (o *affinityGroupShowOutput) toTable()     { outputTable(o) }
 
 func init() {
 	affinitygroupCmd.AddCommand(&cobra.Command{
-		Use:   "show <name | id>",
+		Use:   "show NAME|ID",
 		Short: "Show affinity group details",
 		Long: fmt.Sprintf(`This command shows an Anti-Affinity Group details.
 
@@ -34,7 +34,7 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			ag, err := getAffinityGroupByNameOrID(args[0])
+			ag, err := getAntiAffinityGroupByNameOrID(args[0])
 			if err != nil {
 				return err
 			}

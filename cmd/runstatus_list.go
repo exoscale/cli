@@ -21,7 +21,7 @@ func (o *runstatusPageListOutput) toTable() { outputTable(o) }
 
 func init() {
 	runstatusCmd.AddCommand(&cobra.Command{
-		Use:   "list [filter ...]",
+		Use:   "list [FILTER]...",
 		Short: "List runstat.us pages",
 		Long: fmt.Sprintf(`This command lists existing runstat.us pages.
 Optional patterns can be provided to filter results by name.

@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// privnetCmd represents the pn command
 var privnetCmd = &cobra.Command{
 	Use:   "privnet",
 	Short: "Private networks management",

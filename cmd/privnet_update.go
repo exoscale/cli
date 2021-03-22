@@ -10,10 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// updateCmd represents the update command
 var privnetUpdateCmd = &cobra.Command{
-	Use:   "update <name | id> [flags]",
-	Short: "Update a private network",
+	Use:   "update NAME|ID",
+	Short: "Update a Private Network",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return cmd.Usage()
@@ -57,7 +56,7 @@ var privnetUpdateCmd = &cobra.Command{
 		}
 
 		if netmask.IP != nil && cidrmask != "" {
-			return fmt.Errorf("netmask %q and cidrmask %q are mutually exclusive", netmask, cidrmask)
+			return fmt.Errorf("--netmask %q and --cidrmask %q are mutually exclusive", netmask, cidrmask)
 		}
 
 		if cidrmask != "" {

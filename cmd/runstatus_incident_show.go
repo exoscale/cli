@@ -65,7 +65,7 @@ func (o *runstatusIncidentShowOutput) toTable() {
 
 func init() {
 	runstatusIncidentCmd.AddCommand(&cobra.Command{
-		Use:   "show [page name] <incident name | id>",
+		Use:   "show [PAGE] INCIDENT-NAME|ID",
 		Short: "Show an incident details",
 		Long: fmt.Sprintf(`This command shows a runstat.us incident details.
 
@@ -123,7 +123,8 @@ func showRunstatusIncident(p, i string) (outputter, error) {
 			out.Events[i] = runstatusIncidentEventShowOutput{
 				Date:   e.Created,
 				Status: e.Status,
-				Text:   e.Text}
+				Text:   e.Text,
+			}
 		}
 	}
 

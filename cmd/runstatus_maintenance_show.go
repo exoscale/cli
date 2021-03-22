@@ -26,7 +26,7 @@ func (o *runstatusMaintenanceShowOutput) toTable()     { outputTable(o) }
 func init() {
 	runstatusMaintenanceCmd.AddCommand(
 		&cobra.Command{
-			Use:     "show [page name] <maintenance name|id>",
+			Use:     "show [PAGE] MAINTENANCE-NAME|ID",
 			Short:   "Show a maintenance details",
 			Aliases: gShowAlias,
 			RunE: func(cmd *cobra.Command, args []string) error {

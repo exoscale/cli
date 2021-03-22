@@ -6,10 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// setCmd represents the set command
 var configSetCmd = &cobra.Command{
-	Use:   "set <account name>",
-	Short: "Set an account as default",
+	Use:   "set NAME",
+	Short: "Set an account as default account",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()

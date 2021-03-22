@@ -9,10 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
 var firewallCreateCmd = &cobra.Command{
-	Use:   "create <name>+",
-	Short: "Create security group",
+	Use:   "create NAME",
+	Short: "Create a Security Group",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			return cmd.Usage()
@@ -26,7 +25,7 @@ var firewallCreateCmd = &cobra.Command{
 		for _, arg := range args {
 			syncTasks = append(syncTasks, task{
 				egoscale.CreateSecurityGroup{Name: arg, Description: desc},
-				fmt.Sprintf("Create security group %q", arg),
+				fmt.Sprintf("Creating Security Group %q", arg),
 			})
 		}
 
@@ -51,6 +50,6 @@ var firewallCreateCmd = &cobra.Command{
 }
 
 func init() {
-	firewallCreateCmd.Flags().StringP("description", "d", "", "Security group description")
+	firewallCreateCmd.Flags().StringP("description", "d", "", "Security Group description")
 	firewallCmd.AddCommand(firewallCreateCmd)
 }

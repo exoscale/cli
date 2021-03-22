@@ -32,9 +32,9 @@ func (o *instancePoolItemOutput) toText()  { outputText(o) }
 func (o *instancePoolItemOutput) toTable() { outputTable(o) }
 
 var instancePoolShowCmd = &cobra.Command{
-	Use:   "show <name | id>",
-	Short: "Show an instance pool details",
-	Long: fmt.Sprintf(`This command shows an instance pool details.
+	Use:   "show NAME|ID",
+	Short: "Show an Instance Pool details",
+	Long: fmt.Sprintf(`This command shows an Instance Pool details.
 
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
@@ -102,7 +102,7 @@ func showInstancePool(name, zoneName string) error {
 	}
 
 	for _, a := range instancePool.AntiAffinityGroupIDs {
-		aag, err := getAffinityGroupByNameOrID(a.String())
+		aag, err := getAntiAffinityGroupByNameOrID(a.String())
 		if err != nil {
 			return err
 		}

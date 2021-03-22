@@ -9,10 +9,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// scaleCmd represents the scale command
 var vmScaleCmd = &cobra.Command{
-	Use:               "scale <vm name | id>+",
-	Short:             "Scale virtual machine",
+	Use:               "scale NAME|ID",
+	Short:             "Scale a Compute instance (change service offering)",
 	ValidArgsFunction: completeVMNames,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -40,7 +39,7 @@ var vmScaleCmd = &cobra.Command{
 			}
 
 			if vm.State != (string)(egoscale.VirtualMachineStopped) {
-				fmt.Fprintf(os.Stderr, "this operation is not permitted if your VM is not stopped\n")
+				fmt.Fprintf(os.Stderr, "this operation is not permitted while your Compute instance is not running; stop it before issuing that command again\n")
 			}
 
 			tasks = append(tasks, task{
@@ -61,5 +60,5 @@ var vmScaleCmd = &cobra.Command{
 
 func init() {
 	vmCmd.AddCommand(vmScaleCmd)
-	vmScaleCmd.Flags().StringP("service-offering", "o", "", "<name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan")
+	vmScaleCmd.Flags().StringP("service-offering", "o", "", serviceOfferingHelp)
 }

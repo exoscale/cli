@@ -10,7 +10,7 @@ import (
 )
 
 var sksNodepoolUpdateCmd = &cobra.Command{
-	Use:   "update <cluster name | ID> <Nodepool name | ID>",
+	Use:   "update CLUSTER-NAME|ID NODEPOOL-NAME|ID",
 	Short: "Update a SKS cluster Nodepool",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
@@ -150,10 +150,10 @@ func init() {
 	sksNodepoolUpdateCmd.Flags().String("instance-type", "", "Nodepool Compute instances type")
 	sksNodepoolUpdateCmd.Flags().Int64("disk-size", 0, "Nodepool Compute instances disk size")
 	sksNodepoolUpdateCmd.Flags().StringSlice("anti-affinity-group", nil,
-		"Nodepool Anti-Affinity Group <name | id> (can be specified multiple times). "+
+		"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times). "+
 			"Note: this replaces the current value, it is not cumulative.")
 	sksNodepoolUpdateCmd.Flags().StringSlice("security-group", nil,
-		"Nodepool Security Group <name | id> (can be specified multiple times)"+
+		"Nodepool Security Group NAME|ID (can be specified multiple times)"+
 			"Note: this replaces the current value, it is not cumulative.")
 	sksNodepoolCmd.AddCommand(sksNodepoolUpdateCmd)
 }

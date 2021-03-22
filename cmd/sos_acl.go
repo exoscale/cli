@@ -13,7 +13,7 @@ import (
 
 // nolint
 const (
-	//Canned ACLs
+	// Canned ACLs
 	private                string = "private"
 	publicRead             string = "public-read"
 	publicReadWrite        string = "public-read-write"
@@ -21,14 +21,14 @@ const (
 	bucketOwnerRead        string = "bucket-owner-read"
 	bucketOwnerFullControl string = "bucket-owner-full-control"
 
-	//S3 Grant ACLs response header
+	// S3 Grant ACLs response header
 	manualRead        string = "X-Amz-Grant-Read"
 	manualWrite       string = "X-Amz-Grant-Write"
 	manualReadACP     string = "X-Amz-Grant-Read-Acp"
 	manualWriteACP    string = "X-Amz-Grant-Write-Acp"
 	manualFullControl string = "X-Amz-Grant-Full-Control"
 
-	//S3 Grant ACLs response body
+	// S3 Grant ACLs response body
 	sosACLRead        string = "READ"
 	sosACLWrite       string = "WRITE"
 	sosACLReadACP     string = "READ_ACP"
@@ -36,7 +36,6 @@ const (
 	sosACLFullControl string = "FULL_CONTROL"
 )
 
-// aclCmd represents the acl command
 var sosACLCmd = &cobra.Command{
 	Use:   "acl",
 	Short: "Object(s) ACLs management",
@@ -46,9 +45,8 @@ func init() {
 	sosCmd.AddCommand(sosACLCmd)
 }
 
-// aclCmd represents the acl command
 var sosAddACLCmd = &cobra.Command{
-	Use:   "add <bucket name> <object|prefix>",
+	Use:   "add BUCKET OBJECT|PREFIX",
 	Short: "Add ACL(s) to objects",
 	Long: `This commands adds ACL(s) to objects in a bucket. It is possible to
 set ACLs either on a single object, or recursively from a prefix
@@ -171,7 +169,7 @@ specify "/" as prefix.`,
 	},
 }
 
-//merge src header in dst header
+// merge src header in dst header
 func mergeHeader(dst, src http.Header) {
 	for k, v := range src {
 		dst[k] = v
@@ -318,7 +316,7 @@ func init() {
 	sosAddACLCmd.Flags().SortFlags = false
 	sosAddACLCmd.Flags().Bool("recursive", false, "Set ACL recursively")
 
-	//Canned ACLs
+	// Canned ACLs
 	sosAddACLCmd.Flags().BoolP(private, "p", false, "Canned ACL private")
 	sosAddACLCmd.Flags().BoolP(publicRead, "r", false, "Canned ACL public read")
 	sosAddACLCmd.Flags().BoolP(publicReadWrite, "w", false, "Canned ACL public read and write")
@@ -326,7 +324,7 @@ func init() {
 	sosAddACLCmd.Flags().BoolP(bucketOwnerRead, "", false, "Canned ACL bucket owner read")
 	sosAddACLCmd.Flags().BoolP(bucketOwnerFullControl, "f", false, "Canned ACL bucket owner full control")
 
-	//Manual ACLs
+	// Manual ACLs
 	sosAddACLCmd.Flags().StringP("read", "", "", "Manual acl edit grant read e.g(value, value, ...)")
 	sosAddACLCmd.Flags().StringP("write", "", "", "Manual acl edit grant write e.g(value, value, ...)")
 	sosAddACLCmd.Flags().StringP("read-acp", "", "", "Manual acl edit grant acp read e.g(value, value, ...)")
@@ -334,9 +332,8 @@ func init() {
 	sosAddACLCmd.Flags().StringP("full-control", "", "", "Manual acl edit grant full control e.g(value, value, ...)")
 }
 
-// aclCmd represents the acl command
 var sosRemoveACLCmd = &cobra.Command{
-	Use:     "remove <bucket name> <object name>",
+	Use:     "remove BUCKET OBJECT",
 	Short:   "Remove ACL(s) from an object",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -467,9 +464,8 @@ func getManualACLBool(cmd *cobra.Command) ([]string, error) {
 	return res, nil
 }
 
-// aclCmd represents the acl command
 var sosShowACLCmd = &cobra.Command{
-	Use:     "list <bucket name> <object name>",
+	Use:     "list BUCKET OBJECT",
 	Short:   "list Object ACLs",
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

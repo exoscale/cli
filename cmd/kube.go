@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	// kubeSecurityGroup represents the firewall security group to add k8s VM instances into
+	// kubeSecurityGroup represents the firewall Security Group to add k8s VM instances into
 	kubeSecurityGroup = "exokube"
 
 	// kubeTagKubernetes represents the name of the tag used to store the version of Kubernetes
@@ -24,7 +24,6 @@ var (
 	kubeTagDocker = "exokube:docker"
 )
 
-// kubeCmd represents the kube command
 var kubeCmd = &cobra.Command{
 	Use:   "kube",
 	Short: "Standalone Kubernetes cluster management",
@@ -55,7 +54,7 @@ func saveKubeData(clusterName, key string, data []byte) error {
 		}
 	}
 
-	if err := ioutil.WriteFile(path.Join(getKubeconfigPath(clusterName), key), data, 0600); err != nil {
+	if err := ioutil.WriteFile(path.Join(getKubeconfigPath(clusterName), key), data, 0o600); err != nil {
 		return fmt.Errorf("unable to write file: %s", err)
 	}
 
@@ -65,7 +64,6 @@ func saveKubeData(clusterName, key string, data []byte) error {
 func getKubeVM(clusterName string) (*egoscale.VirtualMachine, error) {
 	filename := path.Join(getKubeconfigPath(clusterName), "instance")
 	content, err := ioutil.ReadFile(filename)
-
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("%q: no such cluster", clusterName)

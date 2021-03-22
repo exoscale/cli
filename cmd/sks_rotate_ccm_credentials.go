@@ -8,7 +8,7 @@ import (
 )
 
 var sksRotateCCMCredentialsCmd = &cobra.Command{
-	Use:   "rotate-ccm-credentials <cluster name | ID>",
+	Use:   "rotate-ccm-credentials CLUSTER-NAME|ID",
 	Short: "Rotate the Exoscale Cloud Controller IAM credentials for a SKS cluster",
 	Long: `This command rotates the Exoscale IAM credentials managed by the SKS control
 plane for the Kubernetes Exoscale Cloud Controller Manager.

@@ -8,9 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
 var runstatusDeleteCmd = &cobra.Command{
-	Use:     "delete <page name>+",
+	Use:     "delete NAME",
 	Short:   "Delete runstat.us page(s)",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -19,7 +18,7 @@ var runstatusDeleteCmd = &cobra.Command{
 		}
 		for _, arg := range args {
 			// TODO: add "--force" flag
-			if !askQuestion(fmt.Sprintf("sure you want to delete %q runstat.us page", arg)) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete runstat.us page %q?", arg)) {
 				continue
 			}
 

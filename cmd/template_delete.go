@@ -7,9 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// templateDeleteCmd represents the delete command
 var templateDeleteCmd = &cobra.Command{
-	Use:   "delete <template id>+",
+	Use:   "delete ID",
 	Short: "Delete a template",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -56,6 +55,6 @@ var templateDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	templateDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove a template without prompting for confirmation")
+	templateDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	templateCmd.AddCommand(templateDeleteCmd)
 }

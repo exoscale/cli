@@ -8,8 +8,8 @@ import (
 )
 
 var vmUpdateCmd = &cobra.Command{
-	Use:               "update <vm name | id>",
-	Short:             "Update virtual machine properties",
+	Use:               "update NAME|ID",
+	Short:             "Update a Compute instance properties",
 	ValidArgsFunction: completeVMNames,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
@@ -52,11 +52,11 @@ var vmUpdateCmd = &cobra.Command{
 		if edited {
 			_, err = cs.RequestWithContext(gContext, &vmEdit)
 			if err != nil {
-				return fmt.Errorf("unable to update virtual machine: %s", err)
+				return fmt.Errorf("unable to update Compute instance: %s", err)
 			}
 
 			if !gQuiet {
-				fmt.Println("Virtual machine updated successfully")
+				fmt.Println("Compute instance updated successfully")
 			}
 
 			return nil

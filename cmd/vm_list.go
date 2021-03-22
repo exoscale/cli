@@ -34,7 +34,7 @@ func (o *vmListOutput) names() []string {
 func init() {
 	vmCmd.AddCommand(&cobra.Command{
 		Use:   "list",
-		Short: "List all the virtual machines instances",
+		Short: "List Compute instances",
 		Long: fmt.Sprintf(`This command lists existing Compute instances.
 
 Supported output template annotations: %s`,

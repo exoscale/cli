@@ -21,7 +21,7 @@ func (o *sshkeyCreateOutput) toTable()     { outputTable(o) }
 
 func init() {
 	sshkeyCmd.AddCommand(&cobra.Command{
-		Use:   "create <name>",
+		Use:   "create NAME",
 		Short: "Create SSH key",
 		Long: fmt.Sprintf(`This command creates an SSH key.
 

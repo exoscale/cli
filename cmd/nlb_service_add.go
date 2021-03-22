@@ -12,7 +12,7 @@ import (
 )
 
 var nlbServiceAddCmd = &cobra.Command{
-	Use:   "add <NLB name | ID> <service name>",
+	Use:   "add NLB-NAME|ID SERVICE-NAME",
 	Short: "Add a service to a Network Load Balancer",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {

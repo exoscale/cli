@@ -34,7 +34,7 @@ func (o *runstatusIncidentListOutput) toTable() {
 
 func init() {
 	runstatusIncidentCmd.AddCommand(&cobra.Command{
-		Use:   "list [page name ...]",
+		Use:   "list [PAGE]...",
 		Short: "List incidents",
 		Long: fmt.Sprintf(`This command lists existing runstat.us incidents.
 

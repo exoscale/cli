@@ -20,9 +20,8 @@ func (o *apiKeyOperationsItemOutput) toJSON()  { outputJSON(o) }
 func (o *apiKeyOperationsItemOutput) toText()  { outputText(o) }
 func (o *apiKeyOperationsItemOutput) toTable() { outputTable(o) }
 
-// apiKeyOperationsCmd represents the supported operations listing command for an API key
 var apiKeyOperationsCmd = &cobra.Command{
-	Use:   "operations [filter ...]",
+	Use:   "operations [FILTER]...",
 	Short: "List supported API key operations",
 	Long: fmt.Sprintf(`This command lists all supported operations for an API key.
 	Optional patterns can be provided to filter results by compute, DNS, IAM or SOS operations.

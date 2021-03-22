@@ -42,7 +42,7 @@ func (o *dnsListOutput) toTable() {
 
 func init() {
 	dnsCmd.AddCommand(&cobra.Command{
-		Use:   "list [filter ...]",
+		Use:   "list [FILTER]...",
 		Short: "List domains",
 		Long: fmt.Sprintf(`This command lists existing DNS Domains.
 Optional patterns can be provided to filter results by ID, or name.

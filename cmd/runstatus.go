@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runstatusCmd represents the runstatus command
 var runstatusCmd = &cobra.Command{
 	Use:   "runstatus",
 	Short: "Manage your Runstat.us pages",

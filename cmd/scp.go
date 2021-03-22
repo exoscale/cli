@@ -18,10 +18,10 @@ type scpInfo struct {
 }
 
 var scpCmd = &cobra.Command{
-	Use:   "scp <instance name | ID> <source> <target>",
+	Use:   "scp INSTANCE-NAME|ID SOURCE TARGET",
 	Short: "SCP files to/from a Compute instance",
 	Long: `This command executes the "scp" command to send or receive files to/from the
-specified Compute instance. The target (or source, depending on the direction
+specified Compute instance. TARGET (or SOURCE, depending on the direction
 of the transfer) must contain the "{}" marker which will be interpolated at
 run time with the actual Compute instance IP address, similar to xargs(1).
 This marker can be replaced by another string via the --replace-str|-i flag.
@@ -128,7 +128,7 @@ func runSCP(args []string) error {
 
 func init() {
 	scpCmd.Flags().StringP("replace-str", "i", "{}",
-		"String to replace with the actual Compute instance information (i.e. username@<IP address>)")
+		"String to replace with the actual Compute instance information (i.e. username@IP-ADDRESS)")
 	scpCmd.Flags().StringP("ssh-options", "o", "",
 		"Additional options to pass to the `scp` command (e.g. -o \"-l my-user -p 2222\"`)")
 	scpCmd.Flags().BoolP("print", "p", false, "Print SCP command")

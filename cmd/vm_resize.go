@@ -7,10 +7,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// vmResetCmd represents the stop command
 var vmResizeCmd = &cobra.Command{
-	Use:               "resize <vm name | id>+",
-	Short:             "Resize disk virtual machine instance",
+	Use:               "resize NAME|ID",
+	Short:             "Resize a Compute instance disk",
 	ValidArgsFunction: completeVMNames,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -33,7 +32,7 @@ var vmResizeCmd = &cobra.Command{
 		tasks := make([]task, 0, len(args))
 		for _, v := range args {
 			if !force {
-				if !askQuestion(fmt.Sprintf("sure you want to resize %q virtual machine", v)) {
+				if !askQuestion(fmt.Sprintf("Are you sure you want to resize Compute instance disk %q?", v)) {
 					continue
 				}
 			}
@@ -64,14 +63,13 @@ func resizeVirtualMachine(vmName string, diskValue int64) (*task, error) {
 
 	state := (string)(egoscale.VirtualMachineStopped)
 	if vm.State != state {
-		return nil, fmt.Errorf("this operation is not permitted if your VM is not stopped")
+		return nil, fmt.Errorf("this operation is not permitted while your Compute instance is running; stop it before issuing that command again")
 	}
 
 	resp, err := cs.GetWithContext(gContext, egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -89,5 +87,5 @@ func resizeVirtualMachine(vmName string, diskValue int64) (*task, error) {
 func init() {
 	vmCmd.AddCommand(vmResizeCmd)
 	vmResizeCmd.Flags().Int64P("disk", "d", 0, "Disk size in GB")
-	vmResizeCmd.Flags().BoolP("force", "f", false, "Attempt to resize vitual machine without prompting for confirmation")
+	vmResizeCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 }

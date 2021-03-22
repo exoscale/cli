@@ -27,7 +27,7 @@ func (o *snapshotShowOutput) toTable()     { outputTable(o) }
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{
-		Use:   "show <ID>",
+		Use:   "show ID",
 		Short: "Show a snapshot details",
 		Long: fmt.Sprintf(`This command shows a snapshot details.
 

@@ -17,7 +17,6 @@ const (
 	templateFilterHelp = "template filter to use (featured|community|mine)"
 )
 
-// templateCmd represents the template command
 var templateCmd = &cobra.Command{
 	Use:   "template",
 	Short: "Templates details",

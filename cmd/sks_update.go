@@ -8,7 +8,7 @@ import (
 )
 
 var sksUpdateCmd = &cobra.Command{
-	Use:   "update <name | ID>",
+	Use:   "update NAME|ID",
 	Short: "Update a SKS cluster",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

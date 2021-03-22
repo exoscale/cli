@@ -82,7 +82,8 @@ func (o *runstatusPageShowOutput) toTable() {
 		buf := bytes.NewBuffer(nil)
 		it := table.NewEmbeddedTable(buf)
 		for _, i := range o.Incidents {
-			it.Append([]string{i.Title,
+			it.Append([]string{
+				i.Title,
 				strings.ToUpper(strings.Replace(i.State, "_", " ", -1)),
 				i.Status,
 				formatSchedule(i.StartDate, i.EndDate),
@@ -107,7 +108,7 @@ func (o *runstatusPageShowOutput) toTable() {
 
 func init() {
 	runstatusCmd.AddCommand(&cobra.Command{
-		Use:   "show <page name>",
+		Use:   "show PAGE",
 		Short: "Show a runstat.us page details",
 		Long: fmt.Sprintf(`This command shows a runstat.us page details.
 

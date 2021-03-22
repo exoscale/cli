@@ -8,7 +8,7 @@ import (
 )
 
 var sksUpgradeCmd = &cobra.Command{
-	Use:   "upgrade <name | ID> <version>",
+	Use:   "upgrade NAME|ID VERSION",
 	Short: "Upgrade a SKS cluster Kubernetes version",
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {

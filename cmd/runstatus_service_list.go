@@ -30,7 +30,7 @@ func (o *runstatusServiceListOutput) toTable() {
 
 func init() {
 	runstatusServiceCmd.AddCommand(&cobra.Command{
-		Use:   "list [page name ...]",
+		Use:   "list [PAGE]...",
 		Short: "List services",
 		Long: fmt.Sprintf(`This command lists existing runstat.us services.
 

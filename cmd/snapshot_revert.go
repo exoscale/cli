@@ -7,9 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// revertCmd represents the revert command
 var snapshotRevertCmd = &cobra.Command{
-	Use:   "revert <name | id>+",
+	Use:   "revert NAME|ID",
 	Short: "Revert a snapshot to an instance volume",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -52,5 +51,5 @@ var snapshotRevertCmd = &cobra.Command{
 
 func init() {
 	snapshotCmd.AddCommand(snapshotRevertCmd)
-	snapshotRevertCmd.Flags().BoolP("force", "f", false, "Attempt to revert snapshot without prompting for confirmation")
+	snapshotRevertCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	serviceOfferingHelp = "service offering <name | id> (micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)"
+	serviceOfferingHelp = "service offering NAME (micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)"
 )
 
 type serviceOfferingListItemOutput struct {

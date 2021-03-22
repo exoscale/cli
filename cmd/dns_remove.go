@@ -6,9 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// dnsRemoveCmd represents the remove command
 var dnsRemoveCmd = &cobra.Command{
-	Use:     "remove <domain name> <record name | id>",
+	Use:     "remove DOMAIN RECORD-NAME|ID",
 	Short:   "Remove a domain record",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -22,7 +21,7 @@ var dnsRemoveCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to remove %q record", args[1])) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to remove record %q?", args[1])) {
 				return nil
 			}
 		}
@@ -52,6 +51,6 @@ func removeRecord(domainName, record string) (int64, error) {
 }
 
 func init() {
+	dnsRemoveCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	dnsCmd.AddCommand(dnsRemoveCmd)
-	dnsRemoveCmd.Flags().BoolP("force", "f", false, "Attempt to remove without prompting for confirmation")
 }

@@ -26,8 +26,8 @@ func (o *securityGroupShowOutput) toTable() { outputTable(o) }
 
 func init() {
 	firewallCmd.AddCommand(&cobra.Command{
-		Use:   "show <security group name | id>",
-		Short: "Show a security group rules details",
+		Use:   "show NAME|ID",
+		Short: "Show a Security Group rules details",
 		Long: fmt.Sprintf(`This command shows a Security Group details.
 
 Supported output template annotations: %s`,
@@ -35,7 +35,7 @@ Supported output template annotations: %s`,
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
-				return errors.New("show expects one security group by name or id")
+				return errors.New("show expects one Security Group by name or id")
 			}
 
 			return output(showSecurityGroup(args[0]))
@@ -60,7 +60,6 @@ func showSecurityGroup(name string) (outputter, error) {
 			Protocol:    rule.Protocol,
 			Description: rule.Description,
 		})
-
 	}
 
 	for _, rule := range sg.EgressRule {

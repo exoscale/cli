@@ -23,7 +23,7 @@ func (o *securityGroupListOutput) toTable() { outputTable(o) }
 
 func init() {
 	firewallCmd.AddCommand(&cobra.Command{
-		Use:   "list [filter ...]",
+		Use:   "list [FILTER]...",
 		Short: "List Security Groups",
 		Long: fmt.Sprintf(`This command lists existing Security Groups.
 Optional patterns can be provided to filter results by ID, name or description.

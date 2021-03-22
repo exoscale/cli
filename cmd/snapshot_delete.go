@@ -7,9 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// deleteCmd represents the delete command
 var snapshotDeleteCmd = &cobra.Command{
-	Use:     "delete <name | id>+",
+	Use:     "delete NAME|ID",
 	Short:   "Delete a snapshot",
 	Aliases: gDeleteAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -49,5 +48,5 @@ var snapshotDeleteCmd = &cobra.Command{
 
 func init() {
 	snapshotCmd.AddCommand(snapshotDeleteCmd)
-	snapshotDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to remove snapshot without prompting for confirmation")
+	snapshotDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 }

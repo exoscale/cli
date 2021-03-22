@@ -50,7 +50,6 @@ var gUploadAlias = []string{"up"}
 var gDissociateAlias = []string{"disassociate", "dissoc"}
 var gAssociateAlias = []string{"assoc"}
 
-// RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
 	Use:           "exo",
 	Short:         "Manage your Exoscale infrastructure easily",

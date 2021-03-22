@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runstatusServiceCmd represents the service command
 var runstatusServiceCmd = &cobra.Command{
 	Use:   "service",
 	Short: "Runstat.us service management",

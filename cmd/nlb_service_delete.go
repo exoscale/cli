@@ -9,7 +9,7 @@ import (
 )
 
 var nlbServiceDeleteCmd = &cobra.Command{
-	Use:     "delete <NLB name | ID> <service name | ID>",
+	Use:     "delete NLB-NAME|ID SERVICE-NAME|ID",
 	Short:   "Delete a Network Load Balancer service",
 	Aliases: gRemoveAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -38,7 +38,7 @@ var nlbServiceDeleteCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Do you really want to delete service %q?", args[1])) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete Network Load Balancer service %q?", args[1])) {
 				return nil
 			}
 		}
@@ -68,7 +68,7 @@ var nlbServiceDeleteCmd = &cobra.Command{
 }
 
 func init() {
-	nlbServiceDeleteCmd.Flags().BoolP("force", "f", false, "Attempt to delete without prompting for confirmation")
+	nlbServiceDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	nlbServiceDeleteCmd.Flags().StringP("zone", "z", "", "Network Load Balancer zone")
 	nlbServiceCmd.AddCommand(nlbServiceDeleteCmd)
 }

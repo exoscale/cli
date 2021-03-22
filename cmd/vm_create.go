@@ -12,9 +12,9 @@ import (
 )
 
 var vmCreateCmd = &cobra.Command{
-	Use:   "create <name>",
-	Short: "Deploy a virtual machine",
-	Long: fmt.Sprintf(`This command deploys a new virtual machine.
+	Use:   "create NAME",
+	Short: "Deploy a Compute instance",
+	Long: fmt.Sprintf(`This command deploys a new Compute instance.
 
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&vmShowOutput{}), ", ")),
@@ -199,14 +199,14 @@ func createVM(deployVM *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine
 
 func init() {
 	vmCreateCmd.Flags().StringP("zone", "z", "", zoneHelp)
-	vmCreateCmd.Flags().StringP("template", "t", defaultTemplate, "template <name | id>")
+	vmCreateCmd.Flags().StringP("template", "t", defaultTemplate, "template NAME|ID")
 	vmCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
 	vmCreateCmd.Flags().StringP("service-offering", "o", defaultServiceOffering, serviceOfferingHelp)
 	vmCreateCmd.Flags().Int64P("disk", "d", 50, "disk size")
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "SSH keypair name. If not specified, a single-use SSH key will be created.")
-	vmCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security Group <name | id>. Can be specified multiple times.")
-	vmCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Private Network <name | id>. Can be specified multiple times.")
-	vmCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinity Group <name | id>. Can be specified multiple times.")
+	vmCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security Group NAME|ID. Can be specified multiple times.")
+	vmCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Private Network NAME|ID. Can be specified multiple times.")
+	vmCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinity Group NAME|ID. Can be specified multiple times.")
 	vmCreateCmd.Flags().StringP("cloud-init-file", "f", "", "cloud-init userdata")
 	vmCreateCmd.Flags().BoolP("ipv6", "6", false, "enable IPv6")
 	vmCmd.AddCommand(vmCreateCmd)

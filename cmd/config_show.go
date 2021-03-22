@@ -26,7 +26,7 @@ func (o *configShowOutput) toTable()     { outputTable(o) }
 
 func init() {
 	configCmd.AddCommand(&cobra.Command{
-		Use:   "show <account name>",
+		Use:   "show NAME",
 		Short: "Show an account details",
 		Long: fmt.Sprintf(`This command shows an Exoscale account details.
 

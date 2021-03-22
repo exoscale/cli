@@ -33,7 +33,7 @@ func (o *sksNodepoolShowOutput) toTable()     { outputTable(o) }
 func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
 
 var sksNodepoolShowCmd = &cobra.Command{
-	Use:   "show <cluster name | ID> <Nodepool name | ID>",
+	Use:   "show CLUSTER-NAME|ID NODEPOOL-NAME|ID",
 	Short: "Show a SKS cluster Nodepool details",
 	Long: fmt.Sprintf(`This command shows a SKS cluster Nodepool details.
 

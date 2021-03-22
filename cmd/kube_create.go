@@ -182,9 +182,8 @@ sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf apply \
 	},
 }
 
-// kubeCreateCmd represents the create command
 var kubeCreateCmd = &cobra.Command{
-	Use:   "create <cluster name>",
+	Use:   "create NAME",
 	Short: "Create and configure a standalone Kubernetes cluster",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
@@ -349,7 +348,7 @@ configuration (e.g. ~/.bashrc, ~/.zshrc).
 	},
 }
 
-// createExokubeSecurityGroup creates the firewall security group to put kube VM instances into, or returns it if it
+// createExokubeSecurityGroup creates the firewall Security Group to put kube VM instances into, or returns it if it
 // already exists.
 func createExokubeSecurityGroup() (*egoscale.SecurityGroup, error) {
 	sg, err := getSecurityGroupByNameOrID(kubeSecurityGroup)
@@ -579,8 +578,7 @@ func fetchKubernetesVersion(requested string) (string, error) {
 
 func init() {
 	kubeCreateCmd.PersistentFlags().BoolVarP(&kubeCreateDebug, "debug", "d", false, "debug mode on")
-	kubeCreateCmd.Flags().StringP("size", "s", "medium", "<name | id> "+
-		"(micro|tiny|small|medium|large|extra-large|huge|mega|titan|jumbo)")
+	kubeCreateCmd.Flags().StringP("size", "s", "medium", serviceOfferingHelp)
 	kubeCreateCmd.Flags().StringP("version", "v", "", "install a specific Kubernetes version")
 	kubeCreateCmd.Flags().String("calico-version", "", "install a specific Calico version")
 	kubeCreateCmd.Flags().String("docker-version", "", "install a specific Docker version")

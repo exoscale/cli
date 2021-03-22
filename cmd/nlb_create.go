@@ -9,7 +9,7 @@ import (
 )
 
 var nlbCreateCmd = &cobra.Command{
-	Use:     "create <name>",
+	Use:     "create NAME",
 	Short:   "Create a Network Load Balancer",
 	Aliases: gCreateAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {

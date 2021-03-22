@@ -8,9 +8,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// removeCmd represents the remove command
 var runstatusIncidentRemoveCmd = &cobra.Command{
-	Use:     "remove [page name] <incident name | id>",
+	Use:     "remove [PAGE] INCIDENT-NAME|ID",
 	Short:   "Remove incident from a runstat.us page",
 	Aliases: gRemoveAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -45,7 +44,7 @@ var runstatusIncidentRemoveCmd = &cobra.Command{
 		}
 
 		// TODO: add "--force" flag
-		if !askQuestion(fmt.Sprintf("sure you want to delete %q incident", incidentName)) {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to delete incident %q?", incidentName)) {
 			return nil
 		}
 		if err := csRunstatus.DeleteRunstatusIncident(gContext, *incident); err != nil {

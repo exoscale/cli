@@ -4,9 +4,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// createCmd represents the create command
 var sosCreateCmd = &cobra.Command{
-	Use:     "create <name>",
+	Use:     "create NAME",
 	Short:   "Create a bucket",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

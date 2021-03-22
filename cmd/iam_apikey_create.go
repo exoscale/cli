@@ -25,7 +25,7 @@ func (o *apiKeyCreateItemOutput) toTable() { outputTable(o) }
 
 // apiKeyCreateCmd represents an API key creation command
 var apiKeyCreateCmd = &cobra.Command{
-	Use:   "create <name>",
+	Use:   "create NAME",
 	Short: "Create an API key",
 	Long: fmt.Sprintf(`This command create an API key.
 

@@ -11,7 +11,7 @@ import (
 )
 
 var sksNodepoolScaleCmd = &cobra.Command{
-	Use:   "scale <cluster name | ID> <Nodepool name | ID> <size>",
+	Use:   "scale CLUSTER-NAME|ID NODEPOOL-NAME|ID SIZE",
 	Short: "Scale a SKS cluster Nodepool size",
 	Long: `This command scales a SKS cluster Nodepool size up (growing) or down
 (shrinking).

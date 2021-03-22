@@ -21,7 +21,7 @@ func (o *sshkeyUploadOutput) toTable()     { outputTable(o) }
 
 func init() {
 	sshkeyCmd.AddCommand(&cobra.Command{
-		Use:   "upload <name> <public key file>",
+		Use:   "upload NAME PUBLIC-KEY-FILE",
 		Short: "Upload SSH key",
 		Long: fmt.Sprintf(`This command uploads a locally existing SSH key.
 
@@ -48,7 +48,6 @@ func uploadSSHKey(name, publicKeyPath string) (outputter, error) {
 		Name:      name,
 		PublicKey: string(pbk),
 	})
-
 	if err != nil {
 		return nil, err
 	}

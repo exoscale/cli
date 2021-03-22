@@ -25,8 +25,8 @@ func (o *instancePoolListOutput) toTable() { outputTable(o) }
 
 var instancePoolListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List instance pools",
-	Long: fmt.Sprintf(`This command lists instance pools.
+	Short: "List Instance Pools",
+	Long: fmt.Sprintf(`This command lists Instance Pools.
 
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instancePoolListItemOutput{}), ", ")),

@@ -64,7 +64,7 @@ func (o *sksShowOutput) toTable() {
 }
 
 var sksShowCmd = &cobra.Command{
-	Use:   "show <name | ID>",
+	Use:   "show NAME|ID",
 	Short: "Show a SKS cluster details",
 	Long: fmt.Sprintf(`This command shows a SKS cluster details.
 

@@ -10,7 +10,7 @@ import (
 
 // templateRegisterCmd registers a template
 var templateRegisterCmd = &cobra.Command{
-	Use:   "register <name>",
+	Use:   "register NAME",
 	Short: "register a custom template",
 	Long: fmt.Sprintf(`This command registers a new Compute instance template.
 

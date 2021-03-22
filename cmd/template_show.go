@@ -27,8 +27,8 @@ func (o *templateShowOutput) toText()      { outputText(o) }
 func (o *templateShowOutput) toTable()     { outputTable(o) }
 
 func init() {
-	var templateShowCmd = &cobra.Command{
-		Use:   "show <template name | id>",
+	templateShowCmd := &cobra.Command{
+		Use:   "show NAME|ID",
 		Short: "Show a template details",
 		Long: fmt.Sprintf(`This command shows a Compute instance template details.
 

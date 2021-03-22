@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// runstatusMaintenanceCmd represents the maintenance command
 var runstatusMaintenanceCmd = &cobra.Command{
 	Use:   "maintenance",
 	Short: "Maintenance management",

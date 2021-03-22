@@ -9,8 +9,8 @@ import (
 )
 
 var affinitygroupCreateCmd = &cobra.Command{
-	Use:   "create <name>",
-	Short: "Create Anti-Affinity Group",
+	Use:   "create NAME",
+	Short: "Create an Anti-Affinity Group",
 	Long: fmt.Sprintf(`This command creates an Anti-Affinity Group.
 
 Supported output template annotations: %s`,
@@ -48,6 +48,6 @@ func createAffinityGroup(name, desc string) (outputter, error) {
 }
 
 func init() {
-	affinitygroupCreateCmd.Flags().StringP("description", "d", "", "affinity group description")
+	affinitygroupCreateCmd.Flags().StringP("description", "d", "", "Anti-Affinity Group description")
 	affinitygroupCmd.AddCommand(affinitygroupCreateCmd)
 }

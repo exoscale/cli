@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	zoneHelp = "zone <name | id> (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1|bg-sof-1|de-muc-1)"
+	zoneHelp = "zone NAME|ID (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1|bg-sof-1|de-muc-1)"
 )
 
 // zones represents the list of known Exoscale zones, in case we need it without performing API lookup.
