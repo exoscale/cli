@@ -71,13 +71,13 @@ func (o *storageListBucketsOutput) toTable() {
 }
 
 var storageListCmd = &cobra.Command{
-	Use:   "list [bucket[/[prefix/]]",
+	Use:   "list [sos://BUCKET[/[PREFIX/]]",
 	Short: "List buckets and objects",
 	Long: fmt.Sprintf(`This command lists buckets and their objects.
 
 If no argument is passed, this commands lists existing buckets. If a prefix is
-specified (e.g. "bucket/.../") the command lists the objects stored in the
-bucket under the corresponding prefix.
+specified (e.g. "sos://my-bucket/.../") the command lists the objects stored
+in the bucket under the corresponding prefix.
 
 Supported output template annotations:
 
@@ -86,6 +86,12 @@ Supported output template annotations:
 		strings.Join(outputterTemplateAnnotations(&storageListBucketsItemOutput{}), ", "),
 		strings.Join(outputterTemplateAnnotations(&storageListObjectsItemOutput{}), ", ")),
 	Aliases: gListAlias,
+
+	PreRun: func(cmd *cobra.Command, args []string) {
+		if len(args) == 1 {
+			args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		}
+	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var (
@@ -156,7 +162,7 @@ func listStorageBuckets() (outputter, error) {
 			Name:    b.Name,
 			Zone:    b.Region,
 			Size:    b.Usage,
-			Created: created.Format("2006-01-02 15:04:05 MST"),
+			Created: created.Format(storageTimestampFormat),
 		})
 	}
 
@@ -205,7 +211,7 @@ func (c *storageClient) listObjects(bucket, prefix string, recursive, stream boo
 				out = append(out, storageListObjectsItemOutput{
 					Path:         aws.ToString(o.Key),
 					Size:         o.Size,
-					LastModified: o.LastModified.Format("2006-01-02 15:04:05 MST"),
+					LastModified: o.LastModified.Format(storageTimestampFormat),
 				})
 			}
 		}

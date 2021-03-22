@@ -12,18 +12,18 @@ import (
 )
 
 var storageSetACLCmd = &cobra.Command{
-	Use:   "setacl <bucket>[/object | prefix/] [canned ACL]",
+	Use:   "setacl sos://BUCKET/[OBJECT|PREFIX/] [CANNED-ACL]",
 	Short: "Set a bucket/objects ACL",
 	Long: fmt.Sprintf(`This command sets bucket/objects ACL.
 It can be used in 2 (mutually exclusive) forms:
 
     * With a "canned" ACL:
 
-        exo storage setacl my-bucket public-read
+        exo storage setacl sos://my-bucket public-read
 
     * With explicit Access Control Policy (ACP) grantees:
 
-        exo storage setacl my-bucket \
+        exo storage setacl sos://my-bucket \
             --full-control alice@example.net \
             --read bob@example.net
 
@@ -45,8 +45,8 @@ https://community.exoscale.com/documentation/storage/acl/
 If you want to target objects under a "directory" prefix, suffix the path
 argument with "/":
 
-    exo storage setacl my-bucket/ --full-control alice@example.net
-    exo storage setacl -r my-bucket/public/ public-read
+    exo storage setacl sos://my-bucket/ --full-control alice@example.net
+    exo storage setacl -r sos://my-bucket/public/ public-read
 
 Supported output template annotations:
 
@@ -61,6 +61,8 @@ Supported output template annotations:
 		if len(args) < 1 || len(args) > 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		if (len(args) == 2 && storageACLFromCmdFlags(cmd.Flags()) != nil) ||
 			(len(args) == 1 && storageACLFromCmdFlags(cmd.Flags()) == nil) {

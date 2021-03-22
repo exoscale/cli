@@ -11,7 +11,7 @@ import (
 )
 
 var storageMbCmd = &cobra.Command{
-	Use:     "mb <name>",
+	Use:     "mb sos://BUCKET",
 	Aliases: []string{"create"},
 	Short:   "Create a new bucket",
 	Long: fmt.Sprintf(`This command creates a new bucket.
@@ -23,6 +23,8 @@ Supported output template annotations: %s`,
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		cmdSetZoneFlagFromDefault(cmd)
 

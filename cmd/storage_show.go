@@ -145,7 +145,7 @@ func (o *storageShowObjectOutput) toTable() {
 
 func init() {
 	storageCmd.AddCommand(&cobra.Command{
-		Use:   "show <bucket>[/object]>",
+		Use:   "show sos://BUCKET/[OBJECT]",
 		Short: "Show a bucket/object details",
 		Long: fmt.Sprintf(`This command lists Storage buckets and objects.
 
@@ -160,6 +160,8 @@ Supported output template annotations:
 			if len(args) != 1 {
 				cmdExitOnUsageError(cmd, "invalid arguments")
 			}
+
+			args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 			return nil
 		},
@@ -248,7 +250,7 @@ func (c *storageClient) showObject(bucket, key string) (outputter, error) {
 	out := storageShowObjectOutput{
 		Path:         key,
 		Bucket:       bucket,
-		LastModified: object.LastModified.Format("2006-01-02 15:04:05 MST"),
+		LastModified: object.LastModified.Format(storageTimestampFormat),
 		Size:         object.ContentLength,
 		ACL:          storageACLFromS3(acl.Grants),
 		Metadata:     object.Metadata,

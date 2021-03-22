@@ -2,19 +2,23 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/spf13/cobra"
 )
 
-var storageCORSResetCmd = &cobra.Command{
-	Use:   "reset",
-	Short: "Reset the CORS configuration of a bucket",
+var storageCORSDeleteCmd = &cobra.Command{
+	Use:     "delete sos://BUCKET",
+	Aliases: []string{"del"},
+	Short:   "Delete the CORS configuration of a bucket",
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		return nil
 	},
@@ -33,7 +37,7 @@ var storageCORSResetCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to reset bucket %s CORS configuration?",
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete bucket %s CORS configuration?",
 				bucket)) {
 				return nil
 			}
@@ -47,12 +51,12 @@ var storageCORSResetCmd = &cobra.Command{
 			return fmt.Errorf("unable to initialize storage client: %v", err)
 		}
 
-		if err := storage.resetBucketCORS(bucket); err != nil {
-			return fmt.Errorf("unable to reset bucket CORS configuration: %s", err)
+		if err := storage.deleteBucketCORS(bucket); err != nil {
+			return fmt.Errorf("unable to delete bucket CORS configuration: %s", err)
 		}
 
 		if !gQuiet {
-			fmt.Println("CORS configuration reset successfully")
+			fmt.Println("CORS configuration deleted successfully")
 		}
 
 		return nil
@@ -60,12 +64,11 @@ var storageCORSResetCmd = &cobra.Command{
 }
 
 func init() {
-	storageCORSResetCmd.Flags().BoolP("force", "f", false,
-		"attempt to reset CORS configuration without prompting for confirmation")
-	storageCORSCmd.AddCommand(storageCORSResetCmd)
+	storageCORSDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
+	storageCORSCmd.AddCommand(storageCORSDeleteCmd)
 }
 
-func (c *storageClient) resetBucketCORS(bucket string) error {
+func (c *storageClient) deleteBucketCORS(bucket string) error {
 	_, err := c.DeleteBucketCors(gContext, &s3.DeleteBucketCorsInput{Bucket: &bucket})
 	return err
 }

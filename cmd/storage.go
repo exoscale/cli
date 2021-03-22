@@ -21,10 +21,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	storageBucketPrefix    = "sos://"
+	storageTimestampFormat = "2006-01-02 15:04:05 MST"
+)
+
 var (
 	storageCmd = &cobra.Command{
 		Use:              "storage",
-		Aliases:          []string{"obst"},
 		Short:            "Object Storage management",
 		Long:             storageCmdLongHelp(),
 		TraverseChildren: true,

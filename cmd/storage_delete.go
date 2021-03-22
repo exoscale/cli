@@ -11,22 +11,24 @@ import (
 )
 
 var storageDeleteCmd = &cobra.Command{
-	Use:     "delete <bucket>/[object | prefix/]",
-	Aliases: []string{"rm"},
+	Use:     "delete sos://BUCKET/[OBJECT|PREFIX/]",
+	Aliases: []string{"del", "rm"},
 	Short:   "Delete objects",
 	Long: `This command deletes objects stored in a bucket.
 
 If you want to target objects under a "directory" prefix, suffix the path
 argument with "/":
 
-    exo storage delete my-bucket/
-    exo storage delete -r my-bucket/some-directory/
+    exo storage delete sos://my-bucket/
+    exo storage delete -r sos://my-bucket/some-directory/
 `,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			args[0] = args[0] + "/"
@@ -73,7 +75,8 @@ argument with "/":
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %s%s?", bucket, prefix)) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %s%s/%s?",
+				storageBucketPrefix, bucket, prefix)) {
 				return nil
 			}
 		}
@@ -102,8 +105,7 @@ argument with "/":
 }
 
 func init() {
-	storageDeleteCmd.Flags().BoolP("force", "f", false,
-		"attempt to delete objects without prompting for confirmation")
+	storageDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	storageDeleteCmd.Flags().BoolP("recursive", "r", false, "delete objects recursively")
 	storageDeleteCmd.Flags().BoolP("verbose", "v", false, "output deleted objects")
 	storageCmd.AddCommand(storageDeleteCmd)

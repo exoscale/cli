@@ -10,13 +10,13 @@ import (
 )
 
 var storageMetadataAddCmd = &cobra.Command{
-	Use:   "add <bucket>/<object | prefix/> <key1=value1> [key2=value2 ...]",
+	Use:   "add sos://BUCKET/(OBJECT|PREFIX/) KEY=VALUE...",
 	Short: "Add key/value metadata to an object",
 	Long: fmt.Sprintf(`This command adds key/value metadata to an object.
 
 Example:
 
-    exo storage metadata add my-bucket/object-a \
+    exo storage metadata add sos://my-bucket/object-a \
         k1=v1 \
         k2=v2
 
@@ -29,6 +29,8 @@ Supported output template annotations: %s`,
 		if len(args) < 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))

@@ -26,7 +26,7 @@ type storageUploadConfig struct {
 }
 
 var storageUploadCmd = &cobra.Command{
-	Use:     "upload <file ...> <bucket>[/prefix/]",
+	Use:     "upload FILE... sos://BUCKET/[PREFIX/]",
 	Aliases: []string{"put"},
 	Short:   "Upload files to a bucket",
 	Long: `This command uploads local files to a bucket.
@@ -34,22 +34,24 @@ var storageUploadCmd = &cobra.Command{
 Examples:
 
     # Upload files at the root of the bucket
-    exo storage upload a b c my-bucket
+    exo storage upload a b c sos://my-bucket
 
     # Upload files in a directory (trailing "/" in destination)
-    exo storage upload index.html my-bucket/public/
+    exo storage upload index.html sos://my-bucket/public/
 
     # Upload a file under a different name
-    exo storage upload a.txt my-bucket/z.txt
+    exo storage upload a.txt sos://my-bucket/z.txt
 
     # Upload a directory recursively
-    exo storage upload -r my-files/ my-bucket
+    exo storage upload -r my-files/ sos://my-bucket
 `,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[len(args)-1] = strings.TrimPrefix(args[len(args)-1], storageBucketPrefix)
 
 		return nil
 	},

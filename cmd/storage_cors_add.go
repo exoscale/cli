@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -61,14 +62,14 @@ func storageCORSRuleFromCmdFlags(flags *pflag.FlagSet) *storageCORSRule {
 }
 
 var storageCORSAddCmd = &cobra.Command{
-	Use:   "add <bucket>",
+	Use:   "add sos://BUCKET",
 	Short: "Add a CORS configuration rule to a bucket",
 	Long: `This command adds a new rule to the current bucket CORS
 configuration.
 
 Example:
 
-    exo storage cors add my-bucket \
+    exo storage cors add sos://my-bucket \
         --allowed-origin "https://my-website.net" \
         --allowed-method "*"
 `,
@@ -77,6 +78,8 @@ Example:
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		return cmdCheckRequiredFlags(cmd, []string{
 			storageCORSAddCmdFlagAllowedOrigin,

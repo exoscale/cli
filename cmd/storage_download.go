@@ -29,7 +29,7 @@ type storageDownloadConfig struct {
 }
 
 var storageDownloadCmd = &cobra.Command{
-	Use:     "download <bucket>/[object | prefix/] [destination]",
+	Use:     "download sos://BUCKET/[OBJECT|PREFIX/] [DESTINATION]",
 	Aliases: []string{"get"},
 	Short:   "Download files from a bucket",
 	Long: `This command downloads files from a bucket.
@@ -40,19 +40,21 @@ directory.
 Examples:
 
     # Download a single file
-    exo storage download my-bucket/file-a
+    exo storage download sos://my-bucket/file-a
 
     # Download a single file and rename it locally
-    exo storage download my-bucket/file-a file-z
+    exo storage download sos://my-bucket/file-a file-z
 
     # Download a prefix recursively
-    exo storage download -r my-bucket/public/ /tmp/public/
+    exo storage download -r sos://my-bucket/public/ /tmp/public/
 `,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 || len(args) > 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		// Append implicit root prefix ("/") if only a bucket name is specified in the source
 		if !strings.Contains(args[0], "/") {

@@ -10,14 +10,14 @@ import (
 )
 
 var storageMetadataDeleteCmd = &cobra.Command{
-	Use:     "delete <bucket>/<object | prefix/> <key> [key ...]",
+	Use:     "delete sos://BUCKET/(OBJECT|PREFIX/) KEY...",
 	Aliases: []string{"del"},
 	Short:   "Delete metadata from an object",
 	Long: fmt.Sprintf(`This command deletes key/value metadata from an object.
 
 Example:
 
-    exo storage metadata delete my-bucket/object-a k1
+    exo storage metadata delete sos://my-bucket/object-a k1
 
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
@@ -26,6 +26,8 @@ Supported output template annotations: %s`,
 		if len(args) < 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))

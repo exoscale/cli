@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -11,13 +12,15 @@ import (
 )
 
 var storageRbCmd = &cobra.Command{
-	Use:   "rb <bucket>",
+	Use:   "rb sos://BUCKET",
 	Short: "Delete a bucket",
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -39,7 +42,7 @@ var storageRbCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %s?", bucket)) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %s%s?", storageBucketPrefix, bucket)) {
 				return nil
 			}
 		}
@@ -57,7 +60,7 @@ var storageRbCmd = &cobra.Command{
 		}
 
 		if !gQuiet {
-			fmt.Printf("Bucket %q deleted successfully\n", bucket)
+			fmt.Printf("Bucket %s%s deleted successfully\n", storageBucketPrefix, bucket)
 		}
 
 		return nil
@@ -65,8 +68,7 @@ var storageRbCmd = &cobra.Command{
 }
 
 func init() {
-	storageRbCmd.Flags().BoolP("force", "f", false,
-		"attempt to delete bucket without prompting for confirmation")
+	storageRbCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	storageRbCmd.Flags().BoolP("recursive", "r", false,
 		"empty the bucket before deleting it")
 	storageCmd.AddCommand(storageRbCmd)
@@ -100,7 +102,7 @@ func (c storageClient) deleteBucket(bucket string, recursive bool) error {
 		var apiErr smithy.APIError
 		if errors.As(err, &apiErr) {
 			if apiErr.ErrorCode() == "BucketNotEmpty" {
-				return errors.New("bucket is not empty, either delete files before or use flag  `-r`")
+				return errors.New("bucket is not empty, either delete files before or use flag `-r`")
 			}
 		}
 

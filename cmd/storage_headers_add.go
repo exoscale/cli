@@ -12,13 +12,13 @@ import (
 )
 
 var storageHeaderAddCmd = &cobra.Command{
-	Use:   "add <bucket>/<object | prefix/>",
+	Use:   "add sos://BUCKET/(OBJECT|PREFIX/)",
 	Short: "Add HTTP headers to an object",
 	Long: fmt.Sprintf(`This command adds response HTTP headers to objects.
 
 Example:
 
-    exo storage headers add my-bucket/data.json \
+    exo storage headers add sos://my-bucket/data.json \
         --content-type=application/json \
         --cache-control=no-store
 
@@ -31,6 +31,8 @@ Supported output template annotations: %s`,
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))

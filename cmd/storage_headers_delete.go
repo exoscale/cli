@@ -10,14 +10,14 @@ import (
 )
 
 var storageHeaderDeleteCmd = &cobra.Command{
-	Use:     "delete <bucket>/<object | prefix/>",
+	Use:     "delete sos://BUCKET/(OBJECT|PREFIX/)",
 	Aliases: []string{"del"},
 	Short:   "Delete HTTP headers from an object",
 	Long: fmt.Sprintf(`This command deletes response HTTP headers from objects.
 
 Example:
 
-    exo storage headers delete my-bucket/data.json \
+    exo storage headers delete sos://my-bucket/data.json \
         --cache-control \
         --expires
 
@@ -31,6 +31,8 @@ Supported output template annotations: %s`,
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
+
+		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
