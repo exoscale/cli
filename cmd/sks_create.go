@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -62,11 +63,6 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		version, err := cmd.Flags().GetString("kubernetes-version")
-		if err != nil {
-			return err
-		}
-
 		level, err := cmd.Flags().GetString("service-level")
 		if err != nil {
 			return err
@@ -86,6 +82,22 @@ Supported output template annotations: %s`,
 		}
 		if noExoscaleCCM {
 			delete(addOns, "exoscale-cloud-controller")
+		}
+
+		version, err := cmd.Flags().GetString("kubernetes-version")
+		if err != nil {
+			return err
+		}
+		if version == "latest" {
+			ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+			versions, err := cs.ListSKSClusterVersions(ctx)
+			if err != nil || len(versions) == 0 {
+				if len(versions) == 0 {
+					err = errors.New("no version returned by the API")
+				}
+				return fmt.Errorf("unable to retrieve SKS versions: %s", err)
+			}
+			version = versions[0]
 		}
 
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
@@ -187,7 +199,7 @@ Supported output template annotations: %s`,
 func init() {
 	sksCreateCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
 	sksCreateCmd.Flags().String("description", "", "SKS cluster description")
-	sksCreateCmd.Flags().String("kubernetes-version", "1.20.2",
+	sksCreateCmd.Flags().String("kubernetes-version", "latest",
 		"SKS cluster control plane Kubernetes version")
 	sksCreateCmd.Flags().String("service-level", "pro",
 		"SKS cluster control plane service level (starter|pro)")
