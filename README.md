@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/exoscale/cli/workflows/CI/badge.svg?branch=main)](https://github.com/exoscale/cli/actions?query=workflow%3ACI+branch%3Amaster)
+[![Actions Status](https://github.com/exoscale/cli/workflows/CI/badge.svg?branch=master)](https://github.com/exoscale/cli/actions?query=workflow%3ACI+branch%3Amaster)
 
 # Exoscale CLI
 
