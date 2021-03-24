@@ -8,6 +8,10 @@
 - `exo sks`: add `rotate-ccm-credentials` command
 - `exo sks nodepool`: add `list` command (#314)
 
+### Bug Fixes
+
+- Manpages are now rendered correctly.
+
 ### Improvements
 
 - `exo sks nodepool`: support Nodepools Security Groups/Anti-Affinity Groups updating
@@ -15,6 +19,7 @@
 ### Changes
 
 - `exo sks kubeconfig`: use group `system:masters` by default if no groups are specified
+- `exo sks create`: flag `--version` now defaults to `latest` (latest available version returned by `exo sks versions`)
 
 
 ## 1.24.0
