@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.26.0
+
+### Bug Fixes
+
+- Raise the timeout value for the `exo sks *` commands.
+
+### Improvements
+
+- `exo sks kubeconfig`: add support for exec credential mode (#323)
+
+
 ## 1.25.0
 
 ### Features
