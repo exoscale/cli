@@ -15,7 +15,7 @@ var sksCmd = &cobra.Command{
 	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		// Some SKS operations can take a long time, raising
 		// the Exoscale API client timeout as a precaution.
-		cs.Timeout = 10 * time.Minute
+		cs.Client.SetTimeout(10 * time.Minute)
 	},
 }
 
