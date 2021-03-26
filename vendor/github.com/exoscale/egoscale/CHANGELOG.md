@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.47.0
+------
+
+- feature: v2: add client property setters (#485)
+
 0.46.1
 ------
 

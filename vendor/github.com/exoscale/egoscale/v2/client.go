@@ -146,6 +146,21 @@ func NewClient(apiKey, apiSecret string, opts ...ClientOpt) (*Client, error) {
 	return &client, nil
 }
 
+// SetHTTPClient overrides the current HTTP client.
+func (c *Client) SetHTTPClient(client *http.Client) {
+	c.httpClient = client
+}
+
+// SetTimeout overrides the current client timeout value.
+func (c *Client) SetTimeout(v time.Duration) {
+	c.timeout = v
+}
+
+// SetTrace enables or disables HTTP request/reponse tracing.
+func (c *Client) SetTrace(enabled bool) {
+	c.trace = enabled
+}
+
 // setEndpointFromContext is an HTTP client request interceptor that overrides the "Host" header
 // with information from a request endpoint optionally set in the context instance. If none is
 // found, the request is left untouched.
