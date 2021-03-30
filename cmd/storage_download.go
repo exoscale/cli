@@ -165,7 +165,7 @@ func (c *storageClient) downloadFiles(config *storageDownloadConfig) error {
 			}
 
 			if strings.HasSuffix(config.destination, "/") {
-				return path.Join(config.destination, aws.ToString(object.Key))
+				return path.Join(config.destination, path.Base(aws.ToString(object.Key)))
 			}
 
 			return path.Join(config.destination)
