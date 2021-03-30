@@ -4,6 +4,12 @@ replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.42.0
 
 require (
 	github.com/alecthomas/chroma v0.7.3
+	github.com/aws/aws-sdk-go-v2 v1.2.0
+	github.com/aws/aws-sdk-go-v2/config v1.1.1
+	github.com/aws/aws-sdk-go-v2/credentials v1.1.1
+	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.0.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
+	github.com/aws/smithy-go v1.1.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/deepmap/oapi-codegen v1.5.1 // indirect

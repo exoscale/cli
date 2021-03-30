@@ -24,7 +24,7 @@ func cmdCheckRequiredFlags(cmd *cobra.Command, flags []string) error {
 				var hasValue bool
 
 				switch flag.Value.Type() {
-				case "string":
+				case "string", "stringSlice":
 					if flag.Value.String() != "" {
 						hasValue = true
 					}

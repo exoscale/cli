@@ -3,10 +3,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/fatih/camelcase"
 	"github.com/spf13/cobra"
@@ -293,6 +295,30 @@ func decorateAsyncOperation(message string, fn func()) {
 	<-done
 	spinner.Increment(1)
 	p.Wait()
+}
+
+// proxyWriterAt is a variant of the internal mpb.proxyWriterTo struct,
+// required for using mpb with s3manager batch download manager (accepting
+// a io.WriterAt interface) since mpb.Bar's ProxyReader() method only
+// supports io.Reader and io.WriterTo interfaces.
+type proxyWriterAt struct {
+	wt  io.WriterAt
+	bar *mpb.Bar
+	iT  time.Time
+}
+
+func (prox *proxyWriterAt) WriteAt(p []byte, off int64) (n int, err error) {
+	n, err = prox.wt.WriteAt(p, off)
+	if n > 0 {
+		prox.bar.IncrInt64(int64(n), time.Since(prox.iT))
+		prox.iT = time.Now()
+	}
+
+	if err == io.EOF {
+		go prox.bar.SetTotal(0, true)
+	}
+
+	return n, err
 }
 
 func init() {

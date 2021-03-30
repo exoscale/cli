@@ -24,7 +24,7 @@ const (
 )
 
 var sosCmdLongHelp = func() string {
-	var long = "Manage Exoscale Object Storage (SOS)"
+	long := "Manage Exoscale Object Storage (SOS)"
 
 	if runtime.GOOS == "windows" {
 		long += `
@@ -55,6 +55,15 @@ var sosCmd = &cobra.Command{
 	Short:            "Simple Object Storage management",
 	Long:             sosCmdLongHelp(),
 	TraverseChildren: true,
+
+	Hidden: true,
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintln(os.Stderr,
+			`**********************************************************************
+The "exo sos" commands are deprecated and replaced by "exo storage",
+they will be removed in a future version.
+**********************************************************************`)
+	},
 }
 
 type sosClient struct {
@@ -66,7 +75,7 @@ type sosClient struct {
 // sosGetExternalCertsFile returns the path to an external certificates file on Windows platforms as a workaround
 // for Golang issue #16736 on Windows (https://github.com/golang/go/issues/16736).
 func sosGetExternalCertsFile(certsFile string) (string, error) {
-	var warningMessage = `error: missing SOS certificates file.
+	warningMessage := `error: missing SOS certificates file.
 
 It seems you are running on Windows and your "sos-certs.pem" file is missing.
 Please download and extract all files from the exo CLI release, not just the
