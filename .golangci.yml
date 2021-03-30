@@ -4,10 +4,10 @@ linters-settings:
 
 linters:
   enable:
+    - exportloopref
     - gofmt
     - golint
     - megacheck
     - misspell
     - prealloc
     - unparam
-    - scopelint
