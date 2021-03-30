@@ -175,6 +175,14 @@ func (c *storageClient) forEachObject(bucket, prefix string, recursive bool, fn 
 				continue
 			}
 
+			// If the prefix doesn't end with a trailing prefix separator ("/"),
+			// consider it as a single object key and match only one exact result
+			// (except in recursive mode, where the prefix is expected to be a
+			// "directory").
+			if !recursive && !strings.HasSuffix(prefix, "/") && aws.ToString(o.Key) != prefix {
+				continue
+			}
+
 			o := o
 			if err := fn(&o); err != nil {
 				return err
