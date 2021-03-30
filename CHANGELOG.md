@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.27.0
+
+### New
+
+- `exo storage` commands (#319)
+
+### Changes
+
+- The `exo sos` commands are now deprecated and replaced by `exo storage` commands.
+
+
 ## 1.26.0
 
 ### Bug Fixes
