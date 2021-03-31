@@ -154,6 +154,13 @@ func (c *storageClient) downloadFiles(config *storageDownloadConfig) error {
 		return errors.New(`multiple files to download, destination must end with "/"`)
 	}
 
+	// Handle relative filesystem destination (e.g. ".", "../.." etc.)
+	if dstInfo, err := os.Stat(config.destination); err == nil {
+		if dstInfo.IsDir() && !strings.HasSuffix(config.destination, "/") {
+			config.destination += "/"
+		}
+	}
+
 	if config.dryRun {
 		fmt.Println("[DRY-RUN]")
 	}
