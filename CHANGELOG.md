@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.27.1
+
+### Bug Fixes
+
+- Various `exo storage` bug fixes (#326)
+
+
 ## 1.27.0
 
 ### New
