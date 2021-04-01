@@ -55,7 +55,7 @@ func init() {
 			// Conditional HTTP client request tracing
 			awsconfig.WithClientLogMode(func() aws.ClientLogMode {
 				if _, ok := os.LookupEnv("EXOSCALE_TRACE"); ok {
-					return aws.LogRequestWithBody | aws.LogResponseWithBody
+					return aws.LogRequest | aws.LogResponse
 				}
 				return 0
 			}()),
