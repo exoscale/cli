@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -204,7 +205,7 @@ func (c *storageClient) downloadFiles(config *storageDownloadConfig) error {
 func (c *storageClient) downloadFile(bucket string, object *s3types.Object, dst string) error {
 	maxFilenameLen := 16
 
-	pb := mpb.New(
+	pb := mpb.NewWithContext(gContext,
 		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool {
 			return gQuiet
 		}),
@@ -251,6 +252,11 @@ func (c *storageClient) downloadFile(bucket string, object *s3types.Object, dst 
 		)
 
 	pb.Wait()
+
+	if errors.Is(err, context.Canceled) {
+		fmt.Fprintf(os.Stderr, "\rDownload interrupted by user\n")
+		return nil
+	}
 
 	return err
 }
