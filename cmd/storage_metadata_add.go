@@ -106,6 +106,10 @@ func (c *storageClient) addObjectMetadata(bucket, key string, metadata map[strin
 		return err
 	}
 
+	if len(object.Metadata) == 0 {
+		object.Metadata = make(map[string]string)
+	}
+
 	for k, v := range metadata {
 		object.Metadata[k] = v
 	}
