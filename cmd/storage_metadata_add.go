@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const storageMetadataForbiddenCharset = `()<>@,;!:\\'&"/[]?_={} `
+
 var storageMetadataAddCmd = &cobra.Command{
 	Use:   "add sos://BUCKET/(OBJECT|PREFIX/) KEY=VALUE...",
 	Short: "Add key/value metadata to an object",
@@ -20,9 +22,13 @@ Example:
         k1=v1 \
         k2=v2
 
-Note: adding an already existing key will overwrite its value.
+Notes:
+
+  * Adding an already existing key will overwrite its value.
+  * The following characters are not allowed in keys: %s
 
 Supported output template annotations: %s`,
+		strings.Join(strings.Split(storageMetadataForbiddenCharset, ""), " "),
 		strings.Join(outputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -111,6 +117,10 @@ func (c *storageClient) addObjectMetadata(bucket, key string, metadata map[strin
 	}
 
 	for k, v := range metadata {
+		if strings.ContainsAny(k, storageMetadataForbiddenCharset) {
+			return fmt.Errorf("%s: invalid value", k)
+		}
+
 		object.Metadata[k] = v
 	}
 
