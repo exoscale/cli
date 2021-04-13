@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -99,17 +101,38 @@ func deleteKeyPair(vmID egoscale.UUID) error {
 }
 
 func getUserDataFromFile(path string) (string, error) {
-	buf, err := ioutil.ReadFile(path)
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
-	userData := base64.StdEncoding.EncodeToString(buf)
+
+	userData, err := prepareUserData(data)
+	if err != nil {
+		return "", err
+	}
 
 	if len(userData) >= maxUserDataLength {
 		return "", fmt.Errorf("user-data maximum allowed length is %d bytes", maxUserDataLength)
 	}
 
 	return userData, nil
+}
+
+func prepareUserData(data []byte) (string, error) {
+	b := new(bytes.Buffer)
+	gz := gzip.NewWriter(b)
+
+	if _, err := gz.Write(data); err != nil {
+		return "", err
+	}
+	if err := gz.Flush(); err != nil {
+		return "", err
+	}
+	if err := gz.Close(); err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
 }
 
 func init() {
