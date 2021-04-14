@@ -11,6 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	sksClusterAddonExoscaleCCM   = "exoscale-cloud-controller"
+	sksClusterAddonMetricsServer = "metrics-server"
+)
+
 var sksCreateCmd = &cobra.Command{
 	Use:   "create NAME",
 	Short: "Create a SKS cluster",
@@ -49,7 +54,8 @@ Supported output template annotations: %s`,
 			cluster *exov2.SKSCluster
 			cni     = "calico"
 			addOns  = map[string]struct{}{
-				"exoscale-cloud-controller": {},
+				sksClusterAddonExoscaleCCM:   {},
+				sksClusterAddonMetricsServer: {},
 			}
 		)
 
@@ -81,7 +87,15 @@ Supported output template annotations: %s`,
 			return err
 		}
 		if noExoscaleCCM {
-			delete(addOns, "exoscale-cloud-controller")
+			delete(addOns, sksClusterAddonExoscaleCCM)
+		}
+
+		noMetricsServer, err := cmd.Flags().GetBool("no-metrics-server")
+		if err != nil {
+			return err
+		}
+		if noMetricsServer {
+			delete(addOns, sksClusterAddonMetricsServer)
 		}
 
 		version, err := cmd.Flags().GetString("kubernetes-version")
@@ -207,6 +221,8 @@ func init() {
 		"do not deploy the default Container Network Interface plugin in the cluster control plane")
 	sksCreateCmd.Flags().Bool("no-exoscale-ccm", false,
 		"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane")
+	sksCreateCmd.Flags().Bool("no-metrics-server", false,
+		"do not deploy the Kubernetes Metrics Server in the cluster control plane")
 	sksCreateCmd.Flags().Int64("nodepool-size", 0,
 		"default Nodepool size (default: 0). If 0, no default Nodepool will be added to the cluster.")
 	sksCreateCmd.Flags().String("nodepool-name", "",
