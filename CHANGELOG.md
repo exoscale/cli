@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.27.2
+
+### Bug Fixes
+
+- `exo vm create`: invalid API request signature caused by cloud-init userdata (#330)
+- Various `exo storage` bug fixes (#326)
+
+
 ## 1.27.1
 
 ### Bug Fixes
