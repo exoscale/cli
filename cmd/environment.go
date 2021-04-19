@@ -6,6 +6,29 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var envCmd = &cobra.Command{
+	Use:    "env",
+	Hidden: true,
+	Run: func(cmd *cobra.Command, _ []string) {
+		vars := map[string]string{
+			"EXOSCALE_API_KEY":         gCurrentAccount.Key,
+			"EXOSCALE_API_SECRET":      gCurrentAccount.Secret,
+			"EXOSCALE_API_ENDPOINT":    gCurrentAccount.Endpoint,
+			"EXOSCALE_API_ENVIRONMENT": gCurrentAccount.Environment,
+		}
+
+		unset, _ := cmd.Flags().GetBool("unset")
+
+		for k, v := range vars {
+			if unset {
+				fmt.Printf("unset %s\n", k)
+			} else {
+				fmt.Printf("export %s=%q\n", k, v)
+			}
+		}
+	},
+}
+
 func init() {
 	RootCmd.AddCommand(&cobra.Command{
 		Use:   "environment",
@@ -20,17 +43,10 @@ variables supported:
 
 Note: to override the current profile API credentials, *both* EXOSCALE_API_KEY
 and EXOSCALE_API_SECRET variables have to be set.
-`},
+`,
+	},
 	)
 
-	RootCmd.AddCommand(&cobra.Command{
-		Use:    "env",
-		Hidden: true,
-		Run: func(_ *cobra.Command, _ []string) {
-			fmt.Printf("export EXOSCALE_API_KEY=%q\n", gCurrentAccount.Key)
-			fmt.Printf("export EXOSCALE_API_SECRET=%q\n", gCurrentAccount.Secret)
-			fmt.Printf("export EXOSCALE_API_ENDPOINT=%q\n", gCurrentAccount.Endpoint)
-			fmt.Printf("export EXOSCALE_API_ENVIRONMENT=%q\n", gCurrentAccount.Environment)
-		},
-	})
+	envCmd.Flags().BoolP("unset", "u", false, "unset EXOSCALE_* environment variables")
+	RootCmd.AddCommand(envCmd)
 }
