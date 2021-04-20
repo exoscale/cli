@@ -81,6 +81,7 @@ type storageShowObjectOutput struct {
 	ACL          storageACL        `json:"acl"`
 	Metadata     map[string]string `json:"metadata"`
 	Headers      map[string]string `json:"headers"`
+	URL          string            `json:"url"`
 }
 
 func (o *storageShowObjectOutput) toJSON() { outputJSON(o) }
@@ -94,6 +95,7 @@ func (o *storageShowObjectOutput) toTable() {
 	t.Append([]string{"Bucket", o.Bucket})
 	t.Append([]string{"Last Modified", fmt.Sprint(o.LastModified)})
 	t.Append([]string{"Size", humanize.IBytes(uint64(o.Size))})
+	t.Append([]string{"URL", o.URL})
 
 	t.Append([]string{"ACL", func() string {
 		buf := bytes.NewBuffer(nil)
@@ -255,6 +257,7 @@ func (c *storageClient) showObject(bucket, key string) (outputter, error) {
 		ACL:          storageACLFromS3(acl.Grants),
 		Metadata:     object.Metadata,
 		Headers:      storageObjectHeadersFromS3(object),
+		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.zone, bucket, key),
 	}
 
 	return &out, nil
