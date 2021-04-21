@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.28.0
+
+### Improvements
+
+- `exo storage show`: display object URL (#333)
+- `exo sks create`: deploy K8s Metrics Server add-on by default (#331)
+
+
 ## 1.27.2
 
 ### Bug Fixes
