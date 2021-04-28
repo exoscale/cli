@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"time"
 
 	"github.com/exoscale/egoscale/v2/api"
@@ -171,4 +172,54 @@ func setEndpointFromContext(ctx context.Context, req *http.Request) error {
 	}
 
 	return nil
+}
+
+// fetchFromIDs returns a list of API resources fetched from the specified list of IDs.
+// It is meant to be used with API resources implementing the getter interface, e.g.:
+//
+//     func (i Instance) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
+//         return client.GetInstance(ctx, zone, id)
+//     }
+//
+//     func (i *InstancePool) Instances(ctx context.Context) ([]*Instance, error) {
+//         res, err := i.c.fetchFromIDs(ctx, i.zone, i.InstanceIDs, new(Instance))
+//         return res.([]*Instance), err
+//     }
+//
+func (c *Client) fetchFromIDs(ctx context.Context, zone string, ids []string, rt interface{}) (interface{}, error) {
+	if rt == nil {
+		return nil, errors.New("resource type must not be <nil>")
+	}
+
+	resType := reflect.ValueOf(rt).Type()
+	if kind := resType.Kind(); kind != reflect.Ptr {
+		return nil, fmt.Errorf("expected resource type to be a pointer, got %s", kind)
+	}
+
+	// Base type identification is necessary as it is not possible to call
+	// the Getter.Get() method on a nil pointer, so we create a new value
+	// using the base type and call the Get() method on it. The corollary is
+	// that the Get() method must be implemented on the type directly,
+	// not as a pointer receiver.
+	baseType := resType.Elem()
+
+	if !resType.Implements(reflect.TypeOf(new(getter)).Elem()) {
+		return nil, fmt.Errorf("resource type %s does not implement the Getter interface", resType)
+	}
+
+	// As a convenience to the caller, even if the list of IDs passed as
+	// parameter is empty we always allocate a slice of <rt> and return
+	// it to them, this way they can confidently convert the returned
+	// interface{} into a []<rt> without having to perform type assertion.
+	collector := reflect.MakeSlice(reflect.SliceOf(resType), 0, 0)
+
+	for _, id := range ids {
+		res, err := reflect.New(baseType).Elem().Interface().(getter).get(ctx, c, zone, id)
+		if err != nil {
+			return nil, err
+		}
+		collector = reflect.Append(collector, reflect.ValueOf(res))
+	}
+
+	return collector.Interface(), nil
 }

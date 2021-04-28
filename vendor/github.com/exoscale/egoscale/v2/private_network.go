@@ -29,9 +29,16 @@ func privateNetworkFromAPI(p *papi.PrivateNetwork) *PrivateNetwork {
 	}
 }
 
+func (p PrivateNetwork) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
+	return client.GetPrivateNetwork(ctx, zone, id)
+}
+
 // CreatePrivateNetwork creates a Private Network in the specified zone.
-func (c *Client) CreatePrivateNetwork(ctx context.Context, zone string,
-	privateNetwork *PrivateNetwork) (*PrivateNetwork, error) {
+func (c *Client) CreatePrivateNetwork(
+	ctx context.Context,
+	zone string,
+	privateNetwork *PrivateNetwork,
+) (*PrivateNetwork, error) {
 	resp, err := c.CreatePrivateNetworkWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreatePrivateNetworkJSONRequestBody{

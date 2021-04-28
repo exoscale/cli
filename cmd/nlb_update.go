@@ -47,7 +47,7 @@ var nlbUpdateCmd = &cobra.Command{
 			nlb.Description = description
 		}
 
-		if _, err := cs.UpdateNetworkLoadBalancer(ctx, zone, nlb); err != nil {
+		if err := cs.UpdateNetworkLoadBalancer(ctx, zone, nlb); err != nil {
 			return fmt.Errorf("unable to update Network Load Balancer: %s", err)
 		}
 

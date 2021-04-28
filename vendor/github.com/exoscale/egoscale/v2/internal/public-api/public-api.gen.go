@@ -27,6 +27,14 @@ type AntiAffinityGroup struct {
 	Name        *string     `json:"name,omitempty"`
 }
 
+// DeployTarget defines model for deploy-target.
+type DeployTarget struct {
+	Description *string `json:"description,omitempty"`
+	Id          *string `json:"id,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Type        *string `json:"type,omitempty"`
+}
+
 // ElasticIp defines model for elastic-ip.
 type ElasticIp struct {
 	Description *string               `json:"description,omitempty"`
@@ -37,12 +45,12 @@ type ElasticIp struct {
 
 // ElasticIpHealthcheck defines model for elastic-ip-healthcheck.
 type ElasticIpHealthcheck struct {
-	Interval      int64   `json:"interval"`
+	Interval      *int64  `json:"interval,omitempty"`
 	Mode          string  `json:"mode"`
 	Port          int64   `json:"port"`
-	StrikesFail   int64   `json:"strikes-fail"`
-	StrikesOk     int64   `json:"strikes-ok"`
-	Timeout       int64   `json:"timeout"`
+	StrikesFail   *int64  `json:"strikes-fail,omitempty"`
+	StrikesOk     *int64  `json:"strikes-ok,omitempty"`
+	Timeout       *int64  `json:"timeout,omitempty"`
 	TlsSkipVerify *bool   `json:"tls-skip-verify,omitempty"`
 	TlsSni        *string `json:"tls-sni,omitempty"`
 	Uri           *string `json:"uri,omitempty"`
@@ -61,17 +69,34 @@ type Event_Payload struct {
 
 // Instance defines model for instance.
 type Instance struct {
-	Id   *string `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	CreatedAt          *time.Time           `json:"created-at,omitempty"`
+	DiskSize           *int64               `json:"disk-size,omitempty"`
+	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
+	Id                 *string              `json:"id,omitempty"`
+	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
+	Ipv6Address        *string              `json:"ipv6-address,omitempty"`
+	Manager            *Manager             `json:"manager,omitempty"`
+	Name               *string              `json:"name,omitempty"`
+	PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
+	PublicIp           *string              `json:"public-ip,omitempty"`
+	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
+	Snapshots          *[]Snapshot          `json:"snapshots,omitempty"`
+	SshKey             *SshKey              `json:"ssh-key,omitempty"`
+	State              *string              `json:"state,omitempty"`
+	Template           *Template            `json:"template,omitempty"`
+	UserData           *string              `json:"user-data,omitempty"`
 }
 
 // InstancePool defines model for instance-pool.
 type InstancePool struct {
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 	Description        *string              `json:"description,omitempty"`
 	DiskSize           *int64               `json:"disk-size,omitempty"`
 	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
 	Id                 *string              `json:"id,omitempty"`
+	InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 	Instances          *[]Instance          `json:"instances,omitempty"`
 	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
@@ -131,11 +156,11 @@ type LoadBalancerService struct {
 
 // LoadBalancerServiceHealthcheck defines model for load-balancer-service-healthcheck.
 type LoadBalancerServiceHealthcheck struct {
-	Interval int64   `json:"interval"`
+	Interval *int64  `json:"interval,omitempty"`
 	Mode     string  `json:"mode"`
 	Port     int64   `json:"port"`
-	Retries  int64   `json:"retries"`
-	Timeout  int64   `json:"timeout"`
+	Retries  *int64  `json:"retries,omitempty"`
+	Timeout  *int64  `json:"timeout,omitempty"`
 	TlsSni   *string `json:"tls-sni,omitempty"`
 	Uri      *string `json:"uri,omitempty"`
 }
@@ -303,6 +328,13 @@ type UpdateElasticIpJSONBody struct {
 	Healthcheck *ElasticIpHealthcheck `json:"healthcheck,omitempty"`
 }
 
+// AttachInstanceToElasticIpJSONBody defines parameters for AttachInstanceToElasticIp.
+type AttachInstanceToElasticIpJSONBody struct {
+	Instance *struct {
+		Id string `json:"id"`
+	} `json:"instance,omitempty"`
+}
+
 // ListEventsParams defines parameters for ListEvents.
 type ListEventsParams struct {
 	From *time.Time `json:"from,omitempty"`
@@ -310,19 +342,27 @@ type ListEventsParams struct {
 }
 
 // CreateInstanceJSONBody defines parameters for CreateInstance.
-type CreateInstanceJSONBody Instance
-
-// CreateInstanceParams defines parameters for CreateInstance.
-type CreateInstanceParams struct {
-	Start *bool `json:"start,omitempty"`
+type CreateInstanceJSONBody struct {
+	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
+	DiskSize           int64                `json:"disk-size"`
+	InstanceType       InstanceType         `json:"instance-type"`
+	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
+	Name               *string              `json:"name,omitempty"`
+	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
+	SshKey             *SshKey              `json:"ssh-key,omitempty"`
+	Template           Template             `json:"template"`
+	UserData           *string              `json:"user-data,omitempty"`
 }
 
 // CreateInstancePoolJSONBody defines parameters for CreateInstancePool.
 type CreateInstancePoolJSONBody struct {
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 	Description        *string              `json:"description,omitempty"`
 	DiskSize           int64                `json:"disk-size"`
 	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
+	InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 	InstanceType       InstanceType         `json:"instance-type"`
 	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
 	Name               string               `json:"name"`
@@ -337,9 +377,11 @@ type CreateInstancePoolJSONBody struct {
 // UpdateInstancePoolJSONBody defines parameters for UpdateInstancePool.
 type UpdateInstancePoolJSONBody struct {
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
+	DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 	Description        *string              `json:"description,omitempty"`
 	DiskSize           *int64               `json:"disk-size,omitempty"`
 	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
+	InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
 	Name               *string              `json:"name,omitempty"`
@@ -358,6 +400,12 @@ type EvictInstancePoolMembersJSONBody struct {
 // ScaleInstancePoolJSONBody defines parameters for ScaleInstancePool.
 type ScaleInstancePoolJSONBody struct {
 	Size int64 `json:"size"`
+}
+
+// UpdateInstanceJSONBody defines parameters for UpdateInstance.
+type UpdateInstanceJSONBody struct {
+	Name     *string `json:"name,omitempty"`
+	UserData *string `json:"user-data,omitempty"`
 }
 
 // RevertInstanceToSnapshotJSONBody defines parameters for RevertInstanceToSnapshot.
@@ -434,7 +482,7 @@ type AddRuleToSecurityGroupJSONBody struct {
 		Type *int64 `json:"type,omitempty"`
 	} `json:"icmp,omitempty"`
 	Network       *string                `json:"network,omitempty"`
-	Protocol      *string                `json:"protocol,omitempty"`
+	Protocol      string                 `json:"protocol"`
 	SecurityGroup *SecurityGroupResource `json:"security-group,omitempty"`
 	StartPort     *int64                 `json:"start-port,omitempty"`
 }
@@ -532,6 +580,9 @@ type CreateElasticIpJSONRequestBody CreateElasticIpJSONBody
 // UpdateElasticIpRequestBody defines body for UpdateElasticIp for application/json ContentType.
 type UpdateElasticIpJSONRequestBody UpdateElasticIpJSONBody
 
+// AttachInstanceToElasticIpRequestBody defines body for AttachInstanceToElasticIp for application/json ContentType.
+type AttachInstanceToElasticIpJSONRequestBody AttachInstanceToElasticIpJSONBody
+
 // CreateInstanceRequestBody defines body for CreateInstance for application/json ContentType.
 type CreateInstanceJSONRequestBody CreateInstanceJSONBody
 
@@ -546,6 +597,9 @@ type EvictInstancePoolMembersJSONRequestBody EvictInstancePoolMembersJSONBody
 
 // ScaleInstancePoolRequestBody defines body for ScaleInstancePool for application/json ContentType.
 type ScaleInstancePoolJSONRequestBody ScaleInstancePoolJSONBody
+
+// UpdateInstanceRequestBody defines body for UpdateInstance for application/json ContentType.
+type UpdateInstanceJSONRequestBody UpdateInstanceJSONBody
 
 // RevertInstanceToSnapshotRequestBody defines body for RevertInstanceToSnapshot for application/json ContentType.
 type RevertInstanceToSnapshotJSONRequestBody RevertInstanceToSnapshotJSONBody
@@ -744,6 +798,12 @@ type ClientInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error)
 
+	// ListDeployTargets request
+	ListDeployTargets(ctx context.Context) (*http.Response, error)
+
+	// GetDeployTarget request
+	GetDeployTarget(ctx context.Context, id string) (*http.Response, error)
+
 	// ListElasticIps request
 	ListElasticIps(ctx context.Context) (*http.Response, error)
 
@@ -766,13 +826,21 @@ type ClientInterface interface {
 	// ResetElasticIpField request
 	ResetElasticIpField(ctx context.Context, id string, field string) (*http.Response, error)
 
+	// AttachInstanceToElasticIp request  with any body
+	AttachInstanceToElasticIpWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	AttachInstanceToElasticIp(ctx context.Context, id string, body AttachInstanceToElasticIpJSONRequestBody) (*http.Response, error)
+
 	// ListEvents request
 	ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error)
 
-	// CreateInstance request  with any body
-	CreateInstanceWithBody(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*http.Response, error)
+	// ListInstances request
+	ListInstances(ctx context.Context) (*http.Response, error)
 
-	CreateInstance(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*http.Response, error)
+	// CreateInstance request  with any body
+	CreateInstanceWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateInstance(ctx context.Context, body CreateInstanceJSONRequestBody) (*http.Response, error)
 
 	// ListInstancePools request
 	ListInstancePools(ctx context.Context) (*http.Response, error)
@@ -811,6 +879,17 @@ type ClientInterface interface {
 
 	// GetInstanceType request
 	GetInstanceType(ctx context.Context, id string) (*http.Response, error)
+
+	// DeleteInstance request
+	DeleteInstance(ctx context.Context, id string) (*http.Response, error)
+
+	// GetInstance request
+	GetInstance(ctx context.Context, id string) (*http.Response, error)
+
+	// UpdateInstance request  with any body
+	UpdateInstanceWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	UpdateInstance(ctx context.Context, id string, body UpdateInstanceJSONRequestBody) (*http.Response, error)
 
 	// CreateSnapshot request
 	CreateSnapshot(ctx context.Context, id string) (*http.Response, error)
@@ -1085,6 +1164,36 @@ func (c *Client) GetAntiAffinityGroup(ctx context.Context, id string) (*http.Res
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListDeployTargets(ctx context.Context) (*http.Response, error) {
+	req, err := NewListDeployTargetsRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDeployTarget(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetDeployTargetRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListElasticIps(ctx context.Context) (*http.Response, error) {
 	req, err := NewListElasticIpsRequest(c.Server)
 	if err != nil {
@@ -1205,6 +1314,36 @@ func (c *Client) ResetElasticIpField(ctx context.Context, id string, field strin
 	return c.Client.Do(req)
 }
 
+func (c *Client) AttachInstanceToElasticIpWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewAttachInstanceToElasticIpRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AttachInstanceToElasticIp(ctx context.Context, id string, body AttachInstanceToElasticIpJSONRequestBody) (*http.Response, error) {
+	req, err := NewAttachInstanceToElasticIpRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error) {
 	req, err := NewListEventsRequest(c.Server, params)
 	if err != nil {
@@ -1220,8 +1359,8 @@ func (c *Client) ListEvents(ctx context.Context, params *ListEventsParams) (*htt
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateInstanceWithBody(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*http.Response, error) {
-	req, err := NewCreateInstanceRequestWithBody(c.Server, params, contentType, body)
+func (c *Client) ListInstances(ctx context.Context) (*http.Response, error) {
+	req, err := NewListInstancesRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -1235,8 +1374,23 @@ func (c *Client) CreateInstanceWithBody(ctx context.Context, params *CreateInsta
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateInstance(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*http.Response, error) {
-	req, err := NewCreateInstanceRequest(c.Server, params, body)
+func (c *Client) CreateInstanceWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateInstanceRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateInstance(ctx context.Context, body CreateInstanceJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateInstanceRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1447,6 +1601,66 @@ func (c *Client) ListInstanceTypes(ctx context.Context) (*http.Response, error) 
 
 func (c *Client) GetInstanceType(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewGetInstanceTypeRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteInstance(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewDeleteInstanceRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetInstance(ctx context.Context, id string) (*http.Response, error) {
+	req, err := NewGetInstanceRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateInstanceWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewUpdateInstanceRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateInstance(ctx context.Context, id string, body UpdateInstanceJSONRequestBody) (*http.Response, error) {
+	req, err := NewUpdateInstanceRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2674,6 +2888,67 @@ func NewGetAntiAffinityGroupRequest(server string, id string) (*http.Request, er
 	return req, nil
 }
 
+// NewListDeployTargetsRequest generates requests for ListDeployTargets
+func NewListDeployTargetsRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/deploy-target")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetDeployTargetRequest generates requests for GetDeployTarget
+func NewGetDeployTargetRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/deploy-target/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListElasticIpsRequest generates requests for ListElasticIps
 func NewListElasticIpsRequest(server string) (*http.Request, error) {
 	var err error
@@ -2895,6 +3170,52 @@ func NewResetElasticIpFieldRequest(server string, id string, field string) (*htt
 	return req, nil
 }
 
+// NewAttachInstanceToElasticIpRequest calls the generic AttachInstanceToElasticIp builder with application/json body
+func NewAttachInstanceToElasticIpRequest(server string, id string, body AttachInstanceToElasticIpJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAttachInstanceToElasticIpRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewAttachInstanceToElasticIpRequestWithBody generates requests for AttachInstanceToElasticIp with any type of body
+func NewAttachInstanceToElasticIpRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/elastic-ip/%s:attach", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
 // NewListEventsRequest generates requests for ListEvents
 func NewListEventsRequest(server string, params *ListEventsParams) (*http.Request, error) {
 	var err error
@@ -2958,19 +3279,8 @@ func NewListEventsRequest(server string, params *ListEventsParams) (*http.Reques
 	return req, nil
 }
 
-// NewCreateInstanceRequest calls the generic CreateInstance builder with application/json body
-func NewCreateInstanceRequest(server string, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateInstanceRequestWithBody(server, params, "application/json", bodyReader)
-}
-
-// NewCreateInstanceRequestWithBody generates requests for CreateInstance with any type of body
-func NewCreateInstanceRequestWithBody(server string, params *CreateInstanceParams, contentType string, body io.Reader) (*http.Request, error) {
+// NewListInstancesRequest generates requests for ListInstances
+func NewListInstancesRequest(server string) (*http.Request, error) {
 	var err error
 
 	queryUrl, err := url.Parse(server)
@@ -2988,25 +3298,43 @@ func NewCreateInstanceRequestWithBody(server string, params *CreateInstanceParam
 		return nil, err
 	}
 
-	queryValues := queryUrl.Query()
-
-	if params.Start != nil {
-
-		if queryFrag, err := runtime.StyleParam("form", true, "start", *params.Start); err != nil {
-			return nil, err
-		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-			return nil, err
-		} else {
-			for k, v := range parsed {
-				for _, v2 := range v {
-					queryValues.Add(k, v2)
-				}
-			}
-		}
-
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
 	}
 
-	queryUrl.RawQuery = queryValues.Encode()
+	return req, nil
+}
+
+// NewCreateInstanceRequest calls the generic CreateInstance builder with application/json body
+func NewCreateInstanceRequest(server string, body CreateInstanceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateInstanceRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateInstanceRequestWithBody generates requests for CreateInstance with any type of body
+func NewCreateInstanceRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest("POST", queryUrl.String(), body)
 	if err != nil {
@@ -3388,6 +3716,120 @@ func NewGetInstanceTypeRequest(server string, id string) (*http.Request, error) 
 		return nil, err
 	}
 
+	return req, nil
+}
+
+// NewDeleteInstanceRequest generates requests for DeleteInstance
+func NewDeleteInstanceRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetInstanceRequest generates requests for GetInstance
+func NewGetInstanceRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateInstanceRequest calls the generic UpdateInstance builder with application/json body
+func NewUpdateInstanceRequest(server string, id string, body UpdateInstanceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateInstanceRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateInstanceRequestWithBody generates requests for UpdateInstance with any type of body
+func NewUpdateInstanceRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/instance/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 	return req, nil
 }
 
@@ -5520,6 +5962,12 @@ type ClientWithResponsesInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroupWithResponse(ctx context.Context, id string) (*GetAntiAffinityGroupResponse, error)
 
+	// ListDeployTargets request
+	ListDeployTargetsWithResponse(ctx context.Context) (*ListDeployTargetsResponse, error)
+
+	// GetDeployTarget request
+	GetDeployTargetWithResponse(ctx context.Context, id string) (*GetDeployTargetResponse, error)
+
 	// ListElasticIps request
 	ListElasticIpsWithResponse(ctx context.Context) (*ListElasticIpsResponse, error)
 
@@ -5542,13 +5990,21 @@ type ClientWithResponsesInterface interface {
 	// ResetElasticIpField request
 	ResetElasticIpFieldWithResponse(ctx context.Context, id string, field string) (*ResetElasticIpFieldResponse, error)
 
+	// AttachInstanceToElasticIp request  with any body
+	AttachInstanceToElasticIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachInstanceToElasticIpResponse, error)
+
+	AttachInstanceToElasticIpWithResponse(ctx context.Context, id string, body AttachInstanceToElasticIpJSONRequestBody) (*AttachInstanceToElasticIpResponse, error)
+
 	// ListEvents request
 	ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error)
 
-	// CreateInstance request  with any body
-	CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*CreateInstanceResponse, error)
+	// ListInstances request
+	ListInstancesWithResponse(ctx context.Context) (*ListInstancesResponse, error)
 
-	CreateInstanceWithResponse(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error)
+	// CreateInstance request  with any body
+	CreateInstanceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateInstanceResponse, error)
+
+	CreateInstanceWithResponse(ctx context.Context, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error)
 
 	// ListInstancePools request
 	ListInstancePoolsWithResponse(ctx context.Context) (*ListInstancePoolsResponse, error)
@@ -5587,6 +6043,17 @@ type ClientWithResponsesInterface interface {
 
 	// GetInstanceType request
 	GetInstanceTypeWithResponse(ctx context.Context, id string) (*GetInstanceTypeResponse, error)
+
+	// DeleteInstance request
+	DeleteInstanceWithResponse(ctx context.Context, id string) (*DeleteInstanceResponse, error)
+
+	// GetInstance request
+	GetInstanceWithResponse(ctx context.Context, id string) (*GetInstanceResponse, error)
+
+	// UpdateInstance request  with any body
+	UpdateInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceResponse, error)
+
+	UpdateInstanceWithResponse(ctx context.Context, id string, body UpdateInstanceJSONRequestBody) (*UpdateInstanceResponse, error)
 
 	// CreateSnapshot request
 	CreateSnapshotWithResponse(ctx context.Context, id string) (*CreateSnapshotResponse, error)
@@ -5876,6 +6343,52 @@ func (r GetAntiAffinityGroupResponse) StatusCode() int {
 	return 0
 }
 
+type ListDeployTargetsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		DeployTargets *[]DeployTarget `json:"deploy-targets,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDeployTargetsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDeployTargetsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDeployTargetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DeployTarget
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDeployTargetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDeployTargetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListElasticIpsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -6010,6 +6523,28 @@ func (r ResetElasticIpFieldResponse) StatusCode() int {
 	return 0
 }
 
+type AttachInstanceToElasticIpResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r AttachInstanceToElasticIpResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AttachInstanceToElasticIpResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -6026,6 +6561,30 @@ func (r ListEventsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListEventsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListInstancesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Instances *[]Instance `json:"instances,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListInstancesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListInstancesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6272,6 +6831,72 @@ func (r GetInstanceTypeResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetInstanceTypeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Instance
+}
+
+// Status returns HTTPResponse.Status
+func (r GetInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateInstanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7510,6 +8135,24 @@ func (c *ClientWithResponses) GetAntiAffinityGroupWithResponse(ctx context.Conte
 	return ParseGetAntiAffinityGroupResponse(rsp)
 }
 
+// ListDeployTargetsWithResponse request returning *ListDeployTargetsResponse
+func (c *ClientWithResponses) ListDeployTargetsWithResponse(ctx context.Context) (*ListDeployTargetsResponse, error) {
+	rsp, err := c.ListDeployTargets(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDeployTargetsResponse(rsp)
+}
+
+// GetDeployTargetWithResponse request returning *GetDeployTargetResponse
+func (c *ClientWithResponses) GetDeployTargetWithResponse(ctx context.Context, id string) (*GetDeployTargetResponse, error) {
+	rsp, err := c.GetDeployTarget(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDeployTargetResponse(rsp)
+}
+
 // ListElasticIpsWithResponse request returning *ListElasticIpsResponse
 func (c *ClientWithResponses) ListElasticIpsWithResponse(ctx context.Context) (*ListElasticIpsResponse, error) {
 	rsp, err := c.ListElasticIps(ctx)
@@ -7580,6 +8223,23 @@ func (c *ClientWithResponses) ResetElasticIpFieldWithResponse(ctx context.Contex
 	return ParseResetElasticIpFieldResponse(rsp)
 }
 
+// AttachInstanceToElasticIpWithBodyWithResponse request with arbitrary body returning *AttachInstanceToElasticIpResponse
+func (c *ClientWithResponses) AttachInstanceToElasticIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachInstanceToElasticIpResponse, error) {
+	rsp, err := c.AttachInstanceToElasticIpWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAttachInstanceToElasticIpResponse(rsp)
+}
+
+func (c *ClientWithResponses) AttachInstanceToElasticIpWithResponse(ctx context.Context, id string, body AttachInstanceToElasticIpJSONRequestBody) (*AttachInstanceToElasticIpResponse, error) {
+	rsp, err := c.AttachInstanceToElasticIp(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAttachInstanceToElasticIpResponse(rsp)
+}
+
 // ListEventsWithResponse request returning *ListEventsResponse
 func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error) {
 	rsp, err := c.ListEvents(ctx, params)
@@ -7589,17 +8249,26 @@ func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params
 	return ParseListEventsResponse(rsp)
 }
 
+// ListInstancesWithResponse request returning *ListInstancesResponse
+func (c *ClientWithResponses) ListInstancesWithResponse(ctx context.Context) (*ListInstancesResponse, error) {
+	rsp, err := c.ListInstances(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListInstancesResponse(rsp)
+}
+
 // CreateInstanceWithBodyWithResponse request with arbitrary body returning *CreateInstanceResponse
-func (c *ClientWithResponses) CreateInstanceWithBodyWithResponse(ctx context.Context, params *CreateInstanceParams, contentType string, body io.Reader) (*CreateInstanceResponse, error) {
-	rsp, err := c.CreateInstanceWithBody(ctx, params, contentType, body)
+func (c *ClientWithResponses) CreateInstanceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateInstanceResponse, error) {
+	rsp, err := c.CreateInstanceWithBody(ctx, contentType, body)
 	if err != nil {
 		return nil, err
 	}
 	return ParseCreateInstanceResponse(rsp)
 }
 
-func (c *ClientWithResponses) CreateInstanceWithResponse(ctx context.Context, params *CreateInstanceParams, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error) {
-	rsp, err := c.CreateInstance(ctx, params, body)
+func (c *ClientWithResponses) CreateInstanceWithResponse(ctx context.Context, body CreateInstanceJSONRequestBody) (*CreateInstanceResponse, error) {
+	rsp, err := c.CreateInstance(ctx, body)
 	if err != nil {
 		return nil, err
 	}
@@ -7726,6 +8395,41 @@ func (c *ClientWithResponses) GetInstanceTypeWithResponse(ctx context.Context, i
 		return nil, err
 	}
 	return ParseGetInstanceTypeResponse(rsp)
+}
+
+// DeleteInstanceWithResponse request returning *DeleteInstanceResponse
+func (c *ClientWithResponses) DeleteInstanceWithResponse(ctx context.Context, id string) (*DeleteInstanceResponse, error) {
+	rsp, err := c.DeleteInstance(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteInstanceResponse(rsp)
+}
+
+// GetInstanceWithResponse request returning *GetInstanceResponse
+func (c *ClientWithResponses) GetInstanceWithResponse(ctx context.Context, id string) (*GetInstanceResponse, error) {
+	rsp, err := c.GetInstance(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetInstanceResponse(rsp)
+}
+
+// UpdateInstanceWithBodyWithResponse request with arbitrary body returning *UpdateInstanceResponse
+func (c *ClientWithResponses) UpdateInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*UpdateInstanceResponse, error) {
+	rsp, err := c.UpdateInstanceWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateInstanceResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateInstanceWithResponse(ctx context.Context, id string, body UpdateInstanceJSONRequestBody) (*UpdateInstanceResponse, error) {
+	rsp, err := c.UpdateInstance(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateInstanceResponse(rsp)
 }
 
 // CreateSnapshotWithResponse request returning *CreateSnapshotResponse
@@ -8463,6 +9167,60 @@ func ParseGetAntiAffinityGroupResponse(rsp *http.Response) (*GetAntiAffinityGrou
 	return response, nil
 }
 
+// ParseListDeployTargetsResponse parses an HTTP response from a ListDeployTargetsWithResponse call
+func ParseListDeployTargetsResponse(rsp *http.Response) (*ListDeployTargetsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListDeployTargetsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			DeployTargets *[]DeployTarget `json:"deploy-targets,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetDeployTargetResponse parses an HTTP response from a GetDeployTargetWithResponse call
+func ParseGetDeployTargetResponse(rsp *http.Response) (*GetDeployTargetResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDeployTargetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DeployTarget
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListElasticIpsResponse parses an HTTP response from a ListElasticIpsWithResponse call
 func ParseListElasticIpsResponse(rsp *http.Response) (*ListElasticIpsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -8621,6 +9379,32 @@ func ParseResetElasticIpFieldResponse(rsp *http.Response) (*ResetElasticIpFieldR
 	return response, nil
 }
 
+// ParseAttachInstanceToElasticIpResponse parses an HTTP response from a AttachInstanceToElasticIpWithResponse call
+func ParseAttachInstanceToElasticIpResponse(rsp *http.Response) (*AttachInstanceToElasticIpResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AttachInstanceToElasticIpResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListEventsResponse parses an HTTP response from a ListEventsWithResponse call
 func ParseListEventsResponse(rsp *http.Response) (*ListEventsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -8637,6 +9421,34 @@ func ParseListEventsResponse(rsp *http.Response) (*ListEventsResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest []Event
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListInstancesResponse parses an HTTP response from a ListInstancesWithResponse call
+func ParseListInstancesResponse(rsp *http.Response) (*ListInstancesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListInstancesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Instances *[]Instance `json:"instances,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -8927,6 +9739,84 @@ func ParseGetInstanceTypeResponse(rsp *http.Response) (*GetInstanceTypeResponse,
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest InstanceType
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteInstanceResponse parses an HTTP response from a DeleteInstanceWithResponse call
+func ParseDeleteInstanceResponse(rsp *http.Response) (*DeleteInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetInstanceResponse parses an HTTP response from a GetInstanceWithResponse call
+func ParseGetInstanceResponse(rsp *http.Response) (*GetInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Instance
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateInstanceResponse parses an HTTP response from a UpdateInstanceWithResponse call
+func ParseUpdateInstanceResponse(rsp *http.Response) (*UpdateInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

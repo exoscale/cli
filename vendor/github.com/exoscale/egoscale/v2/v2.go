@@ -3,9 +3,14 @@
 package v2
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 )
+
+type getter interface {
+	get(ctx context.Context, client *Client, zone, id string) (interface{}, error)
+}
 
 // resetFieldName returns the value corresponding to the `reset:""` struct tag
 // in the struct res for the specified field, for example:

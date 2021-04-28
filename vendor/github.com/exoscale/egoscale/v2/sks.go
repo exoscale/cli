@@ -25,9 +25,12 @@ type SKSNodepool struct {
 	State                string
 	TemplateID           string
 	Version              string
+
+	c    *Client
+	zone string
 }
 
-func sksNodepoolFromAPI(n *papi.SksNodepool) *SKSNodepool {
+func sksNodepoolFromAPI(client *Client, zone string, n *papi.SksNodepool) *SKSNodepool {
 	return &SKSNodepool{
 		AntiAffinityGroupIDs: func() []string {
 			ids := make([]string, 0)
@@ -60,7 +63,22 @@ func sksNodepoolFromAPI(n *papi.SksNodepool) *SKSNodepool {
 		State:      papi.OptionalString(n.State),
 		TemplateID: papi.OptionalString(n.Template.Id),
 		Version:    papi.OptionalString(n.Version),
+
+		c:    client,
+		zone: zone,
 	}
+}
+
+// AntiAffinityGroups returns the list of Anti-Affinity Groups applied to the members of the cluster Nodepool.
+func (n *SKSNodepool) AntiAffinityGroups(ctx context.Context) ([]*AntiAffinityGroup, error) {
+	res, err := n.c.fetchFromIDs(ctx, n.zone, n.AntiAffinityGroupIDs, new(AntiAffinityGroup))
+	return res.([]*AntiAffinityGroup), err
+}
+
+// SecurityGroups returns the list of Security Groups attached to the members of the cluster Nodepool.
+func (n *SKSNodepool) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error) {
+	res, err := n.c.fetchFromIDs(ctx, n.zone, n.SecurityGroupIDs, new(SecurityGroup))
+	return res.([]*SecurityGroup), err
 }
 
 // SKSCluster represents a SKS cluster.
@@ -81,7 +99,7 @@ type SKSCluster struct {
 	zone string
 }
 
-func sksClusterFromAPI(c *papi.SksCluster) *SKSCluster {
+func sksClusterFromAPI(client *Client, zone string, c *papi.SksCluster) *SKSCluster {
 	return &SKSCluster{
 		AddOns: func() []string {
 			addOns := make([]string, 0)
@@ -101,7 +119,7 @@ func sksClusterFromAPI(c *papi.SksCluster) *SKSCluster {
 			if c.Nodepools != nil {
 				for _, n := range *c.Nodepools {
 					n := n
-					nodepools = append(nodepools, sksNodepoolFromAPI(&n))
+					nodepools = append(nodepools, sksNodepoolFromAPI(client, zone, &n))
 				}
 			}
 			return nodepools
@@ -109,6 +127,9 @@ func sksClusterFromAPI(c *papi.SksCluster) *SKSCluster {
 		ServiceLevel: papi.OptionalString(c.Level),
 		State:        papi.OptionalString(c.State),
 		Version:      papi.OptionalString(c.Version),
+
+		c:    client,
+		zone: zone,
 	}
 }
 
@@ -147,8 +168,12 @@ func (c *SKSCluster) AuthorityCert(ctx context.Context, authority string) (strin
 // RequestKubeconfig returns a base64-encoded kubeconfig content for the specified user name,
 // optionally associated to specified groups for a duration d (default API-set TTL applies if not specified).
 // Fore more information: https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
-func (c *SKSCluster) RequestKubeconfig(ctx context.Context, user string, groups []string,
-	d time.Duration) (string, error) {
+func (c *SKSCluster) RequestKubeconfig(
+	ctx context.Context,
+	user string,
+	groups []string,
+	d time.Duration,
+) (string, error) {
 	if user == "" {
 		return "", errors.New("user not specified")
 	}
@@ -229,7 +254,7 @@ func (c *SKSCluster) AddNodepool(ctx context.Context, np *SKSNodepool) (*SKSNode
 		return nil, fmt.Errorf("unable to retrieve Nodepool: %s", err)
 	}
 
-	return sksNodepoolFromAPI(nodepoolRes.JSON200), nil
+	return sksNodepoolFromAPI(c.c, c.zone, nodepoolRes.JSON200), nil
 }
 
 // UpdateNodepool updates the specified SKS cluster Nodepool.
@@ -461,11 +486,7 @@ func (c *Client) ListSKSClusters(ctx context.Context, zone string) ([]*SKSCluste
 
 	if resp.JSON200.SksClusters != nil {
 		for i := range *resp.JSON200.SksClusters {
-			cluster := sksClusterFromAPI(&(*resp.JSON200.SksClusters)[i])
-			cluster.c = c
-			cluster.zone = zone
-
-			list = append(list, cluster)
+			list = append(list, sksClusterFromAPI(c, zone, &(*resp.JSON200.SksClusters)[i]))
 		}
 	}
 
@@ -498,11 +519,7 @@ func (c *Client) GetSKSCluster(ctx context.Context, zone, id string) (*SKSCluste
 		return nil, err
 	}
 
-	cluster := sksClusterFromAPI(resp.JSON200)
-	cluster.c = c
-	cluster.zone = zone
-
-	return cluster, nil
+	return sksClusterFromAPI(c, zone, resp.JSON200), nil
 }
 
 // UpdateSKSCluster updates the specified SKS cluster in the specified zone.

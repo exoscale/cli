@@ -33,20 +33,20 @@ type ElasticIP struct {
 	zone string
 }
 
-func elasticIPFromAPI(e *papi.ElasticIp) *ElasticIP {
+func elasticIPFromAPI(client *Client, zone string, e *papi.ElasticIp) *ElasticIP {
 	return &ElasticIP{
 		Description: papi.OptionalString(e.Description),
 		Healthcheck: func() *ElasticIPHealthcheck {
 			if hc := e.Healthcheck; hc != nil {
 				return &ElasticIPHealthcheck{
-					Interval:      time.Duration(hc.Interval) * time.Second,
+					Interval:      time.Duration(papi.OptionalInt64(hc.Interval)) * time.Second,
 					Mode:          hc.Mode,
 					Port:          uint16(hc.Port),
-					StrikesFail:   hc.StrikesFail,
-					StrikesOK:     hc.StrikesOk,
+					StrikesFail:   papi.OptionalInt64(hc.StrikesFail),
+					StrikesOK:     papi.OptionalInt64(hc.StrikesOk),
 					TLSSNI:        papi.OptionalString(hc.TlsSni),
 					TLSSkipVerify: papi.OptionalBool(hc.TlsSkipVerify),
-					Timeout:       time.Duration(hc.Timeout) * time.Second,
+					Timeout:       time.Duration(papi.OptionalInt64(hc.Timeout)) * time.Second,
 					URI:           papi.OptionalString(hc.Uri),
 				}
 			}
@@ -54,7 +54,14 @@ func elasticIPFromAPI(e *papi.ElasticIp) *ElasticIP {
 		}(),
 		ID:        papi.OptionalString(e.Id),
 		IPAddress: net.ParseIP(papi.OptionalString(e.Ip)),
+
+		c:    client,
+		zone: zone,
 	}
+}
+
+func (e ElasticIP) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
+	return client.GetElasticIP(ctx, zone, id)
 }
 
 // ResetField resets the specified Elastic IP field to its default value.
@@ -95,12 +102,12 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 					)
 
 					return &papi.ElasticIpHealthcheck{
-						Interval:      interval,
+						Interval:      &interval,
 						Mode:          hc.Mode,
 						Port:          port,
-						StrikesFail:   hc.StrikesFail,
-						StrikesOk:     hc.StrikesOK,
-						Timeout:       timeout,
+						StrikesFail:   &hc.StrikesFail,
+						StrikesOk:     &hc.StrikesOK,
+						Timeout:       &timeout,
 						TlsSkipVerify: &hc.TLSSkipVerify,
 						TlsSni:        &hc.TLSSNI,
 						Uri:           &hc.URI,
@@ -134,11 +141,7 @@ func (c *Client) ListElasticIPs(ctx context.Context, zone string) ([]*ElasticIP,
 
 	if resp.JSON200.ElasticIps != nil {
 		for i := range *resp.JSON200.ElasticIps {
-			elasticIP := elasticIPFromAPI(&(*resp.JSON200.ElasticIps)[i])
-			elasticIP.c = c
-			elasticIP.zone = zone
-
-			list = append(list, elasticIP)
+			list = append(list, elasticIPFromAPI(c, zone, &(*resp.JSON200.ElasticIps)[i]))
 		}
 	}
 
@@ -152,11 +155,7 @@ func (c *Client) GetElasticIP(ctx context.Context, zone, id string) (*ElasticIP,
 		return nil, err
 	}
 
-	elasticIP := elasticIPFromAPI(resp.JSON200)
-	elasticIP.c = c
-	elasticIP.zone = zone
-
-	return elasticIP, nil
+	return elasticIPFromAPI(c, zone, resp.JSON200), nil
 }
 
 // UpdateElasticIP updates the specified Elastic IP in the specified zone.
@@ -180,12 +179,12 @@ func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *El
 					)
 
 					return &papi.ElasticIpHealthcheck{
-						Interval:      interval,
+						Interval:      &interval,
 						Mode:          hc.Mode,
 						Port:          port,
-						StrikesFail:   hc.StrikesFail,
-						StrikesOk:     hc.StrikesOK,
-						Timeout:       timeout,
+						StrikesFail:   &hc.StrikesFail,
+						StrikesOk:     &hc.StrikesOK,
+						Timeout:       &timeout,
 						TlsSkipVerify: &hc.TLSSkipVerify,
 						TlsSni:        &hc.TLSSNI,
 						Uri:           &hc.URI,
