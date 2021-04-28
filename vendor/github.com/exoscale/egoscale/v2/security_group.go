@@ -69,7 +69,7 @@ type SecurityGroup struct {
 	c    *Client
 }
 
-func securityGroupFromAPI(s *papi.SecurityGroup) *SecurityGroup {
+func securityGroupFromAPI(client *Client, zone string, s *papi.SecurityGroup) *SecurityGroup {
 	return &SecurityGroup{
 		Description: papi.OptionalString(s.Description),
 		ID:          papi.OptionalString(s.Id),
@@ -84,7 +84,14 @@ func securityGroupFromAPI(s *papi.SecurityGroup) *SecurityGroup {
 			}
 			return rules
 		}(),
+
+		c:    client,
+		zone: zone,
 	}
+}
+
+func (s SecurityGroup) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
+	return client.GetSecurityGroup(ctx, zone, id)
 }
 
 // AddRule adds a rule to the Security Group.
@@ -138,7 +145,7 @@ func (s *SecurityGroup) AddRule(ctx context.Context, rule *SecurityGroupRule) (*
 				}
 				return
 			}(),
-			Protocol: &rule.Protocol,
+			Protocol: rule.Protocol,
 			SecurityGroup: func() (v *papi.SecurityGroupResource) {
 				if rule.SecurityGroupID != "" {
 					v = &papi.SecurityGroupResource{Id: &rule.SecurityGroupID}
@@ -197,8 +204,11 @@ func (s *SecurityGroup) DeleteRule(ctx context.Context, rule *SecurityGroupRule)
 }
 
 // CreateSecurityGroup creates a Security Group.
-func (c *Client) CreateSecurityGroup(ctx context.Context, zone string,
-	securityGroup *SecurityGroup) (*SecurityGroup, error) {
+func (c *Client) CreateSecurityGroup(
+	ctx context.Context,
+	zone string,
+	securityGroup *SecurityGroup,
+) (*SecurityGroup, error) {
 	resp, err := c.CreateSecurityGroupWithResponse(ctx, papi.CreateSecurityGroupJSONRequestBody{
 		Description: &securityGroup.Description,
 		Name:        securityGroup.Name,
@@ -228,11 +238,7 @@ func (c *Client) ListSecurityGroups(ctx context.Context, zone string) ([]*Securi
 
 	if resp.JSON200.SecurityGroups != nil {
 		for i := range *resp.JSON200.SecurityGroups {
-			securityGroup := securityGroupFromAPI(&(*resp.JSON200.SecurityGroups)[i])
-			securityGroup.c = c
-			securityGroup.zone = zone
-
-			list = append(list, securityGroup)
+			list = append(list, securityGroupFromAPI(c, zone, &(*resp.JSON200.SecurityGroups)[i]))
 		}
 	}
 
@@ -246,11 +252,7 @@ func (c *Client) GetSecurityGroup(ctx context.Context, zone, id string) (*Securi
 		return nil, err
 	}
 
-	securityGroup := securityGroupFromAPI(resp.JSON200)
-	securityGroup.c = c
-	securityGroup.zone = zone
-
-	return securityGroup, nil
+	return securityGroupFromAPI(c, zone, resp.JSON200), nil
 }
 
 // DeleteSecurityGroup deletes the specified Security Group in the specified zone.

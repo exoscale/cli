@@ -10,12 +10,14 @@ import (
 // InstancePool represents an Instance Pool.
 type InstancePool struct {
 	AntiAffinityGroupIDs []string `reset:"anti-affinity-groups"`
+	DeployTargetID       string   `reset:"deploy-target"`
 	Description          string   `reset:"description"`
 	DiskSize             int64
 	ElasticIPIDs         []string `reset:"elastic-ips"`
 	ID                   string
-	IPv6Enabled          bool
+	IPv6Enabled          bool `reset:"ipv6-enabled"`
 	InstanceIDs          []string
+	InstancePrefix       string
 	InstanceTypeID       string
 	ManagerID            string
 	Name                 string
@@ -45,6 +47,12 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 
 			return ids
 		}(),
+		DeployTargetID: func() string {
+			if i.DeployTarget != nil {
+				return papi.OptionalString(i.DeployTarget.Id)
+			}
+			return ""
+		}(),
 		Description: papi.OptionalString(i.Description),
 		DiskSize:    papi.OptionalInt64(i.DiskSize),
 		ElasticIPIDs: func() []string {
@@ -73,6 +81,7 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 
 			return ids
 		}(),
+		InstancePrefix: papi.OptionalString(i.InstancePrefix),
 		InstanceTypeID: papi.OptionalString(i.InstanceType.Id),
 		ManagerID: func() string {
 			if i.Manager != nil {
@@ -117,6 +126,36 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 		TemplateID: papi.OptionalString(i.Template.Id),
 		UserData:   papi.OptionalString(i.UserData),
 	}
+}
+
+// AntiAffinityGroups returns the list of Anti-Affinity Groups applied to the members of the Instance Pool.
+func (i *InstancePool) AntiAffinityGroups(ctx context.Context) ([]*AntiAffinityGroup, error) {
+	res, err := i.c.fetchFromIDs(ctx, i.zone, i.AntiAffinityGroupIDs, new(AntiAffinityGroup))
+	return res.([]*AntiAffinityGroup), err
+}
+
+// ElasticIPs returns the list of Elastic IPs attached to the members of the Instance Pool.
+func (i *InstancePool) ElasticIPs(ctx context.Context) ([]*ElasticIP, error) {
+	res, err := i.c.fetchFromIDs(ctx, i.zone, i.ElasticIPIDs, new(ElasticIP))
+	return res.([]*ElasticIP), err
+}
+
+// Instances returns the list of Compute instances member of the Instance Pool.
+func (i *InstancePool) Instances(ctx context.Context) ([]*Instance, error) {
+	res, err := i.c.fetchFromIDs(ctx, i.zone, i.InstanceIDs, new(Instance))
+	return res.([]*Instance), err
+}
+
+// PrivateNetworks returns the list of Private Networks attached to the members of the Instance Pool.
+func (i *InstancePool) PrivateNetworks(ctx context.Context) ([]*PrivateNetwork, error) {
+	res, err := i.c.fetchFromIDs(ctx, i.zone, i.PrivateNetworkIDs, new(PrivateNetwork))
+	return res.([]*PrivateNetwork), err
+}
+
+// SecurityGroups returns the list of Security Groups attached to the members of the Instance Pool.
+func (i *InstancePool) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error) {
+	res, err := i.c.fetchFromIDs(ctx, i.zone, i.SecurityGroupIDs, new(SecurityGroup))
+	return res.([]*SecurityGroup), err
 }
 
 // Scale scales the Instance Pool to the specified number of instances.
@@ -201,6 +240,12 @@ func (c *Client) CreateInstancePool(ctx context.Context, zone string, instancePo
 				}
 				return nil
 			}(),
+			DeployTarget: func() *papi.DeployTarget {
+				if instancePool.DeployTargetID != "" {
+					return &papi.DeployTarget{Id: &instancePool.DeployTargetID}
+				}
+				return nil
+			}(),
 			Description: &instancePool.Description,
 			DiskSize:    instancePool.DiskSize,
 			ElasticIps: func() *[]papi.ElasticIp {
@@ -214,9 +259,10 @@ func (c *Client) CreateInstancePool(ctx context.Context, zone string, instancePo
 				}
 				return nil
 			}(),
-			InstanceType: papi.InstanceType{Id: &instancePool.InstanceTypeID},
-			Ipv6Enabled:  &instancePool.IPv6Enabled,
-			Name:         instancePool.Name,
+			InstancePrefix: &instancePool.InstancePrefix,
+			InstanceType:   papi.InstanceType{Id: &instancePool.InstanceTypeID},
+			Ipv6Enabled:    &instancePool.IPv6Enabled,
+			Name:           instancePool.Name,
 			PrivateNetworks: func() *[]papi.PrivateNetwork {
 				if l := len(instancePool.PrivateNetworkIDs); l > 0 {
 					list := make([]papi.PrivateNetwork, l)
@@ -321,6 +367,12 @@ func (c *Client) UpdateInstancePool(ctx context.Context, zone string, instancePo
 				}
 				return nil
 			}(),
+			DeployTarget: func() *papi.DeployTarget {
+				if instancePool.DeployTargetID != "" {
+					return &papi.DeployTarget{Id: &instancePool.DeployTargetID}
+				}
+				return nil
+			}(),
 			Description: func() *string {
 				if instancePool.Description != "" {
 					return &instancePool.Description
@@ -341,6 +393,12 @@ func (c *Client) UpdateInstancePool(ctx context.Context, zone string, instancePo
 						list[i] = papi.ElasticIp{Id: &v}
 					}
 					return &list
+				}
+				return nil
+			}(),
+			InstancePrefix: func() *string {
+				if instancePool.InstancePrefix != "" {
+					return &instancePool.InstancePrefix
 				}
 				return nil
 			}(),

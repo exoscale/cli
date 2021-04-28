@@ -13,6 +13,7 @@ linters:
   enable:
     - deadcode
     - errcheck
+    - exportloopref
     - gocritic
     - gocyclo
     - goimports
@@ -22,7 +23,6 @@ linters:
     - ineffassign
     - megacheck
     - nakedret
-    - scopelint
     - staticcheck
     - structcheck
     - unused

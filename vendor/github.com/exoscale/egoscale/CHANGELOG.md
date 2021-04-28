@@ -1,6 +1,21 @@
 Changelog
 =========
 
+0.48.1
+------
+
+- fix: v2: add support for `InstancePool.IPv6Enabled` field resetting
+
+0.48.0
+------
+
+- feature: v2: add support for Instance prefix to Instance Pools
+- feature: v2: add support for Deploy Targets
+- feature: v2: add support for Compute instances management
+- feature: v2: add support for Snapshots management
+- feature: v2: add support for Templates management
+- feature: v2: add getter methods on API resources
+
 0.47.0
 ------
 

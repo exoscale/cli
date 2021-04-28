@@ -22,9 +22,16 @@ func antiAffinityGroupFromAPI(a *papi.AntiAffinityGroup) *AntiAffinityGroup {
 	}
 }
 
+func (a AntiAffinityGroup) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
+	return client.GetAntiAffinityGroup(ctx, zone, id)
+}
+
 // CreateAntiAffinityGroup creates an Anti-Affinity Group in the specified zone.
-func (c *Client) CreateAntiAffinityGroup(ctx context.Context, zone string,
-	antiAffinityGroup *AntiAffinityGroup) (*AntiAffinityGroup, error) {
+func (c *Client) CreateAntiAffinityGroup(
+	ctx context.Context,
+	zone string,
+	antiAffinityGroup *AntiAffinityGroup,
+) (*AntiAffinityGroup, error) {
 	resp, err := c.CreateAntiAffinityGroupWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateAntiAffinityGroupJSONRequestBody{
