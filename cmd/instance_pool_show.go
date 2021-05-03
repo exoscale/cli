@@ -4,32 +4,34 @@ import (
 	"fmt"
 	"strings"
 
-	humanize "github.com/dustin/go-humanize"
-	"github.com/exoscale/egoscale"
+	"github.com/dustin/go-humanize"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
-type instancePoolItemOutput struct {
-	ID                 string                     `json:"id"`
-	Name               string                     `json:"name"`
-	Description        string                     `json:"description"`
-	ServiceOffering    string                     `json:"service_offering"`
-	Template           string                     `json:"templateid"`
-	Zone               string                     `json:"zoneid"`
-	AntiAffinityGroups []string                   `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
-	SecurityGroups     []string                   `json:"security_groups"`
-	PrivateNetworks    []string                   `json:"private_networks"`
-	IPv6               bool                       `json:"ipv6" outputLabel:"IPv6"`
-	SSHKey             string                     `json:"ssh_key"`
-	Size               int                        `json:"size"`
-	DiskSize           string                     `json:"disk_size"`
-	State              egoscale.InstancePoolState `json:"state"`
-	Instances          []string                   `json:"instances"`
+type instancePoolShowOutput struct {
+	ID                 string   `json:"id"`
+	Name               string   `json:"name"`
+	Description        string   `json:"description"`
+	ServiceOffering    string   `json:"service_offering"`
+	Template           string   `json:"templateid"`
+	Zone               string   `json:"zoneid"`
+	AntiAffinityGroups []string `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
+	SecurityGroups     []string `json:"security_groups"`
+	PrivateNetworks    []string `json:"private_networks"`
+	ElasticIPs         []string `json:"elastic_ips" outputLabel:"Elastic IPs"`
+	IPv6               bool     `json:"ipv6" outputLabel:"IPv6"`
+	SSHKey             string   `json:"ssh_key"`
+	Size               int64    `json:"size"`
+	DiskSize           string   `json:"disk_size"`
+	InstancePrefix     string   `json:"instance_prefix"`
+	State              string   `json:"state"`
+	Instances          []string `json:"instances"`
 }
 
-func (o *instancePoolItemOutput) toJSON()  { outputJSON(o) }
-func (o *instancePoolItemOutput) toText()  { outputText(o) }
-func (o *instancePoolItemOutput) toTable() { outputTable(o) }
+func (o *instancePoolShowOutput) toJSON()  { outputJSON(o) }
+func (o *instancePoolShowOutput) toText()  { outputText(o) }
+func (o *instancePoolShowOutput) toTable() { outputTable(o) }
 
 var instancePoolShowCmd = &cobra.Command{
 	Use:   "show NAME|ID",
@@ -37,8 +39,9 @@ var instancePoolShowCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command shows an Instance Pool details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolItemOutput{}), ", ")),
+		strings.Join(outputterTemplateAnnotations(&instancePoolShowOutput{}), ", ")),
 	Aliases: gShowAlias,
+
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
@@ -48,94 +51,122 @@ Supported output template annotations: %s`,
 
 		return cmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
+
 	RunE: func(cmd *cobra.Command, args []string) error {
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
 		}
 
-		return showInstancePool(args[0], zone)
+		if showUserData, _ := cmd.Flags().GetBool("user-data"); showUserData {
+			instancePool, err := lookupInstancePool(
+				exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone)),
+				zone,
+				args[0],
+			)
+			if err != nil {
+				return err
+			}
+
+			if instancePool.UserData != "" {
+				userData, err := decodeUserData(instancePool.UserData)
+				if err != nil {
+					return fmt.Errorf("error decoding user data: %s", err)
+				}
+
+				fmt.Print(userData)
+			}
+
+			return nil
+		}
+
+		return output(showInstancePool(zone, args[0]))
 	},
 }
 
-func showInstancePool(name, zoneName string) error {
-	zone, err := getZoneByNameOrID(zoneName)
+func showInstancePool(zone, i string) (outputter, error) {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+
+	instancePool, err := lookupInstancePool(ctx, zone, i)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	instancePool, err := getInstancePoolByNameOrID(name, zone.ID)
+	out := instancePoolShowOutput{
+		ID:             instancePool.ID,
+		Name:           instancePool.Name,
+		Description:    instancePool.Description,
+		Zone:           zone,
+		IPv6:           instancePool.IPv6Enabled,
+		SSHKey:         instancePool.SSHKey,
+		Size:           instancePool.Size,
+		DiskSize:       humanize.IBytes(uint64(instancePool.DiskSize << 30)),
+		InstancePrefix: instancePool.InstancePrefix,
+		State:          instancePool.State,
+	}
+
+	zoneV1, err := getZoneByNameOrID(zone)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	zone, err = getZoneByNameOrID(instancePool.ZoneID.String())
+	serviceOffering, err := getServiceOfferingByNameOrID(instancePool.InstanceTypeID)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	out.ServiceOffering = serviceOffering.Name
 
-	serviceOffering, err := getServiceOfferingByNameOrID(instancePool.ServiceOfferingID.String())
+	template, err := getTemplateByNameOrID(zoneV1.ID, instancePool.TemplateID, "featured")
 	if err != nil {
-		return err
+		return nil, err
 	}
+	out.Template = template.Name
 
-	template, err := getTemplateByNameOrID(instancePool.ZoneID, instancePool.TemplateID.String(), "")
+	antiAffinityGroups, err := instancePool.AntiAffinityGroups(ctx)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	for _, antiAffinityGroup := range antiAffinityGroups {
+		out.AntiAffinityGroups = append(out.AntiAffinityGroups, antiAffinityGroup.Name)
 	}
 
-	o := instancePoolItemOutput{
-		ID:              instancePool.ID.String(),
-		Name:            instancePool.Name,
-		Description:     instancePool.Description,
-		ServiceOffering: serviceOffering.Name,
-		Template:        template.Name,
-		Zone:            zone.Name,
-		SSHKey:          instancePool.KeyPair,
-		Size:            instancePool.Size,
-		DiskSize:        humanize.IBytes(uint64(instancePool.RootDiskSize << 30)),
-		IPv6:            instancePool.IPv6,
-		State:           instancePool.State,
+	securityGroups, err := instancePool.SecurityGroups(ctx)
+	if err != nil {
+		return nil, err
 	}
-	for _, vm := range instancePool.VirtualMachines {
-		o.Instances = append(o.Instances, vm.Name)
+	for _, securityGroup := range securityGroups {
+		out.SecurityGroups = append(out.SecurityGroups, securityGroup.Name)
 	}
 
-	for _, a := range instancePool.AntiAffinityGroupIDs {
-		aag, err := getAntiAffinityGroupByNameOrID(a.String())
-		if err != nil {
-			return err
-		}
-		o.AntiAffinityGroups = append(o.AntiAffinityGroups, aag.Name)
+	privateNetworks, err := instancePool.PrivateNetworks(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, privateNetwork := range privateNetworks {
+		out.PrivateNetworks = append(out.PrivateNetworks, privateNetwork.Name)
 	}
 
-	for _, s := range instancePool.SecurityGroupIDs {
-		sg, err := getSecurityGroupByNameOrID(s.String())
-		if err != nil {
-			return err
-		}
-		o.SecurityGroups = append(o.SecurityGroups, sg.Name)
+	instances, err := instancePool.Instances(ctx)
+	if err != nil {
+		return nil, err
 	}
-	if len(instancePool.SecurityGroupIDs) == 0 {
-		o.SecurityGroups = append(o.SecurityGroups, "default")
+	for _, instance := range instances {
+		out.Instances = append(out.Instances, instance.Name)
 	}
 
-	for _, i := range instancePool.NetworkIDs {
-		net, err := getNetwork(i.String(), instancePool.ZoneID)
-		if err != nil {
-			return err
-		}
-		name := net.Name
-		if name == "" {
-			name = net.ID.String()
-		}
-		o.PrivateNetworks = append(o.PrivateNetworks, name)
+	elasticIPs, err := instancePool.ElasticIPs(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, elasticIP := range elasticIPs {
+		out.ElasticIPs = append(out.ElasticIPs, elasticIP.IPAddress.String())
 	}
 
-	return output(&o, err)
+	return &out, nil
 }
 
 func init() {
+	instancePoolShowCmd.Flags().BoolP("user-data", "u", false, "show cloud-init user data configuration")
 	instancePoolShowCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
 	instancePoolCmd.AddCommand(instancePoolShowCmd)
 }
