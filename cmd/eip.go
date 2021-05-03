@@ -13,11 +13,9 @@ var eipCmd = &cobra.Command{
 	Short: "Elastic IP management",
 }
 
-func getEIPIDByIP(ipAddr string) (*egoscale.UUID, error) {
-	ip := net.ParseIP(ipAddr)
-	if ip == nil {
-		return nil, fmt.Errorf("invalid IP address %q", ipAddr)
-	}
+func getElasticIPByAddressOrID(v string) (*egoscale.IPAddress, error) {
+	ip := net.ParseIP(v)
+	id, _ := egoscale.ParseUUID(v)
 
 	eips, err := cs.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
 	if err != nil {
@@ -26,12 +24,12 @@ func getEIPIDByIP(ipAddr string) (*egoscale.UUID, error) {
 
 	for _, e := range eips {
 		eip := e.(*egoscale.IPAddress)
-		if eip.IPAddress.Equal(ip) {
-			return eip.ID, nil
+		if (ip != nil && eip.IPAddress.Equal(ip)) || (id != nil && id.Equal(*eip.ID)) {
+			return eip, nil
 		}
 	}
 
-	return nil, fmt.Errorf("Elastic IP %q not found", ipAddr) // nolint
+	return nil, fmt.Errorf("Elastic IP %q not found", v) // nolint
 }
 
 func init() {
