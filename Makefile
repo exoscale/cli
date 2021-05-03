@@ -4,6 +4,8 @@ PROJECT_URL = https://github.com/exoscale/cli
 
 GO_BIN_OUTPUT_NAME := exo
 
+OAS_FILE := public-api.json
+
 .PHONY:
 .ONESHELL:
 x-cmd: ## Generates code for "exo x" experimental subcommands
@@ -11,7 +13,7 @@ x-cmd: ## Generates code for "exo x" experimental subcommands
 		echo "openapi-cli-generator tool not found, downloading"
 		go get -u github.com/exoscale/openapi-cli-generator
 	fi
-	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go public-api.json
+	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go $(OAS_FILE)
 
 .PHONY: docker
 docker: ## Builds a Docker image containing the exo CLI
