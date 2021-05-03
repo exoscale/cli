@@ -168,7 +168,7 @@ Let's start over.
 	if err != nil {
 		if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
 			for {
-				defaultZone, err := chooseZone(cs, zones)
+				defaultZone, err := chooseZone(cs, allZones)
 				if err != nil {
 					return nil, err
 				}

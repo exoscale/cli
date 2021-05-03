@@ -44,17 +44,13 @@ the pool rather than leaving the decision to the SKS manager.`,
 			return errors.New("minimum Nodepool size is 1")
 		}
 
-		z, err := cmd.Flags().GetString("zone")
+		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
 		}
-		zone, err := getZoneByNameOrID(z)
-		if err != nil {
-			return fmt.Errorf("error retrieving zone: %s", err)
-		}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
-		cluster, err := lookupSKSCluster(ctx, zone.Name, c)
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		cluster, err := lookupSKSCluster(ctx, zone, c)
 		if err != nil {
 			return err
 		}

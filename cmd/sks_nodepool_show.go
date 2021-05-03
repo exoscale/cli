@@ -50,25 +50,25 @@ Supported output template annotations: %s`,
 		return cmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		z, err := cmd.Flags().GetString("zone")
+		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
-		}
-
-		zone, err := getZoneByNameOrID(z)
-		if err != nil {
-			return fmt.Errorf("error retrieving zone: %s", err)
 		}
 
 		return output(showSKSNodepool(zone, args[0], args[1]))
 	},
 }
 
-func showSKSNodepool(zone *egoscale.Zone, c, np string) (outputter, error) {
+func showSKSNodepool(zone, c, np string) (outputter, error) {
 	var nodepool *exov2.SKSNodepool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
-	cluster, err := lookupSKSCluster(ctx, zone.Name, c)
+	zoneV1, err := getZoneByNameOrID(zone)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	cluster, err := lookupSKSCluster(ctx, zone, c)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func showSKSNodepool(zone *egoscale.Zone, c, np string) (outputter, error) {
 	}
 	out.InstanceType = serviceOffering.Name
 
-	template, err := getTemplateByNameOrID(zone.ID,
+	template, err := getTemplateByNameOrID(zoneV1.ID,
 		egoscale.MustParseUUID(nodepool.TemplateID).String(),
 		"featured")
 	if err != nil {
