@@ -49,6 +49,11 @@ the pool rather than leaving the decision to the SKS manager.`,
 			return err
 		}
 
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			return err
+		}
+
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		cluster, err := lookupSKSCluster(ctx, zone, c)
 		if err != nil {
@@ -63,6 +68,12 @@ the pool rather than leaving the decision to the SKS manager.`,
 		}
 		if nodepool == nil {
 			return errors.New("Nodepool not found") // nolint:golint
+		}
+
+		if !force {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to scale Nodepool %q to %d?", nodepool.Name, size)) {
+				return nil
+			}
 		}
 
 		decorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", np), func() {
@@ -81,6 +92,7 @@ the pool rather than leaving the decision to the SKS manager.`,
 }
 
 func init() {
+	sksNodepoolScaleCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	sksNodepoolScaleCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
 	sksNodepoolCmd.AddCommand(sksNodepoolScaleCmd)
 }
