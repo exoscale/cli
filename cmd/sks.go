@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	v2 "github.com/exoscale/egoscale/v2"
+	exov2 "github.com/exoscale/egoscale/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ func init() {
 }
 
 // lookupSKSCluster attempts to look up a SKS cluster resource by name or ID.
-func lookupSKSCluster(ctx context.Context, zone, v string) (*v2.SKSCluster, error) {
+func lookupSKSCluster(ctx context.Context, zone, v string) (*exov2.SKSCluster, error) {
 	clusters, err := cs.ListSKSClusters(ctx, zone)
 	if err != nil {
 		return nil, fmt.Errorf("unable to list SKS clusters in zone %s: %v", zone, err)

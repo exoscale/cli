@@ -13,8 +13,8 @@ const (
 	zoneHelp = "zone NAME|ID (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1|bg-sof-1|de-muc-1)"
 )
 
-// zones represents the list of known Exoscale zones, in case we need it without performing API lookup.
-var zones = []string{
+// allZones represents the list of known Exoscale zones, in case we need it without performing API lookup.
+var allZones = []string{
 	"at-vie-1",
 	"bg-sof-1",
 	"ch-dk-2",

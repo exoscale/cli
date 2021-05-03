@@ -106,7 +106,7 @@ func getUserDataFromFile(path string) (string, error) {
 		return "", err
 	}
 
-	userData, err := prepareUserData(data)
+	userData, err := encodeUserData(data)
 	if err != nil {
 		return "", err
 	}
@@ -118,7 +118,7 @@ func getUserDataFromFile(path string) (string, error) {
 	return userData, nil
 }
 
-func prepareUserData(data []byte) (string, error) {
+func encodeUserData(data []byte) (string, error) {
 	b := new(bytes.Buffer)
 	gz := gzip.NewWriter(b)
 

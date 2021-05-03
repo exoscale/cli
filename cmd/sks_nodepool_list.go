@@ -49,7 +49,7 @@ func listSKSNodepools(zone string) outputter {
 	if zone != "" {
 		sksClusterZones = []string{zone}
 	} else {
-		sksClusterZones = zones
+		sksClusterZones = allZones
 	}
 
 	out := make(sksNodepoolListOutput, 0)

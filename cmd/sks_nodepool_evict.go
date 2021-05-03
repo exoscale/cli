@@ -13,7 +13,7 @@ var sksNodepoolEvictCmd = &cobra.Command{
 	Use:   "evict CLUSTER-NAME|ID NODEPOOL-NAME|ID NODE-NAME|ID...",
 	Short: "Evict SKS cluster Nodepool members",
 	Long: `This command evicts specific members from a SKS cluster Nodepool, effectively
-shrinking down the Nodepool similar to the "exo sks nodepool scale" command.
+scaling down the Nodepool similar to the "exo sks nodepool scale" command.
 
 Note: Kubernetes Nodes should be drained from their workload prior to being
 evicted from their Nodepool, e.g. using "kubectl drain".`,
@@ -36,13 +36,9 @@ evicted from their Nodepool, e.g. using "kubectl drain".`,
 			nodepool *exov2.SKSNodepool
 		)
 
-		z, err := cmd.Flags().GetString("zone")
+		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
-		}
-		zone, err := getZoneByNameOrID(z)
-		if err != nil {
-			return fmt.Errorf("error retrieving zone: %s", err)
 		}
 
 		force, err := cmd.Flags().GetBool("force")
@@ -56,8 +52,8 @@ evicted from their Nodepool, e.g. using "kubectl drain".`,
 			}
 		}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone.Name))
-		cluster, err := lookupSKSCluster(ctx, zone.Name, c)
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		cluster, err := lookupSKSCluster(ctx, zone, c)
 		if err != nil {
 			return err
 		}

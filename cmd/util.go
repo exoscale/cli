@@ -2,8 +2,8 @@ package cmd
 
 // isInList returns true if v exists in the specified list, false otherwise.
 func isInList(list []string, v string) bool {
-	for _, acl := range list {
-		if acl == v {
+	for _, lv := range list {
+		if lv == v {
 			return true
 		}
 	}

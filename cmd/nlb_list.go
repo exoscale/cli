@@ -47,7 +47,7 @@ func listNLBs(zone string) outputter {
 	if zone != "" {
 		nlbZones = []string{zone}
 	} else {
-		nlbZones = zones
+		nlbZones = allZones
 	}
 
 	out := make(nlbListOutput, 0)
