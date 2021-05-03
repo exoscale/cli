@@ -86,79 +86,51 @@ Supported output template annotations: %s`,
 	})
 }
 
-func showEIP(eip string) (outputter, error) {
-	id, err := egoscale.ParseUUID(eip)
-	if err != nil {
-		id, err = getEIPIDByIP(eip)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	ip, vms, err := eipDetails(id)
+func showEIP(v string) (outputter, error) {
+	eip, err := getElasticIPByAddressOrID(v)
 	if err != nil {
 		return nil, err
 	}
 
 	out := eipShowOutput{
-		Description: ip.Description,
-		ID:          id.String(),
-		Zone:        ip.ZoneName,
-		IPAddress:   ip.IPAddress.String(),
+		ID:          eip.ID.String(),
+		Zone:        eip.ZoneName,
+		Description: eip.Description,
+		IPAddress:   eip.IPAddress.String(),
 	}
 
-	if ip.Healthcheck != nil {
+	if eip.Healthcheck != nil {
 		out.Healthcheck = &eipHealthcheckShowOutput{
-			Mode:          ip.Healthcheck.Mode,
-			Path:          ip.Healthcheck.Path,
-			Port:          ip.Healthcheck.Port,
-			Interval:      ip.Healthcheck.Interval,
-			Timeout:       ip.Healthcheck.Timeout,
-			StrikesOk:     ip.Healthcheck.StrikesOk,
-			StrikesFail:   ip.Healthcheck.StrikesFail,
-			TLSSkipVerify: ip.Healthcheck.TLSSkipVerify,
-			TLSSNI:        ip.Healthcheck.TLSSNI,
+			Mode:          eip.Healthcheck.Mode,
+			Path:          eip.Healthcheck.Path,
+			Port:          eip.Healthcheck.Port,
+			Interval:      eip.Healthcheck.Interval,
+			Timeout:       eip.Healthcheck.Timeout,
+			StrikesOk:     eip.Healthcheck.StrikesOk,
+			StrikesFail:   eip.Healthcheck.StrikesFail,
+			TLSSkipVerify: eip.Healthcheck.TLSSkipVerify,
+			TLSSNI:        eip.Healthcheck.TLSSNI,
 		}
 	}
 
-	instances := make([]string, len(vms))
-	for i := range vms {
-		instances[i] = vms[i].Name
-	}
-	out.Instances = instances
-
-	return &out, nil
-}
-
-func eipDetails(eip *egoscale.UUID) (*egoscale.IPAddress, []egoscale.VirtualMachine, error) {
-	eipID := eip
-
-	query := &egoscale.IPAddress{ID: eipID, IsElastic: true}
-	resp, err := cs.GetWithContext(gContext, query)
+	res, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: eip.ZoneID})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	addr := resp.(*egoscale.IPAddress)
-	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: addr.ZoneID})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	vmAssociated := []egoscale.VirtualMachine{}
-
-	for _, value := range vms {
-		vm := value.(*egoscale.VirtualMachine)
+	for _, item := range res {
+		vm := item.(*egoscale.VirtualMachine)
 		nic := vm.DefaultNic()
 		if nic == nil {
 			continue
 		}
+
 		for _, sIP := range nic.SecondaryIP {
-			if sIP.IPAddress.Equal(addr.IPAddress) {
-				vmAssociated = append(vmAssociated, *vm)
+			if sIP.IPAddress.Equal(eip.IPAddress) {
+				out.Instances = append(out.Instances, vm.Name)
 			}
 		}
 	}
 
-	return addr, vmAssociated, nil
+	return &out, nil
 }

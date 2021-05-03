@@ -16,16 +16,15 @@ var eipUpdateCmd = &cobra.Command{
 		if len(args) != 1 {
 			return cmd.Usage()
 		}
-		description, err := cmd.Flags().GetString("description")
+
+		eip, err := getElasticIPByAddressOrID(args[0])
 		if err != nil {
 			return err
 		}
-		id, err := egoscale.ParseUUID(args[0])
+
+		description, err := cmd.Flags().GetString("description")
 		if err != nil {
-			id, err = getEIPIDByIP(args[0])
-			if err != nil {
-				return err
-			}
+			return err
 		}
 
 		interval, err := cmd.Flags().GetInt64("healthcheck-interval")
@@ -75,7 +74,7 @@ var eipUpdateCmd = &cobra.Command{
 			HealthcheckTimeout:       timeout,
 			HealthcheckTLSSNI:        tlsSNI,
 			HealthcheckTLSSkipVerify: tlsSkipVerify,
-			ID:                       id,
+			ID:                       eip.ID,
 		}
 
 		return updateIPAddress(req)
