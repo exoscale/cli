@@ -135,6 +135,31 @@ func encodeUserData(data []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
 }
 
+func decodeUserData(data string) (string, error) {
+	base64Decoded, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		return "", err
+	}
+
+	gz, err := gzip.NewReader(bytes.NewReader(base64Decoded))
+	if err != nil {
+		// User data are not compressed, returning as-is.
+		if errors.Is(err, gzip.ErrHeader) {
+			return string(base64Decoded), nil
+		}
+
+		return "", err
+	}
+	defer gz.Close()
+
+	userData, err := ioutil.ReadAll(gz)
+	if err != nil {
+		return "", err
+	}
+
+	return string(userData), nil
+}
+
 func init() {
 	RootCmd.AddCommand(vmCmd)
 }

@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/exoscale/egoscale"
+	exov2 "github.com/exoscale/egoscale/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -16,47 +17,18 @@ func init() {
 	RootCmd.AddCommand(instancePoolCmd)
 }
 
-func getInstancePoolByID(id, zone *egoscale.UUID) (*egoscale.InstancePool, error) {
-	resp, err := cs.RequestWithContext(gContext, egoscale.GetInstancePool{
-		ID:     id,
-		ZoneID: zone,
-	})
+// lookupInstancePool attempts to look up an Instance Pool resource by name or ID.
+func lookupInstancePool(ctx context.Context, zone, v string) (*exov2.InstancePool, error) {
+	instancePools, err := cs.ListInstancePools(ctx, zone)
 	if err != nil {
-		return nil, err
-	}
-	r := resp.(*egoscale.GetInstancePoolResponse)
-
-	return &r.InstancePools[0], nil
-}
-
-func getInstancePoolByNameOrID(v string, zone *egoscale.UUID) (*egoscale.InstancePool, error) {
-	instancePools := make([]egoscale.InstancePool, 0)
-
-	id, err := egoscale.ParseUUID(v)
-	if err == nil {
-		return getInstancePoolByID(id, zone)
+		return nil, fmt.Errorf("unable to list Instance Pools in zone %s: %v", zone, err)
 	}
 
-	resp, err := cs.RequestWithContext(gContext, egoscale.ListInstancePools{
-		ZoneID: zone,
-	})
-	if err != nil {
-		return nil, err
-	}
-	r := resp.(*egoscale.ListInstancePoolsResponse)
-
-	for _, i := range r.InstancePools {
-		if i.Name == v {
-			instancePools = append(instancePools, i)
+	for _, instancePool := range instancePools {
+		if instancePool.ID == v || instancePool.Name == v {
+			return instancePool, nil
 		}
 	}
 
-	switch count := len(instancePools); {
-	case count == 0:
-		return nil, fmt.Errorf("not found: %q", v)
-	case count > 1:
-		return nil, fmt.Errorf(`more than one element found: %d`, count)
-	}
-
-	return &instancePools[0], nil
+	return nil, fmt.Errorf("Instance Pool %q not found", v) // nolint:golint
 }
