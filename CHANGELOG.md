@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.29.0
+
+### Features
+
+- `exo vm deploytarget`: add support for Deploy Target resources
+- `exo instancepool`: add support for Elastic IPs, Deploy Targets and Instance Prefix
+- `exo instancepool`: add `evict` command
+
+### Changes
+
+- `exo sks nodepool scale`: ask for confirmation (can be overridden via the `-f, --force` flag)
+- `exo eip list`: remove instances list from the output (information available via `exo eip show`)
+
+
 ## 1.28.0
 
 ### Improvements
@@ -31,14 +45,14 @@
 
 ### Changes
 
-- The `exo sos` commands are now deprecated and replaced by `exo storage` commands.
+- The `exo sos` commands are now deprecated and replaced by `exo storage` commands
 
 
 ## 1.26.0
 
 ### Bug Fixes
 
-- Raise the timeout value for the `exo sks *` commands.
+- Raise the timeout value for the `exo sks *` commands
 
 ### Improvements
 
@@ -55,7 +69,7 @@
 
 ### Bug Fixes
 
-- Manpages are now rendered correctly.
+- Manpages are now rendered correctly
 
 ### Improvements
 
