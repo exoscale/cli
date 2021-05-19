@@ -3,11 +3,19 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	exov2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
+
+var sksNodepoolResetFields = []string{
+	"anti-affinity-groups",
+	"deploy-target",
+	"description",
+	"security-groups",
+}
 
 var sksNodepoolUpdateCmd = &cobra.Command{
 	Use:   "update CLUSTER-NAME|ID NODEPOOL-NAME|ID",
@@ -27,6 +35,7 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 			np = args[1]
 
 			nodepool *exov2.SKSNodepool
+			updated  bool
 		)
 
 		zone, err := cmd.Flags().GetString("zone")
@@ -50,20 +59,45 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 			return errors.New("Nodepool not found") // nolint:golint
 		}
 
-		name, err := cmd.Flags().GetString("name")
+		resetFields, err := cmd.Flags().GetStringSlice("reset")
 		if err != nil {
 			return err
-		}
-		if cmd.Flags().Changed("name") {
-			nodepool.Name = name
 		}
 
-		description, err := cmd.Flags().GetString("description")
-		if err != nil {
-			return err
+		if cmd.Flags().Changed("name") {
+			if nodepool.Name, err = cmd.Flags().GetString("name"); err != nil {
+				return err
+			}
+			updated = true
 		}
+
+		if cmd.Flags().Changed("deploy-target") {
+			deployTargetFlagVal, err := cmd.Flags().GetString("deploy-target")
+			if err != nil {
+				return err
+			}
+			if deployTargetFlagVal != "" {
+				deployTarget, err := lookupDeployTarget(ctx, zone, deployTargetFlagVal)
+				if err != nil {
+					return fmt.Errorf("error retrieving Deploy Target: %s", err)
+				}
+				nodepool.DeployTargetID = deployTarget.ID
+				updated = true
+			}
+		}
+
 		if cmd.Flags().Changed("description") {
-			nodepool.Description = description
+			if nodepool.Description, err = cmd.Flags().GetString("description"); err != nil {
+				return err
+			}
+			updated = true
+		}
+
+		if cmd.Flags().Changed("instance-prefix") {
+			if nodepool.InstancePrefix, err = cmd.Flags().GetString("instance-prefix"); err != nil {
+				return err
+			}
+			updated = true
 		}
 
 		instanceType, err := cmd.Flags().GetString("instance-type")
@@ -76,14 +110,14 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 				return fmt.Errorf("error retrieving service offering: %s", err)
 			}
 			nodepool.InstanceTypeID = serviceOffering.ID.String()
+			updated = true
 		}
 
-		diskSize, err := cmd.Flags().GetInt64("disk-size")
-		if err != nil {
-			return err
-		}
 		if cmd.Flags().Changed("disk-size") {
-			nodepool.DiskSize = diskSize
+			if nodepool.DiskSize, err = cmd.Flags().GetInt64("disk-size"); err != nil {
+				return err
+			}
+			updated = true
 		}
 
 		if cmd.Flags().Changed("anti-affinity-group") {
@@ -103,6 +137,7 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 				}
 				return ids
 			}()
+			updated = true
 		}
 
 		if cmd.Flags().Changed("security-group") {
@@ -122,10 +157,31 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 				}
 				return ids
 			}()
+			updated = true
 		}
 
 		decorateAsyncOperation(fmt.Sprintf("Updating Nodepool %q...", np), func() {
-			err = cluster.UpdateNodepool(ctx, nodepool)
+			if updated {
+				if err = cluster.UpdateNodepool(ctx, nodepool); err != nil {
+					return
+				}
+			}
+
+			for _, f := range resetFields {
+				switch f {
+				case "anti-affinity-groups":
+					err = cluster.ResetNodepoolField(ctx, nodepool, &nodepool.AntiAffinityGroupIDs)
+				case "deploy-target":
+					err = cluster.ResetNodepoolField(ctx, nodepool, &nodepool.DeployTargetID)
+				case "description":
+					err = cluster.ResetNodepoolField(ctx, nodepool, &nodepool.Description)
+				case "security-groups":
+					err = cluster.ResetNodepoolField(ctx, nodepool, &nodepool.SecurityGroupIDs)
+				}
+				if err != nil {
+					return
+				}
+			}
 		})
 		if err != nil {
 			return err
@@ -141,8 +197,10 @@ var sksNodepoolUpdateCmd = &cobra.Command{
 
 func init() {
 	sksNodepoolUpdateCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksNodepoolUpdateCmd.Flags().String("name", "", "name")
-	sksNodepoolUpdateCmd.Flags().String("description", "", "description")
+	sksNodepoolUpdateCmd.Flags().String("name", "", "Nodepool name")
+	sksNodepoolUpdateCmd.Flags().String("deploy-target", "", "Nodepool Deploy Target NAME|ID")
+	sksNodepoolUpdateCmd.Flags().String("description", "", "Nodepool description")
+	sksNodepoolUpdateCmd.Flags().String("instance-prefix", "", "string to prefix Nodepool member names with")
 	sksNodepoolUpdateCmd.Flags().String("instance-type", "", "Nodepool Compute instances type")
 	sksNodepoolUpdateCmd.Flags().Int64("disk-size", 0, "Nodepool Compute instances disk size")
 	sksNodepoolUpdateCmd.Flags().StringSlice("anti-affinity-group", nil,
@@ -151,5 +209,6 @@ func init() {
 	sksNodepoolUpdateCmd.Flags().StringSlice("security-group", nil,
 		"Nodepool Security Group NAME|ID (can be specified multiple times)"+
 			"Note: this replaces the current value, it is not cumulative.")
+	sksNodepoolUpdateCmd.Flags().StringSliceP("reset", "r", nil, fmt.Sprintf("properties to reset to default value. Supported values: %s", strings.Join(sksNodepoolResetFields, ", ")))
 	sksNodepoolCmd.AddCommand(sksNodepoolUpdateCmd)
 }

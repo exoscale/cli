@@ -34,11 +34,27 @@ Supported output template annotations: %s`,
 			c        = args[0]
 			name     = args[1]
 			nodepool *exov2.SKSNodepool
+
+			deployTargetID string
 		)
 
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
+		}
+
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+
+		deployTargetFlagVal, err := cmd.Flags().GetString("deploy-target")
+		if err != nil {
+			return err
+		}
+		if deployTargetFlagVal != "" {
+			deployTarget, err := lookupDeployTarget(ctx, zone, deployTargetFlagVal)
+			if err != nil {
+				return fmt.Errorf("error retrieving Deploy Target: %s", err)
+			}
+			deployTargetID = deployTarget.ID
 		}
 
 		description, err := cmd.Flags().GetString("description")
@@ -47,6 +63,11 @@ Supported output template annotations: %s`,
 		}
 
 		size, err := cmd.Flags().GetInt64("size")
+		if err != nil {
+			return err
+		}
+
+		instancePrefix, err := cmd.Flags().GetString("instance-prefix")
 		if err != nil {
 			return err
 		}
@@ -91,7 +112,6 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 		cluster, err := lookupSKSCluster(ctx, zone, c)
 		if err != nil {
 			return err
@@ -100,8 +120,10 @@ Supported output template annotations: %s`,
 		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", name), func() {
 			nodepool, err = cluster.AddNodepool(ctx, &exov2.SKSNodepool{
 				Name:           name,
+				DeployTargetID: deployTargetID,
 				Description:    description,
 				Size:           size,
+				InstancePrefix: instancePrefix,
 				InstanceTypeID: serviceOffering.ID.String(),
 				DiskSize:       diskSize,
 				AntiAffinityGroupIDs: func() []string {
@@ -134,8 +156,10 @@ Supported output template annotations: %s`,
 
 func init() {
 	sksNodepoolAddCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
+	sksNodepoolAddCmd.Flags().String("deploy-target", "", "Nodepool Deploy Target NAME|ID")
 	sksNodepoolAddCmd.Flags().String("description", "", "description")
 	sksNodepoolAddCmd.Flags().Int64("size", 2, "Nodepool size")
+	sksNodepoolAddCmd.Flags().String("instance-prefix", "", "string to prefix Nodepool member names with")
 	sksNodepoolAddCmd.Flags().String("instance-type", defaultServiceOffering,
 		"Nodepool Compute instances type")
 	sksNodepoolAddCmd.Flags().Int64("disk-size", 50,

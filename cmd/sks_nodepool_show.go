@@ -17,6 +17,7 @@ type sksNodepoolShowOutput struct {
 	Description        string   `json:"description"`
 	CreationDate       string   `json:"creation_date"`
 	InstancePoolID     string   `json:"instance_pool_id"`
+	InstancePrefix     string   `json:"instance_prefix"`
 	InstanceType       string   `json:"instance_type"`
 	Template           string   `json:"template"`
 	DiskSize           int64    `json:"disk_size"`
@@ -89,6 +90,7 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 		Description:        nodepool.Description,
 		CreationDate:       nodepool.CreatedAt.String(),
 		InstancePoolID:     nodepool.InstancePoolID,
+		InstancePrefix:     nodepool.InstancePrefix,
 		DiskSize:           nodepool.DiskSize,
 		AntiAffinityGroups: make([]string, 0),
 		SecurityGroups:     make([]string, 0),
