@@ -9,6 +9,12 @@ import (
 	papi "github.com/exoscale/egoscale/v2/internal/public-api"
 )
 
+// InstanceManager represents a Compute instance manager.
+type InstanceManager struct {
+	ID   string
+	Type string
+}
+
 // Instance represents a Compute instance.
 type Instance struct {
 	AntiAffinityGroupIDs []string
@@ -19,7 +25,7 @@ type Instance struct {
 	IPv6Address          net.IP
 	IPv6Enabled          bool
 	InstanceTypeID       string
-	ManagerID            string
+	Manager              *InstanceManager
 	Name                 string
 	PrivateNetworkIDs    []string
 	PublicIPAddress      net.IP
@@ -73,11 +79,14 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 			return i.Ipv6Address != nil
 		}(),
 		InstanceTypeID: *i.InstanceType.Id,
-		ManagerID: func() string {
+		Manager: func() *InstanceManager {
 			if i.Manager != nil {
-				return papi.OptionalString(i.Manager.Id)
+				return &InstanceManager{
+					ID:   papi.OptionalString(i.Manager.Id),
+					Type: papi.OptionalString(i.Manager.Type),
+				}
 			}
-			return ""
+			return nil
 		}(),
 		Name: *i.Name,
 		PrivateNetworkIDs: func() []string {
@@ -143,22 +152,71 @@ func (i *Instance) AntiAffinityGroups(ctx context.Context) ([]*AntiAffinityGroup
 	return res.([]*AntiAffinityGroup), err
 }
 
-// ElasticIPs returns the list of Elastic IPs attached to the Compute instance.
-func (i *Instance) ElasticIPs(ctx context.Context) ([]*ElasticIP, error) {
-	res, err := i.c.fetchFromIDs(ctx, i.zone, i.ElasticIPIDs, new(ElasticIP))
-	return res.([]*ElasticIP), err
+// AttachElasticIP attaches the Compute instance to the specified Elastic IP.
+func (i *Instance) AttachElasticIP(ctx context.Context, elasticIP *ElasticIP) error {
+	resp, err := i.c.AttachInstanceToElasticIpWithResponse(
+		apiv2.WithZone(ctx, i.zone), elasticIP.ID, papi.AttachInstanceToElasticIpJSONRequestBody{
+			Instance: papi.Instance{Id: &i.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// PrivateNetworks returns the list of Private Networks attached to the Compute instance.
-func (i *Instance) PrivateNetworks(ctx context.Context) ([]*PrivateNetwork, error) {
-	res, err := i.c.fetchFromIDs(ctx, i.zone, i.PrivateNetworkIDs, new(PrivateNetwork))
-	return res.([]*PrivateNetwork), err
+// AttachPrivateNetwork attaches the Compute instance to the specified Private Network.
+func (i *Instance) AttachPrivateNetwork(ctx context.Context, privateNetwork *PrivateNetwork, address net.IP) error {
+	resp, err := i.c.AttachInstanceToPrivateNetworkWithResponse(
+		apiv2.WithZone(ctx, i.zone), privateNetwork.ID, papi.AttachInstanceToPrivateNetworkJSONRequestBody{
+			Instance: papi.Instance{Id: &i.ID},
+			Ip: func() *string {
+				if len(address) > 0 {
+					ip := address.String()
+					return &ip
+				}
+				return nil
+			}(),
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// SecurityGroups returns the list of Security Groups attached to the Compute instance.
-func (i *Instance) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error) {
-	res, err := i.c.fetchFromIDs(ctx, i.zone, i.SecurityGroupIDs, new(SecurityGroup))
-	return res.([]*SecurityGroup), err
+// AttachSecurityGroup attaches the Compute instance to the specified Security Group.
+func (i *Instance) AttachSecurityGroup(ctx context.Context, securityGroup *SecurityGroup) error {
+	resp, err := i.c.AttachInstanceToSecurityGroupWithResponse(
+		apiv2.WithZone(ctx, i.zone), securityGroup.ID, papi.AttachInstanceToSecurityGroupJSONRequestBody{
+			Instance: papi.Instance{Id: &i.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // CreateSnapshot creates a Snapshot of the Compute instance storage volume.
@@ -176,6 +234,78 @@ func (i *Instance) CreateSnapshot(ctx context.Context) (*Snapshot, error) {
 	}
 
 	return i.c.GetSnapshot(ctx, i.zone, *res.(*papi.Reference).Id)
+}
+
+// DetachElasticIP detaches the Compute instance from the specified Elastic IP.
+func (i *Instance) DetachElasticIP(ctx context.Context, elasticIP *ElasticIP) error {
+	resp, err := i.c.DetachInstanceFromElasticIpWithResponse(
+		apiv2.WithZone(ctx, i.zone), elasticIP.ID, papi.DetachInstanceFromElasticIpJSONRequestBody{
+			Instance: papi.Instance{Id: &i.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DetachPrivateNetwork detaches the Compute instance from the specified Private Network.
+func (i *Instance) DetachPrivateNetwork(ctx context.Context, privateNetwork *PrivateNetwork) error {
+	resp, err := i.c.DetachInstanceFromPrivateNetworkWithResponse(
+		apiv2.WithZone(ctx, i.zone), privateNetwork.ID, papi.DetachInstanceFromPrivateNetworkJSONRequestBody{
+			Instance: papi.Instance{Id: &i.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DetachSecurityGroup detaches the Compute instance from the specified Security Group.
+func (i *Instance) DetachSecurityGroup(ctx context.Context, securityGroup *SecurityGroup) error {
+	resp, err := i.c.DetachInstanceFromSecurityGroupWithResponse(
+		apiv2.WithZone(ctx, i.zone), securityGroup.ID, papi.DetachInstanceFromSecurityGroupJSONRequestBody{
+			Instance: papi.Instance{Id: &i.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ElasticIPs returns the list of Elastic IPs attached to the Compute instance.
+func (i *Instance) ElasticIPs(ctx context.Context) ([]*ElasticIP, error) {
+	res, err := i.c.fetchFromIDs(ctx, i.zone, i.ElasticIPIDs, new(ElasticIP))
+	return res.([]*ElasticIP), err
+}
+
+// PrivateNetworks returns the list of Private Networks attached to the Compute instance.
+func (i *Instance) PrivateNetworks(ctx context.Context) ([]*PrivateNetwork, error) {
+	res, err := i.c.fetchFromIDs(ctx, i.zone, i.PrivateNetworkIDs, new(PrivateNetwork))
+	return res.([]*PrivateNetwork), err
 }
 
 // RevertToSnapshot reverts the Compute instance storage volume to the specified Snapshot.
@@ -196,6 +326,12 @@ func (i *Instance) RevertToSnapshot(ctx context.Context, snapshot *Snapshot) err
 	}
 
 	return nil
+}
+
+// SecurityGroups returns the list of Security Groups attached to the Compute instance.
+func (i *Instance) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error) {
+	res, err := i.c.fetchFromIDs(ctx, i.zone, i.SecurityGroupIDs, new(SecurityGroup))
+	return res.([]*SecurityGroup), err
 }
 
 // CreateInstance creates a Compute instance in the specified zone.

@@ -12,10 +12,12 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 	raw := struct {
 		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 		CreatedAt          *string              `json:"created-at,omitempty"`
+		DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 		Description        *string              `json:"description,omitempty"`
 		DiskSize           *int64               `json:"disk-size,omitempty"`
 		Id                 *string              `json:"id,omitempty"` // nolint:golint
 		InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
+		InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
@@ -38,10 +40,12 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 	}
 
 	n.AntiAffinityGroups = raw.AntiAffinityGroups
+	n.DeployTarget = raw.DeployTarget
 	n.Description = raw.Description
 	n.DiskSize = raw.DiskSize
 	n.Id = raw.Id
 	n.InstancePool = raw.InstancePool
+	n.InstancePrefix = raw.InstancePrefix
 	n.InstanceType = raw.InstanceType
 	n.Name = raw.Name
 	n.SecurityGroups = raw.SecurityGroups
@@ -59,10 +63,12 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 	raw := struct {
 		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 		CreatedAt          *string              `json:"created-at,omitempty"`
+		DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 		Description        *string              `json:"description,omitempty"`
 		DiskSize           *int64               `json:"disk-size,omitempty"`
 		Id                 *string              `json:"id,omitempty"` // nolint:golint
 		InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
+		InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
@@ -78,10 +84,12 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 	}
 
 	raw.AntiAffinityGroups = n.AntiAffinityGroups
+	raw.DeployTarget = n.DeployTarget
 	raw.Description = n.Description
 	raw.DiskSize = n.DiskSize
 	raw.Id = n.Id
 	raw.InstancePool = n.InstancePool
+	raw.InstancePrefix = n.InstancePrefix
 	raw.InstanceType = n.InstanceType
 	raw.Name = n.Name
 	raw.SecurityGroups = n.SecurityGroups

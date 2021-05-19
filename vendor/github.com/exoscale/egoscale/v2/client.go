@@ -7,13 +7,39 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"runtime"
 	"time"
 
 	"github.com/exoscale/egoscale/v2/api"
 	papi "github.com/exoscale/egoscale/v2/internal/public-api"
+	"github.com/exoscale/egoscale/version"
 )
 
 const defaultTimeout = 60 * time.Second
+
+// UserAgent is the "User-Agent" HTTP request header added to outgoing HTTP requests.
+var UserAgent = fmt.Sprintf("egoscale/%s (%s; %s/%s)",
+	version.Version,
+	runtime.Version(),
+	runtime.GOOS,
+	runtime.GOARCH)
+
+// defaultTransport is the default HTTP client transport.
+type defaultTransport struct {
+	next http.RoundTripper
+}
+
+// RoundTrip executes a single HTTP transaction, returning a Response for the provided Request.
+func (t *defaultTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Add("User-Agent", UserAgent)
+
+	resp, err := t.next.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
 
 // ClientOpt represents a function setting Exoscale API client option.
 type ClientOpt func(*Client) error
@@ -97,7 +123,7 @@ func NewClient(apiKey, apiSecret string, opts ...ClientOpt) (*Client, error) {
 		apiKey:      apiKey,
 		apiSecret:   apiSecret,
 		apiEndpoint: api.EndpointURL,
-		httpClient:  http.DefaultClient,
+		httpClient:  &http.Client{Transport: &defaultTransport{http.DefaultTransport}},
 		timeout:     defaultTimeout,
 	}
 

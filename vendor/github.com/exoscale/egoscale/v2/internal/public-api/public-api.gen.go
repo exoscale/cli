@@ -19,47 +19,590 @@ import (
 	"github.com/pkg/errors"
 )
 
+// AccessKey defines model for access-key.
+type AccessKey struct {
+
+	// IAM Access Key
+	Key *string `json:"key,omitempty"`
+
+	// IAM Access Key name
+	Name *string `json:"name,omitempty"`
+
+	// IAM Access Key operations
+	Operations *[]string `json:"operations,omitempty"`
+
+	// IAM Access Key Secret
+	Secret *string `json:"secret,omitempty"`
+
+	// IAM Access Key tags
+	Tags *[]string `json:"tags,omitempty"`
+
+	// IAM Access Key type
+	Type *string `json:"type,omitempty"`
+
+	// IAM Access Key version
+	Version *string `json:"version,omitempty"`
+}
+
 // AntiAffinityGroup defines model for anti-affinity-group.
 type AntiAffinityGroup struct {
-	Description *string     `json:"description,omitempty"`
-	Id          *string     `json:"id,omitempty"`
-	Instances   *[]Instance `json:"instances,omitempty"`
-	Name        *string     `json:"name,omitempty"`
+
+	// Anti-affinity Group description
+	Description *string `json:"description,omitempty"`
+
+	// Anti-affinity Group ID
+	Id *string `json:"id,omitempty"`
+
+	// Anti-affinity Group instances
+	Instances *[]Instance `json:"instances,omitempty"`
+
+	// Anti-affinity Group name
+	Name *string `json:"name,omitempty"`
+}
+
+// DbaasBackupConfig defines model for dbaas-backup-config.
+type DbaasBackupConfig struct {
+
+	// Interval of taking a frequent backup in service types supporting different backup schedules
+	FrequentIntervalMinutes *float32 `json:"frequent-interval-minutes,omitempty"`
+
+	// Maximum age of the oldest frequent backup in service types supporting different backup schedules
+	FrequentOldestAgeMinutes *float32 `json:"frequent-oldest-age-minutes,omitempty"`
+
+	// Interval of taking a frequent backup in service types supporting different backup schedules
+	InfrequentIntervalMinutes *float32 `json:"infrequent-interval-minutes,omitempty"`
+
+	// Maximum age of the oldest infrequent backup in service types supporting different backup schedules
+	InfrequentOldestAgeMinutes *float32 `json:"infrequent-oldest-age-minutes,omitempty"`
+
+	// The interval, in hours, at which backups are generated.
+	//                                             For some services, like PostgreSQL, this is the interval
+	//                                             at which full snapshots are taken and continuous incremental
+	//                                             backup stream is maintained in addition to that.
+	Interval *int64 `json:"interval,omitempty"`
+
+	// Maximum number of backups to keep. Zero when no backups are created.
+	MaxCount *int64 `json:"max-count,omitempty"`
+
+	// Mechanism how backups can be restored. 'regular'
+	//                                             means a backup is restored as is so that the system
+	//                                             is restored to the state it was when the backup was generated.
+	//                                             'pitr' means point-in-time-recovery, which allows restoring
+	//                                             the system to any state since the first available full snapshot.
+	RecoveryMode *string `json:"recovery-mode,omitempty"`
+}
+
+// DbaasNodeState defines model for dbaas-node-state.
+type DbaasNodeState struct {
+
+	// Name of the service node
+	Name string `json:"name"`
+
+	// Extra information regarding the progress for current state
+	ProgressUpdates *[]DbaasNodeStateProgressUpdate `json:"progress-updates,omitempty"`
+
+	// Role of this node. Only returned for a subset of service types
+	Role *string `json:"role,omitempty"`
+
+	// Current state of the service node
+	State string `json:"state"`
+}
+
+// DbaasNodeStateProgressUpdate defines model for dbaas-node-state-progress-update.
+type DbaasNodeStateProgressUpdate struct {
+
+	// Indicates whether this phase has been completed or not
+	Completed bool `json:"completed"`
+
+	// Current progress for this phase. May be missing or null.
+	Current *int64 `json:"current,omitempty"`
+
+	// Maximum progress value for this phase. May be missing or null. May change.
+	Max *int64 `json:"max,omitempty"`
+
+	// Minimum progress value for this phase. May be missing or null.
+	Min *int64 `json:"min,omitempty"`
+
+	// Key identifying this phase
+	Phase string `json:"phase"`
+
+	// Unit for current/min/max values. New units may be added.
+	//                         If null should be treated as generic unit
+	Unit *string `json:"unit,omitempty"`
+}
+
+// DbaasPlan defines model for dbaas-plan.
+type DbaasPlan struct {
+
+	// DBaaS plan backup config
+	BackupConfig *DbaasBackupConfig `json:"backup-config,omitempty"`
+
+	// DBaaS plan disk space
+	DiskSpace *int64 `json:"disk-space,omitempty"`
+
+	// DBaaS plan max memory allocated percentage
+	MaxMemoryPercent *int64 `json:"max-memory-percent,omitempty"`
+
+	// DBaaS plan name
+	Name *string `json:"name,omitempty"`
+
+	// DBaaS plan node count
+	NodeCount *int64 `json:"node-count,omitempty"`
+
+	// DBaaS plan CPU count per node
+	NodeCpuCount *int64 `json:"node-cpu-count,omitempty"`
+
+	// DBaaS plan memory count per node
+	NodeMemory *int64 `json:"node-memory,omitempty"`
+}
+
+// DbaasService defines model for dbaas-service.
+type DbaasService struct {
+
+	// List of Kafka ACL entries
+	Acl *[]DbaasServiceAcl `json:"acl,omitempty"`
+
+	// List of backups for the service
+	Backups *[]DbaasServiceBackup `json:"backups,omitempty"`
+
+	// Service component information objects
+	Components *[]DbaasServiceComponents `json:"components,omitempty"`
+
+	// Service-specific connection information properties
+	ConnectionInfo *DbaasService_ConnectionInfo `json:"connection-info,omitempty"`
+
+	// PostgreSQL PGBouncer connection pools
+	ConnectionPools *[]DbaasServiceConnectionPools `json:"connection-pools,omitempty"`
+
+	// Service creation timestamp (ISO 8601)
+	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// Single line description of the service
+	Description *string `json:"description,omitempty"`
+
+	// TODO UNIT disk space for data storage
+	DiskSize *int64 `json:"disk-size,omitempty"`
+
+	// Feature flags
+	Features *DbaasService_Features `json:"features,omitempty"`
+
+	// Integrations with other services
+	Integrations *[]DbaasServiceIntegration `json:"integrations,omitempty"`
+
+	// Automatic maintenance settings
+	Maintenance *DbaasServiceMaintenance `json:"maintenance,omitempty"`
+
+	// Service type specific metadata
+	Metadata *DbaasService_Metadata `json:"metadata,omitempty"`
+	Name     DbaasServiceName       `json:"name"`
+
+	// Number of service nodes in the active plan
+	NodeCount *int64 `json:"node-count,omitempty"`
+
+	// Number of CPUs for each node
+	NodeCpuCount *int64 `json:"node-cpu-count,omitempty"`
+
+	// TODO UNIT of memory for each node
+	NodeMemory *int64 `json:"node-memory,omitempty"`
+
+	// State of individual service nodes
+	NodeStates *[]DbaasNodeState `json:"node-states,omitempty"`
+
+	// Service notifications
+	Notifications *[]DbaasServiceNotification `json:"notifications,omitempty"`
+
+	// Subscription plan
+	Plan string `json:"plan"`
+
+	// State of the service
+	State *string `json:"state,omitempty"`
+
+	// Service is protected against termination and powering off
+	TerminationProtection *bool                `json:"termination-protection,omitempty"`
+	Type                  DbaasServiceTypeName `json:"type"`
+
+	// Service last update timestamp (ISO 8601)
+	UpdatedAt *time.Time `json:"updated-at,omitempty"`
+
+	// URI for connecting to the service (may be absent)
+	Uri *string `json:"uri,omitempty"`
+
+	// service_uri parameterized into key-value pairs
+	UriParams *DbaasService_UriParams `json:"uri-params,omitempty"`
+
+	// Service type-specific settings
+	UserConfig *DbaasService_UserConfig `json:"user-config,omitempty"`
+
+	// List of service users
+	Users *[]DbaasServiceUser `json:"users,omitempty"`
+}
+
+// DbaasService_ConnectionInfo defines model for DbaasService.ConnectionInfo.
+type DbaasService_ConnectionInfo struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasService_Features defines model for DbaasService.Features.
+type DbaasService_Features struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasService_Metadata defines model for DbaasService.Metadata.
+type DbaasService_Metadata struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasService_UriParams defines model for DbaasService.UriParams.
+type DbaasService_UriParams struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasService_UserConfig defines model for DbaasService.UserConfig.
+type DbaasService_UserConfig struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasServiceAcl defines model for dbaas-service-acl.
+type DbaasServiceAcl struct {
+
+	// ID
+	Id *string `json:"id,omitempty"`
+
+	// Kafka permission
+	Permission string `json:"permission"`
+
+	// Topic name pattern
+	Topic string `json:"topic"`
+
+	// Username
+	Username string `json:"username"`
+}
+
+// DbaasServiceBackup defines model for dbaas-service-backup.
+type DbaasServiceBackup struct {
+
+	// Internal name of this backup
+	BackupName string `json:"backup-name"`
+
+	// Backup timestamp (ISO 8601)
+	BackupTime time.Time `json:"backup-time"`
+
+	// Backup's original size before compression
+	DataSize int64 `json:"data-size"`
+}
+
+// DbaasServiceComponents defines model for dbaas-service-components.
+type DbaasServiceComponents struct {
+
+	// Service component name
+	Component string `json:"component"`
+
+	// DNS name for connecting to the service component
+	Host string `json:"host"`
+
+	// Kafka authentication method. This is a value specific to the 'kafka' service component
+	KafkaAuthenticationMethod *string `json:"kafka-authentication-method,omitempty"`
+
+	// Path component of the service URL (useful only if service component is HTTP or HTTPS endpoint)
+	Path *string `json:"path,omitempty"`
+
+	// Port number for connecting to the service component
+	Port int64 `json:"port"`
+
+	// Network access route
+	Route string `json:"route"`
+
+	// Whether the endpoint is encrypted or accepts plaintext.
+	//                                            By default endpoints are always encrypted and
+	//                                            this property is only included for service components that may disable encryption.
+	Ssl *bool `json:"ssl,omitempty"`
+
+	// DNS usage name
+	Usage string `json:"usage"`
+}
+
+// DbaasServiceConnectionPools defines model for dbaas-service-connection-pools.
+type DbaasServiceConnectionPools struct {
+
+	// Connection URI for the DB pool
+	ConnectionUri string `json:"connection-uri"`
+
+	// Service database name
+	Database string `json:"database"`
+
+	// PGBouncer pool mode
+	PoolMode string `json:"pool-mode"`
+
+	// Connection pool name
+	PoolName string `json:"pool-name"`
+
+	// Size of PGBouncer's PostgreSQL side connection pool
+	PoolSize int64 `json:"pool-size"`
+
+	// Pool username
+	Username string `json:"username"`
+}
+
+// DbaasServiceIntegration defines model for dbaas-service-integration.
+type DbaasServiceIntegration struct {
+
+	// True when integration is active
+	Active bool `json:"active"`
+
+	// Description of the integration
+	Description string `json:"description"`
+
+	// Destination endpoint name
+	DestEndpoint *string `json:"dest-endpoint,omitempty"`
+
+	// Destination endpoint id
+	DestEndpointId *string `json:"dest-endpoint-id,omitempty"`
+
+	// Destination service name
+	DestService     string               `json:"dest-service"`
+	DestServiceType DbaasServiceTypeName `json:"dest-service-type"`
+
+	// True when integration is enabled
+	Enabled bool `json:"enabled"`
+
+	// Integration status
+	IntegrationStatus *DbaasServiceIntegration_IntegrationStatus `json:"integration-status,omitempty"`
+
+	// Type of the integration
+	IntegrationType string `json:"integration-type"`
+
+	// Integration ID
+	ServiceIntegrationId string `json:"service-integration-id"`
+
+	// Source endpoint name
+	SourceEndpoint *string `json:"source-endpoint,omitempty"`
+
+	// Source endpoint ID
+	SourceEndpointId *string `json:"source-endpoint-id,omitempty"`
+
+	// Source service name
+	SourceService     string               `json:"source-service"`
+	SourceServiceType DbaasServiceTypeName `json:"source-service-type"`
+
+	// Service integration settings
+	UserConfig *DbaasServiceIntegration_UserConfig `json:"user-config,omitempty"`
+}
+
+// DbaasServiceIntegration_IntegrationStatus defines model for DbaasServiceIntegration.IntegrationStatus.
+type DbaasServiceIntegration_IntegrationStatus struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasServiceIntegration_UserConfig defines model for DbaasServiceIntegration.UserConfig.
+type DbaasServiceIntegration_UserConfig struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasServiceMaintenance defines model for dbaas-service-maintenance.
+type DbaasServiceMaintenance struct {
+
+	// Day of week for installing updates
+	Dow string `json:"dow"`
+
+	// Time for installing updates, UTC
+	Time string `json:"time"`
+
+	// List of updates waiting to be installed
+	Updates []DbaasServiceUpdate `json:"updates"`
+}
+
+// DbaasServiceName defines model for dbaas-service-name.
+type DbaasServiceName string
+
+// DbaasServiceNotification defines model for dbaas-service-notification.
+type DbaasServiceNotification struct {
+
+	// Notification level
+	Level string `json:"level"`
+
+	// Human notification message
+	Message string `json:"message"`
+
+	// Notification metadata
+	Metadata DbaasServiceNotificationMetadata `json:"metadata"`
+
+	// Notification type
+	Type string `json:"type"`
+}
+
+// DbaasServiceNotificationMetadata defines model for dbaas-service-notification-metadata.
+type DbaasServiceNotificationMetadata struct {
+
+	// Link to the help article
+	EndOfLifeHelpArticleUrl string `json:"end-of-life-help-article-url"`
+
+	// Timestamp in ISO 8601 format, always in UTC
+	ServiceEndOfLifeTime *time.Time `json:"service-end-of-life-time,omitempty"`
+}
+
+// DbaasServiceType defines model for dbaas-service-type.
+type DbaasServiceType struct {
+
+	// DbaaS service default version
+	DefaultVersion *string `json:"default-version,omitempty"`
+
+	// DbaaS service description
+	Description *string `json:"description,omitempty"`
+
+	// DbaaS service latest available version
+	LatestVersion *string               `json:"latest-version,omitempty"`
+	Name          *DbaasServiceTypeName `json:"name,omitempty"`
+
+	// DbaaS service plans
+	Plans *[]DbaasPlan `json:"plans,omitempty"`
+
+	// JSON schema representing the configuration options for the service
+	UserConfigSchema *DbaasServiceType_UserConfigSchema `json:"user-config-schema,omitempty"`
+}
+
+// DbaasServiceType_UserConfigSchema defines model for DbaasServiceType.UserConfigSchema.
+type DbaasServiceType_UserConfigSchema struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasServiceTypeName defines model for dbaas-service-type-name.
+type DbaasServiceTypeName string
+
+// List of DbaasServiceTypeName
+const (
+	DbaasServiceTypeName_kafka DbaasServiceTypeName = "kafka"
+	DbaasServiceTypeName_mysql DbaasServiceTypeName = "mysql"
+	DbaasServiceTypeName_pg    DbaasServiceTypeName = "pg"
+)
+
+// DbaasServiceUpdate defines model for dbaas-service-update.
+type DbaasServiceUpdate struct {
+
+	// Deadline for installing the update
+	Deadline *time.Time `json:"deadline,omitempty"`
+
+	// Description of the update
+	Description *string `json:"description,omitempty"`
+
+	// The earliest time the update will be automatically applied
+	StartAfter *time.Time `json:"start-after,omitempty"`
+
+	// The time when the update will be automatically applied
+	StartAt *time.Time `json:"start-at,omitempty"`
+}
+
+// DbaasServiceUser defines model for dbaas-service-user.
+type DbaasServiceUser struct {
+
+	// Access certificate for TLS client authentication
+	AccessCert *string `json:"access-cert,omitempty"`
+
+	// Access certificate validity end time (ISO8601)
+	AccessCertNotValidAfterTime *time.Time `json:"access-cert-not-valid-after-time,omitempty"`
+
+	// Service specific access controls for user
+	AccessControl *DbaasServiceUserAccessControl `json:"access-control,omitempty"`
+
+	// Service specific access controls for user
+	AccessKey *string `json:"access-key,omitempty"`
+
+	// Access key for TLS client authentication
+	Authentication *string `json:"authentication,omitempty"`
+
+	// Account password. A missing field indicates a user overridden password.
+	Password *string `json:"password,omitempty"`
+
+	// Account type
+	Type string `json:"type"`
+
+	// Account username
+	Username string `json:"username"`
+}
+
+// DbaasServiceUserAccessControl defines model for dbaas-service-user-access-control.
+type DbaasServiceUserAccessControl struct {
+
+	// Command category rules
+	RedisAclCategories *[]string `json:"redis-acl-categories,omitempty"`
+
+	// Rules for individual commands
+	RedisAclCommands *[]string `json:"redis-acl-commands,omitempty"`
+
+	// Key access rules
+	RedisAclKeys *[]string `json:"redis-acl-keys,omitempty"`
 }
 
 // DeployTarget defines model for deploy-target.
 type DeployTarget struct {
+
+	// Deploy Target description
 	Description *string `json:"description,omitempty"`
-	Id          *string `json:"id,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	Type        *string `json:"type,omitempty"`
+
+	// Deploy Target ID
+	Id *string `json:"id,omitempty"`
+
+	// Deploy Target name
+	Name *string `json:"name,omitempty"`
+
+	// Deploy Target type
+	Type *string `json:"type,omitempty"`
 }
 
 // ElasticIp defines model for elastic-ip.
 type ElasticIp struct {
-	Description *string               `json:"description,omitempty"`
+
+	// Elastic IP description
+	Description *string `json:"description,omitempty"`
+
+	// Elastic IP address healthcheck
 	Healthcheck *ElasticIpHealthcheck `json:"healthcheck,omitempty"`
-	Id          *string               `json:"id,omitempty"`
-	Ip          *string               `json:"ip,omitempty"`
+
+	// Elastic IP ID
+	Id *string `json:"id,omitempty"`
+
+	// Elastic IP address
+	Ip *string `json:"ip,omitempty"`
 }
 
 // ElasticIpHealthcheck defines model for elastic-ip-healthcheck.
 type ElasticIpHealthcheck struct {
-	Interval      *int64  `json:"interval,omitempty"`
-	Mode          string  `json:"mode"`
-	Port          int64   `json:"port"`
-	StrikesFail   *int64  `json:"strikes-fail,omitempty"`
-	StrikesOk     *int64  `json:"strikes-ok,omitempty"`
-	Timeout       *int64  `json:"timeout,omitempty"`
-	TlsSkipVerify *bool   `json:"tls-skip-verify,omitempty"`
-	TlsSni        *string `json:"tls-sni,omitempty"`
-	Uri           *string `json:"uri,omitempty"`
+
+	// Interval between the checks (default: 10)
+	Interval *int64 `json:"interval,omitempty"`
+
+	// Healthcheck mode
+	Mode string `json:"mode"`
+
+	// Healthcheck port
+	Port int64 `json:"port"`
+
+	// Number of attempts before considering the target unhealthy (default: 3)
+	StrikesFail *int64 `json:"strikes-fail,omitempty"`
+
+	// Number of attempts before considering the target healthy (default: 2)
+	StrikesOk *int64 `json:"strikes-ok,omitempty"`
+
+	// Healthcheck timeout value (default: 2)
+	Timeout *int64 `json:"timeout,omitempty"`
+
+	// Skip TLS verification
+	TlsSkipVerify *bool `json:"tls-skip-verify,omitempty"`
+
+	// SNI domain for HTTPS healthchecks
+	TlsSni *string `json:"tls-sni,omitempty"`
+
+	// Healthcheck URI
+	Uri *string `json:"uri,omitempty"`
 }
 
 // Event defines model for event.
 type Event struct {
-	Payload   *Event_Payload `json:"payload,omitempty"`
-	Timestamp *time.Time     `json:"timestamp,omitempty"`
+
+	// Event payload. This is a free-form map
+	Payload *Event_Payload `json:"payload,omitempty"`
+
+	// Time at which the event happened, millisecond resolution
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 
 // Event_Payload defines model for Event.Payload.
@@ -69,270 +612,669 @@ type Event_Payload struct {
 
 // Instance defines model for instance.
 type Instance struct {
+
+	// Instance Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	CreatedAt          *time.Time           `json:"created-at,omitempty"`
-	DiskSize           *int64               `json:"disk-size,omitempty"`
-	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
-	Id                 *string              `json:"id,omitempty"`
-	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
-	Ipv6Address        *string              `json:"ipv6-address,omitempty"`
-	Manager            *Manager             `json:"manager,omitempty"`
-	Name               *string              `json:"name,omitempty"`
-	PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
-	PublicIp           *string              `json:"public-ip,omitempty"`
-	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
-	Snapshots          *[]Snapshot          `json:"snapshots,omitempty"`
-	SshKey             *SshKey              `json:"ssh-key,omitempty"`
-	State              *string              `json:"state,omitempty"`
-	Template           *Template            `json:"template,omitempty"`
-	UserData           *string              `json:"user-data,omitempty"`
+
+	// Instance creation date
+	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// Instance disk size in GB
+	DiskSize *int64 `json:"disk-size,omitempty"`
+
+	// Instance Elastic IPs
+	ElasticIps *[]ElasticIp `json:"elastic-ips,omitempty"`
+
+	// Instance ID
+	Id *string `json:"id,omitempty"`
+
+	// Compute instance type
+	InstanceType *InstanceType `json:"instance-type,omitempty"`
+
+	// Instance IPv6 address
+	Ipv6Address *string `json:"ipv6-address,omitempty"`
+
+	// Resource manager
+	Manager *Manager `json:"manager,omitempty"`
+
+	// Instance name
+	Name *string `json:"name,omitempty"`
+
+	// Instance Private Networks
+	PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
+
+	// Instance public IPv4 address
+	PublicIp *string `json:"public-ip,omitempty"`
+
+	// Instance Security Groups
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+
+	// Instance Snapshots
+	Snapshots *[]Snapshot `json:"snapshots,omitempty"`
+
+	// SSH key
+	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instance state
+	State *string `json:"state,omitempty"`
+
+	// Instance template
+	Template *Template `json:"template,omitempty"`
+
+	// Instance Cloud-init user-data
+	UserData *string `json:"user-data,omitempty"`
 }
 
 // InstancePool defines model for instance-pool.
 type InstancePool struct {
+
+	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
-	Description        *string              `json:"description,omitempty"`
-	DiskSize           *int64               `json:"disk-size,omitempty"`
-	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
-	Id                 *string              `json:"id,omitempty"`
-	InstancePrefix     *string              `json:"instance-prefix,omitempty"`
-	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
-	Instances          *[]Instance          `json:"instances,omitempty"`
-	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
-	Manager            *Manager             `json:"manager,omitempty"`
-	Name               *string              `json:"name,omitempty"`
-	PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
-	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
-	Size               *int64               `json:"size,omitempty"`
-	SshKey             *SshKey              `json:"ssh-key,omitempty"`
-	State              *string              `json:"state,omitempty"`
-	Template           *Template            `json:"template,omitempty"`
-	UserData           *string              `json:"user-data,omitempty"`
+
+	// Deploy target
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
+
+	// Instance Pool description
+	Description *string `json:"description,omitempty"`
+
+	// Instances disk size in GB
+	DiskSize *int64 `json:"disk-size,omitempty"`
+
+	// Instances Elastic IPs
+	ElasticIps *[]ElasticIp `json:"elastic-ips,omitempty"`
+
+	// Instance Pool ID
+	Id *string `json:"id,omitempty"`
+
+	// The instances created by the Instance Pool will be prefixed with this value (default: pool)
+	InstancePrefix *string `json:"instance-prefix,omitempty"`
+
+	// Compute instance type
+	InstanceType *InstanceType `json:"instance-type,omitempty"`
+
+	// Instances
+	Instances *[]Instance `json:"instances,omitempty"`
+
+	// Enable IPv6 for instances
+	Ipv6Enabled *bool `json:"ipv6-enabled,omitempty"`
+
+	// Resource manager
+	Manager *Manager `json:"manager,omitempty"`
+
+	// Instance Pool name
+	Name *string `json:"name,omitempty"`
+
+	// Instance Pool Private Networks
+	PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
+
+	// Instance Pool Security Groups
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+
+	// Number of instances
+	Size *int64 `json:"size,omitempty"`
+
+	// SSH key
+	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instance Pool state
+	State *string `json:"state,omitempty"`
+
+	// Instance template
+	Template *Template `json:"template,omitempty"`
+
+	// Instances Cloud-init user-data
+	UserData *string `json:"user-data,omitempty"`
 }
 
 // InstanceType defines model for instance-type.
 type InstanceType struct {
-	Authorized *bool   `json:"authorized,omitempty"`
-	Cpus       *int64  `json:"cpus,omitempty"`
-	Family     *string `json:"family,omitempty"`
-	Gpus       *int64  `json:"gpus,omitempty"`
-	Id         *string `json:"id,omitempty"`
-	Memory     *int64  `json:"memory,omitempty"`
-	Size       *string `json:"size,omitempty"`
+
+	// Requires authorization or publicly available
+	Authorized *bool `json:"authorized,omitempty"`
+
+	// CPU count
+	Cpus *int64 `json:"cpus,omitempty"`
+
+	// Instance type family
+	Family *string `json:"family,omitempty"`
+
+	// GPU count
+	Gpus *int64 `json:"gpus,omitempty"`
+
+	// Instance type ID
+	Id *string `json:"id,omitempty"`
+
+	// Available memory
+	Memory *int64 `json:"memory,omitempty"`
+
+	// Instance type size
+	Size *string `json:"size,omitempty"`
 }
 
 // LoadBalancer defines model for load-balancer.
 type LoadBalancer struct {
-	CreatedAt   *time.Time             `json:"created-at,omitempty"`
-	Description *string                `json:"description,omitempty"`
-	Id          *string                `json:"id,omitempty"`
-	Ip          *string                `json:"ip,omitempty"`
-	Name        *string                `json:"name,omitempty"`
-	Services    *[]LoadBalancerService `json:"services,omitempty"`
-	State       *string                `json:"state,omitempty"`
+
+	// Load Balancer creation date
+	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// Load Balancer description
+	Description *string `json:"description,omitempty"`
+
+	// Load Balancer ID
+	Id *string `json:"id,omitempty"`
+
+	// Load Balancer public IP
+	Ip *string `json:"ip,omitempty"`
+
+	// Load Balancer name
+	Name *string `json:"name,omitempty"`
+
+	// Load Balancer Services
+	Services *[]LoadBalancerService `json:"services,omitempty"`
+
+	// Load Balancer state
+	State *string `json:"state,omitempty"`
 }
 
 // LoadBalancerServerStatus defines model for load-balancer-server-status.
 type LoadBalancerServerStatus struct {
+
+	// Backend server public IP
 	PublicIp *string `json:"public-ip,omitempty"`
-	Status   *string `json:"status,omitempty"`
+
+	// Status of the instance's healthcheck
+	Status *string `json:"status,omitempty"`
 }
 
 // LoadBalancerService defines model for load-balancer-service.
 type LoadBalancerService struct {
-	Description       *string                         `json:"description,omitempty"`
-	Healthcheck       *LoadBalancerServiceHealthcheck `json:"healthcheck,omitempty"`
-	HealthcheckStatus *[]LoadBalancerServerStatus     `json:"healthcheck-status,omitempty"`
-	Id                *string                         `json:"id,omitempty"`
-	InstancePool      *InstancePool                   `json:"instance-pool,omitempty"`
-	Name              *string                         `json:"name,omitempty"`
-	Port              *int64                          `json:"port,omitempty"`
-	Protocol          *string                         `json:"protocol,omitempty"`
-	State             *string                         `json:"state,omitempty"`
-	Strategy          *string                         `json:"strategy,omitempty"`
-	TargetPort        *int64                          `json:"target-port,omitempty"`
+
+	// Load Balancer Service description
+	Description *string `json:"description,omitempty"`
+
+	// Load Balancer Service healthcheck
+	Healthcheck *LoadBalancerServiceHealthcheck `json:"healthcheck,omitempty"`
+
+	// Healthcheck status per backend server
+	HealthcheckStatus *[]LoadBalancerServerStatus `json:"healthcheck-status,omitempty"`
+
+	// Load Balancer Service ID
+	Id *string `json:"id,omitempty"`
+
+	// Instance Pool
+	InstancePool *InstancePool `json:"instance-pool,omitempty"`
+
+	// Load Balancer Service name
+	Name *string `json:"name,omitempty"`
+
+	// Port exposed on the Load Balancer's public IP
+	Port *int64 `json:"port,omitempty"`
+
+	// Network traffic protocol
+	Protocol *string `json:"protocol,omitempty"`
+
+	// Load Balancer Service state
+	State *string `json:"state,omitempty"`
+
+	// Load balancing strategy
+	Strategy *string `json:"strategy,omitempty"`
+
+	// Port on which the network traffic will be forwarded to on the receiving instance
+	TargetPort *int64 `json:"target-port,omitempty"`
 }
 
 // LoadBalancerServiceHealthcheck defines model for load-balancer-service-healthcheck.
 type LoadBalancerServiceHealthcheck struct {
-	Interval *int64  `json:"interval,omitempty"`
-	Mode     string  `json:"mode"`
-	Port     int64   `json:"port"`
-	Retries  *int64  `json:"retries,omitempty"`
-	Timeout  *int64  `json:"timeout,omitempty"`
-	TlsSni   *string `json:"tls-sni,omitempty"`
-	Uri      *string `json:"uri,omitempty"`
+
+	// Healthcheck interval (default: 10)
+	Interval *int64 `json:"interval,omitempty"`
+
+	// Healthcheck mode
+	Mode string `json:"mode"`
+
+	// Healthcheck port
+	Port int64 `json:"port"`
+
+	// Number of retries before considering a Service failed
+	Retries *int64 `json:"retries,omitempty"`
+
+	// Healthcheck timeout value (default: 2)
+	Timeout *int64 `json:"timeout,omitempty"`
+
+	// SNI domain for HTTPS healthchecks
+	TlsSni *string `json:"tls-sni,omitempty"`
+
+	// Healthcheck URI
+	Uri *string `json:"uri,omitempty"`
 }
 
 // Manager defines model for manager.
 type Manager struct {
-	Id   *string `json:"id,omitempty"`
+
+	// Manager ID
+	Id *string `json:"id,omitempty"`
+
+	// Manager type
 	Type *string `json:"type,omitempty"`
 }
 
 // Operation defines model for operation.
 type Operation struct {
-	Id        *string    `json:"id,omitempty"`
-	Message   *string    `json:"message,omitempty"`
-	Reason    *string    `json:"reason,omitempty"`
+
+	// Operation ID
+	Id *string `json:"id,omitempty"`
+
+	// Operation message
+	Message *string `json:"message,omitempty"`
+
+	// Operation failure reason
+	Reason *string `json:"reason,omitempty"`
+
+	// Resource reference
 	Reference *Reference `json:"reference,omitempty"`
-	State     *string    `json:"state,omitempty"`
+
+	// Operation status
+	State *string `json:"state,omitempty"`
 }
 
 // PrivateNetwork defines model for private-network.
 type PrivateNetwork struct {
+
+	// Private Network description
 	Description *string `json:"description,omitempty"`
-	EndIp       *string `json:"end-ip,omitempty"`
-	Id          *string `json:"id,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	Netmask     *string `json:"netmask,omitempty"`
-	StartIp     *string `json:"start-ip,omitempty"`
+
+	// Private Network end IP address
+	EndIp *string `json:"end-ip,omitempty"`
+
+	// Private Network ID
+	Id *string `json:"id,omitempty"`
+
+	// Private Network name
+	Name *string `json:"name,omitempty"`
+
+	// Private Network netmask
+	Netmask *string `json:"netmask,omitempty"`
+
+	// Private Network start IP address
+	StartIp *string `json:"start-ip,omitempty"`
 }
 
 // Reference defines model for reference.
 type Reference struct {
+
+	// Command name
 	Command *string `json:"command,omitempty"`
-	Id      *string `json:"id,omitempty"`
-	Link    *string `json:"link,omitempty"`
+
+	// Reference ID
+	Id *string `json:"id,omitempty"`
+
+	// Link to the referenced resource
+	Link *string `json:"link,omitempty"`
 }
 
 // SecurityGroup defines model for security-group.
 type SecurityGroup struct {
-	Description *string              `json:"description,omitempty"`
-	Id          *string              `json:"id,omitempty"`
-	Name        *string              `json:"name,omitempty"`
-	Rules       *[]SecurityGroupRule `json:"rules,omitempty"`
+
+	// Security Group description
+	Description *string `json:"description,omitempty"`
+
+	// Security Group ID
+	Id *string `json:"id,omitempty"`
+
+	// Security Group name
+	Name *string `json:"name,omitempty"`
+
+	// Security Group rules
+	Rules *[]SecurityGroupRule `json:"rules,omitempty"`
 }
 
 // SecurityGroupResource defines model for security-group-resource.
 type SecurityGroupResource struct {
-	Id   *string `json:"id,omitempty"`
-	Name string  `json:"name"`
+
+	// Security Group ID
+	Id *string `json:"id,omitempty"`
+
+	// Security Group name
+	Name string `json:"name"`
 }
 
 // SecurityGroupRule defines model for security-group-rule.
 type SecurityGroupRule struct {
-	Description   *string `json:"description,omitempty"`
-	EndPort       *int64  `json:"end-port,omitempty"`
+
+	// Security Group rule description
+	Description *string `json:"description,omitempty"`
+
+	// End port of the range
+	EndPort *int64 `json:"end-port,omitempty"`
+
+	// Network flow direction to match
 	FlowDirection *string `json:"flow-direction,omitempty"`
-	Icmp          *struct {
+
+	// ICMP details
+	Icmp *struct {
 		Code *int64 `json:"code,omitempty"`
 		Type *int64 `json:"type,omitempty"`
 	} `json:"icmp,omitempty"`
-	Id            *string                `json:"id,omitempty"`
-	Network       *string                `json:"network,omitempty"`
-	Protocol      *string                `json:"protocol,omitempty"`
+
+	// Security Group rule ID
+	Id *string `json:"id,omitempty"`
+
+	// CIDR-formatted network allowed
+	Network *string `json:"network,omitempty"`
+
+	// Network protocol
+	Protocol *string `json:"protocol,omitempty"`
+
+	// Security Group
 	SecurityGroup *SecurityGroupResource `json:"security-group,omitempty"`
-	StartPort     *int64                 `json:"start-port,omitempty"`
+
+	// Start port of the range
+	StartPort *int64 `json:"start-port,omitempty"`
 }
 
 // SksCluster defines model for sks-cluster.
 type SksCluster struct {
-	Addons      *[]string      `json:"addons,omitempty"`
-	Cni         *string        `json:"cni,omitempty"`
-	CreatedAt   *time.Time     `json:"created-at,omitempty"`
-	Description *string        `json:"description,omitempty"`
-	Endpoint    *string        `json:"endpoint,omitempty"`
-	Id          *string        `json:"id,omitempty"`
-	Level       *string        `json:"level,omitempty"`
-	Name        *string        `json:"name,omitempty"`
-	Nodepools   *[]SksNodepool `json:"nodepools,omitempty"`
-	State       *string        `json:"state,omitempty"`
-	Version     *string        `json:"version,omitempty"`
+
+	// Cluster addons
+	Addons *[]string `json:"addons,omitempty"`
+
+	// Cluster CNI
+	Cni *string `json:"cni,omitempty"`
+
+	// Cluster creation date
+	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// Cluster description
+	Description *string `json:"description,omitempty"`
+
+	// Cluster endpoint
+	Endpoint *string `json:"endpoint,omitempty"`
+
+	// Cluster ID
+	Id *string `json:"id,omitempty"`
+
+	// Cluster level
+	Level *string `json:"level,omitempty"`
+
+	// Cluster name
+	Name *string `json:"name,omitempty"`
+
+	// Cluster Nodepools
+	Nodepools *[]SksNodepool `json:"nodepools,omitempty"`
+
+	// Cluster state
+	State *string `json:"state,omitempty"`
+
+	// Control plane Kubernetes version
+	Version *string `json:"version,omitempty"`
 }
 
 // SksKubeconfigRequest defines model for sks-kubeconfig-request.
 type SksKubeconfigRequest struct {
+
+	// List of roles. The certificate present in the Kubeconfig will have these roles set in the Org field.
 	Groups *[]string `json:"groups,omitempty"`
-	Ttl    *int64    `json:"ttl,omitempty"`
-	User   *string   `json:"user,omitempty"`
+
+	// Validity in seconds of the Kubeconfig user certificate (default: 30 days)
+	Ttl *int64 `json:"ttl,omitempty"`
+
+	// User name in the generated Kubeconfig. The certificate present in the Kubeconfig will also have this name set for the CN field.
+	User *string `json:"user,omitempty"`
 }
 
 // SksNodepool defines model for sks-nodepool.
 type SksNodepool struct {
+
+	// Nodepool Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	CreatedAt          *time.Time           `json:"created-at,omitempty"`
-	Description        *string              `json:"description,omitempty"`
-	DiskSize           *int64               `json:"disk-size,omitempty"`
-	Id                 *string              `json:"id,omitempty"`
-	InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
-	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
-	Name               *string              `json:"name,omitempty"`
-	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
-	Size               *int64               `json:"size,omitempty"`
-	State              *string              `json:"state,omitempty"`
-	Template           *Template            `json:"template,omitempty"`
-	Version            *string              `json:"version,omitempty"`
+
+	// Nodepool creation date
+	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// Deploy target
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
+
+	// Nodepool description
+	Description *string `json:"description,omitempty"`
+
+	// Nodepool instances disk size in GB
+	DiskSize *int64 `json:"disk-size,omitempty"`
+
+	// Nodepool ID
+	Id *string `json:"id,omitempty"`
+
+	// Instance Pool
+	InstancePool *InstancePool `json:"instance-pool,omitempty"`
+
+	// The instances created by the Nodepool will be prefixed with this value (default: pool)
+	InstancePrefix *string `json:"instance-prefix,omitempty"`
+
+	// Compute instance type
+	InstanceType *InstanceType `json:"instance-type,omitempty"`
+
+	// Nodepool name
+	Name *string `json:"name,omitempty"`
+
+	// Nodepool Security Groups
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+
+	// Number of instances
+	Size *int64 `json:"size,omitempty"`
+
+	// Nodepool state
+	State *string `json:"state,omitempty"`
+
+	// Instance template
+	Template *Template `json:"template,omitempty"`
+
+	// Nodepool version
+	Version *string `json:"version,omitempty"`
 }
 
 // Snapshot defines model for snapshot.
 type Snapshot struct {
-	CreatedAt   *time.Time `json:"created-at,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	Export      *struct {
-		Md5sum       *string `json:"md5sum,omitempty"`
+
+	// Snapshot creation date
+	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// Exported snapshot information
+	Export *struct {
+
+		// Exported snapshot disk file MD5 checksum
+		Md5sum *string `json:"md5sum,omitempty"`
+
+		// Exported snapshot disk file pre-signed URL
 		PresignedUrl *string `json:"presigned-url,omitempty"`
 	} `json:"export,omitempty"`
-	Id       *string   `json:"id,omitempty"`
+
+	// Snapshot ID
+	Id *string `json:"id,omitempty"`
+
+	// Instance
 	Instance *Instance `json:"instance,omitempty"`
-	Name     *string   `json:"name,omitempty"`
-	State    *string   `json:"state,omitempty"`
+
+	// Snapshot name
+	Name *string `json:"name,omitempty"`
+
+	// Snapshot state
+	State *string `json:"state,omitempty"`
 }
 
 // SshKey defines model for ssh-key.
 type SshKey struct {
+
+	// SSH key fingerprint
 	Fingerprint *string `json:"fingerprint,omitempty"`
-	Name        *string `json:"name,omitempty"`
+
+	// SSH key name
+	Name *string `json:"name,omitempty"`
 }
 
 // Template defines model for template.
 type Template struct {
-	BootMode        *string    `json:"boot-mode,omitempty"`
-	Build           *string    `json:"build,omitempty"`
-	Checksum        *string    `json:"checksum,omitempty"`
-	CreatedAt       *time.Time `json:"created-at,omitempty"`
-	DefaultUser     *string    `json:"default-user,omitempty"`
-	Description     *string    `json:"description,omitempty"`
-	Family          *string    `json:"family,omitempty"`
-	Id              *string    `json:"id,omitempty"`
-	Name            *string    `json:"name,omitempty"`
-	PasswordEnabled *bool      `json:"password-enabled,omitempty"`
-	Size            *int64     `json:"size,omitempty"`
-	SshKeyEnabled   *bool      `json:"ssh-key-enabled,omitempty"`
-	Url             *string    `json:"url,omitempty"`
-	Version         *string    `json:"version,omitempty"`
-	Visibility      *string    `json:"visibility,omitempty"`
+
+	// Boot mode (default: legacy)
+	BootMode *string `json:"boot-mode,omitempty"`
+
+	// Template build
+	Build *string `json:"build,omitempty"`
+
+	// Template MD5 checksum
+	Checksum *string `json:"checksum,omitempty"`
+
+	// Template creation date
+	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// Template default user
+	DefaultUser *string `json:"default-user,omitempty"`
+
+	// Template description
+	Description *string `json:"description,omitempty"`
+
+	// Template family
+	Family *string `json:"family,omitempty"`
+
+	// Template ID
+	Id *string `json:"id,omitempty"`
+
+	// Template name
+	Name *string `json:"name,omitempty"`
+
+	// Enable password based login
+	PasswordEnabled *bool `json:"password-enabled,omitempty"`
+
+	// Template size
+	Size *int64 `json:"size,omitempty"`
+
+	// Enable SSH key based login
+	SshKeyEnabled *bool `json:"ssh-key-enabled,omitempty"`
+
+	// Template source URL
+	Url *string `json:"url,omitempty"`
+
+	// Template version
+	Version *string `json:"version,omitempty"`
+
+	// Template visibility
+	Visibility *string `json:"visibility,omitempty"`
 }
 
 // Zone defines model for zone.
 type Zone struct {
+
+	// Zone short name
 	Name *string `json:"name,omitempty"`
 }
 
+// CreateAccessKeyJSONBody defines parameters for CreateAccessKey.
+type CreateAccessKeyJSONBody AccessKey
+
 // CreateAntiAffinityGroupJSONBody defines parameters for CreateAntiAffinityGroup.
 type CreateAntiAffinityGroupJSONBody struct {
+
+	// Anti-affinity Group description
 	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
+
+	// Anti-affinity Group name
+	Name string `json:"name"`
+}
+
+// DbaasCreateServiceJSONBody defines parameters for DbaasCreateService.
+type DbaasCreateServiceJSONBody struct {
+
+	// Integrations with other services
+	Integrations *[]DbaasServiceIntegration `json:"integrations,omitempty"`
+
+	// Automatic maintenance settings
+	Maintenance *struct {
+
+		// Day of week for installing updates
+		Dow string `json:"dow"`
+
+		// Time for installing updates, UTC
+		Time string `json:"time"`
+	} `json:"maintenance,omitempty"`
+	Name DbaasServiceName `json:"name"`
+
+	// Subscription plan
+	Plan string `json:"plan"`
+
+	// Service is protected against termination and powering off
+	TerminationProtection *bool                `json:"termination-protection,omitempty"`
+	Type                  DbaasServiceTypeName `json:"type"`
+
+	// Service type-specific settings
+	UserConfig *DbaasCreateServiceJSONBody_UserConfig `json:"user-config,omitempty"`
+}
+
+// DbaasCreateServiceJSONBody_UserConfig defines parameters for DbaasCreateService.
+type DbaasCreateServiceJSONBody_UserConfig struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
+
+// DbaasUpdateServiceJSONBody defines parameters for DbaasUpdateService.
+type DbaasUpdateServiceJSONBody struct {
+
+	// Automatic maintenance settings
+	Maintenance *struct {
+
+		// Day of week for installing updates
+		Dow string `json:"dow"`
+
+		// Time for installing updates, UTC
+		Time string `json:"time"`
+	} `json:"maintenance,omitempty"`
+
+	// Subscription plan
+	Plan *string `json:"plan,omitempty"`
+
+	// Power-on the service (true) or power-off (false)
+	Powered *bool `json:"powered,omitempty"`
+
+	// Service is protected against termination and powering off
+	TerminationProtection *bool `json:"termination-protection,omitempty"`
+
+	// Service type-specific settings
+	UserConfig *DbaasUpdateServiceJSONBody_UserConfig `json:"user-config,omitempty"`
+}
+
+// DbaasUpdateServiceJSONBody_UserConfig defines parameters for DbaasUpdateService.
+type DbaasUpdateServiceJSONBody_UserConfig struct {
+	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
 // CreateElasticIpJSONBody defines parameters for CreateElasticIp.
 type CreateElasticIpJSONBody struct {
-	Description *string               `json:"description,omitempty"`
+
+	// Elastic IP description
+	Description *string `json:"description,omitempty"`
+
+	// Elastic IP address healthcheck
 	Healthcheck *ElasticIpHealthcheck `json:"healthcheck,omitempty"`
 }
 
 // UpdateElasticIpJSONBody defines parameters for UpdateElasticIp.
 type UpdateElasticIpJSONBody struct {
-	Description *string               `json:"description,omitempty"`
+
+	// Elastic IP description
+	Description *string `json:"description,omitempty"`
+
+	// Elastic IP address healthcheck
 	Healthcheck *ElasticIpHealthcheck `json:"healthcheck,omitempty"`
 }
 
 // AttachInstanceToElasticIpJSONBody defines parameters for AttachInstanceToElasticIp.
 type AttachInstanceToElasticIpJSONBody struct {
-	Instance *struct {
-		Id string `json:"id"`
-	} `json:"instance,omitempty"`
+
+	// Instance
+	Instance Instance `json:"instance"`
+}
+
+// DetachInstanceFromElasticIpJSONBody defines parameters for DetachInstanceFromElasticIp.
+type DetachInstanceFromElasticIpJSONBody struct {
+
+	// Instance
+	Instance Instance `json:"instance"`
 }
 
 // ListEventsParams defines parameters for ListEvents.
@@ -343,53 +1285,131 @@ type ListEventsParams struct {
 
 // CreateInstanceJSONBody defines parameters for CreateInstance.
 type CreateInstanceJSONBody struct {
+
+	// Instance Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
-	DiskSize           int64                `json:"disk-size"`
-	InstanceType       InstanceType         `json:"instance-type"`
-	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
-	Name               *string              `json:"name,omitempty"`
-	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
-	SshKey             *SshKey              `json:"ssh-key,omitempty"`
-	Template           Template             `json:"template"`
-	UserData           *string              `json:"user-data,omitempty"`
+
+	// Deploy target
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
+
+	// Instance disk size in GB
+	DiskSize int64 `json:"disk-size"`
+
+	// Compute instance type
+	InstanceType InstanceType `json:"instance-type"`
+
+	// Enable IPv6
+	Ipv6Enabled *bool `json:"ipv6-enabled,omitempty"`
+
+	// Instance name
+	Name *string `json:"name,omitempty"`
+
+	// Instance Security Groups
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+
+	// SSH key
+	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instance template
+	Template Template `json:"template"`
+
+	// Instance Cloud-init user-data
+	UserData *string `json:"user-data,omitempty"`
 }
 
 // CreateInstancePoolJSONBody defines parameters for CreateInstancePool.
 type CreateInstancePoolJSONBody struct {
+
+	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
-	Description        *string              `json:"description,omitempty"`
-	DiskSize           int64                `json:"disk-size"`
-	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
-	InstancePrefix     *string              `json:"instance-prefix,omitempty"`
-	InstanceType       InstanceType         `json:"instance-type"`
-	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
-	Name               string               `json:"name"`
-	PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
-	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
-	Size               int64                `json:"size"`
-	SshKey             *SshKey              `json:"ssh-key,omitempty"`
-	Template           Template             `json:"template"`
-	UserData           *string              `json:"user-data,omitempty"`
+
+	// Deploy target
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
+
+	// Instance Pool description
+	Description *string `json:"description,omitempty"`
+
+	// Instances disk size in GB
+	DiskSize int64 `json:"disk-size"`
+
+	// Instances Elastic IPs
+	ElasticIps *[]ElasticIp `json:"elastic-ips,omitempty"`
+
+	// Prefix to apply to instances names (default: pool)
+	InstancePrefix *string `json:"instance-prefix,omitempty"`
+
+	// Compute instance type
+	InstanceType InstanceType `json:"instance-type"`
+
+	// Enable IPv6 for instances
+	Ipv6Enabled *bool `json:"ipv6-enabled,omitempty"`
+
+	// Instance Pool name
+	Name string `json:"name"`
+
+	// Instance Pool Private Networks
+	PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
+
+	// Instance Pool Security Groups
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+
+	// Number of instances
+	Size int64 `json:"size"`
+
+	// SSH key
+	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instance template
+	Template Template `json:"template"`
+
+	// Instances Cloud-init user-data
+	UserData *string `json:"user-data,omitempty"`
 }
 
 // UpdateInstancePoolJSONBody defines parameters for UpdateInstancePool.
 type UpdateInstancePoolJSONBody struct {
+
+	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
-	Description        *string              `json:"description,omitempty"`
-	DiskSize           *int64               `json:"disk-size,omitempty"`
-	ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
-	InstancePrefix     *string              `json:"instance-prefix,omitempty"`
-	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
-	Ipv6Enabled        *bool                `json:"ipv6-enabled,omitempty"`
-	Name               *string              `json:"name,omitempty"`
-	PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
-	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
-	SshKey             *SshKey              `json:"ssh-key,omitempty"`
-	Template           *Template            `json:"template,omitempty"`
-	UserData           *string              `json:"user-data,omitempty"`
+
+	// Deploy target
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
+
+	// Instance Pool description
+	Description *string `json:"description,omitempty"`
+
+	// Instances disk size in GB
+	DiskSize *int64 `json:"disk-size,omitempty"`
+
+	// Instances Elastic IPs
+	ElasticIps *[]ElasticIp `json:"elastic-ips,omitempty"`
+
+	// Prefix to apply to instances names (default: pool)
+	InstancePrefix *string `json:"instance-prefix,omitempty"`
+
+	// Compute instance type
+	InstanceType *InstanceType `json:"instance-type,omitempty"`
+
+	// Enable IPv6 for instances
+	Ipv6Enabled *bool `json:"ipv6-enabled,omitempty"`
+
+	// Instance Pool name
+	Name *string `json:"name,omitempty"`
+
+	// Instance Pool Private Networks
+	PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
+
+	// Instance Pool Security Groups
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+
+	// SSH key
+	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instance template
+	Template *Template `json:"template,omitempty"`
+
+	// Instances Cloud-init user-data
+	UserData *string `json:"user-data,omitempty"`
 }
 
 // EvictInstancePoolMembersJSONBody defines parameters for EvictInstancePoolMembers.
@@ -399,24 +1419,36 @@ type EvictInstancePoolMembersJSONBody struct {
 
 // ScaleInstancePoolJSONBody defines parameters for ScaleInstancePool.
 type ScaleInstancePoolJSONBody struct {
+
+	// Number of managed instances
 	Size int64 `json:"size"`
 }
 
 // UpdateInstanceJSONBody defines parameters for UpdateInstance.
 type UpdateInstanceJSONBody struct {
-	Name     *string `json:"name,omitempty"`
+
+	// Instance name
+	Name *string `json:"name,omitempty"`
+
+	// Instance Cloud-init user-data
 	UserData *string `json:"user-data,omitempty"`
 }
 
 // RevertInstanceToSnapshotJSONBody defines parameters for RevertInstanceToSnapshot.
 type RevertInstanceToSnapshotJSONBody struct {
+
+	// Snapshot ID
 	Id string `json:"id"`
 }
 
 // CreateLoadBalancerJSONBody defines parameters for CreateLoadBalancer.
 type CreateLoadBalancerJSONBody struct {
+
+	// Load Balancer description
 	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
+
+	// Load Balancer name
+	Name string `json:"name"`
 }
 
 // UpdateLoadBalancerJSONBody defines parameters for UpdateLoadBalancer.
@@ -427,74 +1459,187 @@ type UpdateLoadBalancerJSONBody struct {
 
 // AddServiceToLoadBalancerJSONBody defines parameters for AddServiceToLoadBalancer.
 type AddServiceToLoadBalancerJSONBody struct {
-	Description  *string                        `json:"description,omitempty"`
-	Healthcheck  LoadBalancerServiceHealthcheck `json:"healthcheck"`
-	InstancePool InstancePool                   `json:"instance-pool"`
-	Name         string                         `json:"name"`
-	Port         int64                          `json:"port"`
-	Protocol     string                         `json:"protocol"`
-	Strategy     string                         `json:"strategy"`
-	TargetPort   int64                          `json:"target-port"`
+
+	// Load Balancer Service description
+	Description *string `json:"description,omitempty"`
+
+	// Load Balancer Service healthcheck
+	Healthcheck LoadBalancerServiceHealthcheck `json:"healthcheck"`
+
+	// Instance Pool
+	InstancePool InstancePool `json:"instance-pool"`
+
+	// Load Balancer Service name
+	Name string `json:"name"`
+
+	// Port exposed on the Load Balancer's public IP
+	Port int64 `json:"port"`
+
+	// Network traffic protocol
+	Protocol string `json:"protocol"`
+
+	// Load balancing strategy
+	Strategy string `json:"strategy"`
+
+	// Port on which the network traffic will be forwarded to on the receiving instance
+	TargetPort int64 `json:"target-port"`
 }
 
 // UpdateLoadBalancerServiceJSONBody defines parameters for UpdateLoadBalancerService.
 type UpdateLoadBalancerServiceJSONBody struct {
-	Description *string                         `json:"description,omitempty"`
+
+	// Load Balancer Service description
+	Description *string `json:"description,omitempty"`
+
+	// Load Balancer Service healthcheck
 	Healthcheck *LoadBalancerServiceHealthcheck `json:"healthcheck,omitempty"`
-	Name        *string                         `json:"name,omitempty"`
-	Port        *int64                          `json:"port,omitempty"`
-	Protocol    *string                         `json:"protocol,omitempty"`
-	Strategy    *string                         `json:"strategy,omitempty"`
-	TargetPort  *int64                          `json:"target-port,omitempty"`
+
+	// Load Balancer Service name
+	Name *string `json:"name,omitempty"`
+
+	// Port exposed on the Load Balancer's public IP
+	Port *int64 `json:"port,omitempty"`
+
+	// Network traffic protocol
+	Protocol *string `json:"protocol,omitempty"`
+
+	// Load balancing strategy
+	Strategy *string `json:"strategy,omitempty"`
+
+	// Port on which the network traffic will be forwarded to on the receiving instance
+	TargetPort *int64 `json:"target-port,omitempty"`
 }
 
 // CreatePrivateNetworkJSONBody defines parameters for CreatePrivateNetwork.
 type CreatePrivateNetworkJSONBody struct {
+
+	// Private Network description
 	Description *string `json:"description,omitempty"`
-	EndIp       *string `json:"end-ip,omitempty"`
-	Name        string  `json:"name"`
-	Netmask     *string `json:"netmask,omitempty"`
-	StartIp     *string `json:"start-ip,omitempty"`
+
+	// Private Network end IP address
+	EndIp *string `json:"end-ip,omitempty"`
+
+	// Private Network name
+	Name string `json:"name"`
+
+	// Private Network netmask
+	Netmask *string `json:"netmask,omitempty"`
+
+	// Private Network start IP address
+	StartIp *string `json:"start-ip,omitempty"`
 }
 
 // UpdatePrivateNetworkJSONBody defines parameters for UpdatePrivateNetwork.
 type UpdatePrivateNetworkJSONBody struct {
+
+	// Private Network description
 	Description *string `json:"description,omitempty"`
-	EndIp       *string `json:"end-ip,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	Netmask     *string `json:"netmask,omitempty"`
-	StartIp     *string `json:"start-ip,omitempty"`
+
+	// Private Network end IP address
+	EndIp *string `json:"end-ip,omitempty"`
+
+	// Private Network name
+	Name *string `json:"name,omitempty"`
+
+	// Private Network netmask
+	Netmask *string `json:"netmask,omitempty"`
+
+	// Private Network start IP address
+	StartIp *string `json:"start-ip,omitempty"`
+}
+
+// AttachInstanceToPrivateNetworkJSONBody defines parameters for AttachInstanceToPrivateNetwork.
+type AttachInstanceToPrivateNetworkJSONBody struct {
+
+	// Instance
+	Instance Instance `json:"instance"`
+
+	// Static IP address lease for the corresponding network interface
+	Ip *string `json:"ip,omitempty"`
+}
+
+// DetachInstanceFromPrivateNetworkJSONBody defines parameters for DetachInstanceFromPrivateNetwork.
+type DetachInstanceFromPrivateNetworkJSONBody struct {
+
+	// Instance
+	Instance Instance `json:"instance"`
 }
 
 // CreateSecurityGroupJSONBody defines parameters for CreateSecurityGroup.
 type CreateSecurityGroupJSONBody struct {
+
+	// Security Group description
 	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
+
+	// Security Group name
+	Name string `json:"name"`
 }
 
 // AddRuleToSecurityGroupJSONBody defines parameters for AddRuleToSecurityGroup.
 type AddRuleToSecurityGroupJSONBody struct {
-	Description   *string `json:"description,omitempty"`
-	EndPort       *int64  `json:"end-port,omitempty"`
-	FlowDirection string  `json:"flow-direction"`
-	Icmp          *struct {
+
+	// Security Group rule description
+	Description *string `json:"description,omitempty"`
+
+	// End port of the range
+	EndPort *int64 `json:"end-port,omitempty"`
+
+	// Network flow direction to match
+	FlowDirection string `json:"flow-direction"`
+
+	// ICMP details
+	Icmp *struct {
 		Code *int64 `json:"code,omitempty"`
 		Type *int64 `json:"type,omitempty"`
 	} `json:"icmp,omitempty"`
-	Network       *string                `json:"network,omitempty"`
-	Protocol      string                 `json:"protocol"`
+
+	// CIDR-formatted network allowed
+	Network *string `json:"network,omitempty"`
+
+	// Network protocol
+	Protocol string `json:"protocol"`
+
+	// Security Group
 	SecurityGroup *SecurityGroupResource `json:"security-group,omitempty"`
-	StartPort     *int64                 `json:"start-port,omitempty"`
+
+	// Start port of the range
+	StartPort *int64 `json:"start-port,omitempty"`
+}
+
+// AttachInstanceToSecurityGroupJSONBody defines parameters for AttachInstanceToSecurityGroup.
+type AttachInstanceToSecurityGroupJSONBody struct {
+
+	// Instance
+	Instance Instance `json:"instance"`
+}
+
+// DetachInstanceFromSecurityGroupJSONBody defines parameters for DetachInstanceFromSecurityGroup.
+type DetachInstanceFromSecurityGroupJSONBody struct {
+
+	// Instance
+	Instance Instance `json:"instance"`
 }
 
 // CreateSksClusterJSONBody defines parameters for CreateSksCluster.
 type CreateSksClusterJSONBody struct {
-	Addons      *[]string `json:"addons,omitempty"`
-	Cni         *string   `json:"cni,omitempty"`
-	Description *string   `json:"description,omitempty"`
-	Level       string    `json:"level"`
-	Name        string    `json:"name"`
-	Version     string    `json:"version"`
+
+	// Cluster addons
+	Addons *[]string `json:"addons,omitempty"`
+
+	// Cluster CNI
+	Cni *string `json:"cni,omitempty"`
+
+	// Cluster description
+	Description *string `json:"description,omitempty"`
+
+	// Cluster service level
+	Level string `json:"level"`
+
+	// Cluster name
+	Name string `json:"name"`
+
+	// Control plane Kubernetes version
+	Version string `json:"version"`
 }
 
 // GenerateSksClusterKubeconfigJSONBody defines parameters for GenerateSksClusterKubeconfig.
@@ -502,29 +1647,71 @@ type GenerateSksClusterKubeconfigJSONBody SksKubeconfigRequest
 
 // UpdateSksClusterJSONBody defines parameters for UpdateSksCluster.
 type UpdateSksClusterJSONBody struct {
+
+	// Cluster description
 	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
+
+	// Cluster name
+	Name *string `json:"name,omitempty"`
 }
 
 // CreateSksNodepoolJSONBody defines parameters for CreateSksNodepool.
 type CreateSksNodepoolJSONBody struct {
+
+	// Nodepool Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	Description        *string              `json:"description,omitempty"`
-	DiskSize           int64                `json:"disk-size"`
-	InstanceType       InstanceType         `json:"instance-type"`
-	Name               string               `json:"name"`
-	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
-	Size               int64                `json:"size"`
+
+	// Deploy target
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
+
+	// Nodepool description
+	Description *string `json:"description,omitempty"`
+
+	// Nodepool instances disk size in GB
+	DiskSize int64 `json:"disk-size"`
+
+	// Prefix to apply to instances names (default: pool)
+	InstancePrefix *string `json:"instance-prefix,omitempty"`
+
+	// Compute instance type
+	InstanceType InstanceType `json:"instance-type"`
+
+	// Nodepool name
+	Name string `json:"name"`
+
+	// Nodepool Security Groups
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
+
+	// Number of instances
+	Size int64 `json:"size"`
 }
 
 // UpdateSksNodepoolJSONBody defines parameters for UpdateSksNodepool.
 type UpdateSksNodepoolJSONBody struct {
+
+	// Nodepool Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
-	Description        *string              `json:"description,omitempty"`
-	DiskSize           *int64               `json:"disk-size,omitempty"`
-	InstanceType       *InstanceType        `json:"instance-type,omitempty"`
-	Name               *string              `json:"name,omitempty"`
-	SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
+
+	// Deploy target
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
+
+	// Nodepool description
+	Description *string `json:"description,omitempty"`
+
+	// Nodepool instances disk size in GB
+	DiskSize *int64 `json:"disk-size,omitempty"`
+
+	// Prefix to apply to managed instances names (default: pool)
+	InstancePrefix *string `json:"instance-prefix,omitempty"`
+
+	// Compute instance type
+	InstanceType *InstanceType `json:"instance-type,omitempty"`
+
+	// Nodepool name
+	Name *string `json:"name,omitempty"`
+
+	// Nodepool Security Groups
+	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
 }
 
 // EvictSksNodepoolMembersJSONBody defines parameters for EvictSksNodepoolMembers.
@@ -534,11 +1721,15 @@ type EvictSksNodepoolMembersJSONBody struct {
 
 // ScaleSksNodepoolJSONBody defines parameters for ScaleSksNodepool.
 type ScaleSksNodepoolJSONBody struct {
+
+	// Number of instances
 	Size int64 `json:"size"`
 }
 
 // UpgradeSksClusterJSONBody defines parameters for UpgradeSksCluster.
 type UpgradeSksClusterJSONBody struct {
+
+	// Control plane Kubernetes version
 	Version string `json:"version"`
 }
 
@@ -555,24 +1746,53 @@ type ListTemplatesParams struct {
 
 // RegisterTemplateJSONBody defines parameters for RegisterTemplate.
 type RegisterTemplateJSONBody struct {
-	BootMode        *string `json:"boot-mode,omitempty"`
-	Checksum        string  `json:"checksum"`
-	DefaultUser     *string `json:"default-user,omitempty"`
-	Description     *string `json:"description,omitempty"`
-	Name            string  `json:"name"`
-	PasswordEnabled bool    `json:"password-enabled"`
-	Size            *int64  `json:"size,omitempty"`
-	SshKeyEnabled   bool    `json:"ssh-key-enabled"`
-	Url             string  `json:"url"`
+
+	// Boot mode (default: legacy)
+	BootMode *string `json:"boot-mode,omitempty"`
+
+	// Template MD5 checksum
+	Checksum string `json:"checksum"`
+
+	// Template default user
+	DefaultUser *string `json:"default-user,omitempty"`
+
+	// Template description
+	Description *string `json:"description,omitempty"`
+
+	// Template name
+	Name string `json:"name"`
+
+	// Enable password based login
+	PasswordEnabled bool `json:"password-enabled"`
+
+	// Template size
+	Size *int64 `json:"size,omitempty"`
+
+	// Enable SSH key based login
+	SshKeyEnabled bool `json:"ssh-key-enabled"`
+
+	// Template source URL
+	Url string `json:"url"`
 }
 
 // CopyTemplateJSONBody defines parameters for CopyTemplate.
 type CopyTemplateJSONBody struct {
+
+	// Target Zone ID
 	TargetZone string `json:"target-zone"`
 }
 
+// CreateAccessKeyRequestBody defines body for CreateAccessKey for application/json ContentType.
+type CreateAccessKeyJSONRequestBody CreateAccessKeyJSONBody
+
 // CreateAntiAffinityGroupRequestBody defines body for CreateAntiAffinityGroup for application/json ContentType.
 type CreateAntiAffinityGroupJSONRequestBody CreateAntiAffinityGroupJSONBody
+
+// DbaasCreateServiceRequestBody defines body for DbaasCreateService for application/json ContentType.
+type DbaasCreateServiceJSONRequestBody DbaasCreateServiceJSONBody
+
+// DbaasUpdateServiceRequestBody defines body for DbaasUpdateService for application/json ContentType.
+type DbaasUpdateServiceJSONRequestBody DbaasUpdateServiceJSONBody
 
 // CreateElasticIpRequestBody defines body for CreateElasticIp for application/json ContentType.
 type CreateElasticIpJSONRequestBody CreateElasticIpJSONBody
@@ -582,6 +1802,9 @@ type UpdateElasticIpJSONRequestBody UpdateElasticIpJSONBody
 
 // AttachInstanceToElasticIpRequestBody defines body for AttachInstanceToElasticIp for application/json ContentType.
 type AttachInstanceToElasticIpJSONRequestBody AttachInstanceToElasticIpJSONBody
+
+// DetachInstanceFromElasticIpRequestBody defines body for DetachInstanceFromElasticIp for application/json ContentType.
+type DetachInstanceFromElasticIpJSONRequestBody DetachInstanceFromElasticIpJSONBody
 
 // CreateInstanceRequestBody defines body for CreateInstance for application/json ContentType.
 type CreateInstanceJSONRequestBody CreateInstanceJSONBody
@@ -622,11 +1845,23 @@ type CreatePrivateNetworkJSONRequestBody CreatePrivateNetworkJSONBody
 // UpdatePrivateNetworkRequestBody defines body for UpdatePrivateNetwork for application/json ContentType.
 type UpdatePrivateNetworkJSONRequestBody UpdatePrivateNetworkJSONBody
 
+// AttachInstanceToPrivateNetworkRequestBody defines body for AttachInstanceToPrivateNetwork for application/json ContentType.
+type AttachInstanceToPrivateNetworkJSONRequestBody AttachInstanceToPrivateNetworkJSONBody
+
+// DetachInstanceFromPrivateNetworkRequestBody defines body for DetachInstanceFromPrivateNetwork for application/json ContentType.
+type DetachInstanceFromPrivateNetworkJSONRequestBody DetachInstanceFromPrivateNetworkJSONBody
+
 // CreateSecurityGroupRequestBody defines body for CreateSecurityGroup for application/json ContentType.
 type CreateSecurityGroupJSONRequestBody CreateSecurityGroupJSONBody
 
 // AddRuleToSecurityGroupRequestBody defines body for AddRuleToSecurityGroup for application/json ContentType.
 type AddRuleToSecurityGroupJSONRequestBody AddRuleToSecurityGroupJSONBody
+
+// AttachInstanceToSecurityGroupRequestBody defines body for AttachInstanceToSecurityGroup for application/json ContentType.
+type AttachInstanceToSecurityGroupJSONRequestBody AttachInstanceToSecurityGroupJSONBody
+
+// DetachInstanceFromSecurityGroupRequestBody defines body for DetachInstanceFromSecurityGroup for application/json ContentType.
+type DetachInstanceFromSecurityGroupJSONRequestBody DetachInstanceFromSecurityGroupJSONBody
 
 // CreateSksClusterRequestBody defines body for CreateSksCluster for application/json ContentType.
 type CreateSksClusterJSONRequestBody CreateSksClusterJSONBody
@@ -657,6 +1892,536 @@ type RegisterTemplateJSONRequestBody RegisterTemplateJSONBody
 
 // CopyTemplateRequestBody defines body for CopyTemplate for application/json ContentType.
 type CopyTemplateJSONRequestBody CopyTemplateJSONBody
+
+// Getter for additional properties for DbaasCreateServiceJSONBody_UserConfig. Returns the specified
+// element and whether it was found
+func (a DbaasCreateServiceJSONBody_UserConfig) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasCreateServiceJSONBody_UserConfig
+func (a *DbaasCreateServiceJSONBody_UserConfig) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasCreateServiceJSONBody_UserConfig to handle AdditionalProperties
+func (a *DbaasCreateServiceJSONBody_UserConfig) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasCreateServiceJSONBody_UserConfig to handle AdditionalProperties
+func (a DbaasCreateServiceJSONBody_UserConfig) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasUpdateServiceJSONBody_UserConfig. Returns the specified
+// element and whether it was found
+func (a DbaasUpdateServiceJSONBody_UserConfig) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasUpdateServiceJSONBody_UserConfig
+func (a *DbaasUpdateServiceJSONBody_UserConfig) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasUpdateServiceJSONBody_UserConfig to handle AdditionalProperties
+func (a *DbaasUpdateServiceJSONBody_UserConfig) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasUpdateServiceJSONBody_UserConfig to handle AdditionalProperties
+func (a DbaasUpdateServiceJSONBody_UserConfig) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasService_ConnectionInfo. Returns the specified
+// element and whether it was found
+func (a DbaasService_ConnectionInfo) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasService_ConnectionInfo
+func (a *DbaasService_ConnectionInfo) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasService_ConnectionInfo to handle AdditionalProperties
+func (a *DbaasService_ConnectionInfo) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasService_ConnectionInfo to handle AdditionalProperties
+func (a DbaasService_ConnectionInfo) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasService_Features. Returns the specified
+// element and whether it was found
+func (a DbaasService_Features) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasService_Features
+func (a *DbaasService_Features) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasService_Features to handle AdditionalProperties
+func (a *DbaasService_Features) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasService_Features to handle AdditionalProperties
+func (a DbaasService_Features) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasService_Metadata. Returns the specified
+// element and whether it was found
+func (a DbaasService_Metadata) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasService_Metadata
+func (a *DbaasService_Metadata) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasService_Metadata to handle AdditionalProperties
+func (a *DbaasService_Metadata) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasService_Metadata to handle AdditionalProperties
+func (a DbaasService_Metadata) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasService_UriParams. Returns the specified
+// element and whether it was found
+func (a DbaasService_UriParams) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasService_UriParams
+func (a *DbaasService_UriParams) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasService_UriParams to handle AdditionalProperties
+func (a *DbaasService_UriParams) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasService_UriParams to handle AdditionalProperties
+func (a DbaasService_UriParams) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasService_UserConfig. Returns the specified
+// element and whether it was found
+func (a DbaasService_UserConfig) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasService_UserConfig
+func (a *DbaasService_UserConfig) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasService_UserConfig to handle AdditionalProperties
+func (a *DbaasService_UserConfig) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasService_UserConfig to handle AdditionalProperties
+func (a DbaasService_UserConfig) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasServiceIntegration_IntegrationStatus. Returns the specified
+// element and whether it was found
+func (a DbaasServiceIntegration_IntegrationStatus) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasServiceIntegration_IntegrationStatus
+func (a *DbaasServiceIntegration_IntegrationStatus) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasServiceIntegration_IntegrationStatus to handle AdditionalProperties
+func (a *DbaasServiceIntegration_IntegrationStatus) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasServiceIntegration_IntegrationStatus to handle AdditionalProperties
+func (a DbaasServiceIntegration_IntegrationStatus) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasServiceIntegration_UserConfig. Returns the specified
+// element and whether it was found
+func (a DbaasServiceIntegration_UserConfig) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasServiceIntegration_UserConfig
+func (a *DbaasServiceIntegration_UserConfig) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasServiceIntegration_UserConfig to handle AdditionalProperties
+func (a *DbaasServiceIntegration_UserConfig) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasServiceIntegration_UserConfig to handle AdditionalProperties
+func (a DbaasServiceIntegration_UserConfig) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for DbaasServiceType_UserConfigSchema. Returns the specified
+// element and whether it was found
+func (a DbaasServiceType_UserConfigSchema) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for DbaasServiceType_UserConfigSchema
+func (a *DbaasServiceType_UserConfigSchema) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for DbaasServiceType_UserConfigSchema to handle AdditionalProperties
+func (a *DbaasServiceType_UserConfigSchema) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("error unmarshaling field %s", fieldName))
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for DbaasServiceType_UserConfigSchema to handle AdditionalProperties
+func (a DbaasServiceType_UserConfigSchema) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("error marshaling '%s'", fieldName))
+		}
+	}
+	return json.Marshal(object)
+}
 
 // Getter for additional properties for Event_Payload. Returns the specified
 // element and whether it was found
@@ -784,6 +2549,20 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// ListAccessKeys request
+	ListAccessKeys(ctx context.Context) (*http.Response, error)
+
+	// CreateAccessKey request  with any body
+	CreateAccessKeyWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	CreateAccessKey(ctx context.Context, body CreateAccessKeyJSONRequestBody) (*http.Response, error)
+
+	// RevokeAccessKey request
+	RevokeAccessKey(ctx context.Context, key string) (*http.Response, error)
+
+	// GetAccessKey request
+	GetAccessKey(ctx context.Context, key string) (*http.Response, error)
+
 	// ListAntiAffinityGroups request
 	ListAntiAffinityGroups(ctx context.Context) (*http.Response, error)
 
@@ -797,6 +2576,28 @@ type ClientInterface interface {
 
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error)
+
+	// DbaasCreateService request  with any body
+	DbaasCreateServiceWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error)
+
+	DbaasCreateService(ctx context.Context, body DbaasCreateServiceJSONRequestBody) (*http.Response, error)
+
+	// DbaasListServiceTypes request
+	DbaasListServiceTypes(ctx context.Context) (*http.Response, error)
+
+	// DbaasTerminateService request
+	DbaasTerminateService(ctx context.Context, serviceName string) (*http.Response, error)
+
+	// DbaasGetService request
+	DbaasGetService(ctx context.Context, serviceName string) (*http.Response, error)
+
+	// DbaasUpdateService request  with any body
+	DbaasUpdateServiceWithBody(ctx context.Context, serviceName string, contentType string, body io.Reader) (*http.Response, error)
+
+	DbaasUpdateService(ctx context.Context, serviceName string, body DbaasUpdateServiceJSONRequestBody) (*http.Response, error)
+
+	// DbaasListServices request
+	DbaasListServices(ctx context.Context) (*http.Response, error)
 
 	// ListDeployTargets request
 	ListDeployTargets(ctx context.Context) (*http.Response, error)
@@ -830,6 +2631,11 @@ type ClientInterface interface {
 	AttachInstanceToElasticIpWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
 
 	AttachInstanceToElasticIp(ctx context.Context, id string, body AttachInstanceToElasticIpJSONRequestBody) (*http.Response, error)
+
+	// DetachInstanceFromElasticIp request  with any body
+	DetachInstanceFromElasticIpWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	DetachInstanceFromElasticIp(ctx context.Context, id string, body DetachInstanceFromElasticIpJSONRequestBody) (*http.Response, error)
 
 	// ListEvents request
 	ListEvents(ctx context.Context, params *ListEventsParams) (*http.Response, error)
@@ -956,6 +2762,16 @@ type ClientInterface interface {
 
 	UpdatePrivateNetwork(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody) (*http.Response, error)
 
+	// AttachInstanceToPrivateNetwork request  with any body
+	AttachInstanceToPrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	AttachInstanceToPrivateNetwork(ctx context.Context, id string, body AttachInstanceToPrivateNetworkJSONRequestBody) (*http.Response, error)
+
+	// DetachInstanceFromPrivateNetwork request  with any body
+	DetachInstanceFromPrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	DetachInstanceFromPrivateNetwork(ctx context.Context, id string, body DetachInstanceFromPrivateNetworkJSONRequestBody) (*http.Response, error)
+
 	// ListSecurityGroups request
 	ListSecurityGroups(ctx context.Context) (*http.Response, error)
 
@@ -977,6 +2793,16 @@ type ClientInterface interface {
 
 	// DeleteRuleFromSecurityGroup request
 	DeleteRuleFromSecurityGroup(ctx context.Context, id string, ruleId string) (*http.Response, error)
+
+	// AttachInstanceToSecurityGroup request  with any body
+	AttachInstanceToSecurityGroupWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	AttachInstanceToSecurityGroup(ctx context.Context, id string, body AttachInstanceToSecurityGroupJSONRequestBody) (*http.Response, error)
+
+	// DetachInstanceFromSecurityGroup request  with any body
+	DetachInstanceFromSecurityGroupWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error)
+
+	DetachInstanceFromSecurityGroup(ctx context.Context, id string, body DetachInstanceFromSecurityGroupJSONRequestBody) (*http.Response, error)
 
 	// ListSksClusters request
 	ListSksClusters(ctx context.Context) (*http.Response, error)
@@ -1089,6 +2915,81 @@ type ClientInterface interface {
 	ListZones(ctx context.Context) (*http.Response, error)
 }
 
+func (c *Client) ListAccessKeys(ctx context.Context) (*http.Response, error) {
+	req, err := NewListAccessKeysRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAccessKeyWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewCreateAccessKeyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateAccessKey(ctx context.Context, body CreateAccessKeyJSONRequestBody) (*http.Response, error) {
+	req, err := NewCreateAccessKeyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RevokeAccessKey(ctx context.Context, key string) (*http.Response, error) {
+	req, err := NewRevokeAccessKeyRequest(c.Server, key)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetAccessKey(ctx context.Context, key string) (*http.Response, error) {
+	req, err := NewGetAccessKeyRequest(c.Server, key)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListAntiAffinityGroups(ctx context.Context) (*http.Response, error) {
 	req, err := NewListAntiAffinityGroupsRequest(c.Server)
 	if err != nil {
@@ -1151,6 +3052,126 @@ func (c *Client) DeleteAntiAffinityGroup(ctx context.Context, id string) (*http.
 
 func (c *Client) GetAntiAffinityGroup(ctx context.Context, id string) (*http.Response, error) {
 	req, err := NewGetAntiAffinityGroupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DbaasCreateServiceWithBody(ctx context.Context, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewDbaasCreateServiceRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DbaasCreateService(ctx context.Context, body DbaasCreateServiceJSONRequestBody) (*http.Response, error) {
+	req, err := NewDbaasCreateServiceRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DbaasListServiceTypes(ctx context.Context) (*http.Response, error) {
+	req, err := NewDbaasListServiceTypesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DbaasTerminateService(ctx context.Context, serviceName string) (*http.Response, error) {
+	req, err := NewDbaasTerminateServiceRequest(c.Server, serviceName)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DbaasGetService(ctx context.Context, serviceName string) (*http.Response, error) {
+	req, err := NewDbaasGetServiceRequest(c.Server, serviceName)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DbaasUpdateServiceWithBody(ctx context.Context, serviceName string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewDbaasUpdateServiceRequestWithBody(c.Server, serviceName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DbaasUpdateService(ctx context.Context, serviceName string, body DbaasUpdateServiceJSONRequestBody) (*http.Response, error) {
+	req, err := NewDbaasUpdateServiceRequest(c.Server, serviceName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DbaasListServices(ctx context.Context) (*http.Response, error) {
+	req, err := NewDbaasListServicesRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -1331,6 +3352,36 @@ func (c *Client) AttachInstanceToElasticIpWithBody(ctx context.Context, id strin
 
 func (c *Client) AttachInstanceToElasticIp(ctx context.Context, id string, body AttachInstanceToElasticIpJSONRequestBody) (*http.Response, error) {
 	req, err := NewAttachInstanceToElasticIpRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DetachInstanceFromElasticIpWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewDetachInstanceFromElasticIpRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DetachInstanceFromElasticIp(ctx context.Context, id string, body DetachInstanceFromElasticIpJSONRequestBody) (*http.Response, error) {
+	req, err := NewDetachInstanceFromElasticIpRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2034,6 +4085,66 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, id string, body Updat
 	return c.Client.Do(req)
 }
 
+func (c *Client) AttachInstanceToPrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewAttachInstanceToPrivateNetworkRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AttachInstanceToPrivateNetwork(ctx context.Context, id string, body AttachInstanceToPrivateNetworkJSONRequestBody) (*http.Response, error) {
+	req, err := NewAttachInstanceToPrivateNetworkRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DetachInstanceFromPrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewDetachInstanceFromPrivateNetworkRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DetachInstanceFromPrivateNetwork(ctx context.Context, id string, body DetachInstanceFromPrivateNetworkJSONRequestBody) (*http.Response, error) {
+	req, err := NewDetachInstanceFromPrivateNetworkRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListSecurityGroups(ctx context.Context) (*http.Response, error) {
 	req, err := NewListSecurityGroupsRequest(c.Server)
 	if err != nil {
@@ -2141,6 +4252,66 @@ func (c *Client) AddRuleToSecurityGroup(ctx context.Context, id string, body Add
 
 func (c *Client) DeleteRuleFromSecurityGroup(ctx context.Context, id string, ruleId string) (*http.Response, error) {
 	req, err := NewDeleteRuleFromSecurityGroupRequest(c.Server, id, ruleId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AttachInstanceToSecurityGroupWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewAttachInstanceToSecurityGroupRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) AttachInstanceToSecurityGroup(ctx context.Context, id string, body AttachInstanceToSecurityGroupJSONRequestBody) (*http.Response, error) {
+	req, err := NewAttachInstanceToSecurityGroupRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DetachInstanceFromSecurityGroupWithBody(ctx context.Context, id string, contentType string, body io.Reader) (*http.Response, error) {
+	req, err := NewDetachInstanceFromSecurityGroupRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if c.RequestEditor != nil {
+		err = c.RequestEditor(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DetachInstanceFromSecurityGroup(ctx context.Context, id string, body DetachInstanceFromSecurityGroupJSONRequestBody) (*http.Response, error) {
+	req, err := NewDetachInstanceFromSecurityGroupRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2754,6 +4925,140 @@ func (c *Client) ListZones(ctx context.Context) (*http.Response, error) {
 	return c.Client.Do(req)
 }
 
+// NewListAccessKeysRequest generates requests for ListAccessKeys
+func NewListAccessKeysRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/access-key")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateAccessKeyRequest calls the generic CreateAccessKey builder with application/json body
+func NewCreateAccessKeyRequest(server string, body CreateAccessKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateAccessKeyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateAccessKeyRequestWithBody generates requests for CreateAccessKey with any type of body
+func NewCreateAccessKeyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/access-key")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewRevokeAccessKeyRequest generates requests for RevokeAccessKey
+func NewRevokeAccessKeyRequest(server string, key string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "key", key)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/access-key/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetAccessKeyRequest generates requests for GetAccessKey
+func NewGetAccessKeyRequest(server string, key string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "key", key)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/access-key/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListAntiAffinityGroupsRequest generates requests for ListAntiAffinityGroups
 func NewListAntiAffinityGroupsRequest(server string) (*http.Request, error) {
 	var err error
@@ -2871,6 +5176,213 @@ func NewGetAntiAffinityGroupRequest(server string, id string) (*http.Request, er
 	}
 
 	basePath := fmt.Sprintf("/anti-affinity-group/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDbaasCreateServiceRequest calls the generic DbaasCreateService builder with application/json body
+func NewDbaasCreateServiceRequest(server string, body DbaasCreateServiceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDbaasCreateServiceRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewDbaasCreateServiceRequestWithBody generates requests for DbaasCreateService with any type of body
+func NewDbaasCreateServiceRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/dbaas-service")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDbaasListServiceTypesRequest generates requests for DbaasListServiceTypes
+func NewDbaasListServiceTypesRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/dbaas-service-types")
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDbaasTerminateServiceRequest generates requests for DbaasTerminateService
+func NewDbaasTerminateServiceRequest(server string, serviceName string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "service-name", serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/dbaas-service/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDbaasGetServiceRequest generates requests for DbaasGetService
+func NewDbaasGetServiceRequest(server string, serviceName string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "service-name", serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/dbaas-service/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryUrl.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDbaasUpdateServiceRequest calls the generic DbaasUpdateService builder with application/json body
+func NewDbaasUpdateServiceRequest(server string, serviceName string, body DbaasUpdateServiceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDbaasUpdateServiceRequestWithBody(server, serviceName, "application/json", bodyReader)
+}
+
+// NewDbaasUpdateServiceRequestWithBody generates requests for DbaasUpdateService with any type of body
+func NewDbaasUpdateServiceRequestWithBody(server string, serviceName string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "service-name", serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/dbaas-service/%s", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDbaasListServicesRequest generates requests for DbaasListServices
+func NewDbaasListServicesRequest(server string) (*http.Request, error) {
+	var err error
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/dbaas-services")
 	if basePath[0] == '/' {
 		basePath = basePath[1:]
 	}
@@ -3207,7 +5719,53 @@ func NewAttachInstanceToElasticIpRequestWithBody(server string, id string, conte
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", queryUrl.String(), body)
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDetachInstanceFromElasticIpRequest calls the generic DetachInstanceFromElasticIp builder with application/json body
+func NewDetachInstanceFromElasticIpRequest(server string, id string, body DetachInstanceFromElasticIpJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDetachInstanceFromElasticIpRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewDetachInstanceFromElasticIpRequestWithBody generates requests for DetachInstanceFromElasticIp with any type of body
+func NewDetachInstanceFromElasticIpRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/elastic-ip/%s:detach", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -4488,6 +7046,98 @@ func NewUpdatePrivateNetworkRequestWithBody(server string, id string, contentTyp
 	return req, nil
 }
 
+// NewAttachInstanceToPrivateNetworkRequest calls the generic AttachInstanceToPrivateNetwork builder with application/json body
+func NewAttachInstanceToPrivateNetworkRequest(server string, id string, body AttachInstanceToPrivateNetworkJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAttachInstanceToPrivateNetworkRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewAttachInstanceToPrivateNetworkRequestWithBody generates requests for AttachInstanceToPrivateNetwork with any type of body
+func NewAttachInstanceToPrivateNetworkRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/private-network/%s:attach", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDetachInstanceFromPrivateNetworkRequest calls the generic DetachInstanceFromPrivateNetwork builder with application/json body
+func NewDetachInstanceFromPrivateNetworkRequest(server string, id string, body DetachInstanceFromPrivateNetworkJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDetachInstanceFromPrivateNetworkRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewDetachInstanceFromPrivateNetworkRequestWithBody generates requests for DetachInstanceFromPrivateNetwork with any type of body
+func NewDetachInstanceFromPrivateNetworkRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/private-network/%s:detach", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
 // NewListSecurityGroupsRequest generates requests for ListSecurityGroups
 func NewListSecurityGroupsRequest(server string) (*http.Request, error) {
 	var err error
@@ -4706,6 +7356,98 @@ func NewDeleteRuleFromSecurityGroupRequest(server string, id string, ruleId stri
 		return nil, err
 	}
 
+	return req, nil
+}
+
+// NewAttachInstanceToSecurityGroupRequest calls the generic AttachInstanceToSecurityGroup builder with application/json body
+func NewAttachInstanceToSecurityGroupRequest(server string, id string, body AttachInstanceToSecurityGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewAttachInstanceToSecurityGroupRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewAttachInstanceToSecurityGroupRequestWithBody generates requests for AttachInstanceToSecurityGroup with any type of body
+func NewAttachInstanceToSecurityGroupRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group/%s:attach", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+	return req, nil
+}
+
+// NewDetachInstanceFromSecurityGroupRequest calls the generic DetachInstanceFromSecurityGroup builder with application/json body
+func NewDetachInstanceFromSecurityGroupRequest(server string, id string, body DetachInstanceFromSecurityGroupJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewDetachInstanceFromSecurityGroupRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewDetachInstanceFromSecurityGroupRequestWithBody generates requests for DetachInstanceFromSecurityGroup with any type of body
+func NewDetachInstanceFromSecurityGroupRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParam("simple", false, "id", id)
+	if err != nil {
+		return nil, err
+	}
+
+	queryUrl, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	basePath := fmt.Sprintf("/security-group/%s:detach", pathParam0)
+	if basePath[0] == '/' {
+		basePath = basePath[1:]
+	}
+
+	queryUrl, err = queryUrl.Parse(basePath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryUrl.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 	return req, nil
 }
 
@@ -5948,6 +8690,20 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// ListAccessKeys request
+	ListAccessKeysWithResponse(ctx context.Context) (*ListAccessKeysResponse, error)
+
+	// CreateAccessKey request  with any body
+	CreateAccessKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateAccessKeyResponse, error)
+
+	CreateAccessKeyWithResponse(ctx context.Context, body CreateAccessKeyJSONRequestBody) (*CreateAccessKeyResponse, error)
+
+	// RevokeAccessKey request
+	RevokeAccessKeyWithResponse(ctx context.Context, key string) (*RevokeAccessKeyResponse, error)
+
+	// GetAccessKey request
+	GetAccessKeyWithResponse(ctx context.Context, key string) (*GetAccessKeyResponse, error)
+
 	// ListAntiAffinityGroups request
 	ListAntiAffinityGroupsWithResponse(ctx context.Context) (*ListAntiAffinityGroupsResponse, error)
 
@@ -5961,6 +8717,28 @@ type ClientWithResponsesInterface interface {
 
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroupWithResponse(ctx context.Context, id string) (*GetAntiAffinityGroupResponse, error)
+
+	// DbaasCreateService request  with any body
+	DbaasCreateServiceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*DbaasCreateServiceResponse, error)
+
+	DbaasCreateServiceWithResponse(ctx context.Context, body DbaasCreateServiceJSONRequestBody) (*DbaasCreateServiceResponse, error)
+
+	// DbaasListServiceTypes request
+	DbaasListServiceTypesWithResponse(ctx context.Context) (*DbaasListServiceTypesResponse, error)
+
+	// DbaasTerminateService request
+	DbaasTerminateServiceWithResponse(ctx context.Context, serviceName string) (*DbaasTerminateServiceResponse, error)
+
+	// DbaasGetService request
+	DbaasGetServiceWithResponse(ctx context.Context, serviceName string) (*DbaasGetServiceResponse, error)
+
+	// DbaasUpdateService request  with any body
+	DbaasUpdateServiceWithBodyWithResponse(ctx context.Context, serviceName string, contentType string, body io.Reader) (*DbaasUpdateServiceResponse, error)
+
+	DbaasUpdateServiceWithResponse(ctx context.Context, serviceName string, body DbaasUpdateServiceJSONRequestBody) (*DbaasUpdateServiceResponse, error)
+
+	// DbaasListServices request
+	DbaasListServicesWithResponse(ctx context.Context) (*DbaasListServicesResponse, error)
 
 	// ListDeployTargets request
 	ListDeployTargetsWithResponse(ctx context.Context) (*ListDeployTargetsResponse, error)
@@ -5994,6 +8772,11 @@ type ClientWithResponsesInterface interface {
 	AttachInstanceToElasticIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachInstanceToElasticIpResponse, error)
 
 	AttachInstanceToElasticIpWithResponse(ctx context.Context, id string, body AttachInstanceToElasticIpJSONRequestBody) (*AttachInstanceToElasticIpResponse, error)
+
+	// DetachInstanceFromElasticIp request  with any body
+	DetachInstanceFromElasticIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*DetachInstanceFromElasticIpResponse, error)
+
+	DetachInstanceFromElasticIpWithResponse(ctx context.Context, id string, body DetachInstanceFromElasticIpJSONRequestBody) (*DetachInstanceFromElasticIpResponse, error)
 
 	// ListEvents request
 	ListEventsWithResponse(ctx context.Context, params *ListEventsParams) (*ListEventsResponse, error)
@@ -6120,6 +8903,16 @@ type ClientWithResponsesInterface interface {
 
 	UpdatePrivateNetworkWithResponse(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody) (*UpdatePrivateNetworkResponse, error)
 
+	// AttachInstanceToPrivateNetwork request  with any body
+	AttachInstanceToPrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachInstanceToPrivateNetworkResponse, error)
+
+	AttachInstanceToPrivateNetworkWithResponse(ctx context.Context, id string, body AttachInstanceToPrivateNetworkJSONRequestBody) (*AttachInstanceToPrivateNetworkResponse, error)
+
+	// DetachInstanceFromPrivateNetwork request  with any body
+	DetachInstanceFromPrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*DetachInstanceFromPrivateNetworkResponse, error)
+
+	DetachInstanceFromPrivateNetworkWithResponse(ctx context.Context, id string, body DetachInstanceFromPrivateNetworkJSONRequestBody) (*DetachInstanceFromPrivateNetworkResponse, error)
+
 	// ListSecurityGroups request
 	ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error)
 
@@ -6141,6 +8934,16 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteRuleFromSecurityGroup request
 	DeleteRuleFromSecurityGroupWithResponse(ctx context.Context, id string, ruleId string) (*DeleteRuleFromSecurityGroupResponse, error)
+
+	// AttachInstanceToSecurityGroup request  with any body
+	AttachInstanceToSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachInstanceToSecurityGroupResponse, error)
+
+	AttachInstanceToSecurityGroupWithResponse(ctx context.Context, id string, body AttachInstanceToSecurityGroupJSONRequestBody) (*AttachInstanceToSecurityGroupResponse, error)
+
+	// DetachInstanceFromSecurityGroup request  with any body
+	DetachInstanceFromSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*DetachInstanceFromSecurityGroupResponse, error)
+
+	DetachInstanceFromSecurityGroupWithResponse(ctx context.Context, id string, body DetachInstanceFromSecurityGroupJSONRequestBody) (*DetachInstanceFromSecurityGroupResponse, error)
 
 	// ListSksClusters request
 	ListSksClustersWithResponse(ctx context.Context) (*ListSksClustersResponse, error)
@@ -6253,6 +9056,94 @@ type ClientWithResponsesInterface interface {
 	ListZonesWithResponse(ctx context.Context) (*ListZonesResponse, error)
 }
 
+type ListAccessKeysResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]AccessKey
+}
+
+// Status returns HTTPResponse.Status
+func (r ListAccessKeysResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListAccessKeysResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateAccessKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AccessKey
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateAccessKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateAccessKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RevokeAccessKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AccessKey
+}
+
+// Status returns HTTPResponse.Status
+func (r RevokeAccessKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RevokeAccessKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetAccessKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *AccessKey
+}
+
+// Status returns HTTPResponse.Status
+func (r GetAccessKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetAccessKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListAntiAffinityGroupsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -6337,6 +9228,144 @@ func (r GetAntiAffinityGroupResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetAntiAffinityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DbaasCreateServiceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DbaasService
+}
+
+// Status returns HTTPResponse.Status
+func (r DbaasCreateServiceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DbaasCreateServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DbaasListServiceTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		DbaasServiceTypes *[]DbaasServiceType `json:"dbaas-service-types,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r DbaasListServiceTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DbaasListServiceTypesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DbaasTerminateServiceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Message *string `json:"message,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r DbaasTerminateServiceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DbaasTerminateServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DbaasGetServiceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DbaasService
+}
+
+// Status returns HTTPResponse.Status
+func (r DbaasGetServiceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DbaasGetServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DbaasUpdateServiceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DbaasService
+}
+
+// Status returns HTTPResponse.Status
+func (r DbaasUpdateServiceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DbaasUpdateServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DbaasListServicesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		DbaasService *[]DbaasService `json:"dbaas-service,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r DbaasListServicesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DbaasListServicesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -6539,6 +9568,28 @@ func (r AttachInstanceToElasticIpResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r AttachInstanceToElasticIpResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DetachInstanceFromElasticIpResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DetachInstanceFromElasticIpResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DetachInstanceFromElasticIpResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -7281,6 +10332,50 @@ func (r UpdatePrivateNetworkResponse) StatusCode() int {
 	return 0
 }
 
+type AttachInstanceToPrivateNetworkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r AttachInstanceToPrivateNetworkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AttachInstanceToPrivateNetworkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DetachInstanceFromPrivateNetworkResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DetachInstanceFromPrivateNetworkResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DetachInstanceFromPrivateNetworkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListSecurityGroupsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -7409,6 +10504,50 @@ func (r DeleteRuleFromSecurityGroupResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r DeleteRuleFromSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type AttachInstanceToSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r AttachInstanceToSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r AttachInstanceToSecurityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DetachInstanceFromSecurityGroupResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DetachInstanceFromSecurityGroupResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DetachInstanceFromSecurityGroupResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -8091,6 +11230,50 @@ func (r ListZonesResponse) StatusCode() int {
 	return 0
 }
 
+// ListAccessKeysWithResponse request returning *ListAccessKeysResponse
+func (c *ClientWithResponses) ListAccessKeysWithResponse(ctx context.Context) (*ListAccessKeysResponse, error) {
+	rsp, err := c.ListAccessKeys(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListAccessKeysResponse(rsp)
+}
+
+// CreateAccessKeyWithBodyWithResponse request with arbitrary body returning *CreateAccessKeyResponse
+func (c *ClientWithResponses) CreateAccessKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*CreateAccessKeyResponse, error) {
+	rsp, err := c.CreateAccessKeyWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAccessKeyResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateAccessKeyWithResponse(ctx context.Context, body CreateAccessKeyJSONRequestBody) (*CreateAccessKeyResponse, error) {
+	rsp, err := c.CreateAccessKey(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateAccessKeyResponse(rsp)
+}
+
+// RevokeAccessKeyWithResponse request returning *RevokeAccessKeyResponse
+func (c *ClientWithResponses) RevokeAccessKeyWithResponse(ctx context.Context, key string) (*RevokeAccessKeyResponse, error) {
+	rsp, err := c.RevokeAccessKey(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRevokeAccessKeyResponse(rsp)
+}
+
+// GetAccessKeyWithResponse request returning *GetAccessKeyResponse
+func (c *ClientWithResponses) GetAccessKeyWithResponse(ctx context.Context, key string) (*GetAccessKeyResponse, error) {
+	rsp, err := c.GetAccessKey(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetAccessKeyResponse(rsp)
+}
+
 // ListAntiAffinityGroupsWithResponse request returning *ListAntiAffinityGroupsResponse
 func (c *ClientWithResponses) ListAntiAffinityGroupsWithResponse(ctx context.Context) (*ListAntiAffinityGroupsResponse, error) {
 	rsp, err := c.ListAntiAffinityGroups(ctx)
@@ -8133,6 +11316,76 @@ func (c *ClientWithResponses) GetAntiAffinityGroupWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseGetAntiAffinityGroupResponse(rsp)
+}
+
+// DbaasCreateServiceWithBodyWithResponse request with arbitrary body returning *DbaasCreateServiceResponse
+func (c *ClientWithResponses) DbaasCreateServiceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader) (*DbaasCreateServiceResponse, error) {
+	rsp, err := c.DbaasCreateServiceWithBody(ctx, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDbaasCreateServiceResponse(rsp)
+}
+
+func (c *ClientWithResponses) DbaasCreateServiceWithResponse(ctx context.Context, body DbaasCreateServiceJSONRequestBody) (*DbaasCreateServiceResponse, error) {
+	rsp, err := c.DbaasCreateService(ctx, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDbaasCreateServiceResponse(rsp)
+}
+
+// DbaasListServiceTypesWithResponse request returning *DbaasListServiceTypesResponse
+func (c *ClientWithResponses) DbaasListServiceTypesWithResponse(ctx context.Context) (*DbaasListServiceTypesResponse, error) {
+	rsp, err := c.DbaasListServiceTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDbaasListServiceTypesResponse(rsp)
+}
+
+// DbaasTerminateServiceWithResponse request returning *DbaasTerminateServiceResponse
+func (c *ClientWithResponses) DbaasTerminateServiceWithResponse(ctx context.Context, serviceName string) (*DbaasTerminateServiceResponse, error) {
+	rsp, err := c.DbaasTerminateService(ctx, serviceName)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDbaasTerminateServiceResponse(rsp)
+}
+
+// DbaasGetServiceWithResponse request returning *DbaasGetServiceResponse
+func (c *ClientWithResponses) DbaasGetServiceWithResponse(ctx context.Context, serviceName string) (*DbaasGetServiceResponse, error) {
+	rsp, err := c.DbaasGetService(ctx, serviceName)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDbaasGetServiceResponse(rsp)
+}
+
+// DbaasUpdateServiceWithBodyWithResponse request with arbitrary body returning *DbaasUpdateServiceResponse
+func (c *ClientWithResponses) DbaasUpdateServiceWithBodyWithResponse(ctx context.Context, serviceName string, contentType string, body io.Reader) (*DbaasUpdateServiceResponse, error) {
+	rsp, err := c.DbaasUpdateServiceWithBody(ctx, serviceName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDbaasUpdateServiceResponse(rsp)
+}
+
+func (c *ClientWithResponses) DbaasUpdateServiceWithResponse(ctx context.Context, serviceName string, body DbaasUpdateServiceJSONRequestBody) (*DbaasUpdateServiceResponse, error) {
+	rsp, err := c.DbaasUpdateService(ctx, serviceName, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDbaasUpdateServiceResponse(rsp)
+}
+
+// DbaasListServicesWithResponse request returning *DbaasListServicesResponse
+func (c *ClientWithResponses) DbaasListServicesWithResponse(ctx context.Context) (*DbaasListServicesResponse, error) {
+	rsp, err := c.DbaasListServices(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDbaasListServicesResponse(rsp)
 }
 
 // ListDeployTargetsWithResponse request returning *ListDeployTargetsResponse
@@ -8238,6 +11491,23 @@ func (c *ClientWithResponses) AttachInstanceToElasticIpWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseAttachInstanceToElasticIpResponse(rsp)
+}
+
+// DetachInstanceFromElasticIpWithBodyWithResponse request with arbitrary body returning *DetachInstanceFromElasticIpResponse
+func (c *ClientWithResponses) DetachInstanceFromElasticIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*DetachInstanceFromElasticIpResponse, error) {
+	rsp, err := c.DetachInstanceFromElasticIpWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDetachInstanceFromElasticIpResponse(rsp)
+}
+
+func (c *ClientWithResponses) DetachInstanceFromElasticIpWithResponse(ctx context.Context, id string, body DetachInstanceFromElasticIpJSONRequestBody) (*DetachInstanceFromElasticIpResponse, error) {
+	rsp, err := c.DetachInstanceFromElasticIp(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDetachInstanceFromElasticIpResponse(rsp)
 }
 
 // ListEventsWithResponse request returning *ListEventsResponse
@@ -8641,6 +11911,40 @@ func (c *ClientWithResponses) UpdatePrivateNetworkWithResponse(ctx context.Conte
 	return ParseUpdatePrivateNetworkResponse(rsp)
 }
 
+// AttachInstanceToPrivateNetworkWithBodyWithResponse request with arbitrary body returning *AttachInstanceToPrivateNetworkResponse
+func (c *ClientWithResponses) AttachInstanceToPrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachInstanceToPrivateNetworkResponse, error) {
+	rsp, err := c.AttachInstanceToPrivateNetworkWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAttachInstanceToPrivateNetworkResponse(rsp)
+}
+
+func (c *ClientWithResponses) AttachInstanceToPrivateNetworkWithResponse(ctx context.Context, id string, body AttachInstanceToPrivateNetworkJSONRequestBody) (*AttachInstanceToPrivateNetworkResponse, error) {
+	rsp, err := c.AttachInstanceToPrivateNetwork(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAttachInstanceToPrivateNetworkResponse(rsp)
+}
+
+// DetachInstanceFromPrivateNetworkWithBodyWithResponse request with arbitrary body returning *DetachInstanceFromPrivateNetworkResponse
+func (c *ClientWithResponses) DetachInstanceFromPrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*DetachInstanceFromPrivateNetworkResponse, error) {
+	rsp, err := c.DetachInstanceFromPrivateNetworkWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDetachInstanceFromPrivateNetworkResponse(rsp)
+}
+
+func (c *ClientWithResponses) DetachInstanceFromPrivateNetworkWithResponse(ctx context.Context, id string, body DetachInstanceFromPrivateNetworkJSONRequestBody) (*DetachInstanceFromPrivateNetworkResponse, error) {
+	rsp, err := c.DetachInstanceFromPrivateNetwork(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDetachInstanceFromPrivateNetworkResponse(rsp)
+}
+
 // ListSecurityGroupsWithResponse request returning *ListSecurityGroupsResponse
 func (c *ClientWithResponses) ListSecurityGroupsWithResponse(ctx context.Context) (*ListSecurityGroupsResponse, error) {
 	rsp, err := c.ListSecurityGroups(ctx)
@@ -8709,6 +12013,40 @@ func (c *ClientWithResponses) DeleteRuleFromSecurityGroupWithResponse(ctx contex
 		return nil, err
 	}
 	return ParseDeleteRuleFromSecurityGroupResponse(rsp)
+}
+
+// AttachInstanceToSecurityGroupWithBodyWithResponse request with arbitrary body returning *AttachInstanceToSecurityGroupResponse
+func (c *ClientWithResponses) AttachInstanceToSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*AttachInstanceToSecurityGroupResponse, error) {
+	rsp, err := c.AttachInstanceToSecurityGroupWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAttachInstanceToSecurityGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) AttachInstanceToSecurityGroupWithResponse(ctx context.Context, id string, body AttachInstanceToSecurityGroupJSONRequestBody) (*AttachInstanceToSecurityGroupResponse, error) {
+	rsp, err := c.AttachInstanceToSecurityGroup(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseAttachInstanceToSecurityGroupResponse(rsp)
+}
+
+// DetachInstanceFromSecurityGroupWithBodyWithResponse request with arbitrary body returning *DetachInstanceFromSecurityGroupResponse
+func (c *ClientWithResponses) DetachInstanceFromSecurityGroupWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader) (*DetachInstanceFromSecurityGroupResponse, error) {
+	rsp, err := c.DetachInstanceFromSecurityGroupWithBody(ctx, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDetachInstanceFromSecurityGroupResponse(rsp)
+}
+
+func (c *ClientWithResponses) DetachInstanceFromSecurityGroupWithResponse(ctx context.Context, id string, body DetachInstanceFromSecurityGroupJSONRequestBody) (*DetachInstanceFromSecurityGroupResponse, error) {
+	rsp, err := c.DetachInstanceFromSecurityGroup(ctx, id, body)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDetachInstanceFromSecurityGroupResponse(rsp)
 }
 
 // ListSksClustersWithResponse request returning *ListSksClustersResponse
@@ -9061,6 +12399,110 @@ func (c *ClientWithResponses) ListZonesWithResponse(ctx context.Context) (*ListZ
 	return ParseListZonesResponse(rsp)
 }
 
+// ParseListAccessKeysResponse parses an HTTP response from a ListAccessKeysWithResponse call
+func ParseListAccessKeysResponse(rsp *http.Response) (*ListAccessKeysResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListAccessKeysResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []AccessKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateAccessKeyResponse parses an HTTP response from a CreateAccessKeyWithResponse call
+func ParseCreateAccessKeyResponse(rsp *http.Response) (*CreateAccessKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateAccessKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AccessKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseRevokeAccessKeyResponse parses an HTTP response from a RevokeAccessKeyWithResponse call
+func ParseRevokeAccessKeyResponse(rsp *http.Response) (*RevokeAccessKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RevokeAccessKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AccessKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetAccessKeyResponse parses an HTTP response from a GetAccessKeyWithResponse call
+func ParseGetAccessKeyResponse(rsp *http.Response) (*GetAccessKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetAccessKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest AccessKey
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListAntiAffinityGroupsResponse parses an HTTP response from a ListAntiAffinityGroupsWithResponse call
 func ParseListAntiAffinityGroupsResponse(rsp *http.Response) (*ListAntiAffinityGroupsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -9157,6 +12599,168 @@ func ParseGetAntiAffinityGroupResponse(rsp *http.Response) (*GetAntiAffinityGrou
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AntiAffinityGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDbaasCreateServiceResponse parses an HTTP response from a DbaasCreateServiceWithResponse call
+func ParseDbaasCreateServiceResponse(rsp *http.Response) (*DbaasCreateServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DbaasCreateServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DbaasService
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDbaasListServiceTypesResponse parses an HTTP response from a DbaasListServiceTypesWithResponse call
+func ParseDbaasListServiceTypesResponse(rsp *http.Response) (*DbaasListServiceTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DbaasListServiceTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			DbaasServiceTypes *[]DbaasServiceType `json:"dbaas-service-types,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDbaasTerminateServiceResponse parses an HTTP response from a DbaasTerminateServiceWithResponse call
+func ParseDbaasTerminateServiceResponse(rsp *http.Response) (*DbaasTerminateServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DbaasTerminateServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Message *string `json:"message,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDbaasGetServiceResponse parses an HTTP response from a DbaasGetServiceWithResponse call
+func ParseDbaasGetServiceResponse(rsp *http.Response) (*DbaasGetServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DbaasGetServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DbaasService
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDbaasUpdateServiceResponse parses an HTTP response from a DbaasUpdateServiceWithResponse call
+func ParseDbaasUpdateServiceResponse(rsp *http.Response) (*DbaasUpdateServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DbaasUpdateServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DbaasService
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDbaasListServicesResponse parses an HTTP response from a DbaasListServicesWithResponse call
+func ParseDbaasListServicesResponse(rsp *http.Response) (*DbaasListServicesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DbaasListServicesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			DbaasService *[]DbaasService `json:"dbaas-service,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -9388,6 +12992,32 @@ func ParseAttachInstanceToElasticIpResponse(rsp *http.Response) (*AttachInstance
 	}
 
 	response := &AttachInstanceToElasticIpResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDetachInstanceFromElasticIpResponse parses an HTTP response from a DetachInstanceFromElasticIpWithResponse call
+func ParseDetachInstanceFromElasticIpResponse(rsp *http.Response) (*DetachInstanceFromElasticIpResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DetachInstanceFromElasticIpResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -10273,6 +13903,58 @@ func ParseUpdatePrivateNetworkResponse(rsp *http.Response) (*UpdatePrivateNetwor
 	return response, nil
 }
 
+// ParseAttachInstanceToPrivateNetworkResponse parses an HTTP response from a AttachInstanceToPrivateNetworkWithResponse call
+func ParseAttachInstanceToPrivateNetworkResponse(rsp *http.Response) (*AttachInstanceToPrivateNetworkResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AttachInstanceToPrivateNetworkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDetachInstanceFromPrivateNetworkResponse parses an HTTP response from a DetachInstanceFromPrivateNetworkWithResponse call
+func ParseDetachInstanceFromPrivateNetworkResponse(rsp *http.Response) (*DetachInstanceFromPrivateNetworkResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DetachInstanceFromPrivateNetworkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListSecurityGroupsResponse parses an HTTP response from a ListSecurityGroupsWithResponse call
 func ParseListSecurityGroupsResponse(rsp *http.Response) (*ListSecurityGroupsResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -10414,6 +14096,58 @@ func ParseDeleteRuleFromSecurityGroupResponse(rsp *http.Response) (*DeleteRuleFr
 	}
 
 	response := &DeleteRuleFromSecurityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseAttachInstanceToSecurityGroupResponse parses an HTTP response from a AttachInstanceToSecurityGroupWithResponse call
+func ParseAttachInstanceToSecurityGroupResponse(rsp *http.Response) (*AttachInstanceToSecurityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &AttachInstanceToSecurityGroupResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDetachInstanceFromSecurityGroupResponse parses an HTTP response from a DetachInstanceFromSecurityGroupWithResponse call
+func ParseDetachInstanceFromSecurityGroupResponse(rsp *http.Response) (*DetachInstanceFromSecurityGroupResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DetachInstanceFromSecurityGroupResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
