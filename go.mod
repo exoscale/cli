@@ -14,7 +14,7 @@ require (
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/deepmap/oapi-codegen v1.5.1 // indirect
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.48.1
+	github.com/exoscale/egoscale v0.51.0
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect

@@ -10,9 +10,8 @@ import (
 // only supports RFC 3339 format.
 func (t *Snapshot) UnmarshalJSON(data []byte) error {
 	raw := struct {
-		CreatedAt   *string `json:"created-at,omitempty"`
-		Description *string `json:"description,omitempty"`
-		Export      *struct {
+		CreatedAt *string `json:"created-at,omitempty"`
+		Export    *struct {
 			Md5sum       *string `json:"md5sum,omitempty"`
 			PresignedUrl *string `json:"presigned-url,omitempty"` // nolint:golint
 		} `json:"export,omitempty"`
@@ -34,7 +33,6 @@ func (t *Snapshot) UnmarshalJSON(data []byte) error {
 		t.CreatedAt = &createdAt
 	}
 
-	t.Description = raw.Description
 	t.Export = raw.Export
 	t.Id = raw.Id
 	t.Instance = raw.Instance
@@ -48,9 +46,8 @@ func (t *Snapshot) UnmarshalJSON(data []byte) error {
 // in the original timestamp (ISO 8601), since time.MarshalJSON() only supports RFC 3339 format.
 func (t *Snapshot) MarshalJSON() ([]byte, error) {
 	raw := struct {
-		CreatedAt   *string `json:"created-at,omitempty"`
-		Description *string `json:"description,omitempty"`
-		Export      *struct {
+		CreatedAt *string `json:"created-at,omitempty"`
+		Export    *struct {
 			Md5sum       *string `json:"md5sum,omitempty"`
 			PresignedUrl *string `json:"presigned-url,omitempty"` // nolint:golint
 		} `json:"export,omitempty"`
@@ -65,7 +62,6 @@ func (t *Snapshot) MarshalJSON() ([]byte, error) {
 		raw.CreatedAt = &createdAt
 	}
 
-	raw.Description = t.Description
 	raw.Export = t.Export
 	raw.Id = t.Id
 	raw.Instance = t.Instance

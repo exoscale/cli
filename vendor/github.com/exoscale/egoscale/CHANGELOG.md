@@ -1,6 +1,25 @@
 Changelog
 =========
 
+0.51.0
+------
+
+- feature: v2: add new `InstanceType` resource
+
+0.50.0
+------
+
+- change: v2: the `Instance.ManagerID` field is replaced with `Instance.Manager` of type `*InstanceManager`
+
+0.49.0
+------
+
+- deprecatation: top-level `Version` constant is replaced by `version.Version`
+- change: v2: new default HTTP client transport setting request `User-Agent` header to `v2.UserAgent`
+- feature: v2: add support for Elastic IP/Private Network/Security Group attachment/detachment to Instances
+- feature: v2: add support for Deploy Targets to SKS Nodepools
+- feature: v2: add support for Instance prefix to SKS Nodepools
+
 0.48.1
 ------
 
