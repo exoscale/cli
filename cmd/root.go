@@ -115,7 +115,12 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&gQuiet, "quiet", "Q", false, "Quiet mode (disable non-essential command output)")
 	RootCmd.AddCommand(versionCmd)
 
-	cobra.OnInitialize(initConfig, buildClient)
+	// Don't attempt to load client configuration in testing mode.
+	// FIXME: stop using global configurations, see if this can be replaced
+	//   with rootCmd.PersistentPreRun or something.
+	if !strings.HasSuffix(os.Args[0], ".test") {
+		cobra.OnInitialize(initConfig, buildClient)
+	}
 }
 
 var ignoreClientBuild = false
