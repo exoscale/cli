@@ -10,7 +10,7 @@ import (
 	papi "github.com/exoscale/egoscale/v2/internal/public-api"
 )
 
-// SKSNodepool represents a SKS Nodepool.
+// SKSNodepool represents an SKS Nodepool.
 type SKSNodepool struct {
 	AntiAffinityGroupIDs []string `reset:"anti-affinity-groups"`
 	CreatedAt            time.Time
@@ -52,12 +52,12 @@ func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSN
 			return ""
 		}(),
 		Description:    papi.OptionalString(np.Description),
-		DiskSize:       papi.OptionalInt64(np.DiskSize),
-		ID:             papi.OptionalString(np.Id),
-		InstancePoolID: papi.OptionalString(np.InstancePool.Id),
+		DiskSize:       *np.DiskSize,
+		ID:             *np.Id,
+		InstancePoolID: *np.InstancePool.Id,
 		InstancePrefix: papi.OptionalString(np.InstancePrefix),
-		InstanceTypeID: papi.OptionalString(np.InstanceType.Id),
-		Name:           papi.OptionalString(np.Name),
+		InstanceTypeID: *np.InstanceType.Id,
+		Name:           *np.Name,
 		SecurityGroupIDs: func() []string {
 			ids := make([]string, 0)
 			if np.SecurityGroups != nil {
@@ -68,10 +68,10 @@ func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSN
 			}
 			return ids
 		}(),
-		Size:       papi.OptionalInt64(np.Size),
-		State:      papi.OptionalString(np.State),
-		TemplateID: papi.OptionalString(np.Template.Id),
-		Version:    papi.OptionalString(np.Version),
+		Size:       *np.Size,
+		State:      string(*np.State),
+		TemplateID: *np.Template.Id,
+		Version:    *np.Version,
 
 		c:    client,
 		zone: zone,
@@ -90,7 +90,7 @@ func (n *SKSNodepool) SecurityGroups(ctx context.Context) ([]*SecurityGroup, err
 	return res.([]*SecurityGroup), err
 }
 
-// SKSCluster represents a SKS cluster.
+// SKSCluster represents an SKS cluster.
 type SKSCluster struct {
 	AddOns       []string
 	CNI          string
@@ -113,16 +113,23 @@ func sksClusterFromAPI(client *Client, zone string, c *papi.SksCluster) *SKSClus
 		AddOns: func() []string {
 			addOns := make([]string, 0)
 			if c.Addons != nil {
-				addOns = append(addOns, *c.Addons...)
+				for _, a := range *c.Addons {
+					addOns = append(addOns, string(a))
+				}
 			}
 			return addOns
 		}(),
-		CNI:         papi.OptionalString(c.Cni),
+		CNI: func() string {
+			if c.Cni != nil {
+				return string(*c.Cni)
+			}
+			return ""
+		}(),
 		CreatedAt:   *c.CreatedAt,
 		Description: papi.OptionalString(c.Description),
-		Endpoint:    papi.OptionalString(c.Endpoint),
-		ID:          papi.OptionalString(c.Id),
-		Name:        papi.OptionalString(c.Name),
+		Endpoint:    *c.Endpoint,
+		ID:          *c.Id,
+		Name:        *c.Name,
 		Nodepools: func() []*SKSNodepool {
 			nodepools := make([]*SKSNodepool, 0)
 			if c.Nodepools != nil {
@@ -133,9 +140,9 @@ func sksClusterFromAPI(client *Client, zone string, c *papi.SksCluster) *SKSClus
 			}
 			return nodepools
 		}(),
-		ServiceLevel: papi.OptionalString(c.Level),
-		State:        papi.OptionalString(c.State),
-		Version:      papi.OptionalString(c.Version),
+		ServiceLevel: string(*c.Level),
+		State:        string(*c.State),
+		Version:      *c.Version,
 
 		c:    client,
 		zone: zone,
@@ -152,6 +159,7 @@ func (c *SKSCluster) RotateCCMCredentials(ctx context.Context) error {
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.c.timeout).
+		WithInterval(c.c.pollInterval).
 		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -166,7 +174,11 @@ func (c *SKSCluster) AuthorityCert(ctx context.Context, authority string) (strin
 		return "", errors.New("authority not specified")
 	}
 
-	resp, err := c.c.GetSksClusterAuthorityCertWithResponse(apiv2.WithZone(ctx, c.zone), c.ID, authority)
+	resp, err := c.c.GetSksClusterAuthorityCertWithResponse(
+		apiv2.WithZone(ctx, c.zone),
+		c.ID,
+		papi.GetSksClusterAuthorityCertParamsAuthority(authority),
+	)
 	if err != nil {
 		return "", err
 	}
@@ -260,6 +272,7 @@ func (c *SKSCluster) AddNodepool(ctx context.Context, np *SKSNodepool) (*SKSNode
 
 	res, err := papi.NewPoller().
 		WithTimeout(c.c.timeout).
+		WithInterval(c.c.pollInterval).
 		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -345,6 +358,7 @@ func (c *SKSCluster) UpdateNodepool(ctx context.Context, np *SKSNodepool) error 
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.c.timeout).
+		WithInterval(c.c.pollInterval).
 		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -367,6 +381,7 @@ func (c *SKSCluster) ScaleNodepool(ctx context.Context, np *SKSNodepool, nodes i
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.c.timeout).
+		WithInterval(c.c.pollInterval).
 		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -390,6 +405,7 @@ func (c *SKSCluster) EvictNodepoolMembers(ctx context.Context, np *SKSNodepool, 
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.c.timeout).
+		WithInterval(c.c.pollInterval).
 		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -411,6 +427,7 @@ func (c *SKSCluster) DeleteNodepool(ctx context.Context, np *SKSNodepool) error 
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.c.timeout).
+		WithInterval(c.c.pollInterval).
 		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -427,13 +444,18 @@ func (c *SKSCluster) ResetField(ctx context.Context, field interface{}) error {
 		return err
 	}
 
-	resp, err := c.c.ResetSksClusterFieldWithResponse(apiv2.WithZone(ctx, c.zone), c.ID, resetField)
+	resp, err := c.c.ResetSksClusterFieldWithResponse(
+		apiv2.WithZone(ctx, c.zone),
+		c.ID,
+		papi.ResetSksClusterFieldParamsField(resetField),
+	)
 	if err != nil {
 		return err
 	}
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.c.timeout).
+		WithInterval(c.c.pollInterval).
 		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -450,13 +472,19 @@ func (c *SKSCluster) ResetNodepoolField(ctx context.Context, np *SKSNodepool, fi
 		return err
 	}
 
-	resp, err := c.c.ResetSksNodepoolFieldWithResponse(apiv2.WithZone(ctx, c.zone), c.ID, np.ID, resetField)
+	resp, err := c.c.ResetSksNodepoolFieldWithResponse(
+		apiv2.WithZone(ctx, c.zone),
+		c.ID,
+		np.ID,
+		papi.ResetSksNodepoolFieldParamsField(resetField),
+	)
 	if err != nil {
 		return err
 	}
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.c.timeout).
+		WithInterval(c.c.pollInterval).
 		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -465,27 +493,30 @@ func (c *SKSCluster) ResetNodepoolField(ctx context.Context, np *SKSNodepool, fi
 	return nil
 }
 
-// CreateSKSCluster creates a SKS cluster in the specified zone.
+// CreateSKSCluster creates an SKS cluster in the specified zone.
 func (c *Client) CreateSKSCluster(ctx context.Context, zone string, cluster *SKSCluster) (*SKSCluster, error) {
 	resp, err := c.CreateSksClusterWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateSksClusterJSONRequestBody{
-			Addons: func() *[]string {
-				var addOns *[]string
-				if len(cluster.AddOns) > 0 {
-					addOns = &cluster.AddOns
+			Addons: func() *[]papi.CreateSksClusterJSONBodyAddons {
+				var addOns []papi.CreateSksClusterJSONBodyAddons
+				if l := len(cluster.AddOns); l > 0 {
+					addOns = make([]papi.CreateSksClusterJSONBodyAddons, l)
+					for i := range cluster.AddOns {
+						addOns[i] = papi.CreateSksClusterJSONBodyAddons(cluster.AddOns[i])
+					}
+					return &addOns
 				}
-				return addOns
+				return nil
 			}(),
-			Cni: func() *string {
-				var cni *string
+			Cni: func() *papi.CreateSksClusterJSONBodyCni {
 				if cluster.CNI != "" {
-					cni = &cluster.CNI
+					return (*papi.CreateSksClusterJSONBodyCni)(&cluster.CNI)
 				}
-				return cni
+				return nil
 			}(),
 			Description: &cluster.Description,
-			Level:       cluster.ServiceLevel,
+			Level:       papi.CreateSksClusterJSONBodyLevel(cluster.ServiceLevel),
 			Name:        cluster.Name,
 			Version:     cluster.Version,
 		})
@@ -495,6 +526,7 @@ func (c *Client) CreateSKSCluster(ctx context.Context, zone string, cluster *SKS
 
 	res, err := papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -550,6 +582,22 @@ func (c *Client) GetSKSCluster(ctx context.Context, zone, id string) (*SKSCluste
 	return sksClusterFromAPI(c, zone, resp.JSON200), nil
 }
 
+// FindSKSCluster attempts to find an SKS cluster by name or ID in the specified zone.
+func (c *Client) FindSKSCluster(ctx context.Context, zone, v string) (*SKSCluster, error) {
+	res, err := c.ListSKSClusters(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		if r.ID == v || r.Name == v {
+			return c.GetSKSCluster(ctx, zone, r.ID)
+		}
+	}
+
+	return nil, apiv2.ErrNotFound
+}
+
 // UpdateSKSCluster updates the specified SKS cluster in the specified zone.
 func (c *Client) UpdateSKSCluster(ctx context.Context, zone string, cluster *SKSCluster) error {
 	resp, err := c.UpdateSksClusterWithResponse(
@@ -575,6 +623,7 @@ func (c *Client) UpdateSKSCluster(ctx context.Context, zone string, cluster *SKS
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -596,6 +645,7 @@ func (c *Client) UpgradeSKSCluster(ctx context.Context, zone, id, version string
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -613,6 +663,7 @@ func (c *Client) DeleteSKSCluster(ctx context.Context, zone, id string) error {
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err

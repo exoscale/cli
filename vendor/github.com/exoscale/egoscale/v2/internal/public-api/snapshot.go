@@ -13,12 +13,12 @@ func (t *Snapshot) UnmarshalJSON(data []byte) error {
 		CreatedAt *string `json:"created-at,omitempty"`
 		Export    *struct {
 			Md5sum       *string `json:"md5sum,omitempty"`
-			PresignedUrl *string `json:"presigned-url,omitempty"` // nolint:golint
+			PresignedUrl *string `json:"presigned-url,omitempty"` // nolint:revive
 		} `json:"export,omitempty"`
-		Id       *string   `json:"id,omitempty"` // nolint:golint
-		Instance *Instance `json:"instance,omitempty"`
-		Name     *string   `json:"name,omitempty"`
-		State    *string   `json:"state,omitempty"`
+		Id       *string        `json:"id,omitempty"` // nolint:revive
+		Instance *Instance      `json:"instance,omitempty"`
+		Name     *string        `json:"name,omitempty"`
+		State    *SnapshotState `json:"state,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(data, &raw); err != nil {
@@ -49,12 +49,12 @@ func (t *Snapshot) MarshalJSON() ([]byte, error) {
 		CreatedAt *string `json:"created-at,omitempty"`
 		Export    *struct {
 			Md5sum       *string `json:"md5sum,omitempty"`
-			PresignedUrl *string `json:"presigned-url,omitempty"` // nolint:golint
+			PresignedUrl *string `json:"presigned-url,omitempty"` // nolint:revive
 		} `json:"export,omitempty"`
-		Id       *string   `json:"id,omitempty"` // nolint:golint
-		Instance *Instance `json:"instance,omitempty"`
-		Name     *string   `json:"name,omitempty"`
-		State    *string   `json:"state,omitempty"`
+		Id       *string        `json:"id,omitempty"` // nolint:revive
+		Instance *Instance      `json:"instance,omitempty"`
+		Name     *string        `json:"name,omitempty"`
+		State    *SnapshotState `json:"state,omitempty"`
 	}{}
 
 	if t.CreatedAt != nil {

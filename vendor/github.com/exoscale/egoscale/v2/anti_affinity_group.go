@@ -17,8 +17,8 @@ type AntiAffinityGroup struct {
 func antiAffinityGroupFromAPI(a *papi.AntiAffinityGroup) *AntiAffinityGroup {
 	return &AntiAffinityGroup{
 		Description: papi.OptionalString(a.Description),
-		ID:          papi.OptionalString(a.Id),
-		Name:        papi.OptionalString(a.Name),
+		ID:          *a.Id,
+		Name:        *a.Name,
 	}
 }
 
@@ -44,6 +44,7 @@ func (c *Client) CreateAntiAffinityGroup(
 
 	res, err := papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -80,6 +81,22 @@ func (c *Client) GetAntiAffinityGroup(ctx context.Context, zone, id string) (*An
 	return antiAffinityGroupFromAPI(resp.JSON200), nil
 }
 
+// FindAntiAffinityGroup attempts to find an Anti-Affinity Group by name or ID in the specified zone.
+func (c *Client) FindAntiAffinityGroup(ctx context.Context, zone, v string) (*AntiAffinityGroup, error) {
+	res, err := c.ListAntiAffinityGroups(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		if r.ID == v || r.Name == v {
+			return c.GetAntiAffinityGroup(ctx, zone, r.ID)
+		}
+	}
+
+	return nil, apiv2.ErrNotFound
+}
+
 // DeleteAntiAffinityGroup deletes the specified Anti-Affinity Group in the specified zone.
 func (c *Client) DeleteAntiAffinityGroup(ctx context.Context, zone, id string) error {
 	resp, err := c.DeleteAntiAffinityGroupWithResponse(apiv2.WithZone(ctx, zone), id)
@@ -89,6 +106,7 @@ func (c *Client) DeleteAntiAffinityGroup(ctx context.Context, zone, id string) e
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err

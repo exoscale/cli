@@ -29,21 +29,21 @@ type Template struct {
 
 func templateFromAPI(t *papi.Template) *Template {
 	return &Template{
-		BootMode:        papi.OptionalString(t.BootMode),
+		BootMode:        string(*t.BootMode),
 		Build:           papi.OptionalString(t.Build),
-		Checksum:        papi.OptionalString(t.Checksum),
+		Checksum:        *t.Checksum,
 		CreatedAt:       *t.CreatedAt,
 		DefaultUser:     papi.OptionalString(t.DefaultUser),
 		Description:     papi.OptionalString(t.Description),
-		Family:          papi.OptionalString(t.Family),
-		ID:              papi.OptionalString(t.Id),
-		Name:            papi.OptionalString(t.Name),
-		PasswordEnabled: papi.OptionalBool(t.PasswordEnabled),
-		SSHKeyEnabled:   papi.OptionalBool(t.SshKeyEnabled),
+		Family:          *t.Family,
+		ID:              *t.Id,
+		Name:            *t.Name,
+		PasswordEnabled: *t.PasswordEnabled,
+		SSHKeyEnabled:   *t.SshKeyEnabled,
 		Size:            *t.Size,
 		URL:             papi.OptionalString(t.Url),
 		Version:         papi.OptionalString(t.Version),
-		Visibility:      papi.OptionalString(t.Visibility),
+		Visibility:      string(*t.Visibility),
 	}
 }
 
@@ -52,7 +52,7 @@ func (c *Client) ListTemplates(ctx context.Context, zone, visibility, family str
 	list := make([]*Template, 0)
 
 	resp, err := c.ListTemplatesWithResponse(apiv2.WithZone(ctx, zone), &papi.ListTemplatesParams{
-		Visibility: &visibility,
+		Visibility: (*papi.ListTemplatesParamsVisibility)(&visibility),
 		Family: func() *string {
 			if family != "" {
 				return &family
@@ -92,6 +92,7 @@ func (c *Client) DeleteTemplate(ctx context.Context, zone, id string) error {
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err

@@ -15,7 +15,10 @@ import (
 	"github.com/exoscale/egoscale/version"
 )
 
-const defaultTimeout = 60 * time.Second
+const (
+	defaultTimeout      = 60 * time.Second
+	defaultPollInterval = papi.DefaultPollingInterval
+)
 
 // UserAgent is the "User-Agent" HTTP request header added to outgoing HTTP requests.
 var UserAgent = fmt.Sprintf("egoscale/%s (%s; %s/%s)",
@@ -63,11 +66,24 @@ func ClientOptWithAPIEndpoint(v string) ClientOpt {
 // ClientOptWithTimeout returns a ClientOpt overriding the default client timeout.
 func ClientOptWithTimeout(v time.Duration) ClientOpt {
 	return func(c *Client) error {
-		c.timeout = v
-
 		if v <= 0 {
 			return errors.New("timeout value must be greater than 0")
 		}
+
+		c.timeout = v
+
+		return nil
+	}
+}
+
+// ClientOptWithPollInterval returns a ClientOpt overriding the default client async operation polling interval.
+func ClientOptWithPollInterval(v time.Duration) ClientOpt {
+	return func(c *Client) error {
+		if v <= 0 {
+			return errors.New("poll interval value must be greater than 0")
+		}
+
+		c.pollInterval = v
 
 		return nil
 	}
@@ -107,12 +123,13 @@ func ClientOptWithHTTPClient(v *http.Client) ClientOpt {
 
 // Client represents an Exoscale API client.
 type Client struct {
-	apiKey      string
-	apiSecret   string
-	apiEndpoint string
-	timeout     time.Duration
-	trace       bool
-	httpClient  *http.Client
+	apiKey       string
+	apiSecret    string
+	apiEndpoint  string
+	timeout      time.Duration
+	pollInterval time.Duration
+	trace        bool
+	httpClient   *http.Client
 
 	*papi.ClientWithResponses
 }
@@ -120,11 +137,12 @@ type Client struct {
 // NewClient returns a new Exoscale API client, or an error if one couldn't be initialized.
 func NewClient(apiKey, apiSecret string, opts ...ClientOpt) (*Client, error) {
 	client := Client{
-		apiKey:      apiKey,
-		apiSecret:   apiSecret,
-		apiEndpoint: api.EndpointURL,
-		httpClient:  &http.Client{Transport: &defaultTransport{http.DefaultTransport}},
-		timeout:     defaultTimeout,
+		apiKey:       apiKey,
+		apiSecret:    apiSecret,
+		apiEndpoint:  api.EndpointURL,
+		httpClient:   &http.Client{Transport: &defaultTransport{http.DefaultTransport}},
+		timeout:      defaultTimeout,
+		pollInterval: defaultPollInterval,
 	}
 
 	if client.apiKey == "" || client.apiSecret == "" {

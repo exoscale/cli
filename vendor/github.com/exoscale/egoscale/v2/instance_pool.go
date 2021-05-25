@@ -49,7 +49,7 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 		}(),
 		DeployTargetID: func() string {
 			if i.DeployTarget != nil {
-				return papi.OptionalString(i.DeployTarget.Id)
+				return *i.DeployTarget.Id
 			}
 			return ""
 		}(),
@@ -67,8 +67,8 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 
 			return ids
 		}(),
-		ID:          papi.OptionalString(i.Id),
-		IPv6Enabled: papi.OptionalBool(i.Ipv6Enabled),
+		ID:          *i.Id,
+		IPv6Enabled: *i.Ipv6Enabled,
 		InstanceIDs: func() []string {
 			ids := make([]string, 0)
 
@@ -82,14 +82,14 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 			return ids
 		}(),
 		InstancePrefix: papi.OptionalString(i.InstancePrefix),
-		InstanceTypeID: papi.OptionalString(i.InstanceType.Id),
+		InstanceTypeID: *i.InstanceType.Id,
 		ManagerID: func() string {
 			if i.Manager != nil {
-				return papi.OptionalString(i.Manager.Id)
+				return *i.Manager.Id
 			}
 			return ""
 		}(),
-		Name: papi.OptionalString(i.Name),
+		Name: *i.Name,
 		PrivateNetworkIDs: func() []string {
 			ids := make([]string, 0)
 
@@ -105,7 +105,7 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 		SSHKey: func() string {
 			key := ""
 			if i.SshKey != nil {
-				key = papi.OptionalString(i.SshKey.Name)
+				key = *i.SshKey.Name
 			}
 			return key
 		}(),
@@ -121,9 +121,9 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 
 			return ids
 		}(),
-		Size:       papi.OptionalInt64(i.Size),
-		State:      papi.OptionalString(i.State),
-		TemplateID: papi.OptionalString(i.Template.Id),
+		Size:       *i.Size,
+		State:      string(*i.State),
+		TemplateID: *i.Template.Id,
 		UserData:   papi.OptionalString(i.UserData),
 	}
 }
@@ -171,6 +171,7 @@ func (i *InstancePool) Scale(ctx context.Context, instances int64) error {
 
 	_, err = papi.NewPoller().
 		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
 		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -193,6 +194,7 @@ func (i *InstancePool) EvictMembers(ctx context.Context, members []string) error
 
 	_, err = papi.NewPoller().
 		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
 		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -209,13 +211,18 @@ func (i *InstancePool) ResetField(ctx context.Context, field interface{}) error 
 		return err
 	}
 
-	resp, err := i.c.ResetInstancePoolFieldWithResponse(apiv2.WithZone(ctx, i.zone), i.ID, resetField)
+	resp, err := i.c.ResetInstancePoolFieldWithResponse(
+		apiv2.WithZone(ctx, i.zone),
+		i.ID,
+		papi.ResetInstancePoolFieldParamsField(resetField),
+	)
 	if err != nil {
 		return err
 	}
 
 	_, err = papi.NewPoller().
 		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
 		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -306,6 +313,7 @@ func (c *Client) CreateInstancePool(ctx context.Context, zone string, instancePo
 
 	res, err := papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -348,6 +356,22 @@ func (c *Client) GetInstancePool(ctx context.Context, zone, id string) (*Instanc
 	instancePool.zone = zone
 
 	return instancePool, nil
+}
+
+// FindInstancePool attempts to find an Instance Pool by name or ID in the specified zone.
+func (c *Client) FindInstancePool(ctx context.Context, zone, v string) (*InstancePool, error) {
+	res, err := c.ListInstancePools(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		if r.ID == v || r.Name == v {
+			return c.GetInstancePool(ctx, zone, r.ID)
+		}
+	}
+
+	return nil, apiv2.ErrNotFound
 }
 
 // UpdateInstancePool updates the specified Instance Pool in the specified zone.
@@ -462,6 +486,7 @@ func (c *Client) UpdateInstancePool(ctx context.Context, zone string, instancePo
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -479,6 +504,7 @@ func (c *Client) DeleteInstancePool(ctx context.Context, zone, id string) error 
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err

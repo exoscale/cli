@@ -19,8 +19,8 @@ func deployTargetFromAPI(d *papi.DeployTarget) *DeployTarget {
 	return &DeployTarget{
 		Description: papi.OptionalString(d.Description),
 		ID:          *d.Id,
-		Name:        papi.OptionalString(d.Name),
-		Type:        *d.Type,
+		Name:        *d.Name,
+		Type:        string(*d.Type),
 	}
 }
 
@@ -50,4 +50,20 @@ func (c *Client) GetDeployTarget(ctx context.Context, zone, id string) (*DeployT
 	}
 
 	return deployTargetFromAPI(resp.JSON200), nil
+}
+
+// FindDeployTarget attempts to find a Deploy Target by name or ID in the specified zone.
+func (c *Client) FindDeployTarget(ctx context.Context, zone, v string) (*DeployTarget, error) {
+	res, err := c.ListDeployTargets(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		if r.ID == v || r.Name == v {
+			return c.GetDeployTarget(ctx, zone, r.ID)
+		}
+	}
+
+	return nil, apiv2.ErrNotFound
 }

@@ -82,8 +82,8 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 		Manager: func() *InstanceManager {
 			if i.Manager != nil {
 				return &InstanceManager{
-					ID:   papi.OptionalString(i.Manager.Id),
-					Type: papi.OptionalString(i.Manager.Type),
+					ID:   *i.Manager.Id,
+					Type: string(*i.Manager.Type),
 				}
 			}
 			return nil
@@ -105,7 +105,7 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 		SSHKey: func() string {
 			key := ""
 			if i.SshKey != nil {
-				key = papi.OptionalString(i.SshKey.Name)
+				key = *i.SshKey.Name
 			}
 			return key
 		}(),
@@ -133,7 +133,7 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 
 			return ids
 		}(),
-		State:      *i.State,
+		State:      string(*i.State),
 		TemplateID: *i.Template.Id,
 		UserData:   papi.OptionalString(i.UserData),
 
@@ -228,6 +228,7 @@ func (i *Instance) CreateSnapshot(ctx context.Context) (*Snapshot, error) {
 
 	res, err := papi.NewPoller().
 		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
 		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -248,6 +249,7 @@ func (i *Instance) DetachElasticIP(ctx context.Context, elasticIP *ElasticIP) er
 
 	_, err = papi.NewPoller().
 		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
 		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -268,6 +270,7 @@ func (i *Instance) DetachPrivateNetwork(ctx context.Context, privateNetwork *Pri
 
 	_, err = papi.NewPoller().
 		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
 		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -288,6 +291,7 @@ func (i *Instance) DetachSecurityGroup(ctx context.Context, securityGroup *Secur
 
 	_, err = papi.NewPoller().
 		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
 		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -320,6 +324,7 @@ func (i *Instance) RevertToSnapshot(ctx context.Context, snapshot *Snapshot) err
 
 	_, err = papi.NewPoller().
 		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
 		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -332,6 +337,42 @@ func (i *Instance) RevertToSnapshot(ctx context.Context, snapshot *Snapshot) err
 func (i *Instance) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error) {
 	res, err := i.c.fetchFromIDs(ctx, i.zone, i.SecurityGroupIDs, new(SecurityGroup))
 	return res.([]*SecurityGroup), err
+}
+
+// Start starts the Compute instance.
+func (i *Instance) Start(ctx context.Context) error {
+	resp, err := i.c.StartInstanceWithResponse(apiv2.WithZone(ctx, i.zone), i.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Stop stops the Compute instance.
+func (i *Instance) Stop(ctx context.Context) error {
+	resp, err := i.c.StopInstanceWithResponse(apiv2.WithZone(ctx, i.zone), i.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // CreateInstance creates a Compute instance in the specified zone.
@@ -385,6 +426,7 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 
 	res, err := papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -421,6 +463,38 @@ func (c *Client) GetInstance(ctx context.Context, zone, id string) (*Instance, e
 	return instanceFromAPI(c, zone, resp.JSON200), nil
 }
 
+// FindInstance attempts to find a Compute instance by name or ID in the specified zone.
+// In case the identifier is a name and multiple resources match, an ErrTooManyFound error is returned.
+func (c *Client) FindInstance(ctx context.Context, zone, v string) (*Instance, error) {
+	res, err := c.ListInstances(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	var found *Instance
+	for _, r := range res {
+		if r.ID == v {
+			return c.GetInstance(ctx, zone, r.ID)
+		}
+
+		// Historically, the Exoscale API allowed users to create multiple Compute instances sharing a common name.
+		// This function being expected to return one resource at most, in case the specified identifier is a name
+		// we have to check that there aren't more that one matching result before returning it.
+		if r.Name == v {
+			if found != nil {
+				return nil, apiv2.ErrTooManyFound
+			}
+			found = r
+		}
+	}
+
+	if found != nil {
+		return found, nil
+	}
+
+	return nil, apiv2.ErrNotFound
+}
+
 // UpdateInstance updates the specified Compute instance in the specified zone.
 func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Instance) error {
 	resp, err := c.UpdateInstanceWithResponse(
@@ -446,6 +520,7 @@ func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Inst
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -463,6 +538,7 @@ func (c *Client) DeleteInstance(ctx context.Context, zone, id string) error {
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err

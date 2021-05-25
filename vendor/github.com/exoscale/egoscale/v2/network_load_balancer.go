@@ -20,7 +20,7 @@ type NetworkLoadBalancerServerStatus struct {
 func nlbServerStatusFromAPI(st *papi.LoadBalancerServerStatus) *NetworkLoadBalancerServerStatus {
 	return &NetworkLoadBalancerServerStatus{
 		InstanceIP: net.ParseIP(papi.OptionalString(st.PublicIp)),
-		Status:     papi.OptionalString(st.Status),
+		Status:     string(*st.Status),
 	}
 }
 
@@ -55,7 +55,7 @@ func nlbServiceFromAPI(svc *papi.LoadBalancerService) *NetworkLoadBalancerServic
 		Description: papi.OptionalString(svc.Description),
 		Healthcheck: NetworkLoadBalancerServiceHealthcheck{
 			Interval: time.Duration(papi.OptionalInt64(svc.Healthcheck.Interval)) * time.Second,
-			Mode:     svc.Healthcheck.Mode,
+			Mode:     string(svc.Healthcheck.Mode),
 			Port:     uint16(svc.Healthcheck.Port),
 			Retries:  papi.OptionalInt64(svc.Healthcheck.Retries),
 			TLSSNI:   papi.OptionalString(svc.Healthcheck.TlsSni),
@@ -72,14 +72,14 @@ func nlbServiceFromAPI(svc *papi.LoadBalancerService) *NetworkLoadBalancerServic
 			}
 			return statuses
 		}(),
-		ID:             papi.OptionalString(svc.Id),
-		InstancePoolID: papi.OptionalString(svc.InstancePool.Id),
-		Name:           papi.OptionalString(svc.Name),
-		Port:           uint16(papi.OptionalInt64(svc.Port)),
-		Protocol:       papi.OptionalString(svc.Protocol),
-		Strategy:       papi.OptionalString(svc.Strategy),
-		TargetPort:     uint16(papi.OptionalInt64(svc.TargetPort)),
-		State:          papi.OptionalString(svc.State),
+		ID:             *svc.Id,
+		InstancePoolID: *svc.InstancePool.Id,
+		Name:           *svc.Name,
+		Port:           uint16(*svc.Port),
+		Protocol:       string(*svc.Protocol),
+		Strategy:       string(*svc.Strategy),
+		TargetPort:     uint16(*svc.TargetPort),
+		State:          string(*svc.State),
 	}
 }
 
@@ -89,6 +89,7 @@ type NetworkLoadBalancer struct {
 	Description string
 	ID          string
 	IPAddress   net.IP
+	Labels      map[string]string `reset:"labels"`
 	Name        string
 	Services    []*NetworkLoadBalancerService
 	State       string
@@ -101,9 +102,15 @@ func nlbFromAPI(client *Client, zone string, nlb *papi.LoadBalancer) *NetworkLoa
 	return &NetworkLoadBalancer{
 		CreatedAt:   *nlb.CreatedAt,
 		Description: papi.OptionalString(nlb.Description),
-		ID:          papi.OptionalString(nlb.Id),
+		ID:          *nlb.Id,
 		IPAddress:   net.ParseIP(papi.OptionalString(nlb.Ip)),
-		Name:        papi.OptionalString(nlb.Name),
+		Labels: func() map[string]string {
+			if nlb.Labels != nil {
+				return nlb.Labels.AdditionalProperties
+			}
+			return nil
+		}(),
+		Name: *nlb.Name,
 		Services: func() []*NetworkLoadBalancerService {
 			services := make([]*NetworkLoadBalancerService, 0)
 			if nlb.Services != nil {
@@ -114,7 +121,7 @@ func nlbFromAPI(client *Client, zone string, nlb *papi.LoadBalancer) *NetworkLoa
 			}
 			return services
 		}(),
-		State: papi.OptionalString(nlb.State),
+		State: string(*nlb.State),
 
 		c:    client,
 		zone: zone,
@@ -154,7 +161,7 @@ func (nlb *NetworkLoadBalancer) AddService(
 			Description: &svc.Description,
 			Healthcheck: papi.LoadBalancerServiceHealthcheck{
 				Interval: &healthcheckInterval,
-				Mode:     svc.Healthcheck.Mode,
+				Mode:     papi.LoadBalancerServiceHealthcheckMode(svc.Healthcheck.Mode),
 				Port:     healthcheckPort,
 				Retries:  &svc.Healthcheck.Retries,
 				Timeout:  &healthcheckTimeout,
@@ -174,8 +181,8 @@ func (nlb *NetworkLoadBalancer) AddService(
 			InstancePool: papi.InstancePool{Id: &svc.InstancePoolID},
 			Name:         svc.Name,
 			Port:         port,
-			Protocol:     svc.Protocol,
-			Strategy:     svc.Strategy,
+			Protocol:     papi.AddServiceToLoadBalancerJSONBodyProtocol(svc.Protocol),
+			Strategy:     papi.AddServiceToLoadBalancerJSONBodyStrategy(svc.Strategy),
 			TargetPort:   targetPort,
 		})
 	if err != nil {
@@ -184,6 +191,7 @@ func (nlb *NetworkLoadBalancer) AddService(
 
 	res, err := papi.NewPoller().
 		WithTimeout(nlb.c.timeout).
+		WithInterval(nlb.c.pollInterval).
 		Poll(ctx, nlb.c.OperationPoller(nlb.zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -225,7 +233,7 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 			}(),
 			Healthcheck: &papi.LoadBalancerServiceHealthcheck{
 				Interval: &healthcheckInterval,
-				Mode:     svc.Healthcheck.Mode,
+				Mode:     papi.LoadBalancerServiceHealthcheckMode(svc.Healthcheck.Mode),
 				Port:     healthcheckPort,
 				Retries:  &svc.Healthcheck.Retries,
 				Timeout:  &healthcheckTimeout,
@@ -255,15 +263,15 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 				}
 				return nil
 			}(),
-			Protocol: func() *string {
+			Protocol: func() *papi.UpdateLoadBalancerServiceJSONBodyProtocol {
 				if svc.Protocol != "" {
-					return &svc.Protocol
+					return (*papi.UpdateLoadBalancerServiceJSONBodyProtocol)(&svc.Protocol)
 				}
 				return nil
 			}(),
-			Strategy: func() *string {
+			Strategy: func() *papi.UpdateLoadBalancerServiceJSONBodyStrategy {
 				if svc.Strategy != "" {
-					return &svc.Strategy
+					return (*papi.UpdateLoadBalancerServiceJSONBodyStrategy)(&svc.Strategy)
 				}
 				return nil
 			}(),
@@ -281,6 +289,7 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 
 	_, err = papi.NewPoller().
 		WithTimeout(nlb.c.timeout).
+		WithInterval(nlb.c.pollInterval).
 		Poll(ctx, nlb.c.OperationPoller(nlb.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -302,6 +311,35 @@ func (nlb *NetworkLoadBalancer) DeleteService(ctx context.Context, svc *NetworkL
 
 	_, err = papi.NewPoller().
 		WithTimeout(nlb.c.timeout).
+		WithInterval(nlb.c.pollInterval).
+		Poll(ctx, nlb.c.OperationPoller(nlb.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ResetField resets the specified Network Load Balancer field to its default value.
+// The value expected for the field parameter is a pointer to the NetworkLoadBalancer field to reset.
+func (nlb *NetworkLoadBalancer) ResetField(ctx context.Context, field interface{}) error {
+	resetField, err := resetFieldName(nlb, field)
+	if err != nil {
+		return err
+	}
+
+	resp, err := nlb.c.ResetLoadBalancerFieldWithResponse(
+		apiv2.WithZone(ctx, nlb.zone),
+		nlb.ID,
+		papi.ResetLoadBalancerFieldParamsField(resetField),
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(nlb.c.timeout).
+		WithInterval(nlb.c.pollInterval).
 		Poll(ctx, nlb.c.OperationPoller(nlb.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -320,6 +358,7 @@ func (c *Client) CreateNetworkLoadBalancer(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateLoadBalancerJSONRequestBody{
 			Description: &nlb.Description,
+			Labels:      &papi.Labels{AdditionalProperties: nlb.Labels},
 			Name:        nlb.Name,
 		})
 	if err != nil {
@@ -328,6 +367,7 @@ func (c *Client) CreateNetworkLoadBalancer(
 
 	res, err := papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -366,6 +406,22 @@ func (c *Client) GetNetworkLoadBalancer(ctx context.Context, zone, id string) (*
 	return nlbFromAPI(c, zone, resp.JSON200), nil
 }
 
+// FindNetworkLoadBalancer attempts to find a Network Load Balancer by name or ID in the specified zone.
+func (c *Client) FindNetworkLoadBalancer(ctx context.Context, zone, v string) (*NetworkLoadBalancer, error) {
+	res, err := c.ListNetworkLoadBalancers(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		if r.ID == v || r.Name == v {
+			return c.GetNetworkLoadBalancer(ctx, zone, r.ID)
+		}
+	}
+
+	return nil, apiv2.ErrNotFound
+}
+
 // UpdateNetworkLoadBalancer updates the specified Network Load Balancer instance in the specified zone.
 func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string, nlb *NetworkLoadBalancer) error {
 	resp, err := c.UpdateLoadBalancerWithResponse(
@@ -375,6 +431,12 @@ func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string, nlb
 			Description: func() *string {
 				if nlb.Description != "" {
 					return &nlb.Description
+				}
+				return nil
+			}(),
+			Labels: func() *papi.Labels {
+				if len(nlb.Labels) > 0 {
+					return &papi.Labels{AdditionalProperties: nlb.Labels}
 				}
 				return nil
 			}(),
@@ -391,6 +453,7 @@ func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string, nlb
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -408,6 +471,7 @@ func (c *Client) DeleteNetworkLoadBalancer(ctx context.Context, zone, id string)
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err

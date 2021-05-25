@@ -15,14 +15,14 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 		DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 		Description        *string              `json:"description,omitempty"`
 		DiskSize           *int64               `json:"disk-size,omitempty"`
-		Id                 *string              `json:"id,omitempty"` // nolint:golint
+		Id                 *string              `json:"id,omitempty"` // nolint:revive
 		InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
 		InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
 		Size               *int64               `json:"size,omitempty"`
-		State              *string              `json:"state,omitempty"`
+		State              *SksNodepoolState    `json:"state,omitempty"`
 		Template           *Template            `json:"template,omitempty"`
 		Version            *string              `json:"version,omitempty"`
 	}{}
@@ -66,14 +66,14 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 		DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 		Description        *string              `json:"description,omitempty"`
 		DiskSize           *int64               `json:"disk-size,omitempty"`
-		Id                 *string              `json:"id,omitempty"` // nolint:golint
+		Id                 *string              `json:"id,omitempty"` // nolint:revive
 		InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
 		InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
 		Size               *int64               `json:"size,omitempty"`
-		State              *string              `json:"state,omitempty"`
+		State              *SksNodepoolState    `json:"state,omitempty"`
 		Template           *Template            `json:"template,omitempty"`
 		Version            *string              `json:"version,omitempty"`
 	}{}

@@ -137,8 +137,7 @@ github.com/danielgtaylor/go-jmespath-plus
 github.com/danwakefield/fnmatch
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/deepmap/oapi-codegen v1.5.1
-## explicit
+# github.com/deepmap/oapi-codegen v1.6.1
 github.com/deepmap/oapi-codegen/pkg/runtime
 github.com/deepmap/oapi-codegen/pkg/types
 # github.com/dlclark/regexp2 v1.2.0
@@ -147,7 +146,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.51.0
+# github.com/exoscale/egoscale v0.52.0
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin

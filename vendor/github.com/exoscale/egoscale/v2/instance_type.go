@@ -22,11 +22,11 @@ func instanceTypeFromAPI(t *papi.InstanceType) *InstanceType {
 	return &InstanceType{
 		Authorized: *t.Authorized,
 		CPUs:       *t.Cpus,
-		Family:     *t.Family,
+		Family:     string(*t.Family),
 		GPUs:       papi.OptionalInt64(t.Gpus),
 		ID:         *t.Id,
 		Memory:     *t.Memory,
-		Size:       *t.Size,
+		Size:       string(*t.Size),
 	}
 }
 

@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.52.0
+------
+
+- feature: v2: make API async polling interval customizable
+- feature: v2: add `Client.Find*()` methods
+- feature: v2: add `Start`/`Stop` methods to `Instance`
+- feature: v2: add labels support for Network Load Balancers
+- fix: v2: fix Security Group parsing from API
+
 0.51.0
 ------
 

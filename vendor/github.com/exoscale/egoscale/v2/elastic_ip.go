@@ -40,10 +40,10 @@ func elasticIPFromAPI(client *Client, zone string, e *papi.ElasticIp) *ElasticIP
 			if hc := e.Healthcheck; hc != nil {
 				return &ElasticIPHealthcheck{
 					Interval:      time.Duration(papi.OptionalInt64(hc.Interval)) * time.Second,
-					Mode:          hc.Mode,
+					Mode:          string(hc.Mode),
 					Port:          uint16(hc.Port),
-					StrikesFail:   papi.OptionalInt64(hc.StrikesFail),
-					StrikesOK:     papi.OptionalInt64(hc.StrikesOk),
+					StrikesFail:   *hc.StrikesFail,
+					StrikesOK:     *hc.StrikesOk,
 					TLSSNI:        papi.OptionalString(hc.TlsSni),
 					TLSSkipVerify: papi.OptionalBool(hc.TlsSkipVerify),
 					Timeout:       time.Duration(papi.OptionalInt64(hc.Timeout)) * time.Second,
@@ -52,8 +52,8 @@ func elasticIPFromAPI(client *Client, zone string, e *papi.ElasticIp) *ElasticIP
 			}
 			return nil
 		}(),
-		ID:        papi.OptionalString(e.Id),
-		IPAddress: net.ParseIP(papi.OptionalString(e.Ip)),
+		ID:        *e.Id,
+		IPAddress: net.ParseIP(*e.Ip),
 
 		c:    client,
 		zone: zone,
@@ -72,13 +72,18 @@ func (e *ElasticIP) ResetField(ctx context.Context, field interface{}) error {
 		return err
 	}
 
-	resp, err := e.c.ResetElasticIpFieldWithResponse(apiv2.WithZone(ctx, e.zone), e.ID, resetField)
+	resp, err := e.c.ResetElasticIpFieldWithResponse(
+		apiv2.WithZone(ctx, e.zone),
+		e.ID,
+		papi.ResetElasticIpFieldParamsField(resetField),
+	)
 	if err != nil {
 		return err
 	}
 
 	_, err = papi.NewPoller().
 		WithTimeout(e.c.timeout).
+		WithInterval(e.c.pollInterval).
 		Poll(ctx, e.c.OperationPoller(e.zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -103,7 +108,7 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 
 					return &papi.ElasticIpHealthcheck{
 						Interval:      &interval,
-						Mode:          hc.Mode,
+						Mode:          papi.ElasticIpHealthcheckMode(hc.Mode),
 						Port:          port,
 						StrikesFail:   &hc.StrikesFail,
 						StrikesOk:     &hc.StrikesOK,
@@ -122,6 +127,7 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 
 	res, err := papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
@@ -158,6 +164,22 @@ func (c *Client) GetElasticIP(ctx context.Context, zone, id string) (*ElasticIP,
 	return elasticIPFromAPI(c, zone, resp.JSON200), nil
 }
 
+// FindElasticIP attempts to find an Elastic IP by IP address or ID in the specified zone.
+func (c *Client) FindElasticIP(ctx context.Context, zone, v string) (*ElasticIP, error) {
+	res, err := c.ListElasticIPs(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		if r.ID == v || r.IPAddress.String() == v {
+			return c.GetElasticIP(ctx, zone, r.ID)
+		}
+	}
+
+	return nil, apiv2.ErrNotFound
+}
+
 // UpdateElasticIP updates the specified Elastic IP in the specified zone.
 func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *ElasticIP) error {
 	resp, err := c.UpdateElasticIpWithResponse(
@@ -180,7 +202,7 @@ func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *El
 
 					return &papi.ElasticIpHealthcheck{
 						Interval:      &interval,
-						Mode:          hc.Mode,
+						Mode:          papi.ElasticIpHealthcheckMode(hc.Mode),
 						Port:          port,
 						StrikesFail:   &hc.StrikesFail,
 						StrikesOk:     &hc.StrikesOK,
@@ -199,6 +221,7 @@ func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *El
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
@@ -216,6 +239,7 @@ func (c *Client) DeleteElasticIP(ctx context.Context, zone, id string) error {
 
 	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err

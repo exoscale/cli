@@ -14,17 +14,17 @@ func (i *Instance) UnmarshalJSON(data []byte) error {
 		CreatedAt          *string              `json:"created-at,omitempty"`
 		DiskSize           *int64               `json:"disk-size,omitempty"`
 		ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
-		Id                 *string              `json:"id,omitempty"` // nolint:golint
+		Id                 *string              `json:"id,omitempty"` // nolint:revive
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Ipv6Address        *string              `json:"ipv6-address,omitempty"`
 		Manager            *Manager             `json:"manager,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
-		PublicIp           *string              `json:"public-ip,omitempty"` // nolint:golint
+		PublicIp           *string              `json:"public-ip,omitempty"` // nolint:revive
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
 		Snapshots          *[]Snapshot          `json:"snapshots,omitempty"`
-		SshKey             *SshKey              `json:"ssh-key,omitempty"` // nolint:golint
-		State              *string              `json:"state,omitempty"`
+		SshKey             *SshKey              `json:"ssh-key,omitempty"` // nolint:revive
+		State              *InstanceState       `json:"state,omitempty"`
 		Template           *Template            `json:"template,omitempty"`
 		UserData           *string              `json:"user-data,omitempty"`
 	}{}
@@ -69,17 +69,17 @@ func (i *Instance) MarshalJSON() ([]byte, error) {
 		CreatedAt          *string              `json:"created-at,omitempty"`
 		DiskSize           *int64               `json:"disk-size,omitempty"`
 		ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
-		Id                 *string              `json:"id,omitempty"` // nolint:golint
+		Id                 *string              `json:"id,omitempty"` // nolint:revive
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Ipv6Address        *string              `json:"ipv6-address,omitempty"`
 		Manager            *Manager             `json:"manager,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
-		PublicIp           *string              `json:"public-ip,omitempty"` // nolint:golint
+		PublicIp           *string              `json:"public-ip,omitempty"` // nolint:revive
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
 		Snapshots          *[]Snapshot          `json:"snapshots,omitempty"`
-		SshKey             *SshKey              `json:"ssh-key,omitempty"` // nolint:golint
-		State              *string              `json:"state,omitempty"`
+		SshKey             *SshKey              `json:"ssh-key,omitempty"` // nolint:revive
+		State              *InstanceState       `json:"state,omitempty"`
 		Template           *Template            `json:"template,omitempty"`
 		UserData           *string              `json:"user-data,omitempty"`
 	}{}
