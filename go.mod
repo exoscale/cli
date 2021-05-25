@@ -20,6 +20,7 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/hashicorp/go-multierror v1.1.0
+	github.com/iancoleman/strcase v0.1.3
 	github.com/izumin5210/gentleman-logger v1.0.0
 	github.com/izumin5210/httplogger v1.0.0 // indirect
 	github.com/jarcoal/httpmock v1.0.8 // indirect
@@ -41,6 +42,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
+	github.com/stretchr/testify v1.7.0
 	github.com/vbauerster/mpb/v4 v4.12.2
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
