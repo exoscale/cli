@@ -51,8 +51,8 @@ scaling down the Instance Pool similar to the "exo instancepool scale" command.`
 			return err
 		}
 
-		members := make([]string, len(args[1:]))
-		for i, n := range args[2:] {
+		members := make([]string, len(instances))
+		for i, n := range instances {
 			instance, err := getVirtualMachineByNameOrID(n)
 			if err != nil {
 				return fmt.Errorf("invalid Instance %q: %s", n, err)
