@@ -72,6 +72,8 @@ brews:
       bin.install "exo"
       man1.install Dir["manpage/exo*.1"]
       bash_completion.install "contrib/completion/bash/exo"
+      fish_completion.install "contrib/completion/fish/exo"
+      zsh_completion.install "contrib/completion/zsh/exo"
 
 dockers:
   - goos: linux
