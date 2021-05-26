@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.30.0
+
+### Features
+
+- `exo sks`: add support for Instance Prefix/Deploy Target to Nodepools
+
+### Bug Fixes
+
+- `exo instancepool`: fix a bug in the "evict" command
+
+
 ## 1.29.0
 
 ### Features
