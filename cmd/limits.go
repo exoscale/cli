@@ -2,10 +2,27 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
+	"sync"
 
 	"github.com/exoscale/egoscale"
+	exov2 "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
+)
+
+const (
+	limitComputeInstances = "user_vm"
+	limitGPUs             = "gpu"
+	limitSnapshots        = "snapshot"
+	limitTemplates        = "template"
+	limitIPAddresses      = "public_elastic_ip"
+	limitPrivateNetworks  = "network"
+	limitNLBs             = "network_load_balancer"
+	limitIAMAPIKeys       = "iam_key"
+	limitSOSBuckets       = "bucket"
+	limitSKSClusters      = "sks_cluster"
 )
 
 type LimitsItemOutput struct {
@@ -28,94 +45,140 @@ var limitsCmd = &cobra.Command{
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&LimitsOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return output(listLimits())
-	},
-}
+		var curUsage sync.Map
 
-func listLimits() (outputter, error) {
-	limits, err := cs.ListWithContext(gContext, &egoscale.ResourceLimit{})
-	if err != nil {
-		return nil, err
-	}
+		// Global resources ///////////////////////////////////////////////
 
-	display := map[string]string{
-		"user_vm":           "Instances",
-		"snapshot":          "Snapshots",
-		"template":          "Templates",
-		"public_elastic_ip": "IP Addresses",
-		"network":           "Private Networks",
-	}
+		res, err := cs.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
+		if err != nil {
+			return fmt.Errorf("unable to list IAM API keys: %s", err)
+		}
+		curUsage.Store(limitIAMAPIKeys, res.(*egoscale.ListAPIKeysResponse).Count)
 
-	out := LimitsOutput{}
+		res, err = cs.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
+		if err != nil {
+			return fmt.Errorf("unable to list SOS buckets: %s", err)
+		}
+		curUsage.Store(limitSOSBuckets, res.(*egoscale.ListBucketsUsageResponse).Count)
 
-	for _, key := range limits {
-		limit := key.(*egoscale.ResourceLimit)
+		// Zone-local resources /////////////////////////////////////////////
 
-		if used, err := fetchUsedResources(limit.ResourceTypeName); used != -1 {
+		instanceTypes := make(map[string]*exov2.InstanceType) // For caching
+
+		err = forEachZone(allZones, func(zone string) error {
+			ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+
+			instances, err := cs.ListInstances(ctx, zone)
 			if err != nil {
-				return nil, err
+				return fmt.Errorf("unable to list Compute instances: %s", err)
+			}
+			curUsage.Store(limitGPUs, 0)
+			cur, _ := curUsage.LoadOrStore(limitComputeInstances, 0)
+			curUsage.Store(limitComputeInstances, cur.(int)+len(instances))
+
+			for _, instance := range instances {
+				instanceType, cached := instanceTypes[instance.InstanceTypeID]
+				if !cached {
+					instanceType, err = cs.GetInstanceType(ctx, zone, instance.InstanceTypeID)
+					if err != nil {
+						return fmt.Errorf(
+							"unable to retrieve Compute instance type %q: %s",
+							instance.InstanceTypeID,
+							err)
+					}
+					instanceTypes[instance.InstanceTypeID] = instanceType
+				}
+
+				if strings.HasSuffix(instanceType.Family, "gpu") {
+					cur, _ = curUsage.Load(limitGPUs)
+					curUsage.Store(limitGPUs, cur.(int)+int(instanceType.GPUs))
+				}
 			}
 
-			out = append(out, LimitsItemOutput{
-				Resource: display[limit.ResourceTypeName],
-				Max:      int(limit.Max),
-				Used:     used,
-			})
-		}
-	}
+			snapshots, err := cs.ListSnapshots(ctx, zone)
+			if err != nil {
+				return fmt.Errorf("unable to list snapshots: %s", err)
+			}
+			cur, _ = curUsage.LoadOrStore(limitSnapshots, 0)
+			curUsage.Store(limitSnapshots, cur.(int)+len(snapshots))
 
-	return &out, nil
-}
+			templates, err := cs.ListTemplates(ctx, zone, "private", "")
+			if err != nil {
+				return fmt.Errorf("unable to list templates: %s", err)
+			}
+			cur, _ = curUsage.LoadOrStore(limitTemplates, 0)
+			curUsage.Store(limitTemplates, cur.(int)+len(templates))
 
-func fetchUsedResources(resourceType string) (int, error) {
-	var resourceUsed int
+			elasticIPs, err := cs.ListElasticIPs(ctx, zone)
+			if err != nil {
+				return fmt.Errorf("unable to list IP addresses: %s", err)
+			}
+			cur, _ = curUsage.LoadOrStore(limitIPAddresses, 0)
+			curUsage.Store(limitIPAddresses, cur.(int)+len(elasticIPs))
 
-	switch resourceType {
-	case "user_vm":
-		instances, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{})
+			privateNetworks, err := cs.ListPrivateNetworks(ctx, zone)
+			if err != nil {
+				return fmt.Errorf("unable to list Private Networks: %s", err)
+			}
+			cur, _ = curUsage.LoadOrStore(limitPrivateNetworks, 0)
+			curUsage.Store(limitPrivateNetworks, cur.(int)+len(privateNetworks))
+
+			nlbs, err := cs.ListNetworkLoadBalancers(ctx, zone)
+			if err != nil {
+				return fmt.Errorf("unable to list Network Load Balancers: %s", err)
+			}
+			cur, _ = curUsage.LoadOrStore(limitNLBs, 0)
+			curUsage.Store(limitNLBs, cur.(int)+len(nlbs))
+
+			sksClusters, err := cs.ListSKSClusters(ctx, zone)
+			if err != nil {
+				return fmt.Errorf("unable to list SKS clusters: %s", err)
+			}
+			cur, _ = curUsage.LoadOrStore(limitSKSClusters, 0)
+			curUsage.Store(limitSKSClusters, cur.(int)+len(sksClusters))
+
+			return nil
+		})
 		if err != nil {
-			return 0, err
+			_, _ = fmt.Fprintf(os.Stderr,
+				"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 		}
 
-		resourceUsed = len(instances)
+		resourceLimitLabels := map[string]string{
+			limitComputeInstances: "Instances",
+			limitGPUs:             "GPUs",
+			limitSnapshots:        "Snapshots",
+			limitTemplates:        "Templates",
+			limitIPAddresses:      "IP addresses",
+			limitPrivateNetworks:  "Private Networks",
+			limitNLBs:             "Network Load Balancers",
+			limitIAMAPIKeys:       "IAM API keys",
+			limitSOSBuckets:       "SOS buckets",
+			limitSKSClusters:      "SKS clusters",
+		}
 
-	case "snapshot":
-		snapshots, err := cs.ListWithContext(gContext, &egoscale.Snapshot{})
+		out := LimitsOutput{}
+
+		limits, err := cs.ListWithContext(gContext, &egoscale.ResourceLimit{})
 		if err != nil {
-			return 0, err
+			return err
 		}
 
-		resourceUsed = len(snapshots)
+		for _, key := range limits {
+			limit := key.(*egoscale.ResourceLimit)
 
-	case "template":
-		templates, err := cs.ListWithContext(gContext, &egoscale.ListTemplates{TemplateFilter: "self"})
-		if err != nil {
-			return 0, err
+			cur, ok := curUsage.Load(limit.ResourceTypeName)
+			if ok {
+				out = append(out, LimitsItemOutput{
+					Resource: resourceLimitLabels[limit.ResourceTypeName],
+					Used:     cur.(int),
+					Max:      int(limit.Max),
+				})
+			}
 		}
 
-		resourceUsed = len(templates)
-
-	case "network":
-		networks, err := cs.ListWithContext(gContext, &egoscale.Network{})
-		if err != nil {
-			return 0, err
-		}
-
-		resourceUsed = len(networks)
-
-	case "public_elastic_ip":
-		eips, err := cs.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
-		if err != nil {
-			return 0, err
-		}
-
-		resourceUsed = len(eips)
-
-	default:
-		return -1, nil
-	}
-
-	return resourceUsed, nil
+		return output(&out, nil)
+	},
 }
 
 func init() {
