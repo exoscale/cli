@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.53.0
+------
+
+- feature: v2: add `Client.FindInstanceType()` method
+
 0.52.0
 ------
 

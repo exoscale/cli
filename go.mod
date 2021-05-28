@@ -13,7 +13,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.52.0
+	github.com/exoscale/egoscale v0.53.0
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -50,6 +50,7 @@ require (
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/h2non/gentleman.v2 v2.0.4
 	gopkg.in/ini.v1 v1.61.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
