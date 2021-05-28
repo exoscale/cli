@@ -146,7 +146,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.52.0
+# github.com/exoscale/egoscale v0.53.0
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/admin
@@ -386,6 +386,7 @@ gopkg.in/h2non/gentleman.v2/utils
 ## explicit
 gopkg.in/ini.v1
 # gopkg.in/yaml.v2 v2.4.0
+## explicit
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 ## explicit
