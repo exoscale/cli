@@ -5,11 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
-
-	exoapi "github.com/exoscale/egoscale/v2/api"
-
 	"github.com/exoscale/cli/table"
+	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/spf13/cobra"
 )
 
 type sksShowOutput struct {
@@ -63,36 +61,38 @@ func (o *sksShowOutput) toTable() {
 	}()})
 }
 
-var sksShowCmd = &cobra.Command{
-	Use:   "show NAME|ID",
-	Short: "Show a SKS cluster details",
-	Long: fmt.Sprintf(`This command shows a SKS cluster details.
+type sksShowCmd struct {
+	_ bool `cli-cmd:"show"`
+
+	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
+
+	Zone string `cli-short:"z" cli-usage:"SKS cluster zone"`
+}
+
+func (c *sksShowCmd) cmdAliases() []string { return gShowAlias }
+
+func (c *sksShowCmd) cmdShort() string { return "Show an SKS cluster details" }
+
+func (c *sksShowCmd) cmdLong() string {
+	return fmt.Sprintf(`This command shows an SKS cluster details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksShowOutput{}), ", ")),
-	Aliases: gShowAlias,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+		strings.Join(outputterTemplateAnnotations(&sksShowOutput{}), ", "))
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		return output(showSKSCluster(zone, args[0]))
-	},
+func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	return output(showSKSCluster(c.Zone, c.Cluster))
 }
 
 func showSKSCluster(zone, c string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-	cluster, err := lookupSKSCluster(ctx, zone, c)
+
+	cluster, err := cs.FindSKSCluster(ctx, zone, c)
 	if err != nil {
 		return nil, err
 	}
@@ -106,24 +106,23 @@ func showSKSCluster(zone, c string) (outputter, error) {
 	}
 
 	out := sksShowOutput{
+		AddOns:       cluster.AddOns,
+		CNI:          cluster.CNI,
+		CreationDate: cluster.CreatedAt.String(),
+		Description:  cluster.Description,
+		Endpoint:     cluster.Endpoint,
 		ID:           cluster.ID,
 		Name:         cluster.Name,
-		Description:  cluster.Description,
-		CreationDate: cluster.CreatedAt.String(),
-		Version:      cluster.Version,
-		ServiceLevel: cluster.ServiceLevel,
-		CNI:          cluster.CNI,
-		AddOns:       cluster.AddOns,
-		Zone:         zone,
-		Endpoint:     cluster.Endpoint,
-		State:        cluster.State,
 		Nodepools:    sksNodepools,
+		ServiceLevel: cluster.ServiceLevel,
+		State:        cluster.State,
+		Version:      cluster.Version,
+		Zone:         zone,
 	}
 
 	return &out, nil
 }
 
 func init() {
-	sksShowCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksCmd.AddCommand(sksShowCmd)
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksShowCmd{}))
 }

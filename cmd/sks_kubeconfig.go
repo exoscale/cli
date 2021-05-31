@@ -8,14 +8,29 @@ import (
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 )
 
-var sksKubeconfigCmd = &cobra.Command{
-	Use:     "kubeconfig CLUSTER-NAME|ID USER",
-	Aliases: []string{"kc"},
-	Short:   "Generate a Kubernetes kubeconfig file for a SKS cluster",
-	Long: `This command generates a kubeconfig file to be used for authenticating to a SKS
+type sksKubeconfigCmd struct {
+	_ bool `cli-cmd:"kubeconfig"`
+
+	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
+	User    string `cli-arg:"#"`
+
+	ExecCredential bool     `cli-short:"x" cli-usage:"output an ExecCredential object to use with a kubeconfig user.exec mode"`
+	Groups         []string `cli-flag:"group" cli-short:"g" cli-usage:"client certificate group. Can be specified multiple times. Defaults to system:masters"`
+	TTL            int64    `cli-short:"t" cli-usage:"client certificate validity duration in seconds"`
+	Zone           string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+}
+
+func (c *sksKubeconfigCmd) cmdAliases() []string { return []string{"kc"} }
+
+func (c *sksKubeconfigCmd) cmdShort() string {
+	return "Generate a Kubernetes kubeconfig file for an SKS cluster"
+}
+
+func (c *sksKubeconfigCmd) cmdLong() string {
+	return `This command generates a kubeconfig file to be used for authenticating to an SKS
 cluster API.
 
 The "user" command argument corresponds to the CN field of the generated X.509
@@ -82,111 +97,78 @@ Notes:
 
 [1]: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#x509-client-certs
 [2]: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#client-go-credential-plugins
-`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+`
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *sksKubeconfigCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			c    = args[0]
-			user = args[1]
-		)
+func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	// We cannot use the flag's default here as it would be additive
+	if len(c.Groups) == 0 {
+		c.Groups = []string{"system:masters"}
+	}
 
-		groups, err := cmd.Flags().GetStringSlice("group")
-		if err != nil {
-			return err
-		}
-		// We cannot use the flag's default here as it would be additive
-		if len(groups) == 0 {
-			groups = []string{"system:masters"}
-		}
+	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	if err != nil {
+		return err
+	}
 
-		ttl, err := cmd.Flags().GetInt64("ttl")
-		if err != nil {
-			return err
-		}
+	b64Kubeconfig, err := cluster.RequestKubeconfig(ctx, c.User, c.Groups, time.Duration(c.TTL)*time.Second)
+	if err != nil {
+		return fmt.Errorf("error retrieving kubeconfig: %s", err)
+	}
 
-		execCredential, err := cmd.Flags().GetBool("exec-credential")
-		if err != nil {
-			return err
-		}
+	kubeconfig, err := base64.StdEncoding.DecodeString(b64Kubeconfig)
+	if err != nil {
+		return fmt.Errorf("error decoding kubeconfig content: %s", err)
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		cluster, err := lookupSKSCluster(ctx, zone, c)
-		if err != nil {
-			return err
-		}
-
-		b64Kubeconfig, err := cluster.RequestKubeconfig(ctx, user, groups, time.Duration(ttl)*time.Second)
-		if err != nil {
-			return fmt.Errorf("error retrieving kubeconfig: %s", err)
-		}
-
-		kubeconfig, err := base64.StdEncoding.DecodeString(b64Kubeconfig)
-		if err != nil {
-			return fmt.Errorf("error decoding kubeconfig content: %s", err)
-		}
-
-		if !execCredential {
-			fmt.Print(string(kubeconfig))
-			return nil
-		}
-
-		k := struct {
-			Users []struct {
-				Name string            `yaml:"name"`
-				User map[string]string `yaml:"user"`
-			} `yaml:"users"`
-		}{}
-		if err := yaml.Unmarshal(kubeconfig, &k); err != nil {
-			return fmt.Errorf("error decoding kubeconfig content: %s", err)
-		}
-
-		ecClientCertificateData, err := base64.StdEncoding.DecodeString(k.Users[0].User["client-certificate-data"])
-		if err != nil {
-			return fmt.Errorf("error decoding kubeconfig content: %s", err)
-		}
-
-		ecClientKeyData, err := base64.StdEncoding.DecodeString(k.Users[0].User["client-key-data"])
-		if err != nil {
-			return fmt.Errorf("error decoding kubeconfig content: %s", err)
-		}
-
-		ecOut, err := json.Marshal(map[string]interface{}{
-			"apiVersion": "client.authentication.k8s.io/v1beta1",
-			"kind":       "ExecCredential",
-			"status": map[string]string{
-				"clientCertificateData": string(ecClientCertificateData),
-				"clientKeyData":         string(ecClientKeyData),
-			},
-		})
-		if err != nil {
-			return fmt.Errorf("error encoding exec credential content: %s", err)
-		}
-
-		fmt.Print(string(ecOut))
+	if !c.ExecCredential {
+		fmt.Print(string(kubeconfig))
 		return nil
-	},
+	}
+
+	k := struct {
+		Users []struct {
+			Name string            `yaml:"name"`
+			User map[string]string `yaml:"user"`
+		} `yaml:"users"`
+	}{}
+	if err := yaml.Unmarshal(kubeconfig, &k); err != nil {
+		return fmt.Errorf("error decoding kubeconfig content: %s", err)
+	}
+
+	ecClientCertificateData, err := base64.StdEncoding.DecodeString(k.Users[0].User["client-certificate-data"])
+	if err != nil {
+		return fmt.Errorf("error decoding kubeconfig content: %s", err)
+	}
+
+	ecClientKeyData, err := base64.StdEncoding.DecodeString(k.Users[0].User["client-key-data"])
+	if err != nil {
+		return fmt.Errorf("error decoding kubeconfig content: %s", err)
+	}
+
+	ecOut, err := json.Marshal(map[string]interface{}{
+		"apiVersion": "client.authentication.k8s.io/v1beta1",
+		"kind":       "ExecCredential",
+		"status": map[string]string{
+			"clientCertificateData": string(ecClientCertificateData),
+			"clientKeyData":         string(ecClientKeyData),
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("error encoding exec credential content: %s", err)
+	}
+
+	fmt.Print(string(ecOut))
+	return nil
 }
 
 func init() {
-	sksKubeconfigCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksKubeconfigCmd.Flags().StringSliceP("group", "g", nil,
-		"client certificate group. Can be specified multiple times. Defaults to system:masters")
-	sksKubeconfigCmd.Flags().Int64P("ttl", "t", 0,
-		"client certificate validity duration in seconds")
-	sksKubeconfigCmd.Flags().BoolP("exec-credential", "x", false,
-		"output an ExecCredential object to use with a kubeconfig user.exec mode")
-	sksCmd.AddCommand(sksKubeconfigCmd)
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksKubeconfigCmd{}))
 }

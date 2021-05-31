@@ -4,169 +4,114 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/exoscale/egoscale"
 	exov2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
-var sksNodepoolAddCmd = &cobra.Command{
-	Use:   "add CLUSTER-NAME|ID NODEPOOL-NAME",
-	Short: "Add a Nodepool to a SKS cluster",
-	Long: fmt.Sprintf(`This command adds a Nodepool to a SKS cluster.
+type sksNodepoolAddCmd struct {
+	_ bool `cli-cmd:"add"`
+
+	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
+	Name    string `cli-arg:"#" cli-usage:"NODEPOOL-NAME"`
+
+	AntiAffinityGroups []string `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	DeployTarget       string   `cli-usage:"Nodepool Deploy Target NAME|ID"`
+	Description        string   `cli-usage:"Nodepool description"`
+	DiskSize           int64    `cli-usage:"Nodepool Compute instances disk size"`
+	InstancePrefix     string   `cli-usage:"string to prefix Nodepool member names with"`
+	InstanceType       string   `cli-usage:"Nodepool Compute instances type"`
+	SecurityGroups     []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	Size               int64    `cli-usage:"Nodepool size"`
+	Zone               string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+}
+
+func (c *sksNodepoolAddCmd) cmdAliases() []string { return nil }
+
+func (c *sksNodepoolAddCmd) cmdShort() string { return "Add a Nodepool to an SKS cluster" }
+
+func (c *sksNodepoolAddCmd) cmdLong() string {
+	return fmt.Sprintf(`This command adds a Nodepool to an SKS cluster.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", ")),
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *sksNodepoolAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		return cmdCheckRequiredFlags(cmd, []string{
-			"instance-type",
-			"zone",
-		})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			c        = args[0]
-			name     = args[1]
-			nodepool *exov2.SKSNodepool
+func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	nodepool := &exov2.SKSNodepool{
+		Description:    c.Description,
+		DiskSize:       c.DiskSize,
+		InstancePrefix: c.InstancePrefix,
+		Name:           c.Name,
+		Size:           c.Size,
+	}
 
-			deployTargetID string
-		)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	if err != nil {
+		return fmt.Errorf("error retrieving cluster: %s", err)
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-		deployTargetFlagVal, err := cmd.Flags().GetString("deploy-target")
-		if err != nil {
-			return err
-		}
-		if deployTargetFlagVal != "" {
-			deployTarget, err := lookupDeployTarget(ctx, zone, deployTargetFlagVal)
+	if l := len(c.AntiAffinityGroups); l > 0 {
+		nodepool.AntiAffinityGroupIDs = make([]string, l)
+		for i := range c.AntiAffinityGroups {
+			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
 			if err != nil {
-				return fmt.Errorf("error retrieving Deploy Target: %s", err)
+				return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
 			}
-			deployTargetID = deployTarget.ID
+			nodepool.AntiAffinityGroupIDs[i] = antiAffinityGroup.ID
 		}
+	}
 
-		description, err := cmd.Flags().GetString("description")
+	if c.DeployTarget != "" {
+		deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 		if err != nil {
-			return err
+			return fmt.Errorf("error retrieving Deploy Target: %s", err)
 		}
+		nodepool.DeployTargetID = deployTarget.ID
+	}
 
-		size, err := cmd.Flags().GetInt64("size")
-		if err != nil {
-			return err
-		}
+	nodepoolInstanceType, err := cs.FindInstanceType(ctx, c.Zone, c.InstanceType)
+	if err != nil {
+		return fmt.Errorf("error retrieving instance type: %s", err)
+	}
+	nodepool.InstanceTypeID = nodepoolInstanceType.ID
 
-		instancePrefix, err := cmd.Flags().GetString("instance-prefix")
-		if err != nil {
-			return err
-		}
-
-		instanceType, err := cmd.Flags().GetString("instance-type")
-		if err != nil {
-			return err
-		}
-		serviceOffering, err := getServiceOfferingByNameOrID(instanceType)
-		if err != nil {
-			return fmt.Errorf("error retrieving service offering: %s", err)
-		}
-
-		diskSize, err := cmd.Flags().GetInt64("disk-size")
-		if err != nil {
-			return err
-		}
-
-		antiAffinityGroups, err := cmd.Flags().GetStringSlice("anti-affinity-group")
-		if err != nil {
-			return err
-		}
-
-		var antiAffinityGroupIDs []egoscale.UUID
-		if len(antiAffinityGroups) > 0 {
-			antiAffinityGroupIDs, err = getAffinityGroupIDs(antiAffinityGroups)
+	if l := len(c.SecurityGroups); l > 0 {
+		nodepool.SecurityGroupIDs = make([]string, l)
+		for i := range c.SecurityGroups {
+			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 			if err != nil {
-				return err
+				return fmt.Errorf("error retrieving Security Group: %s", err)
 			}
+			nodepool.SecurityGroupIDs[i] = securityGroup.ID
 		}
+	}
 
-		securityGroups, err := cmd.Flags().GetStringSlice("security-group")
-		if err != nil {
-			return err
-		}
+	decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepool.Name), func() {
+		nodepool, err = cluster.AddNodepool(ctx, nodepool)
+	})
+	if err != nil {
+		return err
+	}
 
-		var securityGroupIDs []egoscale.UUID
-		if len(securityGroups) > 0 {
-			securityGroupIDs, err = getSecurityGroupIDs(securityGroups)
-			if err != nil {
-				return err
-			}
-		}
+	if !gQuiet {
+		return output(showSKSNodepool(c.Zone, cluster.ID, nodepool.ID))
+	}
 
-		cluster, err := lookupSKSCluster(ctx, zone, c)
-		if err != nil {
-			return err
-		}
-
-		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", name), func() {
-			nodepool, err = cluster.AddNodepool(ctx, &exov2.SKSNodepool{
-				Name:           name,
-				DeployTargetID: deployTargetID,
-				Description:    description,
-				Size:           size,
-				InstancePrefix: instancePrefix,
-				InstanceTypeID: serviceOffering.ID.String(),
-				DiskSize:       diskSize,
-				AntiAffinityGroupIDs: func() []string {
-					aags := make([]string, len(antiAffinityGroups))
-					for i := range antiAffinityGroupIDs {
-						aags[i] = antiAffinityGroupIDs[i].String()
-					}
-					return aags
-				}(),
-				SecurityGroupIDs: func() []string {
-					sgs := make([]string, len(securityGroupIDs))
-					for i := range securityGroupIDs {
-						sgs[i] = securityGroupIDs[i].String()
-					}
-					return sgs
-				}(),
-			})
-		})
-		if err != nil {
-			return err
-		}
-
-		if !gQuiet {
-			return output(showSKSNodepool(zone, cluster.ID, nodepool.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	sksNodepoolAddCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksNodepoolAddCmd.Flags().String("deploy-target", "", "Nodepool Deploy Target NAME|ID")
-	sksNodepoolAddCmd.Flags().String("description", "", "description")
-	sksNodepoolAddCmd.Flags().Int64("size", 2, "Nodepool size")
-	sksNodepoolAddCmd.Flags().String("instance-prefix", "", "string to prefix Nodepool member names with")
-	sksNodepoolAddCmd.Flags().String("instance-type", defaultServiceOffering,
-		"Nodepool Compute instances type")
-	sksNodepoolAddCmd.Flags().Int64("disk-size", 50,
-		"Nodepool Compute instances disk size")
-	sksNodepoolAddCmd.Flags().StringSlice("anti-affinity-group", nil,
-		"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)")
-	sksNodepoolAddCmd.Flags().StringSlice("security-group", nil,
-		"Nodepool Security Group NAME|ID (can be specified multiple times)")
-	sksNodepoolCmd.AddCommand(sksNodepoolAddCmd)
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolAddCmd{
+		Size:         2,
+		InstanceType: defaultServiceOffering,
+		DiskSize:     50,
+	}))
 }

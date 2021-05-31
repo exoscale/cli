@@ -7,53 +7,59 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sksUpgradeCmd = &cobra.Command{
-	Use:   "upgrade NAME|ID VERSION",
-	Short: "Upgrade a SKS cluster Kubernetes version",
+type sksUpgradeCmd struct {
+	_ bool `cli-cmd:"upgrade"`
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
+	Version string `cli-arg:"#"`
+
+	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  string `cli-short:"z" cli-usage:"SKS cluster zone"`
+}
+
+func (c *sksUpgradeCmd) cmdAliases() []string { return nil }
+
+func (c *sksUpgradeCmd) cmdShort() string { return "Upgrade an SKS cluster Kubernetes version" }
+
+func (c *sksUpgradeCmd) cmdLong() string { return "" }
+
+func (c *sksUpgradeCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	if !c.Force {
+		if !askQuestion(fmt.Sprintf(
+			"Are you sure you want to upgrade the cluster %q to version %s?",
+			c.Cluster,
+			c.Version,
+		)) {
+			return nil
 		}
+	}
 
-		cmdSetZoneFlagFromDefault(cmd)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
+	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	if err != nil {
+		return err
+	}
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			c       = args[0]
-			version = args[1]
-		)
+	decorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q...", c.Cluster), func() {
+		err = cs.UpgradeSKSCluster(ctx, c.Zone, cluster.ID, c.Version)
+	})
+	if err != nil {
+		return err
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	if !gQuiet {
+		return output(showSKSCluster(c.Zone, cluster.ID))
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		cluster, err := lookupSKSCluster(ctx, zone, c)
-		if err != nil {
-			return err
-		}
-
-		decorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q...", c), func() {
-			err = cs.UpgradeSKSCluster(ctx, zone, cluster.ID, version)
-		})
-		if err != nil {
-			return err
-		}
-
-		if !gQuiet {
-			return output(showSKSCluster(zone, cluster.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	sksUpgradeCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksCmd.AddCommand(sksUpgradeCmd)
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpgradeCmd{}))
 }

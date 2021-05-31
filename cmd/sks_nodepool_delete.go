@@ -8,67 +8,58 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sksNodepoolDeleteCmd = &cobra.Command{
-	Use:     "delete CLUSTER-NAME|ID NODEPOOL-NAME|ID",
-	Short:   "Delete a SKS cluster Nodepool",
-	Aliases: gRemoveAlias,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+type sksNodepoolDeleteCmd struct {
+	_ bool `cli-cmd:"delete"`
+
+	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
+	Nodepool string `cli-arg:"#" cli-usage:"NODEPOOL-NAME|ID"`
+
+	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  string `cli-short:"z" cli-usage:"SKS cluster zone"`
+}
+
+func (c *sksNodepoolDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+
+func (c *sksNodepoolDeleteCmd) cmdShort() string { return "Delete an SKS cluster Nodepool" }
+
+func (c *sksNodepoolDeleteCmd) cmdLong() string { return "" }
+
+func (c *sksNodepoolDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *sksNodepoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	if !c.Force {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Nodepool %q?", c.Nodepool)) {
+			return nil
 		}
+	}
 
-		cmdSetZoneFlagFromDefault(cmd)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			c  = args[0]
-			np = args[1]
-		)
+	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	if err != nil {
+		return err
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		force, err := cmd.Flags().GetBool("force")
-		if err != nil {
-			return err
-		}
-
-		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete Nodepool %q?", args[1])) {
-				return nil
+	for _, n := range cluster.Nodepools {
+		if n.ID == c.Nodepool || n.Name == c.Nodepool {
+			n := n
+			decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", c.Nodepool), func() {
+				err = cluster.DeleteNodepool(ctx, n)
+			})
+			if err != nil {
+				return err
 			}
+
+			return nil
 		}
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		cluster, err := lookupSKSCluster(ctx, zone, c)
-		if err != nil {
-			return err
-		}
-
-		for _, n := range cluster.Nodepools {
-			if n.ID == np || n.Name == np {
-				n := n
-				decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", np), func() {
-					err = cluster.DeleteNodepool(ctx, n)
-				})
-				if err != nil {
-					return err
-				}
-
-				return nil
-			}
-		}
-
-		return errors.New("Nodepool not found") // nolint:golint
-	},
+	return errors.New("Nodepool not found") // nolint:golint
 }
 
 func init() {
-	sksNodepoolDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
-	sksNodepoolDeleteCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksNodepoolCmd.AddCommand(sksNodepoolDeleteCmd)
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolDeleteCmd{}))
 }

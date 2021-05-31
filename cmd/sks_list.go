@@ -21,33 +21,37 @@ func (o *sksClusterListOutput) toJSON()  { outputJSON(o) }
 func (o *sksClusterListOutput) toText()  { outputText(o) }
 func (o *sksClusterListOutput) toTable() { outputTable(o) }
 
-var sksListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List SKS clusters",
-	Long: fmt.Sprintf(`This command lists SKS clusters.
+type sksListCmd struct {
+	_ bool `cli-cmd:"list"`
 
-Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksClusterListItemOutput{}), ", ")),
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-		zone = strings.ToLower(zone)
-
-		return output(listSKSClusters(zone), nil)
-	},
+	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func listSKSClusters(zone string) outputter {
-	var sksClusterZones []string
+func (c *sksListCmd) cmdAliases() []string { return gListAlias }
 
-	if zone != "" {
-		sksClusterZones = []string{zone}
+func (c *sksListCmd) cmdShort() string { return "List SKS clusters" }
+
+func (c *sksListCmd) cmdLong() string {
+	return fmt.Sprintf(`This command lists SKS clusters.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&sksClusterListItemOutput{}), ", "))
+}
+
+func (c *sksListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	var zones []string
+
+	if c.Zone != "" {
+		zones = []string{c.Zone}
 	} else {
-		sksClusterZones = allZones
+		zones = allZones
 	}
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	out := make(sksClusterListOutput, 0)
 	res := make(chan sksClusterListItemOutput)
@@ -58,8 +62,7 @@ func listSKSClusters(zone string) outputter {
 			out = append(out, cluster)
 		}
 	}()
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-	err := forEachZone(sksClusterZones, func(zone string) error {
+	err := forEachZone(zones, func(zone string) error {
 		list, err := cs.ListSKSClusters(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list SKS clusters in zone %s: %v", zone, err)
@@ -80,10 +83,9 @@ func listSKSClusters(zone string) outputter {
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
-	return &out
+	return output(&out, nil)
 }
 
 func init() {
-	sksListCmd.Flags().StringP("zone", "z", "", "Zone to filter results to")
-	sksCmd.AddCommand(sksListCmd)
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksListCmd{}))
 }

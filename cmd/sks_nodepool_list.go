@@ -24,33 +24,37 @@ func (o *sksNodepoolListOutput) toJSON()  { outputJSON(o) }
 func (o *sksNodepoolListOutput) toText()  { outputText(o) }
 func (o *sksNodepoolListOutput) toTable() { outputTable(o) }
 
-var sksNodepoolListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List SKS cluster Nodepools",
-	Long: fmt.Sprintf(`This command lists SKS cluster Nodepools.
+type sksNodepoolListCmd struct {
+	_ bool `cli-cmd:"list"`
 
-Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksNodepoolListItemOutput{}), ", ")),
-	Aliases: gListAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-		zone = strings.ToLower(zone)
-
-		return output(listSKSNodepools(zone), nil)
-	},
+	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func listSKSNodepools(zone string) outputter {
-	var sksClusterZones []string
+func (c *sksNodepoolListCmd) cmdAliases() []string { return gListAlias }
 
-	if zone != "" {
-		sksClusterZones = []string{zone}
+func (c *sksNodepoolListCmd) cmdShort() string { return "List SKS cluster Nodepools" }
+
+func (c *sksNodepoolListCmd) cmdLong() string {
+	return fmt.Sprintf(`This command lists SKS cluster Nodepools.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&sksNodepoolListItemOutput{}), ", "))
+}
+
+func (c *sksNodepoolListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *sksNodepoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	var zones []string
+
+	if c.Zone != "" {
+		zones = []string{c.Zone}
 	} else {
-		sksClusterZones = allZones
+		zones = allZones
 	}
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zones[0]))
 
 	out := make(sksNodepoolListOutput, 0)
 	res := make(chan sksNodepoolListItemOutput)
@@ -61,8 +65,7 @@ func listSKSNodepools(zone string) outputter {
 			out = append(out, cluster)
 		}
 	}()
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-	err := forEachZone(sksClusterZones, func(zone string) error {
+	err := forEachZone(zones, func(zone string) error {
 		list, err := cs.ListSKSClusters(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list SKS clusters in zone %s: %v", zone, err)
@@ -88,10 +91,9 @@ func listSKSNodepools(zone string) outputter {
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
-	return &out
+	return output(&out, nil)
 }
 
 func init() {
-	sksNodepoolListCmd.Flags().StringP("zone", "z", "", "Zone to filter results to")
-	sksNodepoolCmd.AddCommand(sksNodepoolListCmd)
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolListCmd{}))
 }

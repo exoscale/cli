@@ -2,71 +2,93 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
-var sksUpdateCmd = &cobra.Command{
-	Use:   "update NAME|ID",
-	Short: "Update a SKS cluster",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+var sksClusterResetFields = []string{
+	"description",
+}
+
+type sksUpdateCmd struct {
+	_ bool `cli-cmd:"update"`
+
+	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
+
+	Description string   `cli-usage:"cluster description"`
+	Name        string   `cli-usage:"cluster name"`
+	ResetFields []string `cli-flag:"reset" cli-usage:"properties to reset to default value"`
+	Zone        string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+}
+
+func (c *sksUpdateCmd) cmdAliases() []string { return nil }
+
+func (c *sksUpdateCmd) cmdShort() string { return "Update an SKS cluster" }
+
+func (c *sksUpdateCmd) cmdLong() string {
+	return fmt.Sprintf(`This command updates an SKS cluster.
+
+Supported output template annotations: %s
+
+Support values for --reset flag: %s`,
+		strings.Join(outputterTemplateAnnotations(&sksShowOutput{}), ", "),
+		strings.Join(sksClusterResetFields, ", "),
+	)
+}
+
+func (c *sksUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+	var updated bool
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+		cluster.Name = c.Name
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+		cluster.Description = c.Description
+		updated = true
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Updating SKS cluster %q...", c.Cluster), func() {
+		if updated {
+			err = cs.UpdateSKSCluster(ctx, c.Zone, cluster)
 		}
 
-		cmdSetZoneFlagFromDefault(cmd)
-
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		c := args[0]
-
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
+		for _, f := range c.ResetFields {
+			switch f {
+			case "description":
+				err = cluster.ResetField(ctx, &cluster.Description)
+			}
+			if err != nil {
+				return
+			}
 		}
+	})
+	if err != nil {
+		return err
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		cluster, err := lookupSKSCluster(ctx, zone, c)
-		if err != nil {
-			return err
-		}
+	if !gQuiet {
+		return output(showSKSCluster(c.Zone, cluster.ID))
+	}
 
-		name, err := cmd.Flags().GetString("name")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("name") {
-			cluster.Name = name
-		}
-
-		description, err := cmd.Flags().GetString("description")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("description") {
-			cluster.Description = description
-		}
-
-		decorateAsyncOperation(fmt.Sprintf("Updating SKS cluster %q...", c), func() {
-			err = cs.UpdateSKSCluster(ctx, zone, cluster)
-		})
-		if err != nil {
-			return err
-		}
-
-		if !gQuiet {
-			return output(showSKSCluster(zone, cluster.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	sksUpdateCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksUpdateCmd.Flags().String("name", "", "name")
-	sksUpdateCmd.Flags().String("description", "", "description")
-	sksCmd.AddCommand(sksUpdateCmd)
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpdateCmd{}))
 }
