@@ -5,21 +5,47 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/exoscale/egoscale"
 	exov2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
 const (
-	sksClusterAddonExoscaleCCM   = "exoscale-cloud-controller"
-	sksClusterAddonMetricsServer = "metrics-server"
+	defaultSKSClusterCNI          = "calico"
+	defaultSKSClusterServiceLevel = "pro"
+	sksClusterAddonExoscaleCCM    = "exoscale-cloud-controller"
+	sksClusterAddonMetricsServer  = "metrics-server"
 )
 
-var sksCreateCmd = &cobra.Command{
-	Use:   "create NAME",
-	Short: "Create a SKS cluster",
-	Long: fmt.Sprintf(`This command creates a SKS cluster.
+type sksCreateCmd struct {
+	_ bool `cli-cmd:"create"`
+
+	Name string `cli-arg:"#" cli-usage:"NAME"`
+
+	Description                string   `cli-usage:"SKS cluster description"`
+	KubernetesVersion          string   `cli-usage:"SKS cluster control plane Kubernetes version"`
+	NoCNI                      bool     `cli-usage:"do not deploy a default Container Network Interface plugin in the cluster control plane"`
+	NoExoscaleCCM              bool     `cli-usage:"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane"`
+	NoMetricsServer            bool     `cli-usage:"do not deploy the Kubernetes Metrics Server in the cluster control plane"`
+	NodepoolAntiAffinityGroups []string `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	NodepoolDeployTarget       string   `cli-usage:"default Nodepool Deploy Target NAME|ID"`
+	NodepoolDescription        string   `cli-usage:"default Nodepool description"`
+	NodepoolDiskSize           int64    `cli-usage:"default Nodepool Compute instances disk size"`
+	NodepoolInstancePrefix     string   `cli-usage:"string to prefix default Nodepool member names with"`
+	NodepoolInstanceType       string   `cli-usage:"default Nodepool Compute instances type"`
+	NodepoolName               string   `cli-usage:"default Nodepool name"`
+	NodepoolSecurityGroups     []string `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	NodepoolSize               int64    `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
+	ServiceLevel               string   `cli-usage:"SKS cluster control plane service level (starter|pro)"`
+	Zone                       string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+}
+
+func (c *sksCreateCmd) cmdAliases() []string { return gCreateAlias }
+
+func (c *sksCreateCmd) cmdShort() string { return "Add a Nodepool to an SKS cluster" }
+
+func (c *sksCreateCmd) cmdLong() string {
+	return fmt.Sprintf(`This command creates an SKS cluster.
 
 Note: SKS cluster Nodes' kubelet configuration is set to use the Exoscale
 Cloud Controller Manager (CCM) as Cloud Provider by default. Cluster Nodes
@@ -34,206 +60,137 @@ If you do not want to use a Cloud Controller Manager, add the
 cluster has been created.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksShowOutput{}), ", ")),
-	Aliases: gCreateAlias,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+		strings.Join(outputterTemplateAnnotations(&sksShowOutput{}), ", "))
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		return cmdCheckRequiredFlags(cmd, []string{
-			"kubernetes-version",
-			"zone",
-		})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			name    = args[0]
-			cluster *exov2.SKSCluster
-			cni     = "calico"
-			addOns  = map[string]struct{}{
-				sksClusterAddonExoscaleCCM:   {},
-				sksClusterAddonMetricsServer: {},
-			}
-		)
+func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	cluster := &exov2.SKSCluster{
+		CNI:          defaultSKSClusterCNI,
+		Description:  c.Description,
+		Name:         c.Name,
+		ServiceLevel: c.ServiceLevel,
+		Version:      c.KubernetesVersion,
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		description, err := cmd.Flags().GetString("description")
-		if err != nil {
-			return err
-		}
+	if c.NoCNI {
+		cluster.CNI = ""
+	}
 
-		level, err := cmd.Flags().GetString("service-level")
-		if err != nil {
-			return err
-		}
-
-		noCNI, err := cmd.Flags().GetBool("no-cni")
-		if err != nil {
-			return err
-		}
-		if noCNI {
-			cni = ""
-		}
-
-		noExoscaleCCM, err := cmd.Flags().GetBool("no-exoscale-ccm")
-		if err != nil {
-			return err
-		}
-		if noExoscaleCCM {
+	addOns := map[string]struct{}{
+		sksClusterAddonExoscaleCCM:   {},
+		sksClusterAddonMetricsServer: {},
+	}
+	cluster.AddOns = func() []string {
+		if c.NoExoscaleCCM {
 			delete(addOns, sksClusterAddonExoscaleCCM)
 		}
-
-		noMetricsServer, err := cmd.Flags().GetBool("no-metrics-server")
-		if err != nil {
-			return err
-		}
-		if noMetricsServer {
+		if c.NoMetricsServer {
 			delete(addOns, sksClusterAddonMetricsServer)
 		}
 
-		version, err := cmd.Flags().GetString("kubernetes-version")
-		if err != nil {
-			return err
+		list := make([]string, 0)
+		for k := range addOns {
+			list = append(list, k)
 		}
-		if version == "latest" {
-			ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-			versions, err := cs.ListSKSClusterVersions(ctx)
-			if err != nil || len(versions) == 0 {
-				if len(versions) == 0 {
-					err = errors.New("no version returned by the API")
-				}
-				return fmt.Errorf("unable to retrieve SKS versions: %s", err)
+		return list
+	}()
+
+	if cluster.Version == "latest" {
+		versions, err := cs.ListSKSClusterVersions(ctx)
+		if err != nil || len(versions) == 0 {
+			if len(versions) == 0 {
+				err = errors.New("no version returned by the API")
 			}
-			version = versions[0]
+			return fmt.Errorf("unable to retrieve SKS versions: %s", err)
+		}
+		cluster.Version = versions[0]
+	}
+
+	var err error
+	decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", c.Name), func() {
+		cluster, err = cs.CreateSKSCluster(ctx, c.Zone, cluster)
+	})
+	if err != nil {
+		return err
+	}
+
+	if c.NodepoolSize > 0 {
+		nodepool := &exov2.SKSNodepool{
+			Description:    c.NodepoolDescription,
+			DiskSize:       c.NodepoolDiskSize,
+			InstancePrefix: c.NodepoolInstancePrefix,
+			Name: func() string {
+				if c.NodepoolName != "" {
+					return c.NodepoolName
+				}
+				return c.Name
+			}(),
+			Size: c.NodepoolSize,
 		}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", name), func() {
-			cluster, err = cs.CreateSKSCluster(ctx, zone, &exov2.SKSCluster{
-				Name:         name,
-				Description:  description,
-				Version:      version,
-				ServiceLevel: level,
-				CNI:          cni,
-				AddOns: func() []string {
-					list := make([]string, 0)
-					for k := range addOns {
-						list = append(list, k)
-					}
-					return list
-				}(),
-			})
+		if l := len(c.NodepoolAntiAffinityGroups); l > 0 {
+			nodepool.AntiAffinityGroupIDs = make([]string, l)
+			for i := range c.NodepoolAntiAffinityGroups {
+				antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, c.NodepoolAntiAffinityGroups[i])
+				if err != nil {
+					return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
+				}
+				nodepool.AntiAffinityGroupIDs[i] = antiAffinityGroup.ID
+			}
+		}
+
+		if c.NodepoolDeployTarget != "" {
+			deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.NodepoolDeployTarget)
+			if err != nil {
+				return fmt.Errorf("error retrieving Deploy Target: %s", err)
+			}
+			nodepool.DeployTargetID = deployTarget.ID
+		}
+
+		nodepoolInstanceType, err := cs.FindInstanceType(ctx, c.Zone, c.NodepoolInstanceType)
+		if err != nil {
+			return fmt.Errorf("error retrieving instance type: %s", err)
+		}
+		nodepool.InstanceTypeID = nodepoolInstanceType.ID
+
+		if l := len(c.NodepoolSecurityGroups); l > 0 {
+			nodepool.SecurityGroupIDs = make([]string, l)
+			for i := range c.NodepoolSecurityGroups {
+				securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.NodepoolSecurityGroups[i])
+				if err != nil {
+					return fmt.Errorf("error retrieving Security Group: %s", err)
+				}
+				nodepool.SecurityGroupIDs[i] = securityGroup.ID
+			}
+		}
+
+		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepool.Name), func() {
+			_, err = cluster.AddNodepool(ctx, nodepool)
 		})
 		if err != nil {
 			return err
 		}
+	}
 
-		nodepoolSize, err := cmd.Flags().GetInt64("nodepool-size")
-		if err != nil {
-			return err
-		}
+	if !gQuiet {
+		return output(showSKSCluster(c.Zone, cluster.ID))
+	}
 
-		if nodepoolSize > 0 {
-			nodepoolName, err := cmd.Flags().GetString("nodepool-name")
-			if err != nil {
-				return err
-			}
-			if nodepoolName == "" {
-				nodepoolName = name
-			}
-
-			nodepoolDescription, err := cmd.Flags().GetString("nodepool-description")
-			if err != nil {
-				return err
-			}
-
-			nodepoolInstanceType, err := cmd.Flags().GetString("nodepool-instance-type")
-			if err != nil {
-				return err
-			}
-			nodepoolServiceOffering, err := getServiceOfferingByNameOrID(nodepoolInstanceType)
-			if err != nil {
-				return fmt.Errorf("error retrieving service offering: %s", err)
-			}
-
-			nodepoolDiskSize, err := cmd.Flags().GetInt64("nodepool-disk-size")
-			if err != nil {
-				return err
-			}
-
-			nodepoolSecurityGroups, err := cmd.Flags().GetStringSlice("nodepool-security-group")
-			if err != nil {
-				return err
-			}
-
-			var nodepoolSecurityGroupIDs []egoscale.UUID
-			if len(nodepoolSecurityGroups) > 0 {
-				nodepoolSecurityGroupIDs, err = getSecurityGroupIDs(nodepoolSecurityGroups)
-				if err != nil {
-					return err
-				}
-			}
-
-			decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolName), func() {
-				_, err = cluster.AddNodepool(ctx, &exov2.SKSNodepool{
-					Name:           nodepoolName,
-					Description:    nodepoolDescription,
-					Size:           nodepoolSize,
-					InstanceTypeID: nodepoolServiceOffering.ID.String(),
-					DiskSize:       nodepoolDiskSize,
-					SecurityGroupIDs: func() []string {
-						sgs := make([]string, len(nodepoolSecurityGroupIDs))
-						for i := range nodepoolSecurityGroupIDs {
-							sgs[i] = nodepoolSecurityGroupIDs[i].String()
-						}
-						return sgs
-					}(),
-				})
-			})
-			if err != nil {
-				return err
-			}
-		}
-
-		if !gQuiet {
-			return output(showSKSCluster(zone, cluster.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	sksCreateCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksCreateCmd.Flags().String("description", "", "SKS cluster description")
-	sksCreateCmd.Flags().String("kubernetes-version", "latest",
-		"SKS cluster control plane Kubernetes version")
-	sksCreateCmd.Flags().String("service-level", "pro",
-		"SKS cluster control plane service level (starter|pro)")
-	sksCreateCmd.Flags().Bool("no-cni", false,
-		"do not deploy the default Container Network Interface plugin in the cluster control plane")
-	sksCreateCmd.Flags().Bool("no-exoscale-ccm", false,
-		"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane")
-	sksCreateCmd.Flags().Bool("no-metrics-server", false,
-		"do not deploy the Kubernetes Metrics Server in the cluster control plane")
-	sksCreateCmd.Flags().Int64("nodepool-size", 0,
-		"default Nodepool size (default: 0). If 0, no default Nodepool will be added to the cluster.")
-	sksCreateCmd.Flags().String("nodepool-name", "",
-		"default Nodepool name (default: name of the SKS cluster)")
-	sksCreateCmd.Flags().String("nodepool-description", "",
-		"default Nodepool description")
-	sksCreateCmd.Flags().String("nodepool-instance-type", defaultServiceOffering,
-		"default Nodepool Compute instances type")
-	sksCreateCmd.Flags().Int64("nodepool-disk-size", 50,
-		"default Nodepool Compute instances disk size")
-	sksCreateCmd.Flags().StringSlice("nodepool-security-group", nil,
-		"default Nodepool Security Group NAME|ID (can be specified multiple times)")
-	sksCmd.AddCommand(sksCreateCmd)
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksCreateCmd{
+		KubernetesVersion:    "latest",
+		NodepoolDiskSize:     50,
+		NodepoolInstanceType: defaultServiceOffering,
+		ServiceLevel:         defaultSKSClusterServiceLevel,
+	}))
 }

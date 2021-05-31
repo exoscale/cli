@@ -18,49 +18,45 @@ func (o *sksClusterVersionsOutput) toJSON()  { outputJSON(o) }
 func (o *sksClusterVersionsOutput) toText()  { outputText(o) }
 func (o *sksClusterVersionsOutput) toTable() { outputTable(o) }
 
-var sksVersionsCmd = &cobra.Command{
-	Use:   "versions",
-	Short: "List SKS cluster versions",
-	Long: fmt.Sprintf(`This command lists supported SKS cluster versions.
+type sksVersionsCmd struct {
+	_ bool `cli-cmd:"versions"`
 
-Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksClusterVersionsItemOutput{}), ", ")),
-	Aliases: gListAlias,
-
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		cmdSetZoneFlagFromDefault(cmd)
-
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-		zone = strings.ToLower(zone)
-
-		return output(listSKSVersions(zone))
-	},
+	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func listSKSVersions(zone string) (outputter, error) {
+func (c *sksVersionsCmd) cmdAliases() []string { return gListAlias }
+
+func (c *sksVersionsCmd) cmdShort() string { return "List supported SKS cluster versions" }
+
+func (c *sksVersionsCmd) cmdLong() string {
+	return fmt.Sprintf(`This command lists supported SKS cluster versions.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&sksClusterVersionsItemOutput{}), ", "))
+}
+
+func (c *sksVersionsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *sksVersionsCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
 	out := make(sksClusterVersionsOutput, 0)
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 	versions, err := cs.ListSKSClusterVersions(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, v := range versions {
 		out = append(out, sksClusterVersionsItemOutput{Version: v})
 	}
 
-	return &out, nil
+	return output(&out, nil)
 }
 
 func init() {
-	sksVersionsCmd.Flags().StringP("zone", "z", "", "Zone to filter results to")
-	sksCmd.AddCommand(sksVersionsCmd)
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksVersionsCmd{}))
 }

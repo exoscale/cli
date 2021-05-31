@@ -3,96 +3,88 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"strconv"
+	"strings"
 
 	exov2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
-var sksNodepoolScaleCmd = &cobra.Command{
-	Use:   "scale CLUSTER-NAME|ID NODEPOOL-NAME|ID SIZE",
-	Short: "Scale a SKS cluster Nodepool size",
-	Long: `This command scales a SKS cluster Nodepool size up (growing) or down
+type sksNodepoolScaleCmd struct {
+	_ bool `cli-cmd:"scale"`
+
+	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
+	Nodepool string `cli-arg:"#" cli-usage:"NODEPOOL-NAME|ID"`
+	Size     int64  `cli-arg:"#"`
+
+	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  string `cli-short:"z" cli-usage:"SKS cluster zone"`
+}
+
+func (c *sksNodepoolScaleCmd) cmdAliases() []string { return nil }
+
+func (c *sksNodepoolScaleCmd) cmdShort() string { return "Scale an SKS cluster Nodepool size" }
+
+func (c *sksNodepoolScaleCmd) cmdLong() string {
+	return fmt.Sprintf(`This command scales an SKS cluster Nodepool size up (growing) or down
 (shrinking).
 
 In case of a scale-down, operators should use the "exo sks nodepool evict"
 variant, allowing them to specify which specific Nodes should be evicted from
-the pool rather than leaving the decision to the SKS manager.`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 3 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+the pool rather than leaving the decision to the SKS manager.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+}
+
+func (c *sksNodepoolScaleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	if c.Size <= 0 {
+		return errors.New("minimum Nodepool size is 1")
+	}
+
+	if !c.Force {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to scale Nodepool %q to %d?", c.Nodepool, c.Size)) {
+			return nil
 		}
+	}
 
-		cmdSetZoneFlagFromDefault(cmd)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			c  = args[0]
-			np = args[1]
+	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	if err != nil {
+		return err
+	}
 
-			nodepool *exov2.SKSNodepool
-		)
-
-		size, err := strconv.Atoi(args[2])
-		if err != nil {
-			return fmt.Errorf("invalid size %q", args[2])
+	var nodepool *exov2.SKSNodepool
+	for _, n := range cluster.Nodepools {
+		if n.ID == c.Nodepool || n.Name == c.Nodepool {
+			nodepool = n
+			break
 		}
-		if size <= 0 {
-			return errors.New("minimum Nodepool size is 1")
-		}
+	}
+	if nodepool == nil {
+		return errors.New("Nodepool not found") // nolint:golint
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	decorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", c.Nodepool), func() {
+		err = cluster.ScaleNodepool(ctx, nodepool, c.Size)
+	})
+	if err != nil {
+		return err
+	}
 
-		force, err := cmd.Flags().GetBool("force")
-		if err != nil {
-			return err
-		}
+	if !gQuiet {
+		return output(showSKSNodepool(c.Zone, cluster.ID, nodepool.ID))
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		cluster, err := lookupSKSCluster(ctx, zone, c)
-		if err != nil {
-			return err
-		}
-
-		for _, n := range cluster.Nodepools {
-			if n.ID == np || n.Name == np {
-				nodepool = n
-				break
-			}
-		}
-		if nodepool == nil {
-			return errors.New("Nodepool not found") // nolint:golint
-		}
-
-		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to scale Nodepool %q to %d?", nodepool.Name, size)) {
-				return nil
-			}
-		}
-
-		decorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", np), func() {
-			err = cluster.ScaleNodepool(ctx, nodepool, int64(size))
-		})
-		if err != nil {
-			return err
-		}
-
-		if !gQuiet {
-			return output(showSKSNodepool(zone, cluster.ID, nodepool.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	sksNodepoolScaleCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
-	sksNodepoolScaleCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	sksNodepoolCmd.AddCommand(sksNodepoolScaleCmd)
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolScaleCmd{}))
 }
