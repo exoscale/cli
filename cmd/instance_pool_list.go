@@ -23,34 +23,37 @@ func (o *instancePoolListOutput) toJSON()  { outputJSON(o) }
 func (o *instancePoolListOutput) toText()  { outputText(o) }
 func (o *instancePoolListOutput) toTable() { outputTable(o) }
 
-var instancePoolListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List Instance Pools",
-	Long: fmt.Sprintf(`This command lists Instance Pools.
+type instancePoolListCmd struct {
+	_ bool `cli-cmd:"list"`
 
-Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolListItemOutput{}), ", ")),
-	Aliases: gListAlias,
-
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-		zone = strings.ToLower(zone)
-
-		return output(listInstancePools(zone), nil)
-	},
+	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func listInstancePools(zone string) outputter {
+func (c *instancePoolListCmd) cmdAliases() []string { return gListAlias }
+
+func (c *instancePoolListCmd) cmdShort() string { return "List Instance Pools" }
+
+func (c *instancePoolListCmd) cmdLong() string {
+	return fmt.Sprintf(`This command lists Instance Pools.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&instancePoolListItemOutput{}), ", "))
+}
+
+func (c *instancePoolListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *instancePoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
 
-	if zone != "" {
-		zones = []string{zone}
+	if c.Zone != "" {
+		zones = []string{c.Zone}
 	} else {
 		zones = allZones
 	}
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	out := make(instancePoolListOutput, 0)
 	res := make(chan instancePoolListItemOutput)
@@ -61,7 +64,6 @@ func listInstancePools(zone string) outputter {
 			out = append(out, instancePool)
 		}
 	}()
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 	err := forEachZone(zones, func(zone string) error {
 		list, err := cs.ListInstancePools(ctx, zone)
 		if err != nil {
@@ -85,10 +87,9 @@ func listInstancePools(zone string) outputter {
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
-	return &out
+	return output(&out, nil)
 }
 
 func init() {
-	instancePoolListCmd.Flags().StringP("zone", "z", "", "Zone to filter results to")
-	instancePoolCmd.AddCommand(instancePoolListCmd)
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolListCmd{}))
 }

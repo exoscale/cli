@@ -200,7 +200,7 @@ func createVM(deployVM *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine
 func init() {
 	vmCreateCmd.Flags().StringP("zone", "z", "", zoneHelp)
 	vmCreateCmd.Flags().StringP("template", "t", defaultTemplate, "template NAME|ID")
-	vmCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
+	vmCreateCmd.Flags().StringP("template-filter", "", defaultTemplateFilter, templateFilterHelp)
 	vmCreateCmd.Flags().StringP("service-offering", "o", defaultServiceOffering, serviceOfferingHelp)
 	vmCreateCmd.Flags().Int64P("disk", "d", 50, "disk size")
 	vmCreateCmd.Flags().StringP("keypair", "k", "", "SSH keypair name. If not specified, a single-use SSH key will be created.")

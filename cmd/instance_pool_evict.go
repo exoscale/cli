@@ -7,76 +7,76 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var instancePoolEvictCmd = &cobra.Command{
-	Use:   "evict INSTANCE-POOL-NAME|ID INSTANCE-NAME|ID...",
-	Short: "Evict Instance Pool members",
-	Long: `This command evicts specific members from an Instance Pool, effectively
-scaling down the Instance Pool similar to the "exo instancepool scale" command.`,
+type instancePoolEvictCmd struct {
+	_ bool `cli-cmd:"evict"`
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+	InstancePool string   `cli-arg:"#" cli-usage:"INSTANCE-POOL-NAME|ID"`
+	Instances    []string `cli-arg:"*" cli-usage:"INSTANCE-NAME|ID"`
+
+	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  string `cli-short:"z" cli-usage:"Instance Pool zone"`
+}
+
+func (c *instancePoolEvictCmd) cmdAliases() []string { return nil }
+
+func (c *instancePoolEvictCmd) cmdShort() string { return "Evict Instance Pool members" }
+
+func (c *instancePoolEvictCmd) cmdLong() string {
+	return `This command evicts specific members from an Instance Pool, effectively
+scaling down the Instance Pool similar to the "exo instancepool scale" command.`
+}
+
+func (c *instancePoolEvictCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+	if len(c.Instances) == 0 {
+		cmdExitOnUsageError(cmd, "no instances specified")
+	}
+
+	if !c.Force {
+		if !askQuestion(fmt.Sprintf(
+			"Are you sure you want to evict %v from Instance Pool %q?",
+			c.Instances,
+			c.InstancePool,
+		)) {
+			return nil
 		}
+	}
 
-		cmdSetZoneFlagFromDefault(cmd)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
+	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	if err != nil {
+		return err
+	}
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			i         = args[0]
-			instances = args[1:]
-		)
-
-		zone, err := cmd.Flags().GetString("zone")
+	instances := make([]string, len(c.Instances))
+	for i, n := range c.Instances {
+		instance, err := cs.FindInstance(ctx, c.Zone, n)
 		if err != nil {
-			return err
+			return fmt.Errorf("invalid instance %q: %s", n, err)
 		}
+		instances[i] = instance.ID
+	}
 
-		force, err := cmd.Flags().GetBool("force")
-		if err != nil {
-			return err
-		}
-		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to evict %v from Instance Pool %q?", instances, i)) {
-				return nil
-			}
-		}
+	decorateAsyncOperation(
+		fmt.Sprintf("Evicting instances from Instance Pool %q...", instancePool.Name),
+		func() { err = instancePool.EvictMembers(ctx, instances) },
+	)
+	if err != nil {
+		return err
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	if !gQuiet {
+		return output(showInstancePool(c.Zone, instancePool.ID))
+	}
 
-		instancePool, err := lookupInstancePool(ctx, zone, i)
-		if err != nil {
-			return err
-		}
-
-		members := make([]string, len(instances))
-		for i, n := range instances {
-			instance, err := getVirtualMachineByNameOrID(n)
-			if err != nil {
-				return fmt.Errorf("invalid Instance %q: %s", n, err)
-			}
-			members[i] = instance.ID.String()
-		}
-
-		decorateAsyncOperation(fmt.Sprintf("Evicting Instances from Instance Pool %q...", instancePool.Name), func() {
-			err = instancePool.EvictMembers(ctx, members)
-		})
-		if err != nil {
-			return err
-		}
-
-		if !gQuiet {
-			return output(showInstancePool(zone, instancePool.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	instancePoolEvictCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
-	instancePoolEvictCmd.Flags().StringP("zone", "z", "", "Instance Pool zone")
-	instancePoolCmd.AddCommand(instancePoolEvictCmd)
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolEvictCmd{}))
 }

@@ -9,201 +9,163 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var instancePoolCreateCmd = &cobra.Command{
-	Use:   "create NAME",
-	Short: "Create an Instance Pool",
-	Long: fmt.Sprintf(`This command creates an Instance Pool.
+type instancePoolCreateCmd struct {
+	_ bool `cli-cmd:"create"`
+
+	Name string `cli-arg:"#" cli-usage:"NAME"`
+
+	AntiAffinityGroups []string `cli-flag:"anti-affinity-group" cli-short:"a" cli-usage:"managed Compute instances Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	CloudInitFile      string   `cli-flag:"cloud-init" cli-short:"c" cli-usage:"cloud-init user data configuration file path"`
+	DeployTarget       string   `cli-usage:"managed Compute instances Deploy Target NAME|ID"`
+	Description        string   `cli-usage:"Instance Pool description"`
+	DiskSize           int64    `cli-flag:"disk" cli-short:"d" cli-usage:"managed Compute instances disk size"`
+	ElasticIPs         []string `cli-flag:"elastic-ip" cli-short:"e" cli-usage:"managed Compute instances Elastic IP ADDRESS|ID (can be specified multiple times)"`
+	IPv6               bool     `cli-flag:"ipv6" cli-short:"6" cli-usage:"enable IPv6 on managed Compute instances"`
+	InstancePrefix     string   `cli-usage:"string to prefix managed Compute instances names with"`
+	InstanceType       string   `cli-flag:"service-offering" cli-short:"o" cli-usage:"managed Compute instances type"`
+	PrivateNetworks    []string `cli-flag:"privnet" cli-short:"p" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
+	SSHKey             string   `cli-short:"k" cli-flag:"keypair" cli-usage:"SSH key to deploy on managed Compute instances"`
+	SecurityGroups     []string `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
+	Size               int64    `cli-usage:"Instance Pool size"`
+	Template           string   `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
+	TemplateFilter     string   `cli-usage:"managed Compute instances template filter"`
+	Zone               string   `cli-short:"z" cli-usage:"Instance Pool zone"`
+}
+
+func (c *instancePoolCreateCmd) cmdAliases() []string { return gCreateAlias }
+
+func (c *instancePoolCreateCmd) cmdShort() string { return "Create an Instance Pool" }
+
+func (c *instancePoolCreateCmd) cmdLong() string {
+	return fmt.Sprintf(`This command creates an Instance Pool.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolShowOutput{}), ", ")),
-	Aliases: gCreateAlias,
+		strings.Join(outputterTemplateAnnotations(&instancePoolShowOutput{}), ", "))
+}
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+func (c *instancePoolCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	instancePool := &exov2.InstancePool{
+		DeployTargetID: c.DeployTarget,
+		Description:    c.Description,
+		DiskSize:       c.DiskSize,
+		IPv6Enabled:    c.IPv6,
+		InstancePrefix: c.InstancePrefix,
+		Name:           c.Name,
+		SSHKey:         c.SSHKey,
+		Size:           c.Size,
+	}
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	RunE: func(cmd *cobra.Command, args []string) error {
-		instancePool := new(exov2.InstancePool)
-		instancePool.Name = args[0]
+	zoneV1, err := getZoneByNameOrID(c.Zone)
+	if err != nil {
+		return err
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-		zoneV1, err := getZoneByNameOrID(zone)
-		if err != nil {
-			return err
-		}
-
-		antiAffinityGroups, err := cmd.Flags().GetStringSlice("anti-affinity-group")
-		if err != nil {
-			return err
-		}
-		for _, v := range antiAffinityGroups {
-			antiAffinityGroup, err := getAntiAffinityGroupByNameOrID(v)
+	if l := len(c.AntiAffinityGroups); l > 0 {
+		instancePool.AntiAffinityGroupIDs = make([]string, l)
+		for i := range c.AntiAffinityGroups {
+			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
 			if err != nil {
-				return err
+				return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
 			}
-			instancePool.AntiAffinityGroupIDs = append(instancePool.AntiAffinityGroupIDs, antiAffinityGroup.ID.String())
+			instancePool.AntiAffinityGroupIDs[i] = antiAffinityGroup.ID
 		}
+	}
 
-		deployTargetFlagVal, err := cmd.Flags().GetString("deploy-target")
+	if c.DeployTarget != "" {
+		deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 		if err != nil {
-			return err
+			return fmt.Errorf("error retrieving Deploy Target: %s", err)
 		}
-		if deployTargetFlagVal != "" {
-			deployTarget, err := lookupDeployTarget(ctx, zone, deployTargetFlagVal)
+		instancePool.DeployTargetID = deployTarget.ID
+	}
+
+	if l := len(c.ElasticIPs); l > 0 {
+		instancePool.ElasticIPIDs = make([]string, l)
+		for i := range c.ElasticIPs {
+			elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIPs[i])
 			if err != nil {
-				return err
+				return fmt.Errorf("error retrieving Elastic IP: %s", err)
 			}
-			instancePool.DeployTargetID = deployTarget.ID
+			instancePool.ElasticIPIDs[i] = elasticIP.ID
 		}
+	}
 
-		if instancePool.Description, err = cmd.Flags().GetString("description"); err != nil {
-			return err
-		}
+	instanceType, err := cs.FindInstanceType(ctx, c.Zone, c.InstanceType)
+	if err != nil {
+		return fmt.Errorf("error retrieving instance type: %s", err)
+	}
+	instancePool.InstanceTypeID = instanceType.ID
 
-		if instancePool.DiskSize, err = cmd.Flags().GetInt64("disk"); err != nil {
-			return err
-		}
-
-		elasticIPs, err := cmd.Flags().GetStringSlice("elastic-ip")
-		if err != nil {
-			return err
-		}
-		for _, v := range elasticIPs {
-			elasticIP, err := getElasticIPByAddressOrID(v)
+	if l := len(c.PrivateNetworks); l > 0 {
+		instancePool.PrivateNetworkIDs = make([]string, l)
+		for i := range c.PrivateNetworks {
+			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
 			if err != nil {
-				return err
+				return fmt.Errorf("error retrieving Private Network: %s", err)
 			}
-			instancePool.ElasticIPIDs = append(instancePool.ElasticIPIDs, elasticIP.ID.String())
+			instancePool.PrivateNetworkIDs[i] = privateNetwork.ID
 		}
+	}
 
-		if instancePool.InstancePrefix, err = cmd.Flags().GetString("instance-prefix"); err != nil {
-			return err
-		}
-
-		if instancePool.IPv6Enabled, err = cmd.Flags().GetBool("ipv6"); err != nil {
-			return err
-		}
-
-		privateNetworks, err := cmd.Flags().GetStringSlice("privnet")
-		if err != nil {
-			return err
-		}
-		for _, v := range privateNetworks {
-			privateNetwork, err := getNetwork(v, zoneV1.ID)
+	if l := len(c.SecurityGroups); l > 0 {
+		instancePool.SecurityGroupIDs = make([]string, l)
+		for i := range c.SecurityGroups {
+			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 			if err != nil {
-				return err
+				return fmt.Errorf("error retrieving Security Group: %s", err)
 			}
-			instancePool.PrivateNetworkIDs = append(instancePool.PrivateNetworkIDs, privateNetwork.ID.String())
+			instancePool.SecurityGroupIDs[i] = securityGroup.ID
 		}
+	}
 
-		securityGroups, err := cmd.Flags().GetStringSlice("security-group")
-		if err != nil {
-			return err
-		}
-		for _, v := range securityGroups {
-			securityGroup, err := getSecurityGroupByNameOrID(v)
-			if err != nil {
-				return err
-			}
-			instancePool.SecurityGroupIDs = append(instancePool.SecurityGroupIDs, securityGroup.ID.String())
-		}
+	if instancePool.SSHKey == "" {
+		instancePool.SSHKey = gCurrentAccount.DefaultSSHKey
+	}
 
-		serviceOfferingFlagVal, err := cmd.Flags().GetString("service-offering")
-		if err != nil {
-			return err
-		}
-		serviceOffering, err := getServiceOfferingByNameOrID(serviceOfferingFlagVal)
-		if err != nil {
-			return err
-		}
-		instancePool.InstanceTypeID = serviceOffering.ID.String()
+	templateFilter, err := validateTemplateFilter(c.TemplateFilter)
+	if err != nil {
+		return err
+	}
 
-		if instancePool.Size, err = cmd.Flags().GetInt64("size"); err != nil {
-			return err
-		}
+	template, err := getTemplateByNameOrID(zoneV1.ID, c.Template, templateFilter)
+	if err != nil {
+		return fmt.Errorf("error retrieving template: %s", err)
+	}
+	instancePool.TemplateID = template.ID.String()
 
-		if instancePool.SSHKey, err = cmd.Flags().GetString("keypair"); err != nil {
-			return err
+	if c.CloudInitFile != "" {
+		if instancePool.UserData, err = getUserDataFromFile(c.CloudInitFile); err != nil {
+			return fmt.Errorf("error parsing cloud-init user data: %s", err)
 		}
-		if instancePool.SSHKey == "" {
-			instancePool.SSHKey = gCurrentAccount.DefaultSSHKey
-		}
+	}
 
-		templateFilterFlagVal, err := cmd.Flags().GetString("template-filter")
-		if err != nil {
-			return err
-		}
-		templateFilter, err := validateTemplateFilter(templateFilterFlagVal)
-		if err != nil {
-			return err
-		}
+	decorateAsyncOperation(fmt.Sprintf("Creating Instance Pool %q...", instancePool.Name), func() {
+		instancePool, err = cs.CreateInstancePool(ctx, c.Zone, instancePool)
+	})
+	if err != nil {
+		return err
+	}
 
-		templateFlagVal, err := cmd.Flags().GetString("template")
-		if err != nil {
-			return err
-		}
-		template, err := getTemplateByNameOrID(zoneV1.ID, templateFlagVal, templateFilter)
-		if err != nil {
-			return err
-		}
-		instancePool.TemplateID = template.ID.String()
+	if !gQuiet {
+		return output(showInstancePool(c.Zone, instancePool.ID))
+	}
 
-		userData := ""
-		userDataPath, err := cmd.Flags().GetString("cloud-init")
-		if err != nil {
-			return err
-		}
-		if userDataPath != "" {
-			userData, err = getUserDataFromFile(userDataPath)
-			if err != nil {
-				return err
-			}
-			instancePool.UserData = userData
-		}
-
-		decorateAsyncOperation(fmt.Sprintf("Creating Instance Pool %q...", instancePool.Name), func() {
-			instancePool, err = cs.CreateInstancePool(ctx, zone, instancePool)
-		})
-		if err != nil {
-			return fmt.Errorf("unable to create Instance Pool: %s", err)
-		}
-
-		if !gQuiet {
-			return output(showInstancePool(zone, instancePool.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	instancePoolCreateCmd.Flags().StringSliceP("anti-affinity-group", "a", nil, "Anti-Affinity Group NAME|ID. Can be specified multiple times.")
-	instancePoolCreateCmd.Flags().StringP("cloud-init", "c", "", "Cloud-init user data configuration file path")
-	instancePoolCreateCmd.Flags().StringP("description", "", "", "Instance Pool description")
-	instancePoolCreateCmd.Flags().String("deploy-target", "", "Deploy Target NAME|ID")
-	instancePoolCreateCmd.Flags().Int64P("disk", "d", 50, "Instance Pool members disk size")
-	instancePoolCreateCmd.Flags().StringSliceP("elastic-ip", "e", nil, "Elastic IP ADDRESS. Can be specified multiple times.")
-	instancePoolCreateCmd.Flags().String("instance-prefix", "", "string to prefix Instance Pool member names with")
-	instancePoolCreateCmd.Flags().BoolP("ipv6", "6", false, "enable IPv6")
-	instancePoolCreateCmd.Flags().StringP("keypair", "k", "", "Instance Pool members SSH key")
-	instancePoolCreateCmd.Flags().StringSliceP("privnet", "p", nil, "Private Network NAME|ID. Can be specified multiple times.")
-	instancePoolCreateCmd.Flags().StringSliceP("security-group", "s", nil, "Security Group NAME|ID. Can be specified multiple times.")
-	instancePoolCreateCmd.Flags().StringP("service-offering", "o", defaultServiceOffering, serviceOfferingHelp)
-	instancePoolCreateCmd.Flags().Int64P("size", "", 1, "number of Compute instances in the Instance Pool")
-	instancePoolCreateCmd.Flags().StringP("template", "t", defaultTemplate, "Instance Pool members template NAME|ID")
-	instancePoolCreateCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
-	instancePoolCreateCmd.Flags().StringP("zone", "z", "", "Zone to deploy the Instance Pool to")
-	instancePoolCmd.AddCommand(instancePoolCreateCmd)
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolCreateCmd{
+		DiskSize:       50,
+		InstanceType:   defaultServiceOffering,
+		Size:           1,
+		Template:       defaultTemplate,
+		TemplateFilter: defaultTemplateFilter,
+	}))
 }

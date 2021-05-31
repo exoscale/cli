@@ -78,6 +78,7 @@ const (
 	defaultEnvironment       = "api"
 	defaultConfigFileName    = "exoscale"
 	defaultTemplate          = "Linux Ubuntu 20.04 LTS 64-bit"
+	defaultTemplateFilter    = "featured"
 	defaultSosEndpoint       = "https://sos-{zone}.exo.io"
 	defaultRunstatusEndpoint = "https://api.runstatus.com"
 	defaultZone              = "ch-dk-2"

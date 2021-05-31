@@ -74,7 +74,7 @@ Supported output template annotations: %s`,
 		},
 	}
 
-	templateShowCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
+	templateShowCmd.Flags().StringP("template-filter", "", defaultTemplateFilter, templateFilterHelp)
 	templateShowCmd.Flags().StringP("zone", "z", "", zoneHelp)
 	templateCmd.AddCommand(templateShowCmd)
 }
