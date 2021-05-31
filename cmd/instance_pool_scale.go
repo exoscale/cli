@@ -3,82 +3,75 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
-var instancePoolScaleCmd = &cobra.Command{
-	Use:   "scale NAME|ID SIZE",
-	Short: "Scale an Instance Pool size",
-	Long: `This command scales an Instance Pool size up (growing) or down
+type instancePoolScaleCmd struct {
+	_ bool `cli-cmd:"scale"`
+
+	InstancePool string `cli-arg:"#" cli-usage:"INSTANCE-POOL-NAME|ID"`
+	Size         int64  `cli-arg:"#"`
+
+	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  string `cli-short:"z" cli-usage:"Instance Pool zone"`
+}
+
+func (c *instancePoolScaleCmd) cmdAliases() []string { return nil }
+
+func (c *instancePoolScaleCmd) cmdShort() string { return "Scale an Instance Pool size" }
+
+func (c *instancePoolScaleCmd) cmdLong() string {
+	return `This command scales an Instance Pool size up (growing) or down
 (shrinking).
 
 In case of a scale-down, operators should use the "exo instancepool evict"
 variant, allowing them to specify which specific instance should be evicted
-from the Instance Pool rather than leaving the decision to the orchestrator.`,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+from the Instance Pool rather than leaving the decision to the orchestrator.`
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *instancePoolScaleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		size, err := strconv.Atoi(args[1])
-		if err != nil {
-			return fmt.Errorf("invalid size %q", args[1])
-		}
-		if size <= 0 {
-			return errors.New("minimum Instance Pool size is 1")
-		}
+func (c *instancePoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	if c.Size <= 0 {
+		return errors.New("minimum Instance Pool size is 1")
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
+	if !c.Force {
+		if !askQuestion(fmt.Sprintf(
+			"Are you sure you want to scale InstancePool %q to %d?",
+			c.InstancePool,
+			c.Size,
+		)) {
+			return nil
 		}
+	}
 
-		force, err := cmd.Flags().GetBool("force")
-		if err != nil {
-			return err
-		}
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		instancePool, err := lookupInstancePool(ctx, zone, args[0])
-		if err != nil {
-			return err
-		}
+	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	if err != nil {
+		return err
+	}
 
-		if !force {
-			if !askQuestion(fmt.Sprintf(
-				"Are you sure you want to scale Instance Pool %q to %d?",
-				instancePool.Name,
-				size),
-			) {
-				return nil
-			}
-		}
+	decorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
+		err = instancePool.Scale(ctx, c.Size)
+	})
+	if err != nil {
+		return err
+	}
 
-		decorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", instancePool.Name), func() {
-			err = instancePool.Scale(ctx, int64(size))
-		})
-		if err != nil {
-			return err
-		}
+	if !gQuiet {
+		return output(showInstancePool(c.Zone, instancePool.ID))
+	}
 
-		if !gQuiet {
-			return output(showInstancePool(zone, instancePool.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	instancePoolScaleCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
-	instancePoolScaleCmd.Flags().StringP("zone", "z", "", "SKS cluster zone")
-	instancePoolCmd.AddCommand(instancePoolScaleCmd)
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolScaleCmd{}))
 }

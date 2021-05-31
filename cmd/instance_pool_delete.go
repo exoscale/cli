@@ -7,77 +7,69 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var instancePoolDeleteCmd = &cobra.Command{
-	Use:     "delete NAME|ID",
-	Short:   "Delete an Instance Pool",
-	Aliases: gDeleteAlias,
+type instancePoolDeleteCmd struct {
+	_ bool `cli-cmd:"delete"`
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+	InstancePool string `cli-arg:"#" cli-usage:"NAME|ID"`
+
+	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  string `cli-short:"z" cli-usage:"Instance Pool zone"`
+}
+
+func (c *instancePoolDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+
+func (c *instancePoolDeleteCmd) cmdShort() string { return "Delete an Instance Pool" }
+
+func (c *instancePoolDeleteCmd) cmdLong() string { return "" }
+
+func (c *instancePoolDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	if err != nil {
+		return err
+	}
+
+	// Ensure the Instance Pool is not attached to an NLB service.
+	nlbs, err := cs.ListNetworkLoadBalancers(gContext, c.Zone)
+	if err != nil {
+		return fmt.Errorf("unable to list Network Load Balancers: %v", err)
+	}
+
+	if !c.Force {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Instance Pool %q?", c.InstancePool)) {
+			return nil
 		}
+	}
 
-		cmdSetZoneFlagFromDefault(cmd)
-
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-
-	RunE: func(cmd *cobra.Command, args []string) error {
-		force, err := cmd.Flags().GetBool("force")
-		if err != nil {
-			return err
-		}
-
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-		instancePool, err := lookupInstancePool(ctx, zone, args[0])
-		if err != nil {
-			return err
-		}
-
-		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete Instance Pool %q?", instancePool.Name)) {
-				return nil
+	for _, nlb := range nlbs {
+		for _, svc := range nlb.Services {
+			if svc.InstancePoolID == instancePool.ID {
+				return fmt.Errorf(
+					"Instance Pool %q is still referenced by NLB service %s/%s", // nolint:golint
+					instancePool.Name,
+					nlb.Name,
+					svc.Name,
+				)
 			}
 		}
+	}
 
-		// Ensure the Instance Pool is not attached to a NLB service.
-		nlbs, err := cs.ListNetworkLoadBalancers(gContext, zone)
-		if err != nil {
-			return fmt.Errorf("unable to list Network Load Balancers: %v", err)
-		}
+	decorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", instancePool.Name), func() {
+		err = cs.DeleteInstancePool(ctx, c.Zone, instancePool.ID)
+	})
+	if err != nil {
+		return err
+	}
 
-		for _, nlb := range nlbs {
-			for _, svc := range nlb.Services {
-				if svc.InstancePoolID == instancePool.ID {
-					return fmt.Errorf("Instance Pool %q is still referenced by NLB service %s/%s", // nolint
-						instancePool.Name, nlb.Name, svc.Name)
-				}
-			}
-		}
-
-		decorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", instancePool.Name), func() {
-			err = cs.DeleteInstancePool(ctx, zone, instancePool.ID)
-		})
-		if err != nil {
-			return err
-		}
-
-		if !gQuiet {
-			cmd.Println("Instance Pool deleted successfully")
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	instancePoolDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
-	instancePoolDeleteCmd.Flags().StringP("zone", "z", "", "Instance Pool zone")
-	instancePoolCmd.AddCommand(instancePoolDeleteCmd)
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolDeleteCmd{}))
 }

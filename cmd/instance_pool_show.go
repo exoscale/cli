@@ -33,94 +33,80 @@ func (o *instancePoolShowOutput) toJSON()  { outputJSON(o) }
 func (o *instancePoolShowOutput) toText()  { outputText(o) }
 func (o *instancePoolShowOutput) toTable() { outputTable(o) }
 
-var instancePoolShowCmd = &cobra.Command{
-	Use:   "show NAME|ID",
-	Short: "Show an Instance Pool details",
-	Long: fmt.Sprintf(`This command shows an Instance Pool details.
+type instancePoolShowCmd struct {
+	_ bool `cli-cmd:"show"`
+
+	InstancePool string `cli-arg:"#" cli-usage:"NAME|ID"`
+
+	ShowUserData bool   `cli-flag:"user-data" cli-short:"u" cli-usage:"show cloud-init user data configuration"`
+	Zone         string `cli-short:"z" cli-usage:"Instance Pool zone"`
+}
+
+func (c *instancePoolShowCmd) cmdAliases() []string { return gShowAlias }
+
+func (c *instancePoolShowCmd) cmdShort() string { return "Show an Instance Pool details" }
+
+func (c *instancePoolShowCmd) cmdLong() string {
+	return fmt.Sprintf(`This command shows an Instance Pool details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolShowOutput{}), ", ")),
-	Aliases: gShowAlias,
+		strings.Join(outputterTemplateAnnotations(&instancePoolShowOutput{}), ", "))
+}
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+func (c *instancePoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *instancePoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	if c.ShowUserData {
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
+		instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
 		if err != nil {
 			return err
 		}
 
-		if showUserData, _ := cmd.Flags().GetBool("user-data"); showUserData {
-			instancePool, err := lookupInstancePool(
-				exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone)),
-				zone,
-				args[0],
-			)
+		if instancePool.UserData != "" {
+			userData, err := decodeUserData(instancePool.UserData)
 			if err != nil {
-				return err
+				return fmt.Errorf("error decoding user data: %s", err)
 			}
 
-			if instancePool.UserData != "" {
-				userData, err := decodeUserData(instancePool.UserData)
-				if err != nil {
-					return fmt.Errorf("error decoding user data: %s", err)
-				}
-
-				fmt.Print(userData)
-			}
-
-			return nil
+			fmt.Print(userData)
 		}
 
-		return output(showInstancePool(zone, args[0]))
-	},
+		return nil
+	}
+
+	return output(showInstancePool(c.Zone, c.InstancePool))
 }
 
 func showInstancePool(zone, i string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	instancePool, err := lookupInstancePool(ctx, zone, i)
+	instancePool, err := cs.FindInstancePool(ctx, zone, i)
 	if err != nil {
 		return nil, err
 	}
 
 	out := instancePoolShowOutput{
-		ID:             instancePool.ID,
-		Name:           instancePool.Name,
-		Description:    instancePool.Description,
-		Zone:           zone,
-		IPv6:           instancePool.IPv6Enabled,
-		SSHKey:         instancePool.SSHKey,
-		Size:           instancePool.Size,
-		DiskSize:       humanize.IBytes(uint64(instancePool.DiskSize << 30)),
-		InstancePrefix: instancePool.InstancePrefix,
-		State:          instancePool.State,
+		AntiAffinityGroups: make([]string, 0),
+		Description:        instancePool.Description,
+		DiskSize:           humanize.IBytes(uint64(instancePool.DiskSize << 30)),
+		ElasticIPs:         make([]string, 0),
+		ID:                 instancePool.ID,
+		IPv6:               instancePool.IPv6Enabled,
+		InstancePrefix:     instancePool.InstancePrefix,
+		Instances:          make([]string, 0),
+		Name:               instancePool.Name,
+		PrivateNetworks:    make([]string, 0),
+		SSHKey:             instancePool.SSHKey,
+		SecurityGroups:     make([]string, 0),
+		Size:               instancePool.Size,
+		State:              instancePool.State,
+		Zone:               zone,
 	}
-
-	zoneV1, err := getZoneByNameOrID(zone)
-	if err != nil {
-		return nil, err
-	}
-
-	serviceOffering, err := getServiceOfferingByNameOrID(instancePool.InstanceTypeID)
-	if err != nil {
-		return nil, err
-	}
-	out.ServiceOffering = serviceOffering.Name
-
-	template, err := getTemplateByNameOrID(zoneV1.ID, instancePool.TemplateID, "featured")
-	if err != nil {
-		return nil, err
-	}
-	out.Template = template.Name
 
 	antiAffinityGroups, err := instancePool.AntiAffinityGroups(ctx)
 	if err != nil {
@@ -128,30 +114,6 @@ func showInstancePool(zone, i string) (outputter, error) {
 	}
 	for _, antiAffinityGroup := range antiAffinityGroups {
 		out.AntiAffinityGroups = append(out.AntiAffinityGroups, antiAffinityGroup.Name)
-	}
-
-	securityGroups, err := instancePool.SecurityGroups(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, securityGroup := range securityGroups {
-		out.SecurityGroups = append(out.SecurityGroups, securityGroup.Name)
-	}
-
-	privateNetworks, err := instancePool.PrivateNetworks(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, privateNetwork := range privateNetworks {
-		out.PrivateNetworks = append(out.PrivateNetworks, privateNetwork.Name)
-	}
-
-	instances, err := instancePool.Instances(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, instance := range instances {
-		out.Instances = append(out.Instances, instance.Name)
 	}
 
 	elasticIPs, err := instancePool.ElasticIPs(ctx)
@@ -162,11 +124,45 @@ func showInstancePool(zone, i string) (outputter, error) {
 		out.ElasticIPs = append(out.ElasticIPs, elasticIP.IPAddress.String())
 	}
 
+	instances, err := instancePool.Instances(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, instance := range instances {
+		out.Instances = append(out.Instances, instance.Name)
+	}
+
+	instanceType, err := cs.GetInstanceType(ctx, zone, instancePool.InstanceTypeID)
+	if err != nil {
+		return nil, err
+	}
+	out.ServiceOffering = instanceType.Size
+
+	privateNetworks, err := instancePool.PrivateNetworks(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, privateNetwork := range privateNetworks {
+		out.PrivateNetworks = append(out.PrivateNetworks, privateNetwork.Name)
+	}
+
+	securityGroups, err := instancePool.SecurityGroups(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, securityGroup := range securityGroups {
+		out.SecurityGroups = append(out.SecurityGroups, securityGroup.Name)
+	}
+
+	template, err := cs.GetTemplate(ctx, zone, instancePool.TemplateID)
+	if err != nil {
+		return nil, err
+	}
+	out.Template = template.Name
+
 	return &out, nil
 }
 
 func init() {
-	instancePoolShowCmd.Flags().BoolP("user-data", "u", false, "show cloud-init user data configuration")
-	instancePoolShowCmd.Flags().StringP("zone", "z", "", "Instance pool zone")
-	instancePoolCmd.AddCommand(instancePoolShowCmd)
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolShowCmd{}))
 }

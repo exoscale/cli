@@ -137,6 +137,6 @@ func init() {
 	diskSizeVarP := new(int64PtrValue)
 	vmResetCmd.Flags().VarP(diskSizeVarP, "disk", "d", "New disk size after reset in GB")
 	vmResetCmd.Flags().StringP("template", "t", "", fmt.Sprintf("template NAME|ID (default: %s)", defaultTemplate))
-	vmResetCmd.Flags().StringP("template-filter", "", "featured", templateFilterHelp)
+	vmResetCmd.Flags().StringP("template-filter", "", defaultTemplateFilter, templateFilterHelp)
 	vmResetCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 }
