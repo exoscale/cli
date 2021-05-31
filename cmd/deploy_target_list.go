@@ -22,32 +22,37 @@ func (o *deployTargetListOutput) toJSON()  { outputJSON(o) }
 func (o *deployTargetListOutput) toText()  { outputText(o) }
 func (o *deployTargetListOutput) toTable() { outputTable(o) }
 
-var deployTargetListCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List Deploy Targets",
-	Long: fmt.Sprintf(`This command lists existing Deploy Targets.
+type deployTargetListCmd struct {
+	_ bool `cli-cmd:"list"`
 
-Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&vmListOutput{}), ", ")),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-		zone = strings.ToLower(zone)
-
-		return output(listDeployTargets(zone), nil)
-	},
+	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func listDeployTargets(zone string) outputter {
-	var listZones []string
+func (c *deployTargetListCmd) cmdAliases() []string { return nil }
 
-	if zone != "" {
-		listZones = []string{zone}
+func (c *deployTargetListCmd) cmdShort() string { return "List Deploy Targets" }
+
+func (c *deployTargetListCmd) cmdLong() string {
+	return fmt.Sprintf(`This command lists existing Deploy Targets.
+
+	Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&vmListOutput{}), ", "))
+}
+
+func (c *deployTargetListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	var zones []string
+
+	if c.Zone != "" {
+		zones = []string{c.Zone}
 	} else {
-		listZones = allZones
+		zones = allZones
 	}
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zones[0]))
 
 	out := make(deployTargetListOutput, 0)
 	res := make(chan deployTargetListItemOutput)
@@ -58,8 +63,7 @@ func listDeployTargets(zone string) outputter {
 			out = append(out, dt)
 		}
 	}()
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-	err := forEachZone(listZones, func(zone string) error {
+	err := forEachZone(zones, func(zone string) error {
 		list, err := cs.ListDeployTargets(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Deploy Targets in zone %s: %v", zone, err)
@@ -67,10 +71,10 @@ func listDeployTargets(zone string) outputter {
 
 		for _, dt := range list {
 			res <- deployTargetListItemOutput{
-				Zone: zone,
 				ID:   dt.ID,
 				Name: dt.Name,
 				Type: dt.Type,
+				Zone: zone,
 			}
 		}
 
@@ -81,10 +85,9 @@ func listDeployTargets(zone string) outputter {
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
-	return &out
+	return output(&out, nil)
 }
 
 func init() {
-	deployTargetListCmd.Flags().StringP("zone", "z", "", "zone to filter results to")
-	deployTargetCmd.AddCommand(deployTargetListCmd)
+	cobra.CheckErr(registerCLICommand(deployTargetCmd, &deployTargetListCmd{}))
 }

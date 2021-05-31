@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/cobra"
-
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/spf13/cobra"
 )
 
 type deployTargetShowOutput struct {
@@ -21,50 +20,47 @@ func (o *deployTargetShowOutput) toJSON()  { outputJSON(o) }
 func (o *deployTargetShowOutput) toText()  { outputText(o) }
 func (o *deployTargetShowOutput) toTable() { outputTable(o) }
 
-var deployTargetShowCmd = &cobra.Command{
-	Use:   "show NAME|ID",
-	Short: "Show a Deploy Target details",
-	Long: fmt.Sprintf(`This command shows a Deploy Target details.
+type deployTargetShowCmd struct {
+	_ bool `cli-cmd:"show"`
 
-Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&deployTargetShowOutput{}), ", ")),
-	Aliases: gShowAlias,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+	DeployTarget string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-		cmdSetZoneFlagFromDefault(cmd)
-
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		return output(showDeployTarget(zone, args[0]))
-	},
+	Zone string `cli-short:"z" cli-usage:"Deploy Target zone"`
 }
 
-func showDeployTarget(zone, c string) (outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-	dt, err := lookupDeployTarget(ctx, zone, c)
+func (c *deployTargetShowCmd) cmdAliases() []string { return gShowAlias }
+
+func (c *deployTargetShowCmd) cmdShort() string { return "Show a Deploy Target details" }
+
+func (c *deployTargetShowCmd) cmdLong() string {
+	return fmt.Sprintf(`This command shows a Deploy Target details.
+
+	Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&deployTargetShowOutput{}), ", "))
+}
+
+func (c *deployTargetShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	dt, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("error retrieving Deploy Target: %s", err)
 	}
 
-	return &deployTargetShowOutput{
+	return output(&deployTargetShowOutput{
 		ID:          dt.ID,
 		Name:        dt.Name,
 		Description: dt.Description,
 		Type:        dt.Type,
-		Zone:        zone,
-	}, nil
+		Zone:        c.Zone,
+	}, nil)
 }
 
 func init() {
-	deployTargetShowCmd.Flags().StringP("zone", "z", "", "Deploy Target zone")
-	deployTargetCmd.AddCommand(deployTargetShowCmd)
+	cobra.CheckErr(registerCLICommand(deployTargetCmd, &deployTargetShowCmd{}))
 }
