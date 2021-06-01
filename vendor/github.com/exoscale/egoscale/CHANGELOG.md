@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.53.1
+------
+
+- fix: v2: only point to non-zero struct fields for optional API resource properties (#496)
+
 0.53.0
 ------
 

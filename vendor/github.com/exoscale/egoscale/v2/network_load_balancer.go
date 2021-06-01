@@ -158,7 +158,12 @@ func (nlb *NetworkLoadBalancer) AddService(
 		apiv2.WithZone(ctx, nlb.zone),
 		nlb.ID,
 		papi.AddServiceToLoadBalancerJSONRequestBody{
-			Description: &svc.Description,
+			Description: func() *string {
+				if svc.Description != "" {
+					return &svc.Description
+				}
+				return nil
+			}(),
 			Healthcheck: papi.LoadBalancerServiceHealthcheck{
 				Interval: &healthcheckInterval,
 				Mode:     papi.LoadBalancerServiceHealthcheckMode(svc.Healthcheck.Mode),
@@ -357,9 +362,19 @@ func (c *Client) CreateNetworkLoadBalancer(
 	resp, err := c.CreateLoadBalancerWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateLoadBalancerJSONRequestBody{
-			Description: &nlb.Description,
-			Labels:      &papi.Labels{AdditionalProperties: nlb.Labels},
-			Name:        nlb.Name,
+			Description: func() *string {
+				if nlb.Description != "" {
+					return &nlb.Description
+				}
+				return nil
+			}(),
+			Labels: func() *papi.Labels {
+				if len(nlb.Labels) > 0 {
+					return &papi.Labels{AdditionalProperties: nlb.Labels}
+				}
+				return nil
+			}(),
+			Name: nlb.Name,
 		})
 	if err != nil {
 		return nil, err

@@ -144,8 +144,18 @@ func (s *SecurityGroup) AddRule(ctx context.Context, rule *SecurityGroupRule) (*
 		apiv2.WithZone(ctx, s.zone),
 		s.ID,
 		papi.AddRuleToSecurityGroupJSONRequestBody{
-			Description:   &rule.Description,
-			EndPort:       &endPort,
+			Description: func() *string {
+				if rule.Description != "" {
+					return &rule.Description
+				}
+				return nil
+			}(),
+			EndPort: func() *int64 {
+				if endPort > 0 {
+					return &endPort
+				}
+				return nil
+			}(),
 			FlowDirection: papi.AddRuleToSecurityGroupJSONBodyFlowDirection(rule.FlowDirection),
 			Icmp:          icmp,
 			Network: func() (v *string) {
@@ -162,7 +172,12 @@ func (s *SecurityGroup) AddRule(ctx context.Context, rule *SecurityGroupRule) (*
 				}
 				return
 			}(),
-			StartPort: &startPort,
+			StartPort: func() *int64 {
+				if startPort > 0 {
+					return &startPort
+				}
+				return nil
+			}(),
 		})
 	if err != nil {
 		return nil, err
@@ -222,8 +237,13 @@ func (c *Client) CreateSecurityGroup(
 	securityGroup *SecurityGroup,
 ) (*SecurityGroup, error) {
 	resp, err := c.CreateSecurityGroupWithResponse(ctx, papi.CreateSecurityGroupJSONRequestBody{
-		Description: &securityGroup.Description,
-		Name:        securityGroup.Name,
+		Description: func() *string {
+			if securityGroup.Description != "" {
+				return &securityGroup.Description
+			}
+			return nil
+		}(),
+		Name: securityGroup.Name,
 	})
 	if err != nil {
 		return nil, err

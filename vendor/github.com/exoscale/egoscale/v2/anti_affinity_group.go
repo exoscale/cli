@@ -35,8 +35,13 @@ func (c *Client) CreateAntiAffinityGroup(
 	resp, err := c.CreateAntiAffinityGroupWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateAntiAffinityGroupJSONRequestBody{
-			Description: &antiAffinityGroup.Description,
-			Name:        antiAffinityGroup.Name,
+			Description: func() *string {
+				if antiAffinityGroup.Description != "" {
+					return &antiAffinityGroup.Description
+				}
+				return nil
+			}(),
+			Name: antiAffinityGroup.Name,
 		})
 	if err != nil {
 		return nil, err

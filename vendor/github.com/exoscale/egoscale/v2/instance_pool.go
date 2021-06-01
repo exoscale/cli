@@ -253,8 +253,13 @@ func (c *Client) CreateInstancePool(ctx context.Context, zone string, instancePo
 				}
 				return nil
 			}(),
-			Description: &instancePool.Description,
-			DiskSize:    instancePool.DiskSize,
+			Description: func() *string {
+				if instancePool.Description != "" {
+					return &instancePool.Description
+				}
+				return nil
+			}(),
+			DiskSize: instancePool.DiskSize,
 			ElasticIps: func() *[]papi.ElasticIp {
 				if l := len(instancePool.ElasticIPIDs); l > 0 {
 					list := make([]papi.ElasticIp, l)
@@ -266,10 +271,15 @@ func (c *Client) CreateInstancePool(ctx context.Context, zone string, instancePo
 				}
 				return nil
 			}(),
-			InstancePrefix: &instancePool.InstancePrefix,
-			InstanceType:   papi.InstanceType{Id: &instancePool.InstanceTypeID},
-			Ipv6Enabled:    &instancePool.IPv6Enabled,
-			Name:           instancePool.Name,
+			InstancePrefix: func() *string {
+				if instancePool.InstancePrefix != "" {
+					return &instancePool.InstancePrefix
+				}
+				return nil
+			}(),
+			InstanceType: papi.InstanceType{Id: &instancePool.InstanceTypeID},
+			Ipv6Enabled:  &instancePool.IPv6Enabled,
+			Name:         instancePool.Name,
 			PrivateNetworks: func() *[]papi.PrivateNetwork {
 				if l := len(instancePool.PrivateNetworkIDs); l > 0 {
 					list := make([]papi.PrivateNetwork, l)
