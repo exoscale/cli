@@ -249,10 +249,15 @@ func (c *SKSCluster) AddNodepool(ctx context.Context, np *SKSNodepool) (*SKSNode
 				}
 				return nil
 			}(),
-			DiskSize:       np.DiskSize,
-			InstancePrefix: &np.InstancePrefix,
-			InstanceType:   papi.InstanceType{Id: &np.InstanceTypeID},
-			Name:           np.Name,
+			DiskSize: np.DiskSize,
+			InstancePrefix: func() *string {
+				if np.InstancePrefix != "" {
+					return &np.InstancePrefix
+				}
+				return nil
+			}(),
+			InstanceType: papi.InstanceType{Id: &np.InstanceTypeID},
+			Name:         np.Name,
 			SecurityGroups: func() *[]papi.SecurityGroup {
 				if l := len(np.SecurityGroupIDs); l > 0 {
 					list := make([]papi.SecurityGroup, l)
@@ -515,10 +520,15 @@ func (c *Client) CreateSKSCluster(ctx context.Context, zone string, cluster *SKS
 				}
 				return nil
 			}(),
-			Description: &cluster.Description,
-			Level:       papi.CreateSksClusterJSONBodyLevel(cluster.ServiceLevel),
-			Name:        cluster.Name,
-			Version:     cluster.Version,
+			Description: func() *string {
+				if cluster.Description != "" {
+					return &cluster.Description
+				}
+				return nil
+			}(),
+			Level:   papi.CreateSksClusterJSONBodyLevel(cluster.ServiceLevel),
+			Name:    cluster.Name,
+			Version: cluster.Version,
 		})
 	if err != nil {
 		return nil, err

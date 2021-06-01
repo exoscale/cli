@@ -42,7 +42,12 @@ func (c *Client) CreatePrivateNetwork(
 	resp, err := c.CreatePrivateNetworkWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreatePrivateNetworkJSONRequestBody{
-			Description: &privateNetwork.Description,
+			Description: func() *string {
+				if privateNetwork.Description != "" {
+					return &privateNetwork.Description
+				}
+				return nil
+			}(),
 			EndIp: func() (ip *string) {
 				if privateNetwork.EndIP != nil {
 					v := privateNetwork.EndIP.String()
@@ -147,7 +152,12 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, zone string, privateN
 		apiv2.WithZone(ctx, zone),
 		privateNetwork.ID,
 		papi.UpdatePrivateNetworkJSONRequestBody{
-			Description: &privateNetwork.Description,
+			Description: func() *string {
+				if privateNetwork.Description != "" {
+					return &privateNetwork.Description
+				}
+				return nil
+			}(),
 			EndIp: func() (ip *string) {
 				if privateNetwork.EndIP != nil {
 					v := privateNetwork.EndIP.String()

@@ -97,7 +97,12 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 	resp, err := c.CreateElasticIpWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateElasticIpJSONRequestBody{
-			Description: &elasticIP.Description,
+			Description: func() *string {
+				if elasticIP.Description != "" {
+					return &elasticIP.Description
+				}
+				return nil
+			}(),
 			Healthcheck: func() *papi.ElasticIpHealthcheck {
 				if hc := elasticIP.Healthcheck; hc != nil {
 					var (
@@ -114,8 +119,18 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 						StrikesOk:     &hc.StrikesOK,
 						Timeout:       &timeout,
 						TlsSkipVerify: &hc.TLSSkipVerify,
-						TlsSni:        &hc.TLSSNI,
-						Uri:           &hc.URI,
+						TlsSni: func() *string {
+							if hc.TLSSNI != "" {
+								return &hc.TLSSNI
+							}
+							return nil
+						}(),
+						Uri: func() *string {
+							if hc.URI != "" {
+								return &hc.URI
+							}
+							return nil
+						}(),
 					}
 				}
 				return nil
@@ -208,8 +223,18 @@ func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *El
 						StrikesOk:     &hc.StrikesOK,
 						Timeout:       &timeout,
 						TlsSkipVerify: &hc.TLSSkipVerify,
-						TlsSni:        &hc.TLSSNI,
-						Uri:           &hc.URI,
+						TlsSni: func() *string {
+							if hc.TLSSNI != "" {
+								return &hc.TLSSNI
+							}
+							return nil
+						}(),
+						Uri: func() *string {
+							if hc.URI != "" {
+								return &hc.URI
+							}
+							return nil
+						}(),
 					}
 				}
 				return nil
