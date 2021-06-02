@@ -1,15 +1,15 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
-	"github.com/spf13/cobra"
-
-	exoapi "github.com/exoscale/egoscale/v2/api"
-
 	"github.com/exoscale/cli/table"
+	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/spf13/cobra"
 )
 
 type nlbShowOutput struct {
@@ -21,6 +21,7 @@ type nlbShowOutput struct {
 	IPAddress    string                 `json:"ip_address"`
 	State        string                 `json:"state"`
 	Services     []nlbServiceShowOutput `json:"services"`
+	Labels       map[string]string      `json:"labels"`
 }
 
 func (o *nlbShowOutput) toJSON() { outputJSON(o) }
@@ -36,6 +37,8 @@ func (o *nlbShowOutput) toTable() {
 	t.Append([]string{"IP Address", o.IPAddress})
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Creation Date", o.CreationDate})
+	t.Append([]string{"State", o.State})
+
 	t.Append([]string{"Services", func() string {
 		if len(o.Services) > 0 {
 			return strings.Join(
@@ -52,39 +55,61 @@ func (o *nlbShowOutput) toTable() {
 		}
 		return "n/a"
 	}()})
-	t.Append([]string{"State", o.State})
+
+	t.Append([]string{"Labels", func() string {
+		sortedKeys := func() []string {
+			keys := make([]string, 0)
+			for k := range o.Labels {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			return keys
+		}()
+
+		buf := bytes.NewBuffer(nil)
+		at := table.NewEmbeddedTable(buf)
+		at.SetHeader([]string{" "})
+		for _, k := range sortedKeys {
+			at.Append([]string{k, o.Labels[k]})
+		}
+		at.Render()
+
+		return buf.String()
+	}()})
 }
 
-var nlbShowCmd = &cobra.Command{
-	Use:   "show NAME|ID",
-	Short: "Show a Network Load Balancer details",
-	Long: fmt.Sprintf(`This command shows a Network Load Balancer details.
+type nlbShowCmd struct {
+	_ bool `cli-cmd:"show"`
+
+	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"NAME|ID"`
+
+	Zone string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+}
+
+func (c *nlbShowCmd) cmdAliases() []string { return gShowAlias }
+
+func (c *nlbShowCmd) cmdShort() string { return "Show a Network Load Balancer details" }
+
+func (c *nlbShowCmd) cmdLong() string {
+	return fmt.Sprintf(`This command shows a Network Load Balancer details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbShowOutput{}), ", ")),
-	Aliases: gShowAlias,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+		strings.Join(outputterTemplateAnnotations(&nlbShowOutput{}), ", "))
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *nlbShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		return output(showNLB(zone, args[0]))
-	},
+func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	return output(showNLB(c.Zone, c.NetworkLoadBalancer))
 }
 
 func showNLB(zone, ref string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-	nlb, err := lookupNLB(ctx, zone, ref)
+
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, zone, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -106,12 +131,12 @@ func showNLB(zone, ref string) (outputter, error) {
 		IPAddress:    nlb.IPAddress.String(),
 		State:        nlb.State,
 		Services:     svcOut,
+		Labels:       nlb.Labels,
 	}
 
 	return &out, nil
 }
 
 func init() {
-	nlbShowCmd.Flags().StringP("zone", "z", "", "Network Load Balancer zone")
-	nlbCmd.AddCommand(nlbShowCmd)
+	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbShowCmd{}))
 }

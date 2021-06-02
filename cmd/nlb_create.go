@@ -2,55 +2,63 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	exov2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
-var nlbCreateCmd = &cobra.Command{
-	Use:     "create NAME",
-	Short:   "Create a Network Load Balancer",
-	Aliases: gCreateAlias,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+type nlbCreateCmd struct {
+	_ bool `cli-cmd:"create"`
 
-		cmdSetZoneFlagFromDefault(cmd)
+	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	Description string            `cli-usage:"Network Load Balancer description"`
+	Labels      map[string]string `cli-flag:"label" cli-usage:"Network Load Balancer label (format: key=value)"`
+	Zone        string            `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+}
 
-		description, err := cmd.Flags().GetString("description")
-		if err != nil {
-			return err
-		}
+func (c *nlbCreateCmd) cmdAliases() []string { return gCreateAlias }
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		nlb, err := cs.CreateNetworkLoadBalancer(ctx, zone, &exov2.NetworkLoadBalancer{
-			Name:        args[0],
-			Description: description,
-		})
-		if err != nil {
-			return fmt.Errorf("unable to create Network Load Balancer: %s", err)
-		}
+func (c *nlbCreateCmd) cmdShort() string { return "Create a Network Load Balancer" }
 
-		if !gQuiet {
-			return output(showNLB(zone, nlb.ID))
-		}
+func (c *nlbCreateCmd) cmdLong() string {
+	return fmt.Sprintf(`This command creates a Network Load Balancer.
 
-		return nil
-	},
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&nlbShowOutput{}), ", "))
+}
+
+func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	nlb := &exov2.NetworkLoadBalancer{
+		Description: c.Description,
+		Labels:      c.Labels,
+		Name:        c.Name,
+	}
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	var err error
+	decorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", nlb.Name), func() {
+		nlb, err = cs.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
+	})
+	if err != nil {
+		return err
+	}
+
+	if !gQuiet {
+		return output(showNLB(c.Zone, nlb.ID))
+	}
+
+	return nil
 }
 
 func init() {
-	nlbCreateCmd.Flags().StringP("zone", "z", "", "Network Load Balancer zone")
-	nlbCreateCmd.Flags().String("description", "", "service description")
-	nlbCmd.AddCommand(nlbCreateCmd)
+	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbCreateCmd{}))
 }

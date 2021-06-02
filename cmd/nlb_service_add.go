@@ -11,166 +11,108 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var nlbServiceAddCmd = &cobra.Command{
-	Use:   "add NLB-NAME|ID SERVICE-NAME",
-	Short: "Add a service to a Network Load Balancer",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+type nlbServiceAddCmd struct {
+	_ bool `cli-cmd:"add"`
 
-		cmdSetZoneFlagFromDefault(cmd)
+	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
+	Name                string `cli-arg:"#" cli-usage:"SERVICE-NAME"`
 
-		return cmdCheckRequiredFlags(cmd, []string{
-			"healthcheck-interval",
-			"healthcheck-retries",
-			"healthcheck-timeout",
-			"instance-pool-id",
-			"port",
-			"protocol",
-			"strategy",
-			"zone",
-		})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			nlbRef = args[0]
-			name   = args[1]
-		)
+	Description         string `cli-usage:"service description"`
+	HealthcheckInterval int64  `cli-usage:"service health checking interval in seconds"`
+	HealthcheckMode     string `cli-usage:"service health checking mode (tcp|http|https)"`
+	HealthcheckPort     int64  `cli-usage:"service health checking port (defaults to target port)"`
+	HealthcheckRetries  int64  `cli-usage:"service health checking retries"`
+	HealthcheckTLSSNI   string `cli-flag:"healthcheck-tls-sni" cli-usage:"service health checking server name to present with SNI in https mode"`
+	HealthcheckTimeout  int64  `cli-usage:"service health checking timeout in seconds"`
+	HealthcheckURI      string `cli-usage:"service health checking URI (required in http(s) mode)"`
+	InstancePool        string `cli-usage:"name or ID of the Instance Pool to forward traffic to"`
+	Port                int64  `cli-usage:"service port"`
+	Protocol            string `cli-usage:"service network protocol (tcp|udp)"`
+	Strategy            string `cli-usage:"load balancing strategy (round-robin|source-hash)"`
+	TargetPort          int64  `cli-usage:"port to forward traffic to on target instances (defaults to service port)"`
+	Zone                string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+func (c *nlbServiceAddCmd) cmdAliases() []string { return nil }
 
-		description, err := cmd.Flags().GetString("description")
-		if err != nil {
-			return err
-		}
+func (c *nlbServiceAddCmd) cmdShort() string { return "Add a service to a Network Load Balancer" }
 
-		instancePoolID, err := cmd.Flags().GetString("instance-pool-id")
-		if err != nil {
-			return err
-		}
+func (c *nlbServiceAddCmd) cmdLong() string {
+	return fmt.Sprintf(`This command adds a service to a Network Load Balancer.
 
-		protocol, err := cmd.Flags().GetString("protocol")
-		if err != nil {
-			return err
-		}
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&nlbServiceShowOutput{}), ", "))
+}
 
-		port, err := cmd.Flags().GetUint16("port")
-		if err != nil {
-			return err
-		}
+func (c *nlbServiceAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		targetPort, err := cmd.Flags().GetUint16("target-port")
-		if err != nil {
-			return err
-		}
-		if targetPort == 0 {
-			targetPort = port
-		}
+func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	service := &exov2.NetworkLoadBalancerService{
+		Description: c.Description,
+		Healthcheck: exov2.NetworkLoadBalancerServiceHealthcheck{
+			Interval: time.Duration(c.HealthcheckInterval) * time.Second,
+			Mode:     c.HealthcheckMode,
+			Port:     uint16(c.HealthcheckPort),
+			Retries:  c.HealthcheckRetries,
+			TLSSNI:   c.HealthcheckTLSSNI,
+			Timeout:  time.Duration(c.HealthcheckTimeout) * time.Second,
+			URI:      c.HealthcheckURI,
+		},
+		Name:       c.Name,
+		Port:       uint16(c.Port),
+		Protocol:   c.Protocol,
+		Strategy:   c.Strategy,
+		TargetPort: uint16(c.TargetPort),
+	}
 
-		strategy, err := cmd.Flags().GetString("strategy")
-		if err != nil {
-			return err
-		}
+	if strings.HasPrefix(service.Healthcheck.Mode, "http") && service.Healthcheck.URI == "" {
+		return errors.New(`an healthcheck URI is required in "http(s)" mode`)
+	}
 
-		healthcheckMode, err := cmd.Flags().GetString("healthcheck-mode")
-		if err != nil {
-			return err
-		}
+	if service.TargetPort == 0 {
+		service.TargetPort = service.Port
+	}
+	if service.Healthcheck.Port == 0 {
+		service.Healthcheck.Port = service.TargetPort
+	}
 
-		healthcheckURI, err := cmd.Flags().GetString("healthcheck-uri")
-		if err != nil {
-			return err
-		}
-		if strings.HasPrefix(healthcheckMode, "http") && healthcheckURI == "" {
-			return errors.New(`an healthcheck URI is required in "http(s)" mode`)
-		}
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		healthcheckPort, err := cmd.Flags().GetUint16("healthcheck-port")
-		if err != nil {
-			return err
-		}
-		if healthcheckPort == 0 {
-			healthcheckPort = targetPort
-		}
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	if err != nil {
+		return fmt.Errorf("error retrieving Network Load Balancer: %s", err)
+	}
 
-		healthcheckInterval, err := cmd.Flags().GetInt64("healthcheck-interval")
-		if err != nil {
-			return err
-		}
+	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	if err != nil {
+		return fmt.Errorf("error retrieving Instance Pool: %s", err)
+	}
+	service.InstancePoolID = instancePool.ID
 
-		healthcheckTimeout, err := cmd.Flags().GetInt64("healthcheck-timeout")
-		if err != nil {
-			return err
-		}
+	decorateAsyncOperation(fmt.Sprintf("Adding service %q...", service.Name), func() {
+		service, err = nlb.AddService(ctx, service)
+	})
+	if err != nil {
+		return err
+	}
 
-		healthcheckRetries, err := cmd.Flags().GetInt64("healthcheck-retries")
-		if err != nil {
-			return err
-		}
+	if !gQuiet {
+		return output(showNLBService(c.Zone, nlb.ID, service.ID))
+	}
 
-		healthcheckTLSSNI, err := cmd.Flags().GetString("healthcheck-tls-sni")
-		if err != nil {
-			return err
-		}
-		if healthcheckTLSSNI != "" && healthcheckMode != "https" {
-			return errors.New(`a healthcheck TLS SNI can only be specified in https mode`)
-		}
-
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		nlb, err := lookupNLB(ctx, zone, nlbRef)
-		if err != nil {
-			return err
-		}
-
-		svc, err := nlb.AddService(ctx, &exov2.NetworkLoadBalancerService{
-			Name:           name,
-			Description:    description,
-			InstancePoolID: instancePoolID,
-			Protocol:       protocol,
-			Port:           port,
-			TargetPort:     targetPort,
-			Strategy:       strategy,
-			Healthcheck: exov2.NetworkLoadBalancerServiceHealthcheck{
-				Mode:     healthcheckMode,
-				Port:     healthcheckPort,
-				URI:      healthcheckURI,
-				Interval: time.Duration(healthcheckInterval) * time.Second,
-				Timeout:  time.Duration(healthcheckTimeout) * time.Second,
-				Retries:  healthcheckRetries,
-				TLSSNI:   healthcheckTLSSNI,
-			},
-		})
-		if err != nil {
-			return fmt.Errorf("unable to add service: %s", err)
-		}
-
-		if !gQuiet {
-			return output(showNLBService(zone, nlb.ID, svc.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	nlbServiceAddCmd.Flags().StringP("zone", "z", "", "Network Load Balancer zone")
-	nlbServiceAddCmd.Flags().String("instance-pool-id", "",
-		"ID of the Instance Pool to forward traffic to")
-	nlbServiceAddCmd.Flags().String("description", "", "service description")
-	nlbServiceAddCmd.Flags().String("protocol", "tcp", "protocol of the service (tcp|udp)")
-	nlbServiceAddCmd.Flags().Uint16("port", 0, "service port")
-	nlbServiceAddCmd.Flags().Uint16("target-port", 0, "port to forward traffic to on target instances (defaults to service port)")
-	nlbServiceAddCmd.Flags().String("strategy", "round-robin", "load balancing strategy (round-robin|source-hash)")
-	nlbServiceAddCmd.Flags().String("healthcheck-mode", "tcp", "service health checking mode (tcp|http|https)")
-	nlbServiceAddCmd.Flags().String("healthcheck-uri", "", "service health checking URI (required in http(s) mode)")
-	nlbServiceAddCmd.Flags().Uint16("healthcheck-port", 0, "service health checking port (defaults to target port)")
-	nlbServiceAddCmd.Flags().Int64("healthcheck-interval", 10, "service health checking interval in seconds")
-	nlbServiceAddCmd.Flags().Int64("healthcheck-timeout", 5, "service health checking timeout in seconds")
-	nlbServiceAddCmd.Flags().Int64("healthcheck-retries", 1, "service health checking retries")
-	nlbServiceAddCmd.Flags().String("healthcheck-tls-sni", "", "service health checking server name to present with SNI in https mode")
-	nlbServiceCmd.AddCommand(nlbServiceAddCmd)
+	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceAddCmd{
+		HealthcheckInterval: 10,
+		HealthcheckMode:     "tcp",
+		HealthcheckRetries:  1,
+		HealthcheckTimeout:  5,
+		Protocol:            "tcp",
+		Strategy:            "round-robin",
+	}))
 }

@@ -11,182 +11,150 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var nlbServiceUpdateCmd = &cobra.Command{
-	Use:   "update NLB-NAME|ID SERVICE-NAME|ID",
-	Short: "Update a Network Load Balancer service",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "missing arguments")
+type nlbServiceUpdateCmd struct {
+	_ bool `cli-cmd:"update"`
+
+	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
+	Service             string `cli-arg:"#" cli-usage:"SERVICE-NAME|ID"`
+
+	Description         string `cli-usage:"service description"`
+	HealthcheckInterval int64  `cli-usage:"service health checking interval in seconds"`
+	HealthcheckMode     string `cli-usage:"service health checking mode (tcp|http|https)"`
+	HealthcheckPort     int64  `cli-usage:"service health checking port"`
+	HealthcheckRetries  int64  `cli-usage:"service health checking retries"`
+	HealthcheckTLSSNI   string `cli-flag:"healthcheck-tls-sni" cli-usage:"service health checking server name to present with SNI in https mode"`
+	HealthcheckTimeout  int64  `cli-usage:"service health checking timeout in seconds"`
+	HealthcheckURI      string `cli-usage:"service health checking URI (required in http(s) mode)"`
+	Name                string `cli-usage:"service name"`
+	Port                int64  `cli-usage:"service port"`
+	Protocol            string `cli-usage:"service network protocol (tcp|udp)"`
+	Strategy            string `cli-usage:"load balancing strategy (round-robin|source-hash)"`
+	TargetPort          int64  `cli-usage:"port to forward traffic to on target instances"`
+	Zone                string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+}
+
+func (c *nlbServiceUpdateCmd) cmdAliases() []string { return nil }
+
+func (c *nlbServiceUpdateCmd) cmdShort() string { return "Update a Network Load Balancer service" }
+
+func (c *nlbServiceUpdateCmd) cmdLong() string {
+	return fmt.Sprintf(`This command updates a Network Load Balancer service.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&nlbServiceShowOutput{}), ", "))
+}
+
+func (c *nlbServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+	var (
+		service *exov2.NetworkLoadBalancerService
+		updated bool
+	)
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	if err != nil {
+		return err
+	}
+
+	for _, s := range nlb.Services {
+		if s.ID == c.Service || s.Name == c.Service {
+			service = s
+			break
 		}
+	}
+	if service == nil {
+		return errors.New("service not found")
+	}
 
-		cmdSetZoneFlagFromDefault(cmd)
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+		service.Description = c.Description
+		updated = true
+	}
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			svc    *exov2.NetworkLoadBalancerService
-			nlbRef = args[0]
-			svcRef = args[1]
-		)
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckInterval)) {
+		service.Healthcheck.Interval = time.Duration(c.HealthcheckInterval) * time.Second
+		updated = true
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckMode)) {
+		service.Healthcheck.Mode = c.HealthcheckMode
+		updated = true
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		nlb, err := lookupNLB(ctx, zone, nlbRef)
-		if err != nil {
-			return err
-		}
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckPort)) {
+		service.Healthcheck.Port = uint16(c.HealthcheckPort)
+		updated = true
+	}
 
-		for _, s := range nlb.Services {
-			if s.ID == svcRef || s.Name == svcRef {
-				svc = s
-				break
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckRetries)) {
+		service.Healthcheck.Retries = c.HealthcheckRetries
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckTLSSNI)) {
+		service.Healthcheck.TLSSNI = c.HealthcheckTLSSNI
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckTimeout)) {
+		service.Healthcheck.Timeout = time.Duration(c.HealthcheckTimeout) * time.Second
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckURI)) {
+		service.Healthcheck.URI = c.HealthcheckURI
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+		service.Name = c.Name
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Port)) {
+		service.Port = uint16(c.Port)
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protocol)) {
+		service.Protocol = c.Protocol
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Strategy)) {
+		service.Strategy = c.Strategy
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TargetPort)) {
+		service.TargetPort = uint16(c.TargetPort)
+		updated = true
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Updating service %q...", c.Service), func() {
+		if updated {
+			if err = nlb.UpdateService(ctx, service); err != nil {
+				return
 			}
 		}
-		if svc == nil {
-			return errors.New("service not found")
-		}
+	})
+	if err != nil {
+		return err
+	}
 
-		name, err := cmd.Flags().GetString("name")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("name") {
-			svc.Name = name
-		}
+	if !gQuiet {
+		return output(showNLBService(c.Zone, nlb.ID, service.ID))
+	}
 
-		description, err := cmd.Flags().GetString("description")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("description") {
-			svc.Description = description
-		}
-
-		protocol, err := cmd.Flags().GetString("protocol")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("protocol") {
-			svc.Protocol = protocol
-		}
-
-		port, err := cmd.Flags().GetUint16("port")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("port") {
-			svc.Port = port
-		}
-
-		targetPort, err := cmd.Flags().GetUint16("target-port")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("target-port") {
-			svc.TargetPort = targetPort
-		}
-
-		strategy, err := cmd.Flags().GetString("strategy")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("strategy") {
-			svc.Strategy = strategy
-		}
-
-		healthcheckMode, err := cmd.Flags().GetString("healthcheck-mode")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("healthcheck-mode") {
-			svc.Healthcheck.Mode = healthcheckMode
-		}
-
-		healthcheckURI, err := cmd.Flags().GetString("healthcheck-uri")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("healthcheck-uri") {
-			svc.Healthcheck.URI = healthcheckURI
-		}
-		if strings.HasPrefix(healthcheckMode, "http") && healthcheckURI == "" {
-			return errors.New(`an healthcheck URI is required in "http(s)" mode`)
-		}
-
-		healthcheckPort, err := cmd.Flags().GetUint16("healthcheck-port")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("healthcheck-port") {
-			svc.Healthcheck.Port = healthcheckPort
-		}
-
-		healthcheckInterval, err := cmd.Flags().GetInt64("healthcheck-interval")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("healthcheck-interval") {
-			svc.Healthcheck.Interval = time.Duration(healthcheckInterval) * time.Second
-		}
-
-		healthcheckTimeout, err := cmd.Flags().GetInt64("healthcheck-timeout")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("healthcheck-timeout") {
-			svc.Healthcheck.Timeout = time.Duration(healthcheckTimeout) * time.Second
-		}
-
-		healthcheckRetries, err := cmd.Flags().GetInt64("healthcheck-retries")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("healthcheck-retries") {
-			svc.Healthcheck.Retries = healthcheckRetries
-		}
-
-		healthcheckTLSSNI, err := cmd.Flags().GetString("healthcheck-tls-sni")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("healthcheck-tls-sni") {
-			svc.Healthcheck.TLSSNI = healthcheckTLSSNI
-		}
-		if healthcheckTLSSNI != "" && healthcheckMode != "https" {
-			return errors.New(`a healthcheck TLS SNI can only be specified in https mode`)
-		}
-
-		if err := nlb.UpdateService(ctx, svc); err != nil {
-			return fmt.Errorf("unable to update service: %s", err)
-		}
-
-		if !gQuiet {
-			return output(showNLBService(zone, nlb.ID, svc.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	nlbServiceUpdateCmd.Flags().StringP("zone", "z", "", "Network Load Balancer zone")
-	nlbServiceUpdateCmd.Flags().String("name", "", "service name")
-	nlbServiceUpdateCmd.Flags().String("description", "", "service description")
-	nlbServiceUpdateCmd.Flags().String("protocol", "", "protocol of the service (tcp|udp)")
-	nlbServiceUpdateCmd.Flags().Uint16("port", 0, "service port")
-	nlbServiceUpdateCmd.Flags().Uint16("target-port", 0, "port to forward traffic to on target instances")
-	nlbServiceUpdateCmd.Flags().String("strategy", "", "load balancing strategy (round-robin|source-hash)")
-	nlbServiceUpdateCmd.Flags().String("healthcheck-mode", "", "service health checking mode (tcp|http|https)")
-	nlbServiceUpdateCmd.Flags().String("healthcheck-uri", "", "service health checking URI (required in http(s) mode)")
-	nlbServiceUpdateCmd.Flags().Uint16("healthcheck-port", 0, "service health checking port")
-	nlbServiceUpdateCmd.Flags().Int64("healthcheck-interval", 0, "service health checking interval in seconds")
-	nlbServiceUpdateCmd.Flags().Int64("healthcheck-timeout", 0, "service health checking timeout in seconds")
-	nlbServiceUpdateCmd.Flags().Int64("healthcheck-retries", 0, "service health checking retries")
-	nlbServiceUpdateCmd.Flags().String("healthcheck-tls-sni", "", "service health checking server name to present with SNI in https mode")
-	nlbServiceCmd.AddCommand(nlbServiceUpdateCmd)
+	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceUpdateCmd{}))
 }
