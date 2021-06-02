@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -287,10 +288,21 @@ func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
 		return err
 	}
 
+	var contentType string
+	buf := make([]byte, 512) // http.DetectContentType() only looks at the first 512 bytes of the file.
+	if _, err = f.Read(buf); err != nil {
+		return err
+	}
+	contentType = http.DetectContentType(buf)
+	if _, err = f.Seek(0, 0); err != nil {
+		return err
+	}
+
 	putObjectInput := s3.PutObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-		Body:   bar.ProxyReader(f),
+		Bucket:      aws.String(bucket),
+		Key:         aws.String(key),
+		Body:        bar.ProxyReader(f),
+		ContentType: aws.String(contentType),
 	}
 
 	if acl != "" {
