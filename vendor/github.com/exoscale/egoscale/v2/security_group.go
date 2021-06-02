@@ -14,8 +14,8 @@ type SecurityGroupRule struct {
 	Description     string
 	EndPort         uint16
 	FlowDirection   string
-	ICMPCode        uint8
-	ICMPType        uint8
+	ICMPCode        int
+	ICMPType        int
 	ID              string
 	Network         *net.IPNet
 	Protocol        string
@@ -33,15 +33,15 @@ func securityGroupRuleFromAPI(r *papi.SecurityGroupRule) *SecurityGroupRule {
 			return
 		}(),
 		FlowDirection: string(*r.FlowDirection),
-		ICMPCode: func() (v uint8) {
+		ICMPCode: func() (v int) {
 			if r.Icmp != nil {
-				v = uint8(*r.Icmp.Code)
+				v = int(*r.Icmp.Code)
 			}
 			return
 		}(),
-		ICMPType: func() (v uint8) {
+		ICMPType: func() (v int) {
 			if r.Icmp != nil {
-				v = uint8(*r.Icmp.Type)
+				v = int(*r.Icmp.Type)
 			}
 			return
 		}(),

@@ -74,8 +74,8 @@ type IngressRule struct {
 	CIDR              *CIDR  `json:"cidr,omitempty" doc:"the CIDR notation for the base IP address of the security group rule"`
 	Description       string `json:"description,omitempty" doc:"description of the security group rule"`
 	EndPort           uint16 `json:"endport,omitempty" doc:"the ending port of the security group rule "`
-	IcmpCode          uint8  `json:"icmpcode,omitempty" doc:"the code for the ICMP message response"`
-	IcmpType          uint8  `json:"icmptype,omitempty" doc:"the type of the ICMP message response"`
+	IcmpCode          int    `json:"icmpcode,omitempty" doc:"the code for the ICMP message response"`
+	IcmpType          int    `json:"icmptype,omitempty" doc:"the type of the ICMP message response"`
 	Protocol          string `json:"protocol,omitempty" doc:"the protocol of the security group rule"`
 	RuleID            *UUID  `json:"ruleid" doc:"the id of the security group rule"`
 	SecurityGroupName string `json:"securitygroupname,omitempty" doc:"security group name"`

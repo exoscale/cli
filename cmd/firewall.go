@@ -46,6 +46,10 @@ func formatRulePort(rule egoscale.IngressRule) string {
 		if desc == "" {
 			desc = t.StringFormatted()
 		}
+		if rule.IcmpCode == -1 || rule.IcmpType == -1 {
+			desc = "Any"
+		}
+
 		ports = fmt.Sprintf("%d,%d (%s)", rule.IcmpType, rule.IcmpCode, desc)
 	} else if rule.StartPort == rule.EndPort {
 		ports = fmt.Sprint(rule.StartPort)
