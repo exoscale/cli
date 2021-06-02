@@ -7,11 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/table"
 	exov2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
-
-	"github.com/exoscale/cli/table"
 )
 
 type nlbServerStatusShowOutput struct {
@@ -88,38 +87,41 @@ func (o *nlbServiceShowOutput) toTable() {
 	t.Append([]string{"State", o.State})
 }
 
-var nlbServiceShowCmd = &cobra.Command{
-	Use:   "show NLB-NAME|ID SERVICE-NAME|ID",
-	Short: "Show a Network Load Balancer service details",
-	Long: fmt.Sprintf(`This command shows a Network Load Balancer service details.
+type nlbServiceShowCmd struct {
+	_ bool `cli-cmd:"show"`
+
+	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
+	Service             string `cli-arg:"#" cli-usage:"SERVICE-NAME|ID"`
+
+	Zone string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+}
+
+func (c *nlbServiceShowCmd) cmdAliases() []string { return gShowAlias }
+
+func (c *nlbServiceShowCmd) cmdShort() string { return "Show a Network Load Balancer service details" }
+
+func (c *nlbServiceShowCmd) cmdLong() string {
+	return fmt.Sprintf(`This command shows a Network Load Balancer service details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbServiceShowOutput{}), ", ")),
-	Aliases: gShowAlias,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
-		}
+		strings.Join(outputterTemplateAnnotations(&nlbServiceShowOutput{}), ", "))
+}
 
-		cmdSetZoneFlagFromDefault(cmd)
+func (c *nlbServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		return output(showNLBService(zone, args[0], args[1]))
-	},
+func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	return output(showNLBService(c.Zone, c.NetworkLoadBalancer, c.Service))
 }
 
 func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
 	var svc *exov2.NetworkLoadBalancerService
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-	nlb, err := lookupNLB(ctx, zone, nlbRef)
+
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, zone, nlbRef)
 	if err != nil {
 		return nil, err
 	}
@@ -171,6 +173,5 @@ func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
 }
 
 func init() {
-	nlbServiceShowCmd.Flags().StringP("zone", "z", "", "Network Load Balancer zone")
-	nlbServiceCmd.AddCommand(nlbServiceShowCmd)
+	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceShowCmd{}))
 }

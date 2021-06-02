@@ -2,66 +2,101 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
-var nlbUpdateCmd = &cobra.Command{
-	Use:   "update NAME|ID",
-	Short: "Update a Network Load Balancer",
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "missing arguments")
+var nlbResetFields = []string{
+	"labels",
+}
+
+type nlbUpdateCmd struct {
+	_ bool `cli-cmd:"update"`
+
+	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"NAME|ID"`
+
+	Description string            `cli-usage:"Network Load Balancer description"`
+	Labels      map[string]string `cli-flag:"label" cli-usage:"Network Load Balancer label (format: key=value)"`
+	Name        string            `cli-usage:"Network Load Balancer name"`
+	ResetFields []string          `cli-flag:"reset" cli-usage:"properties to reset to default value"`
+	Zone        string            `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+}
+
+func (c *nlbUpdateCmd) cmdAliases() []string { return nil }
+
+func (c *nlbUpdateCmd) cmdShort() string { return "Update a Network Load Balancer" }
+
+func (c *nlbUpdateCmd) cmdLong() string {
+	return fmt.Sprintf(`This command updates a Network Load Balancer.
+
+Supported output template annotations: %s
+
+Support values for --reset flag: %s`,
+		strings.Join(outputterTemplateAnnotations(&nlbShowOutput{}), ", "),
+		strings.Join(nlbResetFields, ", "),
+	)
+}
+
+func (c *nlbUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *nlbUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+	var updated bool
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	if err != nil {
+		return err
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+		nlb.Description = c.Description
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+		nlb.Labels = c.Labels
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+		nlb.Name = c.Name
+		updated = true
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Updating Network Load Balancer %q...", nlb.Name), func() {
+		if updated {
+			if err = cs.UpdateNetworkLoadBalancer(ctx, c.Zone, nlb); err != nil {
+				return
+			}
 		}
 
-		cmdSetZoneFlagFromDefault(cmd)
+		for _, f := range c.ResetFields {
+			switch f {
+			case "labels":
+				err = nlb.ResetField(ctx, &nlb.Labels)
+			}
+			if err != nil {
+				return
+			}
+		}
+	})
+	if err != nil {
+		return err
+	}
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
+	if !gQuiet {
+		return output(showNLB(c.Zone, nlb.ID))
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		nlb, err := lookupNLB(ctx, zone, args[0])
-		if err != nil {
-			return err
-		}
-
-		name, err := cmd.Flags().GetString("name")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("name") {
-			nlb.Name = name
-		}
-
-		description, err := cmd.Flags().GetString("description")
-		if err != nil {
-			return err
-		}
-		if cmd.Flags().Changed("description") {
-			nlb.Description = description
-		}
-
-		if err := cs.UpdateNetworkLoadBalancer(ctx, zone, nlb); err != nil {
-			return fmt.Errorf("unable to update Network Load Balancer: %s", err)
-		}
-
-		if !gQuiet {
-			return output(showNLB(zone, nlb.ID))
-		}
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
-	nlbUpdateCmd.Flags().StringP("zone", "z", "", "Network Load Balancer zone")
-	nlbUpdateCmd.Flags().String("name", "", "service name")
-	nlbUpdateCmd.Flags().String("description", "", "service description")
-	nlbCmd.AddCommand(nlbUpdateCmd)
+	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbUpdateCmd{}))
 }

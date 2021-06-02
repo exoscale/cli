@@ -8,67 +8,58 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var nlbServiceDeleteCmd = &cobra.Command{
-	Use:     "delete NLB-NAME|ID SERVICE-NAME|ID",
-	Short:   "Delete a Network Load Balancer service",
-	Aliases: gRemoveAlias,
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+type nlbServiceDeleteCmd struct {
+	_ bool `cli-cmd:"delete"`
+
+	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
+	Service             string `cli-arg:"#" cli-usage:"SERVICE-NAME|ID"`
+
+	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+}
+
+func (c *nlbServiceDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+
+func (c *nlbServiceDeleteCmd) cmdShort() string { return "Delete a Network Load Balancer service" }
+
+func (c *nlbServiceDeleteCmd) cmdLong() string { return "" }
+
+func (c *nlbServiceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *nlbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	if !c.Force {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to delete service %q?", c.Service)) {
+			return nil
 		}
+	}
 
-		cmdSetZoneFlagFromDefault(cmd)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-		return cmdCheckRequiredFlags(cmd, []string{"zone"})
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var (
-			nlbRef = args[0]
-			svcRef = args[1]
-		)
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	if err != nil {
+		return err
+	}
 
-		zone, err := cmd.Flags().GetString("zone")
-		if err != nil {
-			return err
-		}
-
-		force, err := cmd.Flags().GetBool("force")
-		if err != nil {
-			return err
-		}
-
-		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete Network Load Balancer service %q?", args[1])) {
-				return nil
+	for _, s := range nlb.Services {
+		if s.ID == c.Service || s.Name == c.Service {
+			s := s
+			decorateAsyncOperation(fmt.Sprintf("Deleting service %q...", c.Service), func() {
+				err = nlb.DeleteService(ctx, s)
+			})
+			if err != nil {
+				return err
 			}
+
+			return nil
 		}
+	}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-		nlb, err := lookupNLB(ctx, zone, nlbRef)
-		if err != nil {
-			return err
-		}
-
-		for _, svc := range nlb.Services {
-			if svc.ID == svcRef || svc.Name == svcRef {
-				if err := nlb.DeleteService(ctx, svc); err != nil {
-					return err
-				}
-
-				if !gQuiet {
-					cmd.Println("Service deleted successfully")
-				}
-
-				return nil
-			}
-		}
-
-		return errors.New("service not found")
-	},
+	return errors.New("service not found")
 }
 
 func init() {
-	nlbServiceDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
-	nlbServiceDeleteCmd.Flags().StringP("zone", "z", "", "Network Load Balancer zone")
-	nlbServiceCmd.AddCommand(nlbServiceDeleteCmd)
+	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceDeleteCmd{}))
 }
