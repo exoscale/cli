@@ -20,17 +20,11 @@ func init() {
 	firewallAddCmd.Flags().BoolP("my-ip", "", false, "Set CIDR for my ip")
 	firewallAddCmd.Flags().BoolP("egress", "e", false, "By default rule is INGRESS (set --egress to have EGRESS rule)")
 	firewallAddCmd.Flags().StringP("protocol", "p", "", "Rule Protocol available [tcp, udp, icmp, icmpv6, ah, esp, gre]")
-	firewallAddCmd.Flags().StringP("cidr", "c", "", "Rule Cidr [CIDR 0.0.0.0/0,::/0,...]")
+	firewallAddCmd.Flags().StringP("cidr", "c", "", "Rule CIDR [CIDR 0.0.0.0/0,::/0,...]")
 	firewallAddCmd.Flags().StringP("security-group", "s", "", "Rule Security Group [NAME|ID ex: sg1,sg2...]")
 	firewallAddCmd.Flags().StringP("port", "P", "", "Rule port range [80-80,443,22-22]")
-
-	// Flag for icmp
-	icmpTypeVarP := new(uint8PtrValue)
-	icmpCodeVarP := new(uint8PtrValue)
-
-	firewallAddCmd.Flags().VarP(icmpTypeVarP, "icmp-type", "", "Set icmp type")
-	firewallAddCmd.Flags().VarP(icmpCodeVarP, "icmp-code", "", "Set icmp type code")
-
+	firewallAddCmd.Flags().Int("icmp-type", -1, "Rule ICMP type")
+	firewallAddCmd.Flags().Int("icmp-code", -1, "Rule ICMP code")
 	firewallAddCmd.Flags().StringP("description", "d", "", "Rule description")
 
 	firewallCmd.AddCommand(firewallAddCmd)
@@ -79,12 +73,12 @@ A set of predefined commands exists: ping, ssh, rdp.
 			return err
 		}
 
-		icmptype, err := getUint8CustomFlag(cmd, "icmp-type")
+		icmptype, err := cmd.Flags().GetInt("icmp-type")
 		if err != nil {
 			return err
 		}
 
-		icmpcode, err := getUint8CustomFlag(cmd, "icmp-code")
+		icmpcode, err := cmd.Flags().GetInt("icmp-code")
 		if err != nil {
 			return err
 		}
@@ -183,12 +177,9 @@ A set of predefined commands exists: ping, ssh, rdp.
 				}
 			}
 
-			if icmptype.uint8 != nil {
-				rule.IcmpType = *icmptype.uint8
-			}
-
-			if icmpcode.uint8 != nil {
-				rule.IcmpCode = *icmpcode.uint8
+			if strings.HasPrefix(rule.Protocol, "icmp") {
+				rule.IcmpType = icmptype
+				rule.IcmpCode = icmpcode
 			}
 
 			// Not best practice but waiting to find better solution
@@ -277,7 +268,7 @@ func getDefaultRule(ruleName string) (*egoscale.AuthorizeSecurityGroupIngress, e
 		return &egoscale.AuthorizeSecurityGroupIngress{
 			Protocol: "ICMP",
 			CIDRList: []egoscale.CIDR{},
-			IcmpType: uint8(echo),
+			IcmpType: int(echo),
 			IcmpCode: 0,
 		}, nil
 	}
@@ -286,7 +277,7 @@ func getDefaultRule(ruleName string) (*egoscale.AuthorizeSecurityGroupIngress, e
 		return &egoscale.AuthorizeSecurityGroupIngress{
 			Protocol: "ICMPv6",
 			CIDRList: []egoscale.CIDR{},
-			IcmpType: uint8(echoRequest),
+			IcmpType: int(echoRequest),
 			IcmpCode: 0,
 		}, nil
 	}

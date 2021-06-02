@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.56.0
+------
+
+- change: the `AuthorizeSecurityGroupIngress` struct now uses an `int` type for `Icmp(Code|Type)` fields (#499)
+
 0.55.0
 ------
 
