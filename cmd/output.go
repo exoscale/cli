@@ -146,7 +146,7 @@ func outputTable(o interface{}) {
 	v = reflect.Indirect(v)
 	t := v.Type()
 
-	// If the outputter interface is iterable (slice only), use the element type
+	// If the outputter interface is iterable (slice only), use the element type.
 	if v.Kind() == reflect.Slice {
 		t = v.Type().Elem()
 	}
@@ -155,7 +155,7 @@ func outputTable(o interface{}) {
 	// If the field has an `outputLabel` tag, use its value to override the header label.
 	headers := make([]string, 0)
 	for i := 0; i < t.NumField(); i++ {
-		// Check if the field has to be skipped
+		// Check if the field has to be skipped.
 		if l, ok := t.Field(i).Tag.Lookup("output"); ok {
 			if l == "-" {
 				continue
@@ -170,7 +170,7 @@ func outputTable(o interface{}) {
 	}
 
 	// If the outputter interface is iterable (slice only), we loop over the
-	// items and display each one in a table row
+	// items and display each one in a table row.
 	if v := reflect.ValueOf(o); reflect.Indirect(v).Kind() == reflect.Slice {
 		tab.SetHeader(headers)
 
@@ -180,7 +180,7 @@ func outputTable(o interface{}) {
 
 			for j := 0; j < item.NumField(); j++ {
 				field := item.Field(j)
-				// Check if the field has to be skipped
+				// Check if the field has to be skipped.
 				if l, ok := item.Type().Field(j).Tag.Lookup("output"); ok {
 					if l == "-" {
 						continue
@@ -190,7 +190,16 @@ func outputTable(o interface{}) {
 				switch field.Kind() {
 				case reflect.Slice:
 					// If the field value is a slice and is empty,
-					// print "n/a" instead of an empty slice
+					// print "n/a" instead of an empty slice.
+					if field.Len() == 0 {
+						row = append(row, "n/a")
+					} else {
+						row = append(row, fmt.Sprint(field.Interface()))
+					}
+
+				case reflect.Map:
+					// If the field value is a map and is empty,
+					// print "n/a" instead of an empty map.
 					if field.Len() == 0 {
 						row = append(row, "n/a")
 					} else {
@@ -217,10 +226,10 @@ func outputTable(o interface{}) {
 		return
 	}
 
-	// Single item, loop over the type fields and display each item in a key/value-type table
+	// Single item, loop over the type fields and display each item in a key/value-type table.
 
 	// If the outputter interface implements the optional `Type()` method,
-	// use its return value as table header
+	// use its return value as table header.
 	if typeMethod := reflect.ValueOf(o).MethodByName("Type"); typeMethod.Kind() != reflect.Invalid {
 		in := make([]reflect.Value, typeMethod.Type().NumIn())
 		header := typeMethod.Call(in)[0].Interface().(string)
@@ -228,7 +237,7 @@ func outputTable(o interface{}) {
 	}
 
 	for i := 0; i < t.NumField(); i++ {
-		// Check if the field has to be skipped
+		// Check if the field has to be skipped.
 		if l, ok := t.Field(i).Tag.Lookup("output"); ok {
 			if l == "-" {
 				continue
@@ -242,7 +251,7 @@ func outputTable(o interface{}) {
 
 		switch v.Field(i).Kind() {
 		case reflect.Slice:
-			// If the field value is a slice and is empty, print "n/a" instead of 0
+			// If the field value is a slice and is empty, print "n/a" instead of 0.
 			if n := v.Field(i).Len(); n == 0 {
 				tab.Append([]string{label, "n/a"})
 			} else {
@@ -251,7 +260,7 @@ func outputTable(o interface{}) {
 			}
 
 		case reflect.Ptr:
-			// If the field value is a nil pointer, print "n/a" instead of <nil>
+			// If the field value is a nil pointer, print "n/a" instead of <nil>.
 			if v.Field(i).IsNil() {
 				tab.Append([]string{label, "n/a"})
 			} else {
