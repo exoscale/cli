@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.31.0
+
+### Features
+
+- Add autocompletion generation for more shells
+- `exo nlb`: add support for labels
+
+## Bug Fixes
+
+- `exo limits`: add missing organization resource limits
+- `exo storage upload`: detect content type before file upload
+- `exo firewall`: support Security Group rules with ICMP code/type -1
+
+## Changes
+
+- `exo nlb service add`: the flag `--instance-pool-id` has been replaced by `--instance-pool` accepting either a name or ID
+
+
 ## 1.30.0
 
 ### Features
