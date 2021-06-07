@@ -42,7 +42,7 @@ type sksCreateCmd struct {
 
 func (c *sksCreateCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *sksCreateCmd) cmdShort() string { return "Add a Nodepool to an SKS cluster" }
+func (c *sksCreateCmd) cmdShort() string { return "Create an SKS cluster" }
 
 func (c *sksCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates an SKS cluster.
