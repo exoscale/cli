@@ -43,7 +43,7 @@ func (c *instancePoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to scale InstancePool %q to %d?",
+			"Are you sure you want to scale Instance Pool %q to %d?",
 			c.InstancePool,
 			c.Size,
 		)) {
