@@ -10,8 +10,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.0.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
-	github.com/blang/semver v3.5.1+incompatible
-	github.com/cenkalti/backoff v2.0.0+incompatible
 	github.com/dustin/go-humanize v1.0.0
 	github.com/exoscale/egoscale v0.56.0
 	github.com/exoscale/openapi-cli-generator v1.1.0
@@ -44,7 +42,6 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0
 	github.com/vbauerster/mpb/v4 v4.12.2
-	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
