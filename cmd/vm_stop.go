@@ -56,22 +56,6 @@ var vmStopCmd = &cobra.Command{
 	},
 }
 
-// stopVirtualMachine stop a virtual machine instance
-func stopVirtualMachine(vmName string) error {
-	vm, err := getVirtualMachineByNameOrID(vmName)
-	if err != nil {
-		return err
-	}
-
-	state := (string)(egoscale.VirtualMachineRunning)
-	if vm.State != state {
-		return fmt.Errorf("%q is not in a %s state, got %s", vmName, state, vm.State)
-	}
-
-	_, err = asyncRequest(&egoscale.StopVirtualMachine{ID: vm.ID}, fmt.Sprintf("Stopping %q ", vm.Name))
-	return err
-}
-
 func init() {
 	vmStopCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	vmCmd.AddCommand(vmStopCmd)

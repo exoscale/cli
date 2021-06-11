@@ -88,18 +88,6 @@ func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
 	}
 }
 
-func deleteKeyPair(vmID egoscale.UUID) error {
-	folder := getKeyPairPath(vmID.String())
-
-	if _, err := os.Stat(folder); !os.IsNotExist(err) {
-		if err := os.RemoveAll(folder); err != nil {
-			return fmt.Errorf("the SSH private key could not be deleted: %s", err)
-		}
-	}
-
-	return nil
-}
-
 func getUserDataFromFile(path string) (string, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
