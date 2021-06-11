@@ -36,7 +36,7 @@ func (c *deployTargetListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing Deploy Targets.
 
 	Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&vmListOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&deployTargetListOutput{}), ", "))
 }
 
 func (c *deployTargetListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
