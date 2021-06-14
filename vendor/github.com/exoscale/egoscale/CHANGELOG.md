@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.57.0
+------
+
+- feature: v2: add support for Database Services
+
 0.56.0
 ------
 
