@@ -481,16 +481,16 @@ type AntiAffinityGroup struct {
 type DbaasBackupConfig struct {
 
 	// Interval of taking a frequent backup in service types supporting different backup schedules
-	FrequentIntervalMinutes *float32 `json:"frequent-interval-minutes,omitempty"`
+	FrequentIntervalMinutes *int64 `json:"frequent-interval-minutes,omitempty"`
 
 	// Maximum age of the oldest frequent backup in service types supporting different backup schedules
-	FrequentOldestAgeMinutes *float32 `json:"frequent-oldest-age-minutes,omitempty"`
+	FrequentOldestAgeMinutes *int64 `json:"frequent-oldest-age-minutes,omitempty"`
 
 	// Interval of taking a frequent backup in service types supporting different backup schedules
-	InfrequentIntervalMinutes *float32 `json:"infrequent-interval-minutes,omitempty"`
+	InfrequentIntervalMinutes *int64 `json:"infrequent-interval-minutes,omitempty"`
 
 	// Maximum age of the oldest infrequent backup in service types supporting different backup schedules
-	InfrequentOldestAgeMinutes *float32 `json:"infrequent-oldest-age-minutes,omitempty"`
+	InfrequentOldestAgeMinutes *int64 `json:"infrequent-oldest-age-minutes,omitempty"`
 
 	// The interval, in hours, at which backups are generated.
 	//                                             For some services, like PostgreSQL, this is the interval
@@ -1088,6 +1088,7 @@ type Instance struct {
 
 	// Instance IPv6 address
 	Ipv6Address *string `json:"ipv6-address,omitempty"`
+	Labels      *Labels `json:"labels,omitempty"`
 
 	// Resource manager
 	Manager *Manager `json:"manager,omitempty"`
@@ -1318,10 +1319,10 @@ type LoadBalancerServiceHealthcheck struct {
 	Interval *int64 `json:"interval,omitempty"`
 
 	// Healthcheck mode
-	Mode LoadBalancerServiceHealthcheckMode `json:"mode"`
+	Mode *LoadBalancerServiceHealthcheckMode `json:"mode,omitempty"`
 
 	// Healthcheck port
-	Port int64 `json:"port"`
+	Port *int64 `json:"port,omitempty"`
 
 	// Number of retries before considering a Service failed
 	Retries *int64 `json:"retries,omitempty"`
@@ -1674,6 +1675,9 @@ type Template struct {
 	// Template ID
 	Id *string `json:"id,omitempty"`
 
+	// Template maintainer
+	Maintainer *string `json:"maintainer,omitempty"`
+
 	// Template name
 	Name *string `json:"name,omitempty"`
 
@@ -1722,8 +1726,8 @@ type CreateAntiAffinityGroupJSONBody struct {
 	Name string `json:"name"`
 }
 
-// DbaasCreateServiceJSONBody defines parameters for DbaasCreateService.
-type DbaasCreateServiceJSONBody struct {
+// CreateDbaasServiceJSONBody defines parameters for CreateDbaasService.
+type CreateDbaasServiceJSONBody struct {
 
 	// Integrations with other services
 	Integrations *[]DbaasServiceIntegration `json:"integrations,omitempty"`
@@ -1732,7 +1736,7 @@ type DbaasCreateServiceJSONBody struct {
 	Maintenance *struct {
 
 		// Day of week for installing updates
-		Dow DbaasCreateServiceJSONBodyMaintenanceDow `json:"dow"`
+		Dow CreateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
 
 		// Time for installing updates, UTC
 		Time string `json:"time"`
@@ -1747,25 +1751,25 @@ type DbaasCreateServiceJSONBody struct {
 	Type                  DbaasServiceTypeName `json:"type"`
 
 	// Service type-specific settings
-	UserConfig *DbaasCreateServiceJSONBody_UserConfig `json:"user-config,omitempty"`
+	UserConfig *CreateDbaasServiceJSONBody_UserConfig `json:"user-config,omitempty"`
 }
 
-// DbaasCreateServiceJSONBodyMaintenanceDow defines parameters for DbaasCreateService.
-type DbaasCreateServiceJSONBodyMaintenanceDow string
+// CreateDbaasServiceJSONBodyMaintenanceDow defines parameters for CreateDbaasService.
+type CreateDbaasServiceJSONBodyMaintenanceDow string
 
-// DbaasCreateServiceJSONBody_UserConfig defines parameters for DbaasCreateService.
-type DbaasCreateServiceJSONBody_UserConfig struct {
+// CreateDbaasServiceJSONBody_UserConfig defines parameters for CreateDbaasService.
+type CreateDbaasServiceJSONBody_UserConfig struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
-// DbaasUpdateServiceJSONBody defines parameters for DbaasUpdateService.
-type DbaasUpdateServiceJSONBody struct {
+// UpdateDbaasServiceJSONBody defines parameters for UpdateDbaasService.
+type UpdateDbaasServiceJSONBody struct {
 
 	// Automatic maintenance settings
 	Maintenance *struct {
 
 		// Day of week for installing updates
-		Dow DbaasUpdateServiceJSONBodyMaintenanceDow `json:"dow"`
+		Dow UpdateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
 
 		// Time for installing updates, UTC
 		Time string `json:"time"`
@@ -1781,14 +1785,14 @@ type DbaasUpdateServiceJSONBody struct {
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
 
 	// Service type-specific settings
-	UserConfig *DbaasUpdateServiceJSONBody_UserConfig `json:"user-config,omitempty"`
+	UserConfig *UpdateDbaasServiceJSONBody_UserConfig `json:"user-config,omitempty"`
 }
 
-// DbaasUpdateServiceJSONBodyMaintenanceDow defines parameters for DbaasUpdateService.
-type DbaasUpdateServiceJSONBodyMaintenanceDow string
+// UpdateDbaasServiceJSONBodyMaintenanceDow defines parameters for UpdateDbaasService.
+type UpdateDbaasServiceJSONBodyMaintenanceDow string
 
-// DbaasUpdateServiceJSONBody_UserConfig defines parameters for DbaasUpdateService.
-type DbaasUpdateServiceJSONBody_UserConfig struct {
+// UpdateDbaasServiceJSONBody_UserConfig defines parameters for UpdateDbaasService.
+type UpdateDbaasServiceJSONBody_UserConfig struct {
 	AdditionalProperties map[string]interface{} `json:"-"`
 }
 
@@ -1851,7 +1855,8 @@ type CreateInstanceJSONBody struct {
 	InstanceType InstanceType `json:"instance-type"`
 
 	// Enable IPv6
-	Ipv6Enabled *bool `json:"ipv6-enabled,omitempty"`
+	Ipv6Enabled *bool   `json:"ipv6-enabled,omitempty"`
+	Labels      *Labels `json:"labels,omitempty"`
 
 	// Instance name
 	Name *string `json:"name,omitempty"`
@@ -1981,6 +1986,7 @@ type ScaleInstancePoolJSONBody struct {
 
 // UpdateInstanceJSONBody defines parameters for UpdateInstance.
 type UpdateInstanceJSONBody struct {
+	Labels *Labels `json:"labels,omitempty"`
 
 	// Instance name
 	Name *string `json:"name,omitempty"`
@@ -1988,6 +1994,9 @@ type UpdateInstanceJSONBody struct {
 	// Instance Cloud-init user-data
 	UserData *string `json:"user-data,omitempty"`
 }
+
+// ResetInstanceFieldParamsField defines parameters for ResetInstanceField.
+type ResetInstanceFieldParamsField string
 
 // RevertInstanceToSnapshotJSONBody defines parameters for RevertInstanceToSnapshot.
 type RevertInstanceToSnapshotJSONBody struct {
@@ -2078,6 +2087,9 @@ type UpdateLoadBalancerServiceJSONBodyProtocol string
 
 // UpdateLoadBalancerServiceJSONBodyStrategy defines parameters for UpdateLoadBalancerService.
 type UpdateLoadBalancerServiceJSONBodyStrategy string
+
+// ResetLoadBalancerServiceFieldParamsField defines parameters for ResetLoadBalancerServiceField.
+type ResetLoadBalancerServiceFieldParamsField string
 
 // ResetLoadBalancerFieldParamsField defines parameters for ResetLoadBalancerField.
 type ResetLoadBalancerFieldParamsField string
@@ -2387,11 +2399,11 @@ type CopyTemplateJSONBody struct {
 // CreateAntiAffinityGroupJSONRequestBody defines body for CreateAntiAffinityGroup for application/json ContentType.
 type CreateAntiAffinityGroupJSONRequestBody CreateAntiAffinityGroupJSONBody
 
-// DbaasCreateServiceJSONRequestBody defines body for DbaasCreateService for application/json ContentType.
-type DbaasCreateServiceJSONRequestBody DbaasCreateServiceJSONBody
+// CreateDbaasServiceJSONRequestBody defines body for CreateDbaasService for application/json ContentType.
+type CreateDbaasServiceJSONRequestBody CreateDbaasServiceJSONBody
 
-// DbaasUpdateServiceJSONRequestBody defines body for DbaasUpdateService for application/json ContentType.
-type DbaasUpdateServiceJSONRequestBody DbaasUpdateServiceJSONBody
+// UpdateDbaasServiceJSONRequestBody defines body for UpdateDbaasService for application/json ContentType.
+type UpdateDbaasServiceJSONRequestBody UpdateDbaasServiceJSONBody
 
 // CreateElasticIpJSONRequestBody defines body for CreateElasticIp for application/json ContentType.
 type CreateElasticIpJSONRequestBody CreateElasticIpJSONBody
@@ -2492,25 +2504,25 @@ type RegisterTemplateJSONRequestBody RegisterTemplateJSONBody
 // CopyTemplateJSONRequestBody defines body for CopyTemplate for application/json ContentType.
 type CopyTemplateJSONRequestBody CopyTemplateJSONBody
 
-// Getter for additional properties for DbaasCreateServiceJSONBody_UserConfig. Returns the specified
+// Getter for additional properties for CreateDbaasServiceJSONBody_UserConfig. Returns the specified
 // element and whether it was found
-func (a DbaasCreateServiceJSONBody_UserConfig) Get(fieldName string) (value interface{}, found bool) {
+func (a CreateDbaasServiceJSONBody_UserConfig) Get(fieldName string) (value interface{}, found bool) {
 	if a.AdditionalProperties != nil {
 		value, found = a.AdditionalProperties[fieldName]
 	}
 	return
 }
 
-// Setter for additional properties for DbaasCreateServiceJSONBody_UserConfig
-func (a *DbaasCreateServiceJSONBody_UserConfig) Set(fieldName string, value interface{}) {
+// Setter for additional properties for CreateDbaasServiceJSONBody_UserConfig
+func (a *CreateDbaasServiceJSONBody_UserConfig) Set(fieldName string, value interface{}) {
 	if a.AdditionalProperties == nil {
 		a.AdditionalProperties = make(map[string]interface{})
 	}
 	a.AdditionalProperties[fieldName] = value
 }
 
-// Override default JSON handling for DbaasCreateServiceJSONBody_UserConfig to handle AdditionalProperties
-func (a *DbaasCreateServiceJSONBody_UserConfig) UnmarshalJSON(b []byte) error {
+// Override default JSON handling for CreateDbaasServiceJSONBody_UserConfig to handle AdditionalProperties
+func (a *CreateDbaasServiceJSONBody_UserConfig) UnmarshalJSON(b []byte) error {
 	object := make(map[string]json.RawMessage)
 	err := json.Unmarshal(b, &object)
 	if err != nil {
@@ -2531,8 +2543,8 @@ func (a *DbaasCreateServiceJSONBody_UserConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Override default JSON handling for DbaasCreateServiceJSONBody_UserConfig to handle AdditionalProperties
-func (a DbaasCreateServiceJSONBody_UserConfig) MarshalJSON() ([]byte, error) {
+// Override default JSON handling for CreateDbaasServiceJSONBody_UserConfig to handle AdditionalProperties
+func (a CreateDbaasServiceJSONBody_UserConfig) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -2545,25 +2557,25 @@ func (a DbaasCreateServiceJSONBody_UserConfig) MarshalJSON() ([]byte, error) {
 	return json.Marshal(object)
 }
 
-// Getter for additional properties for DbaasUpdateServiceJSONBody_UserConfig. Returns the specified
+// Getter for additional properties for UpdateDbaasServiceJSONBody_UserConfig. Returns the specified
 // element and whether it was found
-func (a DbaasUpdateServiceJSONBody_UserConfig) Get(fieldName string) (value interface{}, found bool) {
+func (a UpdateDbaasServiceJSONBody_UserConfig) Get(fieldName string) (value interface{}, found bool) {
 	if a.AdditionalProperties != nil {
 		value, found = a.AdditionalProperties[fieldName]
 	}
 	return
 }
 
-// Setter for additional properties for DbaasUpdateServiceJSONBody_UserConfig
-func (a *DbaasUpdateServiceJSONBody_UserConfig) Set(fieldName string, value interface{}) {
+// Setter for additional properties for UpdateDbaasServiceJSONBody_UserConfig
+func (a *UpdateDbaasServiceJSONBody_UserConfig) Set(fieldName string, value interface{}) {
 	if a.AdditionalProperties == nil {
 		a.AdditionalProperties = make(map[string]interface{})
 	}
 	a.AdditionalProperties[fieldName] = value
 }
 
-// Override default JSON handling for DbaasUpdateServiceJSONBody_UserConfig to handle AdditionalProperties
-func (a *DbaasUpdateServiceJSONBody_UserConfig) UnmarshalJSON(b []byte) error {
+// Override default JSON handling for UpdateDbaasServiceJSONBody_UserConfig to handle AdditionalProperties
+func (a *UpdateDbaasServiceJSONBody_UserConfig) UnmarshalJSON(b []byte) error {
 	object := make(map[string]json.RawMessage)
 	err := json.Unmarshal(b, &object)
 	if err != nil {
@@ -2584,8 +2596,8 @@ func (a *DbaasUpdateServiceJSONBody_UserConfig) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Override default JSON handling for DbaasUpdateServiceJSONBody_UserConfig to handle AdditionalProperties
-func (a DbaasUpdateServiceJSONBody_UserConfig) MarshalJSON() ([]byte, error) {
+// Override default JSON handling for UpdateDbaasServiceJSONBody_UserConfig to handle AdditionalProperties
+func (a UpdateDbaasServiceJSONBody_UserConfig) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
@@ -3215,30 +3227,33 @@ type ClientInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroup(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DbaasListServices request
-	DbaasListServices(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetDbaasCaCertificate request
+	GetDbaasCaCertificate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DbaasCreateService request  with any body
-	DbaasCreateServiceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListDbaasServices request
+	ListDbaasServices(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	DbaasCreateService(ctx context.Context, body DbaasCreateServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateDbaasService request  with any body
+	CreateDbaasServiceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DbaasListServiceTypes request
-	DbaasListServiceTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateDbaasService(ctx context.Context, body CreateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DbaasGetServiceType request
-	DbaasGetServiceType(ctx context.Context, serviceTypeName string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListDbaasServiceTypes request
+	ListDbaasServiceTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DbaasTerminateService request
-	DbaasTerminateService(ctx context.Context, serviceName string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetDbaasServiceType request
+	GetDbaasServiceType(ctx context.Context, serviceTypeName string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DbaasGetService request
-	DbaasGetService(ctx context.Context, serviceName string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// TerminateDbaasService request
+	TerminateDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// DbaasUpdateService request  with any body
-	DbaasUpdateServiceWithBody(ctx context.Context, serviceName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetDbaasService request
+	GetDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	DbaasUpdateService(ctx context.Context, serviceName string, body DbaasUpdateServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateDbaasService request  with any body
+	UpdateDbaasServiceWithBody(ctx context.Context, name string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateDbaasService(ctx context.Context, name string, body UpdateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListDeployTargets request
 	ListDeployTargets(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3338,6 +3353,9 @@ type ClientInterface interface {
 
 	UpdateInstance(ctx context.Context, id string, body UpdateInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ResetInstanceField request
+	ResetInstanceField(ctx context.Context, id string, field ResetInstanceFieldParamsField, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateSnapshot request
 	CreateSnapshot(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3386,6 +3404,9 @@ type ClientInterface interface {
 	UpdateLoadBalancerServiceWithBody(ctx context.Context, id string, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateLoadBalancerService(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ResetLoadBalancerServiceField request
+	ResetLoadBalancerServiceField(ctx context.Context, id string, serviceId string, field ResetLoadBalancerServiceFieldParamsField, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResetLoadBalancerField request
 	ResetLoadBalancerField(ctx context.Context, id string, field ResetLoadBalancerFieldParamsField, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3539,6 +3560,9 @@ type ClientInterface interface {
 	// GetSosPresignedUrl request
 	GetSosPresignedUrl(ctx context.Context, bucket string, params *GetSosPresignedUrlParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListSshKeys request
+	ListSshKeys(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetSshKey request
 	GetSshKey(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3625,8 +3649,8 @@ func (c *Client) GetAntiAffinityGroup(ctx context.Context, id string, reqEditors
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasListServices(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasListServicesRequest(c.Server)
+func (c *Client) GetDbaasCaCertificate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDbaasCaCertificateRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -3637,8 +3661,8 @@ func (c *Client) DbaasListServices(ctx context.Context, reqEditors ...RequestEdi
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasCreateServiceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasCreateServiceRequestWithBody(c.Server, contentType, body)
+func (c *Client) ListDbaasServices(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDbaasServicesRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -3649,8 +3673,8 @@ func (c *Client) DbaasCreateServiceWithBody(ctx context.Context, contentType str
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasCreateService(ctx context.Context, body DbaasCreateServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasCreateServiceRequest(c.Server, body)
+func (c *Client) CreateDbaasServiceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasServiceRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3661,8 +3685,8 @@ func (c *Client) DbaasCreateService(ctx context.Context, body DbaasCreateService
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasListServiceTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasListServiceTypesRequest(c.Server)
+func (c *Client) CreateDbaasService(ctx context.Context, body CreateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasServiceRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -3673,8 +3697,8 @@ func (c *Client) DbaasListServiceTypes(ctx context.Context, reqEditors ...Reques
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasGetServiceType(ctx context.Context, serviceTypeName string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasGetServiceTypeRequest(c.Server, serviceTypeName)
+func (c *Client) ListDbaasServiceTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDbaasServiceTypesRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -3685,8 +3709,8 @@ func (c *Client) DbaasGetServiceType(ctx context.Context, serviceTypeName string
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasTerminateService(ctx context.Context, serviceName string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasTerminateServiceRequest(c.Server, serviceName)
+func (c *Client) GetDbaasServiceType(ctx context.Context, serviceTypeName string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDbaasServiceTypeRequest(c.Server, serviceTypeName)
 	if err != nil {
 		return nil, err
 	}
@@ -3697,8 +3721,8 @@ func (c *Client) DbaasTerminateService(ctx context.Context, serviceName string, 
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasGetService(ctx context.Context, serviceName string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasGetServiceRequest(c.Server, serviceName)
+func (c *Client) TerminateDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewTerminateDbaasServiceRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -3709,8 +3733,8 @@ func (c *Client) DbaasGetService(ctx context.Context, serviceName string, reqEdi
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasUpdateServiceWithBody(ctx context.Context, serviceName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasUpdateServiceRequestWithBody(c.Server, serviceName, contentType, body)
+func (c *Client) GetDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDbaasServiceRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -3721,8 +3745,20 @@ func (c *Client) DbaasUpdateServiceWithBody(ctx context.Context, serviceName str
 	return c.Client.Do(req)
 }
 
-func (c *Client) DbaasUpdateService(ctx context.Context, serviceName string, body DbaasUpdateServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDbaasUpdateServiceRequest(c.Server, serviceName, body)
+func (c *Client) UpdateDbaasServiceWithBody(ctx context.Context, name string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDbaasServiceRequestWithBody(c.Server, name, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDbaasService(ctx context.Context, name string, body UpdateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDbaasServiceRequest(c.Server, name, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4165,6 +4201,18 @@ func (c *Client) UpdateInstance(ctx context.Context, id string, body UpdateInsta
 	return c.Client.Do(req)
 }
 
+func (c *Client) ResetInstanceField(ctx context.Context, id string, field ResetInstanceFieldParamsField, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetInstanceFieldRequest(c.Server, id, field)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateSnapshot(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateSnapshotRequest(c.Server, id)
 	if err != nil {
@@ -4371,6 +4419,18 @@ func (c *Client) UpdateLoadBalancerServiceWithBody(ctx context.Context, id strin
 
 func (c *Client) UpdateLoadBalancerService(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateLoadBalancerServiceRequest(c.Server, id, serviceId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetLoadBalancerServiceField(ctx context.Context, id string, serviceId string, field ResetLoadBalancerServiceFieldParamsField, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetLoadBalancerServiceFieldRequest(c.Server, id, serviceId, field)
 	if err != nil {
 		return nil, err
 	}
@@ -5053,6 +5113,18 @@ func (c *Client) GetSosPresignedUrl(ctx context.Context, bucket string, params *
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListSshKeys(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListSshKeysRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetSshKey(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSshKeyRequest(c.Server, name)
 	if err != nil {
@@ -5296,8 +5368,35 @@ func NewGetAntiAffinityGroupRequest(server string, id string) (*http.Request, er
 	return req, nil
 }
 
-// NewDbaasListServicesRequest generates requests for DbaasListServices
-func NewDbaasListServicesRequest(server string) (*http.Request, error) {
+// NewGetDbaasCaCertificateRequest generates requests for GetDbaasCaCertificate
+func NewGetDbaasCaCertificateRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-ca-certificate")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListDbaasServicesRequest generates requests for ListDbaasServices
+func NewListDbaasServicesRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -5323,19 +5422,19 @@ func NewDbaasListServicesRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewDbaasCreateServiceRequest calls the generic DbaasCreateService builder with application/json body
-func NewDbaasCreateServiceRequest(server string, body DbaasCreateServiceJSONRequestBody) (*http.Request, error) {
+// NewCreateDbaasServiceRequest calls the generic CreateDbaasService builder with application/json body
+func NewCreateDbaasServiceRequest(server string, body CreateDbaasServiceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewDbaasCreateServiceRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateDbaasServiceRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewDbaasCreateServiceRequestWithBody generates requests for DbaasCreateService with any type of body
-func NewDbaasCreateServiceRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateDbaasServiceRequestWithBody generates requests for CreateDbaasService with any type of body
+func NewCreateDbaasServiceRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -5363,8 +5462,8 @@ func NewDbaasCreateServiceRequestWithBody(server string, contentType string, bod
 	return req, nil
 }
 
-// NewDbaasListServiceTypesRequest generates requests for DbaasListServiceTypes
-func NewDbaasListServiceTypesRequest(server string) (*http.Request, error) {
+// NewListDbaasServiceTypesRequest generates requests for ListDbaasServiceTypes
+func NewListDbaasServiceTypesRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -5390,8 +5489,8 @@ func NewDbaasListServiceTypesRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewDbaasGetServiceTypeRequest generates requests for DbaasGetServiceType
-func NewDbaasGetServiceTypeRequest(server string, serviceTypeName string) (*http.Request, error) {
+// NewGetDbaasServiceTypeRequest generates requests for GetDbaasServiceType
+func NewGetDbaasServiceTypeRequest(server string, serviceTypeName string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -5424,13 +5523,13 @@ func NewDbaasGetServiceTypeRequest(server string, serviceTypeName string) (*http
 	return req, nil
 }
 
-// NewDbaasTerminateServiceRequest generates requests for DbaasTerminateService
-func NewDbaasTerminateServiceRequest(server string, serviceName string) (*http.Request, error) {
+// NewTerminateDbaasServiceRequest generates requests for TerminateDbaasService
+func NewTerminateDbaasServiceRequest(server string, name string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
 	if err != nil {
 		return nil, err
 	}
@@ -5458,13 +5557,13 @@ func NewDbaasTerminateServiceRequest(server string, serviceName string) (*http.R
 	return req, nil
 }
 
-// NewDbaasGetServiceRequest generates requests for DbaasGetService
-func NewDbaasGetServiceRequest(server string, serviceName string) (*http.Request, error) {
+// NewGetDbaasServiceRequest generates requests for GetDbaasService
+func NewGetDbaasServiceRequest(server string, name string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
 	if err != nil {
 		return nil, err
 	}
@@ -5492,24 +5591,24 @@ func NewDbaasGetServiceRequest(server string, serviceName string) (*http.Request
 	return req, nil
 }
 
-// NewDbaasUpdateServiceRequest calls the generic DbaasUpdateService builder with application/json body
-func NewDbaasUpdateServiceRequest(server string, serviceName string, body DbaasUpdateServiceJSONRequestBody) (*http.Request, error) {
+// NewUpdateDbaasServiceRequest calls the generic UpdateDbaasService builder with application/json body
+func NewUpdateDbaasServiceRequest(server string, name string, body UpdateDbaasServiceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewDbaasUpdateServiceRequestWithBody(server, serviceName, "application/json", bodyReader)
+	return NewUpdateDbaasServiceRequestWithBody(server, name, "application/json", bodyReader)
 }
 
-// NewDbaasUpdateServiceRequestWithBody generates requests for DbaasUpdateService with any type of body
-func NewDbaasUpdateServiceRequestWithBody(server string, serviceName string, contentType string, body io.Reader) (*http.Request, error) {
+// NewUpdateDbaasServiceRequestWithBody generates requests for UpdateDbaasService with any type of body
+func NewUpdateDbaasServiceRequestWithBody(server string, name string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
 	if err != nil {
 		return nil, err
 	}
@@ -6540,6 +6639,47 @@ func NewUpdateInstanceRequestWithBody(server string, id string, contentType stri
 	return req, nil
 }
 
+// NewResetInstanceFieldRequest generates requests for ResetInstanceField
+func NewResetInstanceFieldRequest(server string, id string, field ResetInstanceFieldParamsField) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "field", runtime.ParamLocationPath, field)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/instance/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateSnapshotRequest generates requests for CreateSnapshot
 func NewCreateSnapshotRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -7054,6 +7194,54 @@ func NewUpdateLoadBalancerServiceRequestWithBody(server string, id string, servi
 	return req, nil
 }
 
+// NewResetLoadBalancerServiceFieldRequest generates requests for ResetLoadBalancerServiceField
+func NewResetLoadBalancerServiceFieldRequest(server string, id string, serviceId string, field ResetLoadBalancerServiceFieldParamsField) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "service-id", runtime.ParamLocationPath, serviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "field", runtime.ParamLocationPath, field)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/load-balancer/%s/service/%s/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewResetLoadBalancerFieldRequest generates requests for ResetLoadBalancerField
 func NewResetLoadBalancerFieldRequest(server string, id string, field ResetLoadBalancerFieldParamsField) (*http.Request, error) {
 	var err error
@@ -7077,7 +7265,7 @@ func NewResetLoadBalancerFieldRequest(server string, id string, field ResetLoadB
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/load-balancer/%s/%s:reset", pathParam0, pathParam1)
+	operationPath := fmt.Sprintf("/load-balancer/%s/%s", pathParam0, pathParam1)
 	if operationPath[0] == '/' {
 		operationPath = operationPath[1:]
 	}
@@ -8663,6 +8851,33 @@ func NewGetSosPresignedUrlRequest(server string, bucket string, params *GetSosPr
 	return req, nil
 }
 
+// NewListSshKeysRequest generates requests for ListSshKeys
+func NewListSshKeysRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/ssh-key")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetSshKeyRequest generates requests for GetSshKey
 func NewGetSshKeyRequest(server string, name string) (*http.Request, error) {
 	var err error
@@ -8999,30 +9214,33 @@ type ClientWithResponsesInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroupWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAntiAffinityGroupResponse, error)
 
-	// DbaasListServices request
-	DbaasListServicesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DbaasListServicesResponse, error)
+	// GetDbaasCaCertificate request
+	GetDbaasCaCertificateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasCaCertificateResponse, error)
 
-	// DbaasCreateService request  with any body
-	DbaasCreateServiceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DbaasCreateServiceResponse, error)
+	// ListDbaasServices request
+	ListDbaasServicesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasServicesResponse, error)
 
-	DbaasCreateServiceWithResponse(ctx context.Context, body DbaasCreateServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*DbaasCreateServiceResponse, error)
+	// CreateDbaasService request  with any body
+	CreateDbaasServiceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasServiceResponse, error)
 
-	// DbaasListServiceTypes request
-	DbaasListServiceTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DbaasListServiceTypesResponse, error)
+	CreateDbaasServiceWithResponse(ctx context.Context, body CreateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasServiceResponse, error)
 
-	// DbaasGetServiceType request
-	DbaasGetServiceTypeWithResponse(ctx context.Context, serviceTypeName string, reqEditors ...RequestEditorFn) (*DbaasGetServiceTypeResponse, error)
+	// ListDbaasServiceTypes request
+	ListDbaasServiceTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasServiceTypesResponse, error)
 
-	// DbaasTerminateService request
-	DbaasTerminateServiceWithResponse(ctx context.Context, serviceName string, reqEditors ...RequestEditorFn) (*DbaasTerminateServiceResponse, error)
+	// GetDbaasServiceType request
+	GetDbaasServiceTypeWithResponse(ctx context.Context, serviceTypeName string, reqEditors ...RequestEditorFn) (*GetDbaasServiceTypeResponse, error)
 
-	// DbaasGetService request
-	DbaasGetServiceWithResponse(ctx context.Context, serviceName string, reqEditors ...RequestEditorFn) (*DbaasGetServiceResponse, error)
+	// TerminateDbaasService request
+	TerminateDbaasServiceWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*TerminateDbaasServiceResponse, error)
 
-	// DbaasUpdateService request  with any body
-	DbaasUpdateServiceWithBodyWithResponse(ctx context.Context, serviceName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DbaasUpdateServiceResponse, error)
+	// GetDbaasService request
+	GetDbaasServiceWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetDbaasServiceResponse, error)
 
-	DbaasUpdateServiceWithResponse(ctx context.Context, serviceName string, body DbaasUpdateServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*DbaasUpdateServiceResponse, error)
+	// UpdateDbaasService request  with any body
+	UpdateDbaasServiceWithBodyWithResponse(ctx context.Context, name string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceResponse, error)
+
+	UpdateDbaasServiceWithResponse(ctx context.Context, name string, body UpdateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceResponse, error)
 
 	// ListDeployTargets request
 	ListDeployTargetsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDeployTargetsResponse, error)
@@ -9122,6 +9340,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateInstanceWithResponse(ctx context.Context, id string, body UpdateInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateInstanceResponse, error)
 
+	// ResetInstanceField request
+	ResetInstanceFieldWithResponse(ctx context.Context, id string, field ResetInstanceFieldParamsField, reqEditors ...RequestEditorFn) (*ResetInstanceFieldResponse, error)
+
 	// CreateSnapshot request
 	CreateSnapshotWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*CreateSnapshotResponse, error)
 
@@ -9170,6 +9391,9 @@ type ClientWithResponsesInterface interface {
 	UpdateLoadBalancerServiceWithBodyWithResponse(ctx context.Context, id string, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateLoadBalancerServiceResponse, error)
 
 	UpdateLoadBalancerServiceWithResponse(ctx context.Context, id string, serviceId string, body UpdateLoadBalancerServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateLoadBalancerServiceResponse, error)
+
+	// ResetLoadBalancerServiceField request
+	ResetLoadBalancerServiceFieldWithResponse(ctx context.Context, id string, serviceId string, field ResetLoadBalancerServiceFieldParamsField, reqEditors ...RequestEditorFn) (*ResetLoadBalancerServiceFieldResponse, error)
 
 	// ResetLoadBalancerField request
 	ResetLoadBalancerFieldWithResponse(ctx context.Context, id string, field ResetLoadBalancerFieldParamsField, reqEditors ...RequestEditorFn) (*ResetLoadBalancerFieldResponse, error)
@@ -9323,6 +9547,9 @@ type ClientWithResponsesInterface interface {
 	// GetSosPresignedUrl request
 	GetSosPresignedUrlWithResponse(ctx context.Context, bucket string, params *GetSosPresignedUrlParams, reqEditors ...RequestEditorFn) (*GetSosPresignedUrlResponse, error)
 
+	// ListSshKeys request
+	ListSshKeysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSshKeysResponse, error)
+
 	// GetSshKey request
 	GetSshKeyWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetSshKeyResponse, error)
 
@@ -9439,16 +9666,16 @@ func (r GetAntiAffinityGroupResponse) StatusCode() int {
 	return 0
 }
 
-type DbaasListServicesResponse struct {
+type GetDbaasCaCertificateResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		DbaasService *[]DbaasService `json:"dbaas-service,omitempty"`
+		Certificate *string `json:"certificate,omitempty"`
 	}
 }
 
 // Status returns HTTPResponse.Status
-func (r DbaasListServicesResponse) Status() string {
+func (r GetDbaasCaCertificateResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -9456,21 +9683,45 @@ func (r DbaasListServicesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DbaasListServicesResponse) StatusCode() int {
+func (r GetDbaasCaCertificateResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DbaasCreateServiceResponse struct {
+type ListDbaasServicesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		DbaasServices *[]DbaasService `json:"dbaas-services,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDbaasServicesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDbaasServicesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDbaasServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *DbaasService
 }
 
 // Status returns HTTPResponse.Status
-func (r DbaasCreateServiceResponse) Status() string {
+func (r CreateDbaasServiceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -9478,14 +9729,14 @@ func (r DbaasCreateServiceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DbaasCreateServiceResponse) StatusCode() int {
+func (r CreateDbaasServiceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DbaasListServiceTypesResponse struct {
+type ListDbaasServiceTypesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -9494,7 +9745,7 @@ type DbaasListServiceTypesResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r DbaasListServiceTypesResponse) Status() string {
+func (r ListDbaasServiceTypesResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -9502,21 +9753,21 @@ func (r DbaasListServiceTypesResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DbaasListServiceTypesResponse) StatusCode() int {
+func (r ListDbaasServiceTypesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DbaasGetServiceTypeResponse struct {
+type GetDbaasServiceTypeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *DbaasServiceType
 }
 
 // Status returns HTTPResponse.Status
-func (r DbaasGetServiceTypeResponse) Status() string {
+func (r GetDbaasServiceTypeResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -9524,14 +9775,14 @@ func (r DbaasGetServiceTypeResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DbaasGetServiceTypeResponse) StatusCode() int {
+func (r GetDbaasServiceTypeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DbaasTerminateServiceResponse struct {
+type TerminateDbaasServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
@@ -9540,7 +9791,7 @@ type DbaasTerminateServiceResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r DbaasTerminateServiceResponse) Status() string {
+func (r TerminateDbaasServiceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -9548,21 +9799,21 @@ func (r DbaasTerminateServiceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DbaasTerminateServiceResponse) StatusCode() int {
+func (r TerminateDbaasServiceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DbaasGetServiceResponse struct {
+type GetDbaasServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *DbaasService
 }
 
 // Status returns HTTPResponse.Status
-func (r DbaasGetServiceResponse) Status() string {
+func (r GetDbaasServiceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -9570,21 +9821,21 @@ func (r DbaasGetServiceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DbaasGetServiceResponse) StatusCode() int {
+func (r GetDbaasServiceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type DbaasUpdateServiceResponse struct {
+type UpdateDbaasServiceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *DbaasService
 }
 
 // Status returns HTTPResponse.Status
-func (r DbaasUpdateServiceResponse) Status() string {
+func (r UpdateDbaasServiceResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -9592,7 +9843,7 @@ func (r DbaasUpdateServiceResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r DbaasUpdateServiceResponse) StatusCode() int {
+func (r UpdateDbaasServiceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -10181,6 +10432,28 @@ func (r UpdateInstanceResponse) StatusCode() int {
 	return 0
 }
 
+type ResetInstanceFieldResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ResetInstanceFieldResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResetInstanceFieldResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateSnapshotResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -10463,6 +10736,28 @@ func (r UpdateLoadBalancerServiceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateLoadBalancerServiceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ResetLoadBalancerServiceFieldResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ResetLoadBalancerServiceFieldResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResetLoadBalancerServiceFieldResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -11365,6 +11660,30 @@ func (r GetSosPresignedUrlResponse) StatusCode() int {
 	return 0
 }
 
+type ListSshKeysResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		SshKeys *[]SshKey `json:"ssh-keys,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListSshKeysResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListSshKeysResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetSshKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -11567,83 +11886,92 @@ func (c *ClientWithResponses) GetAntiAffinityGroupWithResponse(ctx context.Conte
 	return ParseGetAntiAffinityGroupResponse(rsp)
 }
 
-// DbaasListServicesWithResponse request returning *DbaasListServicesResponse
-func (c *ClientWithResponses) DbaasListServicesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DbaasListServicesResponse, error) {
-	rsp, err := c.DbaasListServices(ctx, reqEditors...)
+// GetDbaasCaCertificateWithResponse request returning *GetDbaasCaCertificateResponse
+func (c *ClientWithResponses) GetDbaasCaCertificateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasCaCertificateResponse, error) {
+	rsp, err := c.GetDbaasCaCertificate(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasListServicesResponse(rsp)
+	return ParseGetDbaasCaCertificateResponse(rsp)
 }
 
-// DbaasCreateServiceWithBodyWithResponse request with arbitrary body returning *DbaasCreateServiceResponse
-func (c *ClientWithResponses) DbaasCreateServiceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DbaasCreateServiceResponse, error) {
-	rsp, err := c.DbaasCreateServiceWithBody(ctx, contentType, body, reqEditors...)
+// ListDbaasServicesWithResponse request returning *ListDbaasServicesResponse
+func (c *ClientWithResponses) ListDbaasServicesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasServicesResponse, error) {
+	rsp, err := c.ListDbaasServices(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasCreateServiceResponse(rsp)
+	return ParseListDbaasServicesResponse(rsp)
 }
 
-func (c *ClientWithResponses) DbaasCreateServiceWithResponse(ctx context.Context, body DbaasCreateServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*DbaasCreateServiceResponse, error) {
-	rsp, err := c.DbaasCreateService(ctx, body, reqEditors...)
+// CreateDbaasServiceWithBodyWithResponse request with arbitrary body returning *CreateDbaasServiceResponse
+func (c *ClientWithResponses) CreateDbaasServiceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasServiceResponse, error) {
+	rsp, err := c.CreateDbaasServiceWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasCreateServiceResponse(rsp)
+	return ParseCreateDbaasServiceResponse(rsp)
 }
 
-// DbaasListServiceTypesWithResponse request returning *DbaasListServiceTypesResponse
-func (c *ClientWithResponses) DbaasListServiceTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*DbaasListServiceTypesResponse, error) {
-	rsp, err := c.DbaasListServiceTypes(ctx, reqEditors...)
+func (c *ClientWithResponses) CreateDbaasServiceWithResponse(ctx context.Context, body CreateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasServiceResponse, error) {
+	rsp, err := c.CreateDbaasService(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasListServiceTypesResponse(rsp)
+	return ParseCreateDbaasServiceResponse(rsp)
 }
 
-// DbaasGetServiceTypeWithResponse request returning *DbaasGetServiceTypeResponse
-func (c *ClientWithResponses) DbaasGetServiceTypeWithResponse(ctx context.Context, serviceTypeName string, reqEditors ...RequestEditorFn) (*DbaasGetServiceTypeResponse, error) {
-	rsp, err := c.DbaasGetServiceType(ctx, serviceTypeName, reqEditors...)
+// ListDbaasServiceTypesWithResponse request returning *ListDbaasServiceTypesResponse
+func (c *ClientWithResponses) ListDbaasServiceTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasServiceTypesResponse, error) {
+	rsp, err := c.ListDbaasServiceTypes(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasGetServiceTypeResponse(rsp)
+	return ParseListDbaasServiceTypesResponse(rsp)
 }
 
-// DbaasTerminateServiceWithResponse request returning *DbaasTerminateServiceResponse
-func (c *ClientWithResponses) DbaasTerminateServiceWithResponse(ctx context.Context, serviceName string, reqEditors ...RequestEditorFn) (*DbaasTerminateServiceResponse, error) {
-	rsp, err := c.DbaasTerminateService(ctx, serviceName, reqEditors...)
+// GetDbaasServiceTypeWithResponse request returning *GetDbaasServiceTypeResponse
+func (c *ClientWithResponses) GetDbaasServiceTypeWithResponse(ctx context.Context, serviceTypeName string, reqEditors ...RequestEditorFn) (*GetDbaasServiceTypeResponse, error) {
+	rsp, err := c.GetDbaasServiceType(ctx, serviceTypeName, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasTerminateServiceResponse(rsp)
+	return ParseGetDbaasServiceTypeResponse(rsp)
 }
 
-// DbaasGetServiceWithResponse request returning *DbaasGetServiceResponse
-func (c *ClientWithResponses) DbaasGetServiceWithResponse(ctx context.Context, serviceName string, reqEditors ...RequestEditorFn) (*DbaasGetServiceResponse, error) {
-	rsp, err := c.DbaasGetService(ctx, serviceName, reqEditors...)
+// TerminateDbaasServiceWithResponse request returning *TerminateDbaasServiceResponse
+func (c *ClientWithResponses) TerminateDbaasServiceWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*TerminateDbaasServiceResponse, error) {
+	rsp, err := c.TerminateDbaasService(ctx, name, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasGetServiceResponse(rsp)
+	return ParseTerminateDbaasServiceResponse(rsp)
 }
 
-// DbaasUpdateServiceWithBodyWithResponse request with arbitrary body returning *DbaasUpdateServiceResponse
-func (c *ClientWithResponses) DbaasUpdateServiceWithBodyWithResponse(ctx context.Context, serviceName string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DbaasUpdateServiceResponse, error) {
-	rsp, err := c.DbaasUpdateServiceWithBody(ctx, serviceName, contentType, body, reqEditors...)
+// GetDbaasServiceWithResponse request returning *GetDbaasServiceResponse
+func (c *ClientWithResponses) GetDbaasServiceWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetDbaasServiceResponse, error) {
+	rsp, err := c.GetDbaasService(ctx, name, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasUpdateServiceResponse(rsp)
+	return ParseGetDbaasServiceResponse(rsp)
 }
 
-func (c *ClientWithResponses) DbaasUpdateServiceWithResponse(ctx context.Context, serviceName string, body DbaasUpdateServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*DbaasUpdateServiceResponse, error) {
-	rsp, err := c.DbaasUpdateService(ctx, serviceName, body, reqEditors...)
+// UpdateDbaasServiceWithBodyWithResponse request with arbitrary body returning *UpdateDbaasServiceResponse
+func (c *ClientWithResponses) UpdateDbaasServiceWithBodyWithResponse(ctx context.Context, name string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceResponse, error) {
+	rsp, err := c.UpdateDbaasServiceWithBody(ctx, name, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDbaasUpdateServiceResponse(rsp)
+	return ParseUpdateDbaasServiceResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateDbaasServiceWithResponse(ctx context.Context, name string, body UpdateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceResponse, error) {
+	rsp, err := c.UpdateDbaasService(ctx, name, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDbaasServiceResponse(rsp)
 }
 
 // ListDeployTargetsWithResponse request returning *ListDeployTargetsResponse
@@ -11960,6 +12288,15 @@ func (c *ClientWithResponses) UpdateInstanceWithResponse(ctx context.Context, id
 	return ParseUpdateInstanceResponse(rsp)
 }
 
+// ResetInstanceFieldWithResponse request returning *ResetInstanceFieldResponse
+func (c *ClientWithResponses) ResetInstanceFieldWithResponse(ctx context.Context, id string, field ResetInstanceFieldParamsField, reqEditors ...RequestEditorFn) (*ResetInstanceFieldResponse, error) {
+	rsp, err := c.ResetInstanceField(ctx, id, field, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetInstanceFieldResponse(rsp)
+}
+
 // CreateSnapshotWithResponse request returning *CreateSnapshotResponse
 func (c *ClientWithResponses) CreateSnapshotWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*CreateSnapshotResponse, error) {
 	rsp, err := c.CreateSnapshot(ctx, id, reqEditors...)
@@ -12115,6 +12452,15 @@ func (c *ClientWithResponses) UpdateLoadBalancerServiceWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseUpdateLoadBalancerServiceResponse(rsp)
+}
+
+// ResetLoadBalancerServiceFieldWithResponse request returning *ResetLoadBalancerServiceFieldResponse
+func (c *ClientWithResponses) ResetLoadBalancerServiceFieldWithResponse(ctx context.Context, id string, serviceId string, field ResetLoadBalancerServiceFieldParamsField, reqEditors ...RequestEditorFn) (*ResetLoadBalancerServiceFieldResponse, error) {
+	rsp, err := c.ResetLoadBalancerServiceField(ctx, id, serviceId, field, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetLoadBalancerServiceFieldResponse(rsp)
 }
 
 // ResetLoadBalancerFieldWithResponse request returning *ResetLoadBalancerFieldResponse
@@ -12605,6 +12951,15 @@ func (c *ClientWithResponses) GetSosPresignedUrlWithResponse(ctx context.Context
 	return ParseGetSosPresignedUrlResponse(rsp)
 }
 
+// ListSshKeysWithResponse request returning *ListSshKeysResponse
+func (c *ClientWithResponses) ListSshKeysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSshKeysResponse, error) {
+	rsp, err := c.ListSshKeys(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListSshKeysResponse(rsp)
+}
+
 // GetSshKeyWithResponse request returning *GetSshKeyResponse
 func (c *ClientWithResponses) GetSshKeyWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetSshKeyResponse, error) {
 	rsp, err := c.GetSshKey(ctx, name, reqEditors...)
@@ -12790,15 +13145,15 @@ func ParseGetAntiAffinityGroupResponse(rsp *http.Response) (*GetAntiAffinityGrou
 	return response, nil
 }
 
-// ParseDbaasListServicesResponse parses an HTTP response from a DbaasListServicesWithResponse call
-func ParseDbaasListServicesResponse(rsp *http.Response) (*DbaasListServicesResponse, error) {
+// ParseGetDbaasCaCertificateResponse parses an HTTP response from a GetDbaasCaCertificateWithResponse call
+func ParseGetDbaasCaCertificateResponse(rsp *http.Response) (*GetDbaasCaCertificateResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DbaasListServicesResponse{
+	response := &GetDbaasCaCertificateResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -12806,7 +13161,7 @@ func ParseDbaasListServicesResponse(rsp *http.Response) (*DbaasListServicesRespo
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			DbaasService *[]DbaasService `json:"dbaas-service,omitempty"`
+			Certificate *string `json:"certificate,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -12818,15 +13173,43 @@ func ParseDbaasListServicesResponse(rsp *http.Response) (*DbaasListServicesRespo
 	return response, nil
 }
 
-// ParseDbaasCreateServiceResponse parses an HTTP response from a DbaasCreateServiceWithResponse call
-func ParseDbaasCreateServiceResponse(rsp *http.Response) (*DbaasCreateServiceResponse, error) {
+// ParseListDbaasServicesResponse parses an HTTP response from a ListDbaasServicesWithResponse call
+func ParseListDbaasServicesResponse(rsp *http.Response) (*ListDbaasServicesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DbaasCreateServiceResponse{
+	response := &ListDbaasServicesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			DbaasServices *[]DbaasService `json:"dbaas-services,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateDbaasServiceResponse parses an HTTP response from a CreateDbaasServiceWithResponse call
+func ParseCreateDbaasServiceResponse(rsp *http.Response) (*CreateDbaasServiceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDbaasServiceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -12844,15 +13227,15 @@ func ParseDbaasCreateServiceResponse(rsp *http.Response) (*DbaasCreateServiceRes
 	return response, nil
 }
 
-// ParseDbaasListServiceTypesResponse parses an HTTP response from a DbaasListServiceTypesWithResponse call
-func ParseDbaasListServiceTypesResponse(rsp *http.Response) (*DbaasListServiceTypesResponse, error) {
+// ParseListDbaasServiceTypesResponse parses an HTTP response from a ListDbaasServiceTypesWithResponse call
+func ParseListDbaasServiceTypesResponse(rsp *http.Response) (*ListDbaasServiceTypesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DbaasListServiceTypesResponse{
+	response := &ListDbaasServiceTypesResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -12872,15 +13255,15 @@ func ParseDbaasListServiceTypesResponse(rsp *http.Response) (*DbaasListServiceTy
 	return response, nil
 }
 
-// ParseDbaasGetServiceTypeResponse parses an HTTP response from a DbaasGetServiceTypeWithResponse call
-func ParseDbaasGetServiceTypeResponse(rsp *http.Response) (*DbaasGetServiceTypeResponse, error) {
+// ParseGetDbaasServiceTypeResponse parses an HTTP response from a GetDbaasServiceTypeWithResponse call
+func ParseGetDbaasServiceTypeResponse(rsp *http.Response) (*GetDbaasServiceTypeResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DbaasGetServiceTypeResponse{
+	response := &GetDbaasServiceTypeResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -12898,15 +13281,15 @@ func ParseDbaasGetServiceTypeResponse(rsp *http.Response) (*DbaasGetServiceTypeR
 	return response, nil
 }
 
-// ParseDbaasTerminateServiceResponse parses an HTTP response from a DbaasTerminateServiceWithResponse call
-func ParseDbaasTerminateServiceResponse(rsp *http.Response) (*DbaasTerminateServiceResponse, error) {
+// ParseTerminateDbaasServiceResponse parses an HTTP response from a TerminateDbaasServiceWithResponse call
+func ParseTerminateDbaasServiceResponse(rsp *http.Response) (*TerminateDbaasServiceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DbaasTerminateServiceResponse{
+	response := &TerminateDbaasServiceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -12926,15 +13309,15 @@ func ParseDbaasTerminateServiceResponse(rsp *http.Response) (*DbaasTerminateServ
 	return response, nil
 }
 
-// ParseDbaasGetServiceResponse parses an HTTP response from a DbaasGetServiceWithResponse call
-func ParseDbaasGetServiceResponse(rsp *http.Response) (*DbaasGetServiceResponse, error) {
+// ParseGetDbaasServiceResponse parses an HTTP response from a GetDbaasServiceWithResponse call
+func ParseGetDbaasServiceResponse(rsp *http.Response) (*GetDbaasServiceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DbaasGetServiceResponse{
+	response := &GetDbaasServiceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -12952,15 +13335,15 @@ func ParseDbaasGetServiceResponse(rsp *http.Response) (*DbaasGetServiceResponse,
 	return response, nil
 }
 
-// ParseDbaasUpdateServiceResponse parses an HTTP response from a DbaasUpdateServiceWithResponse call
-func ParseDbaasUpdateServiceResponse(rsp *http.Response) (*DbaasUpdateServiceResponse, error) {
+// ParseUpdateDbaasServiceResponse parses an HTTP response from a UpdateDbaasServiceWithResponse call
+func ParseUpdateDbaasServiceResponse(rsp *http.Response) (*UpdateDbaasServiceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer rsp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &DbaasUpdateServiceResponse{
+	response := &UpdateDbaasServiceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -13664,6 +14047,32 @@ func ParseUpdateInstanceResponse(rsp *http.Response) (*UpdateInstanceResponse, e
 	return response, nil
 }
 
+// ParseResetInstanceFieldResponse parses an HTTP response from a ResetInstanceFieldWithResponse call
+func ParseResetInstanceFieldResponse(rsp *http.Response) (*ResetInstanceFieldResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResetInstanceFieldResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateSnapshotResponse parses an HTTP response from a CreateSnapshotWithResponse call
 func ParseCreateSnapshotResponse(rsp *http.Response) (*CreateSnapshotResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -13987,6 +14396,32 @@ func ParseUpdateLoadBalancerServiceResponse(rsp *http.Response) (*UpdateLoadBala
 	}
 
 	response := &UpdateLoadBalancerServiceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseResetLoadBalancerServiceFieldResponse parses an HTTP response from a ResetLoadBalancerServiceFieldWithResponse call
+func ParseResetLoadBalancerServiceFieldResponse(rsp *http.Response) (*ResetLoadBalancerServiceFieldResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResetLoadBalancerServiceFieldResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -15049,6 +15484,34 @@ func ParseGetSosPresignedUrlResponse(rsp *http.Response) (*GetSosPresignedUrlRes
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
 			Url *string `json:"url,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListSshKeysResponse parses an HTTP response from a ListSshKeysWithResponse call
+func ParseListSshKeysResponse(rsp *http.Response) (*ListSshKeysResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListSshKeysResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			SshKeys *[]SshKey `json:"ssh-keys,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

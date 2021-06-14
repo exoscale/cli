@@ -55,8 +55,8 @@ func nlbServiceFromAPI(svc *papi.LoadBalancerService) *NetworkLoadBalancerServic
 		Description: papi.OptionalString(svc.Description),
 		Healthcheck: NetworkLoadBalancerServiceHealthcheck{
 			Interval: time.Duration(papi.OptionalInt64(svc.Healthcheck.Interval)) * time.Second,
-			Mode:     string(svc.Healthcheck.Mode),
-			Port:     uint16(svc.Healthcheck.Port),
+			Mode:     string(*svc.Healthcheck.Mode),
+			Port:     uint16(*svc.Healthcheck.Port),
 			Retries:  papi.OptionalInt64(svc.Healthcheck.Retries),
 			TLSSNI:   papi.OptionalString(svc.Healthcheck.TlsSni),
 			Timeout:  time.Duration(papi.OptionalInt64(svc.Healthcheck.Timeout)) * time.Second,
@@ -166,10 +166,13 @@ func (nlb *NetworkLoadBalancer) AddService(
 			}(),
 			Healthcheck: papi.LoadBalancerServiceHealthcheck{
 				Interval: &healthcheckInterval,
-				Mode:     papi.LoadBalancerServiceHealthcheckMode(svc.Healthcheck.Mode),
-				Port:     healthcheckPort,
-				Retries:  &svc.Healthcheck.Retries,
-				Timeout:  &healthcheckTimeout,
+				Mode: func() *papi.LoadBalancerServiceHealthcheckMode {
+					mode := papi.LoadBalancerServiceHealthcheckMode(svc.Healthcheck.Mode)
+					return &mode
+				}(),
+				Port:    &healthcheckPort,
+				Retries: &svc.Healthcheck.Retries,
+				Timeout: &healthcheckTimeout,
 				TlsSni: func() *string {
 					if svc.Healthcheck.Mode == "https" && svc.Healthcheck.TLSSNI != "" {
 						return &svc.Healthcheck.TLSSNI
@@ -238,10 +241,13 @@ func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkL
 			}(),
 			Healthcheck: &papi.LoadBalancerServiceHealthcheck{
 				Interval: &healthcheckInterval,
-				Mode:     papi.LoadBalancerServiceHealthcheckMode(svc.Healthcheck.Mode),
-				Port:     healthcheckPort,
-				Retries:  &svc.Healthcheck.Retries,
-				Timeout:  &healthcheckTimeout,
+				Mode: func() *papi.LoadBalancerServiceHealthcheckMode {
+					mode := papi.LoadBalancerServiceHealthcheckMode(svc.Healthcheck.Mode)
+					return &mode
+				}(),
+				Port:    &healthcheckPort,
+				Retries: &svc.Healthcheck.Retries,
+				Timeout: &healthcheckTimeout,
 				TlsSni: func() *string {
 					if svc.Healthcheck.Mode == "https" && svc.Healthcheck.TLSSNI != "" {
 						return &svc.Healthcheck.TLSSNI
