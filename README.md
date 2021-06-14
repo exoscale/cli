@@ -14,7 +14,7 @@ You can find pre-built releases of the CLI [here][releases].
 
 ### From sources
 
-To build `exo` from sources, a Go compiler >= 1.13 is required.
+To build `exo` from sources, a Go compiler >= 1.16 is required.
 
 ```shell
 $ git clone https://github.com/exoscale/cli
