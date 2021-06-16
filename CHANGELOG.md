@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.32.0
+
+### Features
+
+- New commands `exo lab db`
+
+### Bug Fixes
+
+- Fix output annotations for `exo deploytarget list` command
+- Fix `exo sks create` command description
+
+### Changes
+
+- The `exo lab kube` commands have been removed
+
+
 ## 1.31.0
 
 ### Features
