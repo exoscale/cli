@@ -41,7 +41,6 @@ type dbServiceShowOutput struct {
 	Name                  string                          `json:"name"`
 	Type                  string                          `json:"type"`
 	Plan                  string                          `json:"plan"`
-	Description           string                          `json:"description"`
 	CreationDate          time.Time                       `json:"creation_date"`
 	Nodes                 int64                           `json:"nodes"`
 	NodeCPUs              int64                           `json:"node_cpus"`
@@ -67,7 +66,6 @@ func (o *dbServiceShowOutput) toTable() {
 	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"Type", o.Type})
 	t.Append([]string{"Plan", o.Plan})
-	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Creation Date", fmt.Sprint(o.CreationDate)})
 	t.Append([]string{"Nodes", fmt.Sprint(o.Nodes)})
 	t.Append([]string{"Node CPUs", fmt.Sprint(o.NodeCPUs)})
@@ -187,9 +185,9 @@ func (c *dbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			backups := make(dbServiceBackupListOutput, len(dbService.Backups))
 			for i, b := range dbService.Backups {
 				backups[i] = dbServiceBackupListItemOutput{
-					Name: b.Name,
-					Date: b.Date,
-					Size: b.Size,
+					Name: *b.Name,
+					Date: *b.Date,
+					Size: *b.Size,
 				}
 			}
 			return output(&backups, nil)
@@ -220,18 +218,17 @@ func showDatabaseService(zone, name string) (outputter, error) {
 	}
 
 	out := dbServiceShowOutput{
-		Name:                  databaseService.Name,
-		Type:                  databaseService.Type,
-		Plan:                  databaseService.Plan,
-		Description:           databaseService.Description,
-		CreationDate:          databaseService.CreatedAt,
-		Nodes:                 databaseService.Nodes,
-		NodeCPUs:              databaseService.NodeCPUs,
-		NodeMemory:            databaseService.NodeMemory,
-		UpdateDate:            databaseService.UpdatedAt,
-		DiskSize:              databaseService.DiskSize,
-		State:                 databaseService.State,
-		TerminationProtection: databaseService.TerminationProtection,
+		Name:                  *databaseService.Name,
+		Type:                  *databaseService.Type,
+		Plan:                  *databaseService.Plan,
+		CreationDate:          *databaseService.CreatedAt,
+		Nodes:                 *databaseService.Nodes,
+		NodeCPUs:              *databaseService.NodeCPUs,
+		NodeMemory:            *databaseService.NodeMemory,
+		UpdateDate:            *databaseService.UpdatedAt,
+		DiskSize:              *databaseService.DiskSize,
+		State:                 *databaseService.State,
+		TerminationProtection: *databaseService.TerminationProtection,
 		Maintenance: func() (v *dbServiceMaintenanceShowOutput) {
 			if databaseService.Maintenance != nil {
 				v = &dbServiceMaintenanceShowOutput{
@@ -247,8 +244,8 @@ func showDatabaseService(zone, name string) (outputter, error) {
 			list := make([]dbServiceUserShowOutput, len(databaseService.Users))
 			for i, u := range databaseService.Users {
 				list[i] = dbServiceUserShowOutput{
-					UserName: u.UserName,
-					Type:     u.Type,
+					UserName: *u.UserName,
+					Type:     *u.Type,
 				}
 			}
 			return list

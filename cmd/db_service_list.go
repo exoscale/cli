@@ -71,9 +71,9 @@ func (c *dbServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		for _, dbService := range list {
 			res <- dbServiceListItemOutput{
-				Name: dbService.Name,
-				Type: dbService.Type,
-				Plan: dbService.Plan,
+				Name: *dbService.Name,
+				Type: *dbService.Type,
+				Plan: *dbService.Plan,
 				Zone: zone,
 			}
 		}

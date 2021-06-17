@@ -17,6 +17,7 @@ func (i *Instance) UnmarshalJSON(data []byte) error {
 		Id                 *string              `json:"id,omitempty"` // nolint:revive
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Ipv6Address        *string              `json:"ipv6-address,omitempty"`
+		Labels             *Labels              `json:"labels,omitempty"`
 		Manager            *Manager             `json:"manager,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
@@ -47,6 +48,7 @@ func (i *Instance) UnmarshalJSON(data []byte) error {
 	i.Id = raw.Id
 	i.InstanceType = raw.InstanceType
 	i.Ipv6Address = raw.Ipv6Address
+	i.Labels = raw.Labels
 	i.Manager = raw.Manager
 	i.Name = raw.Name
 	i.PrivateNetworks = raw.PrivateNetworks
@@ -72,6 +74,7 @@ func (i *Instance) MarshalJSON() ([]byte, error) {
 		Id                 *string              `json:"id,omitempty"` // nolint:revive
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Ipv6Address        *string              `json:"ipv6-address,omitempty"`
+		Labels             *Labels              `json:"labels,omitempty"`
 		Manager            *Manager             `json:"manager,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
@@ -95,6 +98,7 @@ func (i *Instance) MarshalJSON() ([]byte, error) {
 	raw.Id = i.Id
 	raw.InstanceType = i.InstanceType
 	raw.Ipv6Address = i.Ipv6Address
+	raw.Labels = i.Labels
 	raw.Manager = i.Manager
 	raw.Name = i.Name
 	raw.PrivateNetworks = i.PrivateNetworks

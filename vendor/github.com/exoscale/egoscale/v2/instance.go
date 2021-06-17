@@ -25,6 +25,7 @@ type Instance struct {
 	IPv6Address          net.IP
 	IPv6Enabled          bool
 	InstanceTypeID       string
+	Labels               map[string]string `reset:"labels"`
 	Manager              *InstanceManager
 	Name                 string
 	PrivateNetworkIDs    []string
@@ -79,6 +80,12 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 			return i.Ipv6Address != nil
 		}(),
 		InstanceTypeID: *i.InstanceType.Id,
+		Labels: func() map[string]string {
+			if i.Labels != nil {
+				return i.Labels.AdditionalProperties
+			}
+			return nil
+		}(),
 		Manager: func() *InstanceManager {
 			if i.Manager != nil {
 				return &InstanceManager{
@@ -312,6 +319,34 @@ func (i *Instance) PrivateNetworks(ctx context.Context) ([]*PrivateNetwork, erro
 	return res.([]*PrivateNetwork), err
 }
 
+// ResetField resets the specified Compute instance field to its default value.
+// The value expected for the field parameter is a pointer to the Instance field to reset.
+func (i *Instance) ResetField(ctx context.Context, field interface{}) error {
+	resetField, err := resetFieldName(i, field)
+	if err != nil {
+		return err
+	}
+
+	resp, err := i.c.ResetInstanceFieldWithResponse(
+		apiv2.WithZone(ctx, i.zone),
+		i.ID,
+		papi.ResetInstanceFieldParamsField(resetField),
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // RevertToSnapshot reverts the Compute instance storage volume to the specified Snapshot.
 func (i *Instance) RevertToSnapshot(ctx context.Context, snapshot *Snapshot) error {
 	resp, err := i.c.RevertInstanceToSnapshotWithResponse(
@@ -394,7 +429,13 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 			DiskSize:     instance.DiskSize,
 			InstanceType: papi.InstanceType{Id: &instance.InstanceTypeID},
 			Ipv6Enabled:  &instance.IPv6Enabled,
-			Name:         &instance.Name,
+			Labels: func() *papi.Labels {
+				if len(instance.Labels) > 0 {
+					return &papi.Labels{AdditionalProperties: instance.Labels}
+				}
+				return nil
+			}(),
+			Name: &instance.Name,
 			SecurityGroups: func() *[]papi.SecurityGroup {
 				if l := len(instance.SecurityGroupIDs); l > 0 {
 					list := make([]papi.SecurityGroup, l)
@@ -501,6 +542,12 @@ func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Inst
 		apiv2.WithZone(ctx, zone),
 		instance.ID,
 		papi.UpdateInstanceJSONRequestBody{
+			Labels: func() *papi.Labels {
+				if len(instance.Labels) > 0 {
+					return &papi.Labels{AdditionalProperties: instance.Labels}
+				}
+				return nil
+			}(),
 			Name: func() *string {
 				if instance.Name != "" {
 					return &instance.Name

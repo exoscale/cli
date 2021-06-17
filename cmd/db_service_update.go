@@ -53,12 +53,12 @@ func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
-		databaseService.Plan = c.Plan
+		databaseService.Plan = &c.Plan
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
-		databaseService.TerminationProtection = c.TerminationProtection
+		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
@@ -78,7 +78,7 @@ func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", databaseService.Name), func() {
+	decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", *databaseService.Name), func() {
 		if updated {
 			if err = cs.UpdateDatabaseService(ctx, c.Zone, databaseService); err != nil {
 				return
@@ -90,7 +90,7 @@ func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showDatabaseService(c.Zone, databaseService.Name))
+		return output(showDatabaseService(c.Zone, *databaseService.Name))
 	}
 
 	return nil

@@ -11,66 +11,66 @@ import (
 
 // DatabaseBackupConfig represents a Database Backup configuration.
 type DatabaseBackupConfig struct {
-	FrequentIntervalMinutes    int64
-	FrequentOldestAgeMinutes   int64
-	InfrequentIntervalMinutes  int64
-	InfrequentOldestAgeMinutes int64
-	Interval                   int64
-	MaxCount                   int64
-	RecoveryMode               string
+	FrequentIntervalMinutes    *int64
+	FrequentOldestAgeMinutes   *int64
+	InfrequentIntervalMinutes  *int64
+	InfrequentOldestAgeMinutes *int64
+	Interval                   *int64
+	MaxCount                   *int64
+	RecoveryMode               *string
 }
 
 func databaseBackupConfigFromAPI(c *papi.DbaasBackupConfig) *DatabaseBackupConfig {
 	return &DatabaseBackupConfig{
-		FrequentIntervalMinutes:    papi.OptionalInt64(c.FrequentIntervalMinutes),
-		FrequentOldestAgeMinutes:   papi.OptionalInt64(c.FrequentOldestAgeMinutes),
-		InfrequentIntervalMinutes:  papi.OptionalInt64(c.InfrequentIntervalMinutes),
-		InfrequentOldestAgeMinutes: papi.OptionalInt64(c.InfrequentOldestAgeMinutes),
-		Interval:                   papi.OptionalInt64(c.Interval),
-		MaxCount:                   papi.OptionalInt64(c.MaxCount),
-		RecoveryMode:               papi.OptionalString(c.RecoveryMode),
+		FrequentIntervalMinutes:    c.FrequentIntervalMinutes,
+		FrequentOldestAgeMinutes:   c.FrequentOldestAgeMinutes,
+		InfrequentIntervalMinutes:  c.InfrequentIntervalMinutes,
+		InfrequentOldestAgeMinutes: c.InfrequentOldestAgeMinutes,
+		Interval:                   c.Interval,
+		MaxCount:                   c.MaxCount,
+		RecoveryMode:               c.RecoveryMode,
 	}
 }
 
 // DatabasePlan represents a Database Plan.
 type DatabasePlan struct {
 	BackupConfig     *DatabaseBackupConfig
-	DiskSpace        int64
-	MaxMemoryPercent int64
-	Name             string
-	Nodes            int64
-	NodeCPUs         int64
-	NodeMemory       int64
+	DiskSpace        *int64
+	MaxMemoryPercent *int64
+	Name             *string
+	Nodes            *int64
+	NodeCPUs         *int64
+	NodeMemory       *int64
 }
 
 func databasePlanFromAPI(p *papi.DbaasPlan) *DatabasePlan {
 	return &DatabasePlan{
 		BackupConfig:     databaseBackupConfigFromAPI(p.BackupConfig),
-		DiskSpace:        papi.OptionalInt64(p.DiskSpace),
-		MaxMemoryPercent: papi.OptionalInt64(p.MaxMemoryPercent),
-		Name:             *p.Name,
-		Nodes:            papi.OptionalInt64(p.NodeCount),
-		NodeCPUs:         papi.OptionalInt64(p.NodeCpuCount),
-		NodeMemory:       papi.OptionalInt64(p.NodeMemory),
+		DiskSpace:        p.DiskSpace,
+		MaxMemoryPercent: p.MaxMemoryPercent,
+		Name:             p.Name,
+		Nodes:            p.NodeCount,
+		NodeCPUs:         p.NodeCpuCount,
+		NodeMemory:       p.NodeMemory,
 	}
 }
 
 // DatabaseServiceType represents a Database Service type.
 type DatabaseServiceType struct {
-	DefaultVersion   string
-	Description      string
-	LatestVersion    string
-	Name             string
+	DefaultVersion   *string
+	Description      *string
+	LatestVersion    *string
+	Name             *string
 	Plans            []*DatabasePlan
 	UserConfigSchema map[string]interface{}
 }
 
 func databaseServiceTypeFromAPI(t *papi.DbaasServiceType) *DatabaseServiceType {
 	return &DatabaseServiceType{
-		DefaultVersion: papi.OptionalString(t.DefaultVersion),
-		Description:    papi.OptionalString(t.Description),
-		LatestVersion:  papi.OptionalString(t.LatestVersion),
-		Name:           string(*t.Name),
+		DefaultVersion: t.DefaultVersion,
+		Description:    t.Description,
+		LatestVersion:  t.LatestVersion,
+		Name:           (*string)(t.Name),
 		Plans: func() []*DatabasePlan {
 			plans := make([]*DatabasePlan, 0)
 			if t.Plans != nil {
@@ -92,9 +92,9 @@ func databaseServiceTypeFromAPI(t *papi.DbaasServiceType) *DatabaseServiceType {
 
 // DatabaseServiceBackup represents a Database Service backup.
 type DatabaseServiceBackup struct {
-	Name string
-	Size int64
-	Date time.Time
+	Name *string
+	Size *int64
+	Date *time.Time
 }
 
 // DatabaseServiceMaintenance represents a Database Service maintenance.
@@ -112,24 +112,24 @@ func databaseServiceMaintenanceFromAPI(m *papi.DbaasServiceMaintenance) *Databas
 
 func databaseServiceBackupFromAPI(b *papi.DbaasServiceBackup) *DatabaseServiceBackup {
 	return &DatabaseServiceBackup{
-		Name: b.BackupName,
-		Size: b.DataSize,
-		Date: b.BackupTime,
+		Name: &b.BackupName,
+		Size: &b.DataSize,
+		Date: &b.BackupTime,
 	}
 }
 
 // DatabaseServiceUser represents a Database Service user.
 type DatabaseServiceUser struct {
-	Password string
-	Type     string
-	UserName string
+	Password *string
+	Type     *string
+	UserName *string
 }
 
 func databaseServiceUserFromAPI(u *papi.DbaasServiceUser) *DatabaseServiceUser {
 	return &DatabaseServiceUser{
-		Password: papi.OptionalString(u.Password),
-		UserName: u.Username,
-		Type:     u.Type,
+		Password: u.Password,
+		UserName: &u.Username,
+		Type:     &u.Type,
 	}
 }
 
@@ -137,21 +137,20 @@ func databaseServiceUserFromAPI(u *papi.DbaasServiceUser) *DatabaseServiceUser {
 type DatabaseService struct {
 	Backups               []*DatabaseServiceBackup
 	ConnectionInfo        map[string]interface{}
-	CreatedAt             time.Time
-	Description           string
-	DiskSize              int64
+	CreatedAt             *time.Time
+	DiskSize              *int64
 	Features              map[string]interface{}
 	Maintenance           *DatabaseServiceMaintenance
 	Metadata              map[string]interface{}
-	Name                  string
-	Nodes                 int64
-	NodeCPUs              int64
-	NodeMemory            int64
-	Plan                  string
-	State                 string
-	TerminationProtection bool
-	Type                  string
-	UpdatedAt             time.Time
+	Name                  *string
+	Nodes                 *int64
+	NodeCPUs              *int64
+	NodeMemory            *int64
+	Plan                  *string
+	State                 *string
+	TerminationProtection *bool
+	Type                  *string
+	UpdatedAt             *time.Time
 	URI                   *url.URL
 	UserConfig            map[string]interface{}
 	Users                 []*DatabaseServiceUser
@@ -174,14 +173,8 @@ func databaseServiceFromAPI(s *papi.DbaasService) *DatabaseService {
 			}
 			return
 		}(),
-		CreatedAt: func() (v time.Time) {
-			if s.CreatedAt != nil {
-				v = *s.CreatedAt
-			}
-			return v
-		}(),
-		Description: papi.OptionalString(s.Description),
-		DiskSize:    papi.OptionalInt64(s.DiskSize),
+		CreatedAt: s.CreatedAt,
+		DiskSize:  s.DiskSize,
 		Features: func() (v map[string]interface{}) {
 			if s.Features != nil {
 				v = s.Features.AdditionalProperties
@@ -200,25 +193,15 @@ func databaseServiceFromAPI(s *papi.DbaasService) *DatabaseService {
 			}
 			return
 		}(),
-		Name:       string(s.Name),
-		Nodes:      papi.OptionalInt64(s.NodeCount),
-		NodeCPUs:   papi.OptionalInt64(s.NodeCpuCount),
-		NodeMemory: papi.OptionalInt64(s.NodeMemory),
-		Plan:       s.Plan,
-		State: func() (v string) {
-			if s.State != nil {
-				v = string(*s.State)
-			}
-			return v
-		}(),
-		TerminationProtection: papi.OptionalBool(s.TerminationProtection),
-		Type:                  string(s.Type),
-		UpdatedAt: func() (v time.Time) {
-			if s.UpdatedAt != nil {
-				v = *s.UpdatedAt
-			}
-			return v
-		}(),
+		Name:                  (*string)(&s.Name),
+		Nodes:                 s.NodeCount,
+		NodeCPUs:              s.NodeCpuCount,
+		NodeMemory:            s.NodeMemory,
+		Plan:                  &s.Plan,
+		State:                 (*string)(s.State),
+		TerminationProtection: s.TerminationProtection,
+		Type:                  (*string)(&s.Type),
+		UpdatedAt:             s.UpdatedAt,
 		URI: func() *url.URL {
 			if s.Uri != nil {
 				if u, _ := url.Parse(*s.Uri); u != nil {
@@ -297,10 +280,10 @@ func (c *Client) CreateDatabaseService(
 				}
 				return
 			}(),
-			Name:                  papi.DbaasServiceName(databaseService.Name),
-			Plan:                  databaseService.Plan,
-			TerminationProtection: &databaseService.TerminationProtection,
-			Type:                  papi.DbaasServiceTypeName(databaseService.Type),
+			Name:                  papi.DbaasServiceName(*databaseService.Name),
+			Plan:                  *databaseService.Plan,
+			TerminationProtection: databaseService.TerminationProtection,
+			Type:                  papi.DbaasServiceTypeName(*databaseService.Type),
 			UserConfig: func() *papi.CreateDbaasServiceJSONBody_UserConfig {
 				if len(databaseService.UserConfig) > 0 {
 					return &papi.CreateDbaasServiceJSONBody_UserConfig{
@@ -314,7 +297,7 @@ func (c *Client) CreateDatabaseService(
 		return nil, err
 	}
 
-	return c.GetDatabaseService(ctx, zone, databaseService.Name)
+	return c.GetDatabaseService(ctx, zone, *databaseService.Name)
 }
 
 // ListDatabaseServices returns the list of Database Services.
@@ -349,7 +332,7 @@ func (c *Client) GetDatabaseService(ctx context.Context, zone, name string) (*Da
 func (c *Client) UpdateDatabaseService(ctx context.Context, zone string, databaseService *DatabaseService) error {
 	_, err := c.UpdateDbaasServiceWithResponse(
 		apiv2.WithZone(ctx, zone),
-		databaseService.Name,
+		*databaseService.Name,
 		papi.UpdateDbaasServiceJSONRequestBody{
 			Maintenance: func() (v *struct {
 				Dow  papi.UpdateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
@@ -366,13 +349,8 @@ func (c *Client) UpdateDatabaseService(ctx context.Context, zone string, databas
 				}
 				return
 			}(),
-			Plan: func() (v *string) {
-				if databaseService.Plan != "" {
-					v = &databaseService.Plan
-				}
-				return
-			}(),
-			TerminationProtection: &databaseService.TerminationProtection,
+			Plan:                  databaseService.Plan,
+			TerminationProtection: databaseService.TerminationProtection,
 			UserConfig: func() *papi.UpdateDbaasServiceJSONBody_UserConfig {
 				if len(databaseService.UserConfig) > 0 {
 					return &papi.UpdateDbaasServiceJSONBody_UserConfig{
