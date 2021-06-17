@@ -53,8 +53,8 @@ func (c *dbTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	for _, t := range dbTypes {
 		out = append(out, dbTypeListItemOutput{
-			Name:          t.Name,
-			LatestVersion: t.LatestVersion,
+			Name:          *t.Name,
+			LatestVersion: *t.LatestVersion,
 		})
 	}
 

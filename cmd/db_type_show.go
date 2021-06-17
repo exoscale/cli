@@ -92,19 +92,19 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	return output(&dbTypeShowOutput{
-		Name:           dt.Name,
-		Description:    dt.Description,
-		LatestVersion:  dt.LatestVersion,
-		DefaultVersion: dt.DefaultVersion,
+		Name:           *dt.Name,
+		Description:    *dt.Description,
+		LatestVersion:  *dt.LatestVersion,
+		DefaultVersion: *dt.DefaultVersion,
 		Plans: func() []dbTypePlanShowOutput {
 			plans := make([]dbTypePlanShowOutput, len(dt.Plans))
 			for i := range dt.Plans {
 				plans[i] = dbTypePlanShowOutput{
-					Name:       dt.Plans[i].Name,
-					Nodes:      dt.Plans[i].Nodes,
-					NodeCPUs:   dt.Plans[i].NodeCPUs,
-					NodeMemory: dt.Plans[i].NodeMemory,
-					DiskSpace:  dt.Plans[i].DiskSpace,
+					Name:       *dt.Plans[i].Name,
+					Nodes:      *dt.Plans[i].Nodes,
+					NodeCPUs:   *dt.Plans[i].NodeCPUs,
+					NodeMemory: *dt.Plans[i].NodeMemory,
+					DiskSpace:  *dt.Plans[i].DiskSpace,
 				}
 			}
 			return plans

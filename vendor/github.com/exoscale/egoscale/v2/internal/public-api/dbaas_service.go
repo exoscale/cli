@@ -16,7 +16,6 @@ func (s *DbaasService) UnmarshalJSON(data []byte) error {
 		ConnectionInfo        *DbaasService_ConnectionInfo   `json:"connection-info,omitempty"`
 		ConnectionPools       *[]DbaasServiceConnectionPools `json:"connection-pools,omitempty"`
 		CreatedAt             *string                        `json:"created-at,omitempty"`
-		Description           *string                        `json:"description,omitempty"`
 		DiskSize              *int64                         `json:"disk-size,omitempty"`
 		Features              *DbaasService_Features         `json:"features,omitempty"`
 		Integrations          *[]DbaasServiceIntegration     `json:"integrations,omitempty"`
@@ -64,7 +63,6 @@ func (s *DbaasService) UnmarshalJSON(data []byte) error {
 	s.Components = raw.Components
 	s.ConnectionInfo = raw.ConnectionInfo
 	s.ConnectionPools = raw.ConnectionPools
-	s.Description = raw.Description
 	s.DiskSize = raw.DiskSize
 	s.Features = raw.Features
 	s.Integrations = raw.Integrations
@@ -98,7 +96,6 @@ func (s *DbaasService) MarshalJSON() ([]byte, error) {
 		ConnectionInfo        *DbaasService_ConnectionInfo   `json:"connection-info,omitempty"`
 		ConnectionPools       *[]DbaasServiceConnectionPools `json:"connection-pools,omitempty"`
 		CreatedAt             *string                        `json:"created-at,omitempty"`
-		Description           *string                        `json:"description,omitempty"`
 		DiskSize              *int64                         `json:"disk-size,omitempty"`
 		Features              *DbaasService_Features         `json:"features,omitempty"`
 		Integrations          *[]DbaasServiceIntegration     `json:"integrations,omitempty"`
@@ -136,7 +133,6 @@ func (s *DbaasService) MarshalJSON() ([]byte, error) {
 	raw.Components = s.Components
 	raw.ConnectionInfo = s.ConnectionInfo
 	raw.ConnectionPools = s.ConnectionPools
-	raw.Description = s.Description
 	raw.DiskSize = s.DiskSize
 	raw.Features = s.Features
 	raw.Integrations = s.Integrations

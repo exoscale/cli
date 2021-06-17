@@ -16,7 +16,6 @@ type dbServiceCreateCmd struct {
 	Plan string `cli-arg:"#"`
 	Name string `cli-arg:"#"`
 
-	Description           string `cli-usage:"Database Service description"`
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM)"`
 	TerminationProtection bool   `cli-usage:"enable Database Service termination protection"`
@@ -46,15 +45,14 @@ func (c *dbServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 func (c *dbServiceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	var err error
 
-	databaseService := &exov2.DatabaseService{
-		Description:           c.Description,
-		Name:                  c.Name,
-		Plan:                  c.Plan,
-		TerminationProtection: c.TerminationProtection,
-		Type:                  c.Type,
-	}
-
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	databaseService := &exov2.DatabaseService{
+		Name:                  &c.Name,
+		Plan:                  &c.Plan,
+		TerminationProtection: &c.TerminationProtection,
+		Type:                  &c.Type,
+	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
 		databaseService.Maintenance = &exov2.DatabaseServiceMaintenance{
@@ -69,7 +67,7 @@ func (c *dbServiceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", databaseService.Name), func() {
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", *databaseService.Name), func() {
 		databaseService, err = cs.CreateDatabaseService(ctx, c.Zone, databaseService)
 	})
 	if err != nil {
@@ -77,7 +75,7 @@ func (c *dbServiceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showDatabaseService(c.Zone, databaseService.Name))
+		return output(showDatabaseService(c.Zone, *databaseService.Name))
 	}
 
 	return nil
