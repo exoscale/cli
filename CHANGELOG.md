@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.32.1
+
+### Bug Fixes
+
+- `exo lab db update`: fix `--termination-protection` flag handling when set to `false`
+
+
 ## 1.32.0
 
 ### Features
