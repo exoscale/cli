@@ -56,10 +56,18 @@ nfpms:
       - deb
       - rpm
     contents:
+      # manpages
       - src: "./manpage/exo*.1"
         dst: "/usr/share/man/man1"
+      # bash
       - src: "./contrib/completion/bash/exo"
-        dst: "/etc/bash_completion.d/exo"
+        dst: "/usr/share/bash-completion/completion/exo"
+      # fish
+      - src: "./contrib/completion/fish/exo.fish"
+        dst: "/usr/share/fish/vendor_functions.d/exo.fish"
+      # zsh
+      - src: "./contrib/completion/zsh/_exo"
+        dst: "/usr/share/zsh/vendor-completions/_exo"
 
 brews:
   - tap:
@@ -72,8 +80,8 @@ brews:
       bin.install "exo"
       man1.install Dir["manpage/exo*.1"]
       bash_completion.install "contrib/completion/bash/exo"
-      fish_completion.install "contrib/completion/fish/exo"
-      zsh_completion.install "contrib/completion/zsh/exo"
+      fish_completion.install "contrib/completion/fish/exo.fish"
+      zsh_completion.install "contrib/completion/zsh/_exo"
 
 dockers:
   - goos: linux
