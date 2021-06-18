@@ -93,9 +93,9 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	return output(&dbTypeShowOutput{
 		Name:           *dt.Name,
-		Description:    *dt.Description,
-		LatestVersion:  *dt.LatestVersion,
-		DefaultVersion: *dt.DefaultVersion,
+		Description:    defaultString(dt.Description, ""),
+		LatestVersion:  defaultString(dt.LatestVersion, "-"),
+		DefaultVersion: defaultString(dt.DefaultVersion, "-"),
 		Plans: func() []dbTypePlanShowOutput {
 			plans := make([]dbTypePlanShowOutput, len(dt.Plans))
 			for i := range dt.Plans {

@@ -9,8 +9,9 @@ import (
 )
 
 type dbTypeListItemOutput struct {
-	Name          string `json:"name"`
-	LatestVersion string `json:"latest_version"`
+	Name           string `json:"name"`
+	LatestVersion  string `json:"latest_version"`
+	DefaultVersion string `json:"default_version"`
 }
 
 type dbTypeListOutput []dbTypeListItemOutput
@@ -53,8 +54,9 @@ func (c *dbTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	for _, t := range dbTypes {
 		out = append(out, dbTypeListItemOutput{
-			Name:          *t.Name,
-			LatestVersion: *t.LatestVersion,
+			Name:           *t.Name,
+			DefaultVersion: defaultString(t.DefaultVersion, "-"),
+			LatestVersion:  defaultString(t.LatestVersion, "-"),
 		})
 	}
 
