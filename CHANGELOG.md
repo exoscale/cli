@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.32.2
+
+### Bug Fixes
+
+- Fix crash during `exo lab db types list|show`
+- Fix Zsh completion file installation path
+
+
 ## 1.32.1
 
 ### Bug Fixes
