@@ -10,13 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sksNodepoolResetFields = []string{
-	"anti-affinity-groups",
-	"deploy-target",
-	"description",
-	"security-groups",
-}
-
 type sksNodepoolUpdateCmd struct {
 	_ bool `cli-cmd:"update"`
 
@@ -30,7 +23,6 @@ type sksNodepoolUpdateCmd struct {
 	InstancePrefix     string   `cli-usage:"string to prefix Nodepool member names with"`
 	InstanceType       string   `cli-usage:"Nodepool Compute instances type"`
 	Name               string   `cli-usage:"Nodepool name"`
-	ResetFields        []string `cli-flag:"reset" cli-usage:"properties to reset to default value"`
 	SecurityGroups     []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Zone               string   `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
@@ -42,11 +34,8 @@ func (c *sksNodepoolUpdateCmd) cmdShort() string { return "Update an SKS cluster
 func (c *sksNodepoolUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an SKS Nodepool.
 
-Supported output template annotations: %s
-
-Support values for --reset flag: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "),
-		strings.Join(sksNodepoolResetFields, ", "),
 	)
 }
 
@@ -69,7 +58,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	for _, n := range cluster.Nodepools {
-		if n.ID == c.Nodepool || n.Name == c.Nodepool {
+		if *n.ID == c.Nodepool || *n.Name == c.Nodepool {
 			nodepool = n
 			break
 		}
@@ -79,14 +68,15 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
-		nodepool.AntiAffinityGroupIDs = make([]string, 0)
-		for _, v := range c.AntiAffinityGroups {
+		nodepoolAntiAffinityGroupIDs := make([]string, len(c.AntiAffinityGroups))
+		for i, v := range c.AntiAffinityGroups {
 			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
 			}
-			nodepool.AntiAffinityGroupIDs = append(nodepool.AntiAffinityGroupIDs, antiAffinityGroup.ID)
+			nodepoolAntiAffinityGroupIDs[i] = *antiAffinityGroup.ID
 		}
+		nodepool.AntiAffinityGroupIDs = &nodepoolAntiAffinityGroupIDs
 		updated = true
 	}
 
@@ -100,17 +90,17 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		nodepool.Description = c.Description
+		nodepool.Description = &c.Description
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DiskSize)) {
-		nodepool.DiskSize = c.DiskSize
+		nodepool.DiskSize = &c.DiskSize
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstancePrefix)) {
-		nodepool.InstancePrefix = c.InstancePrefix
+		nodepool.InstancePrefix = &c.InstancePrefix
 		updated = true
 	}
 
@@ -124,51 +114,36 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
-		nodepool.Name = c.Name
+		nodepool.Name = &c.Name
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SecurityGroups)) {
-		nodepool.SecurityGroupIDs = make([]string, 0)
-		for _, v := range c.SecurityGroups {
+		nodepoolSecurityGroupIDs := make([]string, len(c.SecurityGroups))
+		for i, v := range c.SecurityGroups {
 			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %s", err)
 			}
-			nodepool.SecurityGroupIDs = append(nodepool.SecurityGroupIDs, securityGroup.ID)
+			nodepoolSecurityGroupIDs[i] = *securityGroup.ID
 		}
+		nodepool.SecurityGroupIDs = &nodepoolSecurityGroupIDs
 		updated = true
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Updating Nodepool %q...", c.Nodepool), func() {
-		if updated {
+	if updated {
+		decorateAsyncOperation(fmt.Sprintf("Updating Nodepool %q...", c.Nodepool), func() {
 			if err = cluster.UpdateNodepool(ctx, nodepool); err != nil {
 				return
 			}
+		})
+		if err != nil {
+			return err
 		}
-
-		for _, f := range c.ResetFields {
-			switch f {
-			case "anti-affinity-groups":
-				err = cluster.ResetNodepoolField(ctx, nodepool, &nodepool.AntiAffinityGroupIDs)
-			case "deploy-target":
-				err = cluster.ResetNodepoolField(ctx, nodepool, &nodepool.DeployTargetID)
-			case "description":
-				err = cluster.ResetNodepoolField(ctx, nodepool, &nodepool.Description)
-			case "security-groups":
-				err = cluster.ResetNodepoolField(ctx, nodepool, &nodepool.SecurityGroupIDs)
-			}
-			if err != nil {
-				return
-			}
-		}
-	})
-	if err != nil {
-		return err
 	}
 
 	if !gQuiet {
-		return output(showSKSNodepool(c.Zone, cluster.ID, nodepool.ID))
+		return output(showSKSNodepool(c.Zone, *cluster.ID, *nodepool.ID))
 	}
 
 	return nil

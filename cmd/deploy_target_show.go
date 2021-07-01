@@ -53,10 +53,10 @@ func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	return output(&deployTargetShowOutput{
-		ID:          dt.ID,
-		Name:        dt.Name,
-		Description: dt.Description,
-		Type:        dt.Type,
+		ID:          *dt.ID,
+		Name:        *dt.Name,
+		Description: defaultString(dt.Description, ""),
+		Type:        *dt.Type,
 		Zone:        c.Zone,
 	}, nil)
 }

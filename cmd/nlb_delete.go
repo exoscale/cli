@@ -44,8 +44,8 @@ func (c *nlbDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting Network Load Balancer %q...", nlb.Name), func() {
-		err = cs.DeleteNetworkLoadBalancer(ctx, c.Zone, nlb.ID)
+	decorateAsyncOperation(fmt.Sprintf("Deleting Network Load Balancer %q...", c.NetworkLoadBalancer), func() {
+		err = cs.DeleteNetworkLoadBalancer(ctx, c.Zone, *nlb.ID)
 	})
 	if err != nil {
 		return err

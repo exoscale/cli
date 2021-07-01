@@ -127,7 +127,7 @@ func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
 	}
 
 	for _, s := range nlb.Services {
-		if s.ID == svcRef || s.Name == svcRef {
+		if *s.ID == svcRef || *s.Name == svcRef {
 			svc = s
 			break
 		}
@@ -137,24 +137,24 @@ func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
 	}
 
 	out := nlbServiceShowOutput{
-		ID:             svc.ID,
-		Name:           svc.Name,
-		Description:    svc.Description,
-		InstancePoolID: svc.InstancePoolID,
-		Protocol:       svc.Protocol,
-		Port:           svc.Port,
-		TargetPort:     svc.TargetPort,
-		Strategy:       svc.Strategy,
-		State:          svc.State,
+		ID:             *svc.ID,
+		Name:           *svc.Name,
+		Description:    defaultString(svc.Description, ""),
+		InstancePoolID: *svc.InstancePoolID,
+		Protocol:       *svc.Protocol,
+		Port:           *svc.Port,
+		TargetPort:     *svc.TargetPort,
+		Strategy:       *svc.Strategy,
+		State:          *svc.State,
 
 		Healthcheck: nlbServiceHealthcheckShowOutput{
-			Mode:     svc.Healthcheck.Mode,
-			Port:     svc.Healthcheck.Port,
-			Interval: svc.Healthcheck.Interval,
-			Timeout:  svc.Healthcheck.Timeout,
-			Retries:  svc.Healthcheck.Retries,
-			URI:      svc.Healthcheck.URI,
-			TLSSNI:   svc.Healthcheck.TLSSNI,
+			Mode:     *svc.Healthcheck.Mode,
+			Port:     *svc.Healthcheck.Port,
+			Interval: *svc.Healthcheck.Interval,
+			Timeout:  *svc.Healthcheck.Timeout,
+			Retries:  *svc.Healthcheck.Retries,
+			URI:      defaultString(svc.Healthcheck.URI, ""),
+			TLSSNI:   defaultString(svc.Healthcheck.TLSSNI, ""),
 		},
 
 		HealthcheckStatus: func() []nlbServerStatusShowOutput {
@@ -162,7 +162,7 @@ func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
 			for i, st := range svc.HealthcheckStatus {
 				statuses[i] = nlbServerStatusShowOutput{
 					InstanceIP: st.InstanceIP.String(),
-					Status:     st.Status,
+					Status:     *st.Status,
 				}
 			}
 			return statuses

@@ -63,7 +63,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	for _, s := range nlb.Services {
-		if s.ID == c.Service || s.Name == c.Service {
+		if *s.ID == c.Service || *s.Name == c.Service {
 			service = s
 			break
 		}
@@ -73,67 +73,72 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		service.Description = c.Description
+		service.Description = &c.Description
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckInterval)) {
-		service.Healthcheck.Interval = time.Duration(c.HealthcheckInterval) * time.Second
+		hcInterval := time.Duration(c.HealthcheckInterval) * time.Second
+		service.Healthcheck.Interval = &hcInterval
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckMode)) {
-		service.Healthcheck.Mode = c.HealthcheckMode
+		service.Healthcheck.Mode = &c.HealthcheckMode
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckPort)) {
-		service.Healthcheck.Port = uint16(c.HealthcheckPort)
+		hcPort := uint16(c.HealthcheckPort)
+		service.Healthcheck.Port = &hcPort
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckRetries)) {
-		service.Healthcheck.Retries = c.HealthcheckRetries
+		service.Healthcheck.Retries = &c.HealthcheckRetries
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckTLSSNI)) {
-		service.Healthcheck.TLSSNI = c.HealthcheckTLSSNI
+		service.Healthcheck.TLSSNI = &c.HealthcheckTLSSNI
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckTimeout)) {
-		service.Healthcheck.Timeout = time.Duration(c.HealthcheckTimeout) * time.Second
+		hcTimeout := time.Duration(c.HealthcheckTimeout) * time.Second
+		service.Healthcheck.Timeout = &hcTimeout
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckURI)) {
-		service.Healthcheck.URI = c.HealthcheckURI
+		service.Healthcheck.URI = &c.HealthcheckURI
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
-		service.Name = c.Name
+		service.Name = &c.Name
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Port)) {
-		service.Port = uint16(c.Port)
+		port := uint16(c.Port)
+		service.Port = &port
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protocol)) {
-		service.Protocol = c.Protocol
+		service.Protocol = &c.Protocol
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Strategy)) {
-		service.Strategy = c.Strategy
+		service.Strategy = &c.Strategy
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TargetPort)) {
-		service.TargetPort = uint16(c.TargetPort)
+		targetPort := uint16(c.TargetPort)
+		service.TargetPort = &targetPort
 		updated = true
 	}
 
@@ -149,7 +154,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showNLBService(c.Zone, nlb.ID, service.ID))
+		return output(showNLBService(c.Zone, *nlb.ID, *service.ID))
 	}
 
 	return nil

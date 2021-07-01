@@ -72,11 +72,11 @@ func (c *instancePoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		for _, i := range list {
 			res <- instancePoolListItemOutput{
-				ID:    i.ID,
-				Name:  i.Name,
+				ID:    *i.ID,
+				Name:  *i.Name,
 				Zone:  zone,
-				Size:  i.Size,
-				State: i.State,
+				Size:  *i.Size,
+				State: *i.State,
 			}
 		}
 

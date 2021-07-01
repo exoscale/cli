@@ -47,13 +47,13 @@ func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				if !c.Force {
 					if !askQuestion(fmt.Sprintf(
 						"Are you sure you want to delete Nodepool %q?",
-						nodepool.Name),
+						*nodepool.Name),
 					) {
 						continue
 					}
 				}
 
-				decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", nodepool.Name), func() {
+				decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", *nodepool.Name), func() {
 					err = cluster.DeleteNodepool(ctx, nodepool)
 				})
 				if err != nil {
@@ -70,13 +70,13 @@ func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete SKS cluster %q?", c.Cluster)) {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to delete SKS cluster %q?", *cluster.Name)) {
 			return nil
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting SKS cluster %q...", cluster.Name), func() {
-		err = cs.DeleteSKSCluster(ctx, c.Zone, cluster.ID)
+	decorateAsyncOperation(fmt.Sprintf("Deleting SKS cluster %q...", *cluster.Name), func() {
+		err = cs.DeleteSKSCluster(ctx, c.Zone, *cluster.ID)
 	})
 	if err != nil {
 		return err

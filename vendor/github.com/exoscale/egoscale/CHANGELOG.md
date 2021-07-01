@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.60.0
+------
+
+- change: v2: API resource structs fields are now pointers instead of concrete types
+
 0.59.0
 ------
 

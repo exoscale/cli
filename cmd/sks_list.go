@@ -70,8 +70,8 @@ func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		for _, cluster := range list {
 			res <- sksClusterListItemOutput{
-				ID:   cluster.ID,
-				Name: cluster.Name,
+				ID:   *cluster.ID,
+				Name: *cluster.Name,
 				Zone: zone,
 			}
 		}

@@ -140,10 +140,9 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.59.0
+# github.com/exoscale/egoscale v0.60.0
 ## explicit
 github.com/exoscale/egoscale
-github.com/exoscale/egoscale/admin
 github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/internal/public-api
@@ -306,6 +305,7 @@ github.com/stretchr/objx
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
+github.com/stretchr/testify/suite
 # github.com/subosito/gotenv v1.2.0
 github.com/subosito/gotenv
 # github.com/tsenart/deadcode v0.0.0-20160724212837-210d2dc333e9

@@ -143,11 +143,19 @@ const (
 
 // Defines values for DbaasServiceTypeName.
 const (
+	DbaasServiceTypeNameElasticsearch DbaasServiceTypeName = "elasticsearch"
+
 	DbaasServiceTypeNameKafka DbaasServiceTypeName = "kafka"
+
+	DbaasServiceTypeNameKafkaConnect DbaasServiceTypeName = "kafka_connect"
+
+	DbaasServiceTypeNameKafkaMirrormaker DbaasServiceTypeName = "kafka_mirrormaker"
 
 	DbaasServiceTypeNameMysql DbaasServiceTypeName = "mysql"
 
 	DbaasServiceTypeNamePg DbaasServiceTypeName = "pg"
+
+	DbaasServiceTypeNameRedis DbaasServiceTypeName = "redis"
 )
 
 // Defines values for DbaasServiceUserAuthentication.
@@ -1074,6 +1082,9 @@ type Instance struct {
 	// Instance creation date
 	CreatedAt *time.Time `json:"created-at,omitempty"`
 
+	// Deploy target
+	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
+
 	// Instance disk size in GB
 	DiskSize *int64 `json:"disk-size,omitempty"`
 
@@ -1155,7 +1166,8 @@ type InstancePool struct {
 	Instances *[]Instance `json:"instances,omitempty"`
 
 	// Enable IPv6 for instances
-	Ipv6Enabled *bool `json:"ipv6-enabled,omitempty"`
+	Ipv6Enabled *bool   `json:"ipv6-enabled,omitempty"`
+	Labels      *Labels `json:"labels,omitempty"`
 
 	// Resource manager
 	Manager *Manager `json:"manager,omitempty"`
@@ -1498,6 +1510,9 @@ type SksCluster struct {
 	// Cluster addons
 	Addons *[]SksClusterAddons `json:"addons,omitempty"`
 
+	// Enable auto upgrade of the control plane to the latest patch version available
+	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
+
 	// Cluster CNI
 	Cni *SksClusterCni `json:"cni,omitempty"`
 
@@ -1511,7 +1526,8 @@ type SksCluster struct {
 	Endpoint *string `json:"endpoint,omitempty"`
 
 	// Cluster ID
-	Id *string `json:"id,omitempty"`
+	Id     *string `json:"id,omitempty"`
+	Labels *Labels `json:"labels,omitempty"`
 
 	// Cluster level
 	Level *SksClusterLevel `json:"level,omitempty"`
@@ -1583,6 +1599,7 @@ type SksNodepool struct {
 
 	// Compute instance type
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
+	Labels       *Labels       `json:"labels,omitempty"`
 
 	// Nodepool name
 	Name *string `json:"name,omitempty"`
@@ -1899,7 +1916,8 @@ type CreateInstancePoolJSONBody struct {
 	InstanceType InstanceType `json:"instance-type"`
 
 	// Enable IPv6 for instances
-	Ipv6Enabled *bool `json:"ipv6-enabled,omitempty"`
+	Ipv6Enabled *bool   `json:"ipv6-enabled,omitempty"`
+	Labels      *Labels `json:"labels,omitempty"`
 
 	// Instance Pool name
 	Name string `json:"name"`
@@ -1948,7 +1966,8 @@ type UpdateInstancePoolJSONBody struct {
 	InstanceType *InstanceType `json:"instance-type,omitempty"`
 
 	// Enable IPv6 for instances
-	Ipv6Enabled *bool `json:"ipv6-enabled,omitempty"`
+	Ipv6Enabled *bool   `json:"ipv6-enabled,omitempty"`
+	Labels      *Labels `json:"labels,omitempty"`
 
 	// Instance Pool name
 	Name *string `json:"name,omitempty"`
@@ -2216,6 +2235,9 @@ type CreateSksClusterJSONBody struct {
 	// Cluster addons
 	Addons *[]CreateSksClusterJSONBodyAddons `json:"addons,omitempty"`
 
+	// Enable auto upgrade of the control plane to the latest patch version available
+	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
+
 	// Cluster CNI
 	Cni *CreateSksClusterJSONBodyCni `json:"cni,omitempty"`
 
@@ -2247,6 +2269,9 @@ type GenerateSksClusterKubeconfigJSONBody SksKubeconfigRequest
 
 // UpdateSksClusterJSONBody defines parameters for UpdateSksCluster.
 type UpdateSksClusterJSONBody struct {
+
+	// Enable auto upgrade of the control plane to the latest patch version available
+	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
 
 	// Cluster description
 	Description *string `json:"description,omitempty"`
@@ -2348,6 +2373,16 @@ type ResetSksClusterFieldParamsField string
 // GetSosPresignedUrlParams defines parameters for GetSosPresignedUrl.
 type GetSosPresignedUrlParams struct {
 	Key *string `json:"key,omitempty"`
+}
+
+// RegisterSshKeyJSONBody defines parameters for RegisterSshKey.
+type RegisterSshKeyJSONBody struct {
+
+	// Private Network name
+	Name string `json:"name"`
+
+	// Public key value
+	PublicKey string `json:"public-key"`
 }
 
 // ListTemplatesParams defines parameters for ListTemplates.
@@ -2501,6 +2536,9 @@ type ScaleSksNodepoolJSONRequestBody ScaleSksNodepoolJSONBody
 
 // UpgradeSksClusterJSONRequestBody defines body for UpgradeSksCluster for application/json ContentType.
 type UpgradeSksClusterJSONRequestBody UpgradeSksClusterJSONBody
+
+// RegisterSshKeyJSONRequestBody defines body for RegisterSshKey for application/json ContentType.
+type RegisterSshKeyJSONRequestBody RegisterSshKeyJSONBody
 
 // RegisterTemplateJSONRequestBody defines body for RegisterTemplate for application/json ContentType.
 type RegisterTemplateJSONRequestBody RegisterTemplateJSONBody
@@ -3567,8 +3605,10 @@ type ClientInterface interface {
 	// ListSshKeys request
 	ListSshKeys(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// RegisterSshKey request
-	RegisterSshKey(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// RegisterSshKey request  with any body
+	RegisterSshKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	RegisterSshKey(ctx context.Context, body RegisterSshKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSshKey request
 	GetSshKey(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5132,8 +5172,20 @@ func (c *Client) ListSshKeys(ctx context.Context, reqEditors ...RequestEditorFn)
 	return c.Client.Do(req)
 }
 
-func (c *Client) RegisterSshKey(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRegisterSshKeyRequest(c.Server)
+func (c *Client) RegisterSshKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegisterSshKeyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) RegisterSshKey(ctx context.Context, body RegisterSshKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRegisterSshKeyRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8897,8 +8949,19 @@ func NewListSshKeysRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewRegisterSshKeyRequest generates requests for RegisterSshKey
-func NewRegisterSshKeyRequest(server string) (*http.Request, error) {
+// NewRegisterSshKeyRequest calls the generic RegisterSshKey builder with application/json body
+func NewRegisterSshKeyRequest(server string, body RegisterSshKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewRegisterSshKeyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewRegisterSshKeyRequestWithBody generates requests for RegisterSshKey with any type of body
+func NewRegisterSshKeyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -8916,10 +8979,12 @@ func NewRegisterSshKeyRequest(server string) (*http.Request, error) {
 
 	queryURL := serverURL.ResolveReference(&operationURL)
 
-	req, err := http.NewRequest("POST", queryURL.String(), nil)
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -9596,8 +9661,10 @@ type ClientWithResponsesInterface interface {
 	// ListSshKeys request
 	ListSshKeysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSshKeysResponse, error)
 
-	// RegisterSshKey request
-	RegisterSshKeyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RegisterSshKeyResponse, error)
+	// RegisterSshKey request  with any body
+	RegisterSshKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterSshKeyResponse, error)
+
+	RegisterSshKeyWithResponse(ctx context.Context, body RegisterSshKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*RegisterSshKeyResponse, error)
 
 	// GetSshKey request
 	GetSshKeyWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetSshKeyResponse, error)
@@ -11736,7 +11803,7 @@ func (r ListSshKeysResponse) StatusCode() int {
 type RegisterSshKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *SshKey
+	JSON200      *Operation
 }
 
 // Status returns HTTPResponse.Status
@@ -13031,9 +13098,17 @@ func (c *ClientWithResponses) ListSshKeysWithResponse(ctx context.Context, reqEd
 	return ParseListSshKeysResponse(rsp)
 }
 
-// RegisterSshKeyWithResponse request returning *RegisterSshKeyResponse
-func (c *ClientWithResponses) RegisterSshKeyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*RegisterSshKeyResponse, error) {
-	rsp, err := c.RegisterSshKey(ctx, reqEditors...)
+// RegisterSshKeyWithBodyWithResponse request with arbitrary body returning *RegisterSshKeyResponse
+func (c *ClientWithResponses) RegisterSshKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterSshKeyResponse, error) {
+	rsp, err := c.RegisterSshKeyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRegisterSshKeyResponse(rsp)
+}
+
+func (c *ClientWithResponses) RegisterSshKeyWithResponse(ctx context.Context, body RegisterSshKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*RegisterSshKeyResponse, error) {
+	rsp, err := c.RegisterSshKey(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -15618,7 +15693,7 @@ func ParseRegisterSshKeyResponse(rsp *http.Response) (*RegisterSshKeyResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest SshKey
+		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

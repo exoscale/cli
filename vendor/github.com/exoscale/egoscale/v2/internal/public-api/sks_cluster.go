@@ -11,11 +11,13 @@ import (
 func (c *SksCluster) UnmarshalJSON(data []byte) error {
 	raw := struct {
 		Addons      *[]SksClusterAddons `json:"addons,omitempty"`
+		AutoUpgrade *bool               `json:"auto-upgrade,omitempty"`
 		Cni         *SksClusterCni      `json:"cni,omitempty"`
 		CreatedAt   *string             `json:"created-at,omitempty"`
 		Description *string             `json:"description,omitempty"`
 		Endpoint    *string             `json:"endpoint,omitempty"`
 		Id          *string             `json:"id,omitempty"` // nolint:revive
+		Labels      *Labels             `json:"labels,omitempty"`
 		Level       *SksClusterLevel    `json:"level,omitempty"`
 		Name        *string             `json:"name,omitempty"`
 		Nodepools   *[]SksNodepool      `json:"nodepools,omitempty"`
@@ -36,10 +38,12 @@ func (c *SksCluster) UnmarshalJSON(data []byte) error {
 	}
 
 	c.Addons = raw.Addons
+	c.AutoUpgrade = raw.AutoUpgrade
 	c.Cni = raw.Cni
 	c.Description = raw.Description
 	c.Endpoint = raw.Endpoint
 	c.Id = raw.Id
+	c.Labels = raw.Labels
 	c.Level = raw.Level
 	c.Name = raw.Name
 	c.Nodepools = raw.Nodepools
@@ -54,11 +58,13 @@ func (c *SksCluster) UnmarshalJSON(data []byte) error {
 func (c *SksCluster) MarshalJSON() ([]byte, error) {
 	raw := struct {
 		Addons      *[]SksClusterAddons `json:"addons,omitempty"`
+		AutoUpgrade *bool               `json:"auto-upgrade,omitempty"`
 		Cni         *SksClusterCni      `json:"cni,omitempty"`
 		CreatedAt   *string             `json:"created-at,omitempty"`
 		Description *string             `json:"description,omitempty"`
 		Endpoint    *string             `json:"endpoint,omitempty"`
 		Id          *string             `json:"id,omitempty"` // nolint:revive
+		Labels      *Labels             `json:"labels,omitempty"`
 		Level       *SksClusterLevel    `json:"level,omitempty"`
 		Name        *string             `json:"name,omitempty"`
 		Nodepools   *[]SksNodepool      `json:"nodepools,omitempty"`
@@ -72,10 +78,12 @@ func (c *SksCluster) MarshalJSON() ([]byte, error) {
 	}
 
 	raw.Addons = c.Addons
+	raw.AutoUpgrade = c.AutoUpgrade
 	raw.Cni = c.Cni
 	raw.Description = c.Description
 	raw.Endpoint = c.Endpoint
 	raw.Id = c.Id
+	raw.Labels = c.Labels
 	raw.Level = c.Level
 	raw.Name = c.Name
 	raw.Nodepools = c.Nodepools

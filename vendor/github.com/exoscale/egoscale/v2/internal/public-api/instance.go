@@ -12,6 +12,7 @@ func (i *Instance) UnmarshalJSON(data []byte) error {
 	raw := struct {
 		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 		CreatedAt          *string              `json:"created-at,omitempty"`
+		DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 		DiskSize           *int64               `json:"disk-size,omitempty"`
 		ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
 		Id                 *string              `json:"id,omitempty"` // nolint:revive
@@ -43,6 +44,7 @@ func (i *Instance) UnmarshalJSON(data []byte) error {
 	}
 
 	i.AntiAffinityGroups = raw.AntiAffinityGroups
+	i.DeployTarget = raw.DeployTarget
 	i.DiskSize = raw.DiskSize
 	i.ElasticIps = raw.ElasticIps
 	i.Id = raw.Id
@@ -69,6 +71,7 @@ func (i *Instance) MarshalJSON() ([]byte, error) {
 	raw := struct {
 		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 		CreatedAt          *string              `json:"created-at,omitempty"`
+		DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
 		DiskSize           *int64               `json:"disk-size,omitempty"`
 		ElasticIps         *[]ElasticIp         `json:"elastic-ips,omitempty"`
 		Id                 *string              `json:"id,omitempty"` // nolint:revive
@@ -93,6 +96,7 @@ func (i *Instance) MarshalJSON() ([]byte, error) {
 	}
 
 	raw.AntiAffinityGroups = i.AntiAffinityGroups
+	raw.DeployTarget = i.DeployTarget
 	raw.DiskSize = i.DiskSize
 	raw.ElasticIps = i.ElasticIps
 	raw.Id = i.Id

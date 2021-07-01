@@ -72,7 +72,7 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 	}
 
 	for _, n := range cluster.Nodepools {
-		if n.ID == np || n.Name == np {
+		if *n.ID == np || *n.Name == np {
 			nodepool = n
 			break
 		}
@@ -84,16 +84,16 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 	out := sksNodepoolShowOutput{
 		AntiAffinityGroups: make([]string, 0),
 		CreationDate:       nodepool.CreatedAt.String(),
-		Description:        nodepool.Description,
-		DiskSize:           nodepool.DiskSize,
-		ID:                 nodepool.ID,
-		InstancePoolID:     nodepool.InstancePoolID,
-		InstancePrefix:     nodepool.InstancePrefix,
-		Name:               nodepool.Name,
+		Description:        defaultString(nodepool.Description, ""),
+		DiskSize:           *nodepool.DiskSize,
+		ID:                 *nodepool.ID,
+		InstancePoolID:     *nodepool.InstancePoolID,
+		InstancePrefix:     defaultString(nodepool.InstancePrefix, ""),
+		Name:               *nodepool.Name,
 		SecurityGroups:     make([]string, 0),
-		Size:               nodepool.Size,
-		State:              nodepool.State,
-		Version:            nodepool.Version,
+		Size:               *nodepool.Size,
+		State:              *nodepool.State,
+		Version:            *nodepool.Version,
 	}
 
 	antiAffinityGroups, err := nodepool.AntiAffinityGroups(ctx)
@@ -101,7 +101,7 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 		return nil, err
 	}
 	for _, antiAffinityGroup := range antiAffinityGroups {
-		out.AntiAffinityGroups = append(out.AntiAffinityGroups, antiAffinityGroup.Name)
+		out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
 	}
 
 	securityGroups, err := nodepool.SecurityGroups(ctx)
@@ -109,20 +109,20 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 		return nil, err
 	}
 	for _, securityGroup := range securityGroups {
-		out.SecurityGroups = append(out.SecurityGroups, securityGroup.Name)
+		out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
 	}
 
-	serviceOffering, err := cs.GetInstanceType(ctx, zone, nodepool.InstanceTypeID)
+	serviceOffering, err := cs.GetInstanceType(ctx, zone, *nodepool.InstanceTypeID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving service offering: %s", err)
 	}
-	out.InstanceType = serviceOffering.Size
+	out.InstanceType = *serviceOffering.Size
 
-	template, err := cs.GetTemplate(ctx, zone, nodepool.TemplateID)
+	template, err := cs.GetTemplate(ctx, zone, *nodepool.TemplateID)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving template: %s", err)
 	}
-	out.Template = template.Name
+	out.Template = *template.Name
 
 	return &out, nil
 }

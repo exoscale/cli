@@ -50,32 +50,55 @@ func (c *nlbServiceAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	var (
+		port       = uint16(c.Port)
+		targetPort = uint16(c.TargetPort)
+		hcPort     = uint16(c.HealthcheckPort)
+		hcInterval = time.Duration(c.HealthcheckInterval) * time.Second
+		hcTimeout  = time.Duration(c.HealthcheckTimeout) * time.Second
+	)
+
 	service := &exov2.NetworkLoadBalancerService{
-		Description: c.Description,
-		Healthcheck: exov2.NetworkLoadBalancerServiceHealthcheck{
-			Interval: time.Duration(c.HealthcheckInterval) * time.Second,
-			Mode:     c.HealthcheckMode,
-			Port:     uint16(c.HealthcheckPort),
-			Retries:  c.HealthcheckRetries,
-			TLSSNI:   c.HealthcheckTLSSNI,
-			Timeout:  time.Duration(c.HealthcheckTimeout) * time.Second,
-			URI:      c.HealthcheckURI,
+		Description: func() (v *string) {
+			if c.Description != "" {
+				v = &c.Description
+			}
+			return
+		}(),
+		Healthcheck: &exov2.NetworkLoadBalancerServiceHealthcheck{
+			Interval: &hcInterval,
+			Mode:     &c.HealthcheckMode,
+			Port:     &hcPort,
+			Retries:  &c.HealthcheckRetries,
+			TLSSNI: func() (v *string) {
+				if c.HealthcheckTLSSNI != "" {
+					v = &c.HealthcheckTLSSNI
+				}
+				return
+			}(),
+			Timeout: &hcTimeout,
+			URI: func() (v *string) {
+				if c.HealthcheckURI != "" {
+					v = &c.HealthcheckURI
+				}
+				return
+			}(),
 		},
-		Name:       c.Name,
-		Port:       uint16(c.Port),
-		Protocol:   c.Protocol,
-		Strategy:   c.Strategy,
-		TargetPort: uint16(c.TargetPort),
+		Name:       &c.Name,
+		Port:       &port,
+		Protocol:   &c.Protocol,
+		Strategy:   &c.Strategy,
+		TargetPort: &targetPort,
 	}
 
-	if strings.HasPrefix(service.Healthcheck.Mode, "http") && service.Healthcheck.URI == "" {
+	if strings.HasPrefix(*service.Healthcheck.Mode, "http") && *service.Healthcheck.URI == "" {
 		return errors.New(`an healthcheck URI is required in "http(s)" mode`)
 	}
 
-	if service.TargetPort == 0 {
+	if *service.TargetPort == 0 {
 		service.TargetPort = service.Port
 	}
-	if service.Healthcheck.Port == 0 {
+	if *service.Healthcheck.Port == 0 {
 		service.Healthcheck.Port = service.TargetPort
 	}
 
@@ -92,7 +115,7 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 	service.InstancePoolID = instancePool.ID
 
-	decorateAsyncOperation(fmt.Sprintf("Adding service %q...", service.Name), func() {
+	decorateAsyncOperation(fmt.Sprintf("Adding service %q...", c.Name), func() {
 		service, err = nlb.AddService(ctx, service)
 	})
 	if err != nil {
@@ -100,7 +123,7 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showNLBService(c.Zone, nlb.ID, service.ID))
+		return output(showNLBService(c.Zone, *nlb.ID, *service.ID))
 	}
 
 	return nil

@@ -9,16 +9,16 @@ import (
 
 // AntiAffinityGroup represents an Anti-Affinity Group.
 type AntiAffinityGroup struct {
-	Description string
-	ID          string
-	Name        string
+	Description *string
+	ID          *string
+	Name        *string `req-for:"create"`
 }
 
 func antiAffinityGroupFromAPI(a *papi.AntiAffinityGroup) *AntiAffinityGroup {
 	return &AntiAffinityGroup{
-		Description: papi.OptionalString(a.Description),
-		ID:          *a.Id,
-		Name:        *a.Name,
+		Description: a.Description,
+		ID:          a.Id,
+		Name:        a.Name,
 	}
 }
 
@@ -32,16 +32,15 @@ func (c *Client) CreateAntiAffinityGroup(
 	zone string,
 	antiAffinityGroup *AntiAffinityGroup,
 ) (*AntiAffinityGroup, error) {
+	if err := validateOperationParams(antiAffinityGroup, "create"); err != nil {
+		return nil, err
+	}
+
 	resp, err := c.CreateAntiAffinityGroupWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateAntiAffinityGroupJSONRequestBody{
-			Description: func() *string {
-				if antiAffinityGroup.Description != "" {
-					return &antiAffinityGroup.Description
-				}
-				return nil
-			}(),
-			Name: antiAffinityGroup.Name,
+			Description: antiAffinityGroup.Description,
+			Name:        *antiAffinityGroup.Name,
 		})
 	if err != nil {
 		return nil, err
@@ -94,8 +93,8 @@ func (c *Client) FindAntiAffinityGroup(ctx context.Context, zone, v string) (*An
 	}
 
 	for _, r := range res {
-		if r.ID == v || r.Name == v {
-			return c.GetAntiAffinityGroup(ctx, zone, r.ID)
+		if *r.ID == v || *r.Name == v {
+			return c.GetAntiAffinityGroup(ctx, zone, *r.ID)
 		}
 	}
 

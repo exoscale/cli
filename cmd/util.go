@@ -31,3 +31,12 @@ func defaultString(s *string, def string) string {
 
 	return def
 }
+
+// defaultBool returns the value of the bool pointer b if not nil, otherwise the default value specified.
+func defaultBool(b *bool, def bool) bool {
+	if b != nil {
+		return *b
+	}
+
+	return def
+}

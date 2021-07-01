@@ -12,21 +12,22 @@ import (
 
 // SKSNodepool represents an SKS Nodepool.
 type SKSNodepool struct {
-	AntiAffinityGroupIDs []string `reset:"anti-affinity-groups"`
-	CreatedAt            time.Time
-	DeployTargetID       string `reset:"deploy-target"`
-	Description          string `reset:"description"`
-	DiskSize             int64
-	ID                   string
-	InstancePoolID       string
-	InstancePrefix       string
-	InstanceTypeID       string
-	Name                 string
-	SecurityGroupIDs     []string `reset:"security-groups"`
-	Size                 int64
-	State                string
-	TemplateID           string
-	Version              string
+	AntiAffinityGroupIDs *[]string
+	CreatedAt            *time.Time
+	DeployTargetID       *string
+	Description          *string
+	DiskSize             *int64  `req-for:"create"`
+	ID                   *string `req-for:"update,scale,evict,delete"`
+	InstancePoolID       *string
+	InstancePrefix       *string
+	InstanceTypeID       *string `req-for:"create"`
+	Labels               *map[string]string
+	Name                 *string `req-for:"create"`
+	SecurityGroupIDs     *[]string
+	Size                 *int64 `req-for:"create"`
+	State                *string
+	TemplateID           *string
+	Version              *string
 
 	c    *Client
 	zone string
@@ -34,44 +35,52 @@ type SKSNodepool struct {
 
 func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSNodepool {
 	return &SKSNodepool{
-		AntiAffinityGroupIDs: func() []string {
+		AntiAffinityGroupIDs: func() (v *[]string) {
 			ids := make([]string, 0)
 			if np.AntiAffinityGroups != nil {
 				for _, aag := range *np.AntiAffinityGroups {
 					aag := aag
 					ids = append(ids, *aag.Id)
 				}
+				v = &ids
 			}
-			return ids
+			return
 		}(),
-		CreatedAt: *np.CreatedAt,
-		DeployTargetID: func() string {
+		CreatedAt: np.CreatedAt,
+		DeployTargetID: func() (v *string) {
 			if np.DeployTarget != nil {
-				return papi.OptionalString(np.DeployTarget.Id)
+				v = np.DeployTarget.Id
 			}
-			return ""
+			return
 		}(),
-		Description:    papi.OptionalString(np.Description),
-		DiskSize:       *np.DiskSize,
-		ID:             *np.Id,
-		InstancePoolID: *np.InstancePool.Id,
-		InstancePrefix: papi.OptionalString(np.InstancePrefix),
-		InstanceTypeID: *np.InstanceType.Id,
-		Name:           *np.Name,
-		SecurityGroupIDs: func() []string {
+		Description:    np.Description,
+		DiskSize:       np.DiskSize,
+		ID:             np.Id,
+		InstancePoolID: np.InstancePool.Id,
+		InstancePrefix: np.InstancePrefix,
+		InstanceTypeID: np.InstanceType.Id,
+		Labels: func() (v *map[string]string) {
+			if np.Labels != nil {
+				v = &np.Labels.AdditionalProperties
+			}
+			return
+		}(),
+		Name: np.Name,
+		SecurityGroupIDs: func() (v *[]string) {
 			ids := make([]string, 0)
 			if np.SecurityGroups != nil {
 				for _, sg := range *np.SecurityGroups {
 					sg := sg
 					ids = append(ids, *sg.Id)
 				}
+				v = &ids
 			}
-			return ids
+			return
 		}(),
-		Size:       *np.Size,
-		State:      string(*np.State),
-		TemplateID: *np.Template.Id,
-		Version:    *np.Version,
+		Size:       np.Size,
+		State:      (*string)(np.State),
+		TemplateID: np.Template.Id,
+		Version:    np.Version,
 
 		c:    client,
 		zone: zone,
@@ -80,29 +89,37 @@ func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSN
 
 // AntiAffinityGroups returns the list of Anti-Affinity Groups applied to the members of the cluster Nodepool.
 func (n *SKSNodepool) AntiAffinityGroups(ctx context.Context) ([]*AntiAffinityGroup, error) {
-	res, err := n.c.fetchFromIDs(ctx, n.zone, n.AntiAffinityGroupIDs, new(AntiAffinityGroup))
-	return res.([]*AntiAffinityGroup), err
+	if n.AntiAffinityGroupIDs != nil {
+		res, err := n.c.fetchFromIDs(ctx, n.zone, *n.AntiAffinityGroupIDs, new(AntiAffinityGroup))
+		return res.([]*AntiAffinityGroup), err
+	}
+	return nil, nil
 }
 
 // SecurityGroups returns the list of Security Groups attached to the members of the cluster Nodepool.
 func (n *SKSNodepool) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error) {
-	res, err := n.c.fetchFromIDs(ctx, n.zone, n.SecurityGroupIDs, new(SecurityGroup))
-	return res.([]*SecurityGroup), err
+	if n.SecurityGroupIDs != nil {
+		res, err := n.c.fetchFromIDs(ctx, n.zone, *n.SecurityGroupIDs, new(SecurityGroup))
+		return res.([]*SecurityGroup), err
+	}
+	return nil, nil
 }
 
 // SKSCluster represents an SKS cluster.
 type SKSCluster struct {
-	AddOns       []string
-	CNI          string
-	CreatedAt    time.Time
-	Description  string `reset:"description"`
-	Endpoint     string
-	ID           string
-	Name         string
+	AddOns       *[]string
+	AutoUpgrade  *bool
+	CNI          *string
+	CreatedAt    *time.Time
+	Description  *string
+	Endpoint     *string
+	ID           *string `req-for:"update"`
+	Labels       *map[string]string
+	Name         *string `req-for:"create"`
 	Nodepools    []*SKSNodepool
-	ServiceLevel string
-	State        string
-	Version      string
+	ServiceLevel *string `req-for:"create"`
+	State        *string
+	Version      *string `req-for:"create"`
 
 	c    *Client
 	zone string
@@ -110,26 +127,29 @@ type SKSCluster struct {
 
 func sksClusterFromAPI(client *Client, zone string, c *papi.SksCluster) *SKSCluster {
 	return &SKSCluster{
-		AddOns: func() []string {
-			addOns := make([]string, 0)
+		AddOns: func() (v *[]string) {
 			if c.Addons != nil {
+				addOns := make([]string, 0)
 				for _, a := range *c.Addons {
 					addOns = append(addOns, string(a))
 				}
+				v = &addOns
 			}
-			return addOns
+			return
 		}(),
-		CNI: func() string {
-			if c.Cni != nil {
-				return string(*c.Cni)
+		AutoUpgrade: c.AutoUpgrade,
+		CNI:         (*string)(c.Cni),
+		CreatedAt:   c.CreatedAt,
+		Description: c.Description,
+		Endpoint:    c.Endpoint,
+		ID:          c.Id,
+		Labels: func() (v *map[string]string) {
+			if c.Labels != nil {
+				v = &c.Labels.AdditionalProperties
 			}
-			return ""
+			return
 		}(),
-		CreatedAt:   *c.CreatedAt,
-		Description: papi.OptionalString(c.Description),
-		Endpoint:    *c.Endpoint,
-		ID:          *c.Id,
-		Name:        *c.Name,
+		Name: c.Name,
 		Nodepools: func() []*SKSNodepool {
 			nodepools := make([]*SKSNodepool, 0)
 			if c.Nodepools != nil {
@@ -140,9 +160,9 @@ func sksClusterFromAPI(client *Client, zone string, c *papi.SksCluster) *SKSClus
 			}
 			return nodepools
 		}(),
-		ServiceLevel: string(*c.Level),
-		State:        string(*c.State),
-		Version:      *c.Version,
+		ServiceLevel: (*string)(c.Level),
+		State:        (*string)(c.State),
+		Version:      c.Version,
 
 		c:    client,
 		zone: zone,
@@ -152,7 +172,7 @@ func sksClusterFromAPI(client *Client, zone string, c *papi.SksCluster) *SKSClus
 // RotateCCMCredentials rotates the Exoscale IAM credentials managed by the SKS control plane for the
 // Kubernetes Exoscale Cloud Controller Manager.
 func (c *SKSCluster) RotateCCMCredentials(ctx context.Context) error {
-	resp, err := c.c.RotateSksCcmCredentialsWithResponse(apiv2.WithZone(ctx, c.zone), c.ID)
+	resp, err := c.c.RotateSksCcmCredentialsWithResponse(apiv2.WithZone(ctx, c.zone), *c.ID)
 	if err != nil {
 		return err
 	}
@@ -176,7 +196,7 @@ func (c *SKSCluster) AuthorityCert(ctx context.Context, authority string) (strin
 
 	resp, err := c.c.GetSksClusterAuthorityCertWithResponse(
 		apiv2.WithZone(ctx, c.zone),
-		c.ID,
+		*c.ID,
 		papi.GetSksClusterAuthorityCertParamsAuthority(authority),
 	)
 	if err != nil {
@@ -201,7 +221,7 @@ func (c *SKSCluster) RequestKubeconfig(
 
 	resp, err := c.c.GenerateSksClusterKubeconfigWithResponse(
 		apiv2.WithZone(ctx, c.zone),
-		c.ID,
+		*c.ID,
 		papi.GenerateSksClusterKubeconfigJSONRequestBody{
 			User:   &user,
 			Groups: &groups,
@@ -221,55 +241,55 @@ func (c *SKSCluster) RequestKubeconfig(
 }
 
 // AddNodepool adds a Nodepool to the SKS cluster.
-func (c *SKSCluster) AddNodepool(ctx context.Context, np *SKSNodepool) (*SKSNodepool, error) {
+func (c *SKSCluster) AddNodepool(ctx context.Context, nodepool *SKSNodepool) (*SKSNodepool, error) {
+	if err := validateOperationParams(nodepool, "create"); err != nil {
+		return nil, err
+	}
+
 	resp, err := c.c.CreateSksNodepoolWithResponse(
 		apiv2.WithZone(ctx, c.zone),
-		c.ID,
+		*c.ID,
 		papi.CreateSksNodepoolJSONRequestBody{
-			AntiAffinityGroups: func() *[]papi.AntiAffinityGroup {
-				if l := len(np.AntiAffinityGroupIDs); l > 0 {
-					list := make([]papi.AntiAffinityGroup, l)
-					for i, v := range np.AntiAffinityGroupIDs {
-						v := v
-						list[i] = papi.AntiAffinityGroup{Id: &v}
+			AntiAffinityGroups: func() (v *[]papi.AntiAffinityGroup) {
+				if nodepool.AntiAffinityGroupIDs != nil {
+					ids := make([]papi.AntiAffinityGroup, len(*nodepool.AntiAffinityGroupIDs))
+					for i, item := range *nodepool.AntiAffinityGroupIDs {
+						item := item
+						ids[i] = papi.AntiAffinityGroup{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			DeployTarget: func() *papi.DeployTarget {
-				if np.DeployTargetID != "" {
-					return &papi.DeployTarget{Id: &np.DeployTargetID}
+			DeployTarget: func() (v *papi.DeployTarget) {
+				if nodepool.DeployTargetID != nil {
+					v = &papi.DeployTarget{Id: nodepool.DeployTargetID}
 				}
-				return nil
+				return
 			}(),
-			Description: func() *string {
-				if np.Description != "" {
-					return &np.Description
+			Description:    nodepool.Description,
+			DiskSize:       *nodepool.DiskSize,
+			InstancePrefix: nodepool.InstancePrefix,
+			InstanceType:   papi.InstanceType{Id: nodepool.InstanceTypeID},
+			Labels: func() (v *papi.Labels) {
+				if nodepool.Labels != nil {
+					v = &papi.Labels{AdditionalProperties: *nodepool.Labels}
 				}
-				return nil
+				return
 			}(),
-			DiskSize: np.DiskSize,
-			InstancePrefix: func() *string {
-				if np.InstancePrefix != "" {
-					return &np.InstancePrefix
-				}
-				return nil
-			}(),
-			InstanceType: papi.InstanceType{Id: &np.InstanceTypeID},
-			Name:         np.Name,
-			SecurityGroups: func() *[]papi.SecurityGroup {
-				if l := len(np.SecurityGroupIDs); l > 0 {
-					list := make([]papi.SecurityGroup, l)
-					for i, v := range np.SecurityGroupIDs {
-						v := v
-						list[i] = papi.SecurityGroup{Id: &v}
+			Name: *nodepool.Name,
+			SecurityGroups: func() (v *[]papi.SecurityGroup) {
+				if nodepool.SecurityGroupIDs != nil {
+					ids := make([]papi.SecurityGroup, len(*nodepool.SecurityGroupIDs))
+					for i, item := range *nodepool.SecurityGroupIDs {
+						item := item
+						ids[i] = papi.SecurityGroup{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			Size: np.Size,
+			Size: *nodepool.Size,
 		})
 	if err != nil {
 		return nil, err
@@ -283,7 +303,7 @@ func (c *SKSCluster) AddNodepool(ctx context.Context, np *SKSNodepool) (*SKSNode
 		return nil, err
 	}
 
-	nodepoolRes, err := c.c.GetSksNodepoolWithResponse(ctx, c.ID, *res.(*papi.Reference).Id)
+	nodepoolRes, err := c.c.GetSksNodepoolWithResponse(ctx, *c.ID, *res.(*papi.Reference).Id)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve Nodepool: %s", err)
 	}
@@ -292,69 +312,59 @@ func (c *SKSCluster) AddNodepool(ctx context.Context, np *SKSNodepool) (*SKSNode
 }
 
 // UpdateNodepool updates the specified SKS cluster Nodepool.
-func (c *SKSCluster) UpdateNodepool(ctx context.Context, np *SKSNodepool) error {
+func (c *SKSCluster) UpdateNodepool(ctx context.Context, nodepool *SKSNodepool) error {
+	if err := validateOperationParams(nodepool, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.c.UpdateSksNodepoolWithResponse(
 		apiv2.WithZone(ctx, c.zone),
-		c.ID,
-		np.ID,
+		*c.ID,
+		*nodepool.ID,
 		papi.UpdateSksNodepoolJSONRequestBody{
-			AntiAffinityGroups: func() *[]papi.AntiAffinityGroup {
-				if l := len(np.AntiAffinityGroupIDs); l > 0 {
-					list := make([]papi.AntiAffinityGroup, l)
-					for i, v := range np.AntiAffinityGroupIDs {
-						v := v
-						list[i] = papi.AntiAffinityGroup{Id: &v}
+			AntiAffinityGroups: func() (v *[]papi.AntiAffinityGroup) {
+				if nodepool.AntiAffinityGroupIDs != nil {
+					ids := make([]papi.AntiAffinityGroup, len(*nodepool.AntiAffinityGroupIDs))
+					for i, item := range *nodepool.AntiAffinityGroupIDs {
+						item := item
+						ids[i] = papi.AntiAffinityGroup{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			DeployTarget: func() *papi.DeployTarget {
-				if np.DeployTargetID != "" {
-					return &papi.DeployTarget{Id: &np.DeployTargetID}
+			DeployTarget: func() (v *papi.DeployTarget) {
+				if nodepool.DeployTargetID != nil {
+					v = &papi.DeployTarget{Id: nodepool.DeployTargetID}
 				}
-				return nil
+				return
 			}(),
-			Description: func() *string {
-				if np.Description != "" {
-					return &np.Description
+			Description:    nodepool.Description,
+			DiskSize:       nodepool.DiskSize,
+			InstancePrefix: nodepool.InstancePrefix,
+			InstanceType: func() (v *papi.InstanceType) {
+				if nodepool.InstanceTypeID != nil {
+					v = &papi.InstanceType{Id: nodepool.InstanceTypeID}
 				}
-				return nil
+				return
 			}(),
-			DiskSize: func() *int64 {
-				if np.DiskSize > 0 {
-					return &np.DiskSize
+			Labels: func() (v *papi.Labels) {
+				if nodepool.Labels != nil {
+					v = &papi.Labels{AdditionalProperties: *nodepool.Labels}
 				}
-				return nil
+				return
 			}(),
-			InstancePrefix: func() *string {
-				if np.InstancePrefix != "" {
-					return &np.InstancePrefix
-				}
-				return nil
-			}(),
-			InstanceType: func() *papi.InstanceType {
-				if np.InstanceTypeID != "" {
-					return &papi.InstanceType{Id: &np.InstanceTypeID}
-				}
-				return nil
-			}(),
-			Name: func() *string {
-				if np.Name != "" {
-					return &np.Name
-				}
-				return nil
-			}(),
-			SecurityGroups: func() *[]papi.SecurityGroup {
-				if l := len(np.SecurityGroupIDs); l > 0 {
-					list := make([]papi.SecurityGroup, l)
-					for i, v := range np.SecurityGroupIDs {
-						v := v
-						list[i] = papi.SecurityGroup{Id: &v}
+			Name: nodepool.Name,
+			SecurityGroups: func() (v *[]papi.SecurityGroup) {
+				if nodepool.SecurityGroupIDs != nil {
+					ids := make([]papi.SecurityGroup, len(*nodepool.SecurityGroupIDs))
+					for i, item := range *nodepool.SecurityGroupIDs {
+						item := item
+						ids[i] = papi.SecurityGroup{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
 		})
 	if err != nil {
@@ -373,11 +383,15 @@ func (c *SKSCluster) UpdateNodepool(ctx context.Context, np *SKSNodepool) error 
 }
 
 // ScaleNodepool scales the SKS cluster Nodepool to the specified number of Kubernetes Nodes.
-func (c *SKSCluster) ScaleNodepool(ctx context.Context, np *SKSNodepool, nodes int64) error {
+func (c *SKSCluster) ScaleNodepool(ctx context.Context, nodepool *SKSNodepool, nodes int64) error {
+	if err := validateOperationParams(nodepool, "scale"); err != nil {
+		return err
+	}
+
 	resp, err := c.c.ScaleSksNodepoolWithResponse(
 		apiv2.WithZone(ctx, c.zone),
-		c.ID,
-		np.ID,
+		*c.ID,
+		*nodepool.ID,
 		papi.ScaleSksNodepoolJSONRequestBody{Size: nodes},
 	)
 	if err != nil {
@@ -397,11 +411,15 @@ func (c *SKSCluster) ScaleNodepool(ctx context.Context, np *SKSNodepool, nodes i
 
 // EvictNodepoolMembers evicts the specified members (identified by their Compute instance ID) from the
 // SKS cluster Nodepool.
-func (c *SKSCluster) EvictNodepoolMembers(ctx context.Context, np *SKSNodepool, members []string) error {
+func (c *SKSCluster) EvictNodepoolMembers(ctx context.Context, nodepool *SKSNodepool, members []string) error {
+	if err := validateOperationParams(nodepool, "evict"); err != nil {
+		return err
+	}
+
 	resp, err := c.c.EvictSksNodepoolMembersWithResponse(
 		apiv2.WithZone(ctx, c.zone),
-		c.ID,
-		np.ID,
+		*c.ID,
+		*nodepool.ID,
 		papi.EvictSksNodepoolMembersJSONRequestBody{Instances: &members},
 	)
 	if err != nil {
@@ -420,68 +438,15 @@ func (c *SKSCluster) EvictNodepoolMembers(ctx context.Context, np *SKSNodepool, 
 }
 
 // DeleteNodepool deletes the specified Nodepool from the SKS cluster.
-func (c *SKSCluster) DeleteNodepool(ctx context.Context, np *SKSNodepool) error {
+func (c *SKSCluster) DeleteNodepool(ctx context.Context, nodepool *SKSNodepool) error {
+	if err := validateOperationParams(nodepool, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.c.DeleteSksNodepoolWithResponse(
 		apiv2.WithZone(ctx, c.zone),
-		c.ID,
-		np.ID,
-	)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(c.c.timeout).
-		WithInterval(c.c.pollInterval).
-		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ResetField resets the specified SKS cluster field to its default value.
-// The value expected for the field parameter is a pointer to the SKSCluster field to reset.
-func (c *SKSCluster) ResetField(ctx context.Context, field interface{}) error {
-	resetField, err := resetFieldName(c, field)
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.c.ResetSksClusterFieldWithResponse(
-		apiv2.WithZone(ctx, c.zone),
-		c.ID,
-		papi.ResetSksClusterFieldParamsField(resetField),
-	)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(c.c.timeout).
-		WithInterval(c.c.pollInterval).
-		Poll(ctx, c.c.OperationPoller(c.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ResetNodepoolField resets the specified SKS Nodepool field to its default value.
-// The value expected for the field parameter is a pointer to the SKSNodepool field to reset.
-func (c *SKSCluster) ResetNodepoolField(ctx context.Context, np *SKSNodepool, field interface{}) error {
-	resetField, err := resetFieldName(np, field)
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.c.ResetSksNodepoolFieldWithResponse(
-		apiv2.WithZone(ctx, c.zone),
-		c.ID,
-		np.ID,
-		papi.ResetSksNodepoolFieldParamsField(resetField),
+		*c.ID,
+		*nodepool.ID,
 	)
 	if err != nil {
 		return err
@@ -500,35 +465,35 @@ func (c *SKSCluster) ResetNodepoolField(ctx context.Context, np *SKSNodepool, fi
 
 // CreateSKSCluster creates an SKS cluster in the specified zone.
 func (c *Client) CreateSKSCluster(ctx context.Context, zone string, cluster *SKSCluster) (*SKSCluster, error) {
+	if err := validateOperationParams(cluster, "create"); err != nil {
+		return nil, err
+	}
+
 	resp, err := c.CreateSksClusterWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateSksClusterJSONRequestBody{
-			Addons: func() *[]papi.CreateSksClusterJSONBodyAddons {
-				var addOns []papi.CreateSksClusterJSONBodyAddons
-				if l := len(cluster.AddOns); l > 0 {
-					addOns = make([]papi.CreateSksClusterJSONBodyAddons, l)
-					for i := range cluster.AddOns {
-						addOns[i] = papi.CreateSksClusterJSONBodyAddons(cluster.AddOns[i])
+			Addons: func() (v *[]papi.CreateSksClusterJSONBodyAddons) {
+				if cluster.AddOns != nil {
+					addOns := make([]papi.CreateSksClusterJSONBodyAddons, len(*cluster.AddOns))
+					for i, a := range *cluster.AddOns {
+						addOns[i] = papi.CreateSksClusterJSONBodyAddons(a)
 					}
-					return &addOns
+					v = &addOns
 				}
-				return nil
+				return
 			}(),
-			Cni: func() *papi.CreateSksClusterJSONBodyCni {
-				if cluster.CNI != "" {
-					return (*papi.CreateSksClusterJSONBodyCni)(&cluster.CNI)
+			AutoUpgrade: cluster.AutoUpgrade,
+			Cni:         (*papi.CreateSksClusterJSONBodyCni)(cluster.CNI),
+			Description: cluster.Description,
+			Labels: func() (v *papi.Labels) {
+				if cluster.Labels != nil {
+					v = &papi.Labels{AdditionalProperties: *cluster.Labels}
 				}
-				return nil
+				return
 			}(),
-			Description: func() *string {
-				if cluster.Description != "" {
-					return &cluster.Description
-				}
-				return nil
-			}(),
-			Level:   papi.CreateSksClusterJSONBodyLevel(cluster.ServiceLevel),
-			Name:    cluster.Name,
-			Version: cluster.Version,
+			Level:   papi.CreateSksClusterJSONBodyLevel(*cluster.ServiceLevel),
+			Name:    *cluster.Name,
+			Version: *cluster.Version,
 		})
 	if err != nil {
 		return nil, err
@@ -600,8 +565,8 @@ func (c *Client) FindSKSCluster(ctx context.Context, zone, v string) (*SKSCluste
 	}
 
 	for _, r := range res {
-		if r.ID == v || r.Name == v {
-			return c.GetSKSCluster(ctx, zone, r.ID)
+		if *r.ID == v || *r.Name == v {
+			return c.GetSKSCluster(ctx, zone, *r.ID)
 		}
 	}
 
@@ -610,22 +575,23 @@ func (c *Client) FindSKSCluster(ctx context.Context, zone, v string) (*SKSCluste
 
 // UpdateSKSCluster updates the specified SKS cluster in the specified zone.
 func (c *Client) UpdateSKSCluster(ctx context.Context, zone string, cluster *SKSCluster) error {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.UpdateSksClusterWithResponse(
 		apiv2.WithZone(ctx, zone),
-		cluster.ID,
+		*cluster.ID,
 		papi.UpdateSksClusterJSONRequestBody{
-			Description: func() *string {
-				if cluster.Description != "" {
-					return &cluster.Description
+			AutoUpgrade: cluster.AutoUpgrade,
+			Description: cluster.Description,
+			Labels: func() (v *papi.Labels) {
+				if cluster.Labels != nil {
+					v = &papi.Labels{AdditionalProperties: *cluster.Labels}
 				}
-				return nil
+				return
 			}(),
-			Name: func() *string {
-				if cluster.Name != "" {
-					return &cluster.Name
-				}
-				return nil
-			}(),
+			Name: cluster.Name,
 		})
 	if err != nil {
 		return err
