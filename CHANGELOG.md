@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.33.0
+
+### Features
+
+- Add new `exo compute instance` commands
+
+### Changes
+
+- Removed deprecated `exo api` command
+- Deprecated `exo vm` commands
+
+
 ## 1.32.2
 
 ### Bug Fixes
