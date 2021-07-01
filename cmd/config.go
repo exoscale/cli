@@ -72,17 +72,20 @@ func (a account) IsDefault() bool {
 }
 
 const (
-	legacyAPIVersion         = "compute"
-	apiVersion               = "v1"
-	defaultEndpoint          = "https://api.exoscale.com/" + apiVersion
-	defaultEnvironment       = "api"
-	defaultConfigFileName    = "exoscale"
-	defaultTemplate          = "Linux Ubuntu 20.04 LTS 64-bit"
-	defaultTemplateFilter    = "featured"
-	defaultSosEndpoint       = "https://sos-{zone}.exo.io"
-	defaultRunstatusEndpoint = "https://api.runstatus.com"
-	defaultZone              = "ch-dk-2"
-	defaultOutputFormat      = "table"
+	legacyAPIVersion          = "compute"
+	apiVersion                = "v1"
+	defaultEndpoint           = "https://api.exoscale.com/" + apiVersion
+	defaultEnvironment        = "api"
+	defaultConfigFileName     = "exoscale"
+	defaultInstanceType       = "medium"
+	defaultInstanceTypeFamily = "standard"
+	defaultTemplate           = "Linux Ubuntu 20.04 LTS 64-bit"
+	defaultTemplateVisibility = "public"
+	defaultTemplateFilter     = "featured"
+	defaultSosEndpoint        = "https://sos-{zone}.exo.io"
+	defaultRunstatusEndpoint  = "https://api.runstatus.com"
+	defaultZone               = "ch-dk-2"
+	defaultOutputFormat       = "table"
 )
 
 var configCmd = &cobra.Command{

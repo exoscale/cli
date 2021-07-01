@@ -23,6 +23,13 @@ const (
 var vmCmd = &cobra.Command{
 	Use:   "vm",
 	Short: "Compute instances management",
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintln(os.Stderr,
+			`**********************************************************************
+The "exo vm" commands are deprecated and will be removed in a future
+version, please use "exo compute instance" replacement commands.
+**********************************************************************`)
+	},
 }
 
 func getVirtualMachineByNameOrID(name string) (*egoscale.VirtualMachine, error) {
