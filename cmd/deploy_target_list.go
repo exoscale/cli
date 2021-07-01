@@ -23,6 +23,8 @@ func (o *deployTargetListOutput) toText()  { outputText(o) }
 func (o *deployTargetListOutput) toTable() { outputTable(o) }
 
 type deployTargetListCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
@@ -71,9 +73,9 @@ func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		for _, dt := range list {
 			res <- deployTargetListItemOutput{
-				ID:   dt.ID,
-				Name: dt.Name,
-				Type: dt.Type,
+				ID:   *dt.ID,
+				Name: *dt.Name,
+				Type: *dt.Type,
 				Zone: zone,
 			}
 		}
@@ -89,5 +91,7 @@ func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(deployTargetCmd, &deployTargetListCmd{}))
+	cobra.CheckErr(registerCLICommand(deployTargetCmd, &deployTargetListCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

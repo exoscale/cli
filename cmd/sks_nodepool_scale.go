@@ -62,7 +62,7 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var nodepool *exov2.SKSNodepool
 	for _, n := range cluster.Nodepools {
-		if n.ID == c.Nodepool || n.Name == c.Nodepool {
+		if *n.ID == c.Nodepool || *n.Name == c.Nodepool {
 			nodepool = n
 			break
 		}
@@ -79,7 +79,7 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showSKSNodepool(c.Zone, cluster.ID, nodepool.ID))
+		return output(showSKSNodepool(c.Zone, *cluster.ID, *nodepool.ID))
 	}
 
 	return nil

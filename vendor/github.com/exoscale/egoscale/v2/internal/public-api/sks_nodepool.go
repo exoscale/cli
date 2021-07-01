@@ -19,6 +19,7 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 		InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
 		InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
+		Labels             *Labels              `json:"labels,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
 		Size               *int64               `json:"size,omitempty"`
@@ -47,6 +48,7 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 	n.InstancePool = raw.InstancePool
 	n.InstancePrefix = raw.InstancePrefix
 	n.InstanceType = raw.InstanceType
+	n.Labels = raw.Labels
 	n.Name = raw.Name
 	n.SecurityGroups = raw.SecurityGroups
 	n.Size = raw.Size
@@ -70,6 +72,7 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 		InstancePool       *InstancePool        `json:"instance-pool,omitempty"`
 		InstancePrefix     *string              `json:"instance-prefix,omitempty"`
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
+		Labels             *Labels              `json:"labels,omitempty"`
 		Name               *string              `json:"name,omitempty"`
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
 		Size               *int64               `json:"size,omitempty"`
@@ -91,6 +94,7 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 	raw.InstancePool = n.InstancePool
 	raw.InstancePrefix = n.InstancePrefix
 	raw.InstanceType = n.InstanceType
+	raw.Labels = n.Labels
 	raw.Name = n.Name
 	raw.SecurityGroups = n.SecurityGroups
 	raw.Size = n.Size

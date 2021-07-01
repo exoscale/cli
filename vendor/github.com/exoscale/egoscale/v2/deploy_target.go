@@ -9,18 +9,18 @@ import (
 
 // DeployTarget represents a Deploy Target.
 type DeployTarget struct {
-	Description string
-	ID          string
-	Name        string
-	Type        string
+	Description *string
+	ID          *string
+	Name        *string
+	Type        *string
 }
 
 func deployTargetFromAPI(d *papi.DeployTarget) *DeployTarget {
 	return &DeployTarget{
-		Description: papi.OptionalString(d.Description),
-		ID:          *d.Id,
-		Name:        *d.Name,
-		Type:        string(*d.Type),
+		Description: d.Description,
+		ID:          d.Id,
+		Name:        d.Name,
+		Type:        (*string)(d.Type),
 	}
 }
 
@@ -60,8 +60,8 @@ func (c *Client) FindDeployTarget(ctx context.Context, zone, v string) (*DeployT
 	}
 
 	for _, r := range res {
-		if r.ID == v || r.Name == v {
-			return c.GetDeployTarget(ctx, zone, r.ID)
+		if *r.ID == v || *r.Name == v {
+			return c.GetDeployTarget(ctx, zone, *r.ID)
 		}
 	}
 

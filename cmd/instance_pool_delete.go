@@ -52,16 +52,16 @@ func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if svc.InstancePoolID == instancePool.ID {
 				return fmt.Errorf(
 					"Instance Pool %q is still referenced by NLB service %s/%s", // nolint:golint
-					instancePool.Name,
-					nlb.Name,
-					svc.Name,
+					*instancePool.Name,
+					*nlb.Name,
+					*svc.Name,
 				)
 			}
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", instancePool.Name), func() {
-		err = cs.DeleteInstancePool(ctx, c.Zone, instancePool.ID)
+	decorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", c.InstancePool), func() {
+		err = cs.DeleteInstancePool(ctx, c.Zone, *instancePool.ID)
 	})
 	if err != nil {
 		return err

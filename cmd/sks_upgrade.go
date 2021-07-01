@@ -47,14 +47,14 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q...", c.Cluster), func() {
-		err = cs.UpgradeSKSCluster(ctx, c.Zone, cluster.ID, c.Version)
+		err = cs.UpgradeSKSCluster(ctx, c.Zone, *cluster.ID, c.Version)
 	})
 	if err != nil {
 		return err
 	}
 
 	if !gQuiet {
-		return output(showSKSCluster(c.Zone, cluster.ID))
+		return output(showSKSCluster(c.Zone, *cluster.ID))
 	}
 
 	return nil

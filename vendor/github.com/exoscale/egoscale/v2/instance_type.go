@@ -10,24 +10,24 @@ import (
 
 // InstanceType represents a Compute instance type.
 type InstanceType struct {
-	Authorized bool
-	CPUs       int64
-	Family     string
-	GPUs       int64
-	ID         string
-	Memory     int64
-	Size       string
+	Authorized *bool
+	CPUs       *int64
+	Family     *string
+	GPUs       *int64
+	ID         *string
+	Memory     *int64
+	Size       *string
 }
 
 func instanceTypeFromAPI(t *papi.InstanceType) *InstanceType {
 	return &InstanceType{
-		Authorized: *t.Authorized,
-		CPUs:       *t.Cpus,
-		Family:     string(*t.Family),
-		GPUs:       papi.OptionalInt64(t.Gpus),
-		ID:         *t.Id,
-		Memory:     *t.Memory,
-		Size:       string(*t.Size),
+		Authorized: t.Authorized,
+		CPUs:       t.Cpus,
+		Family:     (*string)(t.Family),
+		GPUs:       t.Gpus,
+		ID:         t.Id,
+		Memory:     t.Memory,
+		Size:       (*string)(t.Size),
 	}
 }
 
@@ -80,8 +80,8 @@ func (c *Client) FindInstanceType(ctx context.Context, zone, v string) (*Instanc
 	}
 
 	for _, r := range res {
-		if r.ID == v || (r.Family == typeFamily && r.Size == typeSize) {
-			return c.GetInstanceType(ctx, zone, r.ID)
+		if *r.ID == v || (*r.Family == typeFamily && *r.Size == typeSize) {
+			return c.GetInstanceType(ctx, zone, *r.ID)
 		}
 	}
 

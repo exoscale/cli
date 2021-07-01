@@ -59,11 +59,11 @@ func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			return fmt.Errorf("invalid instance %q: %s", n, err)
 		}
-		instances[i] = instance.ID
+		instances[i] = *instance.ID
 	}
 
 	decorateAsyncOperation(
-		fmt.Sprintf("Evicting instances from Instance Pool %q...", instancePool.Name),
+		fmt.Sprintf("Evicting instances from Instance Pool %q...", c.InstancePool),
 		func() { err = instancePool.EvictMembers(ctx, instances) },
 	)
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstancePool(c.Zone, instancePool.ID))
+		return output(showInstancePool(c.Zone, *instancePool.ID))
 	}
 
 	return nil

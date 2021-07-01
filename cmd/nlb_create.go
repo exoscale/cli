@@ -37,15 +37,25 @@ func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	nlb := &exov2.NetworkLoadBalancer{
-		Description: c.Description,
-		Labels:      c.Labels,
-		Name:        c.Name,
+		Description: func() (v *string) {
+			if c.Description != "" {
+				v = &c.Description
+			}
+			return
+		}(),
+		Labels: func() (v *map[string]string) {
+			if len(c.Labels) > 0 {
+				return &c.Labels
+			}
+			return
+		}(),
+		Name: &c.Name,
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	var err error
-	decorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", nlb.Name), func() {
+	decorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", c.Name), func() {
 		nlb, err = cs.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
 	})
 	if err != nil {
@@ -53,7 +63,7 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showNLB(c.Zone, nlb.ID))
+		return output(showNLB(c.Zone, *nlb.ID))
 	}
 
 	return nil

@@ -10,17 +10,17 @@ import (
 
 // SnapshotExport represents exported Snapshot information.
 type SnapshotExport struct {
-	MD5sum       string
-	PresignedURL string
+	MD5sum       *string
+	PresignedURL *string
 }
 
 // Snapshot represents a Snapshot.
 type Snapshot struct {
-	CreatedAt  time.Time
-	ID         string
-	InstanceID string
-	Name       string
-	State      string
+	CreatedAt  *time.Time
+	ID         *string
+	InstanceID *string
+	Name       *string
+	State      *string
 
 	c    *Client
 	zone string
@@ -28,11 +28,11 @@ type Snapshot struct {
 
 func snapshotFromAPI(client *Client, zone string, s *papi.Snapshot) *Snapshot {
 	return &Snapshot{
-		CreatedAt:  *s.CreatedAt,
-		ID:         *s.Id,
-		InstanceID: *s.Instance.Id,
-		Name:       *s.Name,
-		State:      string(*s.State),
+		CreatedAt:  s.CreatedAt,
+		ID:         s.Id,
+		InstanceID: s.Instance.Id,
+		Name:       s.Name,
+		State:      (*string)(s.State),
 
 		c:    client,
 		zone: zone,
@@ -45,7 +45,7 @@ func (s Snapshot) get(ctx context.Context, client *Client, zone, id string) (int
 
 // Export exports the Snapshot and returns the exported Snapshot information.
 func (s *Snapshot) Export(ctx context.Context) (*SnapshotExport, error) {
-	resp, err := s.c.ExportSnapshotWithResponse(apiv2.WithZone(ctx, s.zone), s.ID)
+	resp, err := s.c.ExportSnapshotWithResponse(apiv2.WithZone(ctx, s.zone), *s.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +64,8 @@ func (s *Snapshot) Export(ctx context.Context) (*SnapshotExport, error) {
 	}
 
 	return &SnapshotExport{
-		MD5sum:       *expSnapshot.JSON200.Export.Md5sum,
-		PresignedURL: *expSnapshot.JSON200.Export.PresignedUrl,
+		MD5sum:       expSnapshot.JSON200.Export.Md5sum,
+		PresignedURL: expSnapshot.JSON200.Export.PresignedUrl,
 	}, nil
 }
 

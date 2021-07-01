@@ -74,11 +74,11 @@ func (c *sksNodepoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		for _, cluster := range list {
 			for _, np := range cluster.Nodepools {
 				res <- sksNodepoolListItemOutput{
-					ID:      np.ID,
-					Name:    np.Name,
-					Cluster: cluster.Name,
-					Size:    np.Size,
-					State:   np.State,
+					ID:      *np.ID,
+					Name:    *np.Name,
+					Cluster: *cluster.Name,
+					Size:    *np.Size,
+					State:   *np.State,
 					Zone:    zone,
 				}
 			}

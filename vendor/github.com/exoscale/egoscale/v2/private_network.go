@@ -10,22 +10,40 @@ import (
 
 // PrivateNetwork represents a Private Network.
 type PrivateNetwork struct {
-	Description string
-	EndIP       net.IP
-	ID          string
-	Name        string
-	Netmask     net.IP
-	StartIP     net.IP
+	Description *string
+	EndIP       *net.IP
+	ID          *string `req-for:"update"`
+	Name        *string `req-for:"create"`
+	Netmask     *net.IP
+	StartIP     *net.IP
 }
 
 func privateNetworkFromAPI(p *papi.PrivateNetwork) *PrivateNetwork {
 	return &PrivateNetwork{
-		Description: papi.OptionalString(p.Description),
-		EndIP:       net.ParseIP(papi.OptionalString(p.EndIp)),
-		ID:          *p.Id,
-		Name:        *p.Name,
-		Netmask:     net.ParseIP(papi.OptionalString(p.Netmask)),
-		StartIP:     net.ParseIP(papi.OptionalString(p.StartIp)),
+		Description: p.Description,
+		EndIP: func() (v *net.IP) {
+			if p.EndIp != nil {
+				ip := net.ParseIP(*p.EndIp)
+				v = &ip
+			}
+			return
+		}(),
+		ID:   p.Id,
+		Name: p.Name,
+		Netmask: func() (v *net.IP) {
+			if p.Netmask != nil {
+				ip := net.ParseIP(*p.Netmask)
+				v = &ip
+			}
+			return
+		}(),
+		StartIP: func() (v *net.IP) {
+			if p.StartIp != nil {
+				ip := net.ParseIP(*p.StartIp)
+				v = &ip
+			}
+			return
+		}(),
 	}
 }
 
@@ -39,15 +57,14 @@ func (c *Client) CreatePrivateNetwork(
 	zone string,
 	privateNetwork *PrivateNetwork,
 ) (*PrivateNetwork, error) {
+	if err := validateOperationParams(privateNetwork, "create"); err != nil {
+		return nil, err
+	}
+
 	resp, err := c.CreatePrivateNetworkWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreatePrivateNetworkJSONRequestBody{
-			Description: func() *string {
-				if privateNetwork.Description != "" {
-					return &privateNetwork.Description
-				}
-				return nil
-			}(),
+			Description: privateNetwork.Description,
 			EndIp: func() (ip *string) {
 				if privateNetwork.EndIP != nil {
 					v := privateNetwork.EndIP.String()
@@ -55,7 +72,7 @@ func (c *Client) CreatePrivateNetwork(
 				}
 				return
 			}(),
-			Name: privateNetwork.Name,
+			Name: *privateNetwork.Name,
 			Netmask: func() (ip *string) {
 				if privateNetwork.Netmask != nil {
 					v := privateNetwork.Netmask.String()
@@ -124,14 +141,14 @@ func (c *Client) FindPrivateNetwork(ctx context.Context, zone, v string) (*Priva
 
 	var found *PrivateNetwork
 	for _, r := range res {
-		if r.ID == v {
-			return c.GetPrivateNetwork(ctx, zone, r.ID)
+		if *r.ID == v {
+			return c.GetPrivateNetwork(ctx, zone, *r.ID)
 		}
 
 		// Historically, the Exoscale API allowed users to create multiple Private Networks sharing a common name.
 		// This function being expected to return one resource at most, in case the specified identifier is a name
 		// we have to check that there aren't more that one matching result before returning it.
-		if r.Name == v {
+		if *r.Name == v {
 			if found != nil {
 				return nil, apiv2.ErrTooManyFound
 			}
@@ -140,7 +157,7 @@ func (c *Client) FindPrivateNetwork(ctx context.Context, zone, v string) (*Priva
 	}
 
 	if found != nil {
-		return found, nil
+		return c.GetPrivateNetwork(ctx, zone, *found.ID)
 	}
 
 	return nil, apiv2.ErrNotFound
@@ -148,16 +165,15 @@ func (c *Client) FindPrivateNetwork(ctx context.Context, zone, v string) (*Priva
 
 // UpdatePrivateNetwork updates the specified Private Network in the specified zone.
 func (c *Client) UpdatePrivateNetwork(ctx context.Context, zone string, privateNetwork *PrivateNetwork) error {
+	if err := validateOperationParams(privateNetwork, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.UpdatePrivateNetworkWithResponse(
 		apiv2.WithZone(ctx, zone),
-		privateNetwork.ID,
+		*privateNetwork.ID,
 		papi.UpdatePrivateNetworkJSONRequestBody{
-			Description: func() *string {
-				if privateNetwork.Description != "" {
-					return &privateNetwork.Description
-				}
-				return nil
-			}(),
+			Description: privateNetwork.Description,
 			EndIp: func() (ip *string) {
 				if privateNetwork.EndIP != nil {
 					v := privateNetwork.EndIP.String()
@@ -165,7 +181,7 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, zone string, privateN
 				}
 				return
 			}(),
-			Name: &privateNetwork.Name,
+			Name: privateNetwork.Name,
 			Netmask: func() (ip *string) {
 				if privateNetwork.Netmask != nil {
 					v := privateNetwork.Netmask.String()

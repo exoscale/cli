@@ -77,21 +77,21 @@ Supported output template annotations: %s`,
 			curUsage.Store(limitComputeInstances, cur.(int)+len(instances))
 
 			for _, instance := range instances {
-				instanceType, cached := instanceTypes[instance.InstanceTypeID]
+				instanceType, cached := instanceTypes[*instance.InstanceTypeID]
 				if !cached {
-					instanceType, err = cs.GetInstanceType(ctx, zone, instance.InstanceTypeID)
+					instanceType, err = cs.GetInstanceType(ctx, zone, *instance.InstanceTypeID)
 					if err != nil {
 						return fmt.Errorf(
 							"unable to retrieve Compute instance type %q: %s",
-							instance.InstanceTypeID,
+							*instance.InstanceTypeID,
 							err)
 					}
-					instanceTypes[instance.InstanceTypeID] = instanceType
+					instanceTypes[*instance.InstanceTypeID] = instanceType
 				}
 
-				if strings.HasSuffix(instanceType.Family, "gpu") {
+				if strings.HasSuffix(*instanceType.Family, "gpu") {
 					cur, _ = curUsage.Load(limitGPUs)
-					curUsage.Store(limitGPUs, cur.(int)+int(instanceType.GPUs))
+					curUsage.Store(limitGPUs, cur.(int)+int(*instanceType.GPUs))
 				}
 			}
 

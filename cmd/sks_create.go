@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
+var (
 	defaultSKSClusterCNI          = "calico"
 	defaultSKSClusterServiceLevel = "pro"
 	sksClusterAddonExoscaleCCM    = "exoscale-cloud-controller"
@@ -70,24 +70,29 @@ func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	cluster := &exov2.SKSCluster{
-		CNI:          defaultSKSClusterCNI,
-		Description:  c.Description,
-		Name:         c.Name,
-		ServiceLevel: c.ServiceLevel,
-		Version:      c.KubernetesVersion,
+		CNI: &defaultSKSClusterCNI,
+		Description: func() (v *string) {
+			if c.Description != "" {
+				v = &c.Description
+			}
+			return
+		}(),
+		Name:         &c.Name,
+		ServiceLevel: &c.ServiceLevel,
+		Version:      &c.KubernetesVersion,
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	if c.NoCNI {
-		cluster.CNI = ""
+		cluster.CNI = nil
 	}
 
 	addOns := map[string]struct{}{
 		sksClusterAddonExoscaleCCM:   {},
 		sksClusterAddonMetricsServer: {},
 	}
-	cluster.AddOns = func() []string {
+	cluster.AddOns = func() (v *[]string) {
 		if c.NoExoscaleCCM {
 			delete(addOns, sksClusterAddonExoscaleCCM)
 		}
@@ -95,14 +100,17 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			delete(addOns, sksClusterAddonMetricsServer)
 		}
 
-		list := make([]string, 0)
-		for k := range addOns {
-			list = append(list, k)
+		if len(addOns) > 0 {
+			list := make([]string, 0)
+			for k := range addOns {
+				list = append(list, k)
+			}
+			v = &list
 		}
-		return list
+		return
 	}()
 
-	if cluster.Version == "latest" {
+	if *cluster.Version == "latest" {
 		versions, err := cs.ListSKSClusterVersions(ctx)
 		if err != nil || len(versions) == 0 {
 			if len(versions) == 0 {
@@ -110,11 +118,11 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			}
 			return fmt.Errorf("unable to retrieve SKS versions: %s", err)
 		}
-		cluster.Version = versions[0]
+		cluster.Version = &versions[0]
 	}
 
 	var err error
-	decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", c.Name), func() {
+	decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", *cluster.Name), func() {
 		cluster, err = cs.CreateSKSCluster(ctx, c.Zone, cluster)
 	})
 	if err != nil {
@@ -123,27 +131,38 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if c.NodepoolSize > 0 {
 		nodepool := &exov2.SKSNodepool{
-			Description:    c.NodepoolDescription,
-			DiskSize:       c.NodepoolDiskSize,
-			InstancePrefix: c.NodepoolInstancePrefix,
-			Name: func() string {
-				if c.NodepoolName != "" {
-					return c.NodepoolName
+			Description: func() (v *string) {
+				if c.NodepoolDescription != "" {
+					v = &c.NodepoolDescription
 				}
-				return c.Name
+				return
 			}(),
-			Size: c.NodepoolSize,
+			DiskSize: &c.NodepoolDiskSize,
+			InstancePrefix: func() (v *string) {
+				if c.NodepoolInstancePrefix != "" {
+					v = &c.NodepoolInstancePrefix
+				}
+				return
+			}(),
+			Name: func() *string {
+				if c.NodepoolName != "" {
+					return &c.NodepoolName
+				}
+				return &c.Name
+			}(),
+			Size: &c.NodepoolSize,
 		}
 
 		if l := len(c.NodepoolAntiAffinityGroups); l > 0 {
-			nodepool.AntiAffinityGroupIDs = make([]string, l)
-			for i := range c.NodepoolAntiAffinityGroups {
-				antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, c.NodepoolAntiAffinityGroups[i])
+			nodepoolAntiAffinityGroupIDs := make([]string, l)
+			for i, v := range c.NodepoolAntiAffinityGroups {
+				antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, v)
 				if err != nil {
 					return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
 				}
-				nodepool.AntiAffinityGroupIDs[i] = antiAffinityGroup.ID
+				nodepoolAntiAffinityGroupIDs[i] = *antiAffinityGroup.ID
 			}
+			nodepool.AntiAffinityGroupIDs = &nodepoolAntiAffinityGroupIDs
 		}
 
 		if c.NodepoolDeployTarget != "" {
@@ -161,17 +180,18 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		nodepool.InstanceTypeID = nodepoolInstanceType.ID
 
 		if l := len(c.NodepoolSecurityGroups); l > 0 {
-			nodepool.SecurityGroupIDs = make([]string, l)
-			for i := range c.NodepoolSecurityGroups {
-				securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.NodepoolSecurityGroups[i])
+			nodepoolSecurityGroupIDs := make([]string, l)
+			for i, v := range c.NodepoolSecurityGroups {
+				securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, v)
 				if err != nil {
 					return fmt.Errorf("error retrieving Security Group: %s", err)
 				}
-				nodepool.SecurityGroupIDs[i] = securityGroup.ID
+				nodepoolSecurityGroupIDs[i] = *securityGroup.ID
 			}
+			nodepool.SecurityGroupIDs = &nodepoolSecurityGroupIDs
 		}
 
-		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepool.Name), func() {
+		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", *nodepool.Name), func() {
 			_, err = cluster.AddNodepool(ctx, nodepool)
 		})
 		if err != nil {
@@ -180,7 +200,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showSKSCluster(c.Zone, cluster.ID))
+		return output(showSKSCluster(c.Zone, *cluster.ID))
 	}
 
 	return nil

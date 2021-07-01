@@ -8,19 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var sksClusterResetFields = []string{
-	"description",
-}
-
 type sksUpdateCmd struct {
 	_ bool `cli-cmd:"update"`
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Description string   `cli-usage:"cluster description"`
-	Name        string   `cli-usage:"cluster name"`
-	ResetFields []string `cli-flag:"reset" cli-usage:"properties to reset to default value"`
-	Zone        string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Description string `cli-usage:"cluster description"`
+	Name        string `cli-usage:"cluster name"`
+	Zone        string `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksUpdateCmd) cmdAliases() []string { return nil }
@@ -30,11 +25,8 @@ func (c *sksUpdateCmd) cmdShort() string { return "Update an SKS cluster" }
 func (c *sksUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an SKS cluster.
 
-Supported output template annotations: %s
-
-Support values for --reset flag: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&sksShowOutput{}), ", "),
-		strings.Join(sksClusterResetFields, ", "),
 	)
 }
 
@@ -54,36 +46,26 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
-		cluster.Name = c.Name
+		cluster.Name = &c.Name
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		cluster.Description = c.Description
+		cluster.Description = &c.Description
 		updated = true
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Updating SKS cluster %q...", c.Cluster), func() {
-		if updated {
+	if updated {
+		decorateAsyncOperation(fmt.Sprintf("Updating SKS cluster %q...", c.Cluster), func() {
 			err = cs.UpdateSKSCluster(ctx, c.Zone, cluster)
+		})
+		if err != nil {
+			return err
 		}
-
-		for _, f := range c.ResetFields {
-			switch f {
-			case "description":
-				err = cluster.ResetField(ctx, &cluster.Description)
-			}
-			if err != nil {
-				return
-			}
-		}
-	})
-	if err != nil {
-		return err
 	}
 
 	if !gQuiet {
-		return output(showSKSCluster(c.Zone, cluster.ID))
+		return output(showSKSCluster(c.Zone, *cluster.ID))
 	}
 
 	return nil

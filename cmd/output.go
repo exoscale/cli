@@ -259,6 +259,21 @@ func outputTable(o interface{}) {
 				tab.Append([]string{label, strings.Join(items, "\n")})
 			}
 
+		case reflect.Map:
+			// If the field value is a map and is empty, print "n/a" instead of 0.
+			if n := v.Field(i).Len(); n == 0 {
+				tab.Append([]string{label, "n/a"})
+			} else {
+				items := v.Field(i).Interface().(map[string]string)
+				tab.Append([]string{label, strings.Join(func() []string {
+					list := make([]string, 0)
+					for k, v := range items {
+						list = append(list, fmt.Sprintf("%s:%s", k, v))
+					}
+					return list
+				}(), "\n")})
+			}
+
 		case reflect.Ptr:
 			// If the field value is a nil pointer, print "n/a" instead of <nil>.
 			if v.Field(i).IsNil() {

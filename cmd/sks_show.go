@@ -100,23 +100,28 @@ func showSKSCluster(zone, c string) (outputter, error) {
 	sksNodepools := make([]sksNodepoolShowOutput, 0)
 	for _, np := range cluster.Nodepools {
 		sksNodepools = append(sksNodepools, sksNodepoolShowOutput{
-			ID:   np.ID,
-			Name: np.Name,
+			ID:   *np.ID,
+			Name: *np.Name,
 		})
 	}
 
 	out := sksShowOutput{
-		AddOns:       cluster.AddOns,
-		CNI:          cluster.CNI,
+		AddOns: func() (v []string) {
+			if cluster.AddOns != nil {
+				v = *cluster.AddOns
+			}
+			return
+		}(),
+		CNI:          defaultString(cluster.CNI, "-"),
 		CreationDate: cluster.CreatedAt.String(),
-		Description:  cluster.Description,
-		Endpoint:     cluster.Endpoint,
-		ID:           cluster.ID,
-		Name:         cluster.Name,
+		Description:  defaultString(cluster.Description, ""),
+		Endpoint:     *cluster.Endpoint,
+		ID:           *cluster.ID,
+		Name:         *cluster.Name,
 		Nodepools:    sksNodepools,
-		ServiceLevel: cluster.ServiceLevel,
-		State:        cluster.State,
-		Version:      cluster.Version,
+		ServiceLevel: *cluster.ServiceLevel,
+		State:        *cluster.State,
+		Version:      *cluster.Version,
 		Zone:         zone,
 	}
 

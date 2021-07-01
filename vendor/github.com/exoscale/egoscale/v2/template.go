@@ -10,40 +10,40 @@ import (
 
 // Template represents a Compute instance template.
 type Template struct {
-	BootMode        string
-	Build           string
-	Checksum        string
-	CreatedAt       time.Time
-	DefaultUser     string
-	Description     string
-	Family          string
-	ID              string
-	Name            string
-	PasswordEnabled bool
-	SSHKeyEnabled   bool
-	Size            int64
-	URL             string
-	Version         string
-	Visibility      string
+	BootMode        *string
+	Build           *string
+	Checksum        *string
+	CreatedAt       *time.Time
+	DefaultUser     *string
+	Description     *string
+	Family          *string
+	ID              *string
+	Name            *string
+	PasswordEnabled *bool
+	SSHKeyEnabled   *bool
+	Size            *int64
+	URL             *string
+	Version         *string
+	Visibility      *string
 }
 
 func templateFromAPI(t *papi.Template) *Template {
 	return &Template{
-		BootMode:        string(*t.BootMode),
-		Build:           papi.OptionalString(t.Build),
-		Checksum:        *t.Checksum,
-		CreatedAt:       *t.CreatedAt,
-		DefaultUser:     papi.OptionalString(t.DefaultUser),
-		Description:     papi.OptionalString(t.Description),
-		Family:          *t.Family,
-		ID:              *t.Id,
-		Name:            *t.Name,
-		PasswordEnabled: *t.PasswordEnabled,
-		SSHKeyEnabled:   *t.SshKeyEnabled,
-		Size:            *t.Size,
-		URL:             papi.OptionalString(t.Url),
-		Version:         papi.OptionalString(t.Version),
-		Visibility:      string(*t.Visibility),
+		BootMode:        (*string)(t.BootMode),
+		Build:           t.Build,
+		Checksum:        t.Checksum,
+		CreatedAt:       t.CreatedAt,
+		DefaultUser:     t.DefaultUser,
+		Description:     t.Description,
+		Family:          t.Family,
+		ID:              t.Id,
+		Name:            t.Name,
+		PasswordEnabled: t.PasswordEnabled,
+		SSHKeyEnabled:   t.SshKeyEnabled,
+		Size:            t.Size,
+		URL:             t.Url,
+		Version:         t.Version,
+		Visibility:      (*string)(t.Visibility),
 	}
 }
 

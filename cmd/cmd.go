@@ -107,6 +107,19 @@ func getCommaflag(p string) []string {
 	return res
 }
 
+// cliCommandSettings represents a CLI command settings.
+type cliCommandSettings struct {
+	outputFunc func(o outputter, err error) error
+}
+
+// defaultCLICmdSettings returns a cliCommandSettings struct initialized
+// with default values.
+func defaultCLICmdSettings() cliCommandSettings {
+	return cliCommandSettings{
+		outputFunc: output,
+	}
+}
+
 // cliCommand is the interface to implement for leveraging the automatic CLI
 // command generation system based on implementer struct tags.
 //

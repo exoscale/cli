@@ -44,11 +44,21 @@ func (c *sksNodepoolAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	nodepool := &exov2.SKSNodepool{
-		Description:    c.Description,
-		DiskSize:       c.DiskSize,
-		InstancePrefix: c.InstancePrefix,
-		Name:           c.Name,
-		Size:           c.Size,
+		Description: func() (v *string) {
+			if c.Description != "" {
+				v = &c.Description
+			}
+			return
+		}(),
+		DiskSize: &c.DiskSize,
+		InstancePrefix: func() (v *string) {
+			if c.InstancePrefix != "" {
+				v = &c.InstancePrefix
+			}
+			return
+		}(),
+		Name: &c.Name,
+		Size: &c.Size,
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
@@ -59,14 +69,15 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
-		nodepool.AntiAffinityGroupIDs = make([]string, l)
+		nodepoolAntiAffinityGroupIDs := make([]string, l)
 		for i := range c.AntiAffinityGroups {
 			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
 			}
-			nodepool.AntiAffinityGroupIDs[i] = antiAffinityGroup.ID
+			nodepoolAntiAffinityGroupIDs[i] = *antiAffinityGroup.ID
 		}
+		nodepool.AntiAffinityGroupIDs = &nodepoolAntiAffinityGroupIDs
 	}
 
 	if c.DeployTarget != "" {
@@ -84,17 +95,18 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	nodepool.InstanceTypeID = nodepoolInstanceType.ID
 
 	if l := len(c.SecurityGroups); l > 0 {
-		nodepool.SecurityGroupIDs = make([]string, l)
+		nodepoolSecurityGroupIDs := make([]string, l)
 		for i := range c.SecurityGroups {
 			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %s", err)
 			}
-			nodepool.SecurityGroupIDs[i] = securityGroup.ID
+			nodepoolSecurityGroupIDs[i] = *securityGroup.ID
 		}
+		nodepool.SecurityGroupIDs = &nodepoolSecurityGroupIDs
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepool.Name), func() {
+	decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", *nodepool.Name), func() {
 		nodepool, err = cluster.AddNodepool(ctx, nodepool)
 	})
 	if err != nil {
@@ -102,7 +114,7 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showSKSNodepool(c.Zone, cluster.ID, nodepool.ID))
+		return output(showSKSNodepool(c.Zone, *cluster.ID, *nodepool.ID))
 	}
 
 	return nil

@@ -71,8 +71,8 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		for _, nlb := range list {
 			res <- nlbListItemOutput{
-				ID:        nlb.ID,
-				Name:      nlb.Name,
+				ID:        *nlb.ID,
+				Name:      *nlb.Name,
 				Zone:      zone,
 				IPAddress: nlb.IPAddress.String(),
 			}
@@ -81,7 +81,7 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return nil
 	})
 	if err != nil {
-		fmt.Fprintf(os.Stderr,
+		_, _ = fmt.Fprintf(os.Stderr,
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 

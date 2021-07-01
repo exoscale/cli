@@ -9,25 +9,26 @@ import (
 
 // InstancePool represents an Instance Pool.
 type InstancePool struct {
-	AntiAffinityGroupIDs []string `reset:"anti-affinity-groups"`
-	DeployTargetID       string   `reset:"deploy-target"`
-	Description          string   `reset:"description"`
-	DiskSize             int64
-	ElasticIPIDs         []string `reset:"elastic-ips"`
-	ID                   string
-	IPv6Enabled          bool `reset:"ipv6-enabled"`
-	InstanceIDs          []string
-	InstancePrefix       string
-	InstanceTypeID       string
-	ManagerID            string
-	Name                 string
-	PrivateNetworkIDs    []string `reset:"private-networks"`
-	SSHKey               string   `reset:"ssh-key"`
-	SecurityGroupIDs     []string `reset:"security-groups"`
-	Size                 int64
-	State                string
-	TemplateID           string
-	UserData             string `reset:"user-data"`
+	AntiAffinityGroupIDs *[]string
+	DeployTargetID       *string
+	Description          *string
+	DiskSize             *int64 `req-for:"create"`
+	ElasticIPIDs         *[]string
+	ID                   *string `req-for:"update"`
+	IPv6Enabled          *bool
+	InstanceIDs          *[]string
+	InstancePrefix       *string
+	InstanceTypeID       *string `req-for:"create"`
+	Labels               *map[string]string
+	ManagerID            *string
+	Name                 *string `req-for:"create"`
+	PrivateNetworkIDs    *[]string
+	SSHKey               *string
+	SecurityGroupIDs     *[]string
+	Size                 *int64 `req-for:"create"`
+	State                *string
+	TemplateID           *string `req-for:"create"`
+	UserData             *string
 
 	c    *Client
 	zone string
@@ -35,134 +36,144 @@ type InstancePool struct {
 
 func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 	return &InstancePool{
-		AntiAffinityGroupIDs: func() []string {
-			ids := make([]string, 0)
-
+		AntiAffinityGroupIDs: func() (v *[]string) {
 			if i.AntiAffinityGroups != nil {
-				for _, item := range *i.AntiAffinityGroups {
-					item := item
-					ids = append(ids, *item.Id)
+				ids := make([]string, len(*i.AntiAffinityGroups))
+				for i, item := range *i.AntiAffinityGroups {
+					ids[i] = *item.Id
 				}
+				v = &ids
 			}
-
-			return ids
+			return
 		}(),
-		DeployTargetID: func() string {
+		DeployTargetID: func() (v *string) {
 			if i.DeployTarget != nil {
-				return *i.DeployTarget.Id
+				v = i.DeployTarget.Id
 			}
-			return ""
+			return
 		}(),
-		Description: papi.OptionalString(i.Description),
-		DiskSize:    papi.OptionalInt64(i.DiskSize),
-		ElasticIPIDs: func() []string {
-			ids := make([]string, 0)
-
+		Description: i.Description,
+		DiskSize:    i.DiskSize,
+		ElasticIPIDs: func() (v *[]string) {
 			if i.ElasticIps != nil {
-				for _, item := range *i.ElasticIps {
-					item := item
-					ids = append(ids, *item.Id)
+				ids := make([]string, len(*i.ElasticIps))
+				for i, item := range *i.ElasticIps {
+					ids[i] = *item.Id
 				}
+				v = &ids
 			}
-
-			return ids
+			return
 		}(),
-		ID:          *i.Id,
-		IPv6Enabled: *i.Ipv6Enabled,
-		InstanceIDs: func() []string {
-			ids := make([]string, 0)
-
+		ID:          i.Id,
+		IPv6Enabled: i.Ipv6Enabled,
+		InstanceIDs: func() (v *[]string) {
 			if i.Instances != nil {
-				for _, item := range *i.Instances {
-					item := item
-					ids = append(ids, *item.Id)
+				ids := make([]string, len(*i.Instances))
+				for i, item := range *i.Instances {
+					ids[i] = *item.Id
 				}
+				v = &ids
 			}
-
-			return ids
+			return
 		}(),
-		InstancePrefix: papi.OptionalString(i.InstancePrefix),
-		InstanceTypeID: *i.InstanceType.Id,
-		ManagerID: func() string {
+		InstancePrefix: i.InstancePrefix,
+		InstanceTypeID: i.InstanceType.Id,
+		Labels: func() (v *map[string]string) {
+			if i.Labels != nil {
+				v = &i.Labels.AdditionalProperties
+			}
+			return
+		}(),
+		ManagerID: func() (v *string) {
 			if i.Manager != nil {
-				return *i.Manager.Id
+				v = i.Manager.Id
 			}
-			return ""
+			return
 		}(),
-		Name: *i.Name,
-		PrivateNetworkIDs: func() []string {
-			ids := make([]string, 0)
-
+		Name: i.Name,
+		PrivateNetworkIDs: func() (v *[]string) {
 			if i.PrivateNetworks != nil {
-				for _, item := range *i.PrivateNetworks {
-					item := item
-					ids = append(ids, *item.Id)
+				ids := make([]string, len(*i.PrivateNetworks))
+				for i, item := range *i.PrivateNetworks {
+					ids[i] = *item.Id
 				}
+				v = &ids
 			}
-
-			return ids
+			return
 		}(),
-		SSHKey: func() string {
-			key := ""
+		SSHKey: func() (v *string) {
 			if i.SshKey != nil {
-				key = *i.SshKey.Name
+				v = i.SshKey.Name
 			}
-			return key
+			return
 		}(),
-		SecurityGroupIDs: func() []string {
-			ids := make([]string, 0)
-
+		SecurityGroupIDs: func() (v *[]string) {
 			if i.SecurityGroups != nil {
-				for _, item := range *i.SecurityGroups {
-					item := item
-					ids = append(ids, *item.Id)
+				ids := make([]string, len(*i.SecurityGroups))
+				for i, item := range *i.SecurityGroups {
+					ids[i] = *item.Id
 				}
+				v = &ids
 			}
-
-			return ids
+			return
 		}(),
-		Size:       *i.Size,
-		State:      string(*i.State),
-		TemplateID: *i.Template.Id,
-		UserData:   papi.OptionalString(i.UserData),
+		Size:       i.Size,
+		State:      (*string)(i.State),
+		TemplateID: i.Template.Id,
+		UserData:   i.UserData,
 	}
 }
 
 // AntiAffinityGroups returns the list of Anti-Affinity Groups applied to the members of the Instance Pool.
 func (i *InstancePool) AntiAffinityGroups(ctx context.Context) ([]*AntiAffinityGroup, error) {
-	res, err := i.c.fetchFromIDs(ctx, i.zone, i.AntiAffinityGroupIDs, new(AntiAffinityGroup))
-	return res.([]*AntiAffinityGroup), err
+	if i.AntiAffinityGroupIDs != nil {
+		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.AntiAffinityGroupIDs, new(AntiAffinityGroup))
+		return res.([]*AntiAffinityGroup), err
+	}
+	return nil, nil
 }
 
 // ElasticIPs returns the list of Elastic IPs attached to the members of the Instance Pool.
 func (i *InstancePool) ElasticIPs(ctx context.Context) ([]*ElasticIP, error) {
-	res, err := i.c.fetchFromIDs(ctx, i.zone, i.ElasticIPIDs, new(ElasticIP))
-	return res.([]*ElasticIP), err
+	if i.ElasticIPIDs != nil {
+		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.ElasticIPIDs, new(ElasticIP))
+		return res.([]*ElasticIP), err
+	}
+	return nil, nil
 }
 
 // Instances returns the list of Compute instances member of the Instance Pool.
 func (i *InstancePool) Instances(ctx context.Context) ([]*Instance, error) {
-	res, err := i.c.fetchFromIDs(ctx, i.zone, i.InstanceIDs, new(Instance))
-	return res.([]*Instance), err
+	if i.InstanceIDs != nil {
+		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.InstanceIDs, new(Instance))
+		return res.([]*Instance), err
+	}
+	return nil, nil
 }
 
 // PrivateNetworks returns the list of Private Networks attached to the members of the Instance Pool.
 func (i *InstancePool) PrivateNetworks(ctx context.Context) ([]*PrivateNetwork, error) {
-	res, err := i.c.fetchFromIDs(ctx, i.zone, i.PrivateNetworkIDs, new(PrivateNetwork))
-	return res.([]*PrivateNetwork), err
+	if i.PrivateNetworkIDs != nil {
+		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.PrivateNetworkIDs, new(PrivateNetwork))
+		return res.([]*PrivateNetwork), err
+	}
+	return nil, nil
 }
 
 // SecurityGroups returns the list of Security Groups attached to the members of the Instance Pool.
 func (i *InstancePool) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error) {
-	res, err := i.c.fetchFromIDs(ctx, i.zone, i.SecurityGroupIDs, new(SecurityGroup))
-	return res.([]*SecurityGroup), err
+	if i.SecurityGroupIDs != nil {
+		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.SecurityGroupIDs, new(SecurityGroup))
+		return res.([]*SecurityGroup), err
+	}
+	return nil, nil
 }
 
 // Scale scales the Instance Pool to the specified number of instances.
 func (i *InstancePool) Scale(ctx context.Context, instances int64) error {
 	resp, err := i.c.ScaleInstancePoolWithResponse(
 		apiv2.WithZone(ctx, i.zone),
-		i.ID,
+		*i.ID,
 		papi.ScaleInstancePoolJSONRequestBody{Size: instances},
 	)
 	if err != nil {
@@ -185,7 +196,7 @@ func (i *InstancePool) Scale(ctx context.Context, instances int64) error {
 func (i *InstancePool) EvictMembers(ctx context.Context, members []string) error {
 	resp, err := i.c.EvictInstancePoolMembersWithResponse(
 		apiv2.WithZone(ctx, i.zone),
-		i.ID,
+		*i.ID,
 		papi.EvictInstancePoolMembersJSONRequestBody{Instances: &members},
 	)
 	if err != nil {
@@ -203,119 +214,90 @@ func (i *InstancePool) EvictMembers(ctx context.Context, members []string) error
 	return nil
 }
 
-// ResetField resets the specified Instance Pool field to its default value.
-// The value expected for the field parameter is a pointer to the InstancePool field to reset.
-func (i *InstancePool) ResetField(ctx context.Context, field interface{}) error {
-	resetField, err := resetFieldName(i, field)
-	if err != nil {
-		return err
-	}
-
-	resp, err := i.c.ResetInstancePoolFieldWithResponse(
-		apiv2.WithZone(ctx, i.zone),
-		i.ID,
-		papi.ResetInstancePoolFieldParamsField(resetField),
-	)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // CreateInstancePool creates an Instance Pool in the specified zone.
-func (c *Client) CreateInstancePool(ctx context.Context, zone string, instancePool *InstancePool) (*InstancePool, error) {
+func (c *Client) CreateInstancePool(
+	ctx context.Context,
+	zone string,
+	instancePool *InstancePool,
+) (*InstancePool, error) {
+	if err := validateOperationParams(instancePool, "create"); err != nil {
+		return nil, err
+	}
+
 	resp, err := c.CreateInstancePoolWithResponse(
 		apiv2.WithZone(ctx, zone),
 		papi.CreateInstancePoolJSONRequestBody{
-			AntiAffinityGroups: func() *[]papi.AntiAffinityGroup {
-				if l := len(instancePool.AntiAffinityGroupIDs); l > 0 {
-					list := make([]papi.AntiAffinityGroup, l)
-					for i, v := range instancePool.AntiAffinityGroupIDs {
-						v := v
-						list[i] = papi.AntiAffinityGroup{Id: &v}
+			AntiAffinityGroups: func() (v *[]papi.AntiAffinityGroup) {
+				if instancePool.AntiAffinityGroupIDs != nil {
+					ids := make([]papi.AntiAffinityGroup, len(*instancePool.AntiAffinityGroupIDs))
+					for i, item := range *instancePool.AntiAffinityGroupIDs {
+						item := item
+						ids[i] = papi.AntiAffinityGroup{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			DeployTarget: func() *papi.DeployTarget {
-				if instancePool.DeployTargetID != "" {
-					return &papi.DeployTarget{Id: &instancePool.DeployTargetID}
+			DeployTarget: func() (v *papi.DeployTarget) {
+				if instancePool.DeployTargetID != nil {
+					v = &papi.DeployTarget{Id: instancePool.DeployTargetID}
 				}
-				return nil
+				return
 			}(),
-			Description: func() *string {
-				if instancePool.Description != "" {
-					return &instancePool.Description
-				}
-				return nil
-			}(),
-			DiskSize: instancePool.DiskSize,
-			ElasticIps: func() *[]papi.ElasticIp {
-				if l := len(instancePool.ElasticIPIDs); l > 0 {
-					list := make([]papi.ElasticIp, l)
-					for i, v := range instancePool.ElasticIPIDs {
-						v := v
-						list[i] = papi.ElasticIp{Id: &v}
+			Description: instancePool.Description,
+			DiskSize:    *instancePool.DiskSize,
+			ElasticIps: func() (v *[]papi.ElasticIp) {
+				if instancePool.ElasticIPIDs != nil {
+					ids := make([]papi.ElasticIp, len(*instancePool.ElasticIPIDs))
+					for i, item := range *instancePool.ElasticIPIDs {
+						item := item
+						ids[i] = papi.ElasticIp{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			InstancePrefix: func() *string {
-				if instancePool.InstancePrefix != "" {
-					return &instancePool.InstancePrefix
+			InstancePrefix: instancePool.InstancePrefix,
+			InstanceType:   papi.InstanceType{Id: instancePool.InstanceTypeID},
+			Ipv6Enabled:    instancePool.IPv6Enabled,
+			Labels: func() (v *papi.Labels) {
+				if instancePool.Labels != nil {
+					v = &papi.Labels{AdditionalProperties: *instancePool.Labels}
 				}
-				return nil
+				return
 			}(),
-			InstanceType: papi.InstanceType{Id: &instancePool.InstanceTypeID},
-			Ipv6Enabled:  &instancePool.IPv6Enabled,
-			Name:         instancePool.Name,
-			PrivateNetworks: func() *[]papi.PrivateNetwork {
-				if l := len(instancePool.PrivateNetworkIDs); l > 0 {
-					list := make([]papi.PrivateNetwork, l)
-					for i, v := range instancePool.PrivateNetworkIDs {
-						v := v
-						list[i] = papi.PrivateNetwork{Id: &v}
+			Name: *instancePool.Name,
+			PrivateNetworks: func() (v *[]papi.PrivateNetwork) {
+				if instancePool.PrivateNetworkIDs != nil {
+					ids := make([]papi.PrivateNetwork, len(*instancePool.PrivateNetworkIDs))
+					for i, item := range *instancePool.PrivateNetworkIDs {
+						item := item
+						ids[i] = papi.PrivateNetwork{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			SecurityGroups: func() *[]papi.SecurityGroup {
-				if l := len(instancePool.SecurityGroupIDs); l > 0 {
-					list := make([]papi.SecurityGroup, l)
-					for i, v := range instancePool.SecurityGroupIDs {
-						v := v
-						list[i] = papi.SecurityGroup{Id: &v}
+			SecurityGroups: func() (v *[]papi.SecurityGroup) {
+				if instancePool.SecurityGroupIDs != nil {
+					ids := make([]papi.SecurityGroup, len(*instancePool.SecurityGroupIDs))
+					for i, item := range *instancePool.SecurityGroupIDs {
+						item := item
+						ids[i] = papi.SecurityGroup{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			Size: instancePool.Size,
-			SshKey: func() *papi.SshKey {
-				if instancePool.SSHKey != "" {
-					return &papi.SshKey{Name: &instancePool.SSHKey}
+			Size: *instancePool.Size,
+			SshKey: func() (v *papi.SshKey) {
+				if instancePool.SSHKey != nil {
+					v = &papi.SshKey{Name: instancePool.SSHKey}
 				}
-				return nil
+				return
 			}(),
-			Template: papi.Template{Id: &instancePool.TemplateID},
-			UserData: func() *string {
-				if instancePool.UserData != "" {
-					return &instancePool.UserData
-				}
-				return nil
-			}(),
+			Template: papi.Template{Id: instancePool.TemplateID},
+			UserData: instancePool.UserData,
 		})
 	if err != nil {
 		return nil, err
@@ -376,8 +358,8 @@ func (c *Client) FindInstancePool(ctx context.Context, zone, v string) (*Instanc
 	}
 
 	for _, r := range res {
-		if r.ID == v || r.Name == v {
-			return c.GetInstancePool(ctx, zone, r.ID)
+		if *r.ID == v || *r.Name == v {
+			return c.GetInstancePool(ctx, zone, *r.ID)
 		}
 	}
 
@@ -386,109 +368,94 @@ func (c *Client) FindInstancePool(ctx context.Context, zone, v string) (*Instanc
 
 // UpdateInstancePool updates the specified Instance Pool in the specified zone.
 func (c *Client) UpdateInstancePool(ctx context.Context, zone string, instancePool *InstancePool) error {
+	if err := validateOperationParams(instancePool, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.UpdateInstancePoolWithResponse(
 		apiv2.WithZone(ctx, zone),
-		instancePool.ID,
+		*instancePool.ID,
 		papi.UpdateInstancePoolJSONRequestBody{
-			AntiAffinityGroups: func() *[]papi.AntiAffinityGroup {
-				if l := len(instancePool.AntiAffinityGroupIDs); l > 0 {
-					list := make([]papi.AntiAffinityGroup, l)
-					for i, v := range instancePool.AntiAffinityGroupIDs {
-						v := v
-						list[i] = papi.AntiAffinityGroup{Id: &v}
+			AntiAffinityGroups: func() (v *[]papi.AntiAffinityGroup) {
+				if instancePool.AntiAffinityGroupIDs != nil {
+					ids := make([]papi.AntiAffinityGroup, len(*instancePool.AntiAffinityGroupIDs))
+					for i, item := range *instancePool.AntiAffinityGroupIDs {
+						item := item
+						ids[i] = papi.AntiAffinityGroup{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			DeployTarget: func() *papi.DeployTarget {
-				if instancePool.DeployTargetID != "" {
-					return &papi.DeployTarget{Id: &instancePool.DeployTargetID}
+			DeployTarget: func() (v *papi.DeployTarget) {
+				if instancePool.DeployTargetID != nil {
+					v = &papi.DeployTarget{Id: instancePool.DeployTargetID}
 				}
-				return nil
+				return
 			}(),
-			Description: func() *string {
-				if instancePool.Description != "" {
-					return &instancePool.Description
-				}
-				return nil
-			}(),
-			DiskSize: func() *int64 {
-				if instancePool.DiskSize > 0 {
-					return &instancePool.DiskSize
-				}
-				return nil
-			}(),
-			ElasticIps: func() *[]papi.ElasticIp {
-				if l := len(instancePool.ElasticIPIDs); l > 0 {
-					list := make([]papi.ElasticIp, l)
-					for i, v := range instancePool.ElasticIPIDs {
-						v := v
-						list[i] = papi.ElasticIp{Id: &v}
+			Description: instancePool.Description,
+			DiskSize:    instancePool.DiskSize,
+			ElasticIps: func() (v *[]papi.ElasticIp) {
+				if instancePool.ElasticIPIDs != nil {
+					ids := make([]papi.ElasticIp, len(*instancePool.ElasticIPIDs))
+					for i, item := range *instancePool.ElasticIPIDs {
+						item := item
+						ids[i] = papi.ElasticIp{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			InstancePrefix: func() *string {
-				if instancePool.InstancePrefix != "" {
-					return &instancePool.InstancePrefix
+			InstancePrefix: instancePool.InstancePrefix,
+			InstanceType: func() (v *papi.InstanceType) {
+				if instancePool.InstanceTypeID != nil {
+					v = &papi.InstanceType{Id: instancePool.InstanceTypeID}
 				}
-				return nil
+				return
 			}(),
-			InstanceType: func() *papi.InstanceType {
-				if instancePool.InstanceTypeID != "" {
-					return &papi.InstanceType{Id: &instancePool.InstanceTypeID}
+			Ipv6Enabled: instancePool.IPv6Enabled,
+			Labels: func() (v *papi.Labels) {
+				if instancePool.Labels != nil {
+					v = &papi.Labels{AdditionalProperties: *instancePool.Labels}
 				}
-				return nil
+				return
 			}(),
-			Ipv6Enabled: &instancePool.IPv6Enabled,
-			Name: func() *string {
-				if instancePool.Name != "" {
-					return &instancePool.Name
-				}
-				return nil
-			}(),
-			PrivateNetworks: func() *[]papi.PrivateNetwork {
-				if l := len(instancePool.PrivateNetworkIDs); l > 0 {
-					list := make([]papi.PrivateNetwork, l)
-					for i, v := range instancePool.PrivateNetworkIDs {
-						v := v
-						list[i] = papi.PrivateNetwork{Id: &v}
+			Name: instancePool.Name,
+			PrivateNetworks: func() (v *[]papi.PrivateNetwork) {
+				if instancePool.PrivateNetworkIDs != nil {
+					ids := make([]papi.PrivateNetwork, len(*instancePool.PrivateNetworkIDs))
+					for i, item := range *instancePool.PrivateNetworkIDs {
+						item := item
+						ids[i] = papi.PrivateNetwork{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			SecurityGroups: func() *[]papi.SecurityGroup {
-				if l := len(instancePool.SecurityGroupIDs); l > 0 {
-					list := make([]papi.SecurityGroup, l)
-					for i, v := range instancePool.SecurityGroupIDs {
-						v := v
-						list[i] = papi.SecurityGroup{Id: &v}
+			SecurityGroups: func() (v *[]papi.SecurityGroup) {
+				if instancePool.SecurityGroupIDs != nil {
+					ids := make([]papi.SecurityGroup, len(*instancePool.SecurityGroupIDs))
+					for i, item := range *instancePool.SecurityGroupIDs {
+						item := item
+						ids[i] = papi.SecurityGroup{Id: &item}
 					}
-					return &list
+					v = &ids
 				}
-				return nil
+				return
 			}(),
-			SshKey: func() *papi.SshKey {
-				if instancePool.SSHKey != "" {
-					return &papi.SshKey{Name: &instancePool.SSHKey}
+			SshKey: func() (v *papi.SshKey) {
+				if instancePool.SSHKey != nil {
+					v = &papi.SshKey{Name: instancePool.SSHKey}
 				}
-				return nil
+				return
 			}(),
-			Template: func() *papi.Template {
-				if instancePool.TemplateID != "" {
-					return &papi.Template{Id: &instancePool.TemplateID}
+			Template: func() (v *papi.Template) {
+				if instancePool.TemplateID != nil {
+					v = &papi.Template{Id: instancePool.TemplateID}
 				}
-				return nil
+				return
 			}(),
-			UserData: func() *string {
-				if instancePool.UserData != "" {
-					return &instancePool.UserData
-				}
-				return nil
-			}(),
+			UserData: instancePool.UserData,
 		})
 	if err != nil {
 		return err

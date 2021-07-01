@@ -66,7 +66,7 @@ func (c *instancePoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstancePool(c.Zone, instancePool.ID))
+		return output(showInstancePool(c.Zone, *instancePool.ID))
 	}
 
 	return nil

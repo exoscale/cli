@@ -44,9 +44,9 @@ func (c *sksNodepoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	for _, n := range cluster.Nodepools {
-		if n.ID == c.Nodepool || n.Name == c.Nodepool {
+		if *n.ID == c.Nodepool || *n.Name == c.Nodepool {
 			n := n
-			decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", c.Nodepool), func() {
+			decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", *n.Name), func() {
 				err = cluster.DeleteNodepool(ctx, n)
 			})
 			if err != nil {

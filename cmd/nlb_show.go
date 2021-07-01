@@ -117,21 +117,26 @@ func showNLB(zone, ref string) (outputter, error) {
 	svcOut := make([]nlbServiceShowOutput, 0)
 	for _, svc := range nlb.Services {
 		svcOut = append(svcOut, nlbServiceShowOutput{
-			ID:   svc.ID,
-			Name: svc.Name,
+			ID:   *svc.ID,
+			Name: *svc.Name,
 		})
 	}
 
 	out := nlbShowOutput{
-		ID:           nlb.ID,
-		Name:         nlb.Name,
-		Description:  nlb.Description,
+		ID:           *nlb.ID,
+		Name:         *nlb.Name,
+		Description:  defaultString(nlb.Description, ""),
 		CreationDate: nlb.CreatedAt.String(),
 		Zone:         zone,
 		IPAddress:    nlb.IPAddress.String(),
-		State:        nlb.State,
+		State:        *nlb.State,
 		Services:     svcOut,
-		Labels:       nlb.Labels,
+		Labels: func() (v map[string]string) {
+			if nlb.Labels != nil {
+				v = *nlb.Labels
+			}
+			return
+		}(),
 	}
 
 	return &out, nil
