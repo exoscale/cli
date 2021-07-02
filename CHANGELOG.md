@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.34.0
+
+### Features
+
+- sks: add support for labels/auto-upgrade
+
+### Bug Fixes
+
+- Add missing IP address in `exo compute instance show` command output
+
+
 ## 1.33.0
 
 ### Features
