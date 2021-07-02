@@ -22,6 +22,7 @@ type sksShowOutput struct {
 	CNI          string                  `json:"cni"`
 	AddOns       []string                `json:"addons"`
 	State        string                  `json:"state"`
+	Labels       map[string]string       `json:"labels"`
 	Nodepools    []sksNodepoolShowOutput `json:"nodepools"`
 }
 
@@ -43,6 +44,20 @@ func (o *sksShowOutput) toTable() {
 	t.Append([]string{"CNI", o.CNI})
 	t.Append([]string{"Add-Ons", strings.Join(o.AddOns, "\n")})
 	t.Append([]string{"State", o.State})
+	t.Append([]string{"Labels", func() string {
+		if len(o.Labels) > 0 {
+			return strings.Join(
+				func() []string {
+					labels := make([]string, 0)
+					for k, v := range o.Labels {
+						labels = append(labels, fmt.Sprintf("%s:%s", k, v))
+					}
+					return labels
+				}(),
+				"\n")
+		}
+		return "n/a"
+	}()})
 	t.Append([]string{"Nodepools", func() string {
 		if len(o.Nodepools) > 0 {
 			return strings.Join(
@@ -117,6 +132,12 @@ func showSKSCluster(zone, c string) (outputter, error) {
 		Description:  defaultString(cluster.Description, ""),
 		Endpoint:     *cluster.Endpoint,
 		ID:           *cluster.ID,
+		Labels: func() (v map[string]string) {
+			if cluster.Labels != nil {
+				v = *cluster.Labels
+			}
+			return
+		}(),
 		Name:         *cluster.Name,
 		Nodepools:    sksNodepools,
 		ServiceLevel: *cluster.ServiceLevel,

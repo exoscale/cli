@@ -22,22 +22,25 @@ type sksCreateCmd struct {
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	Description                string   `cli-usage:"SKS cluster description"`
-	KubernetesVersion          string   `cli-usage:"SKS cluster control plane Kubernetes version"`
-	NoCNI                      bool     `cli-usage:"do not deploy a default Container Network Interface plugin in the cluster control plane"`
-	NoExoscaleCCM              bool     `cli-usage:"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane"`
-	NoMetricsServer            bool     `cli-usage:"do not deploy the Kubernetes Metrics Server in the cluster control plane"`
-	NodepoolAntiAffinityGroups []string `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	NodepoolDeployTarget       string   `cli-usage:"default Nodepool Deploy Target NAME|ID"`
-	NodepoolDescription        string   `cli-usage:"default Nodepool description"`
-	NodepoolDiskSize           int64    `cli-usage:"default Nodepool Compute instances disk size"`
-	NodepoolInstancePrefix     string   `cli-usage:"string to prefix default Nodepool member names with"`
-	NodepoolInstanceType       string   `cli-usage:"default Nodepool Compute instances type"`
-	NodepoolName               string   `cli-usage:"default Nodepool name"`
-	NodepoolSecurityGroups     []string `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
-	NodepoolSize               int64    `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
-	ServiceLevel               string   `cli-usage:"SKS cluster control plane service level (starter|pro)"`
-	Zone                       string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Description                string            `cli-usage:"SKS cluster description"`
+	AutoUpgrade                bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
+	KubernetesVersion          string            `cli-usage:"SKS cluster control plane Kubernetes version"`
+	Labels                     map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
+	NoCNI                      bool              `cli-usage:"do not deploy a default Container Network Interface plugin in the cluster control plane"`
+	NoExoscaleCCM              bool              `cli-usage:"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane"`
+	NoMetricsServer            bool              `cli-usage:"do not deploy the Kubernetes Metrics Server in the cluster control plane"`
+	NodepoolAntiAffinityGroups []string          `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	NodepoolDeployTarget       string            `cli-usage:"default Nodepool Deploy Target NAME|ID"`
+	NodepoolDescription        string            `cli-usage:"default Nodepool description"`
+	NodepoolDiskSize           int64             `cli-usage:"default Nodepool Compute instances disk size"`
+	NodepoolInstancePrefix     string            `cli-usage:"string to prefix default Nodepool member names with"`
+	NodepoolInstanceType       string            `cli-usage:"default Nodepool Compute instances type"`
+	NodepoolLabels             map[string]string `cli-flag:"nodepool-label" cli-usage:"default Nodepool label (format: key=value)"`
+	NodepoolName               string            `cli-usage:"default Nodepool name"`
+	NodepoolSecurityGroups     []string          `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	NodepoolSize               int64             `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
+	ServiceLevel               string            `cli-usage:"SKS cluster control plane service level (starter|pro)"`
+	Zone                       string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -70,10 +73,17 @@ func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	cluster := &exov2.SKSCluster{
-		CNI: &defaultSKSClusterCNI,
+		AutoUpgrade: &c.AutoUpgrade,
+		CNI:         &defaultSKSClusterCNI,
 		Description: func() (v *string) {
 			if c.Description != "" {
 				v = &c.Description
+			}
+			return
+		}(),
+		Labels: func() (v *map[string]string) {
+			if len(c.Labels) > 0 {
+				return &c.Labels
 			}
 			return
 		}(),
@@ -141,6 +151,12 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			InstancePrefix: func() (v *string) {
 				if c.NodepoolInstancePrefix != "" {
 					v = &c.NodepoolInstancePrefix
+				}
+				return
+			}(),
+			Labels: func() (v *map[string]string) {
+				if len(c.NodepoolLabels) > 0 {
+					return &c.NodepoolLabels
 				}
 				return
 			}(),

@@ -11,20 +11,21 @@ import (
 )
 
 type sksNodepoolShowOutput struct {
-	ID                 string   `json:"id"`
-	Name               string   `json:"name"`
-	Description        string   `json:"description"`
-	CreationDate       string   `json:"creation_date"`
-	InstancePoolID     string   `json:"instance_pool_id"`
-	InstancePrefix     string   `json:"instance_prefix"`
-	InstanceType       string   `json:"instance_type"`
-	Template           string   `json:"template"`
-	DiskSize           int64    `json:"disk_size"`
-	AntiAffinityGroups []string `json:"anti_affinity_groups"`
-	SecurityGroups     []string `json:"security_groups"`
-	Version            string   `json:"version"`
-	Size               int64    `json:"size"`
-	State              string   `json:"state"`
+	ID                 string            `json:"id"`
+	Name               string            `json:"name"`
+	Description        string            `json:"description"`
+	CreationDate       string            `json:"creation_date"`
+	InstancePoolID     string            `json:"instance_pool_id"`
+	InstancePrefix     string            `json:"instance_prefix"`
+	InstanceType       string            `json:"instance_type"`
+	Template           string            `json:"template"`
+	DiskSize           int64             `json:"disk_size"`
+	AntiAffinityGroups []string          `json:"anti_affinity_groups"`
+	SecurityGroups     []string          `json:"security_groups"`
+	Version            string            `json:"version"`
+	Size               int64             `json:"size"`
+	State              string            `json:"state"`
+	Labels             map[string]string `json:"labels"`
 }
 
 func (o *sksNodepoolShowOutput) toJSON()      { outputJSON(o) }
@@ -89,11 +90,17 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 		ID:                 *nodepool.ID,
 		InstancePoolID:     *nodepool.InstancePoolID,
 		InstancePrefix:     defaultString(nodepool.InstancePrefix, ""),
-		Name:               *nodepool.Name,
-		SecurityGroups:     make([]string, 0),
-		Size:               *nodepool.Size,
-		State:              *nodepool.State,
-		Version:            *nodepool.Version,
+		Labels: func() (v map[string]string) {
+			if nodepool.Labels != nil {
+				v = *nodepool.Labels
+			}
+			return
+		}(),
+		Name:           *nodepool.Name,
+		SecurityGroups: make([]string, 0),
+		Size:           *nodepool.Size,
+		State:          *nodepool.State,
+		Version:        *nodepool.Version,
 	}
 
 	antiAffinityGroups, err := nodepool.AntiAffinityGroups(ctx)

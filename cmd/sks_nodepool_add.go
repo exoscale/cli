@@ -15,15 +15,16 @@ type sksNodepoolAddCmd struct {
 	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 	Name    string `cli-arg:"#" cli-usage:"NODEPOOL-NAME"`
 
-	AntiAffinityGroups []string `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	DeployTarget       string   `cli-usage:"Nodepool Deploy Target NAME|ID"`
-	Description        string   `cli-usage:"Nodepool description"`
-	DiskSize           int64    `cli-usage:"Nodepool Compute instances disk size"`
-	InstancePrefix     string   `cli-usage:"string to prefix Nodepool member names with"`
-	InstanceType       string   `cli-usage:"Nodepool Compute instances type"`
-	SecurityGroups     []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
-	Size               int64    `cli-usage:"Nodepool size"`
-	Zone               string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+	AntiAffinityGroups []string          `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	DeployTarget       string            `cli-usage:"Nodepool Deploy Target NAME|ID"`
+	Description        string            `cli-usage:"Nodepool description"`
+	DiskSize           int64             `cli-usage:"Nodepool Compute instances disk size"`
+	InstancePrefix     string            `cli-usage:"string to prefix Nodepool member names with"`
+	InstanceType       string            `cli-usage:"Nodepool Compute instances type"`
+	Labels             map[string]string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
+	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	Size               int64             `cli-usage:"Nodepool size"`
+	Zone               string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksNodepoolAddCmd) cmdAliases() []string { return nil }
@@ -54,6 +55,12 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		InstancePrefix: func() (v *string) {
 			if c.InstancePrefix != "" {
 				v = &c.InstancePrefix
+			}
+			return
+		}(),
+		Labels: func() (v *map[string]string) {
+			if len(c.Labels) > 0 {
+				return &c.Labels
 			}
 			return
 		}(),
