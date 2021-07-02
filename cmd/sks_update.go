@@ -13,9 +13,11 @@ type sksUpdateCmd struct {
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Description string `cli-usage:"cluster description"`
-	Name        string `cli-usage:"cluster name"`
-	Zone        string `cli-short:"z" cli-usage:"SKS cluster zone"`
+	AutoUpgrade bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
+	Description string            `cli-usage:"SKS cluster description"`
+	Labels      map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
+	Name        string            `cli-usage:"SKS cluster name"`
+	Zone        string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksUpdateCmd) cmdAliases() []string { return nil }
@@ -43,6 +45,16 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		return err
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AutoUpgrade)) {
+		cluster.AutoUpgrade = &c.AutoUpgrade
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+		cluster.Labels = &c.Labels
+		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {

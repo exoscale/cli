@@ -16,15 +16,16 @@ type sksNodepoolUpdateCmd struct {
 	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 	Nodepool string `cli-arg:"#" cli-usage:"NODEPOOL-NAME|ID"`
 
-	AntiAffinityGroups []string `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	DeployTarget       string   `cli-usage:"Nodepool Deploy Target NAME|ID"`
-	Description        string   `cli-usage:"Nodepool description"`
-	DiskSize           int64    `cli-usage:"Nodepool Compute instances disk size"`
-	InstancePrefix     string   `cli-usage:"string to prefix Nodepool member names with"`
-	InstanceType       string   `cli-usage:"Nodepool Compute instances type"`
-	Name               string   `cli-usage:"Nodepool name"`
-	SecurityGroups     []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
-	Zone               string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+	AntiAffinityGroups []string          `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	DeployTarget       string            `cli-usage:"Nodepool Deploy Target NAME|ID"`
+	Description        string            `cli-usage:"Nodepool description"`
+	DiskSize           int64             `cli-usage:"Nodepool Compute instances disk size"`
+	InstancePrefix     string            `cli-usage:"string to prefix Nodepool member names with"`
+	InstanceType       string            `cli-usage:"Nodepool Compute instances type"`
+	Labels             map[string]string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
+	Name               string            `cli-usage:"Nodepool name"`
+	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	Zone               string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksNodepoolUpdateCmd) cmdAliases() []string { return nil }
@@ -110,6 +111,11 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			return fmt.Errorf("error retrieving instance type: %s", err)
 		}
 		nodepool.InstanceTypeID = nodepoolInstanceType.ID
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+		nodepool.Labels = &c.Labels
 		updated = true
 	}
 
