@@ -20,6 +20,7 @@ type instanceShowOutput struct {
 	SecurityGroups     []string          `json:"security_groups"`
 	PrivateNetworks    []string          `json:"private_networks"`
 	ElasticIPs         []string          `json:"elastic_ips" outputLabel:"Elastic IPs"`
+	IPAddress          string            `json:"ip_address"`
 	IPv6Address        string            `json:"ipv6_address" outputLabel:"IPv6 Address"`
 	SSHKey             string            `json:"ssh_key"`
 	DiskSize           string            `json:"disk_size"`
@@ -96,6 +97,7 @@ func showInstance(zone, i string) (outputter, error) {
 		DiskSize:           humanize.IBytes(uint64(*instance.DiskSize << 30)),
 		ElasticIPs:         make([]string, 0),
 		ID:                 *instance.ID,
+		IPAddress:          instance.PublicIPAddress.String(),
 		IPv6Address: func() string {
 			if instance.IPv6Address != nil {
 				return instance.IPv6Address.String()
