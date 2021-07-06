@@ -37,7 +37,7 @@ func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSN
 	return &SKSNodepool{
 		AntiAffinityGroupIDs: func() (v *[]string) {
 			ids := make([]string, 0)
-			if np.AntiAffinityGroups != nil {
+			if np.AntiAffinityGroups != nil && len(*np.AntiAffinityGroups) > 0 {
 				for _, aag := range *np.AntiAffinityGroups {
 					aag := aag
 					ids = append(ids, *aag.Id)
@@ -60,7 +60,7 @@ func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSN
 		InstancePrefix: np.InstancePrefix,
 		InstanceTypeID: np.InstanceType.Id,
 		Labels: func() (v *map[string]string) {
-			if np.Labels != nil {
+			if np.Labels != nil && len(np.Labels.AdditionalProperties) > 0 {
 				v = &np.Labels.AdditionalProperties
 			}
 			return
@@ -68,7 +68,7 @@ func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSN
 		Name: np.Name,
 		SecurityGroupIDs: func() (v *[]string) {
 			ids := make([]string, 0)
-			if np.SecurityGroups != nil {
+			if np.SecurityGroups != nil && len(*np.SecurityGroups) > 0 {
 				for _, sg := range *np.SecurityGroups {
 					sg := sg
 					ids = append(ids, *sg.Id)
@@ -144,7 +144,7 @@ func sksClusterFromAPI(client *Client, zone string, c *papi.SksCluster) *SKSClus
 		Endpoint:    c.Endpoint,
 		ID:          c.Id,
 		Labels: func() (v *map[string]string) {
-			if c.Labels != nil {
+			if c.Labels != nil && len(c.Labels.AdditionalProperties) > 0 {
 				v = &c.Labels.AdditionalProperties
 			}
 			return

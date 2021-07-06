@@ -37,7 +37,7 @@ type InstancePool struct {
 func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 	return &InstancePool{
 		AntiAffinityGroupIDs: func() (v *[]string) {
-			if i.AntiAffinityGroups != nil {
+			if i.AntiAffinityGroups != nil && len(*i.AntiAffinityGroups) > 0 {
 				ids := make([]string, len(*i.AntiAffinityGroups))
 				for i, item := range *i.AntiAffinityGroups {
 					ids[i] = *item.Id
@@ -55,7 +55,7 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 		Description: i.Description,
 		DiskSize:    i.DiskSize,
 		ElasticIPIDs: func() (v *[]string) {
-			if i.ElasticIps != nil {
+			if i.ElasticIps != nil && len(*i.ElasticIps) > 0 {
 				ids := make([]string, len(*i.ElasticIps))
 				for i, item := range *i.ElasticIps {
 					ids[i] = *item.Id
@@ -67,7 +67,7 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 		ID:          i.Id,
 		IPv6Enabled: i.Ipv6Enabled,
 		InstanceIDs: func() (v *[]string) {
-			if i.Instances != nil {
+			if i.Instances != nil && len(*i.Instances) > 0 {
 				ids := make([]string, len(*i.Instances))
 				for i, item := range *i.Instances {
 					ids[i] = *item.Id
@@ -79,7 +79,7 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 		InstancePrefix: i.InstancePrefix,
 		InstanceTypeID: i.InstanceType.Id,
 		Labels: func() (v *map[string]string) {
-			if i.Labels != nil {
+			if i.Labels != nil && len(i.Labels.AdditionalProperties) > 0 {
 				v = &i.Labels.AdditionalProperties
 			}
 			return
@@ -92,7 +92,7 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 		}(),
 		Name: i.Name,
 		PrivateNetworkIDs: func() (v *[]string) {
-			if i.PrivateNetworks != nil {
+			if i.PrivateNetworks != nil && len(*i.PrivateNetworks) > 0 {
 				ids := make([]string, len(*i.PrivateNetworks))
 				for i, item := range *i.PrivateNetworks {
 					ids[i] = *item.Id
@@ -108,7 +108,7 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 			return
 		}(),
 		SecurityGroupIDs: func() (v *[]string) {
-			if i.SecurityGroups != nil {
+			if i.SecurityGroups != nil && len(*i.SecurityGroups) > 0 {
 				ids := make([]string, len(*i.SecurityGroups))
 				for i, item := range *i.SecurityGroups {
 					ids[i] = *item.Id

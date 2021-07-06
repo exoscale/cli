@@ -11,17 +11,17 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.60.0
+	github.com/exoscale/egoscale v0.60.1
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/gofrs/uuid v4.0.0+incompatible
+	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/iancoleman/strcase v0.1.3
 	github.com/izumin5210/gentleman-logger v1.0.0
 	github.com/izumin5210/httplogger v1.0.0 // indirect
-	github.com/jarcoal/httpmock v1.0.8
+	github.com/jarcoal/httpmock v1.0.8 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/klauspost/cpuid v1.3.1 // indirect
