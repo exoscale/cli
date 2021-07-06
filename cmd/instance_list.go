@@ -110,7 +110,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceListCmd{
+	cobra.CheckErr(registerCLICommand(computeInstanceCmd, &instanceListCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

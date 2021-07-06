@@ -26,11 +26,11 @@ var instanceTypeSizes = []string{
 	"titan",
 }
 
-var instanceCmd = &cobra.Command{
+var computeInstanceCmd = &cobra.Command{
 	Use:   "instance",
 	Short: "Compute instances management",
 }
 
 func init() {
-	computeCmd.AddCommand(instanceCmd)
+	computeCmd.AddCommand(computeInstanceCmd)
 }
