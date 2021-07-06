@@ -45,7 +45,7 @@ type Instance struct {
 func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 	return &Instance{
 		AntiAffinityGroupIDs: func() (v *[]string) {
-			if i.AntiAffinityGroups != nil {
+			if i.AntiAffinityGroups != nil && len(*i.AntiAffinityGroups) > 0 {
 				ids := make([]string, len(*i.AntiAffinityGroups))
 				for i, item := range *i.AntiAffinityGroups {
 					ids[i] = *item.Id
@@ -63,7 +63,7 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 		}(),
 		DiskSize: i.DiskSize,
 		ElasticIPIDs: func() (v *[]string) {
-			if i.ElasticIps != nil {
+			if i.ElasticIps != nil && len(*i.ElasticIps) > 0 {
 				ids := make([]string, len(*i.ElasticIps))
 				for i, item := range *i.ElasticIps {
 					ids[i] = *item.Id
@@ -89,7 +89,7 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 		}(),
 		InstanceTypeID: i.InstanceType.Id,
 		Labels: func() (v *map[string]string) {
-			if i.Labels != nil {
+			if i.Labels != nil && len(i.Labels.AdditionalProperties) > 0 {
 				v = &i.Labels.AdditionalProperties
 			}
 			return
@@ -105,7 +105,7 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 		}(),
 		Name: i.Name,
 		PrivateNetworkIDs: func() (v *[]string) {
-			if i.PrivateNetworks != nil {
+			if i.PrivateNetworks != nil && len(*i.PrivateNetworks) > 0 {
 				ids := make([]string, len(*i.PrivateNetworks))
 				for i, item := range *i.PrivateNetworks {
 					ids[i] = *item.Id
@@ -128,7 +128,7 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 			return
 		}(),
 		SecurityGroupIDs: func() (v *[]string) {
-			if i.SecurityGroups != nil {
+			if i.SecurityGroups != nil && len(*i.SecurityGroups) > 0 {
 				ids := make([]string, len(*i.SecurityGroups))
 				for i, item := range *i.SecurityGroups {
 					ids[i] = *item.Id
@@ -138,7 +138,7 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 			return
 		}(),
 		SnapshotIDs: func() (v *[]string) {
-			if i.Snapshots != nil {
+			if i.Snapshots != nil && len(*i.Snapshots) > 0 {
 				ids := make([]string, len(*i.Snapshots))
 				for i, item := range *i.Snapshots {
 					ids[i] = *item.Id

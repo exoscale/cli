@@ -124,7 +124,7 @@ func nlbFromAPI(client *Client, zone string, nlb *papi.LoadBalancer) *NetworkLoa
 			return
 		}(),
 		Labels: func() (v *map[string]string) {
-			if nlb.Labels != nil {
+			if nlb.Labels != nil && len(nlb.Labels.AdditionalProperties) > 0 {
 				v = &nlb.Labels.AdditionalProperties
 			}
 			return

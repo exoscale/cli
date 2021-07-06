@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.60.1
+------
+
+- fix: v2: don't return pointers to empty maps/slices
+
 0.60.0
 ------
 
