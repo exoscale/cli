@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.61.0
+------
+
+- feature: v2: add `PrivateNetwork.UpdateInstanceIPAddress()` method
+- feature: v2: add `Instance.Reboot()` method
+
 0.60.1
 ------
 

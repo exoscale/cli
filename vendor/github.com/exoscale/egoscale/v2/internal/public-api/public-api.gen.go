@@ -141,23 +141,6 @@ const (
 	DbaasServiceNotificationTypeServicePoweredOffRemoval DbaasServiceNotificationType = "service_powered_off_removal"
 )
 
-// Defines values for DbaasServiceTypeName.
-const (
-	DbaasServiceTypeNameElasticsearch DbaasServiceTypeName = "elasticsearch"
-
-	DbaasServiceTypeNameKafka DbaasServiceTypeName = "kafka"
-
-	DbaasServiceTypeNameKafkaConnect DbaasServiceTypeName = "kafka_connect"
-
-	DbaasServiceTypeNameKafkaMirrormaker DbaasServiceTypeName = "kafka_mirrormaker"
-
-	DbaasServiceTypeNameMysql DbaasServiceTypeName = "mysql"
-
-	DbaasServiceTypeNamePg DbaasServiceTypeName = "pg"
-
-	DbaasServiceTypeNameRedis DbaasServiceTypeName = "redis"
-)
-
 // Defines values for DbaasServiceUserAuthentication.
 const (
 	DbaasServiceUserAuthenticationCachingSha2Password DbaasServiceUserAuthentication = "caching_sha2_password"
@@ -1400,7 +1383,8 @@ type PrivateNetwork struct {
 	EndIp *string `json:"end-ip,omitempty"`
 
 	// Private Network ID
-	Id *string `json:"id,omitempty"`
+	Id     *string `json:"id,omitempty"`
+	Labels *Labels `json:"labels,omitempty"`
 
 	// Private Network leased IP addresses
 	Leases *[]PrivateNetworkLease `json:"leases,omitempty"`
@@ -2120,7 +2104,8 @@ type CreatePrivateNetworkJSONBody struct {
 	Description *string `json:"description,omitempty"`
 
 	// Private Network end IP address
-	EndIp *string `json:"end-ip,omitempty"`
+	EndIp  *string `json:"end-ip,omitempty"`
+	Labels *Labels `json:"labels,omitempty"`
 
 	// Private Network name
 	Name string `json:"name"`
@@ -2139,7 +2124,8 @@ type UpdatePrivateNetworkJSONBody struct {
 	Description *string `json:"description,omitempty"`
 
 	// Private Network end IP address
-	EndIp *string `json:"end-ip,omitempty"`
+	EndIp  *string `json:"end-ip,omitempty"`
+	Labels *Labels `json:"labels,omitempty"`
 
 	// Private Network name
 	Name *string `json:"name,omitempty"`
@@ -2150,6 +2136,9 @@ type UpdatePrivateNetworkJSONBody struct {
 	// Private Network start IP address
 	StartIp *string `json:"start-ip,omitempty"`
 }
+
+// ResetPrivateNetworkFieldParamsField defines parameters for ResetPrivateNetworkField.
+type ResetPrivateNetworkFieldParamsField string
 
 // AttachInstanceToPrivateNetworkJSONBody defines parameters for AttachInstanceToPrivateNetwork.
 type AttachInstanceToPrivateNetworkJSONBody struct {
@@ -2166,6 +2155,16 @@ type DetachInstanceFromPrivateNetworkJSONBody struct {
 
 	// Instance
 	Instance Instance `json:"instance"`
+}
+
+// UpdatePrivateNetworkInstanceIpJSONBody defines parameters for UpdatePrivateNetworkInstanceIp.
+type UpdatePrivateNetworkInstanceIpJSONBody struct {
+
+	// Instance
+	Instance Instance `json:"instance"`
+
+	// Static IP address lease for the corresponding network interface
+	Ip *string `json:"ip,omitempty"`
 }
 
 // CreateSecurityGroupJSONBody defines parameters for CreateSecurityGroup.
@@ -2500,6 +2499,9 @@ type AttachInstanceToPrivateNetworkJSONRequestBody AttachInstanceToPrivateNetwor
 
 // DetachInstanceFromPrivateNetworkJSONRequestBody defines body for DetachInstanceFromPrivateNetwork for application/json ContentType.
 type DetachInstanceFromPrivateNetworkJSONRequestBody DetachInstanceFromPrivateNetworkJSONBody
+
+// UpdatePrivateNetworkInstanceIpJSONRequestBody defines body for UpdatePrivateNetworkInstanceIp for application/json ContentType.
+type UpdatePrivateNetworkInstanceIpJSONRequestBody UpdatePrivateNetworkInstanceIpJSONBody
 
 // CreateSecurityGroupJSONRequestBody defines body for CreateSecurityGroup for application/json ContentType.
 type CreateSecurityGroupJSONRequestBody CreateSecurityGroupJSONBody
@@ -3401,6 +3403,9 @@ type ClientInterface interface {
 	// CreateSnapshot request
 	CreateSnapshot(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RebootInstance request
+	RebootInstance(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// StartInstance request
 	StartInstance(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3475,6 +3480,9 @@ type ClientInterface interface {
 
 	UpdatePrivateNetwork(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ResetPrivateNetworkField request
+	ResetPrivateNetworkField(ctx context.Context, id string, field ResetPrivateNetworkFieldParamsField, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// AttachInstanceToPrivateNetwork request  with any body
 	AttachInstanceToPrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3484,6 +3492,11 @@ type ClientInterface interface {
 	DetachInstanceFromPrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	DetachInstanceFromPrivateNetwork(ctx context.Context, id string, body DetachInstanceFromPrivateNetworkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdatePrivateNetworkInstanceIp request  with any body
+	UpdatePrivateNetworkInstanceIpWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdatePrivateNetworkInstanceIp(ctx context.Context, id string, body UpdatePrivateNetworkInstanceIpJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSecurityGroups request
 	ListSecurityGroups(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3609,6 +3622,9 @@ type ClientInterface interface {
 	RegisterSshKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	RegisterSshKey(ctx context.Context, body RegisterSshKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteSshKey request
+	DeleteSshKey(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSshKey request
 	GetSshKey(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4272,6 +4288,18 @@ func (c *Client) CreateSnapshot(ctx context.Context, id string, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
+func (c *Client) RebootInstance(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRebootInstanceRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) StartInstance(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewStartInstanceRequest(c.Server, id)
 	if err != nil {
@@ -4596,6 +4624,18 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, id string, body Updat
 	return c.Client.Do(req)
 }
 
+func (c *Client) ResetPrivateNetworkField(ctx context.Context, id string, field ResetPrivateNetworkFieldParamsField, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetPrivateNetworkFieldRequest(c.Server, id, field)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) AttachInstanceToPrivateNetworkWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAttachInstanceToPrivateNetworkRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
@@ -4634,6 +4674,30 @@ func (c *Client) DetachInstanceFromPrivateNetworkWithBody(ctx context.Context, i
 
 func (c *Client) DetachInstanceFromPrivateNetwork(ctx context.Context, id string, body DetachInstanceFromPrivateNetworkJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDetachInstanceFromPrivateNetworkRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePrivateNetworkInstanceIpWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdatePrivateNetworkInstanceIpRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdatePrivateNetworkInstanceIp(ctx context.Context, id string, body UpdatePrivateNetworkInstanceIpJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdatePrivateNetworkInstanceIpRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5186,6 +5250,18 @@ func (c *Client) RegisterSshKeyWithBody(ctx context.Context, contentType string,
 
 func (c *Client) RegisterSshKey(ctx context.Context, body RegisterSshKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRegisterSshKeyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteSshKey(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteSshKeyRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -6785,6 +6861,40 @@ func NewCreateSnapshotRequest(server string, id string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewRebootInstanceRequest generates requests for RebootInstance
+func NewRebootInstanceRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/instance/%s:reboot", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewStartInstanceRequest generates requests for StartInstance
 func NewStartInstanceRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -7570,6 +7680,47 @@ func NewUpdatePrivateNetworkRequestWithBody(server string, id string, contentTyp
 	return req, nil
 }
 
+// NewResetPrivateNetworkFieldRequest generates requests for ResetPrivateNetworkField
+func NewResetPrivateNetworkFieldRequest(server string, id string, field ResetPrivateNetworkFieldParamsField) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "field", runtime.ParamLocationPath, field)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/private-network/%s/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewAttachInstanceToPrivateNetworkRequest calls the generic AttachInstanceToPrivateNetwork builder with application/json body
 func NewAttachInstanceToPrivateNetworkRequest(server string, id string, body AttachInstanceToPrivateNetworkJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -7645,6 +7796,53 @@ func NewDetachInstanceFromPrivateNetworkRequestWithBody(server string, id string
 	}
 
 	operationPath := fmt.Sprintf("/private-network/%s:detach", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdatePrivateNetworkInstanceIpRequest calls the generic UpdatePrivateNetworkInstanceIp builder with application/json body
+func NewUpdatePrivateNetworkInstanceIpRequest(server string, id string, body UpdatePrivateNetworkInstanceIpJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdatePrivateNetworkInstanceIpRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdatePrivateNetworkInstanceIpRequestWithBody generates requests for UpdatePrivateNetworkInstanceIp with any type of body
+func NewUpdatePrivateNetworkInstanceIpRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/private-network/%s:update-ip", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = operationPath[1:]
 	}
@@ -8989,6 +9187,40 @@ func NewRegisterSshKeyRequestWithBody(server string, contentType string, body io
 	return req, nil
 }
 
+// NewDeleteSshKeyRequest generates requests for DeleteSshKey
+func NewDeleteSshKeyRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/ssh-key/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetSshKeyRequest generates requests for GetSshKey
 func NewGetSshKeyRequest(server string, name string) (*http.Request, error) {
 	var err error
@@ -9457,6 +9689,9 @@ type ClientWithResponsesInterface interface {
 	// CreateSnapshot request
 	CreateSnapshotWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*CreateSnapshotResponse, error)
 
+	// RebootInstance request
+	RebootInstanceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*RebootInstanceResponse, error)
+
 	// StartInstance request
 	StartInstanceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*StartInstanceResponse, error)
 
@@ -9531,6 +9766,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdatePrivateNetworkWithResponse(ctx context.Context, id string, body UpdatePrivateNetworkJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePrivateNetworkResponse, error)
 
+	// ResetPrivateNetworkField request
+	ResetPrivateNetworkFieldWithResponse(ctx context.Context, id string, field ResetPrivateNetworkFieldParamsField, reqEditors ...RequestEditorFn) (*ResetPrivateNetworkFieldResponse, error)
+
 	// AttachInstanceToPrivateNetwork request  with any body
 	AttachInstanceToPrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AttachInstanceToPrivateNetworkResponse, error)
 
@@ -9540,6 +9778,11 @@ type ClientWithResponsesInterface interface {
 	DetachInstanceFromPrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*DetachInstanceFromPrivateNetworkResponse, error)
 
 	DetachInstanceFromPrivateNetworkWithResponse(ctx context.Context, id string, body DetachInstanceFromPrivateNetworkJSONRequestBody, reqEditors ...RequestEditorFn) (*DetachInstanceFromPrivateNetworkResponse, error)
+
+	// UpdatePrivateNetworkInstanceIp request  with any body
+	UpdatePrivateNetworkInstanceIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePrivateNetworkInstanceIpResponse, error)
+
+	UpdatePrivateNetworkInstanceIpWithResponse(ctx context.Context, id string, body UpdatePrivateNetworkInstanceIpJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePrivateNetworkInstanceIpResponse, error)
 
 	// ListSecurityGroups request
 	ListSecurityGroupsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSecurityGroupsResponse, error)
@@ -9665,6 +9908,9 @@ type ClientWithResponsesInterface interface {
 	RegisterSshKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RegisterSshKeyResponse, error)
 
 	RegisterSshKeyWithResponse(ctx context.Context, body RegisterSshKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*RegisterSshKeyResponse, error)
+
+	// DeleteSshKey request
+	DeleteSshKeyWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteSshKeyResponse, error)
 
 	// GetSshKey request
 	GetSshKeyWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetSshKeyResponse, error)
@@ -10592,6 +10838,28 @@ func (r CreateSnapshotResponse) StatusCode() int {
 	return 0
 }
 
+type RebootInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r RebootInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RebootInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type StartInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -11036,6 +11304,28 @@ func (r UpdatePrivateNetworkResponse) StatusCode() int {
 	return 0
 }
 
+type ResetPrivateNetworkFieldResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ResetPrivateNetworkFieldResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResetPrivateNetworkFieldResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type AttachInstanceToPrivateNetworkResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -11074,6 +11364,28 @@ func (r DetachInstanceFromPrivateNetworkResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r DetachInstanceFromPrivateNetworkResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdatePrivateNetworkInstanceIpResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdatePrivateNetworkInstanceIpResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdatePrivateNetworkInstanceIpResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -11822,6 +12134,28 @@ func (r RegisterSshKeyResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteSshKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteSshKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteSshKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetSshKeyResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -12444,6 +12778,15 @@ func (c *ClientWithResponses) CreateSnapshotWithResponse(ctx context.Context, id
 	return ParseCreateSnapshotResponse(rsp)
 }
 
+// RebootInstanceWithResponse request returning *RebootInstanceResponse
+func (c *ClientWithResponses) RebootInstanceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*RebootInstanceResponse, error) {
+	rsp, err := c.RebootInstance(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRebootInstanceResponse(rsp)
+}
+
 // StartInstanceWithResponse request returning *StartInstanceResponse
 func (c *ClientWithResponses) StartInstanceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*StartInstanceResponse, error) {
 	rsp, err := c.StartInstance(ctx, id, reqEditors...)
@@ -12680,6 +13023,15 @@ func (c *ClientWithResponses) UpdatePrivateNetworkWithResponse(ctx context.Conte
 	return ParseUpdatePrivateNetworkResponse(rsp)
 }
 
+// ResetPrivateNetworkFieldWithResponse request returning *ResetPrivateNetworkFieldResponse
+func (c *ClientWithResponses) ResetPrivateNetworkFieldWithResponse(ctx context.Context, id string, field ResetPrivateNetworkFieldParamsField, reqEditors ...RequestEditorFn) (*ResetPrivateNetworkFieldResponse, error) {
+	rsp, err := c.ResetPrivateNetworkField(ctx, id, field, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetPrivateNetworkFieldResponse(rsp)
+}
+
 // AttachInstanceToPrivateNetworkWithBodyWithResponse request with arbitrary body returning *AttachInstanceToPrivateNetworkResponse
 func (c *ClientWithResponses) AttachInstanceToPrivateNetworkWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AttachInstanceToPrivateNetworkResponse, error) {
 	rsp, err := c.AttachInstanceToPrivateNetworkWithBody(ctx, id, contentType, body, reqEditors...)
@@ -12712,6 +13064,23 @@ func (c *ClientWithResponses) DetachInstanceFromPrivateNetworkWithResponse(ctx c
 		return nil, err
 	}
 	return ParseDetachInstanceFromPrivateNetworkResponse(rsp)
+}
+
+// UpdatePrivateNetworkInstanceIpWithBodyWithResponse request with arbitrary body returning *UpdatePrivateNetworkInstanceIpResponse
+func (c *ClientWithResponses) UpdatePrivateNetworkInstanceIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePrivateNetworkInstanceIpResponse, error) {
+	rsp, err := c.UpdatePrivateNetworkInstanceIpWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePrivateNetworkInstanceIpResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdatePrivateNetworkInstanceIpWithResponse(ctx context.Context, id string, body UpdatePrivateNetworkInstanceIpJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePrivateNetworkInstanceIpResponse, error) {
+	rsp, err := c.UpdatePrivateNetworkInstanceIp(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdatePrivateNetworkInstanceIpResponse(rsp)
 }
 
 // ListSecurityGroupsWithResponse request returning *ListSecurityGroupsResponse
@@ -13113,6 +13482,15 @@ func (c *ClientWithResponses) RegisterSshKeyWithResponse(ctx context.Context, bo
 		return nil, err
 	}
 	return ParseRegisterSshKeyResponse(rsp)
+}
+
+// DeleteSshKeyWithResponse request returning *DeleteSshKeyResponse
+func (c *ClientWithResponses) DeleteSshKeyWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteSshKeyResponse, error) {
+	rsp, err := c.DeleteSshKey(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteSshKeyResponse(rsp)
 }
 
 // GetSshKeyWithResponse request returning *GetSshKeyResponse
@@ -14254,6 +14632,32 @@ func ParseCreateSnapshotResponse(rsp *http.Response) (*CreateSnapshotResponse, e
 	return response, nil
 }
 
+// ParseRebootInstanceResponse parses an HTTP response from a RebootInstanceWithResponse call
+func ParseRebootInstanceResponse(rsp *http.Response) (*RebootInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RebootInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseStartInstanceResponse parses an HTTP response from a StartInstanceWithResponse call
 func ParseStartInstanceResponse(rsp *http.Response) (*StartInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -14778,6 +15182,32 @@ func ParseUpdatePrivateNetworkResponse(rsp *http.Response) (*UpdatePrivateNetwor
 	return response, nil
 }
 
+// ParseResetPrivateNetworkFieldResponse parses an HTTP response from a ResetPrivateNetworkFieldWithResponse call
+func ParseResetPrivateNetworkFieldResponse(rsp *http.Response) (*ResetPrivateNetworkFieldResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResetPrivateNetworkFieldResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseAttachInstanceToPrivateNetworkResponse parses an HTTP response from a AttachInstanceToPrivateNetworkWithResponse call
 func ParseAttachInstanceToPrivateNetworkResponse(rsp *http.Response) (*AttachInstanceToPrivateNetworkResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -14813,6 +15243,32 @@ func ParseDetachInstanceFromPrivateNetworkResponse(rsp *http.Response) (*DetachI
 	}
 
 	response := &DetachInstanceFromPrivateNetworkResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdatePrivateNetworkInstanceIpResponse parses an HTTP response from a UpdatePrivateNetworkInstanceIpWithResponse call
+func ParseUpdatePrivateNetworkInstanceIpResponse(rsp *http.Response) (*UpdatePrivateNetworkInstanceIpResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdatePrivateNetworkInstanceIpResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -15687,6 +16143,32 @@ func ParseRegisterSshKeyResponse(rsp *http.Response) (*RegisterSshKeyResponse, e
 	}
 
 	response := &RegisterSshKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteSshKeyResponse parses an HTTP response from a DeleteSshKeyWithResponse call
+func ParseDeleteSshKeyResponse(rsp *http.Response) (*DeleteSshKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteSshKeyResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

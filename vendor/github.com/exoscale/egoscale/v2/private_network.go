@@ -16,9 +16,12 @@ type PrivateNetwork struct {
 	Name        *string `req-for:"create"`
 	Netmask     *net.IP
 	StartIP     *net.IP
+
+	c    *Client
+	zone string
 }
 
-func privateNetworkFromAPI(p *papi.PrivateNetwork) *PrivateNetwork {
+func privateNetworkFromAPI(client *Client, zone string, p *papi.PrivateNetwork) *PrivateNetwork {
 	return &PrivateNetwork{
 		Description: p.Description,
 		EndIP: func() (v *net.IP) {
@@ -44,11 +47,38 @@ func privateNetworkFromAPI(p *papi.PrivateNetwork) *PrivateNetwork {
 			}
 			return
 		}(),
+
+		c:    client,
+		zone: zone,
 	}
 }
 
 func (p PrivateNetwork) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
 	return client.GetPrivateNetwork(ctx, zone, id)
+}
+
+// UpdateInstanceIPAddress updates the IP address of a Compute instance attached to the managed Private Network.
+func (p *PrivateNetwork) UpdateInstanceIPAddress(ctx context.Context, instance *Instance, ip net.IP) error {
+	resp, err := p.c.UpdatePrivateNetworkInstanceIpWithResponse(
+		apiv2.WithZone(ctx, p.zone),
+		*p.ID,
+		papi.UpdatePrivateNetworkInstanceIpJSONRequestBody{
+			Instance: papi.Instance{Id: instance.ID},
+			Ip: func() *string {
+				s := ip.String()
+				return &s
+			}(),
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(p.c.timeout).
+		WithInterval(p.c.pollInterval).
+		Poll(ctx, p.c.OperationPoller(p.zone, *resp.JSON200.Id))
+
+	return err
 }
 
 // CreatePrivateNetwork creates a Private Network in the specified zone.
@@ -114,7 +144,7 @@ func (c *Client) ListPrivateNetworks(ctx context.Context, zone string) ([]*Priva
 
 	if resp.JSON200.PrivateNetworks != nil {
 		for i := range *resp.JSON200.PrivateNetworks {
-			list = append(list, privateNetworkFromAPI(&(*resp.JSON200.PrivateNetworks)[i]))
+			list = append(list, privateNetworkFromAPI(c, zone, &(*resp.JSON200.PrivateNetworks)[i]))
 		}
 	}
 
@@ -128,7 +158,7 @@ func (c *Client) GetPrivateNetwork(ctx context.Context, zone, id string) (*Priva
 		return nil, err
 	}
 
-	return privateNetworkFromAPI(resp.JSON200), nil
+	return privateNetworkFromAPI(c, zone, resp.JSON200), nil
 }
 
 // FindPrivateNetwork attempts to find a Private Network by name or ID in the specified zone.

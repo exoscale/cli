@@ -368,6 +368,24 @@ func (i *Instance) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error)
 	return nil, nil
 }
 
+// Reboot reboots the Compute instance.
+func (i *Instance) Reboot(ctx context.Context) error {
+	resp, err := i.c.RebootInstanceWithResponse(apiv2.WithZone(ctx, i.zone), *i.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Start starts the Compute instance.
 func (i *Instance) Start(ctx context.Context) error {
 	resp, err := i.c.StartInstanceWithResponse(apiv2.WithZone(ctx, i.zone), *i.ID)
