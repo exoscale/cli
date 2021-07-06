@@ -166,7 +166,7 @@ func showInstance(zone, i string) (outputter, error) {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceShowCmd{
+	cobra.CheckErr(registerCLICommand(computeInstanceCmd, &instanceShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
