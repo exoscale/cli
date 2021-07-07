@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.62.0
+------
+
+- feature: v2: add support for Private Networks leases
+
 0.61.0
 ------
 
