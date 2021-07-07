@@ -8,6 +8,12 @@ import (
 	papi "github.com/exoscale/egoscale/v2/internal/public-api"
 )
 
+// PrivateNetworkLease represents a managed Private Network lease.
+type PrivateNetworkLease struct {
+	InstanceID *string
+	IPAddress  *net.IP
+}
+
 // PrivateNetwork represents a Private Network.
 type PrivateNetwork struct {
 	Description *string
@@ -16,6 +22,7 @@ type PrivateNetwork struct {
 	Name        *string `req-for:"create"`
 	Netmask     *net.IP
 	StartIP     *net.IP
+	Leases      []*PrivateNetworkLease
 
 	c    *Client
 	zone string
@@ -44,6 +51,18 @@ func privateNetworkFromAPI(client *Client, zone string, p *papi.PrivateNetwork) 
 			if p.StartIp != nil {
 				ip := net.ParseIP(*p.StartIp)
 				v = &ip
+			}
+			return
+		}(),
+		Leases: func() (v []*PrivateNetworkLease) {
+			if p.Leases != nil {
+				v = make([]*PrivateNetworkLease, len(*p.Leases))
+				for i, lease := range *p.Leases {
+					v[i] = &PrivateNetworkLease{
+						InstanceID: lease.InstanceId,
+						IPAddress:  func() *net.IP { ip := net.ParseIP(*lease.Ip); return &ip }(),
+					}
+				}
 			}
 			return
 		}(),
