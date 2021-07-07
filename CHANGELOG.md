@@ -1,13 +1,20 @@
 # Changelog
 
+## 1.35.1
+
+### Changes
+
+- `exo vm`: remove deprecation warning
+
+
 ## 1.35.0
 
 ### Features
 
-- ` exo compute instance`: add `private-network` commands
-- ` exo compute instance`: add `security-group` commands
-- ` exo compute instance`: add `reboot` command
-- ` exo compute instance`: add `ssh`/`scp` commands
+- `exo compute instance`: add `private-network` commands
+- `exo compute instance`: add `security-group` commands
+- `exo compute instance`: add `reboot` command
+- `exo compute instance`: add `ssh`/`scp` commands
 
 
 ## 1.34.0
