@@ -31,9 +31,9 @@ func nlbServerStatusFromAPI(st *papi.LoadBalancerServerStatus) *NetworkLoadBalan
 
 // NetworkLoadBalancerServiceHealthcheck represents a Network Load Balancer service healthcheck.
 type NetworkLoadBalancerServiceHealthcheck struct {
-	Interval *time.Duration
-	Mode     *string
-	Port     *uint16
+	Interval *time.Duration `req-for:"create,update"`
+	Mode     *string        `req-for:"create,update"`
+	Port     *uint16        `req-for:"create,update"`
 	Retries  *int64
 	TLSSNI   *string
 	Timeout  *time.Duration
@@ -50,7 +50,7 @@ type NetworkLoadBalancerService struct {
 	Name              *string `req-for:"create"`
 	Port              *uint16 `req-for:"create"`
 	Protocol          *string `req-for:"create"`
-	State             *string `req-for:"create"`
+	State             *string
 	Strategy          *string `req-for:"create"`
 	TargetPort        *uint16 `req-for:"create"`
 }
@@ -155,6 +155,9 @@ func (nlb *NetworkLoadBalancer) AddService(
 	if err := validateOperationParams(svc, "create"); err != nil {
 		return nil, err
 	}
+	if err := validateOperationParams(svc.Healthcheck, "create"); err != nil {
+		return nil, err
+	}
 
 	var (
 		port                = int64(*svc.Port)
@@ -217,7 +220,7 @@ func (nlb *NetworkLoadBalancer) AddService(
 
 	// Look for an unknown service: if we find one we hope it's the one we've just created.
 	for _, s := range nlbUpdated.Services {
-		if _, ok := services[*svc.ID]; !ok && *s.Name == *svc.Name {
+		if _, ok := services[*s.ID]; !ok && *s.Name == *svc.Name {
 			return s, nil
 		}
 	}
@@ -229,6 +232,11 @@ func (nlb *NetworkLoadBalancer) AddService(
 func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkLoadBalancerService) error {
 	if err := validateOperationParams(svc, "update"); err != nil {
 		return err
+	}
+	if svc.Healthcheck != nil {
+		if err := validateOperationParams(svc.Healthcheck, "update"); err != nil {
+			return err
+		}
 	}
 
 	resp, err := nlb.c.UpdateLoadBalancerServiceWithResponse(
