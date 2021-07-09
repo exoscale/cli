@@ -21,6 +21,7 @@ type vmShowOutput struct {
 	Zone               string   `json:"zone"`
 	State              string   `json:"state"`
 	IPAddress          string   `json:"ip_address"`
+	ReverseDNS         string   `json:"reverse_dns"`
 	Username           string   `json:"username"`
 	SSHKey             string   `json:"ssh_key"`
 	SecurityGroups     []string `json:"security_groups,omitempty"`
@@ -87,19 +88,29 @@ func showVM(name string) (outputter, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	volume := resp.(*egoscale.Volume)
 
+	reverseDNS, err := cs.RequestWithContext(gContext, &egoscale.QueryReverseDNSForVirtualMachine{ID: vm.ID})
+	if err != nil {
+		return nil, err
+	}
+
 	out := vmShowOutput{
-		ID:                 vm.ID.String(),
-		Name:               vm.DisplayName,
-		CreationDate:       vm.Created,
-		Size:               vm.ServiceOfferingName,
-		Template:           vm.TemplateName,
-		Zone:               vm.ZoneName,
-		State:              vm.State,
-		DiskSize:           humanize.IBytes(volume.Size),
-		IPAddress:          vm.IP().String(),
+		ID:           vm.ID.String(),
+		Name:         vm.DisplayName,
+		CreationDate: vm.Created,
+		Size:         vm.ServiceOfferingName,
+		Template:     vm.TemplateName,
+		Zone:         vm.ZoneName,
+		State:        vm.State,
+		DiskSize:     humanize.IBytes(volume.Size),
+		IPAddress:    vm.IP().String(),
+		ReverseDNS: func(vm *egoscale.VirtualMachine) string {
+			if len(vm.DefaultNic().ReverseDNS) > 0 {
+				return vm.DefaultNic().ReverseDNS[0].DomainName
+			}
+			return "n/a"
+		}(reverseDNS.(*egoscale.VirtualMachine)),
 		Username:           "n/a",
 		SSHKey:             vm.KeyPair,
 		SecurityGroups:     make([]string, len(vm.SecurityGroup)),

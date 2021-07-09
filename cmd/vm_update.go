@@ -50,24 +50,36 @@ var vmUpdateCmd = &cobra.Command{
 		}
 
 		if edited {
-			_, err = cs.RequestWithContext(gContext, &vmEdit)
-			if err != nil {
+			if _, err = cs.RequestWithContext(gContext, &vmEdit); err != nil {
 				return fmt.Errorf("unable to update Compute instance: %s", err)
 			}
-
-			if !gQuiet {
-				fmt.Println("Compute instance updated successfully")
-			}
-
-			return nil
 		}
 
-		return cmd.Usage()
+		if cmd.Flags().Changed("reverse-dns") {
+			reverseDNS, err := cmd.Flags().GetString("reverse-dns")
+			if err != nil {
+				return err
+			}
+
+			if _, err = cs.RequestWithContext(gContext, &egoscale.UpdateReverseDNSForVirtualMachine{
+				ID:         vm.ID,
+				DomainName: reverseDNS,
+			}); err != nil {
+				return fmt.Errorf("unable to update Compute instance reverse DNS: %s", err)
+			}
+		}
+
+		if !gQuiet {
+			return output(showVM(vm.ID.String()))
+		}
+
+		return nil
 	},
 }
 
 func init() {
-	vmUpdateCmd.Flags().String("name", "", "display name")
+	vmUpdateCmd.Flags().String("name", "", "instance display name")
 	vmUpdateCmd.Flags().String("cloud-init-file", "", "path to a cloud-init user data file")
+	vmUpdateCmd.Flags().String("reverse-dns", "", "instance reverse DNS record")
 	vmCmd.AddCommand(vmUpdateCmd)
 }
