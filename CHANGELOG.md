@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.36.0
+
+### Features
+
+- `exo vm`: add support for reverse DNS management
+
+
 ## 1.35.1
 
 ### Changes
