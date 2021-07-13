@@ -180,8 +180,6 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instancePool.UserData = &userData
 	}
 
-	fmt.Printf("%#v\n", instancePool)
-
 	decorateAsyncOperation(fmt.Sprintf("Creating Instance Pool %q...", c.Name), func() {
 		instancePool, err = cs.CreateInstancePool(ctx, c.Zone, instancePool)
 	})
