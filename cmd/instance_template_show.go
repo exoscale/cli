@@ -1,0 +1,145 @@
+package cmd
+
+import (
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/table"
+	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/spf13/cobra"
+)
+
+type computeInstanceTemplateShowOutput struct {
+	ID              string `json:"id"`
+	Name            string `json:"name"`
+	Description     string `json:"description"`
+	Family          string `json:"family"`
+	CreationDate    string `json:"creation_date"`
+	Visibility      string `json:"visibility"`
+	Size            int64  `json:"size"`
+	Version         string `json:"version"`
+	Build           string `json:"build"`
+	DefaultUser     string `json:"default_user"`
+	SSHKeyEnabled   bool   `json:"ssh_key_enabled"`
+	PasswordEnabled bool   `json:"password_enabled"`
+	BootMode        string `json:"boot_mode"`
+	Checksum        string `json:"checksum"`
+}
+
+func (o *computeInstanceTemplateShowOutput) toJSON() { outputJSON(o) }
+func (o *computeInstanceTemplateShowOutput) toText() { outputText(o) }
+func (o *computeInstanceTemplateShowOutput) toTable() {
+	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"Template"})
+	defer t.Render()
+
+	t.Append([]string{"ID", o.ID})
+	t.Append([]string{"Name", o.Name})
+	t.Append([]string{"Description", o.Description})
+	t.Append([]string{"Family", o.Family})
+	t.Append([]string{"Creation Date", o.CreationDate})
+	t.Append([]string{"Visibility", o.Visibility})
+	t.Append([]string{"Size", humanize.IBytes(uint64(o.Size))})
+	t.Append([]string{"Version", o.Version})
+	t.Append([]string{"Build", o.Build})
+	t.Append([]string{"Default User", o.DefaultUser})
+	t.Append([]string{"SSH key enabled", fmt.Sprint(o.SSHKeyEnabled)})
+	t.Append([]string{"Password enabled", fmt.Sprint(o.PasswordEnabled)})
+	t.Append([]string{"Boot Mode", o.BootMode})
+	t.Append([]string{"Checksum", o.Checksum})
+}
+
+type computeInstanceTemplateShowCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"show"`
+
+	Template string `cli-arg:"#" cli-usage:"[FAMILY.]SIZE"`
+
+	Family     string `cli-short:"f" cli-usage:"template family to filter results to"`
+	Visibility string `cli-short:"v" cli-usage:"template visibility (public|private)"`
+	Zone       string `cli-short:"z" cli-usage:"zone to filter results to (default: current account's default zone)"`
+}
+
+func (c *computeInstanceTemplateShowCmd) cmdAliases() []string { return gShowAlias }
+
+func (c *computeInstanceTemplateShowCmd) cmdShort() string {
+	return "Show a Compute instance template details"
+}
+
+func (c *computeInstanceTemplateShowCmd) cmdLong() string {
+	return fmt.Sprintf(`This command shows a Compute instance template details.
+
+	Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&computeInstanceTemplateShowOutput{}), ", "))
+}
+
+func (c *computeInstanceTemplateShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *computeInstanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(
+		gContext,
+		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+	)
+
+	// Opportunistic shortcut in case the template is referenced by ID.
+	template, _ := cs.Client.GetTemplate(ctx, c.Zone, c.Template)
+
+	if template == nil {
+		var templateID string
+
+		templates, err := cs.ListTemplates(ctx, c.Zone, c.Visibility, c.Family)
+		if err != nil {
+			return fmt.Errorf("error retrieving templates: %s", err)
+		}
+		for _, template := range templates {
+			if *template.ID == c.Template || *template.Name == c.Template {
+				templateID = *template.ID
+				break
+			}
+		}
+		if templateID == "" {
+			return fmt.Errorf(
+				"no template %q found with visibility %s in zone %s",
+				c.Template,
+				c.Visibility,
+				c.Zone,
+			)
+		}
+
+		template, err = cs.Client.GetTemplate(ctx, c.Zone, templateID)
+		if err != nil {
+			return fmt.Errorf("error retrieving template: %s", err)
+		}
+	}
+
+	return output(&computeInstanceTemplateShowOutput{
+		ID:              *template.ID,
+		Family:          defaultString(template.Family, ""),
+		Name:            *template.Name,
+		Description:     defaultString(template.Description, ""),
+		CreationDate:    template.CreatedAt.String(),
+		Visibility:      *template.Visibility,
+		Size:            *template.Size,
+		Version:         defaultString(template.Version, ""),
+		Build:           defaultString(template.Build, ""),
+		Checksum:        *template.Checksum,
+		DefaultUser:     defaultString(template.DefaultUser, ""),
+		SSHKeyEnabled:   *template.SSHKeyEnabled,
+		PasswordEnabled: *template.PasswordEnabled,
+		BootMode:        *template.BootMode,
+	}, nil)
+}
+
+func init() {
+	cobra.CheckErr(registerCLICommand(computeInstanceTemplateCmd, &computeInstanceTemplateShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
+		Visibility: defaultTemplateVisibility,
+	}))
+}
