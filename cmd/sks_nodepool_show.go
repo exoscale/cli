@@ -22,6 +22,7 @@ type sksNodepoolShowOutput struct {
 	DiskSize           int64             `json:"disk_size"`
 	AntiAffinityGroups []string          `json:"anti_affinity_groups"`
 	SecurityGroups     []string          `json:"security_groups"`
+	PrivateNetworks    []string          `json:"private_networks"`
 	Version            string            `json:"version"`
 	Size               int64             `json:"size"`
 	State              string            `json:"state"`
@@ -96,11 +97,12 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 			}
 			return
 		}(),
-		Name:           *nodepool.Name,
-		SecurityGroups: make([]string, 0),
-		Size:           *nodepool.Size,
-		State:          *nodepool.State,
-		Version:        *nodepool.Version,
+		Name:            *nodepool.Name,
+		SecurityGroups:  make([]string, 0),
+		PrivateNetworks: make([]string, 0),
+		Size:            *nodepool.Size,
+		State:           *nodepool.State,
+		Version:         *nodepool.Version,
 	}
 
 	antiAffinityGroups, err := nodepool.AntiAffinityGroups(ctx)
@@ -117,6 +119,14 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 	}
 	for _, securityGroup := range securityGroups {
 		out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
+	}
+
+	privateNetworks, err := nodepool.PrivateNetworks(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, privateNetwork := range privateNetworks {
+		out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
 	}
 
 	serviceOffering, err := cs.GetInstanceType(ctx, zone, *nodepool.InstanceTypeID)

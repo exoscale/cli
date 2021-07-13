@@ -22,6 +22,7 @@ type sksNodepoolAddCmd struct {
 	InstancePrefix     string            `cli-usage:"string to prefix Nodepool member names with"`
 	InstanceType       string            `cli-usage:"Nodepool Compute instances type"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
+	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Size               int64             `cli-usage:"Nodepool size"`
 	Zone               string            `cli-short:"z" cli-usage:"SKS cluster zone"`
@@ -100,6 +101,18 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving instance type: %s", err)
 	}
 	nodepool.InstanceTypeID = nodepoolInstanceType.ID
+
+	if l := len(c.PrivateNetworks); l > 0 {
+		nodepoolPrivateNetworkIDs := make([]string, l)
+		for i := range c.PrivateNetworks {
+			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
+			if err != nil {
+				return fmt.Errorf("error retrieving Private Network: %s", err)
+			}
+			nodepoolPrivateNetworkIDs[i] = *privateNetwork.ID
+		}
+		nodepool.PrivateNetworkIDs = &nodepoolPrivateNetworkIDs
+	}
 
 	if l := len(c.SecurityGroups); l > 0 {
 		nodepoolSecurityGroupIDs := make([]string, l)

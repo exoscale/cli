@@ -24,6 +24,7 @@ type sksNodepoolUpdateCmd struct {
 	InstanceType       string            `cli-usage:"Nodepool Compute instances type"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
 	Name               string            `cli-usage:"Nodepool name"`
+	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Zone               string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
@@ -121,6 +122,19 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
 		nodepool.Name = &c.Name
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PrivateNetworks)) {
+		nodepoolPrivateNetworkIDs := make([]string, len(c.PrivateNetworks))
+		for i, v := range c.PrivateNetworks {
+			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, v)
+			if err != nil {
+				return fmt.Errorf("error retrieving Private Network: %s", err)
+			}
+			nodepoolPrivateNetworkIDs[i] = *privateNetwork.ID
+		}
+		nodepool.PrivateNetworkIDs = &nodepoolPrivateNetworkIDs
 		updated = true
 	}
 
