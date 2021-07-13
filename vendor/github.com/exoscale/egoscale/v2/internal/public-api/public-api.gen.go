@@ -1588,6 +1588,9 @@ type SksNodepool struct {
 	// Nodepool name
 	Name *string `json:"name,omitempty"`
 
+	// Nodepool Private Networks
+	PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
+
 	// Nodepool Security Groups
 	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
 
@@ -2308,6 +2311,9 @@ type CreateSksNodepoolJSONBody struct {
 	// Nodepool name
 	Name string `json:"name"`
 
+	// Nodepool Private Networks
+	PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
+
 	// Nodepool Security Groups
 	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`
 
@@ -2339,6 +2345,9 @@ type UpdateSksNodepoolJSONBody struct {
 
 	// Nodepool name
 	Name *string `json:"name,omitempty"`
+
+	// Nodepool Private Networks
+	PrivateNetworks *[]PrivateNetwork `json:"private-networks,omitempty"`
 
 	// Nodepool Security Groups
 	SecurityGroups *[]SecurityGroup `json:"security-groups,omitempty"`

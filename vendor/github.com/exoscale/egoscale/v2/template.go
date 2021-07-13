@@ -12,17 +12,17 @@ import (
 type Template struct {
 	BootMode        *string
 	Build           *string
-	Checksum        *string
+	Checksum        *string `req-for:"create"`
 	CreatedAt       *time.Time
 	DefaultUser     *string
 	Description     *string
 	Family          *string
 	ID              *string
-	Name            *string
-	PasswordEnabled *bool
-	SSHKeyEnabled   *bool
+	Name            *string `req-for:"create"`
+	PasswordEnabled *bool   `req-for:"create"`
+	SSHKeyEnabled   *bool   `req-for:"create"`
 	Size            *int64
-	URL             *string
+	URL             *string `req-for:"create"`
 	Version         *string
 	Visibility      *string
 }
@@ -45,6 +45,39 @@ func templateFromAPI(t *papi.Template) *Template {
 		Version:         t.Version,
 		Visibility:      (*string)(t.Visibility),
 	}
+}
+
+// RegisterTemplate registers a new Template in the specified zone.
+func (c *Client) RegisterTemplate(ctx context.Context, zone string, template *Template) (*Template, error) {
+	if err := validateOperationParams(template, "create"); err != nil {
+		return nil, err
+	}
+
+	resp, err := c.RegisterTemplateWithResponse(
+		apiv2.WithZone(ctx, zone),
+		papi.RegisterTemplateJSONRequestBody{
+			BootMode:        (*papi.RegisterTemplateJSONBodyBootMode)(template.BootMode),
+			Checksum:        *template.Checksum,
+			DefaultUser:     template.DefaultUser,
+			Description:     template.Description,
+			Name:            *template.Name,
+			PasswordEnabled: *template.PasswordEnabled,
+			SshKeyEnabled:   *template.SSHKeyEnabled,
+			Url:             *template.URL,
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return nil, err
+	}
+
+	return c.GetTemplate(ctx, zone, *res.(*papi.Reference).Id)
 }
 
 // ListTemplates returns the list of existing Templates in the specified zone.

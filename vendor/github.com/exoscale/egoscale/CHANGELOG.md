@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.63.0
+------
+
+- feature: v2: add support for Private Networks to SKS Nodepools
+- feature: v2: add new `Client.RegisterTemplate()` method
+- change: v2: change `DatabaseService.UserConfig` type to pointer
+
 0.62.2
 ------
 

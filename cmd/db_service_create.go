@@ -62,9 +62,11 @@ func (c *dbServiceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.UserConfigFile != "" {
-		if databaseService.UserConfig, err = getDatabaseServiceUserConfigFromFile(c.UserConfigFile); err != nil {
+		userConfig, err := getDatabaseServiceUserConfigFromFile(c.UserConfigFile)
+		if err != nil {
 			return fmt.Errorf("error parsing user config: %s", err)
 		}
+		databaseService.UserConfig = &userConfig
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", *databaseService.Name), func() {
