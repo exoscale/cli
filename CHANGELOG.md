@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.37.0
+
+### Features
+
+- sks: nodepool: add support for Private Networks
+- compute: add "instance-template" commands
+- compute: add "instance-type" commands
+
+
 ## 1.36.0
 
 ### Features
