@@ -24,6 +24,7 @@ func (o *computeInstanceTypeShowOutput) toJSON() { outputJSON(o) }
 func (o *computeInstanceTypeShowOutput) toText() { outputText(o) }
 func (o *computeInstanceTypeShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"Instance Type"})
 	defer t.Render()
 
 	t.Append([]string{"ID", o.ID})
@@ -38,6 +39,8 @@ func (o *computeInstanceTypeShowOutput) toTable() {
 }
 
 type computeInstanceTypeShowCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"show"`
 
 	Type string `cli-arg:"#" cli-usage:"[FAMILY.]SIZE"`
@@ -87,5 +90,7 @@ func (c *computeInstanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceTypeCmd, &computeInstanceTypeShowCmd{}))
+	cobra.CheckErr(registerCLICommand(computeInstanceTypeCmd, &computeInstanceTypeShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

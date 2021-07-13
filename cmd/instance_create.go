@@ -136,7 +136,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	templates, err := cs.ListTemplates(ctx, c.Zone, c.TemplateVisibility, "")
 	if err != nil {
-		return fmt.Errorf("error retrieving Templates: %s", err)
+		return fmt.Errorf("error retrieving templates: %s", err)
 	}
 	for _, template := range templates {
 		if *template.ID == c.Template || *template.Name == c.Template {

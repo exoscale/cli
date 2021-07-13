@@ -21,6 +21,8 @@ func (o *computeInstanceTypeListOutput) toText()  { outputText(o) }
 func (o *computeInstanceTypeListOutput) toTable() { outputTable(o) }
 
 type computeInstanceTypeListCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"list"`
 }
 
@@ -64,5 +66,7 @@ func (c *computeInstanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceTypeCmd, &computeInstanceTypeListCmd{}))
+	cobra.CheckErr(registerCLICommand(computeInstanceTypeCmd, &computeInstanceTypeListCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }
