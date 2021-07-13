@@ -23,6 +23,7 @@ type SKSNodepool struct {
 	InstanceTypeID       *string `req-for:"create"`
 	Labels               *map[string]string
 	Name                 *string `req-for:"create"`
+	PrivateNetworkIDs    *[]string
 	SecurityGroupIDs     *[]string
 	Size                 *int64 `req-for:"create"`
 	State                *string
@@ -38,9 +39,9 @@ func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSN
 		AntiAffinityGroupIDs: func() (v *[]string) {
 			ids := make([]string, 0)
 			if np.AntiAffinityGroups != nil && len(*np.AntiAffinityGroups) > 0 {
-				for _, aag := range *np.AntiAffinityGroups {
-					aag := aag
-					ids = append(ids, *aag.Id)
+				for _, item := range *np.AntiAffinityGroups {
+					item := item
+					ids = append(ids, *item.Id)
 				}
 				v = &ids
 			}
@@ -66,12 +67,23 @@ func sksNodepoolFromAPI(client *Client, zone string, np *papi.SksNodepool) *SKSN
 			return
 		}(),
 		Name: np.Name,
+		PrivateNetworkIDs: func() (v *[]string) {
+			ids := make([]string, 0)
+			if np.PrivateNetworks != nil && len(*np.PrivateNetworks) > 0 {
+				for _, item := range *np.PrivateNetworks {
+					item := item
+					ids = append(ids, *item.Id)
+				}
+				v = &ids
+			}
+			return
+		}(),
 		SecurityGroupIDs: func() (v *[]string) {
 			ids := make([]string, 0)
 			if np.SecurityGroups != nil && len(*np.SecurityGroups) > 0 {
-				for _, sg := range *np.SecurityGroups {
-					sg := sg
-					ids = append(ids, *sg.Id)
+				for _, item := range *np.SecurityGroups {
+					item := item
+					ids = append(ids, *item.Id)
 				}
 				v = &ids
 			}
@@ -92,6 +104,15 @@ func (n *SKSNodepool) AntiAffinityGroups(ctx context.Context) ([]*AntiAffinityGr
 	if n.AntiAffinityGroupIDs != nil {
 		res, err := n.c.fetchFromIDs(ctx, n.zone, *n.AntiAffinityGroupIDs, new(AntiAffinityGroup))
 		return res.([]*AntiAffinityGroup), err
+	}
+	return nil, nil
+}
+
+// PrivateNetworks returns the list of Private Networks attached to the members of the cluster Nodepool.
+func (n *SKSNodepool) PrivateNetworks(ctx context.Context) ([]*PrivateNetwork, error) {
+	if n.PrivateNetworkIDs != nil {
+		res, err := n.c.fetchFromIDs(ctx, n.zone, *n.PrivateNetworkIDs, new(PrivateNetwork))
+		return res.([]*PrivateNetwork), err
 	}
 	return nil, nil
 }
@@ -278,6 +299,17 @@ func (c *SKSCluster) AddNodepool(ctx context.Context, nodepool *SKSNodepool) (*S
 				return
 			}(),
 			Name: *nodepool.Name,
+			PrivateNetworks: func() (v *[]papi.PrivateNetwork) {
+				if nodepool.PrivateNetworkIDs != nil {
+					ids := make([]papi.PrivateNetwork, len(*nodepool.PrivateNetworkIDs))
+					for i, item := range *nodepool.PrivateNetworkIDs {
+						item := item
+						ids[i] = papi.PrivateNetwork{Id: &item}
+					}
+					v = &ids
+				}
+				return
+			}(),
 			SecurityGroups: func() (v *[]papi.SecurityGroup) {
 				if nodepool.SecurityGroupIDs != nil {
 					ids := make([]papi.SecurityGroup, len(*nodepool.SecurityGroupIDs))
@@ -355,6 +387,17 @@ func (c *SKSCluster) UpdateNodepool(ctx context.Context, nodepool *SKSNodepool) 
 				return
 			}(),
 			Name: nodepool.Name,
+			PrivateNetworks: func() (v *[]papi.PrivateNetwork) {
+				if nodepool.PrivateNetworkIDs != nil {
+					ids := make([]papi.PrivateNetwork, len(*nodepool.PrivateNetworkIDs))
+					for i, item := range *nodepool.PrivateNetworkIDs {
+						item := item
+						ids[i] = papi.PrivateNetwork{Id: &item}
+					}
+					v = &ids
+				}
+				return
+			}(),
 			SecurityGroups: func() (v *[]papi.SecurityGroup) {
 				if nodepool.SecurityGroupIDs != nil {
 					ids := make([]papi.SecurityGroup, len(*nodepool.SecurityGroupIDs))

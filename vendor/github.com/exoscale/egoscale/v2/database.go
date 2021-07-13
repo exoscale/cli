@@ -152,7 +152,7 @@ type DatabaseService struct {
 	Type                  *string
 	UpdatedAt             *time.Time
 	URI                   *url.URL
-	UserConfig            map[string]interface{}
+	UserConfig            *map[string]interface{}
 	Users                 []*DatabaseServiceUser
 }
 
@@ -210,9 +210,9 @@ func databaseServiceFromAPI(s *papi.DbaasService) *DatabaseService {
 			}
 			return nil
 		}(),
-		UserConfig: func() (v map[string]interface{}) {
+		UserConfig: func() (v *map[string]interface{}) {
 			if s.UserConfig != nil {
-				v = s.UserConfig.AdditionalProperties
+				v = &s.UserConfig.AdditionalProperties
 			}
 			return
 		}(),
@@ -284,13 +284,13 @@ func (c *Client) CreateDatabaseService(
 			Plan:                  *databaseService.Plan,
 			TerminationProtection: databaseService.TerminationProtection,
 			Type:                  papi.DbaasServiceTypeName(*databaseService.Type),
-			UserConfig: func() *papi.CreateDbaasServiceJSONBody_UserConfig {
-				if len(databaseService.UserConfig) > 0 {
-					return &papi.CreateDbaasServiceJSONBody_UserConfig{
-						AdditionalProperties: databaseService.UserConfig,
+			UserConfig: func() (v *papi.CreateDbaasServiceJSONBody_UserConfig) {
+				if databaseService.UserConfig != nil {
+					v = &papi.CreateDbaasServiceJSONBody_UserConfig{
+						AdditionalProperties: *databaseService.UserConfig,
 					}
 				}
-				return nil
+				return
 			}(),
 		})
 	if err != nil {
@@ -351,13 +351,13 @@ func (c *Client) UpdateDatabaseService(ctx context.Context, zone string, databas
 			}(),
 			Plan:                  databaseService.Plan,
 			TerminationProtection: databaseService.TerminationProtection,
-			UserConfig: func() *papi.UpdateDbaasServiceJSONBody_UserConfig {
-				if len(databaseService.UserConfig) > 0 {
-					return &papi.UpdateDbaasServiceJSONBody_UserConfig{
-						AdditionalProperties: databaseService.UserConfig,
+			UserConfig: func() (v *papi.UpdateDbaasServiceJSONBody_UserConfig) {
+				if databaseService.UserConfig != nil {
+					v = &papi.UpdateDbaasServiceJSONBody_UserConfig{
+						AdditionalProperties: *databaseService.UserConfig,
 					}
 				}
-				return nil
+				return
 			}(),
 		})
 	if err != nil {

@@ -63,9 +63,11 @@ func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.UserConfigFile)) {
-		if databaseService.UserConfig, err = getDatabaseServiceUserConfigFromFile(c.UserConfigFile); err != nil {
+		userConfig, err := getDatabaseServiceUserConfigFromFile(c.UserConfigFile)
+		if err != nil {
 			return fmt.Errorf("error parsing user config: %s", err)
 		}
+		databaseService.UserConfig = &userConfig
 		updated = true
 	}
 

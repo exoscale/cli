@@ -21,6 +21,7 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Labels             *Labels              `json:"labels,omitempty"`
 		Name               *string              `json:"name,omitempty"`
+		PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
 		Size               *int64               `json:"size,omitempty"`
 		State              *SksNodepoolState    `json:"state,omitempty"`
@@ -50,6 +51,7 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 	n.InstanceType = raw.InstanceType
 	n.Labels = raw.Labels
 	n.Name = raw.Name
+	n.PrivateNetworks = raw.PrivateNetworks
 	n.SecurityGroups = raw.SecurityGroups
 	n.Size = raw.Size
 	n.State = raw.State
@@ -74,6 +76,7 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 		InstanceType       *InstanceType        `json:"instance-type,omitempty"`
 		Labels             *Labels              `json:"labels,omitempty"`
 		Name               *string              `json:"name,omitempty"`
+		PrivateNetworks    *[]PrivateNetwork    `json:"private-networks,omitempty"`
 		SecurityGroups     *[]SecurityGroup     `json:"security-groups,omitempty"`
 		Size               *int64               `json:"size,omitempty"`
 		State              *SksNodepoolState    `json:"state,omitempty"`
@@ -96,6 +99,7 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 	raw.InstanceType = n.InstanceType
 	raw.Labels = n.Labels
 	raw.Name = n.Name
+	raw.PrivateNetworks = n.PrivateNetworks
 	raw.SecurityGroups = n.SecurityGroups
 	raw.Size = n.Size
 	raw.State = n.State

@@ -22,8 +22,8 @@ type sksCreateCmd struct {
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	Description                string            `cli-usage:"SKS cluster description"`
 	AutoUpgrade                bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
+	Description                string            `cli-usage:"SKS cluster description"`
 	KubernetesVersion          string            `cli-usage:"SKS cluster control plane Kubernetes version"`
 	Labels                     map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
 	NoCNI                      bool              `cli-usage:"do not deploy a default Container Network Interface plugin in the cluster control plane"`
