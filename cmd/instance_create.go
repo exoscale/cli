@@ -106,16 +106,15 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 	instance.InstanceTypeID = instanceType.ID
 
+	privateNetworks := make([]*exov2.PrivateNetwork, len(c.PrivateNetworks))
 	if l := len(c.PrivateNetworks); l > 0 {
-		privateNetworkIDs := make([]string, l)
 		for i := range c.PrivateNetworks {
 			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %s", err)
 			}
-			privateNetworkIDs[i] = *privateNetwork.ID
+			privateNetworks[i] = privateNetwork
 		}
-		instance.PrivateNetworkIDs = &privateNetworkIDs
 	}
 
 	if l := len(c.SecurityGroups); l > 0 {
@@ -158,6 +157,15 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(fmt.Sprintf("Creating instance %q...", c.Name), func() {
 		instance, err = cs.CreateInstance(ctx, c.Zone, instance)
+		if err != nil {
+			return
+		}
+
+		for _, p := range privateNetworks {
+			if err = instance.AttachPrivateNetwork(ctx, p, nil); err != nil {
+				return
+			}
+		}
 	})
 	if err != nil {
 		return err
