@@ -1,12 +1,23 @@
 # Changelog
 
+## 1.38.0
+
+### Features
+
+- `exo sks create`: add `--nodepool-private-network` flag
+
+### Bug Fix
+
+- `exo compute instance create`: fix private networks attachment
+
+
 ## 1.37.0
 
 ### Features
 
-- sks: nodepool: add support for Private Networks
-- compute: add "instance-template" commands
-- compute: add "instance-type" commands
+- Add `exo compute instance-template` commands
+- Add `exo compute instance-type` commands
+- `exo sks nodepool`: add support for Private Networks
 
 
 ## 1.36.0
