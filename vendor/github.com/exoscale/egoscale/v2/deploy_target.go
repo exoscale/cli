@@ -15,6 +15,16 @@ type DeployTarget struct {
 	Type        *string
 }
 
+// ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
+func (d DeployTarget) ToAPIMock() interface{} {
+	return papi.DeployTarget{
+		Description: d.Description,
+		Id:          d.ID,
+		Name:        d.Name,
+		Type:        (*papi.DeployTargetType)(d.Type),
+	}
+}
+
 func deployTargetFromAPI(d *papi.DeployTarget) *DeployTarget {
 	return &DeployTarget{
 		Description: d.Description,

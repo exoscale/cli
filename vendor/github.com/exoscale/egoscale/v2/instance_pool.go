@@ -7,6 +7,12 @@ import (
 	papi "github.com/exoscale/egoscale/v2/internal/public-api"
 )
 
+// InstancePoolManager represents an Instance Pool manager.
+type InstancePoolManager struct {
+	ID   string
+	Type string
+}
+
 // InstancePool represents an Instance Pool.
 type InstancePool struct {
 	AntiAffinityGroupIDs *[]string
@@ -20,7 +26,7 @@ type InstancePool struct {
 	InstancePrefix       *string
 	InstanceTypeID       *string `req-for:"create"`
 	Labels               *map[string]string
-	ManagerID            *string
+	Manager              *InstancePoolManager
 	Name                 *string `req-for:"create"`
 	PrivateNetworkIDs    *[]string
 	SSHKey               *string
@@ -84,11 +90,14 @@ func instancePoolFromAPI(i *papi.InstancePool) *InstancePool {
 			}
 			return
 		}(),
-		ManagerID: func() (v *string) {
+		Manager: func() *InstancePoolManager {
 			if i.Manager != nil {
-				v = i.Manager.Id
+				return &InstancePoolManager{
+					ID:   *i.Manager.Id,
+					Type: string(*i.Manager.Type),
+				}
 			}
-			return
+			return nil
 		}(),
 		Name: i.Name,
 		PrivateNetworkIDs: func() (v *[]string) {
