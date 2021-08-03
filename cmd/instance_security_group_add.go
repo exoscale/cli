@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -49,7 +49,7 @@ func (c *instanceSGAddCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	securityGroups := make([]*exov2.SecurityGroup, len(c.SecurityGroups))
+	securityGroups := make([]*egoscale.SecurityGroup, len(c.SecurityGroups))
 	for i := range c.SecurityGroups {
 		securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 		if err != nil {

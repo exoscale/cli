@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -63,7 +63,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	res := make(chan instanceListItemOutput)
 	defer close(res)
 
-	instanceTypes := make(map[string]*exov2.InstanceType) // For caching
+	instanceTypes := make(map[string]*egoscale.InstanceType) // For caching
 
 	go func() {
 		for instance := range res {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -47,7 +47,7 @@ func (c *dbServiceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	databaseService := &exov2.DatabaseService{
+	databaseService := &egoscale.DatabaseService{
 		Name:                  &c.Name,
 		Plan:                  &c.Plan,
 		TerminationProtection: &c.TerminationProtection,
@@ -55,7 +55,7 @@ func (c *dbServiceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		databaseService.Maintenance = &exov2.DatabaseServiceMaintenance{
+		databaseService.Maintenance = &egoscale.DatabaseServiceMaintenance{
 			DOW:  c.MaintenanceDOW,
 			Time: c.MaintenanceTime,
 		}

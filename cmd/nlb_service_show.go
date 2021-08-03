@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/exoscale/cli/table"
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -117,7 +117,7 @@ func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
-	var svc *exov2.NetworkLoadBalancerService
+	var svc *egoscale.NetworkLoadBalancerService
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 

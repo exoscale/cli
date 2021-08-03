@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -60,7 +60,7 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	var nodepool *exov2.SKSNodepool
+	var nodepool *egoscale.SKSNodepool
 	for _, n := range cluster.Nodepools {
 		if *n.ID == c.Nodepool || *n.Name == c.Nodepool {
 			nodepool = n

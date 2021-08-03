@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -48,7 +48,7 @@ func (c *sksNodepoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 
 func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var (
-		nodepool *exov2.SKSNodepool
+		nodepool *egoscale.SKSNodepool
 		updated  bool
 	)
 

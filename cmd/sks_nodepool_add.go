@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -45,7 +45,7 @@ func (c *sksNodepoolAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	nodepool := &exov2.SKSNodepool{
+	nodepool := &egoscale.SKSNodepool{
 		Description: func() (v *string) {
 			if c.Description != "" {
 				v = &c.Description

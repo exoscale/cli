@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -50,7 +50,7 @@ func (c *instancePoolCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	instancePool := &exov2.InstancePool{
+	instancePool := &egoscale.InstancePool{
 		DeployTargetID: func() (v *string) {
 			if c.DeployTarget != "" {
 				v = &c.DeployTarget
