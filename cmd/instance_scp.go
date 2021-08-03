@@ -108,7 +108,7 @@ func (c *instanceSCPCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	c.scpInfo.keyFile = getKeyPairPath(*instance.ID)
+	c.scpInfo.keyFile = getInstanceSSHKeyPath(*instance.ID)
 
 	c.scpInfo.ipAddress = instance.PublicIPAddress.String()
 	if c.IPv6 {

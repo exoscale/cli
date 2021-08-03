@@ -1,12 +1,20 @@
 package cmd
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"os"
+	"path"
 	"strings"
+	"time"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
 )
 
 type instanceCreateCmd struct {
@@ -54,7 +62,13 @@ func (c *instanceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	instance := &exov2.Instance{
+	var (
+		singleUseSSHPrivateKey *rsa.PrivateKey
+		singleUseSSHPublicKey  ssh.PublicKey
+		sshKey                 *egoscale.SSHKey
+	)
+
+	instance := &egoscale.Instance{
 		DeployTargetID: func() (v *string) {
 			if c.DeployTarget != "" {
 				v = &c.DeployTarget
@@ -106,7 +120,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 	instance.InstanceTypeID = instanceType.ID
 
-	privateNetworks := make([]*exov2.PrivateNetwork, len(c.PrivateNetworks))
+	privateNetworks := make([]*egoscale.PrivateNetwork, len(c.PrivateNetworks))
 	if l := len(c.PrivateNetworks); l > 0 {
 		for i := range c.PrivateNetworks {
 			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
@@ -131,6 +145,34 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if instance.SSHKey == nil && gCurrentAccount.DefaultSSHKey != "" {
 		instance.SSHKey = &gCurrentAccount.DefaultSSHKey
+	}
+
+	// Generating a single-use SSH key pair for this instance.
+	if instance.SSHKey == nil {
+		singleUseSSHPrivateKey, err = rsa.GenerateKey(rand.Reader, 2048)
+		if err != nil {
+			return fmt.Errorf("error generating SSH private key: %s", err)
+		}
+		if err = singleUseSSHPrivateKey.Validate(); err != nil {
+			return fmt.Errorf("error generating SSH private key: %s", err)
+		}
+
+		singleUseSSHPublicKey, err = ssh.NewPublicKey(&singleUseSSHPrivateKey.PublicKey)
+		if err != nil {
+			return fmt.Errorf("error generating SSH public key: %s", err)
+		}
+
+		sshKey, err = cs.RegisterSSHKey(
+			ctx,
+			c.Zone,
+			fmt.Sprintf("%s-%d", c.Name, time.Now().Unix()),
+			string(ssh.MarshalAuthorizedKey(singleUseSSHPublicKey)),
+		)
+		if err != nil {
+			return fmt.Errorf("error registering SSH key: %s", err)
+		}
+
+		instance.SSHKey = sshKey.Name
 	}
 
 	templates, err := cs.ListTemplates(ctx, c.Zone, c.TemplateVisibility, "")
@@ -169,6 +211,29 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	})
 	if err != nil {
 		return err
+	}
+
+	if singleUseSSHPrivateKey != nil {
+		privateKeyFilePath := getInstanceSSHKeyPath(*instance.ID)
+
+		if err = os.MkdirAll(path.Dir(privateKeyFilePath), 0o700); err != nil {
+			return fmt.Errorf("error writing SSH private key file: %s", err)
+		}
+
+		if err = os.WriteFile(
+			privateKeyFilePath,
+			pem.EncodeToMemory(&pem.Block{
+				Type:  "RSA PRIVATE KEY",
+				Bytes: x509.MarshalPKCS1PrivateKey(singleUseSSHPrivateKey),
+			}),
+			0o600,
+		); err != nil {
+			return fmt.Errorf("error writing SSH private key file: %s", err)
+		}
+
+		if err = cs.DeleteSSHKey(ctx, c.Zone, *sshKey.Name); err != nil {
+			return fmt.Errorf("error deleting SSH key: %s", err)
+		}
 	}
 
 	if !gQuiet {

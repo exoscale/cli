@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -48,6 +50,13 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	})
 	if err != nil {
 		return err
+	}
+
+	instanceDir := path.Join(gConfigFolder, "instances", *instance.ID)
+	if _, err := os.Stat(instanceDir); !os.IsNotExist(err) {
+		if err := os.RemoveAll(instanceDir); err != nil {
+			return fmt.Errorf("error deleting instance directory: %s", err)
+		}
 	}
 
 	return nil
