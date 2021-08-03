@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +28,7 @@ type computeInstanceTemplateRegisterCmd struct {
 	Zone            string `cli-short:"z" cli-usage:"zone to register the template into (default: current account's default zone)"`
 }
 
-func (c *computeInstanceTemplateRegisterCmd) cmdAliases() []string { return gShowAlias }
+func (c *computeInstanceTemplateRegisterCmd) cmdAliases() []string { return gCreateAlias }
 
 func (c *computeInstanceTemplateRegisterCmd) cmdShort() string {
 	return "Register a new Compute instance template"
@@ -63,7 +63,7 @@ func (c *computeInstanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args 
 
 func (c *computeInstanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var (
-		template *exov2.Template
+		template *egoscale.Template
 		err      error
 	)
 
@@ -76,7 +76,7 @@ func (c *computeInstanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []stri
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
 	)
 
-	template = &exov2.Template{
+	template = &egoscale.Template{
 		Name: &c.Name,
 	}
 

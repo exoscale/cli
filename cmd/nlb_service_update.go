@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -51,7 +51,7 @@ func (c *nlbServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 
 func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var (
-		service *exov2.NetworkLoadBalancerService
+		service *egoscale.NetworkLoadBalancerService
 		updated bool
 	)
 

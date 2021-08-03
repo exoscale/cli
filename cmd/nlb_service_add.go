@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -58,14 +58,14 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		hcTimeout  = time.Duration(c.HealthcheckTimeout) * time.Second
 	)
 
-	service := &exov2.NetworkLoadBalancerService{
+	service := &egoscale.NetworkLoadBalancerService{
 		Description: func() (v *string) {
 			if c.Description != "" {
 				v = &c.Description
 			}
 			return
 		}(),
-		Healthcheck: &exov2.NetworkLoadBalancerServiceHealthcheck{
+		Healthcheck: &egoscale.NetworkLoadBalancerServiceHealthcheck{
 			Interval: &hcInterval,
 			Mode:     &c.HealthcheckMode,
 			Port:     &hcPort,

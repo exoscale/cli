@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -51,7 +51,7 @@ func (c *instancePrivnetRemoveCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 		return err
 	}
 
-	privateNetworks := make([]*exov2.PrivateNetwork, len(c.PrivateNetworks))
+	privateNetworks := make([]*egoscale.PrivateNetwork, len(c.PrivateNetworks))
 	for i := range c.PrivateNetworks {
 		privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
 		if err != nil {

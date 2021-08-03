@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -73,7 +73,7 @@ func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
 		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
-		databaseService.Maintenance = &exov2.DatabaseServiceMaintenance{
+		databaseService.Maintenance = &egoscale.DatabaseServiceMaintenance{
 			DOW:  c.MaintenanceDOW,
 			Time: c.MaintenanceTime,
 		}

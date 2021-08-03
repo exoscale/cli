@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	exov2 "github.com/exoscale/egoscale/v2"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -73,7 +73,7 @@ func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	cluster := &exov2.SKSCluster{
+	cluster := &egoscale.SKSCluster{
 		AutoUpgrade: &c.AutoUpgrade,
 		CNI:         &defaultSKSClusterCNI,
 		Description: func() (v *string) {
@@ -141,7 +141,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.NodepoolSize > 0 {
-		nodepool := &exov2.SKSNodepool{
+		nodepool := &egoscale.SKSNodepool{
 			Description: func() (v *string) {
 				if c.NodepoolDescription != "" {
 					v = &c.NodepoolDescription
