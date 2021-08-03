@@ -6,7 +6,7 @@ import (
 
 var computeSSHKeyCmd = &cobra.Command{
 	Use:   "ssh-key",
-	Short: "Compute SSH keys management",
+	Short: "SSH keys management",
 }
 
 func init() {

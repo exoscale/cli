@@ -30,7 +30,7 @@ func (c *computeSSHKeyListCmd) cmdAliases() []string { return nil }
 func (c *computeSSHKeyListCmd) cmdShort() string { return "List SSH keys" }
 
 func (c *computeSSHKeyListCmd) cmdLong() string {
-	return fmt.Sprintf(`This command lists Compute SSH keys.
+	return fmt.Sprintf(`This command lists SSH keys.
 
 	Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&computeSSHKeyListItemOutput{}), ", "))
