@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -164,6 +165,10 @@ func connectSSH(args []string) error {
 	cmd.Stdout = os.Stdout
 
 	return cmd.Run()
+}
+
+func getInstanceSSHKeyPath(instanceID string) string {
+	return path.Join(gConfigFolder, "instances", instanceID, "id_rsa")
 }
 
 func init() {
