@@ -19,6 +19,19 @@ type InstanceType struct {
 	Size       *string
 }
 
+// ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
+func (t InstanceType) ToAPIMock() interface{} {
+	return papi.InstanceType{
+		Authorized: t.Authorized,
+		Cpus:       t.CPUs,
+		Family:     (*papi.InstanceTypeFamily)(t.Family),
+		Gpus:       t.GPUs,
+		Id:         t.ID,
+		Memory:     t.Memory,
+		Size:       (*papi.InstanceTypeSize)(t.Size),
+	}
+}
+
 func instanceTypeFromAPI(t *papi.InstanceType) *InstanceType {
 	return &InstanceType{
 		Authorized: t.Authorized,

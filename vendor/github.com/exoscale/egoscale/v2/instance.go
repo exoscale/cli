@@ -422,6 +422,111 @@ func (i *Instance) Stop(ctx context.Context) error {
 	return nil
 }
 
+// ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
+func (i Instance) ToAPIMock() interface{} {
+	return papi.Instance{
+		AntiAffinityGroups: func() *[]papi.AntiAffinityGroup {
+			if i.AntiAffinityGroupIDs != nil {
+				list := make([]papi.AntiAffinityGroup, len(*i.AntiAffinityGroupIDs))
+				for j, id := range *i.AntiAffinityGroupIDs {
+					id := id
+					list[j] = papi.AntiAffinityGroup{Id: &id}
+				}
+				return &list
+			}
+			return nil
+		}(),
+		CreatedAt:    i.CreatedAt,
+		DeployTarget: &papi.DeployTarget{Id: i.DeployTargetID},
+		DiskSize:     i.DiskSize,
+		ElasticIps: func() *[]papi.ElasticIp {
+			if i.ElasticIPIDs != nil {
+				list := make([]papi.ElasticIp, len(*i.ElasticIPIDs))
+				for j, id := range *i.ElasticIPIDs {
+					id := id
+					list[j] = papi.ElasticIp{Id: &id}
+				}
+				return &list
+			}
+			return nil
+		}(),
+		Id:           i.ID,
+		InstanceType: &papi.InstanceType{Id: i.InstanceTypeID},
+		Ipv6Address: func() *string {
+			if i.IPv6Address != nil {
+				v := i.IPv6Address.String()
+				return &v
+			}
+			return nil
+		}(),
+		Labels: func() *papi.Labels {
+			if i.Labels != nil {
+				return &papi.Labels{AdditionalProperties: *i.Labels}
+			}
+			return nil
+		}(),
+		Manager: func() *papi.Manager {
+			if i.Manager != nil {
+				return &papi.Manager{
+					Id:   &i.Manager.ID,
+					Type: (*papi.ManagerType)(&i.Manager.Type),
+				}
+			}
+			return nil
+		}(),
+		Name: i.Name,
+		PrivateNetworks: func() *[]papi.PrivateNetwork {
+			if i.PrivateNetworkIDs != nil {
+				list := make([]papi.PrivateNetwork, len(*i.PrivateNetworkIDs))
+				for j, id := range *i.PrivateNetworkIDs {
+					id := id
+					list[j] = papi.PrivateNetwork{Id: &id}
+				}
+				return &list
+			}
+			return nil
+		}(),
+		PublicIp: func() *string {
+			if i.PublicIPAddress != nil {
+				v := i.PublicIPAddress.String()
+				return &v
+			}
+			return nil
+		}(),
+		SecurityGroups: func() *[]papi.SecurityGroup {
+			if i.SecurityGroupIDs != nil {
+				list := make([]papi.SecurityGroup, len(*i.SecurityGroupIDs))
+				for j, id := range *i.SecurityGroupIDs {
+					id := id
+					list[j] = papi.SecurityGroup{Id: &id}
+				}
+				return &list
+			}
+			return nil
+		}(),
+		Snapshots: func() *[]papi.Snapshot {
+			if i.SnapshotIDs != nil {
+				list := make([]papi.Snapshot, len(*i.SnapshotIDs))
+				for j, id := range *i.SnapshotIDs {
+					id := id
+					list[j] = papi.Snapshot{Id: &id}
+				}
+				return &list
+			}
+			return nil
+		}(),
+		SshKey: func() *papi.SshKey {
+			if i.SSHKey != nil {
+				return &papi.SshKey{Name: i.SSHKey}
+			}
+			return nil
+		}(),
+		State:    (*papi.InstanceState)(i.State),
+		Template: &papi.Template{Id: i.TemplateID},
+		UserData: i.UserData,
+	}
+}
+
 // CreateInstance creates a Compute instance in the specified zone.
 func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Instance) (*Instance, error) {
 	if err := validateOperationParams(instance, "create"); err != nil {
