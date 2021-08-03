@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.66.0
+------
+
+- feature: v2: add `Instance.Reset()` method
+- feature: v2: add `Instance.Scale()` method
+- feature: v2: add `Instance.ResizeDisk()` method
+
 0.65.1
 ------
 

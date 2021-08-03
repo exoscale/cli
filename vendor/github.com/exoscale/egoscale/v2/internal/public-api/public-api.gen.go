@@ -391,6 +391,11 @@ const (
 	SksClusterStateUpgrading SksClusterState = "upgrading"
 )
 
+// Defines values for SksNodepoolAddons.
+const (
+	SksNodepoolAddonsLinbit SksNodepoolAddons = "linbit"
+)
+
 // Defines values for SksNodepoolState.
 const (
 	SksNodepoolStateCreating SksNodepoolState = "creating"
@@ -1409,6 +1414,19 @@ type PrivateNetworkLease struct {
 	Ip *string `json:"ip,omitempty"`
 }
 
+// Organization Quota
+type Quota struct {
+
+	// Resource Limit. -1 for Unlimited
+	Limit *int64 `json:"limit,omitempty"`
+
+	// Resource Name
+	Resource *string `json:"resource,omitempty"`
+
+	// Resource Usage
+	Usage *int64 `json:"usage,omitempty"`
+}
+
 // Resource reference
 type Reference struct {
 
@@ -1557,6 +1575,9 @@ type SksKubeconfigRequest struct {
 // SKS Nodepool
 type SksNodepool struct {
 
+	// Nodepool addons
+	Addons *[]SksNodepoolAddons `json:"addons,omitempty"`
+
 	// Nodepool Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 
@@ -1606,6 +1627,9 @@ type SksNodepool struct {
 	// Nodepool version
 	Version *string `json:"version,omitempty"`
 }
+
+// SksNodepoolAddons defines model for SksNodepool.Addons.
+type SksNodepoolAddons string
 
 // Nodepool state
 type SksNodepoolState string
@@ -1843,6 +1867,11 @@ type ListEventsParams struct {
 	To   *time.Time `json:"to,omitempty"`
 }
 
+// ListInstancesParams defines parameters for ListInstances.
+type ListInstancesParams struct {
+	Manager *Manager `json:"manager,omitempty"`
+}
+
 // CreateInstanceJSONBody defines parameters for CreateInstance.
 type CreateInstanceJSONBody struct {
 
@@ -2003,6 +2032,30 @@ type UpdateInstanceJSONBody struct {
 
 // ResetInstanceFieldParamsField defines parameters for ResetInstanceField.
 type ResetInstanceFieldParamsField string
+
+// ResetInstanceJSONBody defines parameters for ResetInstance.
+type ResetInstanceJSONBody struct {
+
+	// Instance disk size in GB
+	DiskSize *int64 `json:"disk-size,omitempty"`
+
+	// Instance template
+	Template *Template `json:"template,omitempty"`
+}
+
+// ResizeInstanceDiskJSONBody defines parameters for ResizeInstanceDisk.
+type ResizeInstanceDiskJSONBody struct {
+
+	// Instance disk size in GB
+	DiskSize int64 `json:"disk-size"`
+}
+
+// ScaleInstanceJSONBody defines parameters for ScaleInstance.
+type ScaleInstanceJSONBody struct {
+
+	// Compute instance type
+	InstanceType InstanceType `json:"instance-type"`
+}
 
 // RevertInstanceToSnapshotJSONBody defines parameters for RevertInstanceToSnapshot.
 type RevertInstanceToSnapshotJSONBody struct {
@@ -2289,6 +2342,9 @@ type GetSksClusterAuthorityCertParamsAuthority string
 // CreateSksNodepoolJSONBody defines parameters for CreateSksNodepool.
 type CreateSksNodepoolJSONBody struct {
 
+	// Nodepool addons
+	Addons *[]CreateSksNodepoolJSONBodyAddons `json:"addons,omitempty"`
+
 	// Nodepool Anti-affinity Groups
 	AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 
@@ -2320,6 +2376,9 @@ type CreateSksNodepoolJSONBody struct {
 	// Number of instances
 	Size int64 `json:"size"`
 }
+
+// CreateSksNodepoolJSONBodyAddons defines parameters for CreateSksNodepool.
+type CreateSksNodepoolJSONBodyAddons string
 
 // UpdateSksNodepoolJSONBody defines parameters for UpdateSksNodepool.
 type UpdateSksNodepoolJSONBody struct {
@@ -2439,8 +2498,8 @@ type RegisterTemplateJSONBodyBootMode string
 // CopyTemplateJSONBody defines parameters for CopyTemplate.
 type CopyTemplateJSONBody struct {
 
-	// Target Zone ID
-	TargetZone string `json:"target-zone"`
+	// Zone
+	TargetZone Zone `json:"target-zone"`
 }
 
 // CreateAntiAffinityGroupJSONRequestBody defines body for CreateAntiAffinityGroup for application/json ContentType.
@@ -2481,6 +2540,15 @@ type ScaleInstancePoolJSONRequestBody ScaleInstancePoolJSONBody
 
 // UpdateInstanceJSONRequestBody defines body for UpdateInstance for application/json ContentType.
 type UpdateInstanceJSONRequestBody UpdateInstanceJSONBody
+
+// ResetInstanceJSONRequestBody defines body for ResetInstance for application/json ContentType.
+type ResetInstanceJSONRequestBody ResetInstanceJSONBody
+
+// ResizeInstanceDiskJSONRequestBody defines body for ResizeInstanceDisk for application/json ContentType.
+type ResizeInstanceDiskJSONRequestBody ResizeInstanceDiskJSONBody
+
+// ScaleInstanceJSONRequestBody defines body for ScaleInstance for application/json ContentType.
+type ScaleInstanceJSONRequestBody ScaleInstanceJSONBody
 
 // RevertInstanceToSnapshotJSONRequestBody defines body for RevertInstanceToSnapshot for application/json ContentType.
 type RevertInstanceToSnapshotJSONRequestBody RevertInstanceToSnapshotJSONBody
@@ -3350,7 +3418,7 @@ type ClientInterface interface {
 	ListEvents(ctx context.Context, params *ListEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListInstances request
-	ListInstances(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListInstances(ctx context.Context, params *ListInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateInstance request  with any body
 	CreateInstanceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3414,6 +3482,21 @@ type ClientInterface interface {
 
 	// RebootInstance request
 	RebootInstance(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ResetInstance request  with any body
+	ResetInstanceWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ResetInstance(ctx context.Context, id string, body ResetInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ResizeInstanceDisk request  with any body
+	ResizeInstanceDiskWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ResizeInstanceDisk(ctx context.Context, id string, body ResizeInstanceDiskJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ScaleInstance request  with any body
+	ScaleInstanceWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ScaleInstance(ctx context.Context, id string, body ScaleInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// StartInstance request
 	StartInstance(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3506,6 +3589,12 @@ type ClientInterface interface {
 	UpdatePrivateNetworkInstanceIpWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdatePrivateNetworkInstanceIp(ctx context.Context, id string, body UpdatePrivateNetworkInstanceIpJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListQuotas request
+	ListQuotas(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetQuota request
+	GetQuota(ctx context.Context, entity string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSecurityGroups request
 	ListSecurityGroups(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3605,6 +3694,9 @@ type ClientInterface interface {
 	UpgradeSksClusterWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpgradeSksCluster(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpgradeSksClusterServiceLevel request
+	UpgradeSksClusterServiceLevel(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ResetSksClusterField request
 	ResetSksClusterField(ctx context.Context, id string, field ResetSksClusterFieldParamsField, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4021,8 +4113,8 @@ func (c *Client) ListEvents(ctx context.Context, params *ListEventsParams, reqEd
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListInstances(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListInstancesRequest(c.Server)
+func (c *Client) ListInstances(ctx context.Context, params *ListInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListInstancesRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -4299,6 +4391,78 @@ func (c *Client) CreateSnapshot(ctx context.Context, id string, reqEditors ...Re
 
 func (c *Client) RebootInstance(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewRebootInstanceRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetInstanceWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetInstanceRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetInstance(ctx context.Context, id string, body ResetInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetInstanceRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResizeInstanceDiskWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResizeInstanceDiskRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResizeInstanceDisk(ctx context.Context, id string, body ResizeInstanceDiskJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResizeInstanceDiskRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ScaleInstanceWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScaleInstanceRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ScaleInstance(ctx context.Context, id string, body ScaleInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewScaleInstanceRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -4707,6 +4871,30 @@ func (c *Client) UpdatePrivateNetworkInstanceIpWithBody(ctx context.Context, id 
 
 func (c *Client) UpdatePrivateNetworkInstanceIp(ctx context.Context, id string, body UpdatePrivateNetworkInstanceIpJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdatePrivateNetworkInstanceIpRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListQuotas(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListQuotasRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetQuota(ctx context.Context, entity string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetQuotaRequest(c.Server, entity)
 	if err != nil {
 		return nil, err
 	}
@@ -5151,6 +5339,18 @@ func (c *Client) UpgradeSksClusterWithBody(ctx context.Context, id string, conte
 
 func (c *Client) UpgradeSksCluster(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpgradeSksClusterRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpgradeSksClusterServiceLevel(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpgradeSksClusterServiceLevelRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -6236,7 +6436,7 @@ func NewListEventsRequest(server string, params *ListEventsParams) (*http.Reques
 }
 
 // NewListInstancesRequest generates requests for ListInstances
-func NewListInstancesRequest(server string) (*http.Request, error) {
+func NewListInstancesRequest(server string, params *ListInstancesParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -6253,6 +6453,26 @@ func NewListInstancesRequest(server string) (*http.Request, error) {
 	}
 
 	queryURL := serverURL.ResolveReference(&operationURL)
+
+	queryValues := queryURL.Query()
+
+	if params.Manager != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "manager", runtime.ParamLocationQuery, *params.Manager); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	queryURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
@@ -6900,6 +7120,147 @@ func NewRebootInstanceRequest(server string, id string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewResetInstanceRequest calls the generic ResetInstance builder with application/json body
+func NewResetInstanceRequest(server string, id string, body ResetInstanceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewResetInstanceRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewResetInstanceRequestWithBody generates requests for ResetInstance with any type of body
+func NewResetInstanceRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/instance/%s:reset", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewResizeInstanceDiskRequest calls the generic ResizeInstanceDisk builder with application/json body
+func NewResizeInstanceDiskRequest(server string, id string, body ResizeInstanceDiskJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewResizeInstanceDiskRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewResizeInstanceDiskRequestWithBody generates requests for ResizeInstanceDisk with any type of body
+func NewResizeInstanceDiskRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/instance/%s:resize-disk", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewScaleInstanceRequest calls the generic ScaleInstance builder with application/json body
+func NewScaleInstanceRequest(server string, id string, body ScaleInstanceJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewScaleInstanceRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewScaleInstanceRequestWithBody generates requests for ScaleInstance with any type of body
+func NewScaleInstanceRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/instance/%s:scale", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -7867,6 +8228,67 @@ func NewUpdatePrivateNetworkInstanceIpRequestWithBody(server string, id string, 
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListQuotasRequest generates requests for ListQuotas
+func NewListQuotasRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/quota")
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetQuotaRequest generates requests for GetQuota
+func NewGetQuotaRequest(server string, entity string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "entity", runtime.ParamLocationPath, entity)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/quota/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -8905,6 +9327,40 @@ func NewUpgradeSksClusterRequestWithBody(server string, id string, contentType s
 	return req, nil
 }
 
+// NewUpgradeSksClusterServiceLevelRequest generates requests for UpgradeSksClusterServiceLevel
+func NewUpgradeSksClusterServiceLevelRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/sks-cluster/%s/upgrade-service-level", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = operationPath[1:]
+	}
+	operationURL := url.URL{
+		Path: operationPath,
+	}
+
+	queryURL := serverURL.ResolveReference(&operationURL)
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewResetSksClusterFieldRequest generates requests for ResetSksClusterField
 func NewResetSksClusterFieldRequest(server string, id string, field ResetSksClusterFieldParamsField) (*http.Request, error) {
 	var err error
@@ -9636,7 +10092,7 @@ type ClientWithResponsesInterface interface {
 	ListEventsWithResponse(ctx context.Context, params *ListEventsParams, reqEditors ...RequestEditorFn) (*ListEventsResponse, error)
 
 	// ListInstances request
-	ListInstancesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListInstancesResponse, error)
+	ListInstancesWithResponse(ctx context.Context, params *ListInstancesParams, reqEditors ...RequestEditorFn) (*ListInstancesResponse, error)
 
 	// CreateInstance request  with any body
 	CreateInstanceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateInstanceResponse, error)
@@ -9700,6 +10156,21 @@ type ClientWithResponsesInterface interface {
 
 	// RebootInstance request
 	RebootInstanceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*RebootInstanceResponse, error)
+
+	// ResetInstance request  with any body
+	ResetInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetInstanceResponse, error)
+
+	ResetInstanceWithResponse(ctx context.Context, id string, body ResetInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetInstanceResponse, error)
+
+	// ResizeInstanceDisk request  with any body
+	ResizeInstanceDiskWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResizeInstanceDiskResponse, error)
+
+	ResizeInstanceDiskWithResponse(ctx context.Context, id string, body ResizeInstanceDiskJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeInstanceDiskResponse, error)
+
+	// ScaleInstance request  with any body
+	ScaleInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ScaleInstanceResponse, error)
+
+	ScaleInstanceWithResponse(ctx context.Context, id string, body ScaleInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*ScaleInstanceResponse, error)
 
 	// StartInstance request
 	StartInstanceWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*StartInstanceResponse, error)
@@ -9792,6 +10263,12 @@ type ClientWithResponsesInterface interface {
 	UpdatePrivateNetworkInstanceIpWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdatePrivateNetworkInstanceIpResponse, error)
 
 	UpdatePrivateNetworkInstanceIpWithResponse(ctx context.Context, id string, body UpdatePrivateNetworkInstanceIpJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdatePrivateNetworkInstanceIpResponse, error)
+
+	// ListQuotas request
+	ListQuotasWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListQuotasResponse, error)
+
+	// GetQuota request
+	GetQuotaWithResponse(ctx context.Context, entity string, reqEditors ...RequestEditorFn) (*GetQuotaResponse, error)
 
 	// ListSecurityGroups request
 	ListSecurityGroupsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListSecurityGroupsResponse, error)
@@ -9891,6 +10368,9 @@ type ClientWithResponsesInterface interface {
 	UpgradeSksClusterWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpgradeSksClusterResponse, error)
 
 	UpgradeSksClusterWithResponse(ctx context.Context, id string, body UpgradeSksClusterJSONRequestBody, reqEditors ...RequestEditorFn) (*UpgradeSksClusterResponse, error)
+
+	// UpgradeSksClusterServiceLevel request
+	UpgradeSksClusterServiceLevelWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*UpgradeSksClusterServiceLevelResponse, error)
 
 	// ResetSksClusterField request
 	ResetSksClusterFieldWithResponse(ctx context.Context, id string, field ResetSksClusterFieldParamsField, reqEditors ...RequestEditorFn) (*ResetSksClusterFieldResponse, error)
@@ -10869,6 +11349,72 @@ func (r RebootInstanceResponse) StatusCode() int {
 	return 0
 }
 
+type ResetInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ResetInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResetInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ResizeInstanceDiskResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ResizeInstanceDiskResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResizeInstanceDiskResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ScaleInstanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ScaleInstanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ScaleInstanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type StartInstanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -11395,6 +11941,52 @@ func (r UpdatePrivateNetworkInstanceIpResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdatePrivateNetworkInstanceIpResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListQuotasResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Quotas *[]Quota `json:"quotas,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListQuotasResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListQuotasResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetQuotaResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Quota
+}
+
+// Status returns HTTPResponse.Status
+func (r GetQuotaResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetQuotaResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -11955,6 +12547,28 @@ func (r UpgradeSksClusterResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpgradeSksClusterResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpgradeSksClusterServiceLevelResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpgradeSksClusterServiceLevelResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpgradeSksClusterServiceLevelResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -12587,8 +13201,8 @@ func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params
 }
 
 // ListInstancesWithResponse request returning *ListInstancesResponse
-func (c *ClientWithResponses) ListInstancesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListInstancesResponse, error) {
-	rsp, err := c.ListInstances(ctx, reqEditors...)
+func (c *ClientWithResponses) ListInstancesWithResponse(ctx context.Context, params *ListInstancesParams, reqEditors ...RequestEditorFn) (*ListInstancesResponse, error) {
+	rsp, err := c.ListInstances(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -12794,6 +13408,57 @@ func (c *ClientWithResponses) RebootInstanceWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseRebootInstanceResponse(rsp)
+}
+
+// ResetInstanceWithBodyWithResponse request with arbitrary body returning *ResetInstanceResponse
+func (c *ClientWithResponses) ResetInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetInstanceResponse, error) {
+	rsp, err := c.ResetInstanceWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetInstanceResponse(rsp)
+}
+
+func (c *ClientWithResponses) ResetInstanceWithResponse(ctx context.Context, id string, body ResetInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetInstanceResponse, error) {
+	rsp, err := c.ResetInstance(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetInstanceResponse(rsp)
+}
+
+// ResizeInstanceDiskWithBodyWithResponse request with arbitrary body returning *ResizeInstanceDiskResponse
+func (c *ClientWithResponses) ResizeInstanceDiskWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResizeInstanceDiskResponse, error) {
+	rsp, err := c.ResizeInstanceDiskWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResizeInstanceDiskResponse(rsp)
+}
+
+func (c *ClientWithResponses) ResizeInstanceDiskWithResponse(ctx context.Context, id string, body ResizeInstanceDiskJSONRequestBody, reqEditors ...RequestEditorFn) (*ResizeInstanceDiskResponse, error) {
+	rsp, err := c.ResizeInstanceDisk(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResizeInstanceDiskResponse(rsp)
+}
+
+// ScaleInstanceWithBodyWithResponse request with arbitrary body returning *ScaleInstanceResponse
+func (c *ClientWithResponses) ScaleInstanceWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ScaleInstanceResponse, error) {
+	rsp, err := c.ScaleInstanceWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScaleInstanceResponse(rsp)
+}
+
+func (c *ClientWithResponses) ScaleInstanceWithResponse(ctx context.Context, id string, body ScaleInstanceJSONRequestBody, reqEditors ...RequestEditorFn) (*ScaleInstanceResponse, error) {
+	rsp, err := c.ScaleInstance(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseScaleInstanceResponse(rsp)
 }
 
 // StartInstanceWithResponse request returning *StartInstanceResponse
@@ -13090,6 +13755,24 @@ func (c *ClientWithResponses) UpdatePrivateNetworkInstanceIpWithResponse(ctx con
 		return nil, err
 	}
 	return ParseUpdatePrivateNetworkInstanceIpResponse(rsp)
+}
+
+// ListQuotasWithResponse request returning *ListQuotasResponse
+func (c *ClientWithResponses) ListQuotasWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListQuotasResponse, error) {
+	rsp, err := c.ListQuotas(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListQuotasResponse(rsp)
+}
+
+// GetQuotaWithResponse request returning *GetQuotaResponse
+func (c *ClientWithResponses) GetQuotaWithResponse(ctx context.Context, entity string, reqEditors ...RequestEditorFn) (*GetQuotaResponse, error) {
+	rsp, err := c.GetQuota(ctx, entity, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetQuotaResponse(rsp)
 }
 
 // ListSecurityGroupsWithResponse request returning *ListSecurityGroupsResponse
@@ -13411,6 +14094,15 @@ func (c *ClientWithResponses) UpgradeSksClusterWithResponse(ctx context.Context,
 		return nil, err
 	}
 	return ParseUpgradeSksClusterResponse(rsp)
+}
+
+// UpgradeSksClusterServiceLevelWithResponse request returning *UpgradeSksClusterServiceLevelResponse
+func (c *ClientWithResponses) UpgradeSksClusterServiceLevelWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*UpgradeSksClusterServiceLevelResponse, error) {
+	rsp, err := c.UpgradeSksClusterServiceLevel(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpgradeSksClusterServiceLevelResponse(rsp)
 }
 
 // ResetSksClusterFieldWithResponse request returning *ResetSksClusterFieldResponse
@@ -14667,6 +15359,84 @@ func ParseRebootInstanceResponse(rsp *http.Response) (*RebootInstanceResponse, e
 	return response, nil
 }
 
+// ParseResetInstanceResponse parses an HTTP response from a ResetInstanceWithResponse call
+func ParseResetInstanceResponse(rsp *http.Response) (*ResetInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResetInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseResizeInstanceDiskResponse parses an HTTP response from a ResizeInstanceDiskWithResponse call
+func ParseResizeInstanceDiskResponse(rsp *http.Response) (*ResizeInstanceDiskResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResizeInstanceDiskResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseScaleInstanceResponse parses an HTTP response from a ScaleInstanceWithResponse call
+func ParseScaleInstanceResponse(rsp *http.Response) (*ScaleInstanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ScaleInstanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseStartInstanceResponse parses an HTTP response from a StartInstanceWithResponse call
 func ParseStartInstanceResponse(rsp *http.Response) (*StartInstanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -15285,6 +16055,60 @@ func ParseUpdatePrivateNetworkInstanceIpResponse(rsp *http.Response) (*UpdatePri
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListQuotasResponse parses an HTTP response from a ListQuotasWithResponse call
+func ParseListQuotasResponse(rsp *http.Response) (*ListQuotasResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListQuotasResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Quotas *[]Quota `json:"quotas,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetQuotaResponse parses an HTTP response from a GetQuotaWithResponse call
+func ParseGetQuotaResponse(rsp *http.Response) (*GetQuotaResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetQuotaResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Quota
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -15938,6 +16762,32 @@ func ParseUpgradeSksClusterResponse(rsp *http.Response) (*UpgradeSksClusterRespo
 	}
 
 	response := &UpgradeSksClusterResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpgradeSksClusterServiceLevelResponse parses an HTTP response from a UpgradeSksClusterServiceLevelWithResponse call
+func ParseUpgradeSksClusterServiceLevelResponse(rsp *http.Response) (*UpgradeSksClusterServiceLevelResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpgradeSksClusterServiceLevelResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

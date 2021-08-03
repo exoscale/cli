@@ -338,12 +338,108 @@ func (i *Instance) PrivateNetworks(ctx context.Context) ([]*PrivateNetwork, erro
 	return nil, nil
 }
 
+// Reboot reboots the Compute instance.
+func (i *Instance) Reboot(ctx context.Context) error {
+	resp, err := i.c.RebootInstanceWithResponse(apiv2.WithZone(ctx, i.zone), *i.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Reset resets the Compute instance to a base template state (the current instance template if not specified),
+// and optionally resizes the disk size.
+func (i *Instance) Reset(ctx context.Context, template *Template, diskSize int64) error {
+	resp, err := i.c.ResetInstanceWithResponse(
+		apiv2.WithZone(ctx, i.zone),
+		*i.ID,
+		papi.ResetInstanceJSONRequestBody{
+			DiskSize: func() (v *int64) {
+				if diskSize > 0 {
+					v = &diskSize
+				}
+				return
+			}(),
+			Template: func() (v *papi.Template) {
+				if template != nil {
+					v = &papi.Template{Id: template.ID}
+				}
+				return
+			}(),
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ResizeDisk resizes the Compute instance's disk to a larger size.
+func (i *Instance) ResizeDisk(ctx context.Context, size int64) error {
+	resp, err := i.c.ResizeInstanceDiskWithResponse(
+		apiv2.WithZone(ctx, i.zone),
+		*i.ID,
+		papi.ResizeInstanceDiskJSONRequestBody{DiskSize: size})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // RevertToSnapshot reverts the Compute instance storage volume to the specified Snapshot.
 func (i *Instance) RevertToSnapshot(ctx context.Context, snapshot *Snapshot) error {
 	resp, err := i.c.RevertInstanceToSnapshotWithResponse(
 		apiv2.WithZone(ctx, i.zone),
 		*i.ID,
 		papi.RevertInstanceToSnapshotJSONRequestBody{Id: *snapshot.ID})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(i.c.timeout).
+		WithInterval(i.c.pollInterval).
+		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Scale scales the Compute instance type.
+func (i *Instance) Scale(ctx context.Context, instanceType *InstanceType) error {
+	resp, err := i.c.ScaleInstanceWithResponse(
+		apiv2.WithZone(ctx, i.zone),
+		*i.ID,
+		papi.ScaleInstanceJSONRequestBody{InstanceType: papi.InstanceType{Id: instanceType.ID}},
+	)
 	if err != nil {
 		return err
 	}
@@ -366,24 +462,6 @@ func (i *Instance) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error)
 		return res.([]*SecurityGroup), err
 	}
 	return nil, nil
-}
-
-// Reboot reboots the Compute instance.
-func (i *Instance) Reboot(ctx context.Context) error {
-	resp, err := i.c.RebootInstanceWithResponse(apiv2.WithZone(ctx, i.zone), *i.ID)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // Start starts the Compute instance.
@@ -602,7 +680,7 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 func (c *Client) ListInstances(ctx context.Context, zone string) ([]*Instance, error) {
 	list := make([]*Instance, 0)
 
-	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone))
+	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &papi.ListInstancesParams{})
 	if err != nil {
 		return nil, err
 	}
@@ -642,7 +720,7 @@ func (c *Client) FindInstance(ctx context.Context, zone, v string) (*Instance, e
 
 		// Historically, the Exoscale API allowed users to create multiple Compute instances sharing a common name.
 		// This function being expected to return one resource at most, in case the specified identifier is a name
-		// we have to check that there aren't more that one matching result before returning it.
+		// we have to check that there aren't more than one matching result before returning it.
 		if *r.Name == v {
 			if found != nil {
 				return nil, apiv2.ErrTooManyFound
