@@ -5,11 +5,11 @@ import (
 )
 
 var deployTargetCmd = &cobra.Command{
-	Use:     "deploytarget",
+	Use:     "deploy-target",
 	Short:   "Deploy Targets management",
 	Aliases: []string{"dt"},
 }
 
 func init() {
-	vmCmd.AddCommand(deployTargetCmd)
+	computeCmd.AddCommand(deployTargetCmd)
 }
