@@ -4,6 +4,13 @@
 
 ### Features
 
+- New `exo compute instance snapshot` commands
+
+
+## 1.39.0
+
+### Features
+
 - New `exo compute instance (resize-disk|reset|scale)` commands
 - New `exo compute ssh-key` commands
 - `exo compute instance create` now creates a single-use SSH key by default if none specified (similar to `exo vm create`)
