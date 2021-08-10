@@ -21,6 +21,8 @@ func (o *deployTargetShowOutput) toText()  { outputText(o) }
 func (o *deployTargetShowOutput) toTable() { outputTable(o) }
 
 type deployTargetShowCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"show"`
 
 	DeployTarget string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -62,5 +64,7 @@ func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(deployTargetCmd, &deployTargetShowCmd{}))
+	cobra.CheckErr(registerCLICommand(deployTargetCmd, &deployTargetShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }
