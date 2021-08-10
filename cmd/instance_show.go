@@ -12,7 +12,7 @@ import (
 type instanceShowOutput struct {
 	ID                 string            `json:"id"`
 	Name               string            `json:"name"`
-	CreationDate       string            `json:"created_at"`
+	CreationDate       string            `json:"creation_date"`
 	InstanceType       string            `json:"instance_type"`
 	Template           string            `json:"template_id"`
 	Zone               string            `json:"zoneid"`

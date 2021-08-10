@@ -16,7 +16,7 @@ type nlbShowOutput struct {
 	ID           string                 `json:"id"`
 	Name         string                 `json:"name"`
 	Description  string                 `json:"description"`
-	CreationDate string                 `json:"created_at"`
+	CreationDate string                 `json:"creation_date"`
 	Zone         string                 `json:"zone"`
 	IPAddress    string                 `json:"ip_address"`
 	State        string                 `json:"state"`
