@@ -50,7 +50,7 @@ func (c *computeInstanceTemplateDeleteCmd) cmdRun(_ *cobra.Command, _ []string) 
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting template %s...", c.TemplateID), func() {
-		err = cs.DeleteTemplate(ctx, c.Zone, *template.ID)
+		err = cs.DeleteTemplate(ctx, c.Zone, template)
 	})
 	if err != nil {
 		return err

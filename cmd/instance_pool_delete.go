@@ -61,7 +61,7 @@ func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", c.InstancePool), func() {
-		err = cs.DeleteInstancePool(ctx, c.Zone, *instancePool.ID)
+		err = cs.DeleteInstancePool(ctx, c.Zone, instancePool)
 	})
 	if err != nil {
 		return err

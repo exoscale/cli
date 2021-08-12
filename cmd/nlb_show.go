@@ -28,9 +28,9 @@ func (o *nlbShowOutput) toJSON() { outputJSON(o) }
 func (o *nlbShowOutput) toText() { outputText(o) }
 func (o *nlbShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"Network Load Balancer"})
 	defer t.Render()
 
-	t.SetHeader([]string{"Network Load Balancer"})
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Zone", o.Zone})

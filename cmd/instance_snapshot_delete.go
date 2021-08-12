@@ -46,7 +46,7 @@ func (c *computeInstanceSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) 
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting snapshot %s...", c.ID), func() {
-		err = cs.DeleteSnapshot(ctx, c.Zone, *snapshot.ID)
+		err = cs.DeleteSnapshot(ctx, c.Zone, snapshot)
 	})
 	if err != nil {
 		return err

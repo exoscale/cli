@@ -64,7 +64,13 @@ func (c *instancePrivnetAddCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Private Networks...", c.Instance), func() {
 		for _, privateNetwork := range privateNetworks {
-			if err = instance.AttachPrivateNetwork(ctx, privateNetwork, net.ParseIP(c.IPAddress)); err != nil {
+			if err = cs.AttachInstanceToPrivateNetwork(
+				ctx,
+				c.Zone,
+				instance,
+				privateNetwork,
+				net.ParseIP(c.IPAddress),
+			); err != nil {
 				return
 			}
 		}

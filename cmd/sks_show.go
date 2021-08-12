@@ -30,9 +30,9 @@ func (o *sksShowOutput) toJSON() { outputJSON(o) }
 func (o *sksShowOutput) toText() { outputText(o) }
 func (o *sksShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"SKS Cluster"})
 	defer t.Render()
 
-	t.SetHeader([]string{"SKS Cluster"})
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})

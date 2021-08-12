@@ -37,12 +37,9 @@ type Instance struct {
 	State                *string
 	TemplateID           *string `req-if:"create"`
 	UserData             *string
-
-	c    *Client
-	zone string
 }
 
-func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
+func instanceFromAPI(i *papi.Instance) *Instance {
 	return &Instance{
 		AntiAffinityGroupIDs: func() (v *[]string) {
 			if i.AntiAffinityGroups != nil && len(*i.AntiAffinityGroups) > 0 {
@@ -150,354 +147,7 @@ func instanceFromAPI(client *Client, zone string, i *papi.Instance) *Instance {
 		State:      (*string)(i.State),
 		TemplateID: i.Template.Id,
 		UserData:   i.UserData,
-
-		c:    client,
-		zone: zone,
 	}
-}
-
-func (i Instance) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
-	return client.GetInstance(ctx, zone, id)
-}
-
-// AntiAffinityGroups returns the list of Anti-Affinity Groups applied to the Compute instance.
-func (i *Instance) AntiAffinityGroups(ctx context.Context) ([]*AntiAffinityGroup, error) {
-	if i.AntiAffinityGroupIDs != nil {
-		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.AntiAffinityGroupIDs, new(AntiAffinityGroup))
-		return res.([]*AntiAffinityGroup), err
-	}
-	return nil, nil
-}
-
-// AttachElasticIP attaches the Compute instance to the specified Elastic IP.
-func (i *Instance) AttachElasticIP(ctx context.Context, elasticIP *ElasticIP) error {
-	resp, err := i.c.AttachInstanceToElasticIpWithResponse(
-		apiv2.WithZone(ctx, i.zone), *elasticIP.ID, papi.AttachInstanceToElasticIpJSONRequestBody{
-			Instance: papi.Instance{Id: i.ID},
-		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AttachPrivateNetwork attaches the Compute instance to the specified Private Network.
-func (i *Instance) AttachPrivateNetwork(ctx context.Context, privateNetwork *PrivateNetwork, address net.IP) error {
-	resp, err := i.c.AttachInstanceToPrivateNetworkWithResponse(
-		apiv2.WithZone(ctx, i.zone), *privateNetwork.ID, papi.AttachInstanceToPrivateNetworkJSONRequestBody{
-			Instance: papi.Instance{Id: i.ID},
-			Ip: func() *string {
-				if len(address) > 0 {
-					ip := address.String()
-					return &ip
-				}
-				return nil
-			}(),
-		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AttachSecurityGroup attaches the Compute instance to the specified Security Group.
-func (i *Instance) AttachSecurityGroup(ctx context.Context, securityGroup *SecurityGroup) error {
-	resp, err := i.c.AttachInstanceToSecurityGroupWithResponse(
-		apiv2.WithZone(ctx, i.zone), *securityGroup.ID, papi.AttachInstanceToSecurityGroupJSONRequestBody{
-			Instance: papi.Instance{Id: i.ID},
-		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// CreateSnapshot creates a Snapshot of the Compute instance storage volume.
-func (i *Instance) CreateSnapshot(ctx context.Context) (*Snapshot, error) {
-	resp, err := i.c.CreateSnapshotWithResponse(apiv2.WithZone(ctx, i.zone), *i.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return nil, err
-	}
-
-	return i.c.GetSnapshot(ctx, i.zone, *res.(*papi.Reference).Id)
-}
-
-// DetachElasticIP detaches the Compute instance from the specified Elastic IP.
-func (i *Instance) DetachElasticIP(ctx context.Context, elasticIP *ElasticIP) error {
-	resp, err := i.c.DetachInstanceFromElasticIpWithResponse(
-		apiv2.WithZone(ctx, i.zone), *elasticIP.ID, papi.DetachInstanceFromElasticIpJSONRequestBody{
-			Instance: papi.Instance{Id: i.ID},
-		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DetachPrivateNetwork detaches the Compute instance from the specified Private Network.
-func (i *Instance) DetachPrivateNetwork(ctx context.Context, privateNetwork *PrivateNetwork) error {
-	resp, err := i.c.DetachInstanceFromPrivateNetworkWithResponse(
-		apiv2.WithZone(ctx, i.zone), *privateNetwork.ID, papi.DetachInstanceFromPrivateNetworkJSONRequestBody{
-			Instance: papi.Instance{Id: i.ID},
-		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DetachSecurityGroup detaches the Compute instance from the specified Security Group.
-func (i *Instance) DetachSecurityGroup(ctx context.Context, securityGroup *SecurityGroup) error {
-	resp, err := i.c.DetachInstanceFromSecurityGroupWithResponse(
-		apiv2.WithZone(ctx, i.zone), *securityGroup.ID, papi.DetachInstanceFromSecurityGroupJSONRequestBody{
-			Instance: papi.Instance{Id: i.ID},
-		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ElasticIPs returns the list of Elastic IPs attached to the Compute instance.
-func (i *Instance) ElasticIPs(ctx context.Context) ([]*ElasticIP, error) {
-	if i.ElasticIPIDs != nil {
-		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.ElasticIPIDs, new(ElasticIP))
-		return res.([]*ElasticIP), err
-	}
-	return nil, nil
-}
-
-// PrivateNetworks returns the list of Private Networks attached to the Compute instance.
-func (i *Instance) PrivateNetworks(ctx context.Context) ([]*PrivateNetwork, error) {
-	if i.PrivateNetworkIDs != nil {
-		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.PrivateNetworkIDs, new(PrivateNetwork))
-		return res.([]*PrivateNetwork), err
-	}
-	return nil, nil
-}
-
-// Reboot reboots the Compute instance.
-func (i *Instance) Reboot(ctx context.Context) error {
-	resp, err := i.c.RebootInstanceWithResponse(apiv2.WithZone(ctx, i.zone), *i.ID)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Reset resets the Compute instance to a base template state (the current instance template if not specified),
-// and optionally resizes the disk size.
-func (i *Instance) Reset(ctx context.Context, template *Template, diskSize int64) error {
-	resp, err := i.c.ResetInstanceWithResponse(
-		apiv2.WithZone(ctx, i.zone),
-		*i.ID,
-		papi.ResetInstanceJSONRequestBody{
-			DiskSize: func() (v *int64) {
-				if diskSize > 0 {
-					v = &diskSize
-				}
-				return
-			}(),
-			Template: func() (v *papi.Template) {
-				if template != nil {
-					v = &papi.Template{Id: template.ID}
-				}
-				return
-			}(),
-		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ResizeDisk resizes the Compute instance's disk to a larger size.
-func (i *Instance) ResizeDisk(ctx context.Context, size int64) error {
-	resp, err := i.c.ResizeInstanceDiskWithResponse(
-		apiv2.WithZone(ctx, i.zone),
-		*i.ID,
-		papi.ResizeInstanceDiskJSONRequestBody{DiskSize: size})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// RevertToSnapshot reverts the Compute instance storage volume to the specified Snapshot.
-func (i *Instance) RevertToSnapshot(ctx context.Context, snapshot *Snapshot) error {
-	resp, err := i.c.RevertInstanceToSnapshotWithResponse(
-		apiv2.WithZone(ctx, i.zone),
-		*i.ID,
-		papi.RevertInstanceToSnapshotJSONRequestBody{Id: *snapshot.ID})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Scale scales the Compute instance type.
-func (i *Instance) Scale(ctx context.Context, instanceType *InstanceType) error {
-	resp, err := i.c.ScaleInstanceWithResponse(
-		apiv2.WithZone(ctx, i.zone),
-		*i.ID,
-		papi.ScaleInstanceJSONRequestBody{InstanceType: papi.InstanceType{Id: instanceType.ID}},
-	)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// SecurityGroups returns the list of Security Groups attached to the Compute instance.
-func (i *Instance) SecurityGroups(ctx context.Context) ([]*SecurityGroup, error) {
-	if i.SecurityGroupIDs != nil {
-		res, err := i.c.fetchFromIDs(ctx, i.zone, *i.SecurityGroupIDs, new(SecurityGroup))
-		return res.([]*SecurityGroup), err
-	}
-	return nil, nil
-}
-
-// Start starts the Compute instance.
-func (i *Instance) Start(ctx context.Context) error {
-	resp, err := i.c.StartInstanceWithResponse(apiv2.WithZone(ctx, i.zone), *i.ID)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Stop stops the Compute instance.
-func (i *Instance) Stop(ctx context.Context) error {
-	resp, err := i.c.StopInstanceWithResponse(apiv2.WithZone(ctx, i.zone), *i.ID)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(i.c.timeout).
-		WithInterval(i.c.pollInterval).
-		Poll(ctx, i.c.OperationPoller(i.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
@@ -605,7 +255,94 @@ func (i Instance) ToAPIMock() interface{} {
 	}
 }
 
-// CreateInstance creates a Compute instance in the specified zone.
+// AttachInstanceToElasticIP attaches a Compute instance to the specified Elastic IP.
+func (c *Client) AttachInstanceToElasticIP(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	elasticIP *ElasticIP,
+) error {
+	resp, err := c.AttachInstanceToElasticIpWithResponse(
+		apiv2.WithZone(ctx, zone), *elasticIP.ID, papi.AttachInstanceToElasticIpJSONRequestBody{
+			Instance: papi.Instance{Id: instance.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AttachInstanceToPrivateNetwork attaches a Compute instance to the specified Private Network.
+// If address is specified, it will be used when requesting a network address lease.
+func (c *Client) AttachInstanceToPrivateNetwork(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	privateNetwork *PrivateNetwork,
+	address net.IP,
+) error {
+	resp, err := c.AttachInstanceToPrivateNetworkWithResponse(
+		apiv2.WithZone(ctx, zone), *privateNetwork.ID, papi.AttachInstanceToPrivateNetworkJSONRequestBody{
+			Instance: papi.Instance{Id: instance.ID},
+			Ip: func() *string {
+				if len(address) > 0 {
+					ip := address.String()
+					return &ip
+				}
+				return nil
+			}(),
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// AttachInstanceToSecurityGroup attaches a Compute instance to the specified Security Group.
+func (c *Client) AttachInstanceToSecurityGroup(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	securityGroup *SecurityGroup,
+) error {
+	resp, err := c.AttachInstanceToSecurityGroupWithResponse(
+		apiv2.WithZone(ctx, zone), *securityGroup.ID, papi.AttachInstanceToSecurityGroupJSONRequestBody{
+			Instance: papi.Instance{Id: instance.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CreateInstance creates a Compute instance.
 func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Instance) (*Instance, error) {
 	if err := validateOperationParams(instance, "create"); err != nil {
 		return nil, err
@@ -676,37 +413,123 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 	return c.GetInstance(ctx, zone, *res.(*papi.Reference).Id)
 }
 
-// ListInstances returns the list of existing Compute instances in the specified zone.
-func (c *Client) ListInstances(ctx context.Context, zone string) ([]*Instance, error) {
-	list := make([]*Instance, 0)
-
-	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &papi.ListInstancesParams{})
+// CreateInstanceSnapshot creates a Snapshot of a Compute instance storage volume.
+func (c *Client) CreateInstanceSnapshot(ctx context.Context, zone string, instance *Instance) (*Snapshot, error) {
+	resp, err := c.CreateSnapshotWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.JSON200.Instances != nil {
-		for i := range *resp.JSON200.Instances {
-			list = append(list, instanceFromAPI(c, zone, &(*resp.JSON200.Instances)[i]))
-		}
-	}
-
-	return list, nil
-}
-
-// GetInstance returns the Instance  corresponding to the specified ID in the specified zone.
-func (c *Client) GetInstance(ctx context.Context, zone, id string) (*Instance, error) {
-	resp, err := c.GetInstanceWithResponse(apiv2.WithZone(ctx, zone), id)
+	res, err := papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
 
-	return instanceFromAPI(c, zone, resp.JSON200), nil
+	return c.GetSnapshot(ctx, zone, *res.(*papi.Reference).Id)
 }
 
-// FindInstance attempts to find a Compute instance by name or ID in the specified zone.
+// DetachInstanceFromElasticIP detaches a Compute instance from the specified Elastic IP.
+func (c *Client) DetachInstanceFromElasticIP(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	elasticIP *ElasticIP,
+) error {
+	resp, err := c.DetachInstanceFromElasticIpWithResponse(
+		apiv2.WithZone(ctx, zone), *elasticIP.ID, papi.DetachInstanceFromElasticIpJSONRequestBody{
+			Instance: papi.Instance{Id: instance.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteInstance deletes a Compute instance.
+func (c *Client) DeleteInstance(ctx context.Context, zone string, instance *Instance) error {
+	resp, err := c.DeleteInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DetachInstanceFromPrivateNetwork detaches a Compute instance from the specified Private Network.
+func (c *Client) DetachInstanceFromPrivateNetwork(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	privateNetwork *PrivateNetwork,
+) error {
+	resp, err := c.DetachInstanceFromPrivateNetworkWithResponse(
+		apiv2.WithZone(ctx, zone), *privateNetwork.ID, papi.DetachInstanceFromPrivateNetworkJSONRequestBody{
+			Instance: papi.Instance{Id: instance.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DetachInstanceFromSecurityGroup detaches a Compute instance from the specified Security Group.
+func (c *Client) DetachInstanceFromSecurityGroup(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	securityGroup *SecurityGroup,
+) error {
+	resp, err := c.DetachInstanceFromSecurityGroupWithResponse(
+		apiv2.WithZone(ctx, zone), *securityGroup.ID, papi.DetachInstanceFromSecurityGroupJSONRequestBody{
+			Instance: papi.Instance{Id: instance.ID},
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// FindInstance attempts to find a Compute instance by name or ID.
 // In case the identifier is a name and multiple resources match, an ErrTooManyFound error is returned.
-func (c *Client) FindInstance(ctx context.Context, zone, v string) (*Instance, error) {
+func (c *Client) FindInstance(ctx context.Context, zone, x string) (*Instance, error) {
 	res, err := c.ListInstances(ctx, zone)
 	if err != nil {
 		return nil, err
@@ -714,14 +537,14 @@ func (c *Client) FindInstance(ctx context.Context, zone, v string) (*Instance, e
 
 	var found *Instance
 	for _, r := range res {
-		if *r.ID == v {
+		if *r.ID == x {
 			return c.GetInstance(ctx, zone, *r.ID)
 		}
 
 		// Historically, the Exoscale API allowed users to create multiple Compute instances sharing a common name.
 		// This function being expected to return one resource at most, in case the specified identifier is a name
 		// we have to check that there aren't more than one matching result before returning it.
-		if *r.Name == v {
+		if *r.Name == x {
 			if found != nil {
 				return nil, apiv2.ErrTooManyFound
 			}
@@ -736,7 +559,199 @@ func (c *Client) FindInstance(ctx context.Context, zone, v string) (*Instance, e
 	return nil, apiv2.ErrNotFound
 }
 
-// UpdateInstance updates the specified Compute instance in the specified zone.
+// GetInstance returns the Instance corresponding to the specified ID.
+func (c *Client) GetInstance(ctx context.Context, zone, id string) (*Instance, error) {
+	resp, err := c.GetInstanceWithResponse(apiv2.WithZone(ctx, zone), id)
+	if err != nil {
+		return nil, err
+	}
+
+	return instanceFromAPI(resp.JSON200), nil
+}
+
+// ListInstances returns the list of existing Compute instances.
+func (c *Client) ListInstances(ctx context.Context, zone string) ([]*Instance, error) {
+	list := make([]*Instance, 0)
+
+	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &papi.ListInstancesParams{})
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.JSON200.Instances != nil {
+		for i := range *resp.JSON200.Instances {
+			list = append(list, instanceFromAPI(&(*resp.JSON200.Instances)[i]))
+		}
+	}
+
+	return list, nil
+}
+
+// RebootInstance reboots a Compute instance.
+func (c *Client) RebootInstance(ctx context.Context, zone string, instance *Instance) error {
+	resp, err := c.RebootInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ResetInstance resets a Compute instance to a base template state (the instance's current template if not specified),
+// and optionally resizes its disk size.
+func (c *Client) ResetInstance(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	template *Template,
+	diskSize int64,
+) error {
+	resp, err := c.ResetInstanceWithResponse(
+		apiv2.WithZone(ctx, zone),
+		*instance.ID,
+		papi.ResetInstanceJSONRequestBody{
+			DiskSize: func() (v *int64) {
+				if diskSize > 0 {
+					v = &diskSize
+				}
+				return
+			}(),
+			Template: func() (v *papi.Template) {
+				if template != nil {
+					v = &papi.Template{Id: template.ID}
+				}
+				return
+			}(),
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ResizeInstanceDisk resizes a Compute instance's disk to a larger size.
+func (c *Client) ResizeInstanceDisk(ctx context.Context, zone string, instance *Instance, size int64) error {
+	resp, err := c.ResizeInstanceDiskWithResponse(
+		apiv2.WithZone(ctx, zone),
+		*instance.ID,
+		papi.ResizeInstanceDiskJSONRequestBody{DiskSize: size})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RevertInstanceToSnapshot reverts a Compute instance storage volume to the specified Snapshot.
+func (c *Client) RevertInstanceToSnapshot(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	snapshot *Snapshot,
+) error {
+	resp, err := c.RevertInstanceToSnapshotWithResponse(
+		apiv2.WithZone(ctx, zone),
+		*instance.ID,
+		papi.RevertInstanceToSnapshotJSONRequestBody{Id: *snapshot.ID})
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ScaleInstance scales a Compute instance type.
+func (c *Client) ScaleInstance(ctx context.Context, zone string, instance *Instance, instanceType *InstanceType) error {
+	resp, err := c.ScaleInstanceWithResponse(
+		apiv2.WithZone(ctx, zone),
+		*instance.ID,
+		papi.ScaleInstanceJSONRequestBody{InstanceType: papi.InstanceType{Id: instanceType.ID}},
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// StartInstance starts a Compute instance.
+func (c *Client) StartInstance(ctx context.Context, zone string, instance *Instance) error {
+	resp, err := c.StartInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// StopInstance stops a Compute instance.
+func (c *Client) StopInstance(ctx context.Context, zone string, instance *Instance) error {
+	resp, err := c.StopInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateInstance updates a Compute instance.
 func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Instance) error {
 	if err := validateOperationParams(instance, "update"); err != nil {
 		return err
@@ -755,24 +770,6 @@ func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Inst
 			Name:     instance.Name,
 			UserData: instance.UserData,
 		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(c.timeout).
-		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DeleteInstance deletes the specified Compute instance in the specified zone.
-func (c *Client) DeleteInstance(ctx context.Context, zone, id string) error {
-	resp, err := c.DeleteInstanceWithResponse(apiv2.WithZone(ctx, zone), id)
 	if err != nil {
 		return err
 	}

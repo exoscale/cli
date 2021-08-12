@@ -60,7 +60,7 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	b64Cert, err := cluster.AuthorityCert(ctx, c.Authority)
+	b64Cert, err := cs.GetSKSClusterAuthorityCert(ctx, c.Zone, cluster, c.Authority)
 	if err != nil {
 		return fmt.Errorf("error retrieving certificate: %s", err)
 	}

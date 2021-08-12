@@ -84,7 +84,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Evicting Nodes from Nodepool %q...", c.Nodepool), func() {
-		err = cluster.EvictNodepoolMembers(ctx, nodepool, nodes)
+		err = cs.EvictSKSNodepoolMembers(ctx, c.Zone, cluster, nodepool, nodes)
 	})
 	if err != nil {
 		return err

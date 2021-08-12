@@ -62,7 +62,7 @@ func (c *instancePrivnetRemoveCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Private Networks...", c.Instance), func() {
 		for _, privateNetwork := range privateNetworks {
-			if err = instance.DetachPrivateNetwork(ctx, privateNetwork); err != nil {
+			if err = cs.DetachInstanceFromPrivateNetwork(ctx, c.Zone, instance, privateNetwork); err != nil {
 				return
 			}
 		}

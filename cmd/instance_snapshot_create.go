@@ -28,7 +28,7 @@ func (c *instanceSnapshotCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance snapshot.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&instanceSnapshotShowOutput{}), ", "))
 }
 
 func (c *instanceSnapshotCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -50,7 +50,7 @@ func (c *instanceSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var snapshot *egoscale.Snapshot
 	decorateAsyncOperation(fmt.Sprintf("Creating snapshot of instance %q...", c.Instance), func() {
-		snapshot, err = instance.CreateSnapshot(ctx)
+		snapshot, err = cs.CreateInstanceSnapshot(ctx, c.Zone, instance)
 		if err != nil {
 			return
 		}

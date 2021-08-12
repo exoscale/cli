@@ -204,7 +204,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		for _, p := range privateNetworks {
-			if err = instance.AttachPrivateNetwork(ctx, p, nil); err != nil {
+			if err = cs.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, p, nil); err != nil {
 				return
 			}
 		}
@@ -231,7 +231,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("error writing SSH private key file: %s", err)
 		}
 
-		if err = cs.DeleteSSHKey(ctx, c.Zone, *sshKey.Name); err != nil {
+		if err = cs.DeleteSSHKey(ctx, c.Zone, sshKey); err != nil {
 			return fmt.Errorf("error deleting SSH key: %s", err)
 		}
 	}

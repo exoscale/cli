@@ -144,7 +144,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(fmt.Sprintf("Updating service %q...", c.Service), func() {
 		if updated {
-			if err = nlb.UpdateService(ctx, service); err != nil {
+			if err = cs.UpdateNetworkLoadBalancerService(ctx, c.Zone, nlb, service); err != nil {
 				return
 			}
 		}

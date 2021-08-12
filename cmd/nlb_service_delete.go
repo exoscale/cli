@@ -43,11 +43,11 @@ func (c *nlbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	for _, s := range nlb.Services {
-		if *s.ID == c.Service || *s.Name == c.Service {
-			s := s
+	for _, service := range nlb.Services {
+		if *service.ID == c.Service || *service.Name == c.Service {
+			s := service
 			decorateAsyncOperation(fmt.Sprintf("Deleting service %q...", c.Service), func() {
-				err = nlb.DeleteService(ctx, s)
+				err = cs.DeleteNetworkLoadBalancerService(ctx, c.Zone, nlb, s)
 			})
 			if err != nil {
 				return err

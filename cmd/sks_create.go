@@ -221,7 +221,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", *nodepool.Name), func() {
-			_, err = cluster.AddNodepool(ctx, nodepool)
+			_, err = cs.CreateSKSNodepool(ctx, c.Zone, cluster, nodepool)
 		})
 		if err != nil {
 			return err

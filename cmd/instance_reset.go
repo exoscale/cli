@@ -76,7 +76,7 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Reseting instance %q...", c.Instance), func() {
-		err = instance.Reset(ctx, template, c.DiskSize)
+		err = cs.ResetInstance(ctx, c.Zone, instance, template, c.DiskSize)
 	})
 	if err != nil {
 		return err

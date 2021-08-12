@@ -72,7 +72,7 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", c.Nodepool), func() {
-		err = cluster.ScaleNodepool(ctx, nodepool, c.Size)
+		err = cs.ScaleSKSNodepool(ctx, c.Zone, cluster, nodepool, c.Size)
 	})
 	if err != nil {
 		return err

@@ -218,7 +218,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		)
 
 		decorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
-			err = instancePool.Scale(ctx, c.Size)
+			err = cs.ScaleInstancePool(ctx, c.Zone, instancePool, c.Size)
 		})
 	}
 

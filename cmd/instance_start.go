@@ -44,7 +44,7 @@ func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Starting instance %q...", c.Instance), func() {
-		err = instance.Start(ctx)
+		err = cs.StartInstance(ctx, c.Zone, instance)
 	})
 	if err != nil {
 		return err

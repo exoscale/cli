@@ -51,7 +51,7 @@ func (c *instanceResizeDiskCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Resizing disk of instance %q...", c.Instance), func() {
-		err = instance.ResizeDisk(ctx, c.Size)
+		err = cs.ResizeInstanceDisk(ctx, c.Zone, instance, c.Size)
 	})
 	if err != nil {
 		return err

@@ -46,9 +46,9 @@ func (o *nlbServiceShowOutput) toJSON() { outputJSON(o) }
 func (o *nlbServiceShowOutput) toText() { outputText(o) }
 func (o *nlbServiceShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"NLB Service"})
 	defer t.Render()
 
-	t.SetHeader([]string{"NLB Service"})
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})

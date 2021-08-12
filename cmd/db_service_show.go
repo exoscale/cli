@@ -60,6 +60,7 @@ func (o *dbServiceShowOutput) toJSON() { outputJSON(o) }
 func (o *dbServiceShowOutput) toText() { outputText(o) }
 func (o *dbServiceShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"Database Service"})
 	defer t.Render()
 
 	t.Append([]string{"Name", o.Name})

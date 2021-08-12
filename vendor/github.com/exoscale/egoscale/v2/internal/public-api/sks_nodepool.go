@@ -10,6 +10,7 @@ import (
 // only supports RFC 3339 format.
 func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 	raw := struct {
+		Addons             *[]SksNodepoolAddons `json:"addons,omitempty"`
 		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 		CreatedAt          *string              `json:"created-at,omitempty"`
 		DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
@@ -41,6 +42,7 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 		n.CreatedAt = &createdAt
 	}
 
+	n.Addons = raw.Addons
 	n.AntiAffinityGroups = raw.AntiAffinityGroups
 	n.DeployTarget = raw.DeployTarget
 	n.Description = raw.Description
@@ -65,6 +67,7 @@ func (n *SksNodepool) UnmarshalJSON(data []byte) error {
 // in the original timestamp (ISO 8601), since time.MarshalJSON() only supports RFC 3339 format.
 func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 	raw := struct {
+		Addons             *[]SksNodepoolAddons `json:"addons,omitempty"`
 		AntiAffinityGroups *[]AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 		CreatedAt          *string              `json:"created-at,omitempty"`
 		DeployTarget       *DeployTarget        `json:"deploy-target,omitempty"`
@@ -89,6 +92,7 @@ func (n *SksNodepool) MarshalJSON() ([]byte, error) {
 		raw.CreatedAt = &createdAt
 	}
 
+	raw.Addons = n.Addons
 	raw.AntiAffinityGroups = n.AntiAffinityGroups
 	raw.DeployTarget = n.DeployTarget
 	raw.Description = n.Description
