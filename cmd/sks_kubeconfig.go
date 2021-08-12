@@ -118,7 +118,14 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	b64Kubeconfig, err := cluster.RequestKubeconfig(ctx, c.User, c.Groups, time.Duration(c.TTL)*time.Second)
+	b64Kubeconfig, err := cs.GetSKSClusterKubeconfig(
+		ctx,
+		c.Zone,
+		cluster,
+		c.User,
+		c.Groups,
+		time.Duration(c.TTL)*time.Second,
+	)
 	if err != nil {
 		return fmt.Errorf("error retrieving kubeconfig: %s", err)
 	}

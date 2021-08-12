@@ -46,7 +46,7 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting instance %q...", c.Instance), func() {
-		err = cs.DeleteInstance(ctx, c.Zone, *instance.ID)
+		err = cs.DeleteInstance(ctx, c.Zone, instance)
 	})
 	if err != nil {
 		return err

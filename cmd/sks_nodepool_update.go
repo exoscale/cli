@@ -153,7 +153,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if updated {
 		decorateAsyncOperation(fmt.Sprintf("Updating Nodepool %q...", c.Nodepool), func() {
-			if err = cluster.UpdateNodepool(ctx, nodepool); err != nil {
+			if err = cs.UpdateSKSNodepool(ctx, c.Zone, cluster, nodepool); err != nil {
 				return
 			}
 		})

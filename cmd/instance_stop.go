@@ -44,7 +44,7 @@ func (c *instanceStopCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Stopping instance %q...", c.Instance), func() {
-		err = instance.Stop(ctx)
+		err = cs.StopInstance(ctx, c.Zone, instance)
 	})
 	if err != nil {
 		return err

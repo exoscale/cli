@@ -60,7 +60,7 @@ func (c *instanceSGAddCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Security Groups...", c.Instance), func() {
 		for _, securityGroup := range securityGroups {
-			if err = instance.AttachSecurityGroup(ctx, securityGroup); err != nil {
+			if err = cs.AttachInstanceToSecurityGroup(ctx, c.Zone, instance, securityGroup); err != nil {
 				return
 			}
 		}

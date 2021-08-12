@@ -228,6 +228,16 @@ func databaseServiceFromAPI(s *papi.DbaasService) *DatabaseService {
 	}
 }
 
+// GetDatabaseServiceType returns the Database Service type corresponding to the specified name.
+func (c *Client) GetDatabaseServiceType(ctx context.Context, zone, name string) (*DatabaseServiceType, error) {
+	resp, err := c.GetDbaasServiceTypeWithResponse(apiv2.WithZone(ctx, zone), name)
+	if err != nil {
+		return nil, err
+	}
+
+	return databaseServiceTypeFromAPI(resp.JSON200), nil
+}
+
 // ListDatabaseServiceTypes returns the list of existing Database Service types.
 func (c *Client) ListDatabaseServiceTypes(ctx context.Context, zone string) ([]*DatabaseServiceType, error) {
 	list := make([]*DatabaseServiceType, 0)
@@ -244,16 +254,6 @@ func (c *Client) ListDatabaseServiceTypes(ctx context.Context, zone string) ([]*
 	}
 
 	return list, nil
-}
-
-// GetDatabaseServiceType returns the Database Service type corresponding to the specified name.
-func (c *Client) GetDatabaseServiceType(ctx context.Context, zone, name string) (*DatabaseServiceType, error) {
-	resp, err := c.GetDbaasServiceTypeWithResponse(apiv2.WithZone(ctx, zone), name)
-	if err != nil {
-		return nil, err
-	}
-
-	return databaseServiceTypeFromAPI(resp.JSON200), nil
 }
 
 // CreateDatabaseService creates a Database Service.
@@ -300,6 +300,26 @@ func (c *Client) CreateDatabaseService(
 	return c.GetDatabaseService(ctx, zone, *databaseService.Name)
 }
 
+// DeleteDatabaseService deletes a Database Service.
+func (c *Client) DeleteDatabaseService(ctx context.Context, zone string, databaseService *DatabaseService) error {
+	_, err := c.TerminateDbaasServiceWithResponse(apiv2.WithZone(ctx, zone), *databaseService.Name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetDatabaseService returns the Database Service corresponding to the specified name.
+func (c *Client) GetDatabaseService(ctx context.Context, zone, name string) (*DatabaseService, error) {
+	resp, err := c.GetDbaasServiceWithResponse(apiv2.WithZone(ctx, zone), name)
+	if err != nil {
+		return nil, err
+	}
+
+	return databaseServiceFromAPI(resp.JSON200), nil
+}
+
 // ListDatabaseServices returns the list of Database Services.
 func (c *Client) ListDatabaseServices(ctx context.Context, zone string) ([]*DatabaseService, error) {
 	list := make([]*DatabaseService, 0)
@@ -318,17 +338,7 @@ func (c *Client) ListDatabaseServices(ctx context.Context, zone string) ([]*Data
 	return list, nil
 }
 
-// GetDatabaseService returns the Database Service corresponding to the specified name.
-func (c *Client) GetDatabaseService(ctx context.Context, zone, name string) (*DatabaseService, error) {
-	resp, err := c.GetDbaasServiceWithResponse(apiv2.WithZone(ctx, zone), name)
-	if err != nil {
-		return nil, err
-	}
-
-	return databaseServiceFromAPI(resp.JSON200), nil
-}
-
-// UpdateDatabaseService updates the specified Database Service.
+// UpdateDatabaseService updates a Database Service.
 func (c *Client) UpdateDatabaseService(ctx context.Context, zone string, databaseService *DatabaseService) error {
 	_, err := c.UpdateDbaasServiceWithResponse(
 		apiv2.WithZone(ctx, zone),
@@ -360,16 +370,6 @@ func (c *Client) UpdateDatabaseService(ctx context.Context, zone string, databas
 				return
 			}(),
 		})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DeleteDatabaseService deletes the specified Database Service.
-func (c *Client) DeleteDatabaseService(ctx context.Context, zone, name string) error {
-	_, err := c.TerminateDbaasServiceWithResponse(apiv2.WithZone(ctx, zone), name)
 	if err != nil {
 		return err
 	}

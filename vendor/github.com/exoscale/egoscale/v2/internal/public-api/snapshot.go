@@ -18,6 +18,7 @@ func (t *Snapshot) UnmarshalJSON(data []byte) error {
 		Id       *string        `json:"id,omitempty"` // nolint:revive
 		Instance *Instance      `json:"instance,omitempty"`
 		Name     *string        `json:"name,omitempty"`
+		Size     *int64         `json:"size,omitempty"`
 		State    *SnapshotState `json:"state,omitempty"`
 	}{}
 
@@ -37,6 +38,7 @@ func (t *Snapshot) UnmarshalJSON(data []byte) error {
 	t.Id = raw.Id
 	t.Instance = raw.Instance
 	t.Name = raw.Name
+	t.Size = raw.Size
 	t.State = raw.State
 
 	return nil
@@ -54,6 +56,7 @@ func (t *Snapshot) MarshalJSON() ([]byte, error) {
 		Id       *string        `json:"id,omitempty"` // nolint:revive
 		Instance *Instance      `json:"instance,omitempty"`
 		Name     *string        `json:"name,omitempty"`
+		Size     *int64         `json:"size,omitempty"`
 		State    *SnapshotState `json:"state,omitempty"`
 	}{}
 
@@ -66,6 +69,7 @@ func (t *Snapshot) MarshalJSON() ([]byte, error) {
 	raw.Id = t.Id
 	raw.Instance = t.Instance
 	raw.Name = t.Name
+	raw.Size = t.Size
 	raw.State = t.State
 
 	return json.Marshal(raw)

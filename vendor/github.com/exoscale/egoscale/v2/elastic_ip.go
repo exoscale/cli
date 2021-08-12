@@ -28,12 +28,9 @@ type ElasticIP struct {
 	Healthcheck *ElasticIPHealthcheck
 	ID          *string `req-for:"update"`
 	IPAddress   *net.IP
-
-	c    *Client
-	zone string
 }
 
-func elasticIPFromAPI(client *Client, zone string, e *papi.ElasticIp) *ElasticIP {
+func elasticIPFromAPI(e *papi.ElasticIp) *ElasticIP {
 	ipAddress := net.ParseIP(*e.Ip)
 
 	return &ElasticIP{
@@ -60,17 +57,10 @@ func elasticIPFromAPI(client *Client, zone string, e *papi.ElasticIp) *ElasticIP
 		}(),
 		ID:        e.Id,
 		IPAddress: &ipAddress,
-
-		c:    client,
-		zone: zone,
 	}
 }
 
-func (e ElasticIP) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
-	return client.GetElasticIP(ctx, zone, id)
-}
-
-// CreateElasticIP creates an Elastic IP in the specified zone.
+// CreateElasticIP creates an Elastic IP.
 func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *ElasticIP) (*ElasticIP, error) {
 	if err := validateOperationParams(elasticIP, "create"); err != nil {
 		return nil, err
@@ -123,7 +113,51 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 	return c.GetElasticIP(ctx, zone, *res.(*papi.Reference).Id)
 }
 
-// ListElasticIPs returns the list of existing Elastic IPs in the specified zone.
+// DeleteElasticIP deletes an Elastic IP.
+func (c *Client) DeleteElasticIP(ctx context.Context, zone string, elasticIP *ElasticIP) error {
+	resp, err := c.DeleteElasticIpWithResponse(apiv2.WithZone(ctx, zone), *elasticIP.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// FindElasticIP attempts to find an Elastic IP by IP address or ID.
+func (c *Client) FindElasticIP(ctx context.Context, zone, x string) (*ElasticIP, error) {
+	res, err := c.ListElasticIPs(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		if *r.ID == x || r.IPAddress.String() == x {
+			return c.GetElasticIP(ctx, zone, *r.ID)
+		}
+	}
+
+	return nil, apiv2.ErrNotFound
+}
+
+// GetElasticIP returns the Elastic IP corresponding to the specified ID.
+func (c *Client) GetElasticIP(ctx context.Context, zone, id string) (*ElasticIP, error) {
+	resp, err := c.GetElasticIpWithResponse(apiv2.WithZone(ctx, zone), id)
+	if err != nil {
+		return nil, err
+	}
+
+	return elasticIPFromAPI(resp.JSON200), nil
+}
+
+// ListElasticIPs returns the list of existing Elastic IPs.
 func (c *Client) ListElasticIPs(ctx context.Context, zone string) ([]*ElasticIP, error) {
 	list := make([]*ElasticIP, 0)
 
@@ -134,40 +168,14 @@ func (c *Client) ListElasticIPs(ctx context.Context, zone string) ([]*ElasticIP,
 
 	if resp.JSON200.ElasticIps != nil {
 		for i := range *resp.JSON200.ElasticIps {
-			list = append(list, elasticIPFromAPI(c, zone, &(*resp.JSON200.ElasticIps)[i]))
+			list = append(list, elasticIPFromAPI(&(*resp.JSON200.ElasticIps)[i]))
 		}
 	}
 
 	return list, nil
 }
 
-// GetElasticIP returns the Elastic IP corresponding to the specified ID in the specified zone.
-func (c *Client) GetElasticIP(ctx context.Context, zone, id string) (*ElasticIP, error) {
-	resp, err := c.GetElasticIpWithResponse(apiv2.WithZone(ctx, zone), id)
-	if err != nil {
-		return nil, err
-	}
-
-	return elasticIPFromAPI(c, zone, resp.JSON200), nil
-}
-
-// FindElasticIP attempts to find an Elastic IP by IP address or ID in the specified zone.
-func (c *Client) FindElasticIP(ctx context.Context, zone, v string) (*ElasticIP, error) {
-	res, err := c.ListElasticIPs(ctx, zone)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, r := range res {
-		if *r.ID == v || r.IPAddress.String() == v {
-			return c.GetElasticIP(ctx, zone, *r.ID)
-		}
-	}
-
-	return nil, apiv2.ErrNotFound
-}
-
-// UpdateElasticIP updates the specified Elastic IP in the specified zone.
+// UpdateElasticIP updates an Elastic IP.
 func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *ElasticIP) error {
 	if err := validateOperationParams(elasticIP, "update"); err != nil {
 		return err
@@ -206,24 +214,6 @@ func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *El
 				return nil
 			}(),
 		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(c.timeout).
-		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DeleteElasticIP deletes the specified Elastic IP in the specified zone.
-func (c *Client) DeleteElasticIP(ctx context.Context, zone, id string) error {
-	resp, err := c.DeleteElasticIpWithResponse(apiv2.WithZone(ctx, zone), id)
 	if err != nil {
 		return err
 	}

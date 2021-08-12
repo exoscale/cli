@@ -1659,6 +1659,9 @@ type Snapshot struct {
 	// Snapshot name
 	Name *string `json:"name,omitempty"`
 
+	// Snapshot size in GB
+	Size *int64 `json:"size,omitempty"`
+
 	// Snapshot state
 	State *SnapshotState `json:"state,omitempty"`
 }

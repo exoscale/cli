@@ -96,7 +96,7 @@ func nlbServiceFromAPI(svc *papi.LoadBalancerService) *NetworkLoadBalancerServic
 	}
 }
 
-// NetworkLoadBalancer represents a Network Load Balancer instance.
+// NetworkLoadBalancer represents a Network Load Balancer.
 type NetworkLoadBalancer struct {
 	CreatedAt   *time.Time
 	Description *string
@@ -106,12 +106,9 @@ type NetworkLoadBalancer struct {
 	Name        *string `req-for:"create"`
 	Services    []*NetworkLoadBalancerService
 	State       *string
-
-	c    *Client
-	zone string
 }
 
-func nlbFromAPI(client *Client, zone string, nlb *papi.LoadBalancer) *NetworkLoadBalancer {
+func nlbFromAPI(nlb *papi.LoadBalancer) *NetworkLoadBalancer {
 	return &NetworkLoadBalancer{
 		CreatedAt:   nlb.CreatedAt,
 		Description: nlb.Description,
@@ -141,197 +138,10 @@ func nlbFromAPI(client *Client, zone string, nlb *papi.LoadBalancer) *NetworkLoa
 			return services
 		}(),
 		State: (*string)(nlb.State),
-
-		c:    client,
-		zone: zone,
 	}
 }
 
-// AddService adds a service to the Network Load Balancer instance.
-func (nlb *NetworkLoadBalancer) AddService(
-	ctx context.Context,
-	svc *NetworkLoadBalancerService,
-) (*NetworkLoadBalancerService, error) {
-	if err := validateOperationParams(svc, "create"); err != nil {
-		return nil, err
-	}
-	if err := validateOperationParams(svc.Healthcheck, "create"); err != nil {
-		return nil, err
-	}
-
-	var (
-		port                = int64(*svc.Port)
-		targetPort          = int64(*svc.TargetPort)
-		healthcheckPort     = int64(*svc.Healthcheck.Port)
-		healthcheckInterval = int64(svc.Healthcheck.Interval.Seconds())
-		healthcheckTimeout  = int64(svc.Healthcheck.Timeout.Seconds())
-	)
-
-	// The API doesn't return the NLB service created directly, so in order to return a
-	// *NetworkLoadBalancerService corresponding to the new service we have to manually
-	// compare the list of services on the NLB instance before and after the service
-	// creation, and identify the service that wasn't there before.
-	// Note: in case of multiple services creation in parallel this technique is subject
-	// to race condition as we could return an unrelated service. To prevent this, we
-	// also compare the name of the new service to the name specified in the svc
-	// parameter.
-	services := make(map[string]struct{})
-	for _, svc := range nlb.Services {
-		services[*svc.ID] = struct{}{}
-	}
-
-	resp, err := nlb.c.AddServiceToLoadBalancerWithResponse(
-		apiv2.WithZone(ctx, nlb.zone),
-		*nlb.ID,
-		papi.AddServiceToLoadBalancerJSONRequestBody{
-			Description: svc.Description,
-			Healthcheck: papi.LoadBalancerServiceHealthcheck{
-				Interval: &healthcheckInterval,
-				Mode:     (*papi.LoadBalancerServiceHealthcheckMode)(svc.Healthcheck.Mode),
-				Port:     &healthcheckPort,
-				Retries:  svc.Healthcheck.Retries,
-				Timeout:  &healthcheckTimeout,
-				TlsSni:   svc.Healthcheck.TLSSNI,
-				Uri:      svc.Healthcheck.URI,
-			},
-			InstancePool: papi.InstancePool{Id: svc.InstancePoolID},
-			Name:         *svc.Name,
-			Port:         port,
-			Protocol:     papi.AddServiceToLoadBalancerJSONBodyProtocol(*svc.Protocol),
-			Strategy:     papi.AddServiceToLoadBalancerJSONBodyStrategy(*svc.Strategy),
-			TargetPort:   targetPort,
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := papi.NewPoller().
-		WithTimeout(nlb.c.timeout).
-		WithInterval(nlb.c.pollInterval).
-		Poll(ctx, nlb.c.OperationPoller(nlb.zone, *resp.JSON200.Id))
-	if err != nil {
-		return nil, err
-	}
-
-	nlbUpdated, err := nlb.c.GetNetworkLoadBalancer(ctx, nlb.zone, *res.(*papi.Reference).Id)
-	if err != nil {
-		return nil, err
-	}
-
-	// Look for an unknown service: if we find one we hope it's the one we've just created.
-	for _, s := range nlbUpdated.Services {
-		if _, ok := services[*s.ID]; !ok && *s.Name == *svc.Name {
-			return s, nil
-		}
-	}
-
-	return nil, errors.New("unable to identify the service created")
-}
-
-// UpdateService updates the specified Network Load Balancer service.
-func (nlb *NetworkLoadBalancer) UpdateService(ctx context.Context, svc *NetworkLoadBalancerService) error {
-	if err := validateOperationParams(svc, "update"); err != nil {
-		return err
-	}
-	if svc.Healthcheck != nil {
-		if err := validateOperationParams(svc.Healthcheck, "update"); err != nil {
-			return err
-		}
-	}
-
-	resp, err := nlb.c.UpdateLoadBalancerServiceWithResponse(
-		apiv2.WithZone(ctx, nlb.zone),
-		*nlb.ID,
-		*svc.ID,
-		papi.UpdateLoadBalancerServiceJSONRequestBody{
-			Description: svc.Description,
-			Healthcheck: &papi.LoadBalancerServiceHealthcheck{
-				Interval: func() (v *int64) {
-					if svc.Healthcheck.Interval != nil {
-						interval := int64(svc.Healthcheck.Interval.Seconds())
-						v = &interval
-					}
-					return
-				}(),
-				Mode: (*papi.LoadBalancerServiceHealthcheckMode)(svc.Healthcheck.Mode),
-				Port: func() (v *int64) {
-					if svc.Healthcheck.Port != nil {
-						port := int64(*svc.Healthcheck.Port)
-						v = &port
-					}
-					return
-				}(),
-				Retries: svc.Healthcheck.Retries,
-				Timeout: func() (v *int64) {
-					if svc.Healthcheck.Timeout != nil {
-						interval := int64(svc.Healthcheck.Timeout.Seconds())
-						v = &interval
-					}
-					return
-				}(),
-				TlsSni: svc.Healthcheck.TLSSNI,
-				Uri:    svc.Healthcheck.URI,
-			},
-			Name: svc.Name,
-			Port: func() (v *int64) {
-				if svc.Port != nil {
-					port := int64(*svc.Port)
-					v = &port
-				}
-				return
-			}(),
-			Protocol: (*papi.UpdateLoadBalancerServiceJSONBodyProtocol)(svc.Protocol),
-			Strategy: (*papi.UpdateLoadBalancerServiceJSONBodyStrategy)(svc.Strategy),
-			TargetPort: func() (v *int64) {
-				if svc.TargetPort != nil {
-					port := int64(*svc.TargetPort)
-					v = &port
-				}
-				return
-			}(),
-		})
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(nlb.c.timeout).
-		WithInterval(nlb.c.pollInterval).
-		Poll(ctx, nlb.c.OperationPoller(nlb.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// DeleteService deletes the specified service from the Network Load Balancer instance.
-func (nlb *NetworkLoadBalancer) DeleteService(ctx context.Context, svc *NetworkLoadBalancerService) error {
-	if err := validateOperationParams(svc, "delete"); err != nil {
-		return err
-	}
-
-	resp, err := nlb.c.DeleteLoadBalancerServiceWithResponse(
-		apiv2.WithZone(ctx, nlb.zone),
-		*nlb.ID,
-		*svc.ID,
-	)
-	if err != nil {
-		return err
-	}
-
-	_, err = papi.NewPoller().
-		WithTimeout(nlb.c.timeout).
-		WithInterval(nlb.c.pollInterval).
-		Poll(ctx, nlb.c.OperationPoller(nlb.zone, *resp.JSON200.Id))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// CreateNetworkLoadBalancer creates a Network Load Balancer instance in the specified zone.
+// CreateNetworkLoadBalancer creates a Network Load Balancer.
 func (c *Client) CreateNetworkLoadBalancer(
 	ctx context.Context,
 	zone string,
@@ -368,8 +178,165 @@ func (c *Client) CreateNetworkLoadBalancer(
 	return c.GetNetworkLoadBalancer(ctx, zone, *res.(*papi.Reference).Id)
 }
 
-// ListNetworkLoadBalancers returns the list of existing Network Load Balancers in the
-// specified zone.
+// CreateNetworkLoadBalancerService creates a Network Load Balancer service.
+func (c *Client) CreateNetworkLoadBalancerService(
+	ctx context.Context,
+	zone string,
+	nlb *NetworkLoadBalancer,
+	service *NetworkLoadBalancerService,
+) (*NetworkLoadBalancerService, error) {
+	if err := validateOperationParams(service, "create"); err != nil {
+		return nil, err
+	}
+	if err := validateOperationParams(service.Healthcheck, "create"); err != nil {
+		return nil, err
+	}
+
+	var (
+		port                = int64(*service.Port)
+		targetPort          = int64(*service.TargetPort)
+		healthcheckPort     = int64(*service.Healthcheck.Port)
+		healthcheckInterval = int64(service.Healthcheck.Interval.Seconds())
+		healthcheckTimeout  = int64(service.Healthcheck.Timeout.Seconds())
+	)
+
+	// The API doesn't return the NLB service created directly, so in order to return a
+	// *NetworkLoadBalancerService corresponding to the new service we have to manually
+	// compare the list of services on the NLB before and after the service creation,
+	// and identify the service that wasn't there before.
+	// Note: in case of multiple services creation in parallel this technique is subject
+	// to race condition as we could return an unrelated service. To prevent this, we
+	// also compare the name of the new service to the name specified in the service
+	// parameter.
+	services := make(map[string]struct{})
+	for _, svc := range nlb.Services {
+		services[*svc.ID] = struct{}{}
+	}
+
+	resp, err := c.AddServiceToLoadBalancerWithResponse(
+		apiv2.WithZone(ctx, zone),
+		*nlb.ID,
+		papi.AddServiceToLoadBalancerJSONRequestBody{
+			Description: service.Description,
+			Healthcheck: papi.LoadBalancerServiceHealthcheck{
+				Interval: &healthcheckInterval,
+				Mode:     (*papi.LoadBalancerServiceHealthcheckMode)(service.Healthcheck.Mode),
+				Port:     &healthcheckPort,
+				Retries:  service.Healthcheck.Retries,
+				Timeout:  &healthcheckTimeout,
+				TlsSni:   service.Healthcheck.TLSSNI,
+				Uri:      service.Healthcheck.URI,
+			},
+			InstancePool: papi.InstancePool{Id: service.InstancePoolID},
+			Name:         *service.Name,
+			Port:         port,
+			Protocol:     papi.AddServiceToLoadBalancerJSONBodyProtocol(*service.Protocol),
+			Strategy:     papi.AddServiceToLoadBalancerJSONBodyStrategy(*service.Strategy),
+			TargetPort:   targetPort,
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return nil, err
+	}
+
+	nlbUpdated, err := c.GetNetworkLoadBalancer(ctx, zone, *res.(*papi.Reference).Id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Look for an unknown service: if we find one we hope it's the one we've just created.
+	for _, s := range nlbUpdated.Services {
+		if _, ok := services[*s.ID]; !ok && *s.Name == *service.Name {
+			return s, nil
+		}
+	}
+
+	return nil, errors.New("unable to identify the service created")
+}
+
+// DeleteNetworkLoadBalancer deletes a Network Load Balancer.
+func (c *Client) DeleteNetworkLoadBalancer(ctx context.Context, zone string, nlb *NetworkLoadBalancer) error {
+	resp, err := c.DeleteLoadBalancerWithResponse(apiv2.WithZone(ctx, zone), *nlb.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteNetworkLoadBalancerService deletes a Network Load Balancer service.
+func (c *Client) DeleteNetworkLoadBalancerService(
+	ctx context.Context,
+	zone string,
+	nlb *NetworkLoadBalancer,
+	service *NetworkLoadBalancerService,
+) error {
+	if err := validateOperationParams(service, "delete"); err != nil {
+		return err
+	}
+
+	resp, err := c.DeleteLoadBalancerServiceWithResponse(
+		apiv2.WithZone(ctx, zone),
+		*nlb.ID,
+		*service.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// FindNetworkLoadBalancer attempts to find a Network Load Balancer by name or ID.
+func (c *Client) FindNetworkLoadBalancer(ctx context.Context, zone, x string) (*NetworkLoadBalancer, error) {
+	res, err := c.ListNetworkLoadBalancers(ctx, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, r := range res {
+		if *r.ID == x || *r.Name == x {
+			return c.GetNetworkLoadBalancer(ctx, zone, *r.ID)
+		}
+	}
+
+	return nil, apiv2.ErrNotFound
+}
+
+// GetNetworkLoadBalancer returns the Network Load Balancer corresponding to the specified ID.
+func (c *Client) GetNetworkLoadBalancer(ctx context.Context, zone, id string) (*NetworkLoadBalancer, error) {
+	resp, err := c.GetLoadBalancerWithResponse(apiv2.WithZone(ctx, zone), id)
+	if err != nil {
+		return nil, err
+	}
+
+	return nlbFromAPI(resp.JSON200), nil
+}
+
+// ListNetworkLoadBalancers returns the list of existing Network Load Balancers in the specified zone.
 func (c *Client) ListNetworkLoadBalancers(ctx context.Context, zone string) ([]*NetworkLoadBalancer, error) {
 	list := make([]*NetworkLoadBalancer, 0)
 
@@ -380,41 +347,14 @@ func (c *Client) ListNetworkLoadBalancers(ctx context.Context, zone string) ([]*
 
 	if resp.JSON200.LoadBalancers != nil {
 		for i := range *resp.JSON200.LoadBalancers {
-			list = append(list, nlbFromAPI(c, zone, &(*resp.JSON200.LoadBalancers)[i]))
+			list = append(list, nlbFromAPI(&(*resp.JSON200.LoadBalancers)[i]))
 		}
 	}
 
 	return list, nil
 }
 
-// GetNetworkLoadBalancer returns the Network Load Balancer instance corresponding to the
-// specified ID in the specified zone.
-func (c *Client) GetNetworkLoadBalancer(ctx context.Context, zone, id string) (*NetworkLoadBalancer, error) {
-	resp, err := c.GetLoadBalancerWithResponse(apiv2.WithZone(ctx, zone), id)
-	if err != nil {
-		return nil, err
-	}
-
-	return nlbFromAPI(c, zone, resp.JSON200), nil
-}
-
-// FindNetworkLoadBalancer attempts to find a Network Load Balancer by name or ID in the specified zone.
-func (c *Client) FindNetworkLoadBalancer(ctx context.Context, zone, v string) (*NetworkLoadBalancer, error) {
-	res, err := c.ListNetworkLoadBalancers(ctx, zone)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, r := range res {
-		if *r.ID == v || *r.Name == v {
-			return c.GetNetworkLoadBalancer(ctx, zone, *r.ID)
-		}
-	}
-
-	return nil, apiv2.ErrNotFound
-}
-
-// UpdateNetworkLoadBalancer updates the specified Network Load Balancer instance in the specified zone.
+// UpdateNetworkLoadBalancer updates a Network Load Balancer.
 func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string, nlb *NetworkLoadBalancer) error {
 	if err := validateOperationParams(nlb, "update"); err != nil {
 		return err
@@ -448,9 +388,73 @@ func (c *Client) UpdateNetworkLoadBalancer(ctx context.Context, zone string, nlb
 	return nil
 }
 
-// DeleteNetworkLoadBalancer deletes the specified Network Load Balancer instance in the specified zone.
-func (c *Client) DeleteNetworkLoadBalancer(ctx context.Context, zone, id string) error {
-	resp, err := c.DeleteLoadBalancerWithResponse(apiv2.WithZone(ctx, zone), id)
+// UpdateNetworkLoadBalancerService updates a Network Load Balancer service.
+func (c *Client) UpdateNetworkLoadBalancerService(
+	ctx context.Context,
+	zone string,
+	nlb *NetworkLoadBalancer,
+	service *NetworkLoadBalancerService,
+) error {
+	if err := validateOperationParams(service, "update"); err != nil {
+		return err
+	}
+	if service.Healthcheck != nil {
+		if err := validateOperationParams(service.Healthcheck, "update"); err != nil {
+			return err
+		}
+	}
+
+	resp, err := c.UpdateLoadBalancerServiceWithResponse(
+		apiv2.WithZone(ctx, zone),
+		*nlb.ID,
+		*service.ID,
+		papi.UpdateLoadBalancerServiceJSONRequestBody{
+			Description: service.Description,
+			Healthcheck: &papi.LoadBalancerServiceHealthcheck{
+				Interval: func() (v *int64) {
+					if service.Healthcheck.Interval != nil {
+						interval := int64(service.Healthcheck.Interval.Seconds())
+						v = &interval
+					}
+					return
+				}(),
+				Mode: (*papi.LoadBalancerServiceHealthcheckMode)(service.Healthcheck.Mode),
+				Port: func() (v *int64) {
+					if service.Healthcheck.Port != nil {
+						port := int64(*service.Healthcheck.Port)
+						v = &port
+					}
+					return
+				}(),
+				Retries: service.Healthcheck.Retries,
+				Timeout: func() (v *int64) {
+					if service.Healthcheck.Timeout != nil {
+						interval := int64(service.Healthcheck.Timeout.Seconds())
+						v = &interval
+					}
+					return
+				}(),
+				TlsSni: service.Healthcheck.TLSSNI,
+				Uri:    service.Healthcheck.URI,
+			},
+			Name: service.Name,
+			Port: func() (v *int64) {
+				if service.Port != nil {
+					port := int64(*service.Port)
+					v = &port
+				}
+				return
+			}(),
+			Protocol: (*papi.UpdateLoadBalancerServiceJSONBodyProtocol)(service.Protocol),
+			Strategy: (*papi.UpdateLoadBalancerServiceJSONBodyStrategy)(service.Strategy),
+			TargetPort: func() (v *int64) {
+				if service.TargetPort != nil {
+					port := int64(*service.TargetPort)
+					v = &port
+				}
+				return
+			}(),
+		})
 	if err != nil {
 		return err
 	}

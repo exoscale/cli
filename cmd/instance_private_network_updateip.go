@@ -65,7 +65,13 @@ func (c *instancePrivnetUpdateIPCmd) cmdRun(cmd *cobra.Command, _ []string) erro
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Private Network IP address...", c.Instance), func() {
-		if err = privateNetwork.UpdateInstanceIPAddress(ctx, instance, instanceIPAddress); err != nil {
+		if err = cs.UpdatePrivateNetworkInstanceIPAddress(
+			ctx,
+			c.Zone,
+			instance,
+			privateNetwork,
+			instanceIPAddress,
+		); err != nil {
 			return
 		}
 	})

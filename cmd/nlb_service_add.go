@@ -116,7 +116,7 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	service.InstancePoolID = instancePool.ID
 
 	decorateAsyncOperation(fmt.Sprintf("Adding service %q...", c.Name), func() {
-		service, err = nlb.AddService(ctx, service)
+		service, err = cs.CreateNetworkLoadBalancerService(ctx, c.Zone, nlb, service)
 	})
 	if err != nil {
 		return err

@@ -29,10 +29,10 @@ type sksNodepoolShowOutput struct {
 	Labels             map[string]string `json:"labels"`
 }
 
+func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
 func (o *sksNodepoolShowOutput) toJSON()      { outputJSON(o) }
 func (o *sksNodepoolShowOutput) toText()      { outputText(o) }
 func (o *sksNodepoolShowOutput) toTable()     { outputTable(o) }
-func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
 
 type sksNodepoolShowCmd struct {
 	_ bool `cli-cmd:"show"`
@@ -105,28 +105,34 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 		Version:         *nodepool.Version,
 	}
 
-	antiAffinityGroups, err := nodepool.AntiAffinityGroups(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, antiAffinityGroup := range antiAffinityGroups {
-		out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
-	}
-
-	securityGroups, err := nodepool.SecurityGroups(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, securityGroup := range securityGroups {
-		out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
+	if nodepool.AntiAffinityGroupIDs != nil {
+		for _, id := range *nodepool.AntiAffinityGroupIDs {
+			antiAffinityGroup, err := cs.GetAntiAffinityGroup(ctx, zone, id)
+			if err != nil {
+				return nil, fmt.Errorf("error retrieving Anti-Affinity Group: %v", err)
+			}
+			out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
+		}
 	}
 
-	privateNetworks, err := nodepool.PrivateNetworks(ctx)
-	if err != nil {
-		return nil, err
+	if nodepool.PrivateNetworkIDs != nil {
+		for _, id := range *nodepool.PrivateNetworkIDs {
+			privateNetwork, err := cs.GetPrivateNetwork(ctx, zone, id)
+			if err != nil {
+				return nil, fmt.Errorf("error retrieving Private Network: %v", err)
+			}
+			out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
+		}
 	}
-	for _, privateNetwork := range privateNetworks {
-		out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
+
+	if nodepool.SecurityGroupIDs != nil {
+		for _, id := range *nodepool.SecurityGroupIDs {
+			securityGroup, err := cs.GetSecurityGroup(ctx, zone, id)
+			if err != nil {
+				return nil, fmt.Errorf("error retrieving Security Group: %v", err)
+			}
+			out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
+		}
 	}
 
 	serviceOffering, err := cs.GetInstanceType(ctx, zone, *nodepool.InstanceTypeID)

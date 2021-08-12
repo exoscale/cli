@@ -62,7 +62,7 @@ func (c *instanceSGRemoveCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Security Groups...", c.Instance), func() {
 		for _, securityGroup := range securityGroups {
-			if err = instance.DetachSecurityGroup(ctx, securityGroup); err != nil {
+			if err = cs.DetachInstanceFromSecurityGroup(ctx, c.Zone, instance, securityGroup); err != nil {
 				return
 			}
 		}

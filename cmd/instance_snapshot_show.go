@@ -13,13 +13,15 @@ type instanceSnapshotShowOutput struct {
 	Name         string `json:"name"`
 	CreationDate string `json:"creation_date"`
 	State        string `json:"state"`
+	Size         int64  `json:"size" outputLabel:"Size (GB)"`
 	Instance     string `json:"instance"`
 	Zone         string `json:"zone"`
 }
 
-func (o *instanceSnapshotShowOutput) toJSON()  { outputJSON(o) }
-func (o *instanceSnapshotShowOutput) toText()  { outputText(o) }
-func (o *instanceSnapshotShowOutput) toTable() { outputTable(o) }
+func (o *instanceSnapshotShowOutput) Type() string { return "Snapshot" }
+func (o *instanceSnapshotShowOutput) toJSON()      { outputJSON(o) }
+func (o *instanceSnapshotShowOutput) toText()      { outputText(o) }
+func (o *instanceSnapshotShowOutput) toTable()     { outputTable(o) }
 
 type instanceSnapshotShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -71,6 +73,7 @@ func showInstanceSnapshot(zone, snapshotID string) (outputter, error) {
 		Name:         *snapshot.Name,
 		CreationDate: snapshot.CreatedAt.String(),
 		State:        *snapshot.State,
+		Size:         *snapshot.Size,
 		Instance:     *instance.Name,
 		Zone:         zone,
 	}, nil

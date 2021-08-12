@@ -64,7 +64,7 @@ func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(
 		fmt.Sprintf("Evicting instances from Instance Pool %q...", c.InstancePool),
-		func() { err = instancePool.EvictMembers(ctx, instances) },
+		func() { err = cs.EvictInstancePoolMembers(ctx, c.Zone, instancePool, instances) },
 	)
 	if err != nil {
 		return err

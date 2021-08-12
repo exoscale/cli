@@ -30,9 +30,10 @@ type instancePoolShowOutput struct {
 	Instances          []string          `json:"instances"`
 }
 
-func (o *instancePoolShowOutput) toJSON()  { outputJSON(o) }
-func (o *instancePoolShowOutput) toText()  { outputText(o) }
-func (o *instancePoolShowOutput) toTable() { outputTable(o) }
+func (o *instancePoolShowOutput) Type() string { return "Instance Pool" }
+func (o *instancePoolShowOutput) toJSON()      { outputJSON(o) }
+func (o *instancePoolShowOutput) toText()      { outputText(o) }
+func (o *instancePoolShowOutput) toTable()     { outputTable(o) }
 
 type instancePoolShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -117,28 +118,34 @@ func showInstancePool(zone, i string) (outputter, error) {
 		Zone:            zone,
 	}
 
-	antiAffinityGroups, err := instancePool.AntiAffinityGroups(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, antiAffinityGroup := range antiAffinityGroups {
-		out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
-	}
-
-	elasticIPs, err := instancePool.ElasticIPs(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, elasticIP := range elasticIPs {
-		out.ElasticIPs = append(out.ElasticIPs, elasticIP.IPAddress.String())
+	if instancePool.AntiAffinityGroupIDs != nil {
+		for _, id := range *instancePool.AntiAffinityGroupIDs {
+			antiAffinityGroup, err := cs.GetAntiAffinityGroup(ctx, zone, id)
+			if err != nil {
+				return nil, fmt.Errorf("error retrieving Anti-Affinity Group: %v", err)
+			}
+			out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
+		}
 	}
 
-	instances, err := instancePool.Instances(ctx)
-	if err != nil {
-		return nil, err
+	if instancePool.ElasticIPIDs != nil {
+		for _, id := range *instancePool.ElasticIPIDs {
+			elasticIP, err := cs.GetElasticIP(ctx, zone, id)
+			if err != nil {
+				return nil, fmt.Errorf("error retrieving Elastic IP: %v", err)
+			}
+			out.ElasticIPs = append(out.ElasticIPs, elasticIP.IPAddress.String())
+		}
 	}
-	for _, instance := range instances {
-		out.Instances = append(out.Instances, *instance.Name)
+
+	if instancePool.InstanceIDs != nil {
+		for _, id := range *instancePool.InstanceIDs {
+			instance, err := cs.GetInstance(ctx, zone, id)
+			if err != nil {
+				return nil, fmt.Errorf("error retrieving Compute instance: %v", err)
+			}
+			out.Instances = append(out.Instances, *instance.Name)
+		}
 	}
 
 	instanceType, err := cs.GetInstanceType(ctx, zone, *instancePool.InstanceTypeID)
@@ -147,20 +154,24 @@ func showInstancePool(zone, i string) (outputter, error) {
 	}
 	out.ServiceOffering = *instanceType.Size
 
-	privateNetworks, err := instancePool.PrivateNetworks(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, privateNetwork := range privateNetworks {
-		out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
+	if instancePool.PrivateNetworkIDs != nil {
+		for _, id := range *instancePool.PrivateNetworkIDs {
+			privateNetwork, err := cs.GetPrivateNetwork(ctx, zone, id)
+			if err != nil {
+				return nil, fmt.Errorf("error retrieving Private Network: %v", err)
+			}
+			out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
+		}
 	}
 
-	securityGroups, err := instancePool.SecurityGroups(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, securityGroup := range securityGroups {
-		out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
+	if instancePool.SecurityGroupIDs != nil {
+		for _, id := range *instancePool.SecurityGroupIDs {
+			securityGroup, err := cs.GetSecurityGroup(ctx, zone, id)
+			if err != nil {
+				return nil, fmt.Errorf("error retrieving Security Group: %v", err)
+			}
+			out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
+		}
 	}
 
 	template, err := cs.GetTemplate(ctx, zone, *instancePool.TemplateID)

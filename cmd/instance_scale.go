@@ -59,7 +59,7 @@ func (c *instanceScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Scaling instance %q...", c.Instance), func() {
-		err = instance.Scale(ctx, instanceType)
+		err = cs.ScaleInstance(ctx, c.Zone, instance, instanceType)
 	})
 	if err != nil {
 		return err

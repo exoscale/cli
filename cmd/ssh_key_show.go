@@ -13,9 +13,10 @@ type computeSSHKeyShowOutput struct {
 	Fingerprint string `json:"fingerprint"`
 }
 
-func (o *computeSSHKeyShowOutput) toJSON()  { outputJSON(o) }
-func (o *computeSSHKeyShowOutput) toText()  { outputText(o) }
-func (o *computeSSHKeyShowOutput) toTable() { outputTable(o) }
+func (o *computeSSHKeyShowOutput) Type() string { return "SSH key" }
+func (o *computeSSHKeyShowOutput) toJSON()      { outputJSON(o) }
+func (o *computeSSHKeyShowOutput) toText()      { outputText(o) }
+func (o *computeSSHKeyShowOutput) toTable()     { outputTable(o) }
 
 type computeSSHKeyShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

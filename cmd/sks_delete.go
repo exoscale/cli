@@ -54,7 +54,7 @@ func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				}
 
 				decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", *nodepool.Name), func() {
-					err = cluster.DeleteNodepool(ctx, nodepool)
+					err = cs.DeleteSKSNodepool(ctx, c.Zone, cluster, nodepool)
 				})
 				if err != nil {
 					return err
@@ -76,7 +76,7 @@ func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting SKS cluster %q...", *cluster.Name), func() {
-		err = cs.DeleteSKSCluster(ctx, c.Zone, *cluster.ID)
+		err = cs.DeleteSKSCluster(ctx, c.Zone, cluster)
 	})
 	if err != nil {
 		return err

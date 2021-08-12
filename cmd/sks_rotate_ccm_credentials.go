@@ -43,7 +43,7 @@ func (c *sksRotateCCMCredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error 
 	decorateAsyncOperation(
 		fmt.Sprintf("Rotating SKS cluster %q Exoscale CCM credentials...", c.Cluster),
 		func() {
-			err = cluster.RotateCCMCredentials(ctx)
+			err = cs.RotateSKSClusterCCMCredentials(ctx, c.Zone, cluster)
 		},
 	)
 	if err != nil {

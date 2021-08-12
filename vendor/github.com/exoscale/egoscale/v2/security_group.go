@@ -77,12 +77,9 @@ type SecurityGroup struct {
 	ID          *string
 	Name        *string `req-for:"create"`
 	Rules       []*SecurityGroupRule
-
-	zone string
-	c    *Client
 }
 
-func securityGroupFromAPI(client *Client, zone string, s *papi.SecurityGroup) *SecurityGroup {
+func securityGroupFromAPI(s *papi.SecurityGroup) *SecurityGroup {
 	return &SecurityGroup{
 		Description: s.Description,
 		ID:          s.Id,
@@ -97,18 +94,45 @@ func securityGroupFromAPI(client *Client, zone string, s *papi.SecurityGroup) *S
 			}
 			return rules
 		}(),
-
-		c:    client,
-		zone: zone,
 	}
 }
 
-func (s SecurityGroup) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
-	return client.GetSecurityGroup(ctx, zone, id)
+// CreateSecurityGroup creates a Security Group.
+func (c *Client) CreateSecurityGroup(
+	ctx context.Context,
+	zone string,
+	securityGroup *SecurityGroup,
+) (*SecurityGroup, error) {
+	if err := validateOperationParams(securityGroup, "create"); err != nil {
+		return nil, err
+	}
+
+	resp, err := c.CreateSecurityGroupWithResponse(ctx, papi.CreateSecurityGroupJSONRequestBody{
+		Description: securityGroup.Description,
+		Name:        *securityGroup.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return nil, err
+	}
+
+	return c.GetSecurityGroup(ctx, zone, *res.(*papi.Reference).Id)
 }
 
-// AddRule adds a rule to the Security Group.
-func (s *SecurityGroup) AddRule(ctx context.Context, rule *SecurityGroupRule) (*SecurityGroupRule, error) {
+// CreateSecurityGroupRule creates a Security Group rule.
+func (c *Client) CreateSecurityGroupRule(
+	ctx context.Context,
+	zone string,
+	securityGroup *SecurityGroup,
+	rule *SecurityGroupRule,
+) (*SecurityGroupRule, error) {
 	if err := validateOperationParams(rule, "create"); err != nil {
 		return nil, err
 	}
@@ -137,13 +161,13 @@ func (s *SecurityGroup) AddRule(ctx context.Context, rule *SecurityGroupRule) (*
 	// also compare the protocol/start port/end port parameters of the new rule to the
 	// ones specified in the input rule parameter.
 	rules := make(map[string]struct{})
-	for _, r := range s.Rules {
+	for _, r := range securityGroup.Rules {
 		rules[*r.ID] = struct{}{}
 	}
 
-	resp, err := s.c.AddRuleToSecurityGroupWithResponse(
-		apiv2.WithZone(ctx, s.zone),
-		*s.ID,
+	resp, err := c.AddRuleToSecurityGroupWithResponse(
+		apiv2.WithZone(ctx, zone),
+		*securityGroup.ID,
 		papi.AddRuleToSecurityGroupJSONRequestBody{
 			Description: rule.Description,
 			EndPort: func() (v *int64) {
@@ -182,14 +206,14 @@ func (s *SecurityGroup) AddRule(ctx context.Context, rule *SecurityGroupRule) (*
 	}
 
 	res, err := papi.NewPoller().
-		WithTimeout(s.c.timeout).
-		WithInterval(s.c.pollInterval).
-		Poll(ctx, s.c.OperationPoller(s.zone, *resp.JSON200.Id))
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
 
-	sgUpdated, err := s.c.GetSecurityGroup(ctx, s.zone, *res.(*papi.Reference).Id)
+	sgUpdated, err := c.GetSecurityGroup(ctx, zone, *res.(*papi.Reference).Id)
 	if err != nil {
 		return nil, err
 	}
@@ -206,25 +230,17 @@ func (s *SecurityGroup) AddRule(ctx context.Context, rule *SecurityGroupRule) (*
 	return nil, errors.New("unable to identify the rule created")
 }
 
-// DeleteRule deletes the specified rule from the Security Group.
-func (s *SecurityGroup) DeleteRule(ctx context.Context, rule *SecurityGroupRule) error {
-	if err := validateOperationParams(rule, "delete"); err != nil {
-		return err
-	}
-
-	resp, err := s.c.DeleteRuleFromSecurityGroupWithResponse(
-		apiv2.WithZone(ctx, s.zone),
-		*s.ID,
-		*rule.ID,
-	)
+// DeleteSecurityGroup deletes a Security Group.
+func (c *Client) DeleteSecurityGroup(ctx context.Context, zone string, securityGroup *SecurityGroup) error {
+	resp, err := c.DeleteSecurityGroupWithResponse(apiv2.WithZone(ctx, zone), *securityGroup.ID)
 	if err != nil {
 		return err
 	}
 
 	_, err = papi.NewPoller().
-		WithTimeout(s.c.timeout).
-		WithInterval(s.c.pollInterval).
-		Poll(ctx, s.c.OperationPoller(s.zone, *resp.JSON200.Id))
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -232,72 +248,42 @@ func (s *SecurityGroup) DeleteRule(ctx context.Context, rule *SecurityGroupRule)
 	return nil
 }
 
-// CreateSecurityGroup creates a Security Group.
-func (c *Client) CreateSecurityGroup(
+// DeleteSecurityGroupRule deletes a Security Group rule.
+func (c *Client) DeleteSecurityGroupRule(
 	ctx context.Context,
 	zone string,
 	securityGroup *SecurityGroup,
-) (*SecurityGroup, error) {
-	if err := validateOperationParams(securityGroup, "create"); err != nil {
-		return nil, err
+	rule *SecurityGroupRule,
+) error {
+	if err := validateOperationParams(rule, "delete"); err != nil {
+		return err
 	}
 
-	resp, err := c.CreateSecurityGroupWithResponse(ctx, papi.CreateSecurityGroupJSONRequestBody{
-		Description: securityGroup.Description,
-		Name:        *securityGroup.Name,
-	})
+	resp, err := c.DeleteRuleFromSecurityGroupWithResponse(apiv2.WithZone(ctx, zone), *securityGroup.ID, *rule.ID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	res, err := papi.NewPoller().
+	_, err = papi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return c.GetSecurityGroup(ctx, zone, *res.(*papi.Reference).Id)
+	return nil
 }
 
-// ListSecurityGroups returns the list of existing Security Groups.
-func (c *Client) ListSecurityGroups(ctx context.Context, zone string) ([]*SecurityGroup, error) {
-	list := make([]*SecurityGroup, 0)
-
-	resp, err := c.ListSecurityGroupsWithResponse(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.JSON200.SecurityGroups != nil {
-		for i := range *resp.JSON200.SecurityGroups {
-			list = append(list, securityGroupFromAPI(c, zone, &(*resp.JSON200.SecurityGroups)[i]))
-		}
-	}
-
-	return list, nil
-}
-
-// GetSecurityGroup returns the Security Group corresponding to the specified ID in the specified zone.
-func (c *Client) GetSecurityGroup(ctx context.Context, zone, id string) (*SecurityGroup, error) {
-	resp, err := c.GetSecurityGroupWithResponse(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return securityGroupFromAPI(c, zone, resp.JSON200), nil
-}
-
-// FindSecurityGroup attempts to find a Security Group by name or ID in the specified zone.
-func (c *Client) FindSecurityGroup(ctx context.Context, zone, v string) (*SecurityGroup, error) {
+// FindSecurityGroup attempts to find a Security Group by name or ID.
+func (c *Client) FindSecurityGroup(ctx context.Context, zone, x string) (*SecurityGroup, error) {
 	res, err := c.ListSecurityGroups(ctx, zone)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, r := range res {
-		if *r.ID == v || *r.Name == v {
+		if *r.ID == x || *r.Name == x {
 			return c.GetSecurityGroup(ctx, zone, *r.ID)
 		}
 	}
@@ -305,20 +291,30 @@ func (c *Client) FindSecurityGroup(ctx context.Context, zone, v string) (*Securi
 	return nil, apiv2.ErrNotFound
 }
 
-// DeleteSecurityGroup deletes the specified Security Group in the specified zone.
-func (c *Client) DeleteSecurityGroup(ctx context.Context, zone, id string) error {
-	resp, err := c.DeleteSecurityGroupWithResponse(apiv2.WithZone(ctx, zone), id)
+// GetSecurityGroup returns the Security Group corresponding to the specified ID.
+func (c *Client) GetSecurityGroup(ctx context.Context, zone, id string) (*SecurityGroup, error) {
+	resp, err := c.GetSecurityGroupWithResponse(apiv2.WithZone(ctx, zone), id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = papi.NewPoller().
-		WithTimeout(c.timeout).
-		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	return securityGroupFromAPI(resp.JSON200), nil
+}
+
+// ListSecurityGroups returns the list of existing Security Groups.
+func (c *Client) ListSecurityGroups(ctx context.Context, zone string) ([]*SecurityGroup, error) {
+	list := make([]*SecurityGroup, 0)
+
+	resp, err := c.ListSecurityGroupsWithResponse(apiv2.WithZone(ctx, zone))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	if resp.JSON200.SecurityGroups != nil {
+		for i := range *resp.JSON200.SecurityGroups {
+			list = append(list, securityGroupFromAPI(&(*resp.JSON200.SecurityGroups)[i]))
+		}
+	}
+
+	return list, nil
 }

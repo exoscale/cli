@@ -20,86 +20,24 @@ type Snapshot struct {
 	ID         *string
 	InstanceID *string
 	Name       *string
+	Size       *int64
 	State      *string
-
-	c    *Client
-	zone string
 }
 
-func snapshotFromAPI(client *Client, zone string, s *papi.Snapshot) *Snapshot {
+func snapshotFromAPI(s *papi.Snapshot) *Snapshot {
 	return &Snapshot{
 		CreatedAt:  s.CreatedAt,
 		ID:         s.Id,
 		InstanceID: s.Instance.Id,
 		Name:       s.Name,
+		Size:       s.Size,
 		State:      (*string)(s.State),
-
-		c:    client,
-		zone: zone,
 	}
 }
 
-func (s Snapshot) get(ctx context.Context, client *Client, zone, id string) (interface{}, error) {
-	return client.GetSnapshot(ctx, zone, id)
-}
-
-// Export exports the Snapshot and returns the exported Snapshot information.
-func (s *Snapshot) Export(ctx context.Context) (*SnapshotExport, error) {
-	resp, err := s.c.ExportSnapshotWithResponse(apiv2.WithZone(ctx, s.zone), *s.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := papi.NewPoller().
-		WithTimeout(s.c.timeout).
-		WithInterval(s.c.pollInterval).
-		Poll(ctx, s.c.OperationPoller(s.zone, *resp.JSON200.Id))
-	if err != nil {
-		return nil, err
-	}
-
-	expSnapshot, err := s.c.GetSnapshotWithResponse(apiv2.WithZone(ctx, s.zone), *res.(*papi.Reference).Id)
-	if err != nil {
-		return nil, err
-	}
-
-	return &SnapshotExport{
-		MD5sum:       expSnapshot.JSON200.Export.Md5sum,
-		PresignedURL: expSnapshot.JSON200.Export.PresignedUrl,
-	}, nil
-}
-
-// ListSnapshots returns the list of existing Snapshots in the specified zone.
-func (c *Client) ListSnapshots(ctx context.Context, zone string) ([]*Snapshot, error) {
-	list := make([]*Snapshot, 0)
-
-	resp, err := c.ListSnapshotsWithResponse(apiv2.WithZone(ctx, zone))
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.JSON200.Snapshots != nil {
-		for i := range *resp.JSON200.Snapshots {
-			list = append(list, snapshotFromAPI(c, zone, &(*resp.JSON200.Snapshots)[i]))
-		}
-	}
-
-	return list, nil
-}
-
-// GetSnapshot returns the Snapshot corresponding to the specified ID in the specified zone.
-func (c *Client) GetSnapshot(ctx context.Context, zone, id string) (*Snapshot, error) {
-	resp, err := c.GetSnapshotWithResponse(apiv2.WithZone(ctx, zone), id)
-	if err != nil {
-		return nil, err
-	}
-
-	return snapshotFromAPI(c, zone, resp.JSON200), nil
-}
-
-// DeleteSnapshot deletes the specified Snapshot in the specified zone.
-func (c *Client) DeleteSnapshot(ctx context.Context, zone, id string) error {
-	resp, err := c.DeleteSnapshotWithResponse(apiv2.WithZone(ctx, zone), id)
+// DeleteSnapshot deletes a Snapshot.
+func (c *Client) DeleteSnapshot(ctx context.Context, zone string, snapshot *Snapshot) error {
+	resp, err := c.DeleteSnapshotWithResponse(apiv2.WithZone(ctx, zone), *snapshot.ID)
 	if err != nil {
 		return err
 	}
@@ -113,4 +51,58 @@ func (c *Client) DeleteSnapshot(ctx context.Context, zone, id string) error {
 	}
 
 	return nil
+}
+
+// ExportSnapshot exports a Snapshot and returns the exported Snapshot information.
+func (c *Client) ExportSnapshot(ctx context.Context, zone string, snapshot *Snapshot) (*SnapshotExport, error) {
+	resp, err := c.ExportSnapshotWithResponse(apiv2.WithZone(ctx, zone), *snapshot.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return nil, err
+	}
+
+	expSnapshot, err := c.GetSnapshotWithResponse(apiv2.WithZone(ctx, zone), *res.(*papi.Reference).Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SnapshotExport{
+		MD5sum:       expSnapshot.JSON200.Export.Md5sum,
+		PresignedURL: expSnapshot.JSON200.Export.PresignedUrl,
+	}, nil
+}
+
+// GetSnapshot returns the Snapshot corresponding to the specified ID.
+func (c *Client) GetSnapshot(ctx context.Context, zone, id string) (*Snapshot, error) {
+	resp, err := c.GetSnapshotWithResponse(apiv2.WithZone(ctx, zone), id)
+	if err != nil {
+		return nil, err
+	}
+
+	return snapshotFromAPI(resp.JSON200), nil
+}
+
+// ListSnapshots returns the list of existing Snapshots.
+func (c *Client) ListSnapshots(ctx context.Context, zone string) ([]*Snapshot, error) {
+	list := make([]*Snapshot, 0)
+
+	resp, err := c.ListSnapshotsWithResponse(apiv2.WithZone(ctx, zone))
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.JSON200.Snapshots != nil {
+		for i := range *resp.JSON200.Snapshots {
+			list = append(list, snapshotFromAPI(&(*resp.JSON200.Snapshots)[i]))
+		}
+	}
+
+	return list, nil
 }

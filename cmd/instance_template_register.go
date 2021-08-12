@@ -86,7 +86,7 @@ func (c *computeInstanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []stri
 			return fmt.Errorf("error retrieving snapshot: %s", err)
 		}
 
-		snapshotExport, err := snapshot.Export(ctx)
+		snapshotExport, err := cs.ExportSnapshot(ctx, c.Zone, snapshot)
 		if err != nil {
 			return fmt.Errorf("error retrieving snapshot export information: %s", err)
 		}

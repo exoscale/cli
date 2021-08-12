@@ -44,7 +44,7 @@ func (c *instanceRebootCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Rebooting instance %q...", c.Instance), func() {
-		err = instance.Reboot(ctx)
+		err = cs.RebootInstance(ctx, c.Zone, instance)
 	})
 	if err != nil {
 		return err
