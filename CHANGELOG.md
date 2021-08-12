@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.40.2
+
+### Bug Fixes
+
+- Report missing Compute instance snapshots size in `exo compute instance snapshot show` command
+
+
 ## 1.40.1
 
 ### Bug Fixes
