@@ -295,6 +295,7 @@ func outputTable(o interface{}) {
 // terminal.
 func decorateAsyncOperation(message string, fn func()) {
 	p := mpb.New(
+		mpb.WithOutput(os.Stderr),
 		mpb.WithWidth(1),
 		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
 	)
