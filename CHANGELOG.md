@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.40.1
+
+### Bug Fixes
+
+- Fix the asynchronous operation spinner to output to *stderr* intead of *stdout*
+
+
 ## 1.40.0
 
 ### Features
