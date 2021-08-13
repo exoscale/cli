@@ -10,6 +10,8 @@ import (
 )
 
 type dbServiceCreateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"create"`
 
 	Type string `cli-arg:"#"`
@@ -84,5 +86,7 @@ func (c *dbServiceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceCreateCmd{}))
+	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceCreateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

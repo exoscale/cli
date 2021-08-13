@@ -21,6 +21,8 @@ func (o *dbTypeListOutput) toText()  { outputText(o) }
 func (o *dbTypeListOutput) toTable() { outputTable(o) }
 
 type dbTypeListCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"list"`
 }
 
@@ -64,5 +66,7 @@ func (c *dbTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbTypeCmd, &dbTypeListCmd{}))
+	cobra.CheckErr(registerCLICommand(dbTypeCmd, &dbTypeListCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

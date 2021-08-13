@@ -23,6 +23,8 @@ func (o *dbServiceListOutput) toText()  { outputText(o) }
 func (o *dbServiceListOutput) toTable() { outputTable(o) }
 
 type dbServiceListCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
@@ -89,5 +91,7 @@ func (c *dbServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceListCmd{}))
+	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceListCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

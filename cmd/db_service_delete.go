@@ -9,6 +9,8 @@ import (
 )
 
 type dbServiceDeleteCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"delete"`
 
 	Name string `cli-arg:"#"`
@@ -49,5 +51,7 @@ func (c *dbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceDeleteCmd{}))
+	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceDeleteCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

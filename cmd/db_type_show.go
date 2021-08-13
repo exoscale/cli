@@ -60,6 +60,8 @@ func (o *dbTypeShowOutput) toTable() {
 }
 
 type dbTypeShowCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"show"`
 
 	Name string `cli-arg:"#"`
@@ -113,5 +115,7 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbTypeCmd, &dbTypeShowCmd{}))
+	cobra.CheckErr(registerCLICommand(dbTypeCmd, &dbTypeShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }
