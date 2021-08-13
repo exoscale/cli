@@ -97,6 +97,46 @@ type DatabaseServiceBackup struct {
 	Date *time.Time
 }
 
+func databaseServiceBackupFromAPI(b *papi.DbaasServiceBackup) *DatabaseServiceBackup {
+	return &DatabaseServiceBackup{
+		Name: &b.BackupName,
+		Size: &b.DataSize,
+		Date: &b.BackupTime,
+	}
+}
+
+// DatabaseServiceComponent represents a Database Service component.
+type DatabaseServiceComponent struct {
+	Name *string
+	Info map[string]interface{}
+}
+
+func databaseServiceComponentFromAPI(c *papi.DbaasServiceComponents) *DatabaseServiceComponent {
+	info := map[string]interface{}{
+		"host":  c.Host,
+		"port":  c.Port,
+		"route": c.Route,
+		"usage": c.Usage,
+	}
+
+	if c.KafkaAuthenticationMethod != nil {
+		info["kafka_authenticated_method"] = c.KafkaAuthenticationMethod
+	}
+
+	if c.Path != nil {
+		info["path"] = c.Path
+	}
+
+	if c.Ssl != nil {
+		info["ssl"] = c.Ssl
+	}
+
+	return &DatabaseServiceComponent{
+		Name: &c.Component,
+		Info: info,
+	}
+}
+
 // DatabaseServiceMaintenance represents a Database Service maintenance.
 type DatabaseServiceMaintenance struct {
 	DOW  string
@@ -107,14 +147,6 @@ func databaseServiceMaintenanceFromAPI(m *papi.DbaasServiceMaintenance) *Databas
 	return &DatabaseServiceMaintenance{
 		DOW:  string(m.Dow),
 		Time: m.Time,
-	}
-}
-
-func databaseServiceBackupFromAPI(b *papi.DbaasServiceBackup) *DatabaseServiceBackup {
-	return &DatabaseServiceBackup{
-		Name: &b.BackupName,
-		Size: &b.DataSize,
-		Date: &b.BackupTime,
 	}
 }
 
@@ -136,6 +168,7 @@ func databaseServiceUserFromAPI(u *papi.DbaasServiceUser) *DatabaseServiceUser {
 // DatabaseService represents a Database Service.
 type DatabaseService struct {
 	Backups               []*DatabaseServiceBackup
+	Components            []*DatabaseServiceComponent
 	ConnectionInfo        map[string]interface{}
 	CreatedAt             *time.Time
 	DiskSize              *int64
@@ -166,6 +199,15 @@ func databaseServiceFromAPI(s *papi.DbaasService) *DatabaseService {
 				}
 			}
 			return backups
+		}(),
+		Components: func() []*DatabaseServiceComponent {
+			components := make([]*DatabaseServiceComponent, 0)
+			if s.Components != nil {
+				for _, c := range *s.Components {
+					components = append(components, databaseServiceComponentFromAPI(&c))
+				}
+			}
+			return components
 		}(),
 		ConnectionInfo: func() (v map[string]interface{}) {
 			if s.ConnectionInfo != nil {

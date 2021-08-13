@@ -11,6 +11,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -38,23 +39,24 @@ type dbServiceUserShowOutput struct {
 }
 
 type dbServiceShowOutput struct {
-	Name                  string                          `json:"name"`
-	Type                  string                          `json:"type"`
-	Plan                  string                          `json:"plan"`
-	CreationDate          time.Time                       `json:"creation_date"`
-	Nodes                 int64                           `json:"nodes"`
-	NodeCPUs              int64                           `json:"node_cpus"`
-	NodeMemory            int64                           `json:"node_memory"`
-	UpdateDate            time.Time                       `json:"update_date"`
-	DiskSize              int64                           `json:"disk_size"`
-	State                 string                          `json:"state"`
-	TerminationProtection bool                            `json:"termination_protection"`
-	Maintenance           *dbServiceMaintenanceShowOutput `json:"maintenance"`
-	Users                 []dbServiceUserShowOutput       `json:"users"`
-	ConnectionInfo        map[string]interface{}          `json:"connection_info"`
-	Features              map[string]interface{}          `json:"features"`
-	Metadata              map[string]interface{}          `json:"metadata"`
-	Zone                  string                          `json:"zone"`
+	Name                  string                               `json:"name"`
+	Type                  string                               `json:"type"`
+	Plan                  string                               `json:"plan"`
+	CreationDate          time.Time                            `json:"creation_date"`
+	Nodes                 int64                                `json:"nodes"`
+	NodeCPUs              int64                                `json:"node_cpus"`
+	NodeMemory            int64                                `json:"node_memory"`
+	UpdateDate            time.Time                            `json:"update_date"`
+	DiskSize              int64                                `json:"disk_size"`
+	State                 string                               `json:"state"`
+	TerminationProtection bool                                 `json:"termination_protection"`
+	Maintenance           *dbServiceMaintenanceShowOutput      `json:"maintenance"`
+	Users                 []dbServiceUserShowOutput            `json:"users"`
+	ConnectionInfo        map[string]interface{}               `json:"connection_info"`
+	Components            []*egoscale.DatabaseServiceComponent `json:"components"`
+	Features              map[string]interface{}               `json:"features"`
+	Metadata              map[string]interface{}               `json:"metadata"`
+	Zone                  string                               `json:"zone"`
 }
 
 func (o *dbServiceShowOutput) toJSON() { outputJSON(o) }
@@ -243,6 +245,7 @@ func showDatabaseService(zone, name string) (outputter, error) {
 			return
 		}(),
 		ConnectionInfo: databaseService.ConnectionInfo,
+		Components:     databaseService.Components,
 		Features:       databaseService.Features,
 		Metadata:       databaseService.Metadata,
 		Users: func() []dbServiceUserShowOutput {

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.70.0
+------
+
+- feature: v2: add `DatabaseServiceComponent` struct
+
 0.69.0
 ------
 
