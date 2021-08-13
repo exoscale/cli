@@ -10,6 +10,8 @@ import (
 )
 
 type dbServiceUpdateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"update"`
 
 	Name string `cli-arg:"#"`
@@ -99,5 +101,7 @@ func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceUpdateCmd{}))
+	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceUpdateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

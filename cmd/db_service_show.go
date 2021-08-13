@@ -51,6 +51,7 @@ type dbServiceShowOutput struct {
 	TerminationProtection bool                            `json:"termination_protection"`
 	Maintenance           *dbServiceMaintenanceShowOutput `json:"maintenance"`
 	Users                 []dbServiceUserShowOutput       `json:"users"`
+	ConnectionInfo        map[string]interface{}          `json:"connection_info"`
 	Features              map[string]interface{}          `json:"features"`
 	Metadata              map[string]interface{}          `json:"metadata"`
 	Zone                  string                          `json:"zone"`
@@ -70,9 +71,9 @@ func (o *dbServiceShowOutput) toTable() {
 	t.Append([]string{"Creation Date", fmt.Sprint(o.CreationDate)})
 	t.Append([]string{"Nodes", fmt.Sprint(o.Nodes)})
 	t.Append([]string{"Node CPUs", fmt.Sprint(o.NodeCPUs)})
-	t.Append([]string{"Node Memory", humanize.Bytes(uint64(o.NodeMemory))})
+	t.Append([]string{"Node Memory", humanize.IBytes(uint64(o.NodeMemory))})
 	t.Append([]string{"Update Date", fmt.Sprint(o.UpdateDate)})
-	t.Append([]string{"Disk Size", humanize.Bytes(uint64(o.DiskSize))})
+	t.Append([]string{"Disk Size", humanize.IBytes(uint64(o.DiskSize))})
 	t.Append([]string{"State", o.State})
 	t.Append([]string{"Termination Protected", fmt.Sprint(o.TerminationProtection)})
 
@@ -142,6 +143,8 @@ func (o *dbServiceShowOutput) toTable() {
 }
 
 type dbServiceShowCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"show"`
 
 	Name string `cli-arg:"#"`
@@ -239,8 +242,9 @@ func showDatabaseService(zone, name string) (outputter, error) {
 			}
 			return
 		}(),
-		Features: databaseService.Features,
-		Metadata: databaseService.Metadata,
+		ConnectionInfo: databaseService.ConnectionInfo,
+		Features:       databaseService.Features,
+		Metadata:       databaseService.Metadata,
 		Users: func() []dbServiceUserShowOutput {
 			list := make([]dbServiceUserShowOutput, len(databaseService.Users))
 			for i, u := range databaseService.Users {
@@ -258,5 +262,7 @@ func showDatabaseService(zone, name string) (outputter, error) {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceShowCmd{}))
+	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

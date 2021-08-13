@@ -8,6 +8,8 @@ import (
 )
 
 type dbCACertificateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"ca-certificate"`
 
 	Zone string `cli-short:"z"`
@@ -41,5 +43,7 @@ func (c *dbCACertificateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbCACertificateCmd{}))
+	cobra.CheckErr(registerCLICommand(dbCmd, &dbCACertificateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }
