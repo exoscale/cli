@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.69.0
+------
+
+- feature: v2: add method `Client.GetDatabaseCACertificate()`
+
 0.68.1
 ------
 

@@ -2,4 +2,4 @@
 package version
 
 // Version represents the current egoscale version.
-const Version = "0.68.1"
+const Version = "0.69.0"
