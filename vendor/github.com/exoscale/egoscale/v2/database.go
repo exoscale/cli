@@ -228,6 +228,16 @@ func databaseServiceFromAPI(s *papi.DbaasService) *DatabaseService {
 	}
 }
 
+// GetDatabaseCACertificate returns the CA certificate required to access Database Services using a TLS connection.
+func (c *Client) GetDatabaseCACertificate(ctx context.Context, zone string) (string, error) {
+	resp, err := c.GetDbaasCaCertificateWithResponse(apiv2.WithZone(ctx, zone))
+	if err != nil {
+		return "", err
+	}
+
+	return *resp.JSON200.Certificate, nil
+}
+
 // GetDatabaseServiceType returns the Database Service type corresponding to the specified name.
 func (c *Client) GetDatabaseServiceType(ctx context.Context, zone, name string) (*DatabaseServiceType, error) {
 	resp, err := c.GetDbaasServiceTypeWithResponse(apiv2.WithZone(ctx, zone), name)
