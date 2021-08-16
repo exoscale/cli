@@ -43,17 +43,20 @@ func (c *computeInstanceTemplateListCmd) cmdLong() string {
 }
 
 func (c *computeInstanceTemplateListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *computeInstanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	if c.Zone == "" {
+		c.Zone = gCurrentAccount.DefaultZone
+	}
+
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone),
 	)
 
-	templates, err := cs.ListTemplates(ctx, gCurrentAccount.DefaultZone, c.Visibility, c.Family)
+	templates, err := cs.ListTemplates(ctx, c.Zone, c.Visibility, c.Family)
 	if err != nil {
 		return err
 	}
