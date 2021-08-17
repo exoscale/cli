@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.40.3
+
+### Bug Fixes
+
+- Fix `exo compute instance-template list` command ignoring the `--zone` flag
+
+
 ## 1.40.2
 
 ### Bug Fixes
