@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.40.4
+
+### Changes
+
+- Update experimental `exo lab db` commands
+
+
 ## 1.40.3
 
 ### Bug Fixes
