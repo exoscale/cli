@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.40.5
+
+### Changes
+
+- `exo lab db show`: change `.Users` output label format
+
+
 ## 1.40.4
 
 ### Changes
