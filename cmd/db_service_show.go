@@ -33,11 +33,6 @@ type dbServiceMaintenanceShowOutput struct {
 	Time string `json:"time"`
 }
 
-type dbServiceUserShowOutput struct {
-	Type     string
-	UserName string
-}
-
 type dbServiceShowOutput struct {
 	Name                  string                               `json:"name"`
 	Type                  string                               `json:"type"`
@@ -51,7 +46,7 @@ type dbServiceShowOutput struct {
 	State                 string                               `json:"state"`
 	TerminationProtection bool                                 `json:"termination_protection"`
 	Maintenance           *dbServiceMaintenanceShowOutput      `json:"maintenance"`
-	Users                 []dbServiceUserShowOutput            `json:"users"`
+	Users                 []*egoscale.DatabaseServiceUser      `json:"users"`
 	ConnectionInfo        map[string]interface{}               `json:"connection_info"`
 	Components            []*egoscale.DatabaseServiceComponent `json:"components"`
 	Features              map[string]interface{}               `json:"features"`
@@ -92,7 +87,7 @@ func (o *dbServiceShowOutput) toTable() {
 				func() []string {
 					users := make([]string, len(o.Users))
 					for i := range o.Users {
-						users[i] = fmt.Sprintf("%s (%s)", o.Users[i].UserName, o.Users[i].Type)
+						users[i] = fmt.Sprintf("%s (%s)", *o.Users[i].UserName, *o.Users[i].Type)
 					}
 					return users
 				}(),
@@ -248,17 +243,8 @@ func showDatabaseService(zone, name string) (outputter, error) {
 		Components:     databaseService.Components,
 		Features:       databaseService.Features,
 		Metadata:       databaseService.Metadata,
-		Users: func() []dbServiceUserShowOutput {
-			list := make([]dbServiceUserShowOutput, len(databaseService.Users))
-			for i, u := range databaseService.Users {
-				list[i] = dbServiceUserShowOutput{
-					UserName: *u.UserName,
-					Type:     *u.Type,
-				}
-			}
-			return list
-		}(),
-		Zone: zone,
+		Users:          databaseService.Users,
+		Zone:           zone,
 	}
 
 	return &out, nil
