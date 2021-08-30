@@ -61,7 +61,7 @@ nfpms:
         dst: "/usr/share/man/man1"
       # bash
       - src: "./contrib/completion/bash/exo"
-        dst: "/usr/share/bash-completion/completion/exo"
+        dst: "/usr/share/bash-completion/completions/exo"
       # zsh
       - src: "./contrib/completion/zsh/_exo"
         dst: "/usr/share/zsh/vendor-completions/_exo"
