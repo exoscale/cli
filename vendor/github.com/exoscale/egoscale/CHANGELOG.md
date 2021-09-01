@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.71.0
+------
+
+- feature: v2: add `Client.UpgradeSKSClusterServiceLevel()` method
+
 0.70.0
 ------
 

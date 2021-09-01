@@ -805,3 +805,21 @@ func (c *Client) UpgradeSKSCluster(ctx context.Context, zone string, cluster *SK
 
 	return nil
 }
+
+// UpgradeSKSClusterServiceLevel upgrades an SKS cluster to service level "pro".
+func (c *Client) UpgradeSKSClusterServiceLevel(ctx context.Context, zone string, cluster *SKSCluster) error {
+	resp, err := c.UpgradeSksClusterServiceLevelWithResponse(apiv2.WithZone(ctx, zone), *cluster.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = papi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
