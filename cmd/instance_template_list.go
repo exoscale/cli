@@ -38,7 +38,7 @@ func (c *computeInstanceTemplateListCmd) cmdShort() string { return "List Comput
 func (c *computeInstanceTemplateListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Compute instance templates.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&computeInstanceTemplateListItemOutput{}), ", "))
 }
 

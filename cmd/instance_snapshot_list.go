@@ -39,7 +39,7 @@ func (c *instanceSnapshotListCmd) cmdShort() string { return "List Compute insta
 func (c *instanceSnapshotListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing Compute instance snapshots.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instanceSnapshotListOutput{}), ", "))
 }
 

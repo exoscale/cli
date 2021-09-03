@@ -29,7 +29,7 @@ func (c *computeSSHKeyRegisterCmd) cmdShort() string {
 func (c *computeSSHKeyRegisterCmd) cmdLong() string {
 	return fmt.Sprintf(`This command registers a new SSH key.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
 }
 

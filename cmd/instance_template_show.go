@@ -72,7 +72,7 @@ func (c *computeInstanceTemplateShowCmd) cmdShort() string {
 func (c *computeInstanceTemplateShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance template details.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&computeInstanceTemplateShowOutput{}), ", "))
 }
 

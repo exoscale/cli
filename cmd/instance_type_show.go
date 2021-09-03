@@ -55,7 +55,7 @@ func (c *computeInstanceTypeShowCmd) cmdShort() string {
 func (c *computeInstanceTypeShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance type details.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&computeInstanceTypeShowOutput{}), ", "))
 }
 

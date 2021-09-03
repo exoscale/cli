@@ -42,7 +42,7 @@ func (c *instanceSnapshotShowCmd) cmdShort() string {
 func (c *instanceSnapshotShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance snapshot details.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&instanceSnapshotShowOutput{}), ", "))
 }
 

@@ -29,7 +29,7 @@ var apiKeyCreateCmd = &cobra.Command{
 	Short: "Create an API key",
 	Long: fmt.Sprintf(`This command create an API key.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&apiKeyCreateItemOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

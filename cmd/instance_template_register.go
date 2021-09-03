@@ -37,7 +37,7 @@ func (c *computeInstanceTemplateRegisterCmd) cmdShort() string {
 func (c *computeInstanceTemplateRegisterCmd) cmdLong() string {
 	return fmt.Sprintf(`This command registers a new Compute instance template.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&computeInstanceTemplateShowOutput{}), ", "))
 }
 

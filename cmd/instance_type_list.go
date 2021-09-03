@@ -33,7 +33,7 @@ func (c *computeInstanceTypeListCmd) cmdShort() string { return "List Compute in
 func (c *computeInstanceTypeListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Compute instance types.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&computeInstanceTypeListItemOutput{}), ", "))
 }
 

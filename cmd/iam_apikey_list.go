@@ -25,7 +25,7 @@ var apiKeyListCmd = &cobra.Command{
 	Short: "List API keys",
 	Long: fmt.Sprintf(`This command lists existing API keys.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&apiKeyListItemOutput{}), ", ")),
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {

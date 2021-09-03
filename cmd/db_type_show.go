@@ -74,7 +74,7 @@ func (c *dbTypeShowCmd) cmdShort() string { return "Show a Database Service type
 func (c *dbTypeShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Database Service type details.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&dbTypeShowOutput{}), ", "))
 }
 

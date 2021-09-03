@@ -24,9 +24,9 @@ var apiKeyOperationsCmd = &cobra.Command{
 	Use:   "operations [FILTER]...",
 	Short: "List supported API key operations",
 	Long: fmt.Sprintf(`This command lists all supported operations for an API key.
-	Optional patterns can be provided to filter results by compute, DNS, IAM or SOS operations.
+Optional patterns can be provided to filter results by compute, DNS, IAM or SOS operations.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&apiKeyOperationsItemOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return output(listAPIKeyOperations(args))

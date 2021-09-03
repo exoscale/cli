@@ -35,7 +35,7 @@ func (c *computeSSHKeyShowCmd) cmdShort() string {
 func (c *computeSSHKeyShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an SSH key details.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
 }
 

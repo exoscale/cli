@@ -37,7 +37,7 @@ func (c *deployTargetListCmd) cmdShort() string { return "List Deploy Targets" }
 func (c *deployTargetListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing Deploy Targets.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&deployTargetListOutput{}), ", "))
 }
 

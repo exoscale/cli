@@ -37,7 +37,7 @@ func (c *deployTargetShowCmd) cmdShort() string { return "Show a Deploy Target d
 func (c *deployTargetShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Deploy Target details.
 
-	Supported output template annotations: %s`,
+Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&deployTargetShowOutput{}), ", "))
 }
 
