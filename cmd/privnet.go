@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"net"
+	"os"
+	"time"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -11,6 +13,15 @@ import (
 var privnetCmd = &cobra.Command{
 	Use:   "privnet",
 	Short: "Private networks management",
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintln(os.Stderr,
+			`**********************************************************************
+The "exo privnet" commands are deprecated and will be removed in a future
+version, please use "exo compute private-network" replacement commands.
+**********************************************************************`)
+		time.Sleep(3 * time.Second)
+	},
+	Hidden: true,
 }
 
 // getNetwork returns a Private Network by name or ID, and optionally a zone to restrict search to.
