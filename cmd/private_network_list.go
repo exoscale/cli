@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -23,6 +24,8 @@ type privateNetworkListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
+
+	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *privateNetworkListCmd) cmdAliases() []string { return gListAlias }
@@ -41,23 +44,43 @@ func (c *privateNetworkListCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
-	)
+	var zones []string
 
-	privateNetworks, err := cs.ListPrivateNetworks(ctx, gCurrentAccount.DefaultZone)
-	if err != nil {
-		return err
+	if c.Zone != "" {
+		zones = []string{c.Zone}
+	} else {
+		zones = allZones
 	}
 
 	out := make(privateNetworkListOutput, 0)
+	res := make(chan privateNetworkListItemOutput)
+	defer close(res)
 
-	for _, t := range privateNetworks {
-		out = append(out, privateNetworkListItemOutput{
-			ID:   *t.ID,
-			Name: *t.Name,
-		})
+	go func() {
+		for nlb := range res {
+			out = append(out, nlb)
+		}
+	}()
+	err := forEachZone(zones, func(zone string) error {
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+
+		list, err := cs.ListPrivateNetworks(ctx, zone)
+		if err != nil {
+			return fmt.Errorf("unable to list Private Networks in zone %s: %v", zone, err)
+		}
+
+		for _, p := range list {
+			res <- privateNetworkListItemOutput{
+				ID:   *p.ID,
+				Name: *p.Name,
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr,
+			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
 	return output(&out, nil)

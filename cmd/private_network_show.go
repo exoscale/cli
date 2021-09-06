@@ -70,7 +70,9 @@ type privateNetworkShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	SecurityGroup string `cli-arg:"#" cli-usage:"NAME|ID"`
+	PrivateNetwork string `cli-arg:"#" cli-usage:"NAME|ID"`
+
+	Zone string `cli-short:"z" cli-usage:"Private Network zone"`
 }
 
 func (c *privateNetworkShowCmd) cmdAliases() []string { return gShowAlias }
@@ -90,11 +92,12 @@ Supported output template annotations for Private Network leases: %s`,
 }
 
 func (c *privateNetworkShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showPrivateNetwork(gCurrentAccount.DefaultZone, c.SecurityGroup))
+	return output(showPrivateNetwork(c.Zone, c.PrivateNetwork))
 }
 
 func showPrivateNetwork(zone, x string) (outputter, error) {
