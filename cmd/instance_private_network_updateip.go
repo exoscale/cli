@@ -23,7 +23,7 @@ type instancePrivnetUpdateIPCmd struct {
 func (c *instancePrivnetUpdateIPCmd) cmdAliases() []string { return nil }
 
 func (c *instancePrivnetUpdateIPCmd) cmdShort() string {
-	return "Update Private Network IP address of a Compute instance"
+	return "Update a Compute instance Private Network IP address"
 }
 
 func (c *instancePrivnetUpdateIPCmd) cmdLong() string {
@@ -40,7 +40,7 @@ func (c *instancePrivnetUpdateIPCmd) cmdPreRun(cmd *cobra.Command, args []string
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePrivnetUpdateIPCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
