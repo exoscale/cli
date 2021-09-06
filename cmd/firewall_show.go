@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type securityGroupShowItemOutput struct {
+type firewallShowItemOutput struct {
 	ID          string `json:"id"`
 	Type        string `json:"type"`
 	Source      string `json:"source"`
@@ -18,11 +18,11 @@ type securityGroupShowItemOutput struct {
 	Description string `json:"description,omitempty"`
 }
 
-type securityGroupShowOutput []securityGroupShowItemOutput
+type firewallShowOutput []firewallShowItemOutput
 
-func (o *securityGroupShowOutput) toJSON()  { outputJSON(o) }
-func (o *securityGroupShowOutput) toText()  { outputText(o) }
-func (o *securityGroupShowOutput) toTable() { outputTable(o) }
+func (o *firewallShowOutput) toJSON()  { outputJSON(o) }
+func (o *firewallShowOutput) toText()  { outputText(o) }
+func (o *firewallShowOutput) toTable() { outputTable(o) }
 
 func init() {
 	firewallCmd.AddCommand(&cobra.Command{
@@ -31,28 +31,28 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Security Group details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&securityGroupShowOutput{}), ", ")),
+			strings.Join(outputterTemplateAnnotations(&firewallShowOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("show expects one Security Group by name or id")
 			}
 
-			return output(showSecurityGroup(args[0]))
+			return output(showFirewall(args[0]))
 		},
 	})
 }
 
-func showSecurityGroup(name string) (outputter, error) {
+func showFirewall(name string) (outputter, error) {
 	sg, err := getSecurityGroupByNameOrID(name)
 	if err != nil {
 		return nil, err
 	}
 
-	out := securityGroupShowOutput{}
+	out := firewallShowOutput{}
 
 	for _, rule := range sg.IngressRule {
-		out = append(out, securityGroupShowItemOutput{
+		out = append(out, firewallShowItemOutput{
 			Type:        "ingress",
 			ID:          rule.RuleID.String(),
 			Source:      formatRuleSource(rule),
@@ -63,7 +63,7 @@ func showSecurityGroup(name string) (outputter, error) {
 	}
 
 	for _, rule := range sg.EgressRule {
-		out = append(out, securityGroupShowItemOutput{
+		out = append(out, firewallShowItemOutput{
 			Type:        "egress",
 			ID:          rule.RuleID.String(),
 			Source:      formatRuleSource((egoscale.IngressRule)(rule)),

@@ -8,18 +8,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type securityGroupListItemOutput struct {
+type firewallListItemOutput struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	NumRules    int    `json:"num_rules" outputLabel:"Rules"`
 }
 
-type securityGroupListOutput []securityGroupListItemOutput
+type firewallListOutput []firewallListItemOutput
 
-func (o *securityGroupListOutput) toJSON()  { outputJSON(o) }
-func (o *securityGroupListOutput) toText()  { outputText(o) }
-func (o *securityGroupListOutput) toTable() { outputTable(o) }
+func (o *firewallListOutput) toJSON()  { outputJSON(o) }
+func (o *firewallListOutput) toText()  { outputText(o) }
+func (o *firewallListOutput) toTable() { outputTable(o) }
 
 func init() {
 	firewallCmd.AddCommand(&cobra.Command{
@@ -29,7 +29,7 @@ func init() {
 Optional patterns can be provided to filter results by ID, name or description.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&securityGroupListOutput{}), ", ")),
+			strings.Join(outputterTemplateAnnotations(&firewallListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return output(listSecurityGroups(args))
@@ -43,7 +43,7 @@ func listSecurityGroups(filters []string) (outputter, error) {
 		return nil, err
 	}
 
-	out := securityGroupListOutput{}
+	out := firewallListOutput{}
 
 	for _, s := range sgs {
 		sg := s.(*egoscale.SecurityGroup)
@@ -66,7 +66,7 @@ func listSecurityGroups(filters []string) (outputter, error) {
 			continue
 		}
 
-		out = append(out, securityGroupListItemOutput{
+		out = append(out, firewallListItemOutput{
 			ID:          sg.ID.String(),
 			Name:        sg.Name,
 			Description: sg.Description,

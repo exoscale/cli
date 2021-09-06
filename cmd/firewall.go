@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
+	"time"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -17,6 +19,15 @@ var (
 var firewallCmd = &cobra.Command{
 	Use:   "firewall",
 	Short: "Security Groups management",
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintln(os.Stderr,
+			`**********************************************************************
+The "exo firewall" commands are deprecated and will be removed in a future
+version, please use "exo compute security-group" replacement commands.
+**********************************************************************`)
+		time.Sleep(3 * time.Second)
+	},
+	Hidden: true,
 }
 
 func init() {
