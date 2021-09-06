@@ -56,8 +56,6 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		zones = allZones
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zones[0]))
-
 	out := make(instanceSnapshotListOutput, 0)
 	res := make(chan instanceSnapshotListItemOutput)
 	defer close(res)
@@ -70,6 +68,8 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}()
 	err := forEachZone(zones, func(zone string) error {
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+
 		list, err := cs.ListSnapshots(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Compute instance snapshots in zone %s: %v", zone, err)
