@@ -147,7 +147,7 @@ Supported output template annotations: %s`,
 		}
 
 		if !gQuiet {
-			return output(showVM(vm.Name))
+			return output(showVM(vm.ID.String()))
 		}
 
 		return nil
