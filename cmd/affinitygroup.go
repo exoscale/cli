@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -11,6 +13,16 @@ var affinitygroupCmd = &cobra.Command{
 	Use:     "anti-affinity-group",
 	Aliases: []string{"aag", "affinitygroup"},
 	Short:   "Anti-Affinity Groups management",
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintln(os.Stderr,
+			`**********************************************************************
+The "exo anti-affinity-group" commands are deprecated and will be removed in
+a future version, please use "exo compute anti-affinity-group" replacement
+commands.
+**********************************************************************`)
+		time.Sleep(3 * time.Second)
+	},
+	Hidden: true,
 }
 
 func getAntiAffinityGroupByNameOrID(v string) (*egoscale.AffinityGroup, error) {

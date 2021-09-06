@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.72.0
+------
+
+- feature: v2: add `AntiAffinityGroup.InstanceIDs` field
+
 0.71.1
 ------
 

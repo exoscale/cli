@@ -11,6 +11,7 @@ import (
 type AntiAffinityGroup struct {
 	Description *string
 	ID          *string
+	InstanceIDs *[]string
 	Name        *string `req-for:"create"`
 }
 
@@ -18,7 +19,17 @@ func antiAffinityGroupFromAPI(a *papi.AntiAffinityGroup) *AntiAffinityGroup {
 	return &AntiAffinityGroup{
 		Description: a.Description,
 		ID:          a.Id,
-		Name:        a.Name,
+		InstanceIDs: func() (v *[]string) {
+			if a.Instances != nil && len(*a.Instances) > 0 {
+				ids := make([]string, len(*a.Instances))
+				for i, item := range *a.Instances {
+					ids[i] = *item.Id
+				}
+				v = &ids
+			}
+			return
+		}(),
+		Name: a.Name,
 	}
 }
 
