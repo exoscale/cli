@@ -6,7 +6,7 @@ import (
 
 var deployTargetCmd = &cobra.Command{
 	Use:     "deploy-target",
-	Short:   "Deploy Targets management",
+	Short:   "Compute instance Deploy Targets management",
 	Aliases: []string{"dt"},
 }
 
