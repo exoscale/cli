@@ -54,8 +54,6 @@ func (c *dbServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		zones = allZones
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
-
 	out := make(dbServiceListOutput, 0)
 	res := make(chan dbServiceListItemOutput)
 	defer close(res)
@@ -66,6 +64,8 @@ func (c *dbServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}()
 	err := forEachZone(zones, func(zone string) error {
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+
 		list, err := cs.ListDatabaseServices(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Database Services in zone %s: %v", zone, err)

@@ -57,8 +57,6 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		zones = allZones
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
-
 	out := make(instanceListOutput, 0)
 	res := make(chan instanceListItemOutput)
 	defer close(res)
@@ -71,6 +69,8 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}()
 	err := forEachZone(zones, func(zone string) error {
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+
 		list, err := cs.ListInstances(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Compute instances in zone %s: %v", zone, err)

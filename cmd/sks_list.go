@@ -51,8 +51,6 @@ func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		zones = allZones
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
-
 	out := make(sksClusterListOutput, 0)
 	res := make(chan sksClusterListItemOutput)
 	defer close(res)
@@ -63,6 +61,8 @@ func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}()
 	err := forEachZone(zones, func(zone string) error {
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+
 		list, err := cs.ListSKSClusters(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list SKS clusters in zone %s: %v", zone, err)
