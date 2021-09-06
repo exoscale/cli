@@ -116,18 +116,18 @@ func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	return output(showNLBService(c.Zone, c.NetworkLoadBalancer, c.Service))
 }
 
-func showNLBService(zone, nlbRef, svcRef string) (outputter, error) {
+func showNLBService(zone, xNLB, xService string) (outputter, error) {
 	var svc *egoscale.NetworkLoadBalancerService
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	nlb, err := cs.FindNetworkLoadBalancer(ctx, zone, nlbRef)
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, zone, xNLB)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, s := range nlb.Services {
-		if *s.ID == svcRef || *s.Name == svcRef {
+		if *s.ID == xService || *s.Name == xService {
 			svc = s
 			break
 		}

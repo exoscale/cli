@@ -104,10 +104,10 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	return output(showSKSCluster(c.Zone, c.Cluster))
 }
 
-func showSKSCluster(zone, c string) (outputter, error) {
+func showSKSCluster(zone, x string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, zone, c)
+	cluster, err := cs.FindSKSCluster(ctx, zone, x)
 	if err != nil {
 		return nil, err
 	}
