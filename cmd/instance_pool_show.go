@@ -86,10 +86,10 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	return output(showInstancePool(c.Zone, c.InstancePool))
 }
 
-func showInstancePool(zone, i string) (outputter, error) {
+func showInstancePool(zone, x string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	instancePool, err := cs.FindInstancePool(ctx, zone, i)
+	instancePool, err := cs.FindInstancePool(ctx, zone, x)
 	if err != nil {
 		return nil, err
 	}

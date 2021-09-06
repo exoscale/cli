@@ -84,10 +84,10 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	return output(showInstance(c.Zone, c.Instance))
 }
 
-func showInstance(zone, i string) (outputter, error) {
+func showInstance(zone, x string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	instance, err := cs.FindInstance(ctx, zone, i)
+	instance, err := cs.FindInstance(ctx, zone, x)
 	if err != nil {
 		return nil, err
 	}

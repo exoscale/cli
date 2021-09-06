@@ -106,10 +106,10 @@ func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	return output(showNLB(c.Zone, c.NetworkLoadBalancer))
 }
 
-func showNLB(zone, ref string) (outputter, error) {
+func showNLB(zone, x string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	nlb, err := cs.FindNetworkLoadBalancer(ctx, zone, ref)
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, zone, x)
 	if err != nil {
 		return nil, err
 	}
