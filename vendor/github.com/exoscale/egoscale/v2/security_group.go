@@ -220,9 +220,7 @@ func (c *Client) CreateSecurityGroupRule(
 
 	// Look for an unknown rule: if we find one we hope it's the one we've just created.
 	for _, r := range sgUpdated.Rules {
-		if _, ok := rules[*r.ID]; !ok && (*r.Protocol == *rule.Protocol &&
-			*r.StartPort == *rule.StartPort &&
-			*r.EndPort == *rule.EndPort) {
+		if _, ok := rules[*r.ID]; !ok && (*r.FlowDirection == *rule.FlowDirection && *r.Protocol == *rule.Protocol) {
 			return r, nil
 		}
 	}
