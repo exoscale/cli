@@ -11,6 +11,8 @@ import (
 )
 
 type sksNodepoolScaleCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"scale"`
 
 	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
@@ -86,5 +88,7 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolScaleCmd{}))
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolScaleCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

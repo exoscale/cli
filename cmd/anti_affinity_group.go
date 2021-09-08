@@ -6,7 +6,7 @@ import (
 
 var antiAffinityGroupCmd = &cobra.Command{
 	Use:     "anti-affinity-group",
-	Short:   "Compute instance Anti-Affinity Groups management",
+	Short:   "Anti-Affinity Groups management",
 	Aliases: []string{"aag"},
 }
 

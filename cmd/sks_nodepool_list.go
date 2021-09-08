@@ -25,6 +25,8 @@ func (o *sksNodepoolListOutput) toText()  { outputText(o) }
 func (o *sksNodepoolListOutput) toTable() { outputTable(o) }
 
 type sksNodepoolListCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
@@ -95,5 +97,7 @@ func (c *sksNodepoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolListCmd{}))
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolListCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

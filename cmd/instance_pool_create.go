@@ -10,6 +10,8 @@ import (
 )
 
 type instancePoolCreateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"create"`
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
@@ -196,6 +198,17 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolCreateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
+		DiskSize:       50,
+		InstanceType:   defaultServiceOffering,
+		Size:           1,
+		Template:       defaultTemplate,
+		TemplateFilter: defaultTemplateFilter,
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolCreateCmd{
 		DiskSize:       50,
 		InstanceType:   defaultServiceOffering,
 		Size:           1,

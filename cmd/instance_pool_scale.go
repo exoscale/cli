@@ -9,6 +9,8 @@ import (
 )
 
 type instancePoolScaleCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"scale"`
 
 	InstancePool string `cli-arg:"#" cli-usage:"INSTANCE-POOL-NAME|ID"`
@@ -73,5 +75,10 @@ func (c *instancePoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolScaleCmd{}))
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolScaleCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolScaleCmd{}))
 }

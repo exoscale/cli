@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/kballard/go-shellquote"
 	"github.com/spf13/cobra"
@@ -80,6 +81,15 @@ Example:
 
 		return runSCP(scpCmd[1:])
 	},
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintln(os.Stderr,
+			`**********************************************************************
+The "exo scp" command is deprecated and will be removed in a future
+version, please use "exo compute instance scp" replacement command.
+**********************************************************************`)
+		time.Sleep(3 * time.Second)
+	},
+	Hidden: true,
 }
 
 func buildSCPCommand(info *scpInfo, args []string) []string {

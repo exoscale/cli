@@ -9,6 +9,8 @@ import (
 )
 
 type nlbServiceDeleteCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"delete"`
 
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
@@ -61,5 +63,7 @@ func (c *nlbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceDeleteCmd{}))
+	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceDeleteCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

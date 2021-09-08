@@ -23,6 +23,8 @@ func (o *nlbListOutput) toText()  { outputText(o) }
 func (o *nlbListOutput) toTable() { outputTable(o) }
 
 type nlbListCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
@@ -89,5 +91,10 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbListCmd{}))
+	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbListCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedNLBCmd, &nlbListCmd{}))
 }

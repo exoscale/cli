@@ -6,7 +6,7 @@ import (
 
 var securityGroupCmd = &cobra.Command{
 	Use:     "security-group",
-	Short:   "Compute instance Security Groups management",
+	Short:   "Security Groups management",
 	Aliases: []string{"sg"},
 }
 

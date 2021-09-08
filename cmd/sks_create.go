@@ -18,6 +18,8 @@ var (
 )
 
 type sksCreateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"create"`
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
@@ -237,6 +239,16 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(registerCLICommand(sksCmd, &sksCreateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
+		KubernetesVersion:    "latest",
+		NodepoolDiskSize:     50,
+		NodepoolInstanceType: defaultServiceOffering,
+		ServiceLevel:         defaultSKSClusterServiceLevel,
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksCreateCmd{
 		KubernetesVersion:    "latest",
 		NodepoolDiskSize:     50,
 		NodepoolInstanceType: defaultServiceOffering,

@@ -10,6 +10,8 @@ import (
 )
 
 type nlbCreateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"create"`
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
@@ -70,5 +72,10 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbCreateCmd{}))
+	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbCreateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedNLBCmd, &nlbCreateCmd{}))
 }

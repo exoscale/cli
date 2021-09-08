@@ -12,6 +12,8 @@ import (
 )
 
 type sksKubeconfigCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"kubeconfig"`
 
 	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
@@ -177,5 +179,10 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksKubeconfigCmd{}))
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksKubeconfigCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksKubeconfigCmd{}))
 }

@@ -9,6 +9,8 @@ import (
 )
 
 type sksUpdateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"update"`
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -84,5 +86,10 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpdateCmd{}))
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpdateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksUpdateCmd{}))
 }

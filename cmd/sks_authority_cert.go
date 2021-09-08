@@ -15,6 +15,8 @@ var sksAuthorityCertAuthorities = []string{
 }
 
 type sksAuthorityCertCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"authority-cert"`
 
 	Cluster   string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
@@ -76,5 +78,10 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksAuthorityCertCmd{}))
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksAuthorityCertCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksAuthorityCertCmd{}))
 }

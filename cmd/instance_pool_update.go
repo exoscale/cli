@@ -10,6 +10,8 @@ import (
 )
 
 type instancePoolUpdateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"update"`
 
 	InstancePool string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -231,6 +233,13 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolUpdateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
+		TemplateFilter: defaultTemplateFilter,
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolUpdateCmd{
 		TemplateFilter: defaultTemplateFilter,
 	}))
 }

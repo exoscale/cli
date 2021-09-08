@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/exoscale/egoscale"
 	"github.com/kballard/go-shellquote"
@@ -62,6 +63,15 @@ var sshCmd = &cobra.Command{
 
 		return connectSSH(sshCmd[1:])
 	},
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintln(os.Stderr,
+			`**********************************************************************
+The "exo ssh" command is deprecated and will be removed in a future
+version, please use "exo compute instance ssh" replacement command.
+**********************************************************************`)
+		time.Sleep(3 * time.Second)
+	},
+	Hidden: true,
 }
 
 type sshInfo struct {

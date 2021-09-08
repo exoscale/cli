@@ -8,6 +8,8 @@ import (
 )
 
 type sksRotateCCMCredentialsCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"rotate-ccm-credentials"`
 
 	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
@@ -54,5 +56,10 @@ func (c *sksRotateCCMCredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksRotateCCMCredentialsCmd{}))
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksRotateCCMCredentialsCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksRotateCCMCredentialsCmd{}))
 }

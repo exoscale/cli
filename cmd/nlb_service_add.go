@@ -12,6 +12,8 @@ import (
 )
 
 type nlbServiceAddCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"add"`
 
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
@@ -131,6 +133,8 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceAddCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
 		HealthcheckInterval: 10,
 		HealthcheckMode:     "tcp",
 		HealthcheckRetries:  1,
