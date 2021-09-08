@@ -21,6 +21,7 @@ type privateNetworkShowOutput struct {
 	ID          string                      `json:"id"`
 	Name        string                      `json:"name"`
 	Description string                      `json:"description"`
+	Zone        string                      `json:"zone"`
 	Type        string                      `json:"type"`
 	StartIP     *string                     `json:"start_ip,omitempty"`
 	EndIP       *string                     `json:"end_ip,omitempty"`
@@ -38,6 +39,7 @@ func (o *privateNetworkShowOutput) toTable() {
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
+	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"Type", o.Type})
 
 	if o.Type == "managed" {
@@ -110,6 +112,7 @@ func showPrivateNetwork(zone, x string) (outputter, error) {
 
 	out := privateNetworkShowOutput{
 		ID:          *privateNetwork.ID,
+		Zone:        zone,
 		Name:        *privateNetwork.Name,
 		Description: defaultString(privateNetwork.Description, ""),
 		Type:        "manual",
