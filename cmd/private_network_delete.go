@@ -12,7 +12,7 @@ type privateNetworkDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	PrivateNetwork string `cli-arg:"#" cli-usage:"PRIVATE-NETWORK-NAME|ID"`
+	PrivateNetwork string `cli-arg:"#" cli-usage:"NAME|ID"`
 
 	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 	Zone  string `cli-short:"z" cli-usage:"Private Network zone"`

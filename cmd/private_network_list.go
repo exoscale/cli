@@ -12,6 +12,7 @@ import (
 type privateNetworkListItemOutput struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+	Zone string `json:"zone"`
 }
 
 type privateNetworkListOutput []privateNetworkListItemOutput
@@ -73,6 +74,7 @@ func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			res <- privateNetworkListItemOutput{
 				ID:   *p.ID,
 				Name: *p.Name,
+				Zone: zone,
 			}
 		}
 
