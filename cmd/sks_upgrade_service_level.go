@@ -8,6 +8,8 @@ import (
 )
 
 type sksUpgradeServiceLevelCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"upgrade-service-level"`
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -66,5 +68,10 @@ func (c *sksUpgradeServiceLevelCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpgradeServiceLevelCmd{}))
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpgradeServiceLevelCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksUpgradeServiceLevelCmd{}))
 }

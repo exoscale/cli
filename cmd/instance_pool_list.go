@@ -24,6 +24,8 @@ func (o *instancePoolListOutput) toText()  { outputText(o) }
 func (o *instancePoolListOutput) toTable() { outputTable(o) }
 
 type instancePoolListCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
@@ -91,5 +93,10 @@ func (c *instancePoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolListCmd{}))
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolListCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolListCmd{}))
 }

@@ -11,6 +11,8 @@ import (
 )
 
 type sksNodepoolEvictCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"evict"`
 
 	Cluster  string   `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
@@ -98,5 +100,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolEvictCmd{}))
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolEvictCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

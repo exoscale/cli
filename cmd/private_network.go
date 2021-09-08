@@ -6,7 +6,7 @@ import (
 
 var privateNetworkCmd = &cobra.Command{
 	Use:     "private-network",
-	Short:   "Compute instance Private Networks management",
+	Short:   "Private Networks management",
 	Aliases: []string{"privnet"},
 }
 

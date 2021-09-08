@@ -77,6 +77,8 @@ func (o *sksShowOutput) toTable() {
 }
 
 type sksShowCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"show"`
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -150,5 +152,10 @@ func showSKSCluster(zone, x string) (outputter, error) {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksShowCmd{}))
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksShowCmd{}))
 }

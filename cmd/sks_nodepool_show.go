@@ -35,6 +35,8 @@ func (o *sksNodepoolShowOutput) toText()      { outputText(o) }
 func (o *sksNodepoolShowOutput) toTable()     { outputTable(o) }
 
 type sksNodepoolShowCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"show"`
 
 	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
@@ -151,5 +153,7 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolShowCmd{}))
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

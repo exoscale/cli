@@ -8,6 +8,8 @@ import (
 )
 
 type instancePoolDeleteCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"delete"`
 
 	InstancePool string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -71,5 +73,10 @@ func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolDeleteCmd{}))
+	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolDeleteCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolDeleteCmd{}))
 }

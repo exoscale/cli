@@ -79,6 +79,8 @@ func (o *nlbShowOutput) toTable() {
 }
 
 type nlbShowCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"show"`
 
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -143,5 +145,10 @@ func showNLB(zone, x string) (outputter, error) {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbShowCmd{}))
+	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedNLBCmd, &nlbShowCmd{}))
 }

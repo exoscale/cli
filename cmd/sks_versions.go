@@ -19,6 +19,8 @@ func (o *sksClusterVersionsOutput) toText()  { outputText(o) }
 func (o *sksClusterVersionsOutput) toTable() { outputTable(o) }
 
 type sksVersionsCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"versions"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
@@ -58,5 +60,10 @@ func (c *sksVersionsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksVersionsCmd{}))
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksVersionsCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksVersionsCmd{}))
 }

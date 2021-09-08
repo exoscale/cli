@@ -9,6 +9,8 @@ import (
 )
 
 type sksDeleteCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"delete"`
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -86,5 +88,10 @@ func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksDeleteCmd{}))
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksDeleteCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksDeleteCmd{}))
 }

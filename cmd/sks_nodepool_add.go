@@ -10,6 +10,8 @@ import (
 )
 
 type sksNodepoolAddCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"add"`
 
 	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
@@ -142,6 +144,8 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolAddCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
 		Size:         2,
 		InstanceType: defaultServiceOffering,
 		DiskSize:     50,

@@ -8,6 +8,8 @@ import (
 )
 
 type nlbDeleteCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"delete"`
 
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"NAME|ID"`
@@ -55,5 +57,10 @@ func (c *nlbDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbDeleteCmd{}))
+	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbDeleteCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+
+	// FIXME: remove this someday.
+	cobra.CheckErr(registerCLICommand(deprecatedNLBCmd, &nlbDeleteCmd{}))
 }

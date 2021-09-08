@@ -11,6 +11,8 @@ import (
 )
 
 type sksNodepoolUpdateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"update"`
 
 	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
@@ -170,5 +172,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolUpdateCmd{}))
+	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolUpdateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

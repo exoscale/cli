@@ -12,6 +12,8 @@ import (
 )
 
 type nlbServiceUpdateCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
 	_ bool `cli-cmd:"update"`
 
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
@@ -161,5 +163,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceUpdateCmd{}))
+	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceUpdateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }
