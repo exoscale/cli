@@ -5,7 +5,7 @@ import (
 	"net"
 
 	apiv2 "github.com/exoscale/egoscale/v2/api"
-	papi "github.com/exoscale/egoscale/v2/internal/public-api"
+	"github.com/exoscale/egoscale/v2/oapi"
 )
 
 // PrivateNetworkLease represents a managed Private Network lease.
@@ -25,7 +25,7 @@ type PrivateNetwork struct {
 	Leases      []*PrivateNetworkLease
 }
 
-func privateNetworkFromAPI(p *papi.PrivateNetwork) *PrivateNetwork {
+func privateNetworkFromAPI(p *oapi.PrivateNetwork) *PrivateNetwork {
 	return &PrivateNetwork{
 		Description: p.Description,
 		EndIP: func() (v *net.IP) {
@@ -78,7 +78,7 @@ func (c *Client) CreatePrivateNetwork(
 
 	resp, err := c.CreatePrivateNetworkWithResponse(
 		apiv2.WithZone(ctx, zone),
-		papi.CreatePrivateNetworkJSONRequestBody{
+		oapi.CreatePrivateNetworkJSONRequestBody{
 			Description: privateNetwork.Description,
 			EndIp: func() (ip *string) {
 				if privateNetwork.EndIP != nil {
@@ -107,7 +107,7 @@ func (c *Client) CreatePrivateNetwork(
 		return nil, err
 	}
 
-	res, err := papi.NewPoller().
+	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -115,7 +115,7 @@ func (c *Client) CreatePrivateNetwork(
 		return nil, err
 	}
 
-	return c.GetPrivateNetwork(ctx, zone, *res.(*papi.Reference).Id)
+	return c.GetPrivateNetwork(ctx, zone, *res.(*oapi.Reference).Id)
 }
 
 // DeletePrivateNetwork deletes a Private Network.
@@ -125,7 +125,7 @@ func (c *Client) DeletePrivateNetwork(ctx context.Context, zone string, privateN
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -205,7 +205,7 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, zone string, privateN
 	resp, err := c.UpdatePrivateNetworkWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*privateNetwork.ID,
-		papi.UpdatePrivateNetworkJSONRequestBody{
+		oapi.UpdatePrivateNetworkJSONRequestBody{
 			Description: privateNetwork.Description,
 			EndIp: func() (ip *string) {
 				if privateNetwork.EndIP != nil {
@@ -234,7 +234,7 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, zone string, privateN
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -257,8 +257,8 @@ func (c *Client) UpdatePrivateNetworkInstanceIPAddress(
 	resp, err := c.UpdatePrivateNetworkInstanceIpWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*privateNetwork.ID,
-		papi.UpdatePrivateNetworkInstanceIpJSONRequestBody{
-			Instance: papi.Instance{Id: instance.ID},
+		oapi.UpdatePrivateNetworkInstanceIpJSONRequestBody{
+			Instance: oapi.Instance{Id: instance.ID},
 			Ip: func() *string {
 				s := ip.String()
 				return &s
@@ -268,7 +268,7 @@ func (c *Client) UpdatePrivateNetworkInstanceIPAddress(
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))

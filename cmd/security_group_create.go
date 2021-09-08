@@ -59,7 +59,11 @@ func (c *securityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return output(showSecurityGroup(zone, *securityGroup.ID))
+	if !gQuiet {
+		return output(showSecurityGroup(zone, *securityGroup.ID))
+	}
+
+	return nil
 }
 
 func init() {

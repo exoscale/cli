@@ -5,7 +5,7 @@ import (
 	"time"
 
 	apiv2 "github.com/exoscale/egoscale/v2/api"
-	papi "github.com/exoscale/egoscale/v2/internal/public-api"
+	"github.com/exoscale/egoscale/v2/oapi"
 )
 
 // SnapshotExport represents exported Snapshot information.
@@ -24,7 +24,7 @@ type Snapshot struct {
 	State      *string
 }
 
-func snapshotFromAPI(s *papi.Snapshot) *Snapshot {
+func snapshotFromAPI(s *oapi.Snapshot) *Snapshot {
 	return &Snapshot{
 		CreatedAt:  s.CreatedAt,
 		ID:         s.Id,
@@ -42,7 +42,7 @@ func (c *Client) DeleteSnapshot(ctx context.Context, zone string, snapshot *Snap
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -60,7 +60,7 @@ func (c *Client) ExportSnapshot(ctx context.Context, zone string, snapshot *Snap
 		return nil, err
 	}
 
-	res, err := papi.NewPoller().
+	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -68,7 +68,7 @@ func (c *Client) ExportSnapshot(ctx context.Context, zone string, snapshot *Snap
 		return nil, err
 	}
 
-	expSnapshot, err := c.GetSnapshotWithResponse(apiv2.WithZone(ctx, zone), *res.(*papi.Reference).Id)
+	expSnapshot, err := c.GetSnapshotWithResponse(apiv2.WithZone(ctx, zone), *res.(*oapi.Reference).Id)
 	if err != nil {
 		return nil, err
 	}

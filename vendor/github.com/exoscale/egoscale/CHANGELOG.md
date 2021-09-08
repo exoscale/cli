@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.72.1
+------
+
+- fix: v2: fix `Client.UpdateElasticIP()` method
+
 0.72.0
 ------
 
@@ -9,7 +14,7 @@ Changelog
 0.71.1
 ------
 
-- fix: v2: fix `CreateSecurityGroupRule()` method
+- fix: v2: fix `Client.CreateSecurityGroupRule()` method
 
 0.71.0
 ------

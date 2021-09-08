@@ -1,4 +1,4 @@
-package publicapi
+package oapi
 
 import (
 	"net/http"

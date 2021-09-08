@@ -140,12 +140,12 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.72.0
+# github.com/exoscale/egoscale v0.72.1
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
-github.com/exoscale/egoscale/v2/internal/public-api
+github.com/exoscale/egoscale/v2/oapi
 github.com/exoscale/egoscale/version
 # github.com/exoscale/openapi-cli-generator v1.1.0
 ## explicit

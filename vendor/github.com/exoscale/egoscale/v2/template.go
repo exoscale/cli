@@ -5,7 +5,7 @@ import (
 	"time"
 
 	apiv2 "github.com/exoscale/egoscale/v2/api"
-	papi "github.com/exoscale/egoscale/v2/internal/public-api"
+	"github.com/exoscale/egoscale/v2/oapi"
 )
 
 // Template represents a Compute instance template.
@@ -27,7 +27,7 @@ type Template struct {
 	Visibility      *string
 }
 
-func templateFromAPI(t *papi.Template) *Template {
+func templateFromAPI(t *oapi.Template) *Template {
 	return &Template{
 		BootMode:        (*string)(t.BootMode),
 		Build:           t.Build,
@@ -54,7 +54,7 @@ func (c *Client) DeleteTemplate(ctx context.Context, zone string, template *Temp
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -79,8 +79,8 @@ func (c *Client) GetTemplate(ctx context.Context, zone, id string) (*Template, e
 func (c *Client) ListTemplates(ctx context.Context, zone, visibility, family string) ([]*Template, error) {
 	list := make([]*Template, 0)
 
-	resp, err := c.ListTemplatesWithResponse(apiv2.WithZone(ctx, zone), &papi.ListTemplatesParams{
-		Visibility: (*papi.ListTemplatesParamsVisibility)(&visibility),
+	resp, err := c.ListTemplatesWithResponse(apiv2.WithZone(ctx, zone), &oapi.ListTemplatesParams{
+		Visibility: (*oapi.ListTemplatesParamsVisibility)(&visibility),
 		Family: func() *string {
 			if family != "" {
 				return &family
@@ -109,8 +109,8 @@ func (c *Client) RegisterTemplate(ctx context.Context, zone string, template *Te
 
 	resp, err := c.RegisterTemplateWithResponse(
 		apiv2.WithZone(ctx, zone),
-		papi.RegisterTemplateJSONRequestBody{
-			BootMode:        (*papi.RegisterTemplateJSONBodyBootMode)(template.BootMode),
+		oapi.RegisterTemplateJSONRequestBody{
+			BootMode:        (*oapi.RegisterTemplateJSONBodyBootMode)(template.BootMode),
 			Checksum:        *template.Checksum,
 			DefaultUser:     template.DefaultUser,
 			Description:     template.Description,
@@ -123,7 +123,7 @@ func (c *Client) RegisterTemplate(ctx context.Context, zone string, template *Te
 		return nil, err
 	}
 
-	res, err := papi.NewPoller().
+	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -131,5 +131,5 @@ func (c *Client) RegisterTemplate(ctx context.Context, zone string, template *Te
 		return nil, err
 	}
 
-	return c.GetTemplate(ctx, zone, *res.(*papi.Reference).Id)
+	return c.GetTemplate(ctx, zone, *res.(*oapi.Reference).Id)
 }

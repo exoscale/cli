@@ -4,7 +4,7 @@ import (
 	"context"
 
 	apiv2 "github.com/exoscale/egoscale/v2/api"
-	papi "github.com/exoscale/egoscale/v2/internal/public-api"
+	"github.com/exoscale/egoscale/v2/oapi"
 )
 
 // DeployTarget represents a Deploy Target.
@@ -17,15 +17,15 @@ type DeployTarget struct {
 
 // ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
 func (d DeployTarget) ToAPIMock() interface{} {
-	return papi.DeployTarget{
+	return oapi.DeployTarget{
 		Description: d.Description,
 		Id:          d.ID,
 		Name:        d.Name,
-		Type:        (*papi.DeployTargetType)(d.Type),
+		Type:        (*oapi.DeployTargetType)(d.Type),
 	}
 }
 
-func deployTargetFromAPI(d *papi.DeployTarget) *DeployTarget {
+func deployTargetFromAPI(d *oapi.DeployTarget) *DeployTarget {
 	return &DeployTarget{
 		Description: d.Description,
 		ID:          d.Id,
