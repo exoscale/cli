@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale/v2/api"
-	papi "github.com/exoscale/egoscale/v2/internal/public-api"
+	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/exoscale/egoscale/version"
 )
 
 const (
 	defaultTimeout      = 60 * time.Second
-	defaultPollInterval = papi.DefaultPollingInterval
+	defaultPollInterval = oapi.DefaultPollingInterval
 )
 
 // UserAgent is the "User-Agent" HTTP request header added to outgoing HTTP requests.
@@ -131,7 +131,7 @@ type Client struct {
 	trace        bool
 	httpClient   *http.Client
 
-	*papi.ClientWithResponses
+	*oapi.ClientWithResponses
 }
 
 // NewClient returns a new Exoscale API client, or an error if one couldn't be initialized.
@@ -174,17 +174,17 @@ func NewClient(apiKey, apiSecret string, opts ...ClientOpt) (*Client, error) {
 
 	client.httpClient.Transport = api.NewAPIErrorHandlerMiddleware(client.httpClient.Transport)
 
-	papiOpts := []papi.ClientOption{
-		papi.WithHTTPClient(client.httpClient),
-		papi.WithRequestEditorFn(
-			papi.MultiRequestsEditor(
+	oapiOpts := []oapi.ClientOption{
+		oapi.WithHTTPClient(client.httpClient),
+		oapi.WithRequestEditorFn(
+			oapi.MultiRequestsEditor(
 				apiSecurityProvider.Intercept,
 				setEndpointFromContext,
 			),
 		),
 	}
 
-	if client.ClientWithResponses, err = papi.NewClientWithResponses(apiURL.String(), papiOpts...); err != nil {
+	if client.ClientWithResponses, err = oapi.NewClientWithResponses(apiURL.String(), oapiOpts...); err != nil {
 		return nil, fmt.Errorf("unable to initialize API client: %s", err)
 	}
 

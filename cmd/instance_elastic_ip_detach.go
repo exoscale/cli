@@ -1,0 +1,78 @@
+package cmd
+
+import (
+	"fmt"
+	"strings"
+
+	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/spf13/cobra"
+)
+
+type instanceEIPDetachCmd struct {
+	cliCommandSettings `cli-cmd:"-"`
+
+	_ bool `cli-cmd:"detach"`
+
+	Instance  string `cli-arg:"#" cli-usage:"INSTANCE-NAME|ID"`
+	ElasticIP string `cli-arg:"#" cli-usage:"ELASTIC-IP-ADDRESS|ID"`
+
+	Zone string `cli-short:"z" cli-usage:"instance zone"`
+}
+
+func (c *instanceEIPDetachCmd) cmdAliases() []string { return nil }
+
+func (c *instanceEIPDetachCmd) cmdShort() string {
+	return "Detach a Compute instance from a Elastic IP"
+}
+
+func (c *instanceEIPDetachCmd) cmdLong() string {
+	return fmt.Sprintf(`This command detaches an Elastic IP address from a Compute instance.
+
+Supported output template annotations: %s`,
+		strings.Join(outputterTemplateAnnotations(&instanceShowOutput{}), ", "),
+	)
+}
+
+func (c *instanceEIPDetachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	cmdSetZoneFlagFromDefault(cmd)
+	return cliCommandDefaultPreRun(c, cmd, args)
+}
+
+func (c *instanceEIPDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	if err != nil {
+		return err
+	}
+
+	elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	if err != nil {
+		return fmt.Errorf("error retrieving Elastic IP: %s", err)
+	}
+
+	decorateAsyncOperation(fmt.Sprintf(
+		"Detaching instance %q from Elastic IP %q...",
+		c.Instance,
+		c.ElasticIP,
+	), func() {
+		if err = cs.DetachInstanceFromElasticIP(ctx, c.Zone, instance, elasticIP); err != nil {
+			return
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	if !gQuiet {
+		return output(showInstance(c.Zone, *instance.ID))
+	}
+
+	return nil
+}
+
+func init() {
+	cobra.CheckErr(registerCLICommand(computeInstanceEIPCmd, &instanceEIPDetachCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
+}

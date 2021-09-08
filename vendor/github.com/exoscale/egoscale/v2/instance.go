@@ -6,7 +6,7 @@ import (
 	"time"
 
 	apiv2 "github.com/exoscale/egoscale/v2/api"
-	papi "github.com/exoscale/egoscale/v2/internal/public-api"
+	"github.com/exoscale/egoscale/v2/oapi"
 )
 
 // InstanceManager represents a Compute instance manager.
@@ -39,7 +39,7 @@ type Instance struct {
 	UserData             *string
 }
 
-func instanceFromAPI(i *papi.Instance) *Instance {
+func instanceFromAPI(i *oapi.Instance) *Instance {
 	return &Instance{
 		AntiAffinityGroupIDs: func() (v *[]string) {
 			if i.AntiAffinityGroups != nil && len(*i.AntiAffinityGroups) > 0 {
@@ -152,34 +152,34 @@ func instanceFromAPI(i *papi.Instance) *Instance {
 
 // ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
 func (i Instance) ToAPIMock() interface{} {
-	return papi.Instance{
-		AntiAffinityGroups: func() *[]papi.AntiAffinityGroup {
+	return oapi.Instance{
+		AntiAffinityGroups: func() *[]oapi.AntiAffinityGroup {
 			if i.AntiAffinityGroupIDs != nil {
-				list := make([]papi.AntiAffinityGroup, len(*i.AntiAffinityGroupIDs))
+				list := make([]oapi.AntiAffinityGroup, len(*i.AntiAffinityGroupIDs))
 				for j, id := range *i.AntiAffinityGroupIDs {
 					id := id
-					list[j] = papi.AntiAffinityGroup{Id: &id}
+					list[j] = oapi.AntiAffinityGroup{Id: &id}
 				}
 				return &list
 			}
 			return nil
 		}(),
 		CreatedAt:    i.CreatedAt,
-		DeployTarget: &papi.DeployTarget{Id: i.DeployTargetID},
+		DeployTarget: &oapi.DeployTarget{Id: i.DeployTargetID},
 		DiskSize:     i.DiskSize,
-		ElasticIps: func() *[]papi.ElasticIp {
+		ElasticIps: func() *[]oapi.ElasticIp {
 			if i.ElasticIPIDs != nil {
-				list := make([]papi.ElasticIp, len(*i.ElasticIPIDs))
+				list := make([]oapi.ElasticIp, len(*i.ElasticIPIDs))
 				for j, id := range *i.ElasticIPIDs {
 					id := id
-					list[j] = papi.ElasticIp{Id: &id}
+					list[j] = oapi.ElasticIp{Id: &id}
 				}
 				return &list
 			}
 			return nil
 		}(),
 		Id:           i.ID,
-		InstanceType: &papi.InstanceType{Id: i.InstanceTypeID},
+		InstanceType: &oapi.InstanceType{Id: i.InstanceTypeID},
 		Ipv6Address: func() *string {
 			if i.IPv6Address != nil {
 				v := i.IPv6Address.String()
@@ -187,28 +187,28 @@ func (i Instance) ToAPIMock() interface{} {
 			}
 			return nil
 		}(),
-		Labels: func() *papi.Labels {
+		Labels: func() *oapi.Labels {
 			if i.Labels != nil {
-				return &papi.Labels{AdditionalProperties: *i.Labels}
+				return &oapi.Labels{AdditionalProperties: *i.Labels}
 			}
 			return nil
 		}(),
-		Manager: func() *papi.Manager {
+		Manager: func() *oapi.Manager {
 			if i.Manager != nil {
-				return &papi.Manager{
+				return &oapi.Manager{
 					Id:   &i.Manager.ID,
-					Type: (*papi.ManagerType)(&i.Manager.Type),
+					Type: (*oapi.ManagerType)(&i.Manager.Type),
 				}
 			}
 			return nil
 		}(),
 		Name: i.Name,
-		PrivateNetworks: func() *[]papi.PrivateNetwork {
+		PrivateNetworks: func() *[]oapi.PrivateNetwork {
 			if i.PrivateNetworkIDs != nil {
-				list := make([]papi.PrivateNetwork, len(*i.PrivateNetworkIDs))
+				list := make([]oapi.PrivateNetwork, len(*i.PrivateNetworkIDs))
 				for j, id := range *i.PrivateNetworkIDs {
 					id := id
-					list[j] = papi.PrivateNetwork{Id: &id}
+					list[j] = oapi.PrivateNetwork{Id: &id}
 				}
 				return &list
 			}
@@ -221,36 +221,36 @@ func (i Instance) ToAPIMock() interface{} {
 			}
 			return nil
 		}(),
-		SecurityGroups: func() *[]papi.SecurityGroup {
+		SecurityGroups: func() *[]oapi.SecurityGroup {
 			if i.SecurityGroupIDs != nil {
-				list := make([]papi.SecurityGroup, len(*i.SecurityGroupIDs))
+				list := make([]oapi.SecurityGroup, len(*i.SecurityGroupIDs))
 				for j, id := range *i.SecurityGroupIDs {
 					id := id
-					list[j] = papi.SecurityGroup{Id: &id}
+					list[j] = oapi.SecurityGroup{Id: &id}
 				}
 				return &list
 			}
 			return nil
 		}(),
-		Snapshots: func() *[]papi.Snapshot {
+		Snapshots: func() *[]oapi.Snapshot {
 			if i.SnapshotIDs != nil {
-				list := make([]papi.Snapshot, len(*i.SnapshotIDs))
+				list := make([]oapi.Snapshot, len(*i.SnapshotIDs))
 				for j, id := range *i.SnapshotIDs {
 					id := id
-					list[j] = papi.Snapshot{Id: &id}
+					list[j] = oapi.Snapshot{Id: &id}
 				}
 				return &list
 			}
 			return nil
 		}(),
-		SshKey: func() *papi.SshKey {
+		SshKey: func() *oapi.SshKey {
 			if i.SSHKey != nil {
-				return &papi.SshKey{Name: i.SSHKey}
+				return &oapi.SshKey{Name: i.SSHKey}
 			}
 			return nil
 		}(),
-		State:    (*papi.InstanceState)(i.State),
-		Template: &papi.Template{Id: i.TemplateID},
+		State:    (*oapi.InstanceState)(i.State),
+		Template: &oapi.Template{Id: i.TemplateID},
 		UserData: i.UserData,
 	}
 }
@@ -263,14 +263,14 @@ func (c *Client) AttachInstanceToElasticIP(
 	elasticIP *ElasticIP,
 ) error {
 	resp, err := c.AttachInstanceToElasticIpWithResponse(
-		apiv2.WithZone(ctx, zone), *elasticIP.ID, papi.AttachInstanceToElasticIpJSONRequestBody{
-			Instance: papi.Instance{Id: instance.ID},
+		apiv2.WithZone(ctx, zone), *elasticIP.ID, oapi.AttachInstanceToElasticIpJSONRequestBody{
+			Instance: oapi.Instance{Id: instance.ID},
 		})
 	if err != nil {
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -291,8 +291,8 @@ func (c *Client) AttachInstanceToPrivateNetwork(
 	address net.IP,
 ) error {
 	resp, err := c.AttachInstanceToPrivateNetworkWithResponse(
-		apiv2.WithZone(ctx, zone), *privateNetwork.ID, papi.AttachInstanceToPrivateNetworkJSONRequestBody{
-			Instance: papi.Instance{Id: instance.ID},
+		apiv2.WithZone(ctx, zone), *privateNetwork.ID, oapi.AttachInstanceToPrivateNetworkJSONRequestBody{
+			Instance: oapi.Instance{Id: instance.ID},
 			Ip: func() *string {
 				if len(address) > 0 {
 					ip := address.String()
@@ -305,7 +305,7 @@ func (c *Client) AttachInstanceToPrivateNetwork(
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -324,14 +324,14 @@ func (c *Client) AttachInstanceToSecurityGroup(
 	securityGroup *SecurityGroup,
 ) error {
 	resp, err := c.AttachInstanceToSecurityGroupWithResponse(
-		apiv2.WithZone(ctx, zone), *securityGroup.ID, papi.AttachInstanceToSecurityGroupJSONRequestBody{
-			Instance: papi.Instance{Id: instance.ID},
+		apiv2.WithZone(ctx, zone), *securityGroup.ID, oapi.AttachInstanceToSecurityGroupJSONRequestBody{
+			Instance: oapi.Instance{Id: instance.ID},
 		})
 	if err != nil {
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -350,59 +350,59 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 
 	resp, err := c.CreateInstanceWithResponse(
 		apiv2.WithZone(ctx, zone),
-		papi.CreateInstanceJSONRequestBody{
-			AntiAffinityGroups: func() (v *[]papi.AntiAffinityGroup) {
+		oapi.CreateInstanceJSONRequestBody{
+			AntiAffinityGroups: func() (v *[]oapi.AntiAffinityGroup) {
 				if instance.AntiAffinityGroupIDs != nil {
-					ids := make([]papi.AntiAffinityGroup, len(*instance.AntiAffinityGroupIDs))
+					ids := make([]oapi.AntiAffinityGroup, len(*instance.AntiAffinityGroupIDs))
 					for i, item := range *instance.AntiAffinityGroupIDs {
 						item := item
-						ids[i] = papi.AntiAffinityGroup{Id: &item}
+						ids[i] = oapi.AntiAffinityGroup{Id: &item}
 					}
 					v = &ids
 				}
 				return
 			}(),
-			DeployTarget: func() (v *papi.DeployTarget) {
+			DeployTarget: func() (v *oapi.DeployTarget) {
 				if instance.DeployTargetID != nil {
-					v = &papi.DeployTarget{Id: instance.DeployTargetID}
+					v = &oapi.DeployTarget{Id: instance.DeployTargetID}
 				}
 				return
 			}(),
 			DiskSize:     *instance.DiskSize,
-			InstanceType: papi.InstanceType{Id: instance.InstanceTypeID},
+			InstanceType: oapi.InstanceType{Id: instance.InstanceTypeID},
 			Ipv6Enabled:  instance.IPv6Enabled,
-			Labels: func() (v *papi.Labels) {
+			Labels: func() (v *oapi.Labels) {
 				if instance.Labels != nil {
-					v = &papi.Labels{AdditionalProperties: *instance.Labels}
+					v = &oapi.Labels{AdditionalProperties: *instance.Labels}
 				}
 				return
 			}(),
 			Name: instance.Name,
-			SecurityGroups: func() (v *[]papi.SecurityGroup) {
+			SecurityGroups: func() (v *[]oapi.SecurityGroup) {
 				if instance.SecurityGroupIDs != nil {
-					ids := make([]papi.SecurityGroup, len(*instance.SecurityGroupIDs))
+					ids := make([]oapi.SecurityGroup, len(*instance.SecurityGroupIDs))
 					for i, item := range *instance.SecurityGroupIDs {
 						item := item
-						ids[i] = papi.SecurityGroup{Id: &item}
+						ids[i] = oapi.SecurityGroup{Id: &item}
 					}
 					v = &ids
 				}
 				return
 			}(),
-			SshKey: func() (v *papi.SshKey) {
+			SshKey: func() (v *oapi.SshKey) {
 				if instance.SSHKey != nil {
-					v = &papi.SshKey{Name: instance.SSHKey}
+					v = &oapi.SshKey{Name: instance.SSHKey}
 				}
 				return
 			}(),
-			Template: papi.Template{Id: instance.TemplateID},
+			Template: oapi.Template{Id: instance.TemplateID},
 			UserData: instance.UserData,
 		})
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := papi.NewPoller().
+	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -410,7 +410,7 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 		return nil, err
 	}
 
-	return c.GetInstance(ctx, zone, *res.(*papi.Reference).Id)
+	return c.GetInstance(ctx, zone, *res.(*oapi.Reference).Id)
 }
 
 // CreateInstanceSnapshot creates a Snapshot of a Compute instance storage volume.
@@ -420,7 +420,7 @@ func (c *Client) CreateInstanceSnapshot(ctx context.Context, zone string, instan
 		return nil, err
 	}
 
-	res, err := papi.NewPoller().
+	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -428,7 +428,7 @@ func (c *Client) CreateInstanceSnapshot(ctx context.Context, zone string, instan
 		return nil, err
 	}
 
-	return c.GetSnapshot(ctx, zone, *res.(*papi.Reference).Id)
+	return c.GetSnapshot(ctx, zone, *res.(*oapi.Reference).Id)
 }
 
 // DetachInstanceFromElasticIP detaches a Compute instance from the specified Elastic IP.
@@ -439,14 +439,14 @@ func (c *Client) DetachInstanceFromElasticIP(
 	elasticIP *ElasticIP,
 ) error {
 	resp, err := c.DetachInstanceFromElasticIpWithResponse(
-		apiv2.WithZone(ctx, zone), *elasticIP.ID, papi.DetachInstanceFromElasticIpJSONRequestBody{
-			Instance: papi.Instance{Id: instance.ID},
+		apiv2.WithZone(ctx, zone), *elasticIP.ID, oapi.DetachInstanceFromElasticIpJSONRequestBody{
+			Instance: oapi.Instance{Id: instance.ID},
 		})
 	if err != nil {
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -464,7 +464,7 @@ func (c *Client) DeleteInstance(ctx context.Context, zone string, instance *Inst
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -483,14 +483,14 @@ func (c *Client) DetachInstanceFromPrivateNetwork(
 	privateNetwork *PrivateNetwork,
 ) error {
 	resp, err := c.DetachInstanceFromPrivateNetworkWithResponse(
-		apiv2.WithZone(ctx, zone), *privateNetwork.ID, papi.DetachInstanceFromPrivateNetworkJSONRequestBody{
-			Instance: papi.Instance{Id: instance.ID},
+		apiv2.WithZone(ctx, zone), *privateNetwork.ID, oapi.DetachInstanceFromPrivateNetworkJSONRequestBody{
+			Instance: oapi.Instance{Id: instance.ID},
 		})
 	if err != nil {
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -509,14 +509,14 @@ func (c *Client) DetachInstanceFromSecurityGroup(
 	securityGroup *SecurityGroup,
 ) error {
 	resp, err := c.DetachInstanceFromSecurityGroupWithResponse(
-		apiv2.WithZone(ctx, zone), *securityGroup.ID, papi.DetachInstanceFromSecurityGroupJSONRequestBody{
-			Instance: papi.Instance{Id: instance.ID},
+		apiv2.WithZone(ctx, zone), *securityGroup.ID, oapi.DetachInstanceFromSecurityGroupJSONRequestBody{
+			Instance: oapi.Instance{Id: instance.ID},
 		})
 	if err != nil {
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -573,7 +573,7 @@ func (c *Client) GetInstance(ctx context.Context, zone, id string) (*Instance, e
 func (c *Client) ListInstances(ctx context.Context, zone string) ([]*Instance, error) {
 	list := make([]*Instance, 0)
 
-	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &papi.ListInstancesParams{})
+	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &oapi.ListInstancesParams{})
 	if err != nil {
 		return nil, err
 	}
@@ -594,7 +594,7 @@ func (c *Client) RebootInstance(ctx context.Context, zone string, instance *Inst
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -617,16 +617,16 @@ func (c *Client) ResetInstance(
 	resp, err := c.ResetInstanceWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
-		papi.ResetInstanceJSONRequestBody{
+		oapi.ResetInstanceJSONRequestBody{
 			DiskSize: func() (v *int64) {
 				if diskSize > 0 {
 					v = &diskSize
 				}
 				return
 			}(),
-			Template: func() (v *papi.Template) {
+			Template: func() (v *oapi.Template) {
 				if template != nil {
-					v = &papi.Template{Id: template.ID}
+					v = &oapi.Template{Id: template.ID}
 				}
 				return
 			}(),
@@ -635,7 +635,7 @@ func (c *Client) ResetInstance(
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -651,12 +651,12 @@ func (c *Client) ResizeInstanceDisk(ctx context.Context, zone string, instance *
 	resp, err := c.ResizeInstanceDiskWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
-		papi.ResizeInstanceDiskJSONRequestBody{DiskSize: size})
+		oapi.ResizeInstanceDiskJSONRequestBody{DiskSize: size})
 	if err != nil {
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -677,12 +677,12 @@ func (c *Client) RevertInstanceToSnapshot(
 	resp, err := c.RevertInstanceToSnapshotWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
-		papi.RevertInstanceToSnapshotJSONRequestBody{Id: *snapshot.ID})
+		oapi.RevertInstanceToSnapshotJSONRequestBody{Id: *snapshot.ID})
 	if err != nil {
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -698,13 +698,13 @@ func (c *Client) ScaleInstance(ctx context.Context, zone string, instance *Insta
 	resp, err := c.ScaleInstanceWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
-		papi.ScaleInstanceJSONRequestBody{InstanceType: papi.InstanceType{Id: instanceType.ID}},
+		oapi.ScaleInstanceJSONRequestBody{InstanceType: oapi.InstanceType{Id: instanceType.ID}},
 	)
 	if err != nil {
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -722,7 +722,7 @@ func (c *Client) StartInstance(ctx context.Context, zone string, instance *Insta
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -740,7 +740,7 @@ func (c *Client) StopInstance(ctx context.Context, zone string, instance *Instan
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
@@ -760,10 +760,10 @@ func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Inst
 	resp, err := c.UpdateInstanceWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
-		papi.UpdateInstanceJSONRequestBody{
-			Labels: func() (v *papi.Labels) {
+		oapi.UpdateInstanceJSONRequestBody{
+			Labels: func() (v *oapi.Labels) {
 				if instance.Labels != nil {
-					v = &papi.Labels{AdditionalProperties: *instance.Labels}
+					v = &oapi.Labels{AdditionalProperties: *instance.Labels}
 				}
 				return
 			}(),
@@ -774,7 +774,7 @@ func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Inst
 		return err
 	}
 
-	_, err = papi.NewPoller().
+	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
 		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))

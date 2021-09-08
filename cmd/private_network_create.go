@@ -84,7 +84,11 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return output(showPrivateNetwork(c.Zone, *privateNetwork.ID))
+	if !gQuiet {
+		return output(showPrivateNetwork(c.Zone, *privateNetwork.ID))
+	}
+
+	return nil
 }
 
 func init() {

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	apiv2 "github.com/exoscale/egoscale/v2/api"
-	papi "github.com/exoscale/egoscale/v2/internal/public-api"
+	"github.com/exoscale/egoscale/v2/oapi"
 )
 
 // DatabaseBackupConfig represents a Database Backup configuration.
@@ -20,7 +20,7 @@ type DatabaseBackupConfig struct {
 	RecoveryMode               *string
 }
 
-func databaseBackupConfigFromAPI(c *papi.DbaasBackupConfig) *DatabaseBackupConfig {
+func databaseBackupConfigFromAPI(c *oapi.DbaasBackupConfig) *DatabaseBackupConfig {
 	return &DatabaseBackupConfig{
 		FrequentIntervalMinutes:    c.FrequentIntervalMinutes,
 		FrequentOldestAgeMinutes:   c.FrequentOldestAgeMinutes,
@@ -43,7 +43,7 @@ type DatabasePlan struct {
 	NodeMemory       *int64
 }
 
-func databasePlanFromAPI(p *papi.DbaasPlan) *DatabasePlan {
+func databasePlanFromAPI(p *oapi.DbaasPlan) *DatabasePlan {
 	return &DatabasePlan{
 		BackupConfig:     databaseBackupConfigFromAPI(p.BackupConfig),
 		DiskSpace:        p.DiskSpace,
@@ -65,7 +65,7 @@ type DatabaseServiceType struct {
 	UserConfigSchema map[string]interface{}
 }
 
-func databaseServiceTypeFromAPI(t *papi.DbaasServiceType) *DatabaseServiceType {
+func databaseServiceTypeFromAPI(t *oapi.DbaasServiceType) *DatabaseServiceType {
 	return &DatabaseServiceType{
 		DefaultVersion: t.DefaultVersion,
 		Description:    t.Description,
@@ -97,7 +97,7 @@ type DatabaseServiceBackup struct {
 	Date *time.Time
 }
 
-func databaseServiceBackupFromAPI(b *papi.DbaasServiceBackup) *DatabaseServiceBackup {
+func databaseServiceBackupFromAPI(b *oapi.DbaasServiceBackup) *DatabaseServiceBackup {
 	return &DatabaseServiceBackup{
 		Name: &b.BackupName,
 		Size: &b.DataSize,
@@ -111,7 +111,7 @@ type DatabaseServiceComponent struct {
 	Info map[string]interface{}
 }
 
-func databaseServiceComponentFromAPI(c *papi.DbaasServiceComponents) *DatabaseServiceComponent {
+func databaseServiceComponentFromAPI(c *oapi.DbaasServiceComponents) *DatabaseServiceComponent {
 	info := map[string]interface{}{
 		"host":  c.Host,
 		"port":  c.Port,
@@ -143,7 +143,7 @@ type DatabaseServiceMaintenance struct {
 	Time string
 }
 
-func databaseServiceMaintenanceFromAPI(m *papi.DbaasServiceMaintenance) *DatabaseServiceMaintenance {
+func databaseServiceMaintenanceFromAPI(m *oapi.DbaasServiceMaintenance) *DatabaseServiceMaintenance {
 	return &DatabaseServiceMaintenance{
 		DOW:  string(m.Dow),
 		Time: m.Time,
@@ -157,7 +157,7 @@ type DatabaseServiceUser struct {
 	UserName *string
 }
 
-func databaseServiceUserFromAPI(u *papi.DbaasServiceUser) *DatabaseServiceUser {
+func databaseServiceUserFromAPI(u *oapi.DbaasServiceUser) *DatabaseServiceUser {
 	return &DatabaseServiceUser{
 		Password: u.Password,
 		UserName: &u.Username,
@@ -189,7 +189,7 @@ type DatabaseService struct {
 	Users                 []*DatabaseServiceUser
 }
 
-func databaseServiceFromAPI(s *papi.DbaasService) *DatabaseService {
+func databaseServiceFromAPI(s *oapi.DbaasService) *DatabaseService {
 	return &DatabaseService{
 		Backups: func() []*DatabaseServiceBackup {
 			backups := make([]*DatabaseServiceBackup, 0)
@@ -316,29 +316,29 @@ func (c *Client) CreateDatabaseService(
 ) (*DatabaseService, error) {
 	_, err := c.CreateDbaasServiceWithResponse(
 		apiv2.WithZone(ctx, zone),
-		papi.CreateDbaasServiceJSONRequestBody{
+		oapi.CreateDbaasServiceJSONRequestBody{
 			Maintenance: func() (v *struct {
-				Dow  papi.CreateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
+				Dow  oapi.CreateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
 				Time string                                        `json:"time"`
 			}) {
 				if databaseService.Maintenance != nil {
 					v = &struct {
-						Dow  papi.CreateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
+						Dow  oapi.CreateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
 						Time string                                        `json:"time"`
 					}{
-						Dow:  papi.CreateDbaasServiceJSONBodyMaintenanceDow(databaseService.Maintenance.DOW),
+						Dow:  oapi.CreateDbaasServiceJSONBodyMaintenanceDow(databaseService.Maintenance.DOW),
 						Time: databaseService.Maintenance.Time,
 					}
 				}
 				return
 			}(),
-			Name:                  papi.DbaasServiceName(*databaseService.Name),
+			Name:                  oapi.DbaasServiceName(*databaseService.Name),
 			Plan:                  *databaseService.Plan,
 			TerminationProtection: databaseService.TerminationProtection,
-			Type:                  papi.DbaasServiceTypeName(*databaseService.Type),
-			UserConfig: func() (v *papi.CreateDbaasServiceJSONBody_UserConfig) {
+			Type:                  oapi.DbaasServiceTypeName(*databaseService.Type),
+			UserConfig: func() (v *oapi.CreateDbaasServiceJSONBody_UserConfig) {
 				if databaseService.UserConfig != nil {
-					v = &papi.CreateDbaasServiceJSONBody_UserConfig{
+					v = &oapi.CreateDbaasServiceJSONBody_UserConfig{
 						AdditionalProperties: *databaseService.UserConfig,
 					}
 				}
@@ -395,17 +395,17 @@ func (c *Client) UpdateDatabaseService(ctx context.Context, zone string, databas
 	_, err := c.UpdateDbaasServiceWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*databaseService.Name,
-		papi.UpdateDbaasServiceJSONRequestBody{
+		oapi.UpdateDbaasServiceJSONRequestBody{
 			Maintenance: func() (v *struct {
-				Dow  papi.UpdateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
+				Dow  oapi.UpdateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
 				Time string                                        `json:"time"`
 			}) {
 				if databaseService.Maintenance != nil {
 					v = &struct {
-						Dow  papi.UpdateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
+						Dow  oapi.UpdateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
 						Time string                                        `json:"time"`
 					}{
-						Dow:  papi.UpdateDbaasServiceJSONBodyMaintenanceDow(databaseService.Maintenance.DOW),
+						Dow:  oapi.UpdateDbaasServiceJSONBodyMaintenanceDow(databaseService.Maintenance.DOW),
 						Time: databaseService.Maintenance.Time,
 					}
 				}
@@ -413,9 +413,9 @@ func (c *Client) UpdateDatabaseService(ctx context.Context, zone string, databas
 			}(),
 			Plan:                  databaseService.Plan,
 			TerminationProtection: databaseService.TerminationProtection,
-			UserConfig: func() (v *papi.UpdateDbaasServiceJSONBody_UserConfig) {
+			UserConfig: func() (v *oapi.UpdateDbaasServiceJSONBody_UserConfig) {
 				if databaseService.UserConfig != nil {
-					v = &papi.UpdateDbaasServiceJSONBody_UserConfig{
+					v = &oapi.UpdateDbaasServiceJSONBody_UserConfig{
 						AdditionalProperties: *databaseService.UserConfig,
 					}
 				}
