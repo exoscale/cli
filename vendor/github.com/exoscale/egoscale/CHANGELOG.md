@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.72.2
+------
+
+- fix: v2: update Exoscale API endpoint prefix
+
 0.72.1
 ------
 
