@@ -25,11 +25,12 @@ type securityGroupRuleOutput struct {
 }
 
 type securityGroupShowOutput struct {
-	ID           string                    `json:"id"`
-	Name         string                    `json:"name"`
-	Description  string                    `json:"description"`
-	IngressRules []securityGroupRuleOutput `json:"ingress_rules"`
-	EgressRules  []securityGroupRuleOutput `json:"egress_rules"`
+	ID              string                    `json:"id"`
+	Name            string                    `json:"name"`
+	Description     string                    `json:"description"`
+	ExternalSources []string                  `json:"external_sources"`
+	IngressRules    []securityGroupRuleOutput `json:"ingress_rules"`
+	EgressRules     []securityGroupRuleOutput `json:"egress_rules"`
 }
 
 func (o *securityGroupShowOutput) toJSON() { outputJSON(o) }
@@ -80,6 +81,7 @@ func (o *securityGroupShowOutput) toTable() {
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Ingress Rules", formatRule(o.IngressRules)})
 	t.Append([]string{"Egress Rules", formatRule(o.EgressRules)})
+	t.Append([]string{"External Sources", strings.Join(o.ExternalSources, ", ")})
 }
 
 type securityGroupShowCmd struct {
@@ -123,11 +125,12 @@ func showSecurityGroup(zone, x string) (outputter, error) {
 	}
 
 	out := securityGroupShowOutput{
-		ID:           *securityGroup.ID,
-		Name:         *securityGroup.Name,
-		Description:  defaultString(securityGroup.Description, ""),
-		IngressRules: make([]securityGroupRuleOutput, 0),
-		EgressRules:  make([]securityGroupRuleOutput, 0),
+		ID:              *securityGroup.ID,
+		Name:            *securityGroup.Name,
+		Description:     defaultString(securityGroup.Description, ""),
+		ExternalSources: *securityGroup.ExternalSources,
+		IngressRules:    make([]securityGroupRuleOutput, 0),
+		EgressRules:     make([]securityGroupRuleOutput, 0),
 	}
 
 	for _, rule := range securityGroup.Rules {

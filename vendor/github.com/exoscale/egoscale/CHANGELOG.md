@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.73.0
+------
+
+- feature: v2: add `Client.AddExternalSourceToSecurityGroup()`/`Client.RemoveExternalSourceFromSecurityGroup()` methods
+
 0.72.2
 ------
 
