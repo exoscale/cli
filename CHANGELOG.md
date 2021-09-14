@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.41.0
+
+### Changes
+
+- All Compute-related commands have been relocated to the `exo compute`
+  sub-section. Original top-level commands (e.g. `exo vm`, `exo firewall`, `exo
+  privnet`...) are now deprecated, and will be removed in a future release.
+
+### Features
+
+- New `exo compute security-group` commands
+- New `exo compute sks upgrade-service-level` command
+
+### Bug Fixes
+
+- Fix Bash shell completion destination file path
+
+
 ## 1.40.5
 
 ### Changes
