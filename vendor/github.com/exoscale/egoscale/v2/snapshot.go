@@ -17,7 +17,7 @@ type SnapshotExport struct {
 // Snapshot represents a Snapshot.
 type Snapshot struct {
 	CreatedAt  *time.Time
-	ID         *string
+	ID         *string `req-for:"update,delete"`
 	InstanceID *string
 	Name       *string
 	Size       *int64
@@ -37,6 +37,10 @@ func snapshotFromAPI(s *oapi.Snapshot) *Snapshot {
 
 // DeleteSnapshot deletes a Snapshot.
 func (c *Client) DeleteSnapshot(ctx context.Context, zone string, snapshot *Snapshot) error {
+	if err := validateOperationParams(snapshot, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteSnapshotWithResponse(apiv2.WithZone(ctx, zone), *snapshot.ID)
 	if err != nil {
 		return err
@@ -55,6 +59,10 @@ func (c *Client) DeleteSnapshot(ctx context.Context, zone string, snapshot *Snap
 
 // ExportSnapshot exports a Snapshot and returns the exported Snapshot information.
 func (c *Client) ExportSnapshot(ctx context.Context, zone string, snapshot *Snapshot) (*SnapshotExport, error) {
+	if err := validateOperationParams(snapshot, "update"); err != nil {
+		return nil, err
+	}
+
 	resp, err := c.ExportSnapshotWithResponse(apiv2.WithZone(ctx, zone), *snapshot.ID)
 	if err != nil {
 		return nil, err

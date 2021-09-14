@@ -100,7 +100,7 @@ func nlbServiceFromAPI(svc *oapi.LoadBalancerService) *NetworkLoadBalancerServic
 type NetworkLoadBalancer struct {
 	CreatedAt   *time.Time
 	Description *string
-	ID          *string `req-for:"update"`
+	ID          *string `req-for:"update,delete"`
 	IPAddress   *net.IP
 	Labels      *map[string]string
 	Name        *string `req-for:"create"`
@@ -263,6 +263,10 @@ func (c *Client) CreateNetworkLoadBalancerService(
 
 // DeleteNetworkLoadBalancer deletes a Network Load Balancer.
 func (c *Client) DeleteNetworkLoadBalancer(ctx context.Context, zone string, nlb *NetworkLoadBalancer) error {
+	if err := validateOperationParams(nlb, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteLoadBalancerWithResponse(apiv2.WithZone(ctx, zone), *nlb.ID)
 	if err != nil {
 		return err
@@ -286,6 +290,9 @@ func (c *Client) DeleteNetworkLoadBalancerService(
 	nlb *NetworkLoadBalancer,
 	service *NetworkLoadBalancerService,
 ) error {
+	if err := validateOperationParams(nlb, "delete"); err != nil {
+		return err
+	}
 	if err := validateOperationParams(service, "delete"); err != nil {
 		return err
 	}

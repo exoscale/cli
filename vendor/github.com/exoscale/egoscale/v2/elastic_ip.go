@@ -26,7 +26,7 @@ type ElasticIPHealthcheck struct {
 type ElasticIP struct {
 	Description *string
 	Healthcheck *ElasticIPHealthcheck
-	ID          *string `req-for:"update"`
+	ID          *string `req-for:"update,delete"`
 	IPAddress   *net.IP
 }
 
@@ -115,6 +115,10 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 
 // DeleteElasticIP deletes an Elastic IP.
 func (c *Client) DeleteElasticIP(ctx context.Context, zone string, elasticIP *ElasticIP) error {
+	if err := validateOperationParams(elasticIP, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteElasticIpWithResponse(apiv2.WithZone(ctx, zone), *elasticIP.ID)
 	if err != nil {
 		return err

@@ -17,7 +17,7 @@ type Template struct {
 	DefaultUser     *string
 	Description     *string
 	Family          *string
-	ID              *string
+	ID              *string `req-for:"delete"`
 	Name            *string `req-for:"create"`
 	PasswordEnabled *bool   `req-for:"create"`
 	SSHKeyEnabled   *bool   `req-for:"create"`
@@ -49,6 +49,10 @@ func templateFromAPI(t *oapi.Template) *Template {
 
 // DeleteTemplate deletes a Template.
 func (c *Client) DeleteTemplate(ctx context.Context, zone string, template *Template) error {
+	if err := validateOperationParams(template, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteTemplateWithResponse(apiv2.WithZone(ctx, zone), *template.ID)
 	if err != nil {
 		return err

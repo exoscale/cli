@@ -10,7 +10,7 @@ import (
 // SSHKey represents an SSH key.
 type SSHKey struct {
 	Fingerprint *string
-	Name        *string
+	Name        *string `req-for:"delete"`
 }
 
 func sshKeyFromAPI(k *oapi.SshKey) *SSHKey {
@@ -22,6 +22,10 @@ func sshKeyFromAPI(k *oapi.SshKey) *SSHKey {
 
 // DeleteSSHKey deletes an SSH key.
 func (c *Client) DeleteSSHKey(ctx context.Context, zone string, sshKey *SSHKey) error {
+	if err := validateOperationParams(sshKey, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteSshKeyWithResponse(apiv2.WithZone(ctx, zone), *sshKey.Name)
 	if err != nil {
 		return err

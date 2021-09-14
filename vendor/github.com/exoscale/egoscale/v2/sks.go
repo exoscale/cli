@@ -18,7 +18,7 @@ type SKSNodepool struct {
 	DeployTargetID       *string
 	Description          *string
 	DiskSize             *int64  `req-for:"create"`
-	ID                   *string `req-for:"update,scale,evict,delete"`
+	ID                   *string `req-for:"update,delete"`
 	InstancePoolID       *string
 	InstancePrefix       *string
 	InstanceTypeID       *string `req-for:"create"`
@@ -112,7 +112,7 @@ type SKSCluster struct {
 	CreatedAt    *time.Time
 	Description  *string
 	Endpoint     *string
-	ID           *string `req-for:"update"`
+	ID           *string `req-for:"update,delete"`
 	Labels       *map[string]string
 	Name         *string `req-for:"create"`
 	Nodepools    []*SKSNodepool
@@ -325,6 +325,9 @@ func (c *Client) CreateSKSNodepool(
 	cluster *SKSCluster,
 	nodepool *SKSNodepool,
 ) (*SKSNodepool, error) {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return nil, err
+	}
 	if err := validateOperationParams(nodepool, "create"); err != nil {
 		return nil, err
 	}
@@ -417,6 +420,10 @@ func (c *Client) CreateSKSNodepool(
 
 // DeleteSKSCluster deletes an SKS cluster.
 func (c *Client) DeleteSKSCluster(ctx context.Context, zone string, cluster *SKSCluster) error {
+	if err := validateOperationParams(cluster, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteSksClusterWithResponse(apiv2.WithZone(ctx, zone), *cluster.ID)
 	if err != nil {
 		return err
@@ -435,6 +442,9 @@ func (c *Client) DeleteSKSCluster(ctx context.Context, zone string, cluster *SKS
 
 // DeleteSKSNodepool deletes an SKS Nodepool.
 func (c *Client) DeleteSKSNodepool(ctx context.Context, zone string, cluster *SKSCluster, nodepool *SKSNodepool) error {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return err
+	}
 	if err := validateOperationParams(nodepool, "delete"); err != nil {
 		return err
 	}
@@ -464,7 +474,10 @@ func (c *Client) EvictSKSNodepoolMembers(
 	nodepool *SKSNodepool,
 	members []string,
 ) error {
-	if err := validateOperationParams(nodepool, "evict"); err != nil {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(nodepool, "update"); err != nil {
 		return err
 	}
 
@@ -522,6 +535,10 @@ func (c *Client) GetSKSClusterAuthorityCert(
 	cluster *SKSCluster,
 	authority string,
 ) (string, error) {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return "", err
+	}
+
 	if authority == "" {
 		return "", errors.New("authority not specified")
 	}
@@ -549,6 +566,10 @@ func (c *Client) GetSKSClusterKubeconfig(
 	groups []string,
 	d time.Duration,
 ) (string, error) {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return "", err
+	}
+
 	if user == "" {
 		return "", errors.New("user not specified")
 	}
@@ -614,6 +635,10 @@ func (c *Client) ListSKSClusterVersions(ctx context.Context) ([]string, error) {
 // RotateSKSClusterCCMCredentials rotates the Exoscale IAM credentials managed by the SKS control plane for the
 // Kubernetes Exoscale Cloud Controller Manager.
 func (c *Client) RotateSKSClusterCCMCredentials(ctx context.Context, zone string, cluster *SKSCluster) error {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.RotateSksCcmCredentialsWithResponse(apiv2.WithZone(ctx, zone), *cluster.ID)
 	if err != nil {
 		return err
@@ -638,7 +663,10 @@ func (c *Client) ScaleSKSNodepool(
 	nodepool *SKSNodepool,
 	size int64,
 ) error {
-	if err := validateOperationParams(nodepool, "scale"); err != nil {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(nodepool, "update"); err != nil {
 		return err
 	}
 
@@ -705,6 +733,9 @@ func (c *Client) UpdateSKSNodepool(
 	cluster *SKSCluster,
 	nodepool *SKSNodepool,
 ) error {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return err
+	}
 	if err := validateOperationParams(nodepool, "update"); err != nil {
 		return err
 	}
@@ -787,6 +818,10 @@ func (c *Client) UpdateSKSNodepool(
 
 // UpgradeSKSCluster upgrades an SKS cluster to the requested Kubernetes version.
 func (c *Client) UpgradeSKSCluster(ctx context.Context, zone string, cluster *SKSCluster, version string) error {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.UpgradeSksClusterWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*cluster.ID,
@@ -808,6 +843,10 @@ func (c *Client) UpgradeSKSCluster(ctx context.Context, zone string, cluster *SK
 
 // UpgradeSKSClusterServiceLevel upgrades an SKS cluster to service level "pro".
 func (c *Client) UpgradeSKSClusterServiceLevel(ctx context.Context, zone string, cluster *SKSCluster) error {
+	if err := validateOperationParams(cluster, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.UpgradeSksClusterServiceLevelWithResponse(apiv2.WithZone(ctx, zone), *cluster.ID)
 	if err != nil {
 		return err

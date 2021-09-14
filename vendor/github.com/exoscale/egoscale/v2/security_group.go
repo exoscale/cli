@@ -74,7 +74,7 @@ func securityGroupRuleFromAPI(r *oapi.SecurityGroupRule) *SecurityGroupRule {
 // SecurityGroup represents a Security Group.
 type SecurityGroup struct {
 	Description     *string
-	ID              *string
+	ID              *string `req-for:"update,delete"`
 	Name            *string `req-for:"create"`
 	ExternalSources *[]string
 	Rules           []*SecurityGroupRule
@@ -135,6 +135,9 @@ func (c *Client) CreateSecurityGroupRule(
 	securityGroup *SecurityGroup,
 	rule *SecurityGroupRule,
 ) (*SecurityGroupRule, error) {
+	if err := validateOperationParams(securityGroup, "update"); err != nil {
+		return nil, err
+	}
 	if err := validateOperationParams(rule, "create"); err != nil {
 		return nil, err
 	}
@@ -232,6 +235,10 @@ func (c *Client) CreateSecurityGroupRule(
 
 // DeleteSecurityGroup deletes a Security Group.
 func (c *Client) DeleteSecurityGroup(ctx context.Context, zone string, securityGroup *SecurityGroup) error {
+	if err := validateOperationParams(securityGroup, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteSecurityGroupWithResponse(apiv2.WithZone(ctx, zone), *securityGroup.ID)
 	if err != nil {
 		return err
@@ -255,6 +262,9 @@ func (c *Client) DeleteSecurityGroupRule(
 	securityGroup *SecurityGroup,
 	rule *SecurityGroupRule,
 ) error {
+	if err := validateOperationParams(securityGroup, "update"); err != nil {
+		return err
+	}
 	if err := validateOperationParams(rule, "delete"); err != nil {
 		return err
 	}
@@ -327,6 +337,10 @@ func (c *Client) AddExternalSourceToSecurityGroup(
 	securityGroup *SecurityGroup,
 	cidr string,
 ) error {
+	if err := validateOperationParams(securityGroup, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.AddExternalSourceToSecurityGroupWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*securityGroup.ID,
@@ -356,6 +370,10 @@ func (c *Client) RemoveExternalSourceFromSecurityGroup(
 	securityGroup *SecurityGroup,
 	cidr string,
 ) error {
+	if err := validateOperationParams(securityGroup, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.RemoveExternalSourceFromSecurityGroupWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*securityGroup.ID,

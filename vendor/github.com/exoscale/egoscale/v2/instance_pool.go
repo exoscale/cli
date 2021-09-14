@@ -20,7 +20,7 @@ type InstancePool struct {
 	Description          *string
 	DiskSize             *int64 `req-for:"create"`
 	ElasticIPIDs         *[]string
-	ID                   *string `req-for:"update"`
+	ID                   *string `req-for:"update,delete"`
 	IPv6Enabled          *bool
 	InstanceIDs          *[]string
 	InstancePrefix       *string
@@ -326,6 +326,10 @@ func (c *Client) CreateInstancePool(
 
 // DeleteInstancePool deletes an Instance Pool.
 func (c *Client) DeleteInstancePool(ctx context.Context, zone string, instancePool *InstancePool) error {
+	if err := validateOperationParams(instancePool, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteInstancePoolWithResponse(apiv2.WithZone(ctx, zone), *instancePool.ID)
 	if err != nil {
 		return err
@@ -350,6 +354,10 @@ func (c *Client) EvictInstancePoolMembers(
 	instancePool *InstancePool,
 	members []string,
 ) error {
+	if err := validateOperationParams(instancePool, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.EvictInstancePoolMembersWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instancePool.ID,
@@ -416,6 +424,10 @@ func (c *Client) ListInstancePools(ctx context.Context, zone string) ([]*Instanc
 
 // ScaleInstancePool scales an Instance Pool.
 func (c *Client) ScaleInstancePool(ctx context.Context, zone string, instancePool *InstancePool, size int64) error {
+	if err := validateOperationParams(instancePool, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.ScaleInstancePoolWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instancePool.ID,

@@ -20,22 +20,22 @@ type Instance struct {
 	AntiAffinityGroupIDs *[]string
 	CreatedAt            *time.Time
 	DeployTargetID       *string
-	DiskSize             *int64 `req-if:"create"`
+	DiskSize             *int64 `req-for:"create"`
 	ElasticIPIDs         *[]string
-	ID                   *string `req-if:"update"`
+	ID                   *string `req-for:"update,delete"`
 	IPv6Address          *net.IP
 	IPv6Enabled          *bool
-	InstanceTypeID       *string `req-if:"create"`
+	InstanceTypeID       *string `req-for:"create"`
 	Labels               *map[string]string
 	Manager              *InstanceManager
-	Name                 *string `req-if:"create"`
+	Name                 *string `req-for:"create"`
 	PrivateNetworkIDs    *[]string
 	PublicIPAddress      *net.IP
 	SSHKey               *string
 	SecurityGroupIDs     *[]string
 	SnapshotIDs          *[]string
 	State                *string
-	TemplateID           *string `req-if:"create"`
+	TemplateID           *string `req-for:"create"`
 	UserData             *string
 }
 
@@ -262,6 +262,13 @@ func (c *Client) AttachInstanceToElasticIP(
 	instance *Instance,
 	elasticIP *ElasticIP,
 ) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(elasticIP, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.AttachInstanceToElasticIpWithResponse(
 		apiv2.WithZone(ctx, zone), *elasticIP.ID, oapi.AttachInstanceToElasticIpJSONRequestBody{
 			Instance: oapi.Instance{Id: instance.ID},
@@ -290,6 +297,13 @@ func (c *Client) AttachInstanceToPrivateNetwork(
 	privateNetwork *PrivateNetwork,
 	address net.IP,
 ) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(privateNetwork, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.AttachInstanceToPrivateNetworkWithResponse(
 		apiv2.WithZone(ctx, zone), *privateNetwork.ID, oapi.AttachInstanceToPrivateNetworkJSONRequestBody{
 			Instance: oapi.Instance{Id: instance.ID},
@@ -323,6 +337,13 @@ func (c *Client) AttachInstanceToSecurityGroup(
 	instance *Instance,
 	securityGroup *SecurityGroup,
 ) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(securityGroup, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.AttachInstanceToSecurityGroupWithResponse(
 		apiv2.WithZone(ctx, zone), *securityGroup.ID, oapi.AttachInstanceToSecurityGroupJSONRequestBody{
 			Instance: oapi.Instance{Id: instance.ID},
@@ -415,6 +436,10 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 
 // CreateInstanceSnapshot creates a Snapshot of a Compute instance storage volume.
 func (c *Client) CreateInstanceSnapshot(ctx context.Context, zone string, instance *Instance) (*Snapshot, error) {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return nil, err
+	}
+
 	resp, err := c.CreateSnapshotWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
 	if err != nil {
 		return nil, err
@@ -431,17 +456,13 @@ func (c *Client) CreateInstanceSnapshot(ctx context.Context, zone string, instan
 	return c.GetSnapshot(ctx, zone, *res.(*oapi.Reference).Id)
 }
 
-// DetachInstanceFromElasticIP detaches a Compute instance from the specified Elastic IP.
-func (c *Client) DetachInstanceFromElasticIP(
-	ctx context.Context,
-	zone string,
-	instance *Instance,
-	elasticIP *ElasticIP,
-) error {
-	resp, err := c.DetachInstanceFromElasticIpWithResponse(
-		apiv2.WithZone(ctx, zone), *elasticIP.ID, oapi.DetachInstanceFromElasticIpJSONRequestBody{
-			Instance: oapi.Instance{Id: instance.ID},
-		})
+// DeleteInstance deletes a Compute instance.
+func (c *Client) DeleteInstance(ctx context.Context, zone string, instance *Instance) error {
+	if err := validateOperationParams(instance, "delete"); err != nil {
+		return err
+	}
+
+	resp, err := c.DeleteInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
 	if err != nil {
 		return err
 	}
@@ -457,9 +478,24 @@ func (c *Client) DetachInstanceFromElasticIP(
 	return nil
 }
 
-// DeleteInstance deletes a Compute instance.
-func (c *Client) DeleteInstance(ctx context.Context, zone string, instance *Instance) error {
-	resp, err := c.DeleteInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
+// DetachInstanceFromElasticIP detaches a Compute instance from the specified Elastic IP.
+func (c *Client) DetachInstanceFromElasticIP(
+	ctx context.Context,
+	zone string,
+	instance *Instance,
+	elasticIP *ElasticIP,
+) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(elasticIP, "update"); err != nil {
+		return err
+	}
+
+	resp, err := c.DetachInstanceFromElasticIpWithResponse(
+		apiv2.WithZone(ctx, zone), *elasticIP.ID, oapi.DetachInstanceFromElasticIpJSONRequestBody{
+			Instance: oapi.Instance{Id: instance.ID},
+		})
 	if err != nil {
 		return err
 	}
@@ -482,6 +518,13 @@ func (c *Client) DetachInstanceFromPrivateNetwork(
 	instance *Instance,
 	privateNetwork *PrivateNetwork,
 ) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(privateNetwork, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.DetachInstanceFromPrivateNetworkWithResponse(
 		apiv2.WithZone(ctx, zone), *privateNetwork.ID, oapi.DetachInstanceFromPrivateNetworkJSONRequestBody{
 			Instance: oapi.Instance{Id: instance.ID},
@@ -508,6 +551,13 @@ func (c *Client) DetachInstanceFromSecurityGroup(
 	instance *Instance,
 	securityGroup *SecurityGroup,
 ) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(securityGroup, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.DetachInstanceFromSecurityGroupWithResponse(
 		apiv2.WithZone(ctx, zone), *securityGroup.ID, oapi.DetachInstanceFromSecurityGroupJSONRequestBody{
 			Instance: oapi.Instance{Id: instance.ID},
@@ -589,6 +639,10 @@ func (c *Client) ListInstances(ctx context.Context, zone string) ([]*Instance, e
 
 // RebootInstance reboots a Compute instance.
 func (c *Client) RebootInstance(ctx context.Context, zone string, instance *Instance) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.RebootInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
 	if err != nil {
 		return err
@@ -614,6 +668,10 @@ func (c *Client) ResetInstance(
 	template *Template,
 	diskSize int64,
 ) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.ResetInstanceWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
@@ -648,6 +706,10 @@ func (c *Client) ResetInstance(
 
 // ResizeInstanceDisk resizes a Compute instance's disk to a larger size.
 func (c *Client) ResizeInstanceDisk(ctx context.Context, zone string, instance *Instance, size int64) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.ResizeInstanceDiskWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
@@ -674,6 +736,13 @@ func (c *Client) RevertInstanceToSnapshot(
 	instance *Instance,
 	snapshot *Snapshot,
 ) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+	if err := validateOperationParams(snapshot, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.RevertInstanceToSnapshotWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
@@ -695,6 +764,10 @@ func (c *Client) RevertInstanceToSnapshot(
 
 // ScaleInstance scales a Compute instance type.
 func (c *Client) ScaleInstance(ctx context.Context, zone string, instance *Instance, instanceType *InstanceType) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.ScaleInstanceWithResponse(
 		apiv2.WithZone(ctx, zone),
 		*instance.ID,
@@ -717,6 +790,10 @@ func (c *Client) ScaleInstance(ctx context.Context, zone string, instance *Insta
 
 // StartInstance starts a Compute instance.
 func (c *Client) StartInstance(ctx context.Context, zone string, instance *Instance) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.StartInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
 	if err != nil {
 		return err
@@ -735,6 +812,10 @@ func (c *Client) StartInstance(ctx context.Context, zone string, instance *Insta
 
 // StopInstance stops a Compute instance.
 func (c *Client) StopInstance(ctx context.Context, zone string, instance *Instance) error {
+	if err := validateOperationParams(instance, "update"); err != nil {
+		return err
+	}
+
 	resp, err := c.StopInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
 	if err != nil {
 		return err

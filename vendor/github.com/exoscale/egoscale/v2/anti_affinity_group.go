@@ -10,7 +10,7 @@ import (
 // AntiAffinityGroup represents an Anti-Affinity Group.
 type AntiAffinityGroup struct {
 	Description *string
-	ID          *string
+	ID          *string `req-for:"delete"`
 	InstanceIDs *[]string
 	Name        *string `req-for:"create"`
 }
@@ -70,6 +70,10 @@ func (c *Client) DeleteAntiAffinityGroup(
 	zone string,
 	antiAffinityGroup *AntiAffinityGroup,
 ) error {
+	if err := validateOperationParams(antiAffinityGroup, "delete"); err != nil {
+		return err
+	}
+
 	resp, err := c.DeleteAntiAffinityGroupWithResponse(apiv2.WithZone(ctx, zone), *antiAffinityGroup.ID)
 	if err != nil {
 		return err
