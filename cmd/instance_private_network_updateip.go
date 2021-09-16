@@ -16,6 +16,7 @@ type instancePrivnetUpdateIPCmd struct {
 
 	Instance       string `cli-arg:"#" cli-usage:"INSTANCE-NAME|ID"`
 	PrivateNetwork string `cli-arg:"#" cli-usage:"PRIVATE-NETWORK-NAME|ID"`
+	IPAddress      string `cli-flag:"ip" cli-usage:"network IP address to assign to the Compute instance"`
 
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
@@ -53,24 +54,13 @@ func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		return fmt.Errorf("error retrieving Private Network: %s", err)
 	}
 
-	var instanceIPAddress net.IP
-	for _, lease := range privateNetwork.Leases {
-		if *lease.InstanceID == *instance.ID {
-			instanceIPAddress = *lease.IPAddress
-			break
-		}
-	}
-	if instanceIPAddress == nil {
-		return fmt.Errorf("instance %q has no IP address in Private Network %q", c.Instance, c.PrivateNetwork)
-	}
-
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Private Network IP address...", c.Instance), func() {
 		if err = cs.UpdatePrivateNetworkInstanceIPAddress(
 			ctx,
 			c.Zone,
 			instance,
 			privateNetwork,
-			instanceIPAddress,
+			net.ParseIP(c.IPAddress),
 		); err != nil {
 			return
 		}
