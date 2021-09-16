@@ -27,8 +27,9 @@ var instanceTypeSizes = []string{
 }
 
 var computeInstanceCmd = &cobra.Command{
-	Use:   "instance",
-	Short: "Compute instances management",
+	Use:     "instance",
+	Short:   "Compute instances management",
+	Aliases: []string{"i"},
 }
 
 func init() {
