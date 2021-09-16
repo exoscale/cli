@@ -29,7 +29,8 @@ func (c *sksNodepoolEvictCmd) cmdShort() string { return "Evict SKS cluster Node
 
 func (c *sksNodepoolEvictCmd) cmdLong() string {
 	return fmt.Sprintf(`This command evicts specific members from an SKS cluster Nodepool, effectively
-scaling down the Nodepool similar to the "exo sks nodepool scale" command.
+scaling down the Nodepool similar to the "exo compute sks nodepool scale"
+command.
 
 Note: Kubernetes Nodes should be drained from their workload prior to being
 evicted from their Nodepool, e.g. using "kubectl drain".

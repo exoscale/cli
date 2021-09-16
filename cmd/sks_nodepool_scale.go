@@ -31,9 +31,10 @@ func (c *sksNodepoolScaleCmd) cmdLong() string {
 	return fmt.Sprintf(`This command scales an SKS cluster Nodepool size up (growing) or down
 (shrinking).
 
-In case of a scale-down, operators should use the "exo sks nodepool evict"
-variant, allowing them to specify which specific Nodes should be evicted from
-the pool rather than leaving the decision to the SKS manager.
+In case of a scale-down, operators should use the
+"exo compute sks nodepool evict" command, allowing them to specify which
+specific Nodes should be evicted from the pool rather than leaving the
+decision to the SKS manager.
 
 Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
