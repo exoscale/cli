@@ -13,7 +13,7 @@ type instancePoolShowOutput struct {
 	ID                 string            `json:"id"`
 	Name               string            `json:"name"`
 	Description        string            `json:"description"`
-	ServiceOffering    string            `json:"service_offering"`
+	InstanceType       string            `json:"instance_type"`
 	Template           string            `json:"template_id"`
 	Zone               string            `json:"zoneid"`
 	AntiAffinityGroups []string          `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
@@ -152,7 +152,7 @@ func showInstancePool(zone, x string) (outputter, error) {
 	if err != nil {
 		return nil, err
 	}
-	out.ServiceOffering = *instanceType.Size
+	out.InstanceType = fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size)
 
 	if instancePool.PrivateNetworkIDs != nil {
 		for _, id := range *instancePool.PrivateNetworkIDs {
