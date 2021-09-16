@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/exoscale/egoscale"
 	exov2 "github.com/exoscale/egoscale/v2"
@@ -62,13 +63,14 @@ func buildClient() {
 		egoscale.WithoutV2Client())
 
 	// During the Exoscale API V1 -> V2 transition, we need to initialize the
-	// V2 client independently from the V1 client because of HTTP middleware
+	// V2 client independently of the V1 client because of HTTP middleware
 	// (http.Transport) clashes.
 	// This can be removed once the only API used is V2.
 	clientExoV2, err := exov2.NewClient(
 		gCurrentAccount.Key,
 		gCurrentAccount.APISecret(),
 		exov2.ClientOptWithAPIEndpoint(gCurrentAccount.Endpoint),
+		exov2.ClientOptWithTimeout(5*time.Minute),
 		exov2.ClientOptWithHTTPClient(func() *http.Client {
 			hc := &http.Client{Transport: http.DefaultTransport}
 			if gCurrentAccount.CustomHeaders != nil {
