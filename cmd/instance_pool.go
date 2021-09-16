@@ -9,8 +9,9 @@ import (
 )
 
 var instancePoolCmd = &cobra.Command{
-	Use:   "instance-pool",
-	Short: "Instance Pools management",
+	Use:     "instance-pool",
+	Short:   "Instance Pools management",
+	Aliases: []string{"pool"},
 }
 
 var deprecatedInstancePoolCmd = &cobra.Command{
