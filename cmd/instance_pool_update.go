@@ -26,10 +26,12 @@ type instancePoolUpdateCmd struct {
 	IPv6               bool              `cli-flag:"ipv6" cli-short:"6" cli-usage:"enable IPv6 on managed Compute instances"`
 	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
 	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
+	Keypair            string            `cli-short:"k" cli-usage:"[DEPRECATED] use --ssh-key"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
 	Name               string            `cli-short:"n" cli-usage:"Instance Pool name"`
-	PrivateNetworks    []string          `cli-flag:"privnet" cli-short:"p" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
-	SSHKey             string            `cli-short:"k" cli-flag:"keypair" cli-usage:"SSH key to deploy on managed Compute instances"`
+	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
+	Privnet            []string          `cli-short:"p" cli-usage:"[DEPRECATED] use --private-network"`
+	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
 	ServiceOffering    string            `cli-short:"o" cli-usage:"[DEPRECATED] use --instance-type"`
 	Size               int64             `cli-usage:"[DEPRECATED] use the 'exo compute instance-pool scale' command"`
@@ -51,6 +53,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *instancePoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	// TODO: remove this once the `--disk` flag is retired.
 	if cmd.Flags().Changed("disk") {
 		cmd.PrintErr(`**********************************************************************
 WARNING: flag "--disk" has been deprecated and will be removed in a
@@ -58,11 +61,41 @@ future release, please use "--disk-size" instead.
 **********************************************************************
 `)
 		if !cmd.Flags().Changed("disk-size") {
-			diskFlagValue, err := cmd.Flags().GetInt64("disk")
-			if err != nil {
-				return fmt.Errorf("invalid value for flag --disk: %v", err)
+			diskFlag := cmd.Flags().Lookup("disk")
+			if err := cmd.Flags().Set("disk-size", fmt.Sprint(diskFlag.Value.String())); err == nil {
+				return err
 			}
-			if err = cmd.Flags().Set("disk-size", fmt.Sprint(diskFlagValue)); err != nil {
+		}
+	}
+
+	// TODO: remove this once the `--keypair` flag is retired.
+	if cmd.Flags().Changed("keypair") {
+		cmd.PrintErr(`**********************************************************************
+WARNING: flag "--keypair" has been deprecated and will be removed in
+a future release, please use "--ssh-key" instead.
+**********************************************************************
+`)
+		if !cmd.Flags().Changed("ssh-key") {
+			keypairFlag := cmd.Flags().Lookup("keypair")
+			if err := cmd.Flags().Set("ssh-key", keypairFlag.Value.String()); err != nil {
+				return err
+			}
+		}
+	}
+
+	// TODO: remove this once the `--privnet` flag is retired.
+	if cmd.Flags().Changed("privnet") {
+		cmd.PrintErr(`**********************************************************************
+WARNING: flag "--privnet" has been deprecated and will be removed in
+a future release, please use "--private-network" instead.
+**********************************************************************
+`)
+		if !cmd.Flags().Changed("private-network") {
+			privnetFlag := cmd.Flags().Lookup("privnet")
+			if err := cmd.Flags().Set(
+				"private-network",
+				strings.Trim(privnetFlag.Value.String(), "[]"),
+			); err != nil {
 				return err
 			}
 		}
@@ -76,11 +109,8 @@ in a future release, please use "--instance-type" instead.
 **********************************************************************
 `)
 		if !cmd.Flags().Changed("instance-type") {
-			serviceOfferingFlagValue, err := cmd.Flags().GetString("service-offering")
-			if err != nil {
-				return fmt.Errorf("invalid value for flag --service-offering: %v", err)
-			}
-			if err = cmd.Flags().Set("instance-type", serviceOfferingFlagValue); err != nil {
+			serviceOfferingFlag := cmd.Flags().Lookup("service-offering")
+			if err := cmd.Flags().Set("instance-type", serviceOfferingFlag.Value.String()); err != nil {
 				return err
 			}
 		}
