@@ -20,17 +20,19 @@ type instancePoolUpdateCmd struct {
 	CloudInitFile      string            `cli-flag:"cloud-init" cli-short:"c" cli-usage:"cloud-init user data configuration file path"`
 	DeployTarget       string            `cli-usage:"managed Compute instances Deploy Target NAME|ID"`
 	Description        string            `cli-usage:"Instance Pool description"`
-	DiskSize           int64             `cli-flag:"disk" cli-short:"d" cli-usage:"managed Compute instances disk size"`
+	Disk               int64             `cli-flag:"disk" cli-short:"d" cli-usage:"[DEPRECATED] use --disk-size"`
+	DiskSize           int64             `cli-usage:"managed Compute instances disk size"`
 	ElasticIPs         []string          `cli-flag:"elastic-ip" cli-short:"e" cli-usage:"managed Compute instances Elastic IP ADDRESS|ID (can be specified multiple times)"`
 	IPv6               bool              `cli-flag:"ipv6" cli-short:"6" cli-usage:"enable IPv6 on managed Compute instances"`
 	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
-	InstanceType       string            `cli-flag:"service-offering" cli-short:"o" cli-usage:"managed Compute instances type"`
+	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
 	Name               string            `cli-short:"n" cli-usage:"Instance Pool name"`
 	PrivateNetworks    []string          `cli-flag:"privnet" cli-short:"p" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
 	SSHKey             string            `cli-short:"k" cli-flag:"keypair" cli-usage:"SSH key to deploy on managed Compute instances"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
-	Size               int64             `cli-usage:"Instance Pool size. Deprecated, replaced by the 'exo instancepool scale' command."`
+	ServiceOffering    string            `cli-short:"o" cli-usage:"[DEPRECATED] use --instance-type"`
+	Size               int64             `cli-usage:"[DEPRECATED] use the 'exo compute instance-pool scale' command"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
 	TemplateFilter     string            `cli-usage:"managed Compute instances template filter"`
 	Zone               string            `cli-short:"z" cli-usage:"Instance Pool zone"`
@@ -49,6 +51,41 @@ Supported output template annotations: %s`,
 }
 
 func (c *instancePoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	if cmd.Flags().Changed("disk") {
+		cmd.PrintErr(`**********************************************************************
+WARNING: flag "--disk" has been deprecated and will be removed in a
+future release, please use "--disk-size" instead.
+**********************************************************************
+`)
+		if !cmd.Flags().Changed("disk-size") {
+			diskFlagValue, err := cmd.Flags().GetInt64("disk")
+			if err != nil {
+				return fmt.Errorf("invalid value for flag --disk: %v", err)
+			}
+			if err = cmd.Flags().Set("disk-size", fmt.Sprint(diskFlagValue)); err != nil {
+				return err
+			}
+		}
+	}
+
+	// TODO: remove this once the `--service-offering` flag is retired.
+	if cmd.Flags().Changed("service-offering") {
+		cmd.PrintErr(`**********************************************************************
+WARNING: flag "--service-offering" has been deprecated and will be removed
+in a future release, please use "--instance-type" instead.
+**********************************************************************
+`)
+		if !cmd.Flags().Changed("instance-type") {
+			serviceOfferingFlagValue, err := cmd.Flags().GetString("service-offering")
+			if err != nil {
+				return fmt.Errorf("invalid value for flag --service-offering: %v", err)
+			}
+			if err = cmd.Flags().Set("instance-type", serviceOfferingFlagValue); err != nil {
+				return err
+			}
+		}
+	}
+
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
@@ -216,7 +253,8 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		_, _ = fmt.Fprintln(
 			os.Stderr,
 			`WARNING: the "--size" flag is deprecated and replaced by the `+
-				`"exo instancepool scale" command, it will be removed in a future version.`,
+				`"exo compute instance-pool scale" command, it will be removed `+
+				`in a future version.`,
 		)
 
 		decorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
