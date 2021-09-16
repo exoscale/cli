@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.42.0
+
+### Changes
+
+- Command `exo compute instance-pool show` output template label `.ServiceOffering` has been renamed `.InstanceType`
+- Commands `exo compute instance-pool (create|update)` flags `--disk`/`--service-offering` are now deprecated, replaced by `--disk-size`/`--instance-type`
+
+
 ## 1.41.1
 
 ### Bug Fixes
