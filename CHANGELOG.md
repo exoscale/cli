@@ -4,7 +4,7 @@
 
 ### Bug Fixes
 
-- Fix "exo compute instance private-network update-ip" command
+- Fix `exo compute instance private-network update-ip` command
 
 
 ## 1.41.0
