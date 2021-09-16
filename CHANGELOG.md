@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.41.1
+
+### Bug Fixes
+
+- Fix "exo compute instance private-network update-ip" command
+
+
 ## 1.41.0
 
 ### Changes
