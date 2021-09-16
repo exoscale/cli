@@ -28,9 +28,10 @@ func (c *instancePoolScaleCmd) cmdLong() string {
 	return `This command scales an Instance Pool size up (growing) or down
 (shrinking).
 
-In case of a scale-down, operators should use the "exo instancepool evict"
-variant, allowing them to specify which specific instance should be evicted
-from the Instance Pool rather than leaving the decision to the orchestrator.`
+In case of a scale-down, operators should use the
+"exo compute instance-pool evict" command, allowing them to specify which
+specific instance should be evicted from the Instance Pool rather than leaving
+the decision to the orchestrator.`
 }
 
 func (c *instancePoolScaleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

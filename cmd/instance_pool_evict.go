@@ -25,7 +25,8 @@ func (c *instancePoolEvictCmd) cmdShort() string { return "Evict Instance Pool m
 
 func (c *instancePoolEvictCmd) cmdLong() string {
 	return `This command evicts specific members from an Instance Pool, effectively
-scaling down the Instance Pool similar to the "exo instancepool scale" command.`
+scaling down the Instance Pool similar to the "exo compute instance-pool scale"
+command.`
 }
 
 func (c *instancePoolEvictCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
