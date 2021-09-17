@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.43.0
+
+### Changes
+
+- Commands `exo compute instance-pool (create|update)` flags `--keypair`/`--privnet` are now deprecated, replaced by `--ssh-key`/`--private-network`
+
+### Features
+
+- New `exo compute instance snapshot export` command
+
+
 ## 1.42.0
 
 ### Changes
