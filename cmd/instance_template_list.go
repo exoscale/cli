@@ -8,20 +8,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type computeInstanceTemplateListItemOutput struct {
+type instanceTemplateListItemOutput struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
 	Family       string `json:"family"`
 	CreationDate string `json:"creation_date"`
 }
 
-type computeInstanceTemplateListOutput []computeInstanceTemplateListItemOutput
+type instanceTemplateListOutput []instanceTemplateListItemOutput
 
-func (o *computeInstanceTemplateListOutput) toJSON()  { outputJSON(o) }
-func (o *computeInstanceTemplateListOutput) toText()  { outputText(o) }
-func (o *computeInstanceTemplateListOutput) toTable() { outputTable(o) }
+func (o *instanceTemplateListOutput) toJSON()  { outputJSON(o) }
+func (o *instanceTemplateListOutput) toText()  { outputText(o) }
+func (o *instanceTemplateListOutput) toTable() { outputTable(o) }
 
-type computeInstanceTemplateListCmd struct {
+type instanceTemplateListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
@@ -31,22 +31,22 @@ type computeInstanceTemplateListCmd struct {
 	Zone       string `cli-short:"z" cli-usage:"zone to filter results to (default: current account's default zone)"`
 }
 
-func (c *computeInstanceTemplateListCmd) cmdAliases() []string { return nil }
+func (c *instanceTemplateListCmd) cmdAliases() []string { return nil }
 
-func (c *computeInstanceTemplateListCmd) cmdShort() string { return "List Compute instance templates" }
+func (c *instanceTemplateListCmd) cmdShort() string { return "List Compute instance templates" }
 
-func (c *computeInstanceTemplateListCmd) cmdLong() string {
+func (c *instanceTemplateListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Compute instance templates.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&computeInstanceTemplateListItemOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&instanceTemplateListItemOutput{}), ", "))
 }
 
-func (c *computeInstanceTemplateListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *instanceTemplateListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeInstanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.Zone == "" {
 		c.Zone = gCurrentAccount.DefaultZone
 	}
@@ -61,10 +61,10 @@ func (c *computeInstanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) er
 		return err
 	}
 
-	out := make(computeInstanceTemplateListOutput, 0)
+	out := make(instanceTemplateListOutput, 0)
 
 	for _, t := range templates {
-		out = append(out, computeInstanceTemplateListItemOutput{
+		out = append(out, instanceTemplateListItemOutput{
 			ID:           *t.ID,
 			Name:         *t.Name,
 			Family:       *t.Family,
@@ -76,7 +76,7 @@ func (c *computeInstanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) er
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceTemplateCmd, &computeInstanceTemplateListCmd{
+	cobra.CheckErr(registerCLICommand(instanceTemplateCmd, &instanceTemplateListCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		Visibility: "public",

@@ -79,7 +79,7 @@ func (c *instanceSGRemoveCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceSGCmd, &instanceSGRemoveCmd{
+	cobra.CheckErr(registerCLICommand(instanceSGCmd, &instanceSGRemoveCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

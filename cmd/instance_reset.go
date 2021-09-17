@@ -90,7 +90,7 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceCmd, &instanceResetCmd{
+	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceResetCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		TemplateVisibility: defaultTemplateVisibility,

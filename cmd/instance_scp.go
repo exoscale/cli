@@ -134,7 +134,7 @@ func (c *instanceSCPCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceCmd, &instanceSCPCmd{
+	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceSCPCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		ReplStr: "{}",

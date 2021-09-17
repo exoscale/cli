@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type computeInstanceTemplateShowOutput struct {
+type instanceTemplateShowOutput struct {
 	ID              string `json:"id"`
 	Name            string `json:"name"`
 	Description     string `json:"description"`
@@ -28,9 +28,9 @@ type computeInstanceTemplateShowOutput struct {
 	Checksum        string `json:"checksum"`
 }
 
-func (o *computeInstanceTemplateShowOutput) toJSON() { outputJSON(o) }
-func (o *computeInstanceTemplateShowOutput) toText() { outputText(o) }
-func (o *computeInstanceTemplateShowOutput) toTable() {
+func (o *instanceTemplateShowOutput) toJSON() { outputJSON(o) }
+func (o *instanceTemplateShowOutput) toText() { outputText(o) }
+func (o *instanceTemplateShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Template"})
 	defer t.Render()
@@ -51,7 +51,7 @@ func (o *computeInstanceTemplateShowOutput) toTable() {
 	t.Append([]string{"Checksum", o.Checksum})
 }
 
-type computeInstanceTemplateShowCmd struct {
+type instanceTemplateShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
@@ -63,25 +63,25 @@ type computeInstanceTemplateShowCmd struct {
 	Zone       string `cli-short:"z" cli-usage:"zone to filter results to (default: current account's default zone)"`
 }
 
-func (c *computeInstanceTemplateShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *instanceTemplateShowCmd) cmdAliases() []string { return gShowAlias }
 
-func (c *computeInstanceTemplateShowCmd) cmdShort() string {
+func (c *instanceTemplateShowCmd) cmdShort() string {
 	return "Show a Compute instance template details"
 }
 
-func (c *computeInstanceTemplateShowCmd) cmdLong() string {
+func (c *instanceTemplateShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance template details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&computeInstanceTemplateShowOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
 }
 
-func (c *computeInstanceTemplateShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *instanceTemplateShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeInstanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
@@ -118,7 +118,7 @@ func (c *computeInstanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) er
 		}
 	}
 
-	return output(&computeInstanceTemplateShowOutput{
+	return output(&instanceTemplateShowOutput{
 		ID:              *template.ID,
 		Family:          defaultString(template.Family, ""),
 		Name:            *template.Name,
@@ -137,7 +137,7 @@ func (c *computeInstanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) er
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceTemplateCmd, &computeInstanceTemplateShowCmd{
+	cobra.CheckErr(registerCLICommand(instanceTemplateCmd, &instanceTemplateShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		Visibility: defaultTemplateVisibility,

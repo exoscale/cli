@@ -72,7 +72,7 @@ func (c *instancePrivnetDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstancePrivnetCmd, &instancePrivnetDetachCmd{
+	cobra.CheckErr(registerCLICommand(instancePrivnetCmd, &instancePrivnetDetachCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

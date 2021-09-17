@@ -63,7 +63,7 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceCmd, &instanceDeleteCmd{
+	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceDeleteCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
