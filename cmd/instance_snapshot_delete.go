@@ -56,7 +56,7 @@ func (c *computeInstanceSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceSnapshotCmd, &computeInstanceSnapshotDeleteCmd{
+	cobra.CheckErr(registerCLICommand(instanceSnapshotCmd, &computeInstanceSnapshotDeleteCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
