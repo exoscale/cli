@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.44.0
+
+### Features
+
+- New `exo compute instance snapshot revert` command
+
+
 ## 1.43.0
 
 ### Changes
