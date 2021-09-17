@@ -13,6 +13,7 @@ import (
 
 type instanceTemplateShowOutput struct {
 	ID              string `json:"id"`
+	Zone            string `json:"zone"`
 	Name            string `json:"name"`
 	Description     string `json:"description"`
 	Family          string `json:"family"`
@@ -36,6 +37,7 @@ func (o *instanceTemplateShowOutput) toTable() {
 	defer t.Render()
 
 	t.Append([]string{"ID", o.ID})
+	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Family", o.Family})
@@ -120,6 +122,7 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	return output(&instanceTemplateShowOutput{
 		ID:              *template.ID,
+		Zone:            c.Zone,
 		Family:          defaultString(template.Family, ""),
 		Name:            *template.Name,
 		Description:     defaultString(template.Description, ""),
