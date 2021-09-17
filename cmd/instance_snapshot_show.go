@@ -80,7 +80,7 @@ func showInstanceSnapshot(zone, snapshotID string) (outputter, error) {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceSnapshotCmd, &instanceSnapshotShowCmd{
+	cobra.CheckErr(registerCLICommand(instanceSnapshotCmd, &instanceSnapshotShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

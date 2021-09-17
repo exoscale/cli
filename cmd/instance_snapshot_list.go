@@ -105,7 +105,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceSnapshotCmd, &instanceSnapshotListCmd{
+	cobra.CheckErr(registerCLICommand(instanceSnapshotCmd, &instanceSnapshotListCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
