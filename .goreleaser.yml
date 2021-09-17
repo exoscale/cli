@@ -44,7 +44,6 @@ release:
   github:
     owner: exoscale
     name: cli
-  draft: true
 
 nfpms:
   - vendor: Exoscale
