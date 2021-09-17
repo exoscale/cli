@@ -28,7 +28,7 @@ type instanceSnapshotExportCmd struct {
 	Zone string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotExportCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *instanceSnapshotExportCmd) cmdAliases() []string { return nil }
 
 func (c *instanceSnapshotExportCmd) cmdShort() string {
 	return "Export a Compute instance snapshot"
