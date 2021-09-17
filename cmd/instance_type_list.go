@@ -8,54 +8,54 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type computeInstanceTypeListItemOutput struct {
+type instanceTypeListItemOutput struct {
 	ID     string `json:"id"`
 	Family string `json:"family"`
 	Size   string `json:"name"`
 }
 
-type computeInstanceTypeListOutput []computeInstanceTypeListItemOutput
+type instanceTypeListOutput []instanceTypeListItemOutput
 
-func (o *computeInstanceTypeListOutput) toJSON()  { outputJSON(o) }
-func (o *computeInstanceTypeListOutput) toText()  { outputText(o) }
-func (o *computeInstanceTypeListOutput) toTable() { outputTable(o) }
+func (o *instanceTypeListOutput) toJSON()  { outputJSON(o) }
+func (o *instanceTypeListOutput) toText()  { outputText(o) }
+func (o *instanceTypeListOutput) toTable() { outputTable(o) }
 
-type computeInstanceTypeListCmd struct {
+type instanceTypeListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *computeInstanceTypeListCmd) cmdAliases() []string { return nil }
+func (c *instanceTypeListCmd) cmdAliases() []string { return nil }
 
-func (c *computeInstanceTypeListCmd) cmdShort() string { return "List Compute instance types" }
+func (c *instanceTypeListCmd) cmdShort() string { return "List Compute instance types" }
 
-func (c *computeInstanceTypeListCmd) cmdLong() string {
+func (c *instanceTypeListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Compute instance types.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&computeInstanceTypeListItemOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&instanceTypeListItemOutput{}), ", "))
 }
 
-func (c *computeInstanceTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *instanceTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeInstanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
 	)
 
-	computeInstanceTypes, err := cs.ListInstanceTypes(ctx, gCurrentAccount.DefaultZone)
+	instanceTypes, err := cs.ListInstanceTypes(ctx, gCurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}
 
-	out := make(computeInstanceTypeListOutput, 0)
+	out := make(instanceTypeListOutput, 0)
 
-	for _, t := range computeInstanceTypes {
-		out = append(out, computeInstanceTypeListItemOutput{
+	for _, t := range instanceTypes {
+		out = append(out, instanceTypeListItemOutput{
 			ID:     *t.ID,
 			Family: *t.Family,
 			Size:   *t.Size,
@@ -66,7 +66,7 @@ func (c *computeInstanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceTypeCmd, &computeInstanceTypeListCmd{
+	cobra.CheckErr(registerCLICommand(instanceTypeCmd, &instanceTypeListCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

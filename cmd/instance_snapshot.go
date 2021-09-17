@@ -11,5 +11,5 @@ var instanceSnapshotCmd = &cobra.Command{
 }
 
 func init() {
-	computeInstanceCmd.AddCommand(instanceSnapshotCmd)
+	instanceCmd.AddCommand(instanceSnapshotCmd)
 }

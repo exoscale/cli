@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type computeInstanceTypeShowOutput struct {
+type instanceTypeShowOutput struct {
 	ID     string `json:"id"`
 	Family string `json:"family"`
 	Size   string `json:"name"`
@@ -20,9 +20,9 @@ type computeInstanceTypeShowOutput struct {
 	GPUs   int64  `json:"gpus"`
 }
 
-func (o *computeInstanceTypeShowOutput) toJSON() { outputJSON(o) }
-func (o *computeInstanceTypeShowOutput) toText() { outputText(o) }
-func (o *computeInstanceTypeShowOutput) toTable() {
+func (o *instanceTypeShowOutput) toJSON() { outputJSON(o) }
+func (o *instanceTypeShowOutput) toText() { outputText(o) }
+func (o *instanceTypeShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Instance Type"})
 	defer t.Render()
@@ -38,7 +38,7 @@ func (o *computeInstanceTypeShowOutput) toTable() {
 	}
 }
 
-type computeInstanceTypeShowCmd struct {
+type instanceTypeShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
@@ -46,24 +46,24 @@ type computeInstanceTypeShowCmd struct {
 	Type string `cli-arg:"#" cli-usage:"[FAMILY.]SIZE"`
 }
 
-func (c *computeInstanceTypeShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *instanceTypeShowCmd) cmdAliases() []string { return gShowAlias }
 
-func (c *computeInstanceTypeShowCmd) cmdShort() string {
+func (c *instanceTypeShowCmd) cmdShort() string {
 	return "Show a Compute instance type details"
 }
 
-func (c *computeInstanceTypeShowCmd) cmdLong() string {
+func (c *instanceTypeShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance type details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&computeInstanceTypeShowOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&instanceTypeShowOutput{}), ", "))
 }
 
-func (c *computeInstanceTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *instanceTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeInstanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
@@ -74,7 +74,7 @@ func (c *computeInstanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	return output(&computeInstanceTypeShowOutput{
+	return output(&instanceTypeShowOutput{
 		ID:     *t.ID,
 		Family: *t.Family,
 		Size:   *t.Size,
@@ -90,7 +90,7 @@ func (c *computeInstanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceTypeCmd, &computeInstanceTypeShowCmd{
+	cobra.CheckErr(registerCLICommand(instanceTypeCmd, &instanceTypeShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

@@ -77,7 +77,7 @@ func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstancePrivnetCmd, &instancePrivnetUpdateIPCmd{
+	cobra.CheckErr(registerCLICommand(instancePrivnetCmd, &instancePrivnetUpdateIPCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

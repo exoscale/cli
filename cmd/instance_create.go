@@ -244,7 +244,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceCmd, &instanceCreateCmd{
+	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		DiskSize:           50,

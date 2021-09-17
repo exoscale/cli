@@ -65,7 +65,7 @@ func (c *instanceResizeDiskCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceCmd, &instanceResizeDiskCmd{
+	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceResizeDiskCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

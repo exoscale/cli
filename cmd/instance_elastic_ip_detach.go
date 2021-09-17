@@ -72,7 +72,7 @@ func (c *instanceEIPDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceEIPCmd, &instanceEIPDetachCmd{
+	cobra.CheckErr(registerCLICommand(instanceEIPCmd, &instanceEIPDetachCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type computeInstanceTemplateRegisterCmd struct {
+type instanceTemplateRegisterCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"register"`
@@ -28,20 +28,20 @@ type computeInstanceTemplateRegisterCmd struct {
 	Zone            string `cli-short:"z" cli-usage:"zone to register the template into (default: current account's default zone)"`
 }
 
-func (c *computeInstanceTemplateRegisterCmd) cmdAliases() []string { return gCreateAlias }
+func (c *instanceTemplateRegisterCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *computeInstanceTemplateRegisterCmd) cmdShort() string {
+func (c *instanceTemplateRegisterCmd) cmdShort() string {
 	return "Register a new Compute instance template"
 }
 
-func (c *computeInstanceTemplateRegisterCmd) cmdLong() string {
+func (c *instanceTemplateRegisterCmd) cmdLong() string {
 	return fmt.Sprintf(`This command registers a new Compute instance template.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&computeInstanceTemplateShowOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
 }
 
-func (c *computeInstanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *instanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 
 	// In case the user specified a snapshot ID using the `--from-snapshot` flag,
@@ -61,7 +61,7 @@ func (c *computeInstanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args 
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeInstanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var (
 		template *egoscale.Template
 		err      error
@@ -149,7 +149,7 @@ func (c *computeInstanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []stri
 	}
 
 	if !gQuiet {
-		return output(&computeInstanceTemplateShowOutput{
+		return output(&instanceTemplateShowOutput{
 			ID:              *template.ID,
 			Family:          defaultString(template.Family, ""),
 			Name:            *template.Name,
@@ -171,7 +171,7 @@ func (c *computeInstanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []stri
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeInstanceTemplateCmd, &computeInstanceTemplateRegisterCmd{
+	cobra.CheckErr(registerCLICommand(instanceTemplateCmd, &instanceTemplateRegisterCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		BootMode: "legacy",
