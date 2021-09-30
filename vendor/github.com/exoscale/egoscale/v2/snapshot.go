@@ -22,9 +22,10 @@ type Snapshot struct {
 	Name       *string
 	Size       *int64
 	State      *string
+	Zone       *string
 }
 
-func snapshotFromAPI(s *oapi.Snapshot) *Snapshot {
+func snapshotFromAPI(s *oapi.Snapshot, zone string) *Snapshot {
 	return &Snapshot{
 		CreatedAt:  s.CreatedAt,
 		ID:         s.Id,
@@ -32,6 +33,7 @@ func snapshotFromAPI(s *oapi.Snapshot) *Snapshot {
 		Name:       s.Name,
 		Size:       s.Size,
 		State:      (*string)(s.State),
+		Zone:       &zone,
 	}
 }
 
@@ -94,7 +96,7 @@ func (c *Client) GetSnapshot(ctx context.Context, zone, id string) (*Snapshot, e
 		return nil, err
 	}
 
-	return snapshotFromAPI(resp.JSON200), nil
+	return snapshotFromAPI(resp.JSON200, zone), nil
 }
 
 // ListSnapshots returns the list of existing Snapshots.
@@ -108,7 +110,7 @@ func (c *Client) ListSnapshots(ctx context.Context, zone string) ([]*Snapshot, e
 
 	if resp.JSON200.Snapshots != nil {
 		for i := range *resp.JSON200.Snapshots {
-			list = append(list, snapshotFromAPI(&(*resp.JSON200.Snapshots)[i]))
+			list = append(list, snapshotFromAPI(&(*resp.JSON200.Snapshots)[i], zone))
 		}
 	}
 

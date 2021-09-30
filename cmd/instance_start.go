@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -14,8 +15,9 @@ type instanceStartCmd struct {
 
 	Instance string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"instance zone"`
+	Force         bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	RescueProfile string `cli-usage:"rescue profile to start the instance with"`
+	Zone          string `cli-short:"z" cli-usage:"instance zone"`
 }
 
 func (c *instanceStartCmd) cmdAliases() []string { return nil }
@@ -43,8 +45,13 @@ func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
+	opts := make([]egoscale.StartInstanceOpt, 0)
+	if c.RescueProfile != "" {
+		opts = append(opts, egoscale.StartInstanceWithRescueProfile(c.RescueProfile))
+	}
+
 	decorateAsyncOperation(fmt.Sprintf("Starting instance %q...", c.Instance), func() {
-		err = cs.StartInstance(ctx, c.Zone, instance)
+		err = cs.StartInstance(ctx, c.Zone, instance, opts...)
 	})
 	if err != nil {
 		return err

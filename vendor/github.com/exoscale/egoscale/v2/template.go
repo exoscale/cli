@@ -25,9 +25,10 @@ type Template struct {
 	URL             *string `req-for:"create"`
 	Version         *string
 	Visibility      *string
+	Zone            *string
 }
 
-func templateFromAPI(t *oapi.Template) *Template {
+func templateFromAPI(t *oapi.Template, zone string) *Template {
 	return &Template{
 		BootMode:        (*string)(t.BootMode),
 		Build:           t.Build,
@@ -44,6 +45,7 @@ func templateFromAPI(t *oapi.Template) *Template {
 		URL:             t.Url,
 		Version:         t.Version,
 		Visibility:      (*string)(t.Visibility),
+		Zone:            &zone,
 	}
 }
 
@@ -76,7 +78,7 @@ func (c *Client) GetTemplate(ctx context.Context, zone, id string) (*Template, e
 		return nil, err
 	}
 
-	return templateFromAPI(resp.JSON200), nil
+	return templateFromAPI(resp.JSON200, zone), nil
 }
 
 // ListTemplates returns the list of existing Templates.
@@ -98,7 +100,7 @@ func (c *Client) ListTemplates(ctx context.Context, zone, visibility, family str
 
 	if resp.JSON200.Templates != nil {
 		for i := range *resp.JSON200.Templates {
-			list = append(list, templateFromAPI(&(*resp.JSON200.Templates)[i]))
+			list = append(list, templateFromAPI(&(*resp.JSON200.Templates)[i], zone))
 		}
 	}
 

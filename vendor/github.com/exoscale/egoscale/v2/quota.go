@@ -14,15 +14,6 @@ type Quota struct {
 	Limit    *int64
 }
 
-// ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
-func (q Quota) ToAPIMock() interface{} {
-	return oapi.Quota{
-		Limit:    q.Limit,
-		Resource: q.Resource,
-		Usage:    q.Usage,
-	}
-}
-
 func quotaFromAPI(q *oapi.Quota) *Quota {
 	return &Quota{
 		Resource: q.Resource,

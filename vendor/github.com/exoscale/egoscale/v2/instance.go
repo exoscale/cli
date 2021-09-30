@@ -37,9 +37,22 @@ type Instance struct {
 	State                *string
 	TemplateID           *string `req-for:"create"`
 	UserData             *string
+	Zone                 *string
 }
 
-func instanceFromAPI(i *oapi.Instance) *Instance {
+// StartInstanceOpt represents a StartInstance operation option.
+type StartInstanceOpt func(*oapi.StartInstanceJSONRequestBody)
+
+// StartInstanceWithRescueProfile sets the rescue profile to start a Compute instance with.
+func StartInstanceWithRescueProfile(v string) StartInstanceOpt {
+	return func(b *oapi.StartInstanceJSONRequestBody) {
+		if v != "" {
+			b.RescueProfile = (*oapi.StartInstanceJSONBodyRescueProfile)(&v)
+		}
+	}
+}
+
+func instanceFromAPI(i *oapi.Instance, zone string) *Instance {
 	return &Instance{
 		AntiAffinityGroupIDs: func() (v *[]string) {
 			if i.AntiAffinityGroups != nil && len(*i.AntiAffinityGroups) > 0 {
@@ -147,111 +160,7 @@ func instanceFromAPI(i *oapi.Instance) *Instance {
 		State:      (*string)(i.State),
 		TemplateID: i.Template.Id,
 		UserData:   i.UserData,
-	}
-}
-
-// ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
-func (i Instance) ToAPIMock() interface{} {
-	return oapi.Instance{
-		AntiAffinityGroups: func() *[]oapi.AntiAffinityGroup {
-			if i.AntiAffinityGroupIDs != nil {
-				list := make([]oapi.AntiAffinityGroup, len(*i.AntiAffinityGroupIDs))
-				for j, id := range *i.AntiAffinityGroupIDs {
-					id := id
-					list[j] = oapi.AntiAffinityGroup{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		CreatedAt:    i.CreatedAt,
-		DeployTarget: &oapi.DeployTarget{Id: i.DeployTargetID},
-		DiskSize:     i.DiskSize,
-		ElasticIps: func() *[]oapi.ElasticIp {
-			if i.ElasticIPIDs != nil {
-				list := make([]oapi.ElasticIp, len(*i.ElasticIPIDs))
-				for j, id := range *i.ElasticIPIDs {
-					id := id
-					list[j] = oapi.ElasticIp{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		Id:           i.ID,
-		InstanceType: &oapi.InstanceType{Id: i.InstanceTypeID},
-		Ipv6Address: func() *string {
-			if i.IPv6Address != nil {
-				v := i.IPv6Address.String()
-				return &v
-			}
-			return nil
-		}(),
-		Labels: func() *oapi.Labels {
-			if i.Labels != nil {
-				return &oapi.Labels{AdditionalProperties: *i.Labels}
-			}
-			return nil
-		}(),
-		Manager: func() *oapi.Manager {
-			if i.Manager != nil {
-				return &oapi.Manager{
-					Id:   &i.Manager.ID,
-					Type: (*oapi.ManagerType)(&i.Manager.Type),
-				}
-			}
-			return nil
-		}(),
-		Name: i.Name,
-		PrivateNetworks: func() *[]oapi.PrivateNetwork {
-			if i.PrivateNetworkIDs != nil {
-				list := make([]oapi.PrivateNetwork, len(*i.PrivateNetworkIDs))
-				for j, id := range *i.PrivateNetworkIDs {
-					id := id
-					list[j] = oapi.PrivateNetwork{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		PublicIp: func() *string {
-			if i.PublicIPAddress != nil {
-				v := i.PublicIPAddress.String()
-				return &v
-			}
-			return nil
-		}(),
-		SecurityGroups: func() *[]oapi.SecurityGroup {
-			if i.SecurityGroupIDs != nil {
-				list := make([]oapi.SecurityGroup, len(*i.SecurityGroupIDs))
-				for j, id := range *i.SecurityGroupIDs {
-					id := id
-					list[j] = oapi.SecurityGroup{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		Snapshots: func() *[]oapi.Snapshot {
-			if i.SnapshotIDs != nil {
-				list := make([]oapi.Snapshot, len(*i.SnapshotIDs))
-				for j, id := range *i.SnapshotIDs {
-					id := id
-					list[j] = oapi.Snapshot{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		SshKey: func() *oapi.SshKey {
-			if i.SSHKey != nil {
-				return &oapi.SshKey{Name: i.SSHKey}
-			}
-			return nil
-		}(),
-		State:    (*oapi.InstanceState)(i.State),
-		Template: &oapi.Template{Id: i.TemplateID},
-		UserData: i.UserData,
+		Zone:       &zone,
 	}
 }
 
@@ -616,7 +525,7 @@ func (c *Client) GetInstance(ctx context.Context, zone, id string) (*Instance, e
 		return nil, err
 	}
 
-	return instanceFromAPI(resp.JSON200), nil
+	return instanceFromAPI(resp.JSON200, zone), nil
 }
 
 // ListInstances returns the list of existing Compute instances.
@@ -630,7 +539,7 @@ func (c *Client) ListInstances(ctx context.Context, zone string) ([]*Instance, e
 
 	if resp.JSON200.Instances != nil {
 		for i := range *resp.JSON200.Instances {
-			list = append(list, instanceFromAPI(&(*resp.JSON200.Instances)[i]))
+			list = append(list, instanceFromAPI(&(*resp.JSON200.Instances)[i], zone))
 		}
 	}
 
@@ -789,12 +698,17 @@ func (c *Client) ScaleInstance(ctx context.Context, zone string, instance *Insta
 }
 
 // StartInstance starts a Compute instance.
-func (c *Client) StartInstance(ctx context.Context, zone string, instance *Instance) error {
+func (c *Client) StartInstance(ctx context.Context, zone string, instance *Instance, opts ...StartInstanceOpt) error {
 	if err := validateOperationParams(instance, "update"); err != nil {
 		return err
 	}
 
-	resp, err := c.StartInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
+	var body oapi.StartInstanceJSONRequestBody
+	for _, opt := range opts {
+		opt(&body)
+	}
+
+	resp, err := c.StartInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID, body)
 	if err != nil {
 		return err
 	}

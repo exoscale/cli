@@ -1,7 +1,7 @@
 module github.com/exoscale/egoscale
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.1
 	github.com/deepmap/oapi-codegen v1.6.1
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/jarcoal/httpmock v1.0.6

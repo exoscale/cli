@@ -3,7 +3,7 @@
 // in the public-facing package.
 package oapi
 
-//go:generate oapi-codegen -generate types,client -package oapi -o oapi.gen.go ../../../public-api.json
+//go:generate oapi-codegen -generate types,client -package oapi -o oapi.gen.go ../../public-api.json
 
 // OptionalString returns the dereferenced string value of v if not nil, otherwise an empty string.
 func OptionalString(v *string) string {
