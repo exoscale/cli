@@ -119,9 +119,10 @@ type SKSCluster struct {
 	ServiceLevel *string `req-for:"create"`
 	State        *string
 	Version      *string `req-for:"create"`
+	Zone         *string
 }
 
-func sksClusterFromAPI(c *oapi.SksCluster) *SKSCluster {
+func sksClusterFromAPI(c *oapi.SksCluster, zone string) *SKSCluster {
 	return &SKSCluster{
 		AddOns: func() (v *[]string) {
 			if c.Addons != nil {
@@ -159,115 +160,7 @@ func sksClusterFromAPI(c *oapi.SksCluster) *SKSCluster {
 		ServiceLevel: (*string)(c.Level),
 		State:        (*string)(c.State),
 		Version:      c.Version,
-	}
-}
-
-// ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
-func (c SKSCluster) ToAPIMock() interface{} {
-	return oapi.SksCluster{
-		Addons: func() *[]oapi.SksClusterAddons {
-			if c.AddOns != nil {
-				list := make([]oapi.SksClusterAddons, len(*c.AddOns))
-				for i, a := range *c.AddOns {
-					a := a
-					list[i] = oapi.SksClusterAddons(a)
-				}
-				return &list
-			}
-			return nil
-		}(),
-		AutoUpgrade: c.AutoUpgrade,
-		Cni:         (*oapi.SksClusterCni)(c.CNI),
-		CreatedAt:   c.CreatedAt,
-		Description: c.Description,
-		Endpoint:    c.Endpoint,
-		Id:          c.ID,
-		Labels: func() *oapi.Labels {
-			if c.Labels != nil {
-				return &oapi.Labels{AdditionalProperties: *c.Labels}
-			}
-			return nil
-		}(),
-		Level: (*oapi.SksClusterLevel)(c.ServiceLevel),
-		Name:  c.Name,
-		Nodepools: func() *[]oapi.SksNodepool {
-			list := make([]oapi.SksNodepool, len(c.Nodepools))
-			for j, n := range c.Nodepools {
-				list[j] = oapi.SksNodepool{
-					Addons: func() *[]oapi.SksNodepoolAddons {
-						if n.AddOns != nil {
-							list := make([]oapi.SksNodepoolAddons, len(*n.AddOns))
-							for i, a := range *n.AddOns {
-								a := a
-								list[i] = oapi.SksNodepoolAddons(a)
-							}
-							return &list
-						}
-						return nil
-					}(),
-					AntiAffinityGroups: func() *[]oapi.AntiAffinityGroup {
-						if n.AntiAffinityGroupIDs != nil {
-							list := make([]oapi.AntiAffinityGroup, len(*n.AntiAffinityGroupIDs))
-							for i, id := range *n.AntiAffinityGroupIDs {
-								id := id
-								list[i] = oapi.AntiAffinityGroup{Id: &id}
-							}
-							return &list
-						}
-						return nil
-					}(),
-					CreatedAt: n.CreatedAt,
-					DeployTarget: func() *oapi.DeployTarget {
-						if n.DeployTargetID != nil {
-							return &oapi.DeployTarget{Id: n.DeployTargetID}
-						}
-						return nil
-					}(),
-					Description:    n.Description,
-					DiskSize:       n.DiskSize,
-					Id:             n.ID,
-					InstancePool:   &oapi.InstancePool{Id: n.InstancePoolID},
-					InstancePrefix: n.InstancePrefix,
-					InstanceType:   &oapi.InstanceType{Id: n.InstanceTypeID},
-					Labels: func() *oapi.Labels {
-						if n.Labels != nil {
-							return &oapi.Labels{AdditionalProperties: *n.Labels}
-						}
-						return nil
-					}(),
-					Name: n.Name,
-					PrivateNetworks: func() *[]oapi.PrivateNetwork {
-						if n.PrivateNetworkIDs != nil {
-							list := make([]oapi.PrivateNetwork, len(*n.PrivateNetworkIDs))
-							for i, id := range *n.PrivateNetworkIDs {
-								id := id
-								list[i] = oapi.PrivateNetwork{Id: &id}
-							}
-							return &list
-						}
-						return nil
-					}(),
-					SecurityGroups: func() *[]oapi.SecurityGroup {
-						if n.SecurityGroupIDs != nil {
-							list := make([]oapi.SecurityGroup, len(*n.SecurityGroupIDs))
-							for i, id := range *n.SecurityGroupIDs {
-								id := id
-								list[i] = oapi.SecurityGroup{Id: &id}
-							}
-							return &list
-						}
-						return nil
-					}(),
-					Size:     n.Size,
-					State:    (*oapi.SksNodepoolState)(n.State),
-					Template: &oapi.Template{Id: n.TemplateID},
-					Version:  n.Version,
-				}
-			}
-			return &list
-		}(),
-		State:   (*oapi.SksClusterState)(c.State),
-		Version: c.Version,
+		Zone:         &zone,
 	}
 }
 
@@ -525,7 +418,7 @@ func (c *Client) GetSKSCluster(ctx context.Context, zone, id string) (*SKSCluste
 		return nil, err
 	}
 
-	return sksClusterFromAPI(resp.JSON200), nil
+	return sksClusterFromAPI(resp.JSON200, zone), nil
 }
 
 // GetSKSClusterAuthorityCert returns the SKS cluster base64-encoded certificate content for the specified authority.
@@ -606,7 +499,7 @@ func (c *Client) ListSKSClusters(ctx context.Context, zone string) ([]*SKSCluste
 
 	if resp.JSON200.SksClusters != nil {
 		for i := range *resp.JSON200.SksClusters {
-			list = append(list, sksClusterFromAPI(&(*resp.JSON200.SksClusters)[i]))
+			list = append(list, sksClusterFromAPI(&(*resp.JSON200.SksClusters)[i], zone))
 		}
 	}
 

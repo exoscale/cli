@@ -35,9 +35,10 @@ type InstancePool struct {
 	State                *string
 	TemplateID           *string `req-for:"create"`
 	UserData             *string
+	Zone                 *string
 }
 
-func instancePoolFromAPI(i *oapi.InstancePool) *InstancePool {
+func instancePoolFromAPI(i *oapi.InstancePool, zone string) *InstancePool {
 	return &InstancePool{
 		AntiAffinityGroupIDs: func() (v *[]string) {
 			if i.AntiAffinityGroups != nil && len(*i.AntiAffinityGroups) > 0 {
@@ -127,100 +128,7 @@ func instancePoolFromAPI(i *oapi.InstancePool) *InstancePool {
 		State:      (*string)(i.State),
 		TemplateID: i.Template.Id,
 		UserData:   i.UserData,
-	}
-}
-
-// ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
-func (i InstancePool) ToAPIMock() interface{} {
-	return oapi.InstancePool{
-		AntiAffinityGroups: func() *[]oapi.AntiAffinityGroup {
-			if i.AntiAffinityGroupIDs != nil {
-				list := make([]oapi.AntiAffinityGroup, len(*i.AntiAffinityGroupIDs))
-				for j, id := range *i.AntiAffinityGroupIDs {
-					id := id
-					list[j] = oapi.AntiAffinityGroup{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		DeployTarget: &oapi.DeployTarget{Id: i.DeployTargetID},
-		Description:  i.Description,
-		DiskSize:     i.DiskSize,
-		ElasticIps: func() *[]oapi.ElasticIp {
-			if i.ElasticIPIDs != nil {
-				list := make([]oapi.ElasticIp, len(*i.ElasticIPIDs))
-				for j, id := range *i.ElasticIPIDs {
-					id := id
-					list[j] = oapi.ElasticIp{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		Id:             i.ID,
-		InstancePrefix: i.InstancePrefix,
-		InstanceType:   &oapi.InstanceType{Id: i.InstanceTypeID},
-		Instances: func() *[]oapi.Instance {
-			if i.InstanceIDs != nil {
-				list := make([]oapi.Instance, len(*i.InstanceIDs))
-				for j, id := range *i.InstanceIDs {
-					id := id
-					list[j] = oapi.Instance{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		Ipv6Enabled: i.IPv6Enabled,
-		Labels: func() *oapi.Labels {
-			if i.Labels != nil {
-				return &oapi.Labels{AdditionalProperties: *i.Labels}
-			}
-			return nil
-		}(),
-		Manager: func() *oapi.Manager {
-			if i.Manager != nil {
-				return &oapi.Manager{
-					Id:   &i.Manager.ID,
-					Type: (*oapi.ManagerType)(&i.Manager.Type),
-				}
-			}
-			return nil
-		}(),
-		Name: i.Name,
-		PrivateNetworks: func() *[]oapi.PrivateNetwork {
-			if i.PrivateNetworkIDs != nil {
-				list := make([]oapi.PrivateNetwork, len(*i.PrivateNetworkIDs))
-				for j, id := range *i.PrivateNetworkIDs {
-					id := id
-					list[j] = oapi.PrivateNetwork{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		SecurityGroups: func() *[]oapi.SecurityGroup {
-			if i.SecurityGroupIDs != nil {
-				list := make([]oapi.SecurityGroup, len(*i.SecurityGroupIDs))
-				for j, id := range *i.SecurityGroupIDs {
-					id := id
-					list[j] = oapi.SecurityGroup{Id: &id}
-				}
-				return &list
-			}
-			return nil
-		}(),
-		Size: i.Size,
-		SshKey: func() *oapi.SshKey {
-			if i.SSHKey != nil {
-				return &oapi.SshKey{Name: i.SSHKey}
-			}
-			return nil
-		}(),
-		State:    (*oapi.InstancePoolState)(i.State),
-		Template: &oapi.Template{Id: i.TemplateID},
-		UserData: i.UserData,
+		Zone:       &zone,
 	}
 }
 
@@ -401,7 +309,7 @@ func (c *Client) GetInstancePool(ctx context.Context, zone, id string) (*Instanc
 		return nil, err
 	}
 
-	return instancePoolFromAPI(resp.JSON200), nil
+	return instancePoolFromAPI(resp.JSON200, zone), nil
 }
 
 // ListInstancePools returns the list of existing Instance Pools.
@@ -415,7 +323,7 @@ func (c *Client) ListInstancePools(ctx context.Context, zone string) ([]*Instanc
 
 	if resp.JSON200.InstancePools != nil {
 		for i := range *resp.JSON200.InstancePools {
-			list = append(list, instancePoolFromAPI(&(*resp.JSON200.InstancePools)[i]))
+			list = append(list, instancePoolFromAPI(&(*resp.JSON200.InstancePools)[i], zone))
 		}
 	}
 

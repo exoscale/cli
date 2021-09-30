@@ -106,9 +106,10 @@ type NetworkLoadBalancer struct {
 	Name        *string `req-for:"create"`
 	Services    []*NetworkLoadBalancerService
 	State       *string
+	Zone        *string
 }
 
-func nlbFromAPI(nlb *oapi.LoadBalancer) *NetworkLoadBalancer {
+func nlbFromAPI(nlb *oapi.LoadBalancer, zone string) *NetworkLoadBalancer {
 	return &NetworkLoadBalancer{
 		CreatedAt:   nlb.CreatedAt,
 		Description: nlb.Description,
@@ -138,6 +139,7 @@ func nlbFromAPI(nlb *oapi.LoadBalancer) *NetworkLoadBalancer {
 			return services
 		}(),
 		State: (*string)(nlb.State),
+		Zone:  &zone,
 	}
 }
 
@@ -340,7 +342,7 @@ func (c *Client) GetNetworkLoadBalancer(ctx context.Context, zone, id string) (*
 		return nil, err
 	}
 
-	return nlbFromAPI(resp.JSON200), nil
+	return nlbFromAPI(resp.JSON200, zone), nil
 }
 
 // ListNetworkLoadBalancers returns the list of existing Network Load Balancers in the specified zone.
@@ -354,7 +356,7 @@ func (c *Client) ListNetworkLoadBalancers(ctx context.Context, zone string) ([]*
 
 	if resp.JSON200.LoadBalancers != nil {
 		for i := range *resp.JSON200.LoadBalancers {
-			list = append(list, nlbFromAPI(&(*resp.JSON200.LoadBalancers)[i]))
+			list = append(list, nlbFromAPI(&(*resp.JSON200.LoadBalancers)[i], zone))
 		}
 	}
 

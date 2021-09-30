@@ -13,24 +13,16 @@ type DeployTarget struct {
 	ID          *string
 	Name        *string
 	Type        *string
+	Zone        *string
 }
 
-// ToAPIMock returns the low-level representation of the resource. This is intended for testing purposes.
-func (d DeployTarget) ToAPIMock() interface{} {
-	return oapi.DeployTarget{
-		Description: d.Description,
-		Id:          d.ID,
-		Name:        d.Name,
-		Type:        (*oapi.DeployTargetType)(d.Type),
-	}
-}
-
-func deployTargetFromAPI(d *oapi.DeployTarget) *DeployTarget {
+func deployTargetFromAPI(d *oapi.DeployTarget, zone string) *DeployTarget {
 	return &DeployTarget{
 		Description: d.Description,
 		ID:          d.Id,
 		Name:        d.Name,
 		Type:        (*string)(d.Type),
+		Zone:        &zone,
 	}
 }
 
@@ -57,7 +49,7 @@ func (c *Client) GetDeployTarget(ctx context.Context, zone, id string) (*DeployT
 		return nil, err
 	}
 
-	return deployTargetFromAPI(resp.JSON200), nil
+	return deployTargetFromAPI(resp.JSON200, zone), nil
 }
 
 // ListDeployTargets returns the list of existing Deploy Targets.
@@ -71,7 +63,7 @@ func (c *Client) ListDeployTargets(ctx context.Context, zone string) ([]*DeployT
 
 	if resp.JSON200.DeployTargets != nil {
 		for i := range *resp.JSON200.DeployTargets {
-			list = append(list, deployTargetFromAPI(&(*resp.JSON200.DeployTargets)[i]))
+			list = append(list, deployTargetFromAPI(&(*resp.JSON200.DeployTargets)[i], zone))
 		}
 	}
 

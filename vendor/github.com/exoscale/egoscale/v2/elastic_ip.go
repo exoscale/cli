@@ -28,9 +28,10 @@ type ElasticIP struct {
 	Healthcheck *ElasticIPHealthcheck
 	ID          *string `req-for:"update,delete"`
 	IPAddress   *net.IP
+	Zone        *string
 }
 
-func elasticIPFromAPI(e *oapi.ElasticIp) *ElasticIP {
+func elasticIPFromAPI(e *oapi.ElasticIp, zone string) *ElasticIP {
 	ipAddress := net.ParseIP(*e.Ip)
 
 	return &ElasticIP{
@@ -57,6 +58,7 @@ func elasticIPFromAPI(e *oapi.ElasticIp) *ElasticIP {
 		}(),
 		ID:        e.Id,
 		IPAddress: &ipAddress,
+		Zone:      &zone,
 	}
 }
 
@@ -158,7 +160,7 @@ func (c *Client) GetElasticIP(ctx context.Context, zone, id string) (*ElasticIP,
 		return nil, err
 	}
 
-	return elasticIPFromAPI(resp.JSON200), nil
+	return elasticIPFromAPI(resp.JSON200, zone), nil
 }
 
 // ListElasticIPs returns the list of existing Elastic IPs.
@@ -172,7 +174,7 @@ func (c *Client) ListElasticIPs(ctx context.Context, zone string) ([]*ElasticIP,
 
 	if resp.JSON200.ElasticIps != nil {
 		for i := range *resp.JSON200.ElasticIps {
-			list = append(list, elasticIPFromAPI(&(*resp.JSON200.ElasticIps)[i]))
+			list = append(list, elasticIPFromAPI(&(*resp.JSON200.ElasticIps)[i], zone))
 		}
 	}
 
