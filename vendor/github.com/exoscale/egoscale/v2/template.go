@@ -28,6 +28,27 @@ type Template struct {
 	Zone            *string
 }
 
+// ListTemplatesOpt represents an ListTemplates operation option.
+type ListTemplatesOpt func(params *oapi.ListTemplatesParams)
+
+// ListTemplatesWithFamily sets a family filter to list Templates with.
+func ListTemplatesWithFamily(v string) ListTemplatesOpt {
+	return func(p *oapi.ListTemplatesParams) {
+		if v != "" {
+			p.Family = &v
+		}
+	}
+}
+
+// ListTemplatesWithVisibility sets a visibility filter to list Templates with (default: "public").
+func ListTemplatesWithVisibility(v string) ListTemplatesOpt {
+	return func(p *oapi.ListTemplatesParams) {
+		if v != "" {
+			p.Visibility = (*oapi.ListTemplatesParamsVisibility)(&v)
+		}
+	}
+}
+
 func templateFromAPI(t *oapi.Template, zone string) *Template {
 	return &Template{
 		BootMode:        (*string)(t.BootMode),
@@ -82,18 +103,19 @@ func (c *Client) GetTemplate(ctx context.Context, zone, id string) (*Template, e
 }
 
 // ListTemplates returns the list of existing Templates.
-func (c *Client) ListTemplates(ctx context.Context, zone, visibility, family string) ([]*Template, error) {
+func (c *Client) ListTemplates(ctx context.Context, zone string, opts ...ListTemplatesOpt) ([]*Template, error) {
 	list := make([]*Template, 0)
 
-	resp, err := c.ListTemplatesWithResponse(apiv2.WithZone(ctx, zone), &oapi.ListTemplatesParams{
-		Visibility: (*oapi.ListTemplatesParamsVisibility)(&visibility),
-		Family: func() *string {
-			if family != "" {
-				return &family
-			}
-			return nil
-		}(),
-	})
+	defaultVisibility := oapi.TemplateVisibilityPublic
+	params := oapi.ListTemplatesParams{
+		Visibility: (*oapi.ListTemplatesParamsVisibility)(&defaultVisibility),
+	}
+
+	for _, opt := range opts {
+		opt(&params)
+	}
+
+	resp, err := c.ListTemplatesWithResponse(apiv2.WithZone(ctx, zone), &params)
 	if err != nil {
 		return nil, err
 	}

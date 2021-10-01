@@ -102,7 +102,7 @@ Supported output template annotations: %s`,
 			cur, _ = curUsage.LoadOrStore(limitSnapshots, 0)
 			curUsage.Store(limitSnapshots, cur.(int)+len(snapshots))
 
-			templates, err := cs.ListTemplates(ctx, zone, "private", "")
+			templates, err := cs.ListTemplates(ctx, zone, exov2.ListTemplatesWithVisibility("private"))
 			if err != nil {
 				return fmt.Errorf("unable to list templates: %s", err)
 			}

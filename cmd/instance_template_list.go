@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -56,7 +57,12 @@ func (c *instanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone),
 	)
 
-	templates, err := cs.ListTemplates(ctx, c.Zone, c.Visibility, c.Family)
+	templates, err := cs.ListTemplates(
+		ctx,
+		c.Zone,
+		egoscale.ListTemplatesWithVisibility(c.Visibility),
+		egoscale.ListTemplatesWithFamily(c.Family),
+	)
 	if err != nil {
 		return err
 	}

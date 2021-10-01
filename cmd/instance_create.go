@@ -175,7 +175,11 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instance.SSHKey = sshKey.Name
 	}
 
-	templates, err := cs.ListTemplates(ctx, c.Zone, c.TemplateVisibility, "")
+	templates, err := cs.ListTemplates(
+		ctx,
+		c.Zone,
+		egoscale.ListTemplatesWithVisibility(c.TemplateVisibility),
+	)
 	if err != nil {
 		return fmt.Errorf("error retrieving templates: %s", err)
 	}

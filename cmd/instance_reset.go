@@ -58,9 +58,19 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
+	opts := make([]egoscale.ResetInstanceOpt, 0)
+
+	if c.DiskSize > 0 {
+		opts = append(opts, egoscale.ResetInstanceWithDiskSize(c.DiskSize))
+	}
+
 	var template *egoscale.Template
 	if c.Template != "" {
-		templates, err := cs.ListTemplates(ctx, c.Zone, c.TemplateVisibility, "")
+		templates, err := cs.ListTemplates(
+			ctx,
+			c.Zone,
+			egoscale.ListTemplatesWithVisibility(c.TemplateVisibility),
+		)
 		if err != nil {
 			return fmt.Errorf("error retrieving templates: %s", err)
 		}
@@ -73,10 +83,12 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if template == nil {
 			return fmt.Errorf("no template %q found with visibility %s", c.Template, c.TemplateVisibility)
 		}
+
+		opts = append(opts, egoscale.ResetInstanceWithTemplate(template))
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Reseting instance %q...", c.Instance), func() {
-		err = cs.ResetInstance(ctx, c.Zone, instance, template, c.DiskSize)
+	decorateAsyncOperation(fmt.Sprintf("Resetting instance %q...", c.Instance), func() {
+		err = cs.ResetInstance(ctx, c.Zone, instance, opts...)
 	})
 	if err != nil {
 		return err
