@@ -49,7 +49,12 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 			}
 		}
 
-		x.SetClientUserAgent(egoscale.UserAgent)
+		x.SetClientUserAgent(fmt.Sprintf(
+			"Exoscale-CLI-X/%s (%s) %s",
+			gVersion,
+			gCommit,
+			egoscale.UserAgent,
+		))
 
 		return x.SetClientCredentials(gCurrentAccount.Key, gCurrentAccount.Secret)
 	}
@@ -58,10 +63,10 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 }
 
 func buildServerURL(zone, env string) string {
-	var server = "https://api-ch-gva-2.exoscale.com/v2.alpha"
+	server := "https://api-ch-gva-2.exoscale.com/v2"
 
 	if zone != "" && env != "" {
-		server = fmt.Sprintf("https://%s-%s.exoscale.com/v2.alpha", env, zone)
+		server = fmt.Sprintf("https://%s-%s.exoscale.com/v2", env, zone)
 	}
 
 	return server

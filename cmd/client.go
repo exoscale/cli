@@ -40,7 +40,10 @@ func newCLIRoundTripper(next http.RoundTripper, headers map[string]string) cliRo
 }
 
 func (rt cliRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	r.Header = rt.reqHeaders
+	for h := range rt.reqHeaders {
+		r.Header.Add(h, rt.reqHeaders.Get(h))
+	}
+
 	return rt.next.RoundTrip(r)
 }
 
@@ -72,11 +75,9 @@ func buildClient() {
 		exov2.ClientOptWithAPIEndpoint(gCurrentAccount.Endpoint),
 		exov2.ClientOptWithTimeout(5*time.Minute),
 		exov2.ClientOptWithHTTPClient(func() *http.Client {
-			hc := &http.Client{Transport: http.DefaultTransport}
-			if gCurrentAccount.CustomHeaders != nil {
-				hc.Transport = newCLIRoundTripper(hc.Transport, gCurrentAccount.CustomHeaders)
+			return &http.Client{
+				Transport: newCLIRoundTripper(http.DefaultTransport, gCurrentAccount.CustomHeaders),
 			}
-			return hc
 		}()),
 		exov2.ClientOptCond(func() bool {
 			if v := os.Getenv("EXOSCALE_TRACE"); v != "" {
