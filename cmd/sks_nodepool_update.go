@@ -18,17 +18,18 @@ type sksNodepoolUpdateCmd struct {
 	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 	Nodepool string `cli-arg:"#" cli-usage:"NODEPOOL-NAME|ID"`
 
-	AntiAffinityGroups []string          `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	DeployTarget       string            `cli-usage:"Nodepool Deploy Target NAME|ID"`
-	Description        string            `cli-usage:"Nodepool description"`
-	DiskSize           int64             `cli-usage:"Nodepool Compute instances disk size"`
-	InstancePrefix     string            `cli-usage:"string to prefix Nodepool member names with"`
-	InstanceType       string            `cli-usage:"Nodepool Compute instances type"`
-	Labels             map[string]string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
-	Name               string            `cli-usage:"Nodepool name"`
-	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
-	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
-	Zone               string            `cli-short:"z" cli-usage:"SKS cluster zone"`
+	AntiAffinityGroups []string `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	DeployTarget       string   `cli-usage:"Nodepool Deploy Target NAME|ID"`
+	Description        string   `cli-usage:"Nodepool description"`
+	DiskSize           int64    `cli-usage:"Nodepool Compute instances disk size"`
+	InstancePrefix     string   `cli-usage:"string to prefix Nodepool member names with"`
+	InstanceType       string   `cli-usage:"Nodepool Compute instances type"`
+	Labels             []string `cli-flag:"label" cli-usage:"Nodepool label (format: KEY=VALUE, can be repeated multiple times)"`
+	Name               string   `cli-usage:"Nodepool name"`
+	PrivateNetworks    []string `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
+	SecurityGroups     []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	Taints             []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	Zone               string   `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksNodepoolUpdateCmd) cmdAliases() []string { return nil }
@@ -118,7 +119,14 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
-		nodepool.Labels = &c.Labels
+		labels := make(map[string]string)
+		if len(c.Labels) > 0 {
+			labels, err = sliceToMap(c.Labels)
+			if err != nil {
+				return fmt.Errorf("label: %w", err)
+			}
+		}
+		nodepool.Labels = &labels
 		updated = true
 	}
 
@@ -150,6 +158,19 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			nodepoolSecurityGroupIDs[i] = *securityGroup.ID
 		}
 		nodepool.SecurityGroupIDs = &nodepoolSecurityGroupIDs
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Taints)) {
+		taints := make(map[string]*egoscale.SKSNodepoolTaint)
+		for _, t := range c.Taints {
+			key, taint, err := parseSKSNodepoolTaint(t)
+			if err != nil {
+				return fmt.Errorf("invalid taint value %q: %w", t, err)
+			}
+			taints[key] = taint
+		}
+		nodepool.Taints = &taints
 		updated = true
 	}
 

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.76.0
+------
+
+- feature: v2: add support for SKS Nodepool taints
+
 0.75.0
 ------
 

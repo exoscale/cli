@@ -1,5 +1,10 @@
 package cmd
 
+import (
+	"fmt"
+	"strings"
+)
+
 // isInList returns true if v exists in the specified list, false otherwise.
 func isInList(list []string, v string) bool {
 	for _, lv := range list {
@@ -39,4 +44,25 @@ func defaultBool(b *bool, def bool) bool {
 	}
 
 	return def
+}
+
+// sliceToMap returns a map[string]string from a slice of KEY=VALUE formatted
+// strings.
+// This function is used to obtain a map[string]string from CLI flags, as the
+// current CLI flags parsing module used (github.com/spf13/pflag) implements
+// a "StringToString" type flag but doesn't support passing empty values,
+// which we need in some cases (e.g. resetting labels).
+func sliceToMap(v []string) (map[string]string, error) {
+	m := make(map[string]string)
+
+	for i := range v {
+		parts := strings.SplitN(v[i], "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid value %q, expected format KEY=VALUE", v[i])
+		}
+
+		m[parts[0]] = parts[1]
+	}
+
+	return m, nil
 }

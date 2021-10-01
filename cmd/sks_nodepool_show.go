@@ -26,6 +26,7 @@ type sksNodepoolShowOutput struct {
 	Version            string            `json:"version"`
 	Size               int64             `json:"size"`
 	State              string            `json:"state"`
+	Taints             []string          `json:"taints"`
 	Labels             map[string]string `json:"labels"`
 }
 
@@ -104,7 +105,16 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 		PrivateNetworks: make([]string, 0),
 		Size:            *nodepool.Size,
 		State:           *nodepool.State,
-		Version:         *nodepool.Version,
+		Taints: func() (v []string) {
+			if nodepool.Taints != nil {
+				v = make([]string, 0)
+				for k, t := range *nodepool.Taints {
+					v = append(v, fmt.Sprintf("%s=%s:%s", k, t.Value, t.Effect))
+				}
+			}
+			return
+		}(),
+		Version: *nodepool.Version,
 	}
 
 	if nodepool.AntiAffinityGroupIDs != nil {
