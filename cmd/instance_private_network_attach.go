@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -53,18 +54,17 @@ func (c *instancePrivnetAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving Private Network: %s", err)
 	}
 
+	opts := make([]egoscale.AttachInstanceToPrivateNetworkOpt, 0)
+	if c.IPAddress != "" {
+		opts = append(opts, egoscale.AttachInstanceToPrivateNetworkWithIPAddress(net.ParseIP(c.IPAddress)))
+	}
+
 	decorateAsyncOperation(fmt.Sprintf(
 		"Attaching instance %q to Private Network %q...",
 		c.Instance,
 		c.PrivateNetwork,
 	), func() {
-		if err = cs.AttachInstanceToPrivateNetwork(
-			ctx,
-			c.Zone,
-			instance,
-			privateNetwork,
-			net.ParseIP(c.IPAddress),
-		); err != nil {
+		if err = cs.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, privateNetwork, opts...); err != nil {
 			return
 		}
 	})

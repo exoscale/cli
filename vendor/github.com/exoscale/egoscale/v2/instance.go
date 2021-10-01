@@ -40,6 +40,41 @@ type Instance struct {
 	Zone                 *string
 }
 
+// AttachInstanceToPrivateNetworkOpt represents an AttachInstanceToPrivateNetwork operation option.
+type AttachInstanceToPrivateNetworkOpt func(*oapi.AttachInstanceToPrivateNetworkJSONRequestBody)
+
+// AttachInstanceToPrivateNetworkWithIPAddress sets the Private Network lease IP address to
+// request for the Compute instance.
+func AttachInstanceToPrivateNetworkWithIPAddress(v net.IP) AttachInstanceToPrivateNetworkOpt {
+	return func(b *oapi.AttachInstanceToPrivateNetworkJSONRequestBody) {
+		if v != nil {
+			ip := v.String()
+			b.Ip = &ip
+		}
+	}
+}
+
+// ResetInstanceOpt represents a ResetInstance operation option.
+type ResetInstanceOpt func(*oapi.ResetInstanceJSONRequestBody)
+
+// ResetInstanceWithDiskSize sets a new disk size to set the Compute instance.
+func ResetInstanceWithDiskSize(v int64) ResetInstanceOpt {
+	return func(b *oapi.ResetInstanceJSONRequestBody) {
+		if v > 0 {
+			b.DiskSize = &v
+		}
+	}
+}
+
+// ResetInstanceWithTemplate sets a template to reset the Compute instance to.
+func ResetInstanceWithTemplate(v *Template) ResetInstanceOpt {
+	return func(b *oapi.ResetInstanceJSONRequestBody) {
+		if v != nil {
+			b.Template = &oapi.Template{Id: v.ID}
+		}
+	}
+}
+
 // StartInstanceOpt represents a StartInstance operation option.
 type StartInstanceOpt func(*oapi.StartInstanceJSONRequestBody)
 
@@ -198,13 +233,12 @@ func (c *Client) AttachInstanceToElasticIP(
 }
 
 // AttachInstanceToPrivateNetwork attaches a Compute instance to the specified Private Network.
-// If address is specified, it will be used when requesting a network address lease.
 func (c *Client) AttachInstanceToPrivateNetwork(
 	ctx context.Context,
 	zone string,
 	instance *Instance,
 	privateNetwork *PrivateNetwork,
-	address net.IP,
+	opts ...AttachInstanceToPrivateNetworkOpt,
 ) error {
 	if err := validateOperationParams(instance, "update"); err != nil {
 		return err
@@ -213,17 +247,14 @@ func (c *Client) AttachInstanceToPrivateNetwork(
 		return err
 	}
 
-	resp, err := c.AttachInstanceToPrivateNetworkWithResponse(
-		apiv2.WithZone(ctx, zone), *privateNetwork.ID, oapi.AttachInstanceToPrivateNetworkJSONRequestBody{
-			Instance: oapi.Instance{Id: instance.ID},
-			Ip: func() *string {
-				if len(address) > 0 {
-					ip := address.String()
-					return &ip
-				}
-				return nil
-			}(),
-		})
+	var body oapi.AttachInstanceToPrivateNetworkJSONRequestBody
+	for _, opt := range opts {
+		opt(&body)
+	}
+
+	body.Instance = oapi.Instance{Id: instance.ID}
+
+	resp, err := c.AttachInstanceToPrivateNetworkWithResponse(apiv2.WithZone(ctx, zone), *privateNetwork.ID, body)
 	if err != nil {
 		return err
 	}
@@ -568,36 +599,19 @@ func (c *Client) RebootInstance(ctx context.Context, zone string, instance *Inst
 	return nil
 }
 
-// ResetInstance resets a Compute instance to a base template state (the instance's current template if not specified),
-// and optionally resizes its disk size.
-func (c *Client) ResetInstance(
-	ctx context.Context,
-	zone string,
-	instance *Instance,
-	template *Template,
-	diskSize int64,
-) error {
+// ResetInstance resets a Compute instance to a base template state (the instance's current
+// template if not specified).
+func (c *Client) ResetInstance(ctx context.Context, zone string, instance *Instance, opts ...ResetInstanceOpt) error {
 	if err := validateOperationParams(instance, "update"); err != nil {
 		return err
 	}
 
-	resp, err := c.ResetInstanceWithResponse(
-		apiv2.WithZone(ctx, zone),
-		*instance.ID,
-		oapi.ResetInstanceJSONRequestBody{
-			DiskSize: func() (v *int64) {
-				if diskSize > 0 {
-					v = &diskSize
-				}
-				return
-			}(),
-			Template: func() (v *oapi.Template) {
-				if template != nil {
-					v = &oapi.Template{Id: template.ID}
-				}
-				return
-			}(),
-		})
+	var body oapi.ResetInstanceJSONRequestBody
+	for _, opt := range opts {
+		opt(&body)
+	}
+
+	resp, err := c.ResetInstanceWithResponse(apiv2.WithZone(ctx, zone), *instance.ID, body)
 	if err != nil {
 		return err
 	}

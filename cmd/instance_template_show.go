@@ -7,6 +7,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
+	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -60,7 +61,6 @@ type instanceTemplateShowCmd struct {
 
 	Template string `cli-arg:"#" cli-usage:"[FAMILY.]SIZE"`
 
-	Family     string `cli-short:"f" cli-usage:"template family to filter results to"`
 	Visibility string `cli-short:"v" cli-usage:"template visibility (public|private)"`
 	Zone       string `cli-short:"z" cli-usage:"zone to filter results to (default: current account's default zone)"`
 }
@@ -95,7 +95,7 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if template == nil {
 		var templateID string
 
-		templates, err := cs.ListTemplates(ctx, c.Zone, c.Visibility, c.Family)
+		templates, err := cs.ListTemplates(ctx, c.Zone, egoscale.ListTemplatesWithVisibility(c.Visibility))
 		if err != nil {
 			return fmt.Errorf("error retrieving templates: %s", err)
 		}

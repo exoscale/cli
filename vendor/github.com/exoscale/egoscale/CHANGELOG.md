@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.77.0
+------
+
+- change: v2: switch to func-based options passing
+
 0.76.0
 ------
 
