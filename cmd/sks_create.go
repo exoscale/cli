@@ -42,6 +42,7 @@ type sksCreateCmd struct {
 	NodepoolPrivateNetworks    []string          `cli-flag:"nodepool-private-network" cli-usage:"default Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	NodepoolSecurityGroups     []string          `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	NodepoolSize               int64             `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
+	NodepoolTaints             []string          `cli-flag:"nodepool-taint" cli-usage:"Kubernetes taint to apply to default Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
 	ServiceLevel               string            `cli-usage:"SKS cluster control plane service level (starter|pro)"`
 	Zone                       string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
@@ -220,6 +221,18 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				nodepoolSecurityGroupIDs[i] = *securityGroup.ID
 			}
 			nodepool.SecurityGroupIDs = &nodepoolSecurityGroupIDs
+		}
+
+		if len(c.NodepoolTaints) > 0 {
+			taints := make(map[string]*egoscale.SKSNodepoolTaint)
+			for _, t := range c.NodepoolTaints {
+				key, taint, err := parseSKSNodepoolTaint(t)
+				if err != nil {
+					return fmt.Errorf("invalid taint value %q: %w", t, err)
+				}
+				taints[key] = taint
+			}
+			nodepool.Taints = &taints
 		}
 
 		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", *nodepool.Name), func() {
