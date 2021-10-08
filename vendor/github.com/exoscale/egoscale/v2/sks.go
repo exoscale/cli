@@ -10,16 +10,30 @@ import (
 	"github.com/exoscale/egoscale/v2/oapi"
 )
 
+// ListSKSClusterVersionsOpt represents an ListSKSClusterVersions operation option.
+type ListSKSClusterVersionsOpt func(params *oapi.ListSksClusterVersionsParams)
+
+// ListSKSClusterVersionsWithDeprecated includes deprecated results when listing SKS Cluster versions
+// nolint:gocritic
+func ListSKSClusterVersionsWithDeprecated(v bool) ListSKSClusterVersionsOpt {
+	return func(p *oapi.ListSksClusterVersionsParams) {
+		if v {
+			vs := "true"
+			p.IncludeDeprecated = &vs
+		}
+	}
+}
+
 // SKSNodepoolTaint represents an SKS Nodepool Kubernetes Node taint.
 type SKSNodepoolTaint struct {
 	Effect string
 	Value  string
 }
 
-func sksNodepoolTaintFromAPI(t *oapi.Taint) *SKSNodepoolTaint {
+func sksNodepoolTaintFromAPI(t *oapi.SksNodepoolTaint) *SKSNodepoolTaint {
 	return &SKSNodepoolTaint{
-		Effect: string(*t.Effect),
-		Value:  *t.Value,
+		Effect: string(t.Effect),
+		Value:  t.Value,
 	}
 }
 
@@ -314,13 +328,13 @@ func (c *Client) CreateSKSNodepool(
 				return
 			}(),
 			Size: *nodepool.Size,
-			Taints: func() (v *oapi.Taints) {
+			Taints: func() (v *oapi.SksNodepoolTaints) {
 				if nodepool.Taints != nil {
-					taints := oapi.Taints{AdditionalProperties: make(map[string]oapi.Taint)}
+					taints := oapi.SksNodepoolTaints{AdditionalProperties: map[string]oapi.SksNodepoolTaint{}}
 					for k, t := range *nodepool.Taints {
-						taints.AdditionalProperties[k] = oapi.Taint{
-							Effect: (*oapi.TaintEffect)(&t.Effect),
-							Value:  &t.Value,
+						taints.AdditionalProperties[k] = oapi.SksNodepoolTaint{
+							Effect: (oapi.SksNodepoolTaintEffect)(t.Effect),
+							Value:  t.Value,
 						}
 					}
 					v = &taints
@@ -544,10 +558,16 @@ func (c *Client) ListSKSClusters(ctx context.Context, zone string) ([]*SKSCluste
 }
 
 // ListSKSClusterVersions returns the list of Kubernetes versions supported during SKS cluster creation.
-func (c *Client) ListSKSClusterVersions(ctx context.Context) ([]string, error) {
+func (c *Client) ListSKSClusterVersions(ctx context.Context, opts ...ListSKSClusterVersionsOpt) ([]string, error) {
 	list := make([]string, 0)
 
-	resp, err := c.ListSksClusterVersionsWithResponse(ctx)
+	params := oapi.ListSksClusterVersionsParams{}
+
+	for _, opt := range opts {
+		opt(&params)
+	}
+
+	resp, err := c.ListSksClusterVersionsWithResponse(ctx, &params)
 	if err != nil {
 		return nil, err
 	}
@@ -730,13 +750,13 @@ func (c *Client) UpdateSKSNodepool(
 				}
 				return
 			}(),
-			Taints: func() (v *oapi.Taints) {
+			Taints: func() (v *oapi.SksNodepoolTaints) {
 				if nodepool.Taints != nil {
-					taints := oapi.Taints{AdditionalProperties: make(map[string]oapi.Taint)}
+					taints := oapi.SksNodepoolTaints{AdditionalProperties: map[string]oapi.SksNodepoolTaint{}}
 					for k, t := range *nodepool.Taints {
-						taints.AdditionalProperties[k] = oapi.Taint{
-							Effect: (*oapi.TaintEffect)(&t.Effect),
-							Value:  &t.Value,
+						taints.AdditionalProperties[k] = oapi.SksNodepoolTaint{
+							Effect: (oapi.SksNodepoolTaintEffect)(t.Effect),
+							Value:  t.Value,
 						}
 					}
 					v = &taints
