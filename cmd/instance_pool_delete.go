@@ -38,7 +38,7 @@ func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	// Ensure the Instance Pool is not attached to an NLB service.
-	nlbs, err := cs.ListNetworkLoadBalancers(gContext, c.Zone)
+	nlbs, err := cs.ListNetworkLoadBalancers(ctx, c.Zone)
 	if err != nil {
 		return fmt.Errorf("unable to list Network Load Balancers: %v", err)
 	}
