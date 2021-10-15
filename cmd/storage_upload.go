@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -298,6 +299,18 @@ func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
 		return err
 	}
 
+	// Because we wrap the input with a ProxyReader to render a progress bar
+	// The AWS SDK cannot perform PartSize estimation (we lose the io.Seeker implementation it relies on)
+	// We therefore replicate that logic here, and explicitly set a part size to avoid
+	// bumping into the s3manager.MaxUploadParts limit
+	partSize, err := c.estimatePartSize(f)
+	if err != nil {
+		return err
+	}
+	partSizeOpt := func(u *s3manager.Uploader) {
+		u.PartSize = partSize
+	}
+
 	putObjectInput := s3.PutObjectInput{
 		Bucket:      aws.String(bucket),
 		Key:         aws.String(key),
@@ -310,7 +323,7 @@ func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
 	}
 
 	_, err = s3manager.
-		NewUploader(c.Client).
+		NewUploader(c.Client, partSizeOpt).
 		Upload(gContext, &putObjectInput)
 
 	pb.Wait()
@@ -321,4 +334,36 @@ func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
 	}
 
 	return err
+}
+
+func (c *storageClient) estimatePartSize(f *os.File) (int64, error) {
+	size, err := computeSeekerLength(f)
+	if err != nil {
+		return 0, err
+	}
+
+	if size/int64(s3manager.DefaultUploadPartSize) >= int64(s3manager.MaxUploadParts) {
+		return (size / int64(s3manager.MaxUploadParts)) + 1, nil
+	}
+
+	return s3manager.DefaultUploadPartSize, nil
+}
+
+func computeSeekerLength(s io.Seeker) (int64, error) {
+	curOffset, err := s.Seek(0, io.SeekCurrent)
+	if err != nil {
+		return 0, err
+	}
+
+	endOffset, err := s.Seek(0, io.SeekEnd)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = s.Seek(curOffset, io.SeekStart)
+	if err != nil {
+		return 0, err
+	}
+
+	return endOffset - curOffset, nil
 }
