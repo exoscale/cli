@@ -77,7 +77,7 @@ brews:
     homepage: "https://exoscale.github.io/cli/"
     description: Manage easily your Exoscale infrastructure from the command-line.
     install: |
-      bin.install "exo"
+      bin.install "exoscale-cli" => "exo"
       man1.install Dir["manpage/exo*.1"]
       bash_completion.install "contrib/completion/bash/exo"
       zsh_completion.install "contrib/completion/zsh/_exo"
