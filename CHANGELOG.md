@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.45.0
+
+### Features
+
+- New `exo dbaas` commands (#395)
+- `exo compute sks`: add support for taints to Nodepools (#390)
+- `exo compute instance start`: add new flag `--rescue-mode` (#389)
+- `exo compute instance-template show`: output zone
+
+### Bug Fixes
+
+- `exo storage upload`: fix large file upload bug (#397)
+- `exo compute instance`: raise operation timeout to 10mn (#391)
+
+
 ## 1.44.0
 
 ### Features
