@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.77.0
+	github.com/exoscale/egoscale v0.80.1
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -28,6 +28,7 @@ require (
 	github.com/manifoldco/promptui v0.3.2
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/minio/minio-go/v6 v6.0.57
+	github.com/mitchellh/go-wordwrap v1.0.1
 	github.com/mitchellh/mapstructure v1.3.0 // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
@@ -42,6 +43,7 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.7.0
 	github.com/vbauerster/mpb/v4 v4.12.2
+	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1

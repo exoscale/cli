@@ -5,7 +5,7 @@ import (
 )
 
 var dbTypeCmd = &cobra.Command{
-	Use:   "types",
+	Use:   "type",
 	Short: "Database Services types management",
 }
 

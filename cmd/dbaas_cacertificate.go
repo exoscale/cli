@@ -20,8 +20,8 @@ func (c *dbCACertificateCmd) cmdAliases() []string { return nil }
 func (c *dbCACertificateCmd) cmdShort() string { return "Retrieve the Database CA certificate" }
 
 func (c *dbCACertificateCmd) cmdLong() string {
-	return `This command retrieves the global CA certificate required to access Database
-Services using a TLS connection.`
+	return `This command retrieves the Exoscale organization-level CA certificate
+required to access Database Services using a TLS connection.`
 }
 
 func (c *dbCACertificateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

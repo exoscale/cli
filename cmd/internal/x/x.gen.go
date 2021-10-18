@@ -1114,6 +1114,88 @@ func XGetDbaasSettingsKafka(params *viper.Viper) (*gentleman.Response, map[strin
 	return resp, decoded, nil
 }
 
+// XGetDbaasSettingsMysql Get DBaaS MySQL settings
+func XGetDbaasSettingsMysql(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dbaas-settings-mysql"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-settings-mysql"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetDbaasSettingsPg Get DBaaS PostgreSQL settings
+func XGetDbaasSettingsPg(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dbaas-settings-pg"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-settings-pg"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XListDeployTargets List Deploy Targets
 func XListDeployTargets(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-deploy-targets"
@@ -1169,6 +1251,174 @@ func XGetDeployTarget(paramId string, params *viper.Viper) (*gentleman.Response,
 
 	url := server + "/deploy-target/{id}"
 	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListDnsDomains List DNS domains
+func XListDnsDomains(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-dns-domains"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dns-domain"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetDnsDomain Retrieve DNS domain details
+func XGetDnsDomain(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dns-domain"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dns-domain/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListDnsDomainRecords List DNS domain records
+func XListDnsDomainRecords(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-dns-domain-records"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dns-domain/{id}/record"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetDnsDomainRecord Retrieve DNS domain record details
+func XGetDnsDomainRecord(paramId string, paramRecordId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dns-domain-record"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dns-domain/{id}/record/{record-id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+	url = strings.Replace(url, "{record-id}", paramRecordId, 1)
 
 	req := cli.Client.Get().URL(url)
 
@@ -4263,6 +4513,11 @@ func XListSksClusterVersions(params *viper.Viper) (*gentleman.Response, map[stri
 
 	req := cli.Client.Get().URL(url)
 
+	paramIncludeDeprecated := params.GetString("include-deprecated")
+	if paramIncludeDeprecated != "" {
+		req = req.AddQuery("include-deprecated", fmt.Sprintf("%v", paramIncludeDeprecated))
+	}
+
 	cli.HandleBefore(handlerPath, params, req)
 
 	resp, err := req.Do()
@@ -5861,7 +6116,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-kafka name",
 			Short:   "Create a DBaaS Kafka service",
-			Long:    cli.Markdown("Create a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-config:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet\n      for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-rest-config:\n    description: Kafka REST configuration\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  schema-registry-config:\n    description: Schema Registry configuration\n    type: object\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: Kafka major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet\n      for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-connect-settings:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-rest-settings:\n    description: Kafka REST configuration\n    type: object\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  schema-registry-settings:\n    description: Schema Registry configuration\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: Kafka major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -5935,7 +6190,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-kafka name",
 			Short:   "Update a DBaaS Kafka service",
-			Long:    cli.Markdown("Update a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-config:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet\n      for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-rest-config:\n    description: Kafka REST configuration\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  schema-registry-config:\n    description: Schema Registry configuration\n    type: object\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet\n      for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-connect-settings:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-rest-settings:\n    description: Kafka REST configuration\n    type: object\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  schema-registry-settings:\n    description: Schema Registry configuration\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6599,6 +6854,76 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "get-dbaas-settings-mysql",
+			Short:   "Get DBaaS MySQL settings",
+			Long:    cli.Markdown("Get DBaaS MySQL settings"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDbaasSettingsMysql(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-dbaas-settings-pg",
+			Short:   "Get DBaaS PostgreSQL settings",
+			Long:    cli.Markdown("Get DBaaS PostgreSQL settings"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDbaasSettingsPg(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "list-deploy-targets",
 			Short:   "List Deploy Targets",
 			Long:    cli.Markdown(""),
@@ -6642,6 +6967,146 @@ func xRegister(subcommand bool) {
 			Run: func(cmd *cobra.Command, args []string) {
 
 				_, decoded, err := XGetDeployTarget(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-dns-domains",
+			Short:   "List DNS domains",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListDnsDomains(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-dns-domain id",
+			Short:   "Retrieve DNS domain details",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDnsDomain(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-dns-domain-records id",
+			Short:   "List DNS domain records",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListDnsDomainRecords(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-dns-domain-record id record-id",
+			Short:   "Retrieve DNS domain record details",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDnsDomainRecord(args[0], args[1], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -9250,6 +9715,8 @@ func xRegister(subcommand bool) {
 		}
 
 		root.AddCommand(cmd)
+
+		cmd.Flags().String("include-deprecated", "", "")
 
 		cli.SetCustomFlags(cmd)
 

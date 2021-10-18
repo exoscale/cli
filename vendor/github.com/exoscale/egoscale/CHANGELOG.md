@@ -1,6 +1,26 @@
 Changelog
 =========
 
+0.80.1
+------
+
+- change: v2: refresh code generated from public API spec
+
+0.80.0
+------
+
+- feature: v2: add new `CopyTemplate()`/`UpdateTemplate()` methods
+
+0.79.0
+------
+
+- feature: v2: `ListSKSClusterVersions()` method now accepts an additional `ListSKSClusterVersionsOpt` variadic argument
+
+0.78.0
+------
+
+- change: v2: type-specific `DatabaseService` methods have been removed, to be re-implemented in a future version; use `v2/oapi` methods for type-specific operations in the meantime.
+
 0.77.0
 ------
 
