@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.45.1
+
+### Bug Fixes
+
+- `exo compute instance-template register`: fixed a bug preventing the use of the command without passing `--disable-(password|ssh-key)` flags (#399)
+
+
 ## 1.45.0
 
 ### Features
