@@ -69,15 +69,20 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 
 	// Template registration can take a _long time_, raising
 	// the Exoscale API client timeout as a precaution.
-	cs.Client.SetTimeout(30 * time.Minute)
+	cs.Client.SetTimeout(time.Hour)
 
 	ctx := exoapi.WithEndpoint(
 		gContext,
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
 	)
 
+	passwordEnabled := !c.DisablePassword
+	sshKeyEnabled := !c.DisableSSHKey
+
 	template = &egoscale.Template{
-		Name: &c.Name,
+		Name:            &c.Name,
+		PasswordEnabled: &passwordEnabled,
+		SSHKeyEnabled:   &sshKeyEnabled,
 	}
 
 	if c.FromSnapshot != "" {
@@ -125,16 +130,6 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 
 	if c.Description != "" {
 		template.Description = &c.Description
-	}
-
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DisablePassword)) {
-		passwordEnabled := !c.DisablePassword
-		template.PasswordEnabled = &passwordEnabled
-	}
-
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DisableSSHKey)) {
-		sshKeyEnabled := !c.DisableSSHKey
-		template.SSHKeyEnabled = &sshKeyEnabled
 	}
 
 	if c.URL != "" {
