@@ -29,6 +29,10 @@ builds:
     hooks:
       pre: make manpages completions sos-certificates
 
+# macOS Universal Binaries
+universal_binaries:
+  - replace: true
+
 archives:
   - id: windows
     format_overrides:
@@ -92,4 +96,3 @@ dockers:
       - --build-arg="VERSION={{.Version}}"
       - --build-arg="VCS_REF={{.ShortCommit}}"
       - --build-arg="BUILD_DATE={{.Date}}"
-    skip_push: auto
