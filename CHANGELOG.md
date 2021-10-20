@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.45.2
+
+### Bug Fixes
+
+- `exo compute instance create`: fixed a bug causing the CLI to crash when the `--private-network` flag is specified (#401)
+
+
 ## 1.45.1
 
 ### Bug Fixes
