@@ -208,7 +208,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		for _, p := range privateNetworks {
-			if err = cs.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, p, nil); err != nil {
+			if err = cs.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, p); err != nil {
 				return
 			}
 		}
