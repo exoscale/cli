@@ -122,7 +122,7 @@ type dbServiceShowCmd struct {
 
 	ShowBackups       bool   `cli-flag:"backups" cli-usage:"show Database Service backups"`
 	ShowNotifications bool   `cli-flag:"notifications" cli-usage:"show Database Service notifications"`
-	ShowSettings      string `cli-flag:"settings" cli-usage:"show Database Service settings (see \"exo database type show --help\" for supported settings)"`
+	ShowSettings      string `cli-flag:"settings" cli-usage:"show Database Service settings (see \"exo dbaas type show --help\" for supported settings)"`
 	ShowURI           bool   `cli-flag:"uri" cli-usage:"show Database Service connection URI"`
 	Zone              string `cli-short:"z" cli-usage:"Database Service zone"`
 }

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/exoscale/cli/table"
@@ -34,16 +33,12 @@ type dbServiceRedisShowOutput struct {
 	URI        string                              `json:"uri"`
 	URIParams  map[string]interface{}              `json:"uri_params"`
 	Users      []dbServiceRedisUserShowOutput      `json:"users"`
+	Version    string                              `json:"version"`
 }
 
 func formatDatabaseServiceRedisTable(t *table.Table, o *dbServiceRedisShowOutput) {
-	uri, err := url.Parse(o.URI)
-	if err == nil {
-		t.Append([]string{"URI", uri.Redacted()})
-	} else {
-		t.Append([]string{"URI", o.URI})
-	}
-
+	t.Append([]string{"Version", o.Version})
+	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
 	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
 
 	t.Append([]string{"Components", func() string {

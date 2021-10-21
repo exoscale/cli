@@ -61,12 +61,9 @@ func (c *dbServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		databaseService.Maintenance = &struct {
 			Dow  oapi.UpdateDbaasServicePgJSONBodyMaintenanceDow `json:"dow"`
 			Time string                                          `json:"time"`
-		}{}
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) {
-			databaseService.Maintenance.Dow = oapi.UpdateDbaasServicePgJSONBodyMaintenanceDow(c.MaintenanceDOW)
-		}
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
-			databaseService.Maintenance.Time = c.MaintenanceTime
+		}{
+			Dow:  oapi.UpdateDbaasServicePgJSONBodyMaintenanceDow(c.MaintenanceDOW),
+			Time: c.MaintenanceTime,
 		}
 		updated = true
 	}
