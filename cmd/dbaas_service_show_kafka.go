@@ -64,10 +64,12 @@ type dbServiceKafkaShowOutput struct {
 	URI                   string                                 `json:"uri"`
 	URIParams             map[string]interface{}                 `json:"uri_params"`
 	Users                 []dbServiceKafkaUserShowOutput         `json:"users"`
+	Version               string                                 `json:"version"`
 }
 
 func formatDatabaseServiceKafkaTable(t *table.Table, o *dbServiceKafkaShowOutput) {
-	t.Append([]string{"URI", o.URI})
+	t.Append([]string{"Version", o.Version})
+	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
 	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
 
 	t.Append([]string{"Authentication Methods", func() string {
@@ -308,6 +310,8 @@ func (c *dbServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (output
 				}
 				return
 			}(),
+
+			Version: defaultString(databaseService.Version, ""),
 		},
 	}
 

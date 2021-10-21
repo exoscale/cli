@@ -44,12 +44,9 @@ func (c *dbServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) error {
 		databaseService.Maintenance = &struct {
 			Dow  oapi.UpdateDbaasServiceRedisJSONBodyMaintenanceDow `json:"dow"`
 			Time string                                             `json:"time"`
-		}{}
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) {
-			databaseService.Maintenance.Dow = oapi.UpdateDbaasServiceRedisJSONBodyMaintenanceDow(c.MaintenanceDOW)
-		}
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
-			databaseService.Maintenance.Time = c.MaintenanceTime
+		}{
+			Dow:  oapi.UpdateDbaasServiceRedisJSONBodyMaintenanceDow(c.MaintenanceDOW),
+			Time: c.MaintenanceTime,
 		}
 		updated = true
 	}

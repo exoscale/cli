@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -84,4 +85,14 @@ func validateDatabaseServiceSettings(in string, schema interface{}) (map[string]
 	}
 
 	return userSettings, nil
+}
+
+// redactDatabaseServiceURI returns a redacted version of the URI provided
+// (i.e. masks potential password information).
+func redactDatabaseServiceURI(u string) string {
+	if uri, err := url.Parse(u); err == nil {
+		return uri.Redacted()
+	}
+
+	return u
 }

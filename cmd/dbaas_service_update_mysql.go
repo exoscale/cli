@@ -61,12 +61,9 @@ func (c *dbServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) error {
 		databaseService.Maintenance = &struct {
 			Dow  oapi.UpdateDbaasServiceMysqlJSONBodyMaintenanceDow `json:"dow"`
 			Time string                                             `json:"time"`
-		}{}
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) {
-			databaseService.Maintenance.Dow = oapi.UpdateDbaasServiceMysqlJSONBodyMaintenanceDow(c.MaintenanceDOW)
-		}
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
-			databaseService.Maintenance.Time = c.MaintenanceTime
+		}{
+			Dow:  oapi.UpdateDbaasServiceMysqlJSONBodyMaintenanceDow(c.MaintenanceDOW),
+			Time: c.MaintenanceTime,
 		}
 		updated = true
 	}

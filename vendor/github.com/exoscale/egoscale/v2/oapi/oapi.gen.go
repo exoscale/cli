@@ -51,44 +51,6 @@ const (
 	DbaasNodeStateProgressUpdatePhaseStream DbaasNodeStateProgressUpdatePhase = "stream"
 )
 
-// Defines values for DbaasServiceState.
-const (
-	DbaasServiceStatePoweroff DbaasServiceState = "poweroff"
-
-	DbaasServiceStateRebalancing DbaasServiceState = "rebalancing"
-
-	DbaasServiceStateRebuilding DbaasServiceState = "rebuilding"
-
-	DbaasServiceStateRunning DbaasServiceState = "running"
-)
-
-// Defines values for DbaasServiceComponentsRoute.
-const (
-	DbaasServiceComponentsRouteDynamic DbaasServiceComponentsRoute = "dynamic"
-
-	DbaasServiceComponentsRoutePrivate DbaasServiceComponentsRoute = "private"
-
-	DbaasServiceComponentsRoutePrivatelink DbaasServiceComponentsRoute = "privatelink"
-
-	DbaasServiceComponentsRoutePublic DbaasServiceComponentsRoute = "public"
-)
-
-// Defines values for DbaasServiceComponentsUsage.
-const (
-	DbaasServiceComponentsUsagePrimary DbaasServiceComponentsUsage = "primary"
-
-	DbaasServiceComponentsUsageReplica DbaasServiceComponentsUsage = "replica"
-)
-
-// Defines values for DbaasServiceConnectionPoolsPoolMode.
-const (
-	DbaasServiceConnectionPoolsPoolModeSession DbaasServiceConnectionPoolsPoolMode = "session"
-
-	DbaasServiceConnectionPoolsPoolModeStatement DbaasServiceConnectionPoolsPoolMode = "statement"
-
-	DbaasServiceConnectionPoolsPoolModeTransaction DbaasServiceConnectionPoolsPoolMode = "transaction"
-)
-
 // Defines values for DbaasServiceMaintenanceDow.
 const (
 	DbaasServiceMaintenanceDowFriday DbaasServiceMaintenanceDow = "friday"
@@ -120,13 +82,6 @@ const (
 	DbaasServiceNotificationTypeServiceEndOfLife DbaasServiceNotificationType = "service_end_of_life"
 
 	DbaasServiceNotificationTypeServicePoweredOffRemoval DbaasServiceNotificationType = "service_powered_off_removal"
-)
-
-// Defines values for DbaasServiceUserAuthentication.
-const (
-	DbaasServiceUserAuthenticationCachingSha2Password DbaasServiceUserAuthentication = "caching_sha2_password"
-
-	DbaasServiceUserAuthenticationMysqlNativePassword DbaasServiceUserAuthentication = "mysql_native_password"
 )
 
 // Defines values for DeployTargetType.
@@ -653,99 +608,6 @@ type DbaasPlan struct {
 	NodeMemory *int64 `json:"node-memory,omitempty"`
 }
 
-// Service information
-type DbaasService struct {
-	// List of Kafka ACL entries
-	Acl *[]struct {
-		// ID
-		Id         *string                 `json:"id,omitempty"`
-		Permission EnumKafkaAclPermissions `json:"permission"`
-
-		// Topic name pattern
-		Topic string `json:"topic"`
-
-		// Username
-		Username string `json:"username"`
-	} `json:"acl,omitempty"`
-
-	// List of backups for the service
-	Backups *[]DbaasServiceBackup `json:"backups,omitempty"`
-
-	// Service component information objects
-	Components *[]DbaasServiceComponents `json:"components,omitempty"`
-
-	// Service-specific connection information properties
-	ConnectionInfo *map[string]interface{} `json:"connection-info,omitempty"`
-
-	// PostgreSQL PGBouncer connection pools
-	ConnectionPools *[]DbaasServiceConnectionPools `json:"connection-pools,omitempty"`
-
-	// Service creation timestamp (ISO 8601)
-	CreatedAt *time.Time `json:"created-at,omitempty"`
-
-	// Single line description of the service
-	Description *string `json:"description,omitempty"`
-
-	// TODO UNIT disk space for data storage
-	DiskSize *int64 `json:"disk-size,omitempty"`
-
-	// Feature flags
-	Features *map[string]interface{} `json:"features,omitempty"`
-
-	// Integrations with other services
-	Integrations *[]DbaasServiceIntegration `json:"integrations,omitempty"`
-
-	// Automatic maintenance settings
-	Maintenance *DbaasServiceMaintenance `json:"maintenance,omitempty"`
-
-	// Service type specific metadata
-	Metadata *map[string]interface{} `json:"metadata,omitempty"`
-	Name     DbaasServiceName        `json:"name"`
-
-	// Number of service nodes in the active plan
-	NodeCount *int64 `json:"node-count,omitempty"`
-
-	// Number of CPUs for each node
-	NodeCpuCount *int64 `json:"node-cpu-count,omitempty"`
-
-	// TODO UNIT of memory for each node
-	NodeMemory *int64 `json:"node-memory,omitempty"`
-
-	// State of individual service nodes
-	NodeStates *[]DbaasNodeState `json:"node-states,omitempty"`
-
-	// Service notifications
-	Notifications *[]DbaasServiceNotification `json:"notifications,omitempty"`
-
-	// Subscription plan
-	Plan string `json:"plan"`
-
-	// State of the service
-	State *DbaasServiceState `json:"state,omitempty"`
-
-	// Service is protected against termination and powering off
-	TerminationProtection *bool                `json:"termination-protection,omitempty"`
-	Type                  DbaasServiceTypeName `json:"type"`
-
-	// Service last update timestamp (ISO 8601)
-	UpdatedAt *time.Time `json:"updated-at,omitempty"`
-
-	// URI for connecting to the service (may be absent)
-	Uri *string `json:"uri,omitempty"`
-
-	// service_uri parameterized into key-value pairs
-	UriParams *map[string]interface{} `json:"uri-params,omitempty"`
-
-	// Service type-specific settings
-	UserConfig *map[string]interface{} `json:"user-config,omitempty"`
-
-	// List of service users
-	Users *[]DbaasServiceUser `json:"users,omitempty"`
-}
-
-// State of the service
-type DbaasServiceState string
-
 // List of backups for the service
 type DbaasServiceBackup struct {
 	// Internal name of this backup
@@ -789,107 +651,6 @@ type DbaasServiceCommon struct {
 
 	// Service last update timestamp (ISO 8601)
 	UpdatedAt *time.Time `json:"updated-at,omitempty"`
-}
-
-// Service component information objects
-type DbaasServiceComponents struct {
-	// Service component name
-	Component string `json:"component"`
-
-	// DNS name for connecting to the service component
-	Host                      string               `json:"host"`
-	KafkaAuthenticationMethod *EnumKafkaAuthMethod `json:"kafka-authentication-method,omitempty"`
-
-	// Path component of the service URL (useful only if service component is HTTP or HTTPS endpoint)
-	Path *string `json:"path,omitempty"`
-
-	// Port number for connecting to the service component
-	Port int64 `json:"port"`
-
-	// Network access route
-	Route DbaasServiceComponentsRoute `json:"route"`
-
-	// Whether the endpoint is encrypted or accepts plaintext.
-	//                                            By default endpoints are always encrypted and
-	//                                            this property is only included for service components that may disable encryption.
-	Ssl *bool `json:"ssl,omitempty"`
-
-	// DNS usage name
-	Usage DbaasServiceComponentsUsage `json:"usage"`
-}
-
-// Network access route
-type DbaasServiceComponentsRoute string
-
-// DNS usage name
-type DbaasServiceComponentsUsage string
-
-// PostgreSQL PGBouncer connection pools
-type DbaasServiceConnectionPools struct {
-	// Connection URI for the DB pool
-	ConnectionUri string `json:"connection-uri"`
-
-	// Service database name
-	Database string `json:"database"`
-
-	// PGBouncer pool mode
-	PoolMode DbaasServiceConnectionPoolsPoolMode `json:"pool-mode"`
-
-	// Connection pool name
-	PoolName string `json:"pool-name"`
-
-	// Size of PGBouncer's PostgreSQL side connection pool
-	PoolSize int64 `json:"pool-size"`
-
-	// Pool username
-	Username string `json:"username"`
-}
-
-// PGBouncer pool mode
-type DbaasServiceConnectionPoolsPoolMode string
-
-// Integrations with other services
-type DbaasServiceIntegration struct {
-	// True when integration is active
-	Active bool `json:"active"`
-
-	// Description of the integration
-	Description string `json:"description"`
-
-	// Destination endpoint name
-	DestEndpoint *string `json:"dest-endpoint,omitempty"`
-
-	// Destination endpoint id
-	DestEndpointId *string `json:"dest-endpoint-id,omitempty"`
-
-	// Destination service name
-	DestService     string               `json:"dest-service"`
-	DestServiceType DbaasServiceTypeName `json:"dest-service-type"`
-
-	// True when integration is enabled
-	Enabled bool `json:"enabled"`
-
-	// Integration status
-	IntegrationStatus *map[string]interface{} `json:"integration-status,omitempty"`
-
-	// Type of the integration
-	IntegrationType string `json:"integration-type"`
-
-	// Integration ID
-	ServiceIntegrationId string `json:"service-integration-id"`
-
-	// Source endpoint name
-	SourceEndpoint *string `json:"source-endpoint,omitempty"`
-
-	// Source endpoint ID
-	SourceEndpointId *string `json:"source-endpoint-id,omitempty"`
-
-	// Source service name
-	SourceService     string               `json:"source-service"`
-	SourceServiceType DbaasServiceTypeName `json:"source-service-type"`
-
-	// Service integration settings
-	UserConfig *map[string]interface{} `json:"user-config,omitempty"`
 }
 
 // DbaasServiceKafka defines model for dbaas-service-kafka.
@@ -1018,6 +779,9 @@ type DbaasServiceKafka struct {
 		Type             *string    `json:"type,omitempty"`
 		Username         *string    `json:"username,omitempty"`
 	} `json:"users,omitempty"`
+
+	// Kafka version
+	Version *string `json:"version,omitempty"`
 }
 
 // Automatic maintenance settings
@@ -1127,6 +891,9 @@ type DbaasServiceMysql struct {
 		Type           *string `json:"type,omitempty"`
 		Username       *string `json:"username,omitempty"`
 	} `json:"users,omitempty"`
+
+	// MySQL version
+	Version *string `json:"version,omitempty"`
 }
 
 // DbaasServiceName defines model for dbaas-service-name.
@@ -1279,6 +1046,9 @@ type DbaasServicePg struct {
 		Username *string `json:"username,omitempty"`
 	} `json:"users,omitempty"`
 
+	// PostgreSQL version
+	Version *string `json:"version,omitempty"`
+
 	// Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).
 	WorkMem *int64 `json:"work-mem,omitempty"`
 }
@@ -1374,6 +1144,9 @@ type DbaasServiceRedis struct {
 		Type     *string `json:"type,omitempty"`
 		Username *string `json:"username,omitempty"`
 	} `json:"users,omitempty"`
+
+	// Redis version
+	Version *string `json:"version,omitempty"`
 }
 
 // DBaaS service
@@ -1411,48 +1184,6 @@ type DbaasServiceUpdate struct {
 
 	// The time when the update will be automatically applied
 	StartAt *time.Time `json:"start-at,omitempty"`
-}
-
-// List of service users
-type DbaasServiceUser struct {
-	// Access certificate for TLS client authentication
-	AccessCert *string `json:"access-cert,omitempty"`
-
-	// Access certificate validity end time (ISO8601)
-	AccessCertNotValidAfterTime *time.Time `json:"access-cert-not-valid-after-time,omitempty"`
-
-	// Service specific access controls for user
-	AccessControl *DbaasServiceUserAccessControl `json:"access-control,omitempty"`
-
-	// Service specific access controls for user
-	AccessKey *string `json:"access-key,omitempty"`
-
-	// Access key for TLS client authentication
-	Authentication *DbaasServiceUserAuthentication `json:"authentication,omitempty"`
-
-	// Account password. A missing field indicates a user overridden password.
-	Password *string `json:"password,omitempty"`
-
-	// Account type
-	Type string `json:"type"`
-
-	// Account username
-	Username string `json:"username"`
-}
-
-// Access key for TLS client authentication
-type DbaasServiceUserAuthentication string
-
-// Service specific access controls for user
-type DbaasServiceUserAccessControl struct {
-	// Command category rules
-	RedisAclCategories *[]string `json:"redis-acl-categories,omitempty"`
-
-	// Rules for individual commands
-	RedisAclCommands *[]string `json:"redis-acl-commands,omitempty"`
-
-	// Key access rules
-	RedisAclKeys *[]string `json:"redis-acl-keys,omitempty"`
 }
 
 // Deploy target
@@ -2171,6 +1902,30 @@ type SksNodepoolTaints struct {
 	AdditionalProperties map[string]SksNodepoolTaint `json:"-"`
 }
 
+// SKS Cluster OpenID config map
+type SksOidc struct {
+	// OpenID client ID
+	ClientId string `json:"client-id"`
+
+	// JWT claim to use as the user's group
+	GroupsClaim *string `json:"groups-claim,omitempty"`
+
+	// Prefix prepended to group claims
+	GroupsPrefix *string `json:"groups-prefix,omitempty"`
+
+	// OpenID provider URL
+	IssuerUrl string `json:"issuer-url"`
+
+	// A key=value pair that describes a required claim in the ID Token
+	RequiredClaim *string `json:"required-claim,omitempty"`
+
+	// JWT claim to use as the user name
+	UsernameClaim *string `json:"username-claim,omitempty"`
+
+	// Prefix prepended to username claims
+	UsernamePrefix *string `json:"username-prefix,omitempty"`
+}
+
 // Snapshot
 type Snapshot struct {
 	// Snapshot creation date
@@ -2704,69 +2459,6 @@ type UpdateDbaasServiceRedisJSONBody struct {
 // UpdateDbaasServiceRedisJSONBodyMaintenanceDow defines parameters for UpdateDbaasServiceRedis.
 type UpdateDbaasServiceRedisJSONBodyMaintenanceDow string
 
-// CreateDbaasServiceJSONBody defines parameters for CreateDbaasService.
-type CreateDbaasServiceJSONBody struct {
-	// Name of a backup to recover from for services that support backup names
-	BackupName *string `json:"backup-name,omitempty"`
-
-	// ISO time of a backup to recover from for services that support arbitrary times
-	BackupTime      *string           `json:"backup-time,omitempty"`
-	ForkFromService *DbaasServiceName `json:"fork-from-service,omitempty"`
-
-	// Integrations with other services
-	Integrations *[]DbaasServiceIntegration `json:"integrations,omitempty"`
-
-	// Automatic maintenance settings
-	Maintenance *struct {
-		// Day of week for installing updates
-		Dow CreateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
-
-		// Time for installing updates, UTC
-		Time string `json:"time"`
-	} `json:"maintenance,omitempty"`
-	Name DbaasServiceName `json:"name"`
-
-	// Subscription plan
-	Plan string `json:"plan"`
-
-	// Service is protected against termination and powering off
-	TerminationProtection *bool                `json:"termination-protection,omitempty"`
-	Type                  DbaasServiceTypeName `json:"type"`
-
-	// Service type-specific settings
-	UserConfig *map[string]interface{} `json:"user-config,omitempty"`
-}
-
-// CreateDbaasServiceJSONBodyMaintenanceDow defines parameters for CreateDbaasService.
-type CreateDbaasServiceJSONBodyMaintenanceDow string
-
-// UpdateDbaasServiceJSONBody defines parameters for UpdateDbaasService.
-type UpdateDbaasServiceJSONBody struct {
-	// Automatic maintenance settings
-	Maintenance *struct {
-		// Day of week for installing updates
-		Dow UpdateDbaasServiceJSONBodyMaintenanceDow `json:"dow"`
-
-		// Time for installing updates, UTC
-		Time string `json:"time"`
-	} `json:"maintenance,omitempty"`
-
-	// Subscription plan
-	Plan *string `json:"plan,omitempty"`
-
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
-
-	// Service is protected against termination and powering off
-	TerminationProtection *bool `json:"termination-protection,omitempty"`
-
-	// Service type-specific settings
-	UserConfig *map[string]interface{} `json:"user-config,omitempty"`
-}
-
-// UpdateDbaasServiceJSONBodyMaintenanceDow defines parameters for UpdateDbaasService.
-type UpdateDbaasServiceJSONBodyMaintenanceDow string
-
 // CreateElasticIpJSONBody defines parameters for CreateElasticIp.
 type CreateElasticIpJSONBody struct {
 	// Elastic IP description
@@ -3249,6 +2941,9 @@ type CreateSksClusterJSONBody struct {
 	// Cluster name
 	Name string `json:"name"`
 
+	// SKS Cluster OpenID config map
+	Oidc *SksOidc `json:"oidc,omitempty"`
+
 	// Control plane Kubernetes version
 	Version string `json:"version"`
 }
@@ -3479,12 +3174,6 @@ type CreateDbaasServiceRedisJSONRequestBody CreateDbaasServiceRedisJSONBody
 
 // UpdateDbaasServiceRedisJSONRequestBody defines body for UpdateDbaasServiceRedis for application/json ContentType.
 type UpdateDbaasServiceRedisJSONRequestBody UpdateDbaasServiceRedisJSONBody
-
-// CreateDbaasServiceJSONRequestBody defines body for CreateDbaasService for application/json ContentType.
-type CreateDbaasServiceJSONRequestBody CreateDbaasServiceJSONBody
-
-// UpdateDbaasServiceJSONRequestBody defines body for UpdateDbaasService for application/json ContentType.
-type UpdateDbaasServiceJSONRequestBody UpdateDbaasServiceJSONBody
 
 // CreateElasticIpJSONRequestBody defines body for CreateElasticIp for application/json ContentType.
 type CreateElasticIpJSONRequestBody CreateElasticIpJSONBody
@@ -3863,11 +3552,6 @@ type ClientInterface interface {
 	// ListDbaasServices request
 	ListDbaasServices(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateDbaasService request with any body
-	CreateDbaasServiceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateDbaasService(ctx context.Context, body CreateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// ListDbaasServiceTypes request
 	ListDbaasServiceTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -3876,14 +3560,6 @@ type ClientInterface interface {
 
 	// DeleteDbaasService request
 	DeleteDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetDbaasService request
-	GetDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdateDbaasService request with any body
-	UpdateDbaasServiceWithBody(ctx context.Context, name string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	UpdateDbaasService(ctx context.Context, name string, body UpdateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDbaasSettingsKafka request
 	GetDbaasSettingsKafka(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4627,30 +4303,6 @@ func (c *Client) ListDbaasServices(ctx context.Context, reqEditors ...RequestEdi
 	return c.Client.Do(req)
 }
 
-func (c *Client) CreateDbaasServiceWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateDbaasServiceRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) CreateDbaasService(ctx context.Context, body CreateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateDbaasServiceRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) ListDbaasServiceTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListDbaasServiceTypesRequest(c.Server)
 	if err != nil {
@@ -4677,42 +4329,6 @@ func (c *Client) GetDbaasServiceType(ctx context.Context, serviceTypeName string
 
 func (c *Client) DeleteDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteDbaasServiceRequest(c.Server, name)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetDbaasServiceRequest(c.Server, name)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateDbaasServiceWithBody(ctx context.Context, name string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateDbaasServiceRequestWithBody(c.Server, name, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateDbaasService(ctx context.Context, name string, body UpdateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateDbaasServiceRequest(c.Server, name, body)
 	if err != nil {
 		return nil, err
 	}
@@ -7260,46 +6876,6 @@ func NewListDbaasServicesRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewCreateDbaasServiceRequest calls the generic CreateDbaasService builder with application/json body
-func NewCreateDbaasServiceRequest(server string, body CreateDbaasServiceJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateDbaasServiceRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewCreateDbaasServiceRequestWithBody generates requests for CreateDbaasService with any type of body
-func NewCreateDbaasServiceRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/dbaas-service")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewListDbaasServiceTypesRequest generates requests for ListDbaasServiceTypes
 func NewListDbaasServiceTypesRequest(server string) (*http.Request, error) {
 	var err error
@@ -7391,87 +6967,6 @@ func NewDeleteDbaasServiceRequest(server string, name string) (*http.Request, er
 	if err != nil {
 		return nil, err
 	}
-
-	return req, nil
-}
-
-// NewGetDbaasServiceRequest generates requests for GetDbaasService
-func NewGetDbaasServiceRequest(server string, name string) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/dbaas-service/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdateDbaasServiceRequest calls the generic UpdateDbaasService builder with application/json body
-func NewUpdateDbaasServiceRequest(server string, name string, body UpdateDbaasServiceJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewUpdateDbaasServiceRequestWithBody(server, name, "application/json", bodyReader)
-}
-
-// NewUpdateDbaasServiceRequestWithBody generates requests for UpdateDbaasService with any type of body
-func NewUpdateDbaasServiceRequestWithBody(server string, name string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/dbaas-service/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PUT", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -11996,11 +11491,6 @@ type ClientWithResponsesInterface interface {
 	// ListDbaasServices request
 	ListDbaasServicesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasServicesResponse, error)
 
-	// CreateDbaasService request with any body
-	CreateDbaasServiceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasServiceResponse, error)
-
-	CreateDbaasServiceWithResponse(ctx context.Context, body CreateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasServiceResponse, error)
-
 	// ListDbaasServiceTypes request
 	ListDbaasServiceTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasServiceTypesResponse, error)
 
@@ -12009,14 +11499,6 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteDbaasService request
 	DeleteDbaasServiceWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceResponse, error)
-
-	// GetDbaasService request
-	GetDbaasServiceWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetDbaasServiceResponse, error)
-
-	// UpdateDbaasService request with any body
-	UpdateDbaasServiceWithBodyWithResponse(ctx context.Context, name string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceResponse, error)
-
-	UpdateDbaasServiceWithResponse(ctx context.Context, name string, body UpdateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceResponse, error)
 
 	// GetDbaasSettingsKafka request
 	GetDbaasSettingsKafkaWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasSettingsKafkaResponse, error)
@@ -12838,28 +12320,6 @@ func (r ListDbaasServicesResponse) StatusCode() int {
 	return 0
 }
 
-type CreateDbaasServiceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *DbaasService
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateDbaasServiceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateDbaasServiceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type ListDbaasServiceTypesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -12922,50 +12382,6 @@ func (r DeleteDbaasServiceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r DeleteDbaasServiceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetDbaasServiceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *DbaasService
-}
-
-// Status returns HTTPResponse.Status
-func (r GetDbaasServiceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetDbaasServiceResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type UpdateDbaasServiceResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *DbaasService
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdateDbaasServiceResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdateDbaasServiceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -15776,23 +15192,6 @@ func (c *ClientWithResponses) ListDbaasServicesWithResponse(ctx context.Context,
 	return ParseListDbaasServicesResponse(rsp)
 }
 
-// CreateDbaasServiceWithBodyWithResponse request with arbitrary body returning *CreateDbaasServiceResponse
-func (c *ClientWithResponses) CreateDbaasServiceWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasServiceResponse, error) {
-	rsp, err := c.CreateDbaasServiceWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateDbaasServiceResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateDbaasServiceWithResponse(ctx context.Context, body CreateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasServiceResponse, error) {
-	rsp, err := c.CreateDbaasService(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateDbaasServiceResponse(rsp)
-}
-
 // ListDbaasServiceTypesWithResponse request returning *ListDbaasServiceTypesResponse
 func (c *ClientWithResponses) ListDbaasServiceTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasServiceTypesResponse, error) {
 	rsp, err := c.ListDbaasServiceTypes(ctx, reqEditors...)
@@ -15818,32 +15217,6 @@ func (c *ClientWithResponses) DeleteDbaasServiceWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseDeleteDbaasServiceResponse(rsp)
-}
-
-// GetDbaasServiceWithResponse request returning *GetDbaasServiceResponse
-func (c *ClientWithResponses) GetDbaasServiceWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetDbaasServiceResponse, error) {
-	rsp, err := c.GetDbaasService(ctx, name, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetDbaasServiceResponse(rsp)
-}
-
-// UpdateDbaasServiceWithBodyWithResponse request with arbitrary body returning *UpdateDbaasServiceResponse
-func (c *ClientWithResponses) UpdateDbaasServiceWithBodyWithResponse(ctx context.Context, name string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceResponse, error) {
-	rsp, err := c.UpdateDbaasServiceWithBody(ctx, name, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateDbaasServiceResponse(rsp)
-}
-
-func (c *ClientWithResponses) UpdateDbaasServiceWithResponse(ctx context.Context, name string, body UpdateDbaasServiceJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceResponse, error) {
-	rsp, err := c.UpdateDbaasService(ctx, name, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateDbaasServiceResponse(rsp)
 }
 
 // GetDbaasSettingsKafkaWithResponse request returning *GetDbaasSettingsKafkaResponse
@@ -17655,32 +17028,6 @@ func ParseListDbaasServicesResponse(rsp *http.Response) (*ListDbaasServicesRespo
 	return response, nil
 }
 
-// ParseCreateDbaasServiceResponse parses an HTTP response from a CreateDbaasServiceWithResponse call
-func ParseCreateDbaasServiceResponse(rsp *http.Response) (*CreateDbaasServiceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateDbaasServiceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DbaasService
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseListDbaasServiceTypesResponse parses an HTTP response from a ListDbaasServiceTypesWithResponse call
 func ParseListDbaasServiceTypesResponse(rsp *http.Response) (*ListDbaasServiceTypesResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -17751,58 +17098,6 @@ func ParseDeleteDbaasServiceResponse(rsp *http.Response) (*DeleteDbaasServiceRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest DbaasServiceCommon
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetDbaasServiceResponse parses an HTTP response from a GetDbaasServiceWithResponse call
-func ParseGetDbaasServiceResponse(rsp *http.Response) (*GetDbaasServiceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetDbaasServiceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DbaasService
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdateDbaasServiceResponse parses an HTTP response from a UpdateDbaasServiceWithResponse call
-func ParseUpdateDbaasServiceResponse(rsp *http.Response) (*UpdateDbaasServiceResponse, error) {
-	bodyBytes, err := ioutil.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdateDbaasServiceResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DbaasService
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
