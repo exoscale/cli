@@ -66,7 +66,7 @@ func (c *dbServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 	if c.PGBouncerSettings != "" {
 		settings, err := validateDatabaseServiceSettings(
 			c.PGBouncerSettings,
-			settingsSchema.JSON200.Settings.Pglookout,
+			settingsSchema.JSON200.Settings.Pgbouncer,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
