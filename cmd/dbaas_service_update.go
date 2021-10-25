@@ -72,6 +72,16 @@ func (c *dbServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+	if (cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) &&
+		(!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+			!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) {
+		return fmt.Errorf(
+			"both --%s and --%s must be specified",
+			mustCLICommandFlagName(c, &c.MaintenanceDOW),
+			mustCLICommandFlagName(c, &c.MaintenanceTime))
+	}
+
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	databaseServices, err := cs.ListDatabaseServices(ctx, c.Zone)

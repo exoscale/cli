@@ -78,6 +78,16 @@ func (c *dbServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *dbServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+	if (cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) &&
+		(!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+			!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) {
+		return fmt.Errorf(
+			"both --%s and --%s must be specified",
+			mustCLICommandFlagName(c, &c.MaintenanceDOW),
+			mustCLICommandFlagName(c, &c.MaintenanceTime))
+	}
+
 	switch c.Type {
 	case "kafka":
 		return c.createKafka(cmd, args)
