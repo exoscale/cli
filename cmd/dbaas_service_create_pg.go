@@ -29,6 +29,9 @@ func (c *dbServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 
 	if c.ForkFrom != "" {
 		databaseService.ForkFromService = (*oapi.DbaasServiceName)(&c.ForkFrom)
+		if c.RecoveryBackupTime != "" {
+			databaseService.RecoveryBackupTime = &c.RecoveryBackupTime
+		}
 	}
 
 	if c.PGAdminPassword != "" {
