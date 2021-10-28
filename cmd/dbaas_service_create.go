@@ -19,6 +19,7 @@ type dbServiceCreateCmd struct {
 	ForkFrom              string `cli-usage:"name of a Database Service to fork from"`
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
+	RecoveryBackupTime    string `cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
 	TerminationProtection bool   `cli-usage:"enable Database Service termination protection"`
 	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
 
