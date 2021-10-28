@@ -12,12 +12,13 @@ import (
 )
 
 type instanceTypeShowOutput struct {
-	ID     string `json:"id"`
-	Family string `json:"family"`
-	Size   string `json:"name"`
-	Memory int64  `json:"memory"`
-	CPUs   int64  `json:"cpus"`
-	GPUs   int64  `json:"gpus"`
+	ID         string `json:"id"`
+	Family     string `json:"family"`
+	Size       string `json:"name"`
+	Memory     int64  `json:"memory"`
+	CPUs       int64  `json:"cpus"`
+	GPUs       int64  `json:"gpus"`
+	Authorized bool   `json:"authorized"`
 }
 
 func (o *instanceTypeShowOutput) toJSON() { outputJSON(o) }
@@ -36,6 +37,8 @@ func (o *instanceTypeShowOutput) toTable() {
 	if o.GPUs > 0 {
 		t.Append([]string{"# GPUs", fmt.Sprint(o.GPUs)})
 	}
+
+	t.Append([]string{"Authorized", fmt.Sprint(o.Authorized)})
 }
 
 type instanceTypeShowCmd struct {
@@ -86,6 +89,7 @@ func (c *instanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			}
 			return
 		}(),
+		Authorized: *t.Authorized,
 	}, nil)
 }
 
