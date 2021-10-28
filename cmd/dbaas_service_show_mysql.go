@@ -215,6 +215,8 @@ func (c *dbServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (output
 				}
 				return
 			}(),
+
+			Version: defaultString(databaseService.Version, ""),
 		},
 	}
 

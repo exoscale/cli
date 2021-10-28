@@ -33,11 +33,9 @@ type dbServiceRedisShowOutput struct {
 	URI        string                              `json:"uri"`
 	URIParams  map[string]interface{}              `json:"uri_params"`
 	Users      []dbServiceRedisUserShowOutput      `json:"users"`
-	Version    string                              `json:"version"`
 }
 
 func formatDatabaseServiceRedisTable(t *table.Table, o *dbServiceRedisShowOutput) {
-	t.Append([]string{"Version", o.Version})
 	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
 	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
 
