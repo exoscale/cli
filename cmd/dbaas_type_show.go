@@ -5,18 +5,48 @@ import (
 	"os"
 	"strings"
 
+	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
 )
 
+type dbTypePlanListItemOutput struct {
+	Name       string `json:"name"`
+	Nodes      int64  `json:"nodes"`
+	NodeCPUs   int64  `json:"node_cpus"`
+	NodeMemory int64  `json:"node_memory"`
+	DiskSpace  int64  `json:"disk_space"`
+	Authorized bool   `json:"authorized"`
+}
+
+type dbTypePlanListOutput []dbTypePlanListItemOutput
+
+func (o *dbTypePlanListOutput) toJSON() { outputJSON(o) }
+func (o *dbTypePlanListOutput) toText() { outputText(o) }
+func (o *dbTypePlanListOutput) toTable() {
+	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"Name", "# Nodes", "# CPUs", "Node Memory", "Disk Space", "Authorized"})
+	defer t.Render()
+
+	for _, p := range *o {
+		t.Append([]string{
+			p.Name,
+			fmt.Sprint(p.Nodes),
+			fmt.Sprint(p.NodeCPUs),
+			humanize.Bytes(uint64(p.NodeMemory)),
+			humanize.Bytes(uint64(p.DiskSpace)),
+			fmt.Sprint(p.Authorized),
+		})
+	}
+}
+
 type dbTypeShowOutput struct {
-	Name           string   `json:"name"`
-	Description    string   `json:"description"`
-	LatestVersion  string   `json:"latest_version"`
-	DefaultVersion string   `json:"default_version"`
-	Plans          []string `json:"plans"`
+	Name           string `json:"name"`
+	Description    string `json:"description"`
+	LatestVersion  string `json:"latest_version"`
+	DefaultVersion string `json:"default_version"`
 }
 
 func (o *dbTypeShowOutput) toJSON() { outputJSON(o) }
@@ -29,7 +59,6 @@ func (o *dbTypeShowOutput) toTable() {
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Latest Version", o.LatestVersion})
 	t.Append([]string{"Default Version", o.DefaultVersion})
-	t.Append([]string{"Plans", strings.Join(o.Plans, "\n")})
 }
 
 var (
@@ -55,7 +84,8 @@ type dbTypeShowCmd struct {
 
 	Name string `cli-arg:"#"`
 
-	ShowSettings string `cli-flag:"settings" cli-usage:"show supported settings by the Database Service type"`
+	ShowPlans    bool   `cli-flag:"plans" cli-usage:"list plans offered for the Database Service type"`
+	ShowSettings string `cli-flag:"settings" cli-usage:"show settings supported by the Database Service type"`
 }
 
 func (c *dbTypeShowCmd) cmdAliases() []string { return gShowAlias }
@@ -72,14 +102,17 @@ Supported Database Service type settings:
 * %s
 * %s
 
-Supported output template annotations: %s
+Supported output template annotations:
 
-Note: plans marked with (U) are currently unauthorized for this organization.`,
+* When showing a Database Service: %s
+
+* When listing Database Service plans: %s`,
 		strings.Join(kafkaSettings, ", "),
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
 		strings.Join(redisSettings, ", "),
-		strings.Join(outputterTemplateAnnotations(&dbTypeShowOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&dbTypeShowOutput{}), ", "),
+		strings.Join(outputterTemplateAnnotations(&dbTypePlanListItemOutput{}), ", "))
 }
 
 func (c *dbTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -95,6 +128,21 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	dt, err := cs.GetDatabaseServiceType(ctx, gCurrentAccount.DefaultZone, c.Name)
 	if err != nil {
 		return err
+	}
+
+	if c.ShowPlans {
+		out := make(dbTypePlanListOutput, len(dt.Plans))
+		for i := range dt.Plans {
+			out[i] = dbTypePlanListItemOutput{
+				Name:       *dt.Plans[i].Name,
+				Nodes:      *dt.Plans[i].Nodes,
+				NodeCPUs:   *dt.Plans[i].NodeCPUs,
+				NodeMemory: *dt.Plans[i].NodeMemory,
+				DiskSpace:  *dt.Plans[i].DiskSpace,
+				Authorized: *dt.Plans[i].Authorized,
+			}
+		}
+		return output(&out, nil)
 	}
 
 	if c.ShowSettings != "" {
@@ -204,16 +252,6 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Description:    defaultString(dt.Description, ""),
 		LatestVersion:  defaultString(dt.LatestVersion, "-"),
 		DefaultVersion: defaultString(dt.DefaultVersion, "-"),
-		Plans: func() []string {
-			plans := make([]string, len(dt.Plans))
-			for i := range dt.Plans {
-				plans[i] = *dt.Plans[i].Name
-				if !defaultBool(dt.Plans[i].Authorized, false) {
-					plans[i] += " (U)"
-				}
-			}
-			return plans
-		}(),
 	}, nil)
 }
 
