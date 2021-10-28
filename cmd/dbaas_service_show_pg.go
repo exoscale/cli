@@ -271,6 +271,8 @@ func (c *dbServiceShowCmd) showDatabaseServicePG(ctx context.Context) (outputter
 				}
 				return
 			}(),
+
+			Version: defaultString(databaseService.Version, ""),
 		},
 	}
 
