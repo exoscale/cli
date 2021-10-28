@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 
+	"github.com/exoscale/cli/table"
 	"github.com/hashicorp/go-multierror"
 	"github.com/iancoleman/strcase"
 	"github.com/spf13/cobra"
@@ -75,6 +77,22 @@ func cmdExitOnUsageError(cmd *cobra.Command, reason string) {
 	cmd.PrintErrln(fmt.Sprintf("error: %s", reason))
 	cmd.Usage() // nolint:errcheck
 	os.Exit(1)
+}
+
+// cmdShowHelpFlags outputs flags matching the specified prefix in the provided flag set.
+// This can be used for example to craft specialized usage help messages for hidden flags.
+func cmdShowHelpFlags(flags *pflag.FlagSet, prefix string) {
+	buf := bytes.NewBuffer(nil)
+	t := table.NewEmbeddedTable(buf)
+
+	flags.VisitAll(func(flag *pflag.Flag) {
+		if strings.HasPrefix(flag.Name, prefix) {
+			t.Append([]string{"--" + flag.Name, flag.Usage})
+		}
+	})
+
+	t.Render()
+	fmt.Print(buf)
 }
 
 // completeVMNames is a Cobra Command.ValidArgsFunction that returns the list of Compute instance names belonging to
@@ -187,6 +205,7 @@ func mustCLICommandFlagName(c cliCommand, field interface{}) string {
 //   * cli-usage:"<usage help>": an optional string to use as flag usage
 //     help message. For positional arguments, this field is used as argument
 //     label for the "use" command help.
+//   * cli-hidden:"": mark the corresponding flag "hidden".
 func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 	cv := reflect.ValueOf(c)
@@ -262,6 +281,14 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 
 		default:
 			return nil, cliCommandImplemError{fmt.Sprintf("unsupported type %s", t)}
+		}
+
+		if _, ok := cTypeField.Tag.Lookup("cli-hidden"); ok {
+			if err := fs.MarkHidden(flagName); err != nil {
+				return nil, cliCommandImplemError{
+					reason: fmt.Sprintf("error marking flag %q hidden: %v", flagName, err),
+				}
+			}
 		}
 	}
 
