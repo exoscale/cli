@@ -30,10 +30,6 @@ func (c *dbServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("API request error: unexpected status %s", settingsSchema.Status())
 	}
 
-	if c.ForkFrom != "" {
-		return fmt.Errorf("forking is not supported with kafka Service type")
-	}
-
 	if c.KafkaEnableCertAuth || c.KafkaEnableSASLAuth {
 		databaseService.AuthenticationMethods = &struct {
 			Certificate *bool `json:"certificate,omitempty"`

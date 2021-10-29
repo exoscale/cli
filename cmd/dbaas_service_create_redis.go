@@ -27,8 +27,11 @@ func (c *dbServiceCreateCmd) createRedis(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("API request error: unexpected status %s", settingsSchema.Status())
 	}
 
-	if c.ForkFrom != "" {
-		databaseService.ForkFromService = (*oapi.DbaasServiceName)(&c.ForkFrom)
+	if c.RedisForkFrom != "" {
+		databaseService.ForkFromService = (*oapi.DbaasServiceName)(&c.RedisForkFrom)
+		if c.RedisRecoveryBackupName != "" {
+			databaseService.RecoveryBackupName = &c.RedisRecoveryBackupName
+		}
 	}
 
 	if len(c.RedisIPFilter) > 0 {
