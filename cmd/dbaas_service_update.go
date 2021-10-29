@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -16,6 +17,10 @@ type dbServiceUpdateCmd struct {
 
 	Name string `cli-arg:"#"`
 
+	HelpKafka             bool   `cli-usage:"show usage for flags specific to the kafka type"`
+	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
+	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
+	HelpRedis             bool   `cli-usage:"show usage for flags specific to the redis type"`
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
 	Plan                  string `cli-usage:"Database Service plan"`
@@ -23,32 +28,32 @@ type dbServiceUpdateCmd struct {
 	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
 
 	// "kafka" type specific flags
-	KafkaConnectSettings        string   `cli-flag:"kafka-connect-settings" cli-usage:"[kafka] Kafka Connect configuration settings (JSON format)"`
-	KafkaEnableCertAuth         bool     `cli-flag:"kafka-enable-cert-auth" cli-usage:"[kafka] enable certificate-based authentication method"`
-	KafkaEnableKafkaConnect     bool     `cli-flag:"kafka-enable-kafka-connect" cli-usage:"[kafka] enable Kafka Connect"`
-	KafkaEnableKafkaREST        bool     `cli-flag:"kafka-enable-kafka-rest" cli-usage:"[kafka] enable Kafka REST"`
-	KafkaEnableSASLAuth         bool     `cli-flag:"kafka-enable-sasl-auth" cli-usage:"[kafka] enable SASL-based authentication method"`
-	KafkaEnableSchemaRegistry   bool     `cli-flag:"kafka-enable-schema-registry" cli-usage:"[kafka] enable Schema Registry"`
-	KafkaIPFilter               []string `cli-flag:"kafka-ip-filter" cli-usage:"[kafka] allow incoming connections from CIDR address block"`
-	KafkaRESTSettings           string   `cli-flag:"kafka-rest-settings" cli-usage:"[kafka] Kafka REST configuration settings (JSON format)"`
-	KafkaSchemaRegistrySettings string   `cli-flag:"kafka-schema-registry-settings" cli-usage:"[kafka] Schema Registry configuration settings (JSON format)"`
-	KafkaSettings               string   `cli-flag:"kafka-settings" cli-usage:"[kafka] Kafka configuration settings (JSON format)"`
+	KafkaConnectSettings        string   `cli-flag:"kafka-connect-settings" cli-usage:"Kafka Connect configuration settings (JSON format)" cli-hidden:""`
+	KafkaEnableCertAuth         bool     `cli-flag:"kafka-enable-cert-auth" cli-usage:"enable certificate-based authentication method" cli-hidden:""`
+	KafkaEnableKafkaConnect     bool     `cli-flag:"kafka-enable-kafka-connect" cli-usage:"enable Kafka Connect" cli-hidden:""`
+	KafkaEnableKafkaREST        bool     `cli-flag:"kafka-enable-kafka-rest" cli-usage:"enable Kafka REST" cli-hidden:""`
+	KafkaEnableSASLAuth         bool     `cli-flag:"kafka-enable-sasl-auth" cli-usage:"enable SASL-based authentication method" cli-hidden:""`
+	KafkaEnableSchemaRegistry   bool     `cli-flag:"kafka-enable-schema-registry" cli-usage:"enable Schema Registry" cli-hidden:""`
+	KafkaIPFilter               []string `cli-flag:"kafka-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	KafkaRESTSettings           string   `cli-flag:"kafka-rest-settings" cli-usage:"Kafka REST configuration settings (JSON format)" cli-hidden:""`
+	KafkaSchemaRegistrySettings string   `cli-flag:"kafka-schema-registry-settings" cli-usage:"Schema Registry configuration settings (JSON format)" cli-hidden:""`
+	KafkaSettings               string   `cli-flag:"kafka-settings" cli-usage:"Kafka configuration settings (JSON format)" cli-hidden:""`
 
 	// "mysql" type specific flags
-	MysqlBackupSchedule string   `cli-flag:"mysql-backup-schedule" cli-usage:"[mysql] automated backup schedule (format: HH:MM)"`
-	MysqlIPFilter       []string `cli-flag:"mysql-ip-filter" cli-usage:"[mysql] allow incoming connections from CIDR address block"`
-	MysqlSettings       string   `cli-flag:"mysql-settings" cli-usage:"[mysql] MySQL configuration settings (JSON format)"`
+	MysqlBackupSchedule string   `cli-flag:"mysql-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
+	MysqlIPFilter       []string `cli-flag:"mysql-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	MysqlSettings       string   `cli-flag:"mysql-settings" cli-usage:"MySQL configuration settings (JSON format)" cli-hidden:""`
 
 	// "pg" type specific flags
-	PGBackupSchedule  string   `cli-flag:"pg-backup-schedule" cli-usage:"[pg] automated backup schedule (format: HH:MM)"`
-	PGBouncerSettings string   `cli-flag:"pg-bouncer-settings" cli-usage:"[pg] PgBouncer configuration settings (JSON format)"`
-	PGIPFilter        []string `cli-flag:"pg-ip-filter" cli-usage:"[pg] allow incoming connections from CIDR address block"`
-	PGLookoutSettings string   `cli-flag:"pg-lookout-settings" cli-usage:"[pg] pglookout configuration settings (JSON format)"`
-	PGSettings        string   `cli-flag:"pg-settings" cli-usage:"[pg] PostgreSQL configuration settings (JSON format)"`
+	PGBackupSchedule  string   `cli-flag:"pg-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
+	PGBouncerSettings string   `cli-flag:"pg-bouncer-settings" cli-usage:"PgBouncer configuration settings (JSON format)" cli-hidden:""`
+	PGIPFilter        []string `cli-flag:"pg-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	PGLookoutSettings string   `cli-flag:"pg-lookout-settings" cli-usage:"pglookout configuration settings (JSON format)" cli-hidden:""`
+	PGSettings        string   `cli-flag:"pg-settings" cli-usage:"PostgreSQL configuration settings (JSON format)" cli-hidden:""`
 
 	// "redis" type specific flags
-	RedisIPFilter []string `cli-flag:"redis-ip-filter" cli-usage:"[redis] allow incoming connections from CIDR address block"`
-	RedisSettings string   `cli-flag:"redis-settings" cli-usage:"[redis] Redis configuration settings (JSON format)"`
+	RedisIPFilter []string `cli-flag:"redis-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	RedisSettings string   `cli-flag:"redis-settings" cli-usage:"Redis configuration settings (JSON format)" cli-hidden:""`
 }
 
 func (c *dbServiceUpdateCmd) cmdAliases() []string { return nil }
@@ -67,6 +72,21 @@ Supported output template annotations: %s`,
 }
 
 func (c *dbServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+	switch {
+	case cmd.Flags().Changed("help-kafka"):
+		cmdShowHelpFlags(cmd.Flags(), "kafka-")
+		os.Exit(0)
+	case cmd.Flags().Changed("help-mysql"):
+		cmdShowHelpFlags(cmd.Flags(), "mysql-")
+		os.Exit(0)
+	case cmd.Flags().Changed("help-pg"):
+		cmdShowHelpFlags(cmd.Flags(), "pg-")
+		os.Exit(0)
+	case cmd.Flags().Changed("help-redis"):
+		cmdShowHelpFlags(cmd.Flags(), "redis-")
+		os.Exit(0)
+	}
+
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
