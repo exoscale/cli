@@ -27,10 +27,10 @@ func (c *dbServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("API request error: unexpected status %s", settingsSchema.Status())
 	}
 
-	if c.ForkFrom != "" {
-		databaseService.ForkFromService = (*oapi.DbaasServiceName)(&c.ForkFrom)
-		if c.RecoveryBackupTime != "" {
-			databaseService.RecoveryBackupTime = &c.RecoveryBackupTime
+	if c.PGForkFrom != "" {
+		databaseService.ForkFromService = (*oapi.DbaasServiceName)(&c.PGForkFrom)
+		if c.PGRecoveryBackupTime != "" {
+			databaseService.RecoveryBackupTime = &c.PGRecoveryBackupTime
 		}
 	}
 

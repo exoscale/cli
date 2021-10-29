@@ -17,14 +17,12 @@ type dbServiceCreateCmd struct {
 	Plan string `cli-arg:"#"`
 	Name string `cli-arg:"#"`
 
-	ForkFrom              string `cli-usage:"name of a Database Service to fork from"`
 	HelpKafka             bool   `cli-usage:"show usage for flags specific to the kafka type"`
 	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
 	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
 	HelpRedis             bool   `cli-usage:"show usage for flags specific to the redis type"`
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
-	RecoveryBackupTime    string `cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
 	TerminationProtection bool   `cli-usage:"enable Database Service termination protection"`
 	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
 
@@ -42,26 +40,32 @@ type dbServiceCreateCmd struct {
 	KafkaVersion                string   `cli-flag:"kafka-version" cli-usage:"Kafka major version" cli-hidden:""`
 
 	// "mysql" type specific flags
-	MysqlAdminPassword  string   `cli-flag:"mysql-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
-	MysqlAdminUsername  string   `cli-flag:"mysql-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
-	MysqlBackupSchedule string   `cli-flag:"mysql-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
-	MysqlIPFilter       []string `cli-flag:"mysql-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	MysqlSettings       string   `cli-flag:"mysql-settings" cli-usage:"MySQL configuration settings (JSON format)" cli-hidden:""`
-	MysqlVersion        string   `cli-flag:"mysql-version" cli-usage:"MySQL major version" cli-hidden:""`
+	MysqlAdminPassword      string   `cli-flag:"mysql-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
+	MysqlAdminUsername      string   `cli-flag:"mysql-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
+	MysqlBackupSchedule     string   `cli-flag:"mysql-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
+	MysqlForkFrom           string   `cli-flag:"mysql-fork-from" cli-usage:"name of a Database Service to fork from"`
+	MysqlIPFilter           []string `cli-flag:"mysql-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	MysqlRecoveryBackupTime string   `cli-flag:"mysql-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
+	MysqlSettings           string   `cli-flag:"mysql-settings" cli-usage:"MySQL configuration settings (JSON format)" cli-hidden:""`
+	MysqlVersion            string   `cli-flag:"mysql-version" cli-usage:"MySQL major version" cli-hidden:""`
 
 	// "pg" type specific flags
-	PGAdminPassword   string   `cli-flag:"pg-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
-	PGAdminUsername   string   `cli-flag:"pg-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
-	PGBackupSchedule  string   `cli-flag:"pg-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
-	PGBouncerSettings string   `cli-flag:"pg-bouncer-settings" cli-usage:"PgBouncer configuration settings (JSON format)" cli-hidden:""`
-	PGIPFilter        []string `cli-flag:"pg-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	PGLookoutSettings string   `cli-flag:"pg-lookout-settings" cli-usage:"pglookout configuration settings (JSON format)" cli-hidden:""`
-	PGSettings        string   `cli-flag:"pg-settings" cli-usage:"PostgreSQL configuration settings (JSON format)" cli-hidden:""`
-	PGVersion         string   `cli-flag:"pg-version" cli-usage:"PostgreSQL major version" cli-hidden:""`
+	PGAdminPassword      string   `cli-flag:"pg-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
+	PGAdminUsername      string   `cli-flag:"pg-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
+	PGBackupSchedule     string   `cli-flag:"pg-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
+	PGBouncerSettings    string   `cli-flag:"pg-bouncer-settings" cli-usage:"PgBouncer configuration settings (JSON format)" cli-hidden:""`
+	PGForkFrom           string   `cli-flag:"pg-fork-from" cli-usage:"name of a Database Service to fork from"`
+	PGIPFilter           []string `cli-flag:"pg-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	PGLookoutSettings    string   `cli-flag:"pg-lookout-settings" cli-usage:"pglookout configuration settings (JSON format)" cli-hidden:""`
+	PGRecoveryBackupTime string   `cli-flag:"pg-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
+	PGSettings           string   `cli-flag:"pg-settings" cli-usage:"PostgreSQL configuration settings (JSON format)" cli-hidden:""`
+	PGVersion            string   `cli-flag:"pg-version" cli-usage:"PostgreSQL major version" cli-hidden:""`
 
 	// "redis" type specific flags
-	RedisIPFilter []string `cli-flag:"redis-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	RedisSettings string   `cli-flag:"redis-settings" cli-usage:"Redis configuration settings (JSON format)" cli-hidden:""`
+	RedisForkFrom           string   `cli-flag:"redis-fork-from" cli-usage:"name of a Database Service to fork from"`
+	RedisIPFilter           []string `cli-flag:"redis-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	RedisRecoveryBackupName string   `cli-flag:"redis-recovery-backup-name" cli-usage:"the name of the backup to restore when forking from a Database Service"`
+	RedisSettings           string   `cli-flag:"redis-settings" cli-usage:"Redis configuration settings (JSON format)" cli-hidden:""`
 }
 
 func (c *dbServiceCreateCmd) cmdAliases() []string { return gCreateAlias }
