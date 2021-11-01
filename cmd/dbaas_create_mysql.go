@@ -89,7 +89,10 @@ func (c *dbServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output((&dbServiceShowCmd{Zone: c.Zone, Name: c.Name}).showDatabaseServiceMysql(ctx))
+		return c.outputFunc((&dbServiceShowCmd{
+			Name: c.Name,
+			Zone: c.Zone,
+		}).showDatabaseServiceMysql(ctx))
 	}
 
 	return nil

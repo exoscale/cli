@@ -51,7 +51,7 @@ func (c *dbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceDeleteCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceDeleteCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

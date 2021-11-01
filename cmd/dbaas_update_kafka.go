@@ -142,7 +142,10 @@ func (c *dbServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output((&dbServiceShowCmd{Zone: c.Zone, Name: c.Name}).showDatabaseServiceKafka(ctx))
+		return c.outputFunc((&dbServiceShowCmd{
+			Name: c.Name,
+			Zone: c.Zone,
+		}).showDatabaseServiceKafka(ctx))
 	}
 
 	return nil

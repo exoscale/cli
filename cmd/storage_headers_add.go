@@ -69,12 +69,12 @@ Supported output template annotations: %s`,
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		headers := storageHeadersFromCmdFlags(cmd.Flags())
 		if err := storage.updateObjectsHeaders(bucket, prefix, headers, recursive); err != nil {
-			return fmt.Errorf("unable to add headers to object: %s", err)
+			return fmt.Errorf("unable to add headers to object: %w", err)
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
@@ -131,7 +131,7 @@ func (c *storageClient) updateObjectHeaders(bucket, key string, headers map[stri
 	if v, ok := headers[storageObjectHeaderExpires]; ok {
 		t, err := time.Parse(time.RFC822, aws.ToString(v))
 		if err != nil {
-			return fmt.Errorf(`invalid "Expires" header value %q, expecting RFC822 format`, err)
+			return fmt.Errorf(`invalid "Expires" header value %q, expecting RFC822 format`, aws.ToString(v))
 		}
 		object.Expires = &t
 	}

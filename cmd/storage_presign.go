@@ -54,12 +54,12 @@ var storagePresignCmd = &cobra.Command{
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		url, err := storage.genPresignedURL(method, bucket, key, expires)
 		if err != nil {
-			return fmt.Errorf("unable to pre-sign %s%s/%s: %s", storageBucketPrefix, bucket, key, err)
+			return fmt.Errorf("unable to pre-sign %s%s/%s: %w", storageBucketPrefix, bucket, key, err)
 		}
 
 		fmt.Println(url)

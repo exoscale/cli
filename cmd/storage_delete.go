@@ -86,12 +86,12 @@ argument with "/":
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %s", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		deleted, err := storage.deleteObjects(bucket, prefix, recursive)
 		if err != nil {
-			return fmt.Errorf("unable to delete objects: %s", err)
+			return fmt.Errorf("unable to delete objects: %w", err)
 		}
 
 		if verbose {
@@ -118,7 +118,7 @@ func (c *storageClient) deleteObjects(bucket, prefix string, recursive bool) ([]
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error listing objects to delete: %s", err)
+		return nil, fmt.Errorf("error listing objects to delete: %w", err)
 	}
 
 	// The S3 DeleteObjects API call is limited to 1000 keys per call, as a

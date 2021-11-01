@@ -45,15 +45,13 @@ func (c *antiAffinityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showAntiAffinityGroup(gCurrentAccount.DefaultZone, c.AntiAffinityGroup))
-}
+	zone := gCurrentAccount.DefaultZone
 
-func showAntiAffinityGroup(zone, x string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, zone, x)
+	antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, zone, c.AntiAffinityGroup)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	out := antiAffinityGroupShowOutput{
@@ -67,13 +65,13 @@ func showAntiAffinityGroup(zone, x string) (outputter, error) {
 		for i, id := range *antiAffinityGroup.InstanceIDs {
 			instance, err := cs.GetInstance(ctx, zone, id)
 			if err != nil {
-				return nil, fmt.Errorf("unable to retrieve Compute instance %s: %v", id, err)
+				return fmt.Errorf("unable to retrieve Compute instance %s: %w", id, err)
 			}
 			out.Instances[i] = *instance.Name
 		}
 	}
 
-	return &out, nil
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

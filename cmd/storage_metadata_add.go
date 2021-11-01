@@ -81,11 +81,11 @@ Supported output template annotations: %s`,
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		if err := storage.addObjectsMetadata(bucket, prefix, metadata, recursive); err != nil {
-			return fmt.Errorf("unable to add metadata to object: %s", err)
+			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {

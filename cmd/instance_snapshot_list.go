@@ -72,7 +72,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		list, err := cs.ListSnapshots(ctx, zone)
 		if err != nil {
-			return fmt.Errorf("unable to list Compute instance snapshots in zone %s: %v", zone, err)
+			return fmt.Errorf("unable to list Compute instance snapshots in zone %s: %w", zone, err)
 		}
 
 		for _, s := range list {
@@ -80,7 +80,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if !cached {
 				instance, err = cs.GetInstance(ctx, zone, *s.InstanceID)
 				if err != nil {
-					return fmt.Errorf("unable to retrieve Compute instance %q: %s", *s.InstanceID, err)
+					return fmt.Errorf("unable to retrieve Compute instance %q: %w", *s.InstanceID, err)
 				}
 				instances[*s.InstanceID] = instance
 			}
@@ -101,7 +101,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
-	return output(&out, nil)
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

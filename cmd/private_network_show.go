@@ -99,20 +99,16 @@ func (c *privateNetworkShowCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showPrivateNetwork(c.Zone, c.PrivateNetwork))
-}
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-func showPrivateNetwork(zone, x string) (outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-	privateNetwork, err := cs.FindPrivateNetwork(ctx, zone, x)
+	privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	out := privateNetworkShowOutput{
 		ID:          *privateNetwork.ID,
-		Zone:        zone,
+		Zone:        c.Zone,
 		Name:        *privateNetwork.Name,
 		Description: defaultString(privateNetwork.Description, ""),
 		Type:        "manual",
@@ -135,9 +131,9 @@ func showPrivateNetwork(zone, x string) (outputter, error) {
 		out.Leases = make([]privateNetworkLeaseOutput, 0)
 
 		for _, lease := range privateNetwork.Leases {
-			instance, err := cs.GetInstance(ctx, zone, *lease.InstanceID)
+			instance, err := cs.GetInstance(ctx, c.Zone, *lease.InstanceID)
 			if err != nil {
-				return nil, fmt.Errorf("unable to retrieve Compute instance %s: %v", *lease.InstanceID, err)
+				return fmt.Errorf("unable to retrieve Compute instance %s: %w", *lease.InstanceID, err)
 			}
 
 			out.Leases = append(out.Leases, privateNetworkLeaseOutput{
@@ -147,7 +143,7 @@ func showPrivateNetwork(zone, x string) (outputter, error) {
 		}
 	}
 
-	return &out, nil
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

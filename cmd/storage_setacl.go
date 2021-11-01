@@ -107,7 +107,7 @@ Supported output template annotations:
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		if acl = storageACLFromCmdFlags(cmd.Flags()); acl == nil {
@@ -116,7 +116,7 @@ Supported output template annotations:
 
 		if prefix == "" {
 			if err := storage.setBucketACL(bucket, acl); err != nil {
-				return fmt.Errorf("unable to set ACL: %s", err)
+				return fmt.Errorf("unable to set ACL: %w", err)
 			}
 
 			if !gQuiet {
@@ -126,7 +126,7 @@ Supported output template annotations:
 		}
 
 		if err := storage.setObjectsACL(bucket, prefix, acl, recursive); err != nil {
-			return fmt.Errorf("unable to set ACL: %s", err)
+			return fmt.Errorf("unable to set ACL: %w", err)
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
@@ -170,7 +170,7 @@ func (c *storageClient) setBucketACL(bucket string, acl *storageACL) error {
 		if acl.FullControl == "" {
 			curACL, err := c.GetBucketAcl(gContext, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
 			if err != nil {
-				return fmt.Errorf("unable to retrieve current ACL: %s", err)
+				return fmt.Errorf("unable to retrieve current ACL: %w", err)
 			}
 
 			s3ACL.AccessControlPolicy.Grants = append(s3ACL.AccessControlPolicy.Grants, s3types.Grant{
@@ -212,7 +212,7 @@ func (c *storageClient) setObjectACL(bucket, key string, acl *storageACL) error 
 				Key:    s3ACL.Key,
 			})
 			if err != nil {
-				return fmt.Errorf("unable to retrieve current ACL: %s", err)
+				return fmt.Errorf("unable to retrieve current ACL: %w", err)
 			}
 
 			s3ACL.AccessControlPolicy.Grants = append(s3ACL.AccessControlPolicy.Grants, s3types.Grant{

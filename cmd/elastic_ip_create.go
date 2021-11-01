@@ -96,7 +96,11 @@ func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return output(showElasticIP(c.Zone, *elasticIP.ID))
+	return (&elasticIPShowCmd{
+		cliCommandSettings: c.cliCommandSettings,
+		ElasticIP:          *elasticIP.ID,
+		Zone:               c.Zone,
+	}).cmdRun(nil, nil)
 }
 
 func init() {

@@ -156,7 +156,12 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showNLBService(c.Zone, *nlb.ID, *service.ID))
+		return (&nlbServiceShowCmd{
+			cliCommandSettings:  c.cliCommandSettings,
+			NetworkLoadBalancer: *nlb.ID,
+			Service:             *service.ID,
+			Zone:                c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

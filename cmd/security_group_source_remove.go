@@ -51,7 +51,10 @@ func (c *securityGroupRemoveSourceCmd) cmdRun(_ *cobra.Command, _ []string) erro
 		return err
 	}
 
-	return output(showSecurityGroup(zone, *securityGroup.ID))
+	return (&securityGroupShowCmd{
+		cliCommandSettings: c.cliCommandSettings,
+		SecurityGroup:      *securityGroup.ID,
+	}).cmdRun(nil, nil)
 }
 
 func init() {

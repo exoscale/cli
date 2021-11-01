@@ -120,15 +120,13 @@ func (c *securityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 }
 
 func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showSecurityGroup(gCurrentAccount.DefaultZone, c.SecurityGroup))
-}
+	zone := gCurrentAccount.DefaultZone
 
-func showSecurityGroup(zone, x string) (outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	securityGroup, err := cs.FindSecurityGroup(ctx, zone, x)
+	securityGroup, err := cs.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	externalSources := make([]string, 0)
@@ -165,7 +163,7 @@ func showSecurityGroup(zone, x string) (outputter, error) {
 		if rule.SecurityGroupID != nil {
 			ruleSecurityGroup, err := cs.GetSecurityGroup(ctx, zone, *rule.SecurityGroupID)
 			if err != nil {
-				return nil, fmt.Errorf("error retrieving Security Group: %v", err)
+				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
 			or.SecurityGroup = ruleSecurityGroup.Name
 		}
@@ -177,7 +175,7 @@ func showSecurityGroup(zone, x string) (outputter, error) {
 		}
 	}
 
-	return &out, nil
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

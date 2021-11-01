@@ -87,7 +87,7 @@ func (c *instanceSSHCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.Login == "" {
 		instanceTemplate, err := cs.GetTemplate(ctx, c.Zone, *instance.TemplateID)
 		if err != nil {
-			return fmt.Errorf("error retrieving instance template: %s", err)
+			return fmt.Errorf("error retrieving instance template: %w", err)
 		}
 		if instanceTemplate.DefaultUser != nil {
 			c.Login = *instanceTemplate.DefaultUser

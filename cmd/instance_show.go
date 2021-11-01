@@ -61,35 +61,24 @@ func (c *instanceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+
+	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	if err != nil {
+		return err
+	}
+
 	if c.ShowUserData {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
-
-		instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
-		if err != nil {
-			return err
-		}
-
 		if instance.UserData != nil {
 			userData, err := decodeUserData(*instance.UserData)
 			if err != nil {
-				return fmt.Errorf("error decoding user data: %s", err)
+				return fmt.Errorf("error decoding user data: %w", err)
 			}
 
 			cmd.Print(userData)
 		}
 
 		return nil
-	}
-
-	return output(showInstance(c.Zone, c.Instance))
-}
-
-func showInstance(zone, x string) (outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-	instance, err := cs.FindInstance(ctx, zone, x)
-	if err != nil {
-		return nil, err
 	}
 
 	out := instanceShowOutput{
@@ -116,14 +105,14 @@ func showInstance(zone, x string) (outputter, error) {
 		SSHKey:          defaultString(instance.SSHKey, "-"),
 		SecurityGroups:  make([]string, 0),
 		State:           *instance.State,
-		Zone:            zone,
+		Zone:            c.Zone,
 	}
 
 	if instance.AntiAffinityGroupIDs != nil {
 		for _, id := range *instance.AntiAffinityGroupIDs {
-			antiAffinityGroup, err := cs.GetAntiAffinityGroup(ctx, zone, id)
+			antiAffinityGroup, err := cs.GetAntiAffinityGroup(ctx, c.Zone, id)
 			if err != nil {
-				return nil, fmt.Errorf("error retrieving Anti-Affinity Group: %v", err)
+				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
 			out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
 		}
@@ -131,25 +120,25 @@ func showInstance(zone, x string) (outputter, error) {
 
 	if instance.ElasticIPIDs != nil {
 		for _, id := range *instance.ElasticIPIDs {
-			elasticIP, err := cs.GetElasticIP(ctx, zone, id)
+			elasticIP, err := cs.GetElasticIP(ctx, c.Zone, id)
 			if err != nil {
-				return nil, fmt.Errorf("error retrieving Elastic IP: %v", err)
+				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
 			out.ElasticIPs = append(out.ElasticIPs, elasticIP.IPAddress.String())
 		}
 	}
 
-	instanceType, err := cs.GetInstanceType(ctx, zone, *instance.InstanceTypeID)
+	instanceType, err := cs.GetInstanceType(ctx, c.Zone, *instance.InstanceTypeID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	out.InstanceType = fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size)
 
 	if instance.PrivateNetworkIDs != nil {
 		for _, id := range *instance.PrivateNetworkIDs {
-			privateNetwork, err := cs.GetPrivateNetwork(ctx, zone, id)
+			privateNetwork, err := cs.GetPrivateNetwork(ctx, c.Zone, id)
 			if err != nil {
-				return nil, fmt.Errorf("error retrieving Private Network: %v", err)
+				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
 			out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
 		}
@@ -157,21 +146,21 @@ func showInstance(zone, x string) (outputter, error) {
 
 	if instance.SecurityGroupIDs != nil {
 		for _, id := range *instance.SecurityGroupIDs {
-			securityGroup, err := cs.GetSecurityGroup(ctx, zone, id)
+			securityGroup, err := cs.GetSecurityGroup(ctx, c.Zone, id)
 			if err != nil {
-				return nil, fmt.Errorf("error retrieving Security Group: %v", err)
+				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
 			out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
 		}
 	}
 
-	template, err := cs.GetTemplate(ctx, zone, *instance.TemplateID)
+	template, err := cs.GetTemplate(ctx, c.Zone, *instance.TemplateID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	out.Template = *template.Name
 
-	return &out, nil
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

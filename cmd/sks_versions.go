@@ -56,7 +56,7 @@ func (c *sksVersionsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		out = append(out, sksClusterVersionsItemOutput{Version: v})
 	}
 
-	return output(&out, nil)
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

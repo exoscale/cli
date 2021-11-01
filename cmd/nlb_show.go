@@ -105,15 +105,11 @@ func (c *nlbShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showNLB(c.Zone, c.NetworkLoadBalancer))
-}
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-func showNLB(zone, x string) (outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-	nlb, err := cs.FindNetworkLoadBalancer(ctx, zone, x)
+	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	svcOut := make([]nlbServiceShowOutput, 0)
@@ -129,7 +125,7 @@ func showNLB(zone, x string) (outputter, error) {
 		Name:         *nlb.Name,
 		Description:  defaultString(nlb.Description, ""),
 		CreationDate: nlb.CreatedAt.String(),
-		Zone:         zone,
+		Zone:         c.Zone,
 		IPAddress:    nlb.IPAddress.String(),
 		State:        *nlb.State,
 		Services:     svcOut,
@@ -141,7 +137,7 @@ func showNLB(zone, x string) (outputter, error) {
 		}(),
 	}
 
-	return &out, nil
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

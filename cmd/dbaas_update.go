@@ -138,7 +138,7 @@ func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceUpdateCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceUpdateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

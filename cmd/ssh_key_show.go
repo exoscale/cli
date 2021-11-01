@@ -54,7 +54,7 @@ func (c *computeSSHKeyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return output(&computeSSHKeyShowOutput{
+	return c.outputFunc(&computeSSHKeyShowOutput{
 		Name:        *sshKey.Name,
 		Fingerprint: *sshKey.Fingerprint,
 	}, nil)

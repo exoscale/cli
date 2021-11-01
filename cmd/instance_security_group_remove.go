@@ -55,7 +55,7 @@ func (c *instanceSGRemoveCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	for i := range c.SecurityGroups {
 		securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 		if err != nil {
-			return fmt.Errorf("error retrieving Security Group: %s", err)
+			return fmt.Errorf("error retrieving Security Group: %w", err)
 		}
 		securityGroups[i] = securityGroup
 	}
@@ -72,7 +72,11 @@ func (c *instanceSGRemoveCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstance(c.Zone, *instance.ID))
+		return (&instanceShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Instance:           *instance.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

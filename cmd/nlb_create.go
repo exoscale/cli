@@ -65,7 +65,11 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showNLB(c.Zone, *nlb.ID))
+		return (&nlbShowCmd{
+			cliCommandSettings:  c.cliCommandSettings,
+			NetworkLoadBalancer: *nlb.ID,
+			Zone:                c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

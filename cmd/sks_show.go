@@ -103,15 +103,11 @@ func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showSKSCluster(c.Zone, c.Cluster))
-}
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-func showSKSCluster(zone, x string) (outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-	cluster, err := cs.FindSKSCluster(ctx, zone, x)
+	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	sksNodepools := make([]sksNodepoolShowOutput, 0)
@@ -122,33 +118,33 @@ func showSKSCluster(zone, x string) (outputter, error) {
 		})
 	}
 
-	out := sksShowOutput{
-		AddOns: func() (v []string) {
-			if cluster.AddOns != nil {
-				v = *cluster.AddOns
-			}
-			return
-		}(),
-		CNI:          defaultString(cluster.CNI, "-"),
-		CreationDate: cluster.CreatedAt.String(),
-		Description:  defaultString(cluster.Description, ""),
-		Endpoint:     *cluster.Endpoint,
-		ID:           *cluster.ID,
-		Labels: func() (v map[string]string) {
-			if cluster.Labels != nil {
-				v = *cluster.Labels
-			}
-			return
-		}(),
-		Name:         *cluster.Name,
-		Nodepools:    sksNodepools,
-		ServiceLevel: *cluster.ServiceLevel,
-		State:        *cluster.State,
-		Version:      *cluster.Version,
-		Zone:         zone,
-	}
-
-	return &out, nil
+	return c.outputFunc(
+		&sksShowOutput{
+			AddOns: func() (v []string) {
+				if cluster.AddOns != nil {
+					v = *cluster.AddOns
+				}
+				return
+			}(),
+			CNI:          defaultString(cluster.CNI, "-"),
+			CreationDate: cluster.CreatedAt.String(),
+			Description:  defaultString(cluster.Description, ""),
+			Endpoint:     *cluster.Endpoint,
+			ID:           *cluster.ID,
+			Labels: func() (v map[string]string) {
+				if cluster.Labels != nil {
+					v = *cluster.Labels
+				}
+				return
+			}(),
+			Name:         *cluster.Name,
+			Nodepools:    sksNodepools,
+			ServiceLevel: *cluster.ServiceLevel,
+			State:        *cluster.State,
+			Version:      *cluster.Version,
+			Zone:         c.Zone,
+		},
+		nil)
 }
 
 func init() {

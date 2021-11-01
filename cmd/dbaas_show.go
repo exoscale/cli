@@ -207,20 +207,20 @@ func (c *dbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	switch *databaseService.Type {
 	case "kafka":
-		return output(c.showDatabaseServiceKafka(ctx))
+		return c.outputFunc(c.showDatabaseServiceKafka(ctx))
 	case "mysql":
-		return output(c.showDatabaseServiceMysql(ctx))
+		return c.outputFunc(c.showDatabaseServiceMysql(ctx))
 	case "pg":
-		return output(c.showDatabaseServicePG(ctx))
+		return c.outputFunc(c.showDatabaseServicePG(ctx))
 	case "redis":
-		return output(c.showDatabaseServiceRedis(ctx))
+		return c.outputFunc(c.showDatabaseServiceRedis(ctx))
 	default:
 		return fmt.Errorf("unsupported service type %q", *databaseService.Type)
 	}
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceShowCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

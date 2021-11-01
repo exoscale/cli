@@ -108,12 +108,12 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
-		return fmt.Errorf("error retrieving Network Load Balancer: %s", err)
+		return fmt.Errorf("error retrieving Network Load Balancer: %w", err)
 	}
 
 	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
-		return fmt.Errorf("error retrieving Instance Pool: %s", err)
+		return fmt.Errorf("error retrieving Instance Pool: %w", err)
 	}
 	service.InstancePoolID = instancePool.ID
 
@@ -125,7 +125,12 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showNLBService(c.Zone, *nlb.ID, *service.ID))
+		return (&nlbServiceShowCmd{
+			cliCommandSettings:  c.cliCommandSettings,
+			NetworkLoadBalancer: *nlb.ID,
+			Service:             *service.ID,
+			Zone:                c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

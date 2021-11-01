@@ -64,7 +64,10 @@ func (c *securityGroupDeleteRuleCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	return output(showSecurityGroup(zone, *securityGroup.ID))
+	return (&securityGroupShowCmd{
+		cliCommandSettings: c.cliCommandSettings,
+		SecurityGroup:      *securityGroup.ID,
+	}).cmdRun(nil, nil)
 }
 
 func init() {

@@ -52,31 +52,27 @@ func (c *instanceSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 }
 
 func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showInstanceSnapshot(c.Zone, c.ID))
-}
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-func showInstanceSnapshot(zone, snapshotID string) (outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-	snapshot, err := cs.GetSnapshot(ctx, zone, snapshotID)
+	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving Compute instance snapshot: %s", err)
+		return fmt.Errorf("error retrieving Compute instance snapshot: %w", err)
 	}
 
-	instance, err := cs.GetInstance(ctx, zone, *snapshot.InstanceID)
+	instance, err := cs.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve Compute instance %q: %s", *snapshot.InstanceID, err)
+		return fmt.Errorf("unable to retrieve Compute instance %s: %w", *snapshot.InstanceID, err)
 	}
 
-	return &instanceSnapshotShowOutput{
+	return c.outputFunc(&instanceSnapshotShowOutput{
 		ID:           *snapshot.ID,
 		Name:         *snapshot.Name,
 		CreationDate: snapshot.CreatedAt.String(),
 		State:        *snapshot.State,
 		Size:         *snapshot.Size,
 		Instance:     *instance.Name,
-		Zone:         zone,
-	}, nil
+		Zone:         c.Zone,
+	}, nil)
 }
 
 func init() {

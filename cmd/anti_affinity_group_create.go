@@ -59,7 +59,10 @@ func (c *antiAffinityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	return output(showAntiAffinityGroup(zone, *antiAffinityGroup.ID))
+	return (&antiAffinityGroupShowCmd{
+		cliCommandSettings: c.cliCommandSettings,
+		AntiAffinityGroup:  *antiAffinityGroup.ID,
+	}).cmdRun(nil, nil)
 }
 
 func init() {

@@ -60,7 +60,7 @@ func (c *computeSSHKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return output(&out, nil)
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

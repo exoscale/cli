@@ -88,12 +88,12 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	if c.FromSnapshot != "" {
 		snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.FromSnapshot)
 		if err != nil {
-			return fmt.Errorf("error retrieving snapshot: %s", err)
+			return fmt.Errorf("error retrieving snapshot: %w", err)
 		}
 
 		snapshotExport, err := cs.ExportSnapshot(ctx, c.Zone, snapshot)
 		if err != nil {
-			return fmt.Errorf("error retrieving snapshot export information: %s", err)
+			return fmt.Errorf("error retrieving snapshot export information: %w", err)
 		}
 
 		c.URL = *snapshotExport.PresignedURL
@@ -102,12 +102,12 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		// Pre-setting the new template properties from the source template.
 		instance, err := cs.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
 		if err != nil {
-			return fmt.Errorf("error retrieving Compute instance from snapshot: %s", err)
+			return fmt.Errorf("error retrieving Compute instance from snapshot: %w", err)
 		}
 
 		srcTemplate, err := cs.GetTemplate(ctx, c.Zone, *instance.TemplateID)
 		if err != nil {
-			return fmt.Errorf("error retrieving Compute instance template from snapshot: %s", err)
+			return fmt.Errorf("error retrieving Compute instance template from snapshot: %w", err)
 		}
 
 		template.BootMode = srcTemplate.BootMode
@@ -144,7 +144,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	}
 
 	if !gQuiet {
-		return output(&instanceTemplateShowOutput{
+		return c.outputFunc(&instanceTemplateShowOutput{
 			ID:              *template.ID,
 			Family:          defaultString(template.Family, ""),
 			Name:            *template.Name,

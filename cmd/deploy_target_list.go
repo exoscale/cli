@@ -68,7 +68,7 @@ func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		list, err := cs.ListDeployTargets(ctx, zone)
 		if err != nil {
-			return fmt.Errorf("unable to list Deploy Targets in zone %s: %v", zone, err)
+			return fmt.Errorf("unable to list Deploy Targets in zone %s: %w", zone, err)
 		}
 
 		for _, dt := range list {
@@ -87,7 +87,7 @@ func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
-	return output(&out, nil)
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

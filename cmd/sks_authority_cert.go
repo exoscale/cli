@@ -64,12 +64,12 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	b64Cert, err := cs.GetSKSClusterAuthorityCert(ctx, c.Zone, cluster, c.Authority)
 	if err != nil {
-		return fmt.Errorf("error retrieving certificate: %s", err)
+		return fmt.Errorf("error retrieving certificate: %w", err)
 	}
 
 	cert, err := base64.StdEncoding.DecodeString(b64Cert)
 	if err != nil {
-		return fmt.Errorf("error decoding certificate content: %s", err)
+		return fmt.Errorf("error decoding certificate content: %w", err)
 	}
 
 	fmt.Print(string(cert))

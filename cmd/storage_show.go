@@ -190,7 +190,7 @@ Supported output template annotations:
 				storageClientOptZoneFromBucket(bucket),
 			)
 			if err != nil {
-				return fmt.Errorf("unable to initialize storage client: %v", err)
+				return fmt.Errorf("unable to initialize storage client: %w", err)
 			}
 
 			if key == "" {
@@ -205,7 +205,7 @@ Supported output template annotations:
 func (c *storageClient) showBucket(bucket string) (outputter, error) {
 	acl, err := c.GetBucketAcl(gContext, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve bucket ACL: %s", err)
+		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
 	}
 
 	cors, err := c.GetBucketCors(gContext, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
@@ -218,7 +218,7 @@ func (c *storageClient) showBucket(bucket string) (outputter, error) {
 		}
 
 		if cors == nil {
-			return nil, fmt.Errorf("unable to retrieve bucket CORS configuration: %s", err)
+			return nil, fmt.Errorf("unable to retrieve bucket CORS configuration: %w", err)
 		}
 	}
 
@@ -238,7 +238,7 @@ func (c *storageClient) showObject(bucket, key string) (outputter, error) {
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve object information: %s", err)
+		return nil, fmt.Errorf("unable to retrieve object information: %w", err)
 	}
 
 	acl, err := c.GetObjectAcl(gContext, &s3.GetObjectAclInput{
@@ -246,7 +246,7 @@ func (c *storageClient) showObject(bucket, key string) (outputter, error) {
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve bucket ACL: %s", err)
+		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
 	}
 
 	out := storageShowObjectOutput{

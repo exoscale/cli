@@ -60,7 +60,10 @@ func (c *securityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showSecurityGroup(zone, *securityGroup.ID))
+		return (&securityGroupShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			SecurityGroup:      *securityGroup.ID,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

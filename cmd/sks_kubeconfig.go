@@ -129,12 +129,12 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		time.Duration(c.TTL)*time.Second,
 	)
 	if err != nil {
-		return fmt.Errorf("error retrieving kubeconfig: %s", err)
+		return fmt.Errorf("error retrieving kubeconfig: %w", err)
 	}
 
 	kubeconfig, err := base64.StdEncoding.DecodeString(b64Kubeconfig)
 	if err != nil {
-		return fmt.Errorf("error decoding kubeconfig content: %s", err)
+		return fmt.Errorf("error decoding kubeconfig content: %w", err)
 	}
 
 	if !c.ExecCredential {
@@ -149,17 +149,17 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		} `yaml:"users"`
 	}{}
 	if err := yaml.Unmarshal(kubeconfig, &k); err != nil {
-		return fmt.Errorf("error decoding kubeconfig content: %s", err)
+		return fmt.Errorf("error decoding kubeconfig content: %w", err)
 	}
 
 	ecClientCertificateData, err := base64.StdEncoding.DecodeString(k.Users[0].User["client-certificate-data"])
 	if err != nil {
-		return fmt.Errorf("error decoding kubeconfig content: %s", err)
+		return fmt.Errorf("error decoding kubeconfig content: %w", err)
 	}
 
 	ecClientKeyData, err := base64.StdEncoding.DecodeString(k.Users[0].User["client-key-data"])
 	if err != nil {
-		return fmt.Errorf("error decoding kubeconfig content: %s", err)
+		return fmt.Errorf("error decoding kubeconfig content: %w", err)
 	}
 
 	ecOut, err := json.Marshal(map[string]interface{}{
@@ -171,7 +171,7 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		},
 	})
 	if err != nil {
-		return fmt.Errorf("error encoding exec credential content: %s", err)
+		return fmt.Errorf("error encoding exec credential content: %w", err)
 	}
 
 	fmt.Print(string(ecOut))

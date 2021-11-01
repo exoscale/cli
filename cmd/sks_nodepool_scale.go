@@ -82,7 +82,12 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showSKSNodepool(c.Zone, *cluster.ID, *nodepool.ID))
+		return (&sksNodepoolShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Cluster:            *cluster.ID,
+			Nodepool:           *nodepool.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

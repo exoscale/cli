@@ -50,6 +50,14 @@ func (c *instanceRebootCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	if !gQuiet {
+		return (&instanceShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Instance:           *instance.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
+	}
+
 	return nil
 }
 

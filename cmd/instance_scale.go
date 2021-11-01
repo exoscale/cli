@@ -55,7 +55,7 @@ func (c *instanceScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	instanceType, err := cs.FindInstanceType(ctx, c.Zone, c.Type)
 	if err != nil {
-		return fmt.Errorf("error retrieving instance type: %s", err)
+		return fmt.Errorf("error retrieving instance type: %w", err)
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Scaling instance %q...", c.Instance), func() {
@@ -66,7 +66,11 @@ func (c *instanceScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstance(c.Zone, *instance.ID))
+		return (&instanceShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Instance:           *instance.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

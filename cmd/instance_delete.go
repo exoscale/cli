@@ -55,7 +55,7 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	instanceDir := path.Join(gConfigFolder, "instances", *instance.ID)
 	if _, err := os.Stat(instanceDir); !os.IsNotExist(err) {
 		if err := os.RemoveAll(instanceDir); err != nil {
-			return fmt.Errorf("error deleting instance directory: %s", err)
+			return fmt.Errorf("error deleting instance directory: %w", err)
 		}
 	}
 

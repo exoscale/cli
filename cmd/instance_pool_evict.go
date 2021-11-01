@@ -60,7 +60,7 @@ func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	for i, n := range c.Instances {
 		instance, err := cs.FindInstance(ctx, c.Zone, n)
 		if err != nil {
-			return fmt.Errorf("invalid instance %q: %s", n, err)
+			return fmt.Errorf("invalid instance %q: %w", n, err)
 		}
 		instances[i] = *instance.ID
 	}
@@ -74,7 +74,11 @@ func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstancePool(c.Zone, *instancePool.ID))
+		return (&instancePoolShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Zone:               c.Zone,
+			InstancePool:       *instancePool.ID,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil
