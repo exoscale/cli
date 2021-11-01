@@ -157,7 +157,7 @@ func (c *dbServiceShowCmd) showDatabaseServicePG(ctx context.Context) (outputter
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
 				c.ShowSettings,
-				strings.Join(kafkaSettings, ", "),
+				strings.Join(pgSettings, ", "),
 			)
 		}
 
