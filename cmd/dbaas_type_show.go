@@ -142,7 +142,7 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				Authorized: *dt.Plans[i].Authorized,
 			}
 		}
-		return output(&out, nil)
+		return c.outputFunc(&out, nil)
 	}
 
 	if c.ShowSettings != "" {
@@ -247,7 +247,7 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return nil
 	}
 
-	return output(&dbTypeShowOutput{
+	return c.outputFunc(&dbTypeShowOutput{
 		Name:           *dt.Name,
 		Description:    defaultString(dt.Description, ""),
 		LatestVersion:  defaultString(dt.LatestVersion, "-"),

@@ -61,11 +61,11 @@ Supported output template annotations: %s`,
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		if err := storage.deleteObjectsMetadata(bucket, prefix, mdKeys, recursive); err != nil {
-			return fmt.Errorf("unable to delete metadata from object: %s", err)
+			return fmt.Errorf("unable to delete metadata from object: %w", err)
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {

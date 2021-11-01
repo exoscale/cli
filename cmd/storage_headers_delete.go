@@ -84,7 +84,7 @@ Supported output template annotations: %s`,
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		for _, header := range []string{
@@ -101,7 +101,7 @@ Supported output template annotations: %s`,
 		}
 
 		if err := storage.deleteObjectsHeaders(bucket, prefix, headers, recursive); err != nil {
-			return fmt.Errorf("unable to add headers to object: %s", err)
+			return fmt.Errorf("unable to add headers to object: %w", err)
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {

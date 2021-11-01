@@ -23,13 +23,13 @@ var dbServiceMaintenanceDOWs = []string{
 	"sunday",
 }
 
-var dbCmd = &cobra.Command{
+var dbaasCmd = &cobra.Command{
 	Use:   "dbaas",
 	Short: "Database as a Service management",
 }
 
 func init() {
-	RootCmd.AddCommand(dbCmd)
+	RootCmd.AddCommand(dbaasCmd)
 }
 
 // parseDtabaseBackupSchedule parses a Database Service backup schedule value

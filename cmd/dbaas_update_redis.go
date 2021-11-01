@@ -76,7 +76,10 @@ func (c *dbServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output((&dbServiceShowCmd{Zone: c.Zone, Name: c.Name}).showDatabaseServiceRedis(ctx))
+		return c.outputFunc((&dbServiceShowCmd{
+			Name: c.Name,
+			Zone: c.Zone,
+		}).showDatabaseServiceRedis(ctx))
 	}
 
 	return nil

@@ -130,7 +130,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if len(versions) == 0 {
 				err = errors.New("no version returned by the API")
 			}
-			return fmt.Errorf("unable to retrieve SKS versions: %s", err)
+			return fmt.Errorf("unable to retrieve SKS versions: %w", err)
 		}
 		cluster.Version = &versions[0]
 	}
@@ -178,7 +178,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			for i, v := range c.NodepoolAntiAffinityGroups {
 				antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, v)
 				if err != nil {
-					return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
+					return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 				}
 				nodepoolAntiAffinityGroupIDs[i] = *antiAffinityGroup.ID
 			}
@@ -188,14 +188,14 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if c.NodepoolDeployTarget != "" {
 			deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.NodepoolDeployTarget)
 			if err != nil {
-				return fmt.Errorf("error retrieving Deploy Target: %s", err)
+				return fmt.Errorf("error retrieving Deploy Target: %w", err)
 			}
 			nodepool.DeployTargetID = deployTarget.ID
 		}
 
 		nodepoolInstanceType, err := cs.FindInstanceType(ctx, c.Zone, c.NodepoolInstanceType)
 		if err != nil {
-			return fmt.Errorf("error retrieving instance type: %s", err)
+			return fmt.Errorf("error retrieving instance type: %w", err)
 		}
 		nodepool.InstanceTypeID = nodepoolInstanceType.ID
 
@@ -204,7 +204,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			for i, v := range c.NodepoolPrivateNetworks {
 				privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, v)
 				if err != nil {
-					return fmt.Errorf("error retrieving Private Network: %s", err)
+					return fmt.Errorf("error retrieving Private Network: %w", err)
 				}
 				nodepoolPrivateNetworkIDs[i] = *privateNetwork.ID
 			}
@@ -216,7 +216,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			for i, v := range c.NodepoolSecurityGroups {
 				securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, v)
 				if err != nil {
-					return fmt.Errorf("error retrieving Security Group: %s", err)
+					return fmt.Errorf("error retrieving Security Group: %w", err)
 				}
 				nodepoolSecurityGroupIDs[i] = *securityGroup.ID
 			}
@@ -244,7 +244,11 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showSKSCluster(c.Zone, *cluster.ID))
+		return (&sksShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Cluster:            *cluster.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

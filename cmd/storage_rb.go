@@ -52,11 +52,11 @@ var storageRbCmd = &cobra.Command{
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %s", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		if err := storage.deleteBucket(bucket, recursive); err != nil {
-			return fmt.Errorf("unable to delete bucket: %s", err)
+			return fmt.Errorf("unable to delete bucket: %w", err)
 		}
 
 		if !gQuiet {
@@ -86,7 +86,7 @@ func (c storageClient) deleteBucket(bucket string, recursive bool) error {
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
-		return fmt.Errorf("error listing dangling multipart uploads: %s", err)
+		return fmt.Errorf("error listing dangling multipart uploads: %w", err)
 	}
 	for _, mp := range res.Uploads {
 		if _, err = c.AbortMultipartUpload(gContext, &s3.AbortMultipartUploadInput{
@@ -94,7 +94,7 @@ func (c storageClient) deleteBucket(bucket string, recursive bool) error {
 			Key:      mp.Key,
 			UploadId: mp.UploadId,
 		}); err != nil {
-			return fmt.Errorf("error aborting dangling multipart upload: %s", err)
+			return fmt.Errorf("error aborting dangling multipart upload: %w", err)
 		}
 	}
 
@@ -106,7 +106,7 @@ func (c storageClient) deleteBucket(bucket string, recursive bool) error {
 			}
 		}
 
-		return fmt.Errorf("unable to retrieve bucket CORS configuration: %s", err)
+		return fmt.Errorf("unable to retrieve bucket CORS configuration: %w", err)
 	}
 
 	return nil

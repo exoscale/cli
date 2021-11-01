@@ -81,7 +81,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	for i, n := range c.Nodes {
 		instance, err := cs.FindInstance(ctx, c.Zone, n)
 		if err != nil {
-			return fmt.Errorf("invalid Node %q: %s", n, err)
+			return fmt.Errorf("invalid Node %q: %w", n, err)
 		}
 		nodes[i] = *instance.ID
 	}
@@ -94,7 +94,12 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showSKSNodepool(c.Zone, *cluster.ID, *nodepool.ID))
+		return (&sksNodepoolShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Cluster:            *cluster.ID,
+			Nodepool:           *nodepool.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

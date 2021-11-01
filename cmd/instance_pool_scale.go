@@ -69,7 +69,11 @@ func (c *instancePoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstancePool(c.Zone, *instancePool.ID))
+		return (&instancePoolShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Zone:               c.Zone,
+			InstancePool:       *instancePool.ID,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

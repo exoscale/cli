@@ -146,7 +146,11 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showElasticIP(c.Zone, *elasticIP.ID))
+		return (&elasticIPShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			ElasticIP:          *elasticIP.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

@@ -63,10 +63,12 @@ func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(&instanceSnapshotExportOutput{
-			URL:      *snapshotExport.PresignedURL,
-			Checksum: *snapshotExport.MD5sum,
-		}, nil)
+		return c.outputFunc(
+			&instanceSnapshotExportOutput{
+				URL:      *snapshotExport.PresignedURL,
+				Checksum: *snapshotExport.MD5sum,
+			},
+			nil)
 	}
 
 	return nil

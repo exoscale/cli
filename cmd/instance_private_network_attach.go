@@ -51,7 +51,7 @@ func (c *instancePrivnetAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
-		return fmt.Errorf("error retrieving Private Network: %s", err)
+		return fmt.Errorf("error retrieving Private Network: %w", err)
 	}
 
 	opts := make([]egoscale.AttachInstanceToPrivateNetworkOpt, 0)
@@ -73,7 +73,11 @@ func (c *instancePrivnetAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstance(c.Zone, *instance.ID))
+		return (&instanceShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Instance:           *instance.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

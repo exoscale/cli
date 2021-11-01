@@ -51,10 +51,10 @@ func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	dt, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 	if err != nil {
-		return fmt.Errorf("error retrieving Deploy Target: %s", err)
+		return fmt.Errorf("error retrieving Deploy Target: %w", err)
 	}
 
-	return output(&deployTargetShowOutput{
+	return c.outputFunc(&deployTargetShowOutput{
 		ID:          *dt.ID,
 		Name:        *dt.Name,
 		Description: defaultString(dt.Description, ""),

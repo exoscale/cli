@@ -10,5 +10,5 @@ var dbTypeCmd = &cobra.Command{
 }
 
 func init() {
-	dbCmd.AddCommand(dbTypeCmd)
+	dbaasCmd.AddCommand(dbTypeCmd)
 }

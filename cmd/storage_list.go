@@ -129,7 +129,7 @@ Supported output template annotations:
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		return output(storage.listObjects(bucket, prefix, recursive, stream))

@@ -48,7 +48,7 @@ func (c *instanceEIPAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
-		return fmt.Errorf("error retrieving Elastic IP: %s", err)
+		return fmt.Errorf("error retrieving Elastic IP: %w", err)
 	}
 
 	decorateAsyncOperation(fmt.Sprintf(
@@ -70,7 +70,11 @@ func (c *instanceEIPAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstance(c.Zone, *instance.ID))
+		return (&instanceShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Instance:           *instance.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

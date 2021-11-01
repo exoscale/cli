@@ -97,7 +97,7 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		templates, err := cs.ListTemplates(ctx, c.Zone, egoscale.ListTemplatesWithVisibility(c.Visibility))
 		if err != nil {
-			return fmt.Errorf("error retrieving templates: %s", err)
+			return fmt.Errorf("error retrieving templates: %w", err)
 		}
 		for _, template := range templates {
 			if *template.ID == c.Template || *template.Name == c.Template {
@@ -116,11 +116,11 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		template, err = cs.Client.GetTemplate(ctx, c.Zone, templateID)
 		if err != nil {
-			return fmt.Errorf("error retrieving template: %s", err)
+			return fmt.Errorf("error retrieving template: %w", err)
 		}
 	}
 
-	return output(&instanceTemplateShowOutput{
+	return c.outputFunc(&instanceTemplateShowOutput{
 		ID:              *template.ID,
 		Zone:            c.Zone,
 		Family:          defaultString(template.Family, ""),

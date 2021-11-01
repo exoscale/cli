@@ -73,7 +73,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		list, err := cs.ListInstances(ctx, zone)
 		if err != nil {
-			return fmt.Errorf("unable to list Compute instances in zone %s: %v", zone, err)
+			return fmt.Errorf("unable to list Compute instances in zone %s: %w", zone, err)
 		}
 
 		for _, i := range list {
@@ -82,7 +82,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				instanceType, err = cs.GetInstanceType(ctx, zone, *i.InstanceTypeID)
 				if err != nil {
 					return fmt.Errorf(
-						"unable to retrieve Compute instance type %q: %s",
+						"unable to retrieve Compute instance type %q: %w",
 						*i.InstanceTypeID,
 						err)
 				}
@@ -106,7 +106,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
-	return output(&out, nil)
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

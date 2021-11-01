@@ -72,7 +72,7 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			egoscale.ListTemplatesWithVisibility(c.TemplateVisibility),
 		)
 		if err != nil {
-			return fmt.Errorf("error retrieving templates: %s", err)
+			return fmt.Errorf("error retrieving templates: %w", err)
 		}
 		for _, t := range templates {
 			if *t.ID == c.Template || *t.Name == c.Template {
@@ -95,7 +95,11 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstance(c.Zone, *instance.ID))
+		return (&instanceShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Instance:           *instance.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

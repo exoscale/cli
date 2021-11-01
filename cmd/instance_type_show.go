@@ -77,7 +77,7 @@ func (c *instanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return output(&instanceTypeShowOutput{
+	return c.outputFunc(&instanceTypeShowOutput{
 		ID:     *t.ID,
 		Family: *t.Family,
 		Size:   *t.Size,

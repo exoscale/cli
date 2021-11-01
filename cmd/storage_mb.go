@@ -54,11 +54,11 @@ Supported output template annotations: %s`,
 			storageClientOptWithZone(zone),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %s", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		if err := storage.createBucket(bucket, acl); err != nil {
-			return fmt.Errorf("unable to create bucket: %s", err)
+			return fmt.Errorf("unable to create bucket: %w", err)
 		}
 
 		if !gQuiet {

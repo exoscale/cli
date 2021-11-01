@@ -128,7 +128,7 @@ func (c *dbServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbCmd, &dbServiceCreateCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		TerminationProtection: true,

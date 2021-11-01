@@ -79,7 +79,11 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showSKSCluster(c.Zone, *cluster.ID))
+		return (&sksShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Cluster:            *cluster.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

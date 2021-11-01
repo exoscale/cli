@@ -87,22 +87,18 @@ func (c *elasticIPShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showElasticIP(c.Zone, c.ElasticIP))
-}
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-func showElasticIP(zone, x string) (outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
-
-	elasticIP, err := cs.FindElasticIP(ctx, zone, x)
+	elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	out := elasticIPShowOutput{
 		ID:          *elasticIP.ID,
 		IPAddress:   elasticIP.IPAddress.String(),
 		Description: defaultString(elasticIP.Description, ""),
-		Zone:        zone,
+		Zone:        c.Zone,
 		Type:        "manual",
 	}
 
@@ -119,7 +115,7 @@ func showElasticIP(zone, x string) (outputter, error) {
 		out.HealthcheckTLSSkipVerify = elasticIP.Healthcheck.TLSSkipVerify
 	}
 
-	return &out, nil
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

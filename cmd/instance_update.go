@@ -61,7 +61,7 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.CloudInitFile)) {
 		userData, err := getUserDataFromFile(c.CloudInitFile)
 		if err != nil {
-			return fmt.Errorf("error parsing cloud-init user data: %s", err)
+			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
 		instance.UserData = &userData
 		updated = true
@@ -79,7 +79,11 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstance(c.Zone, *instance.ID))
+		return (&instanceShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Instance:           *instance.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

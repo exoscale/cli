@@ -93,13 +93,13 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.TargetSecurityGroup != "" {
 		targetSecurityGroup, err := cs.FindSecurityGroup(ctx, zone, c.TargetSecurityGroup)
 		if err != nil {
-			return fmt.Errorf("unable to retrieve Security Group %q: %v", c.TargetSecurityGroup, err)
+			return fmt.Errorf("unable to retrieve Security Group %q: %w", c.TargetSecurityGroup, err)
 		}
 		securityGroupRule.SecurityGroupID = targetSecurityGroup.ID
 	} else {
 		_, network, err := net.ParseCIDR(c.TargetNetwork)
 		if err != nil {
-			return fmt.Errorf("invalid value for network %q: %v", c.TargetNetwork, err)
+			return fmt.Errorf("invalid value for network %q: %w", c.TargetNetwork, err)
 		}
 		securityGroupRule.Network = network
 	}
@@ -129,7 +129,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			return uint16(p), uint16(p), nil
 		}(c.Port)
 		if err != nil {
-			return fmt.Errorf("invalid port value %q: %s", c.Port, err)
+			return fmt.Errorf("invalid port value %q: %w", c.Port, err)
 		}
 
 		for _, v := range []uint16{startPort, endPort} {
@@ -158,7 +158,10 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return output(showSecurityGroup(zone, *securityGroup.ID))
+	return (&securityGroupShowCmd{
+		cliCommandSettings: c.cliCommandSettings,
+		SecurityGroup:      *securityGroup.ID,
+	}).cmdRun(nil, nil)
 }
 
 func init() {

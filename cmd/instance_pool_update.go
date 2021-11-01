@@ -140,7 +140,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		for i, v := range c.AntiAffinityGroups {
 			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, v)
 			if err != nil {
-				return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
+				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
 			antiAffinityGroupIDs[i] = *antiAffinityGroup.ID
 		}
@@ -151,7 +151,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DeployTarget)) {
 		deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 		if err != nil {
-			return fmt.Errorf("error retrieving Deploy Target: %s", err)
+			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
 		instancePool.DeployTargetID = deployTarget.ID
 		updated = true
@@ -172,7 +172,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		for i, v := range c.ElasticIPs {
 			elasticIP, err := cs.FindElasticIP(ctx, c.Zone, v)
 			if err != nil {
-				return fmt.Errorf("error retrieving Elastic IP: %s", err)
+				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
 			elasticIPIDs[i] = *elasticIP.ID
 		}
@@ -205,7 +205,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		for i, v := range c.PrivateNetworks {
 			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, v)
 			if err != nil {
-				return fmt.Errorf("error retrieving Private Network: %s", err)
+				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
 			privateNetworkIDs[i] = *privateNetwork.ID
 		}
@@ -218,7 +218,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		for i, v := range c.SecurityGroups {
 			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, v)
 			if err != nil {
-				return fmt.Errorf("error retrieving Security Group: %s", err)
+				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
 			securityGroupIDs[i] = *securityGroup.ID
 		}
@@ -229,7 +229,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) {
 		instanceType, err := cs.FindInstanceType(ctx, c.Zone, c.InstanceType)
 		if err != nil {
-			return fmt.Errorf("error retrieving instance type: %s", err)
+			return fmt.Errorf("error retrieving instance type: %w", err)
 		}
 		instancePool.InstanceTypeID = instanceType.ID
 		updated = true
@@ -252,7 +252,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 		template, err := getTemplateByNameOrID(zoneV1.ID, templateFlagVal, templateFilter)
 		if err != nil {
-			return fmt.Errorf("error retrieving template: %s", err)
+			return fmt.Errorf("error retrieving template: %w", err)
 		}
 		templateID := template.ID.String()
 		instancePool.TemplateID = &templateID
@@ -262,7 +262,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.CloudInitFile)) {
 		userData, err := getUserDataFromFile(c.CloudInitFile)
 		if err != nil {
-			return fmt.Errorf("error parsing cloud-init user data: %s", err)
+			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
 		instancePool.UserData = &userData
 		updated = true
@@ -293,7 +293,11 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output(showInstancePool(c.Zone, *instancePool.ID))
+		return (&instancePoolShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Zone:               c.Zone,
+			InstancePool:       *instancePool.ID,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

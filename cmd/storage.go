@@ -74,7 +74,7 @@ func init() {
 			if certsFile == "" {
 				binPath, err := os.Executable()
 				if err != nil {
-					return fmt.Errorf("unable to retrieve the executable path: %s", err)
+					return fmt.Errorf("unable to retrieve the executable path: %w", err)
 				}
 
 				certsFile = filepath.Join(path.Dir(binPath), "sos-certs.pem")
@@ -206,7 +206,7 @@ func (c *storageClient) copyObject(bucket, key string) (*s3.CopyObjectInput, err
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve object information: %s", err)
+		return nil, fmt.Errorf("unable to retrieve object information: %w", err)
 	}
 
 	// Object ACL are reset during a CopyObject operation,
@@ -217,7 +217,7 @@ func (c *storageClient) copyObject(bucket, key string) (*s3.CopyObjectInput, err
 		Key:    aws.String(key),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve object ACL: %s", err)
+		return nil, fmt.Errorf("unable to retrieve object ACL: %w", err)
 	}
 
 	copyObject := s3.CopyObjectInput{
@@ -294,14 +294,14 @@ func newStorageClient(opts ...storageClientOpt) (*storageClient, error) {
 
 	for _, opt := range opts {
 		if err := opt(&client); err != nil {
-			return nil, fmt.Errorf("option error: %s", err)
+			return nil, fmt.Errorf("option error: %w", err)
 		}
 	}
 
 	if client.certsFile != "" {
 		r, err := os.Open(client.certsFile)
 		if err != nil {
-			return nil, fmt.Errorf("unable to read certificates from file: %s", err)
+			return nil, fmt.Errorf("unable to read certificates from file: %w", err)
 		}
 		caCerts = r
 	}

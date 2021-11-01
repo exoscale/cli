@@ -65,7 +65,7 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 	}
 
 	if !gQuiet {
-		return output(&computeSSHKeyShowOutput{
+		return c.outputFunc(&computeSSHKeyShowOutput{
 			Fingerprint: *sshKey.Fingerprint,
 			Name:        *sshKey.Name,
 		}, nil)

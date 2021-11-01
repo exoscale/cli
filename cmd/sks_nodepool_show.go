@@ -63,27 +63,23 @@ func (c *sksNodepoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return output(showSKSNodepool(c.Zone, c.Cluster, c.Nodepool))
-}
-
-func showSKSNodepool(zone, c, np string) (outputter, error) {
 	var nodepool *egoscale.SKSNodepool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, zone, c)
+	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for _, n := range cluster.Nodepools {
-		if *n.ID == np || *n.Name == np {
+		if *n.ID == c.Nodepool || *n.Name == c.Nodepool {
 			nodepool = n
 			break
 		}
 	}
 	if nodepool == nil {
-		return nil, errors.New("Nodepool not found") // nolint:golint
+		return errors.New("Nodepool not found") // nolint:golint
 	}
 
 	out := sksNodepoolShowOutput{
@@ -119,9 +115,9 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 
 	if nodepool.AntiAffinityGroupIDs != nil {
 		for _, id := range *nodepool.AntiAffinityGroupIDs {
-			antiAffinityGroup, err := cs.GetAntiAffinityGroup(ctx, zone, id)
+			antiAffinityGroup, err := cs.GetAntiAffinityGroup(ctx, c.Zone, id)
 			if err != nil {
-				return nil, fmt.Errorf("error retrieving Anti-Affinity Group: %v", err)
+				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
 			out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
 		}
@@ -129,9 +125,9 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 
 	if nodepool.PrivateNetworkIDs != nil {
 		for _, id := range *nodepool.PrivateNetworkIDs {
-			privateNetwork, err := cs.GetPrivateNetwork(ctx, zone, id)
+			privateNetwork, err := cs.GetPrivateNetwork(ctx, c.Zone, id)
 			if err != nil {
-				return nil, fmt.Errorf("error retrieving Private Network: %v", err)
+				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
 			out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
 		}
@@ -139,27 +135,27 @@ func showSKSNodepool(zone, c, np string) (outputter, error) {
 
 	if nodepool.SecurityGroupIDs != nil {
 		for _, id := range *nodepool.SecurityGroupIDs {
-			securityGroup, err := cs.GetSecurityGroup(ctx, zone, id)
+			securityGroup, err := cs.GetSecurityGroup(ctx, c.Zone, id)
 			if err != nil {
-				return nil, fmt.Errorf("error retrieving Security Group: %v", err)
+				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
 			out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
 		}
 	}
 
-	serviceOffering, err := cs.GetInstanceType(ctx, zone, *nodepool.InstanceTypeID)
+	serviceOffering, err := cs.GetInstanceType(ctx, c.Zone, *nodepool.InstanceTypeID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving service offering: %s", err)
+		return fmt.Errorf("error retrieving service offering: %w", err)
 	}
 	out.InstanceType = *serviceOffering.Size
 
-	template, err := cs.GetTemplate(ctx, zone, *nodepool.TemplateID)
+	template, err := cs.GetTemplate(ctx, c.Zone, *nodepool.TemplateID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving template: %s", err)
+		return fmt.Errorf("error retrieving template: %w", err)
 	}
 	out.Template = *template.Name
 
-	return &out, nil
+	return c.outputFunc(&out, nil)
 }
 
 func init() {

@@ -100,12 +100,12 @@ Example:
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		cors := storageCORSRuleFromCmdFlags(cmd.Flags())
 		if err := storage.addBucketCORSRule(bucket, cors); err != nil {
-			return fmt.Errorf("unable to add rule to the bucket CORS configuration: %s", err)
+			return fmt.Errorf("unable to add rule to the bucket CORS configuration: %w", err)
 		}
 
 		if !gQuiet {
@@ -137,7 +137,7 @@ func (c *storageClient) addBucketCORSRule(bucket string, cors *storageCORSRule) 
 		}
 
 		if cors == nil {
-			return fmt.Errorf("unable to retrieve bucket CORS configuration: %s", err)
+			return fmt.Errorf("unable to retrieve bucket CORS configuration: %w", err)
 		}
 	}
 

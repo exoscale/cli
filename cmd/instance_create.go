@@ -99,7 +99,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		for i := range c.AntiAffinityGroups {
 			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
 			if err != nil {
-				return fmt.Errorf("error retrieving Anti-Affinity Group: %s", err)
+				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
 			antiAffinityGroupIDs[i] = *antiAffinityGroup.ID
 		}
@@ -109,14 +109,14 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.DeployTarget != "" {
 		deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 		if err != nil {
-			return fmt.Errorf("error retrieving Deploy Target: %s", err)
+			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
 		instance.DeployTargetID = deployTarget.ID
 	}
 
 	instanceType, err := cs.FindInstanceType(ctx, c.Zone, c.InstanceType)
 	if err != nil {
-		return fmt.Errorf("error retrieving instance type: %s", err)
+		return fmt.Errorf("error retrieving instance type: %w", err)
 	}
 	instance.InstanceTypeID = instanceType.ID
 
@@ -125,7 +125,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		for i := range c.PrivateNetworks {
 			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
 			if err != nil {
-				return fmt.Errorf("error retrieving Private Network: %s", err)
+				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
 			privateNetworks[i] = privateNetwork
 		}
@@ -136,7 +136,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		for i := range c.SecurityGroups {
 			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 			if err != nil {
-				return fmt.Errorf("error retrieving Security Group: %s", err)
+				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
 			securityGroupIDs[i] = *securityGroup.ID
 		}
@@ -151,15 +151,15 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if instance.SSHKey == nil {
 		singleUseSSHPrivateKey, err = rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			return fmt.Errorf("error generating SSH private key: %s", err)
+			return fmt.Errorf("error generating SSH private key: %w", err)
 		}
 		if err = singleUseSSHPrivateKey.Validate(); err != nil {
-			return fmt.Errorf("error generating SSH private key: %s", err)
+			return fmt.Errorf("error generating SSH private key: %w", err)
 		}
 
 		singleUseSSHPublicKey, err = ssh.NewPublicKey(&singleUseSSHPrivateKey.PublicKey)
 		if err != nil {
-			return fmt.Errorf("error generating SSH public key: %s", err)
+			return fmt.Errorf("error generating SSH public key: %w", err)
 		}
 
 		sshKey, err = cs.RegisterSSHKey(
@@ -169,7 +169,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			string(ssh.MarshalAuthorizedKey(singleUseSSHPublicKey)),
 		)
 		if err != nil {
-			return fmt.Errorf("error registering SSH key: %s", err)
+			return fmt.Errorf("error registering SSH key: %w", err)
 		}
 
 		instance.SSHKey = sshKey.Name
@@ -181,7 +181,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		egoscale.ListTemplatesWithVisibility(c.TemplateVisibility),
 	)
 	if err != nil {
-		return fmt.Errorf("error retrieving templates: %s", err)
+		return fmt.Errorf("error retrieving templates: %w", err)
 	}
 	for _, template := range templates {
 		if *template.ID == c.Template || *template.Name == c.Template {
@@ -196,7 +196,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.CloudInitFile != "" {
 		userData, err := getUserDataFromFile(c.CloudInitFile)
 		if err != nil {
-			return fmt.Errorf("error parsing cloud-init user data: %s", err)
+			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
 		instance.UserData = &userData
 	}
@@ -221,7 +221,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		privateKeyFilePath := getInstanceSSHKeyPath(*instance.ID)
 
 		if err = os.MkdirAll(path.Dir(privateKeyFilePath), 0o700); err != nil {
-			return fmt.Errorf("error writing SSH private key file: %s", err)
+			return fmt.Errorf("error writing SSH private key file: %w", err)
 		}
 
 		if err = os.WriteFile(
@@ -232,16 +232,20 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			}),
 			0o600,
 		); err != nil {
-			return fmt.Errorf("error writing SSH private key file: %s", err)
+			return fmt.Errorf("error writing SSH private key file: %w", err)
 		}
 
 		if err = cs.DeleteSSHKey(ctx, c.Zone, sshKey); err != nil {
-			return fmt.Errorf("error deleting SSH key: %s", err)
+			return fmt.Errorf("error deleting SSH key: %w", err)
 		}
 	}
 
 	if !gQuiet {
-		return output(showInstance(c.Zone, *instance.ID))
+		return (&instanceShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Instance:           *instance.ID,
+			Zone:               c.Zone,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

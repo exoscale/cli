@@ -48,11 +48,11 @@ var storageCORSDeleteCmd = &cobra.Command{
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
-			return fmt.Errorf("unable to initialize storage client: %v", err)
+			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		if err := storage.deleteBucketCORS(bucket); err != nil {
-			return fmt.Errorf("unable to delete bucket CORS configuration: %s", err)
+			return fmt.Errorf("unable to delete bucket CORS configuration: %w", err)
 		}
 
 		if !gQuiet {

@@ -117,7 +117,10 @@ func (c *dbServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return output((&dbServiceShowCmd{Zone: c.Zone, Name: c.Name}).showDatabaseServicePG(ctx))
+		return c.outputFunc((&dbServiceShowCmd{
+			Name: c.Name,
+			Zone: c.Zone,
+		}).showDatabaseServicePG(ctx))
 	}
 
 	return nil
