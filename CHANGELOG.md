@@ -1,5 +1,27 @@
 # Changelog
 
+
+## 1.46.0
+
+### Changes
+
+- `exo dbaas (create|update) --help`: all type-specific `--<TYPE>-*` flag help descriptions have been moved to `--help-<TYPE>`
+- `exo dbaas type show`: plans are not displayed by default, use the `--plans` flag to display a detailed list of plans supported by type (#405)
+
+### Features
+
+- `exo compute instance-type list`: new flag `--verbose|-v` to display more details (# CPUs, memory) (#407)
+- `exo dbaas create mysql`: add `--mysql-recovery-backup-time` flag
+- `exo dbaas create pg`: add `--pg-recovery-backup-time` flag
+- `exo dbaas create redis`: add `--redis-recovery-backup-name` flag
+- `exo dbaas show`: output service software version (#402)
+
+### Bug Fixes
+
+- `exo dbaas show`: add missing version for types `mysql`/`pg` (#406)
+- `exo dbaas (create|update)`: improve maintenance-related flags handling (#404)
+
+
 ## 1.45.2
 
 ### Bug Fixes
