@@ -24,7 +24,7 @@ type dbServiceUpdateCmd struct {
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
 	Plan                  string `cli-usage:"Database Service plan"`
-	TerminationProtection bool   `cli-usage:"enable Database Service termination protection"`
+	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
 	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
 
 	// "kafka" type specific flags
