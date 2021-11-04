@@ -23,7 +23,7 @@ type dbServiceCreateCmd struct {
 	HelpRedis             bool   `cli-usage:"show usage for flags specific to the redis type"`
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
-	TerminationProtection bool   `cli-usage:"enable Database Service termination protection"`
+	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
 	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
 
 	// "kafka" type specific flags
