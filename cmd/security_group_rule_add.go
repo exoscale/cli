@@ -76,12 +76,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	securityGroupRule := &egoscale.SecurityGroupRule{
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
+		Description:   nonEmptyStringPtr(c.Description),
 		FlowDirection: &c.FlowDirection,
 		Protocol:      &c.Protocol,
 	}

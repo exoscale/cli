@@ -61,30 +61,15 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	)
 
 	service := &egoscale.NetworkLoadBalancerService{
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
+		Description: nonEmptyStringPtr(c.Description),
 		Healthcheck: &egoscale.NetworkLoadBalancerServiceHealthcheck{
 			Interval: &hcInterval,
 			Mode:     &c.HealthcheckMode,
 			Port:     &hcPort,
 			Retries:  &c.HealthcheckRetries,
-			TLSSNI: func() (v *string) {
-				if c.HealthcheckTLSSNI != "" {
-					v = &c.HealthcheckTLSSNI
-				}
-				return
-			}(),
-			Timeout: &hcTimeout,
-			URI: func() (v *string) {
-				if c.HealthcheckURI != "" {
-					v = &c.HealthcheckURI
-				}
-				return
-			}(),
+			TLSSNI:   nonEmptyStringPtr(c.HealthcheckTLSSNI),
+			Timeout:  &hcTimeout,
+			URI:      nonEmptyStringPtr(c.HealthcheckURI),
 		},
 		Name:       &c.Name,
 		Port:       &port,

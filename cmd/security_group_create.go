@@ -42,13 +42,8 @@ func (c *securityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
 	securityGroup := &egoscale.SecurityGroup{
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
-		Name: &c.Name,
+		Description: nonEmptyStringPtr(c.Description),
+		Name:        &c.Name,
 	}
 
 	var err error
