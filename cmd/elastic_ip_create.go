@@ -72,19 +72,12 @@ func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		if c.HealthcheckMode == "https" {
 			healthcheck.TLSSkipVerify = &c.HealthcheckTLSSSkipVerify
-			if c.HealthcheckTLSSNI != "" {
-				healthcheck.TLSSNI = &c.HealthcheckTLSSNI
-			}
+			healthcheck.TLSSNI = nonEmptyStringPtr(c.HealthcheckTLSSNI)
 		}
 	}
 
 	elasticIP := &egoscale.ElasticIP{
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
+		Description: nonEmptyStringPtr(c.Description),
 		Healthcheck: healthcheck,
 	}
 

@@ -120,40 +120,19 @@ in a future release, please use "--instance-type" instead.
 
 func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	instancePool := &egoscale.InstancePool{
-		DeployTargetID: func() (v *string) {
-			if c.DeployTarget != "" {
-				v = &c.DeployTarget
-			}
-			return
-		}(),
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
-		DiskSize:    &c.DiskSize,
-		IPv6Enabled: &c.IPv6,
-		InstancePrefix: func() (v *string) {
-			if c.InstancePrefix != "" {
-				v = &c.InstancePrefix
-			}
-			return
-		}(),
+		Description:    nonEmptyStringPtr(c.Description),
+		DiskSize:       &c.DiskSize,
+		IPv6Enabled:    &c.IPv6,
+		InstancePrefix: nonEmptyStringPtr(c.InstancePrefix),
 		Labels: func() (v *map[string]string) {
 			if len(c.Labels) > 0 {
 				return &c.Labels
 			}
 			return
 		}(),
-		Name: &c.Name,
-		SSHKey: func() (v *string) {
-			if c.SSHKey != "" {
-				v = &c.SSHKey
-			}
-			return
-		}(),
-		Size: &c.Size,
+		Name:   &c.Name,
+		SSHKey: nonEmptyStringPtr(c.SSHKey),
+		Size:   &c.Size,
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))

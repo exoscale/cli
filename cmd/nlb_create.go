@@ -39,12 +39,7 @@ func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	nlb := &egoscale.NetworkLoadBalancer{
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
+		Description: nonEmptyStringPtr(c.Description),
 		Labels: func() (v *map[string]string) {
 			if len(c.Labels) > 0 {
 				return &c.Labels

@@ -17,6 +17,7 @@ func (c *dbServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 	databaseService := oapi.CreateDbaasServicePgJSONRequestBody{
 		Plan:                  c.Plan,
 		TerminationProtection: &c.TerminationProtection,
+		Version:               nonEmptyStringPtr(c.PGVersion),
 	}
 
 	settingsSchema, err := cs.GetDbaasSettingsPgWithResponse(ctx)
@@ -97,10 +98,6 @@ func (c *dbServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 		databaseService.PgSettings = &settings
-	}
-
-	if c.PGVersion != "" {
-		databaseService.Version = &c.PGVersion
 	}
 
 	fmt.Printf("Creating Database Service %q...\n", c.Name)

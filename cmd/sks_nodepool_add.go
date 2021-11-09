@@ -49,21 +49,11 @@ func (c *sksNodepoolAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	nodepool := &egoscale.SKSNodepool{
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
-		DiskSize: &c.DiskSize,
-		InstancePrefix: func() (v *string) {
-			if c.InstancePrefix != "" {
-				v = &c.InstancePrefix
-			}
-			return
-		}(),
-		Name: &c.Name,
-		Size: &c.Size,
+		Description:    nonEmptyStringPtr(c.Description),
+		DiskSize:       &c.DiskSize,
+		InstancePrefix: nonEmptyStringPtr(c.InstancePrefix),
+		Name:           &c.Name,
+		Size:           &c.Size,
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))

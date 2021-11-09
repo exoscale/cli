@@ -79,12 +79,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	cluster := &egoscale.SKSCluster{
 		AutoUpgrade: &c.AutoUpgrade,
 		CNI:         &defaultSKSClusterCNI,
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
+		Description: nonEmptyStringPtr(c.Description),
 		Labels: func() (v *map[string]string) {
 			if len(c.Labels) > 0 {
 				return &c.Labels
@@ -145,31 +140,16 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if c.NodepoolSize > 0 {
 		nodepool := &egoscale.SKSNodepool{
-			Description: func() (v *string) {
-				if c.NodepoolDescription != "" {
-					v = &c.NodepoolDescription
-				}
-				return
-			}(),
-			DiskSize: &c.NodepoolDiskSize,
-			InstancePrefix: func() (v *string) {
-				if c.NodepoolInstancePrefix != "" {
-					v = &c.NodepoolInstancePrefix
-				}
-				return
-			}(),
+			Description:    nonEmptyStringPtr(c.NodepoolDescription),
+			DiskSize:       &c.NodepoolDiskSize,
+			InstancePrefix: nonEmptyStringPtr(c.NodepoolInstancePrefix),
 			Labels: func() (v *map[string]string) {
 				if len(c.NodepoolLabels) > 0 {
 					return &c.NodepoolLabels
 				}
 				return
 			}(),
-			Name: func() *string {
-				if c.NodepoolName != "" {
-					return &c.NodepoolName
-				}
-				return &c.Name
-			}(),
+			Name: nonEmptyStringPtr(c.NodepoolName),
 			Size: &c.NodepoolSize,
 		}
 

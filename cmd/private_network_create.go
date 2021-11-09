@@ -46,12 +46,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	privateNetwork := &egoscale.PrivateNetwork{
-		Description: func() (v *string) {
-			if c.Description != "" {
-				v = &c.Description
-			}
-			return
-		}(),
+		Description: nonEmptyStringPtr(c.Description),
 		EndIP: func() (v *net.IP) {
 			if c.EndIP != "" {
 				ip := net.ParseIP(c.EndIP)

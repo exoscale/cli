@@ -17,6 +17,7 @@ func (c *dbServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error {
 	databaseService := oapi.CreateDbaasServiceMysqlJSONRequestBody{
 		Plan:                  c.Plan,
 		TerminationProtection: &c.TerminationProtection,
+		Version:               nonEmptyStringPtr(c.MysqlVersion),
 	}
 
 	settingsSchema, err := cs.GetDbaasSettingsMysqlWithResponse(ctx)
@@ -72,10 +73,6 @@ func (c *dbServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 		databaseService.MysqlSettings = &settings
-	}
-
-	if c.MysqlVersion != "" {
-		databaseService.Version = &c.MysqlVersion
 	}
 
 	fmt.Printf("Creating Database Service %q...\n", c.Name)

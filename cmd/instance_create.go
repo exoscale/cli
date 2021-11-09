@@ -69,12 +69,6 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	)
 
 	instance := &egoscale.Instance{
-		DeployTargetID: func() (v *string) {
-			if c.DeployTarget != "" {
-				v = &c.DeployTarget
-			}
-			return
-		}(),
 		DiskSize:    &c.DiskSize,
 		IPv6Enabled: &c.IPv6,
 		Labels: func() (v *map[string]string) {
@@ -83,13 +77,8 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			}
 			return
 		}(),
-		Name: &c.Name,
-		SSHKey: func() (v *string) {
-			if c.SSHKey != "" {
-				v = &c.SSHKey
-			}
-			return
-		}(),
+		Name:   &c.Name,
+		SSHKey: nonEmptyStringPtr(c.SSHKey),
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))

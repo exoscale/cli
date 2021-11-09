@@ -20,6 +20,7 @@ func (c *dbServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error {
 		Plan:                  c.Plan,
 		SchemaRegistryEnabled: &c.KafkaEnableSchemaRegistry,
 		TerminationProtection: &c.TerminationProtection,
+		Version:               nonEmptyStringPtr(c.KafkaVersion),
 	}
 
 	settingsSchema, err := cs.GetDbaasSettingsKafkaWithResponse(ctx)
@@ -91,10 +92,6 @@ func (c *dbServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 		databaseService.SchemaRegistrySettings = &settings
-	}
-
-	if c.KafkaVersion != "" {
-		databaseService.Version = &c.KafkaVersion
 	}
 
 	fmt.Printf("Creating Database Service %q...\n", c.Name)

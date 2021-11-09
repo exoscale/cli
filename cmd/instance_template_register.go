@@ -80,9 +80,13 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	sshKeyEnabled := !c.DisableSSHKey
 
 	template = &egoscale.Template{
+		Checksum:        nonEmptyStringPtr(c.Checksum),
+		DefaultUser:     nonEmptyStringPtr(c.Username),
+		Description:     nonEmptyStringPtr(c.Description),
 		Name:            &c.Name,
 		PasswordEnabled: &passwordEnabled,
 		SSHKeyEnabled:   &sshKeyEnabled,
+		URL:             nonEmptyStringPtr(c.URL),
 	}
 
 	if c.FromSnapshot != "" {
@@ -118,22 +122,6 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.BootMode)) {
 		template.BootMode = &c.BootMode
-	}
-
-	if c.Checksum != "" {
-		template.Checksum = &c.Checksum
-	}
-
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Username)) {
-		template.DefaultUser = &c.Username
-	}
-
-	if c.Description != "" {
-		template.Description = &c.Description
-	}
-
-	if c.URL != "" {
-		template.URL = &c.URL
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Registering template %q...", c.Name), func() {
