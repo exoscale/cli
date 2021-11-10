@@ -43,6 +43,13 @@ type sksCreateCmd struct {
 	NodepoolSecurityGroups     []string          `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	NodepoolSize               int64             `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
 	NodepoolTaints             []string          `cli-flag:"nodepool-taint" cli-usage:"Kubernetes taint to apply to default Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	OIDCClientID               string            `cli-flag:"oidc-client-id" cli-usage:"OpenID client ID"`
+	OIDCGroupsClaim            string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
+	OIDCGroupsPrefix           string            `cli-flag:"oidc-groups-prefix" cli-usage:"OpenID prefix prepended to group claims"`
+	OIDCIssuerURL              string            `cli-flag:"oidc-issuer-url" cli-usage:"OpenID provider URL"`
+	OIDCRequiredClaim          string            `cli-flag:"oidc-required-claim" cli-usage:"a key=value pair that describes a required claim in the OpenID Token"`
+	OIDCUsernameClaim          string            `cli-flag:"oidc-username-claim" cli-usage:"OpenID JWT claim to use as the user name"`
+	OIDCUsernamePrefix         string            `cli-flag:"oidc-username-prefix" cli-usage:"OpenID prefix prepended to username claims"`
 	ServiceLevel               string            `cli-usage:"SKS cluster control plane service level (starter|pro)"`
 	Zone                       string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
@@ -130,9 +137,22 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		cluster.Version = &versions[0]
 	}
 
+	var opts []egoscale.CreateSKSClusterOpt
+	if c.OIDCClientID != "" {
+		opts = append(opts, egoscale.CreateSKSClusterWithOIDC(&egoscale.SKSClusterOIDCConfig{
+			ClientID:       &c.OIDCClientID,
+			GroupsClaim:    nonEmptyStringPtr(c.OIDCGroupsClaim),
+			GroupsPrefix:   nonEmptyStringPtr(c.OIDCGroupsPrefix),
+			IssuerURL:      &c.OIDCIssuerURL,
+			RequiredClaim:  nonEmptyStringPtr(c.OIDCRequiredClaim),
+			UsernameClaim:  nonEmptyStringPtr(c.OIDCUsernameClaim),
+			UsernamePrefix: nonEmptyStringPtr(c.OIDCUsernamePrefix),
+		}))
+	}
+
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", *cluster.Name), func() {
-		cluster, err = cs.CreateSKSCluster(ctx, c.Zone, cluster)
+		cluster, err = cs.CreateSKSCluster(ctx, c.Zone, cluster, opts...)
 	})
 	if err != nil {
 		return err
