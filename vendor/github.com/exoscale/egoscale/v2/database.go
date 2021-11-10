@@ -58,19 +58,19 @@ func databasePlanFromAPI(p *oapi.DbaasPlan) *DatabasePlan {
 
 // DatabaseServiceType represents a Database Service type.
 type DatabaseServiceType struct {
-	DefaultVersion *string
-	Description    *string
-	LatestVersion  *string
-	Name           *string
-	Plans          []*DatabasePlan
+	AvailableVersions *[]string
+	DefaultVersion    *string
+	Description       *string
+	Name              *string
+	Plans             []*DatabasePlan
 }
 
 func databaseServiceTypeFromAPI(t *oapi.DbaasServiceType) *DatabaseServiceType {
 	return &DatabaseServiceType{
-		DefaultVersion: t.DefaultVersion,
-		Description:    t.Description,
-		LatestVersion:  t.LatestVersion,
-		Name:           (*string)(t.Name),
+		AvailableVersions: t.AvailableVersions,
+		DefaultVersion:    t.DefaultVersion,
+		Description:       t.Description,
+		Name:              (*string)(t.Name),
 		Plans: func() []*DatabasePlan {
 			plans := make([]*DatabasePlan, 0)
 			if t.Plans != nil {

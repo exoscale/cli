@@ -1,6 +1,19 @@
 Changelog
 =========
 
+0.82.0
+------
+
+- feature: v2: add support for IAM access keys management
+- feature: v2: add support for SKS Cluster OIDC configuration via `CreateSKSClusterOpt` options
+- feature: v2: add `ListInstancesOpt` options
+
+0.81.0
+------
+
+- change: v2: `DatabaseServiceType`'s `LatestVersion` field has been replaced by `AvailableVersions`
+- fix: v2:`Update*()` methods no longer send empty strings to the public API, which does not accept those anymore
+
 0.80.2
 ------
 
@@ -24,7 +37,7 @@ Changelog
 0.78.0
 ------
 
-- change: v2: type-specific `DatabaseService` methods have been removed, to be re-implemented in a future version; use `v2/oapi` methods for type-specific operations in the meantime.
+- change: v2: type-specific `DatabaseService` methods have been removed, to be re-implemented in a future version; use `v2/oapi` methods for type-specific operations in the meantime
 
 0.77.0
 ------

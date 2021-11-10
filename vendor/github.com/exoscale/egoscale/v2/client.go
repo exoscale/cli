@@ -35,13 +35,7 @@ type defaultTransport struct {
 // RoundTrip executes a single HTTP transaction, returning a Response for the provided Request.
 func (t *defaultTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("User-Agent", UserAgent)
-
-	resp, err := t.next.RoundTrip(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return t.next.RoundTrip(req)
 }
 
 // ClientOpt represents a function setting Exoscale API client option.
@@ -121,8 +115,14 @@ func ClientOptWithHTTPClient(v *http.Client) ClientOpt {
 	}
 }
 
+type oapiClient interface {
+	oapi.ClientWithResponsesInterface
+}
+
 // Client represents an Exoscale API client.
 type Client struct {
+	oapiClient
+
 	apiKey       string
 	apiSecret    string
 	apiEndpoint  string
@@ -130,8 +130,6 @@ type Client struct {
 	pollInterval time.Duration
 	trace        bool
 	httpClient   *http.Client
-
-	*oapi.ClientWithResponses
 }
 
 // NewClient returns a new Exoscale API client, or an error if one couldn't be initialized.
@@ -157,12 +155,12 @@ func NewClient(apiKey, apiSecret string, opts ...ClientOpt) (*Client, error) {
 
 	apiSecurityProvider, err := api.NewSecurityProvider(client.apiKey, client.apiSecret)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize API security provider: %s", err)
+		return nil, fmt.Errorf("unable to initialize API security provider: %w", err)
 	}
 
 	apiURL, err := url.Parse(client.apiEndpoint)
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize API client: %s", err)
+		return nil, fmt.Errorf("unable to initialize API client: %w", err)
 	}
 	apiURL = apiURL.ResolveReference(&url.URL{Path: api.Prefix})
 
@@ -184,8 +182,8 @@ func NewClient(apiKey, apiSecret string, opts ...ClientOpt) (*Client, error) {
 		),
 	}
 
-	if client.ClientWithResponses, err = oapi.NewClientWithResponses(apiURL.String(), oapiOpts...); err != nil {
-		return nil, fmt.Errorf("unable to initialize API client: %s", err)
+	if client.oapiClient, err = oapi.NewClientWithResponses(apiURL.String(), oapiOpts...); err != nil {
+		return nil, fmt.Errorf("unable to initialize API client: %w", err)
 	}
 
 	return &client, nil

@@ -3,7 +3,15 @@
 // in the public-facing package.
 package oapi
 
+import "context"
+
 //go:generate oapi-codegen -generate types,client -package oapi -o oapi.gen.go ../../public-api.json
+
+type oapiClient interface {
+	ClientWithResponsesInterface
+
+	GetOperationWithResponse(context.Context, string, ...RequestEditorFn) (*GetOperationResponse, error)
+}
 
 // OptionalString returns the dereferenced string value of v if not nil, otherwise an empty string.
 func OptionalString(v *string) string {
@@ -23,11 +31,12 @@ func OptionalInt64(v *int64) int64 {
 	return 0
 }
 
-// OptionalBool returns the dereferenced bool value of v if not nil, otherwise false.
-func OptionalBool(v *bool) bool {
-	if v != nil {
-		return *v
+// NilableString returns the input string pointer v if the dereferenced string is non-empty, otherwise nil.
+// This helper is intended for use with OAPI types containing nilable string properties.
+func NilableString(v *string) *string {
+	if v != nil && *v == "" {
+		return nil
 	}
 
-	return false
+	return v
 }
