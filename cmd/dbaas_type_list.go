@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +18,21 @@ type dbTypeListItemOutput struct {
 
 type dbTypeListOutput []dbTypeListItemOutput
 
-func (o *dbTypeListOutput) toJSON()  { outputJSON(o) }
-func (o *dbTypeListOutput) toText()  { outputText(o) }
-func (o *dbTypeListOutput) toTable() { outputTable(o) }
+func (o *dbTypeListOutput) toJSON() { outputJSON(o) }
+func (o *dbTypeListOutput) toText() { outputText(o) }
+func (o *dbTypeListOutput) toTable() {
+	t := table.NewTable(os.Stdout)
+	t.SetHeader([]string{"Name", "Available Versions", "Default Version"})
+	defer t.Render()
+
+	for _, dbType := range *o {
+		t.Append([]string{
+			dbType.Name,
+			strings.Join(dbType.AvailableVersions, ", "),
+			dbType.DefaultVersion,
+		})
+	}
+}
 
 type dbTypeListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
