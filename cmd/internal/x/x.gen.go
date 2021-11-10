@@ -27,6 +27,258 @@ func xServers() []map[string]string {
 	}
 }
 
+// XCreateAccessKey Create an IAM Access Key
+func XCreateAccessKey(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-access-key"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/access-key"
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListAccessKeys List IAM Access Keys
+func XListAccessKeys(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-access-keys"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/access-key"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListAccessKeyKnownOperations Retrieve all known available IAM Access Key operations and associated tags
+func XListAccessKeyKnownOperations(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-access-key-known-operations"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/access-key-known-operations"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListAccessKeyOperations Retrieve IAM Access Key operations and associated tags for the signing key
+func XListAccessKeyOperations(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-access-key-operations"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/access-key-operations"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetAccessKey Retrieve IAM Access Key details
+func XGetAccessKey(paramKey string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-access-key"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/access-key/{key}"
+	url = strings.Replace(url, "{key}", paramKey, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XRevokeAccessKey Revoke an IAM Access Key
+func XRevokeAccessKey(paramKey string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "revoke-access-key"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/access-key/{key}"
+	url = strings.Replace(url, "{key}", paramKey, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateAntiAffinityGroup Create an Anti-affinity Group
 func XCreateAntiAffinityGroup(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-anti-affinity-group"
@@ -210,6 +462,47 @@ func XGetDbaasCaCertificate(params *viper.Viper) (*gentleman.Response, map[strin
 	}
 
 	url := server + "/dbaas-ca-certificate"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListDbaasIntegrationTypes Get DBaaS integration types
+func XListDbaasIntegrationTypes(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-dbaas-integration-types"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-integration-types"
 
 	req := cli.Client.Get().URL(url)
 
@@ -6022,6 +6315,220 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "create-access-key",
+			Short:   "Create an IAM Access Key",
+			Long:    cli.Markdown("This operation creates a new IAM Access Key, which can either be restricted to specific API operations or unrestricted. The corresponding secret is only available in the response returned by this operation, the caller must take care of storing it safely as there is no other way to retrieve it.\n## Request Schema (application/json)\n\ndescription: IAM Access Key\nproperties:\n  name:\n    description: IAM Access Key name\n    type: string\n  operations:\n    description: IAM Access Key operations\n    items:\n      type: string\n    type: array\n  resources:\n    description: IAM Access Key Resources\n    items:\n      $ref: '#/components/schemas/access-key-resource'\n    type: array\n  tags:\n    description: IAM Access Key tags\n    items:\n      type: string\n    type: array\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateAccessKey(params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-access-keys",
+			Short:   "List IAM Access Keys",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListAccessKeys(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-access-key-known-operations",
+			Short:   "Retrieve all known available IAM Access Key operations and associated tags",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListAccessKeyKnownOperations(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-access-key-operations",
+			Short:   "Retrieve IAM Access Key operations and associated tags for the signing key",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListAccessKeyOperations(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-access-key key",
+			Short:   "Retrieve IAM Access Key details",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetAccessKey(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "revoke-access-key key",
+			Short:   "Revoke an IAM Access Key",
+			Long:    cli.Markdown("This operation revokes the specified IAM Access Key. Access Keys created by the revoked Access Key will not be revoked."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XRevokeAccessKey(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-anti-affinity-group",
 			Short:   "Create an Anti-affinity Group",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Anti-affinity Group description\n    maxLength: 255\n    minLength: 1\n    type: string\n  name:\n    description: Anti-affinity Group name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\ntype: object\n"),
@@ -6201,9 +6708,44 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "list-dbaas-integration-types",
+			Short:   "Get DBaaS integration types",
+			Long:    cli.Markdown("Get DBaaS integration types"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListDbaasIntegrationTypes(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-kafka name",
 			Short:   "Create a DBaaS Kafka service",
-			Long:    cli.Markdown("Create a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet\n      for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-connect-settings:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-rest-settings:\n    description: Kafka REST configuration\n    type: object\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  schema-registry-settings:\n    description: Schema Registry configuration\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: Kafka major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet\n      for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-connect-settings:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-rest-settings:\n    description: Kafka REST configuration\n    type: object\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  schema-registry-settings:\n    description: Schema Registry configuration\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: Kafka major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6277,7 +6819,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-kafka name",
 			Short:   "Update a DBaaS Kafka service",
-			Long:    cli.Markdown("Update a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet\n      for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-connect-settings:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-rest-settings:\n    description: Kafka REST configuration\n    type: object\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  schema-registry-settings:\n    description: Schema Registry configuration\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet\n      for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-connect-settings:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-rest-settings:\n    description: Kafka REST configuration\n    type: object\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  schema-registry-settings:\n    description: Schema Registry configuration\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6316,7 +6858,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-mysql name",
 			Short:   "Create a DBaaS MySQL service",
-			Long:    cli.Markdown("Create a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must\n      be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new\n      service is being created.\n    maxLength: 64\n    minLength: 1\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before\n      deletion. This may be extended for services that require binlog entries for\n      longer than the default for example if using the MySQL Debezium Kafka connector.\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  mysql-settings:\n    description: MySQL-specific settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary\n      times\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: MySQL major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must\n      be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new\n      service is being created.\n    maxLength: 64\n    minLength: 1\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before\n      deletion. This may be extended for services that require binlog entries for\n      longer than the default for example if using the MySQL Debezium Kafka connector.\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  mysql-settings:\n    description: MySQL-specific settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary\n      times\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: MySQL major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6390,7 +6932,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-mysql name",
 			Short:   "Update a DBaaS MySQL service",
-			Long:    cli.Markdown("Update a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before\n      deletion. This may be extended for services that require binlog entries for\n      longer than the default for example if using the MySQL Debezium Kafka connector.\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  mysql-settings:\n    description: MySQL-specific settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before\n      deletion. This may be extended for services that require binlog entries for\n      longer than the default for example if using the MySQL Debezium Kafka connector.\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  mysql-settings:\n    description: MySQL-specific settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6429,7 +6971,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-pg name",
 			Short:   "Create a DBaaS PostgreSQL service",
-			Long:    cli.Markdown("Create a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must\n      be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new\n      service is being created.\n    maxLength: 64\n    minLength: 1\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary\n      times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared\n      memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%.\n      This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: PostgreSQL major version\n    minLength: 1\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation\n      (such as a sort or hash table) before writing to temporary disk files, in MB.\n      Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must\n      be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new\n      service is being created.\n    maxLength: 64\n    minLength: 1\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary\n      times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared\n      memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%.\n      This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: PostgreSQL major version\n    minLength: 1\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation\n      (such as a sort or hash table) before writing to temporary disk files, in MB.\n      Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6503,7 +7045,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-pg name",
 			Short:   "Update a DBaaS PostgreSQL service",
-			Long:    cli.Markdown("Update a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared\n      memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%.\n      This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation\n      (such as a sort or hash table) before writing to temporary disk files, in MB.\n      Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started.\n          New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared\n      memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%.\n      This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation\n      (such as a sort or hash table) before writing to temporary disk files, in MB.\n      Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6542,7 +7084,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-redis name",
 			Short:   "Create a DBaaS Redis service",
-			Long:    cli.Markdown("Create a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  recovery-backup-name:\n    description: Name of a backup to recover from for services that support backup\n      names\n    minLength: 1\n    type: string\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-name:\n    description: Name of a backup to recover from for services that support backup\n      names\n    minLength: 1\n    type: string\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6616,7 +7158,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-redis name",
 			Short:   "Update a DBaaS Redis service",
-			Long:    cli.Markdown("Update a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -6869,7 +7411,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service name",
 			Short:   "Update a DBaaS service",
-			Long:    cli.Markdown("Update a DBaaS service\n## Request Schema (application/json)\n\nproperties:\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    minLength: 1\n    type: string\n  powered:\n    description: Power-on the service (true) or power-off (false)\n    type: boolean\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  user-config:\n    description: Service type-specific settings\n    type: object\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS service\n## Request Schema (application/json)\n\nproperties:\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  user-config:\n    description: Service type-specific settings\n    type: object\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -10963,7 +11505,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-template id",
 			Short:   "Update template attributes",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Template Description\n    maxLength: 255\n    minLength: 1\n    type: string\n  name:\n    description: Template name\n    maxLength: 255\n    minLength: 1\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Template Description\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\n  name:\n    description: Template name\n    maxLength: 255\n    minLength: 1\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
