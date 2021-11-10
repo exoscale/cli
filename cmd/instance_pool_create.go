@@ -259,6 +259,8 @@ func init() {
 
 	// FIXME: remove this someday.
 	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolCreateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
 		DiskSize:       50,
 		InstanceType:   fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
 		Size:           1,

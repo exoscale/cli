@@ -61,5 +61,7 @@ func init() {
 	}))
 
 	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksRotateCCMCredentialsCmd{}))
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksRotateCCMCredentialsCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

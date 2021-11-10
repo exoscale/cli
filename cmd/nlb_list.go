@@ -96,5 +96,7 @@ func init() {
 	}))
 
 	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedNLBCmd, &nlbListCmd{}))
+	cobra.CheckErr(registerCLICommand(deprecatedNLBCmd, &nlbListCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }

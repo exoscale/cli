@@ -266,6 +266,8 @@ func init() {
 
 	// FIXME: remove this someday.
 	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksCreateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
 		KubernetesVersion:    "latest",
 		NodepoolDiskSize:     50,
 		NodepoolInstanceType: defaultServiceOffering,

@@ -153,5 +153,7 @@ func init() {
 	}))
 
 	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksShowCmd{}))
+	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksShowCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+	}))
 }
