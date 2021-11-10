@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.47.0
+
+### Changes
+
+- `exo dbaas type update (list|show)` commands output: the `LatestVersion` label has been replaced by `AvailableVersions`
+
+### Features
+
+- `exo compute sks create`: add support for OpenID Connect configuration via `--oidc-*` flags
+- `exo compute security-group delete`: add `--delete-rules|-r` flag
+
 
 ## 1.46.0
 
