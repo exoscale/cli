@@ -94,9 +94,9 @@ func (p *Poller) Poll(ctx context.Context, pf PollFunc) (interface{}, error) {
 // OperationPoller returns a PollFunc function which queries the state of the specified job.
 // Upon successful job completion, the type of the interface{} returned by the PollFunc is a
 // pointer to a Resource object (*Resource).
-func (c *ClientWithResponses) OperationPoller(zone string, jobID string) PollFunc {
+func OperationPoller(client ClientWithResponsesInterface, zone string, id string) PollFunc {
 	return func(ctx context.Context) (bool, interface{}, error) {
-		resp, err := c.GetOperationWithResponse(v2.WithZone(ctx, zone), jobID)
+		resp, err := client.GetOperationWithResponse(v2.WithZone(ctx, zone), id)
 		if err != nil {
 			return true, nil, err
 		}

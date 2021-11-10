@@ -43,10 +43,10 @@ func (o *dbTypePlanListOutput) toTable() {
 }
 
 type dbTypeShowOutput struct {
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	LatestVersion  string `json:"latest_version"`
-	DefaultVersion string `json:"default_version"`
+	Name              string   `json:"name"`
+	Description       string   `json:"description"`
+	AvailableVersions []string `json:"available_versions"`
+	DefaultVersion    string   `json:"default_version"`
 }
 
 func (o *dbTypeShowOutput) toJSON() { outputJSON(o) }
@@ -57,7 +57,7 @@ func (o *dbTypeShowOutput) toTable() {
 
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
-	t.Append([]string{"Latest Version", o.LatestVersion})
+	t.Append([]string{"Available Versions", strings.Join(o.AvailableVersions, ", ")})
 	t.Append([]string{"Default Version", o.DefaultVersion})
 }
 
@@ -248,9 +248,14 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	return c.outputFunc(&dbTypeShowOutput{
-		Name:           *dt.Name,
-		Description:    defaultString(dt.Description, ""),
-		LatestVersion:  defaultString(dt.LatestVersion, "-"),
+		Name:        *dt.Name,
+		Description: defaultString(dt.Description, ""),
+		AvailableVersions: func() (v []string) {
+			if dt.AvailableVersions != nil {
+				v = *dt.AvailableVersions
+			}
+			return
+		}(),
 		DefaultVersion: defaultString(dt.DefaultVersion, "-"),
 	}, nil)
 }

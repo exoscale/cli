@@ -54,6 +54,27 @@ func AttachInstanceToPrivateNetworkWithIPAddress(v net.IP) AttachInstanceToPriva
 	}
 }
 
+// ListInstancesOpt represents a ListInstances operation option.
+type ListInstancesOpt func(params *oapi.ListInstancesParams)
+
+// ListInstancesByManagerID sets a Compute instances listing filter based on a manager ID.
+func ListInstancesByManagerID(v string) ListInstancesOpt {
+	return func(p *oapi.ListInstancesParams) {
+		if v != "" {
+			p.ManagerId = &v
+		}
+	}
+}
+
+// ListInstancesByManagerType sets a Compute instances listing filter based on a manager type.
+func ListInstancesByManagerType(v string) ListInstancesOpt {
+	return func(p *oapi.ListInstancesParams) {
+		if v != "" {
+			p.ManagerType = (*oapi.ListInstancesParamsManagerType)(&v)
+		}
+	}
+}
+
 // ResetInstanceOpt represents a ResetInstance operation option.
 type ResetInstanceOpt func(*oapi.ResetInstanceJSONRequestBody)
 
@@ -224,7 +245,7 @@ func (c *Client) AttachInstanceToElasticIP(
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -262,7 +283,7 @@ func (c *Client) AttachInstanceToPrivateNetwork(
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -295,7 +316,7 @@ func (c *Client) AttachInstanceToSecurityGroup(
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -366,7 +387,7 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +409,7 @@ func (c *Client) CreateInstanceSnapshot(ctx context.Context, zone string, instan
 	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -410,7 +431,7 @@ func (c *Client) DeleteInstance(ctx context.Context, zone string, instance *Inst
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -443,7 +464,7 @@ func (c *Client) DetachInstanceFromElasticIP(
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -476,7 +497,7 @@ func (c *Client) DetachInstanceFromPrivateNetwork(
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -509,7 +530,7 @@ func (c *Client) DetachInstanceFromSecurityGroup(
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -560,10 +581,15 @@ func (c *Client) GetInstance(ctx context.Context, zone, id string) (*Instance, e
 }
 
 // ListInstances returns the list of existing Compute instances.
-func (c *Client) ListInstances(ctx context.Context, zone string) ([]*Instance, error) {
+func (c *Client) ListInstances(ctx context.Context, zone string, opts ...ListInstancesOpt) ([]*Instance, error) {
 	list := make([]*Instance, 0)
 
-	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &oapi.ListInstancesParams{})
+	var params oapi.ListInstancesParams
+	for _, opt := range opts {
+		opt(&params)
+	}
+
+	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &params)
 	if err != nil {
 		return nil, err
 	}
@@ -591,7 +617,7 @@ func (c *Client) RebootInstance(ctx context.Context, zone string, instance *Inst
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -619,7 +645,7 @@ func (c *Client) ResetInstance(ctx context.Context, zone string, instance *Insta
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -644,7 +670,7 @@ func (c *Client) ResizeInstanceDisk(ctx context.Context, zone string, instance *
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -677,7 +703,7 @@ func (c *Client) RevertInstanceToSnapshot(
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -703,7 +729,7 @@ func (c *Client) ScaleInstance(ctx context.Context, zone string, instance *Insta
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -730,7 +756,7 @@ func (c *Client) StartInstance(ctx context.Context, zone string, instance *Insta
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -752,7 +778,7 @@ func (c *Client) StopInstance(ctx context.Context, zone string, instance *Instan
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -786,7 +812,7 @@ func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Inst
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}

@@ -88,7 +88,7 @@ func (c *Client) CopyTemplate(ctx context.Context, zone string, template *Templa
 	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (c *Client) DeleteTemplate(ctx context.Context, zone string, template *Temp
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (c *Client) RegisterTemplate(ctx context.Context, zone string, template *Te
 	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func (c *Client) UpdateTemplate(ctx context.Context, zone string, template *Temp
 		apiv2.WithZone(ctx, zone),
 		*template.ID,
 		oapi.UpdateTemplateJSONRequestBody{
-			Description: template.Description,
+			Description: oapi.NilableString(template.Description),
 			Name:        template.Name,
 		})
 	if err != nil {
@@ -208,7 +208,7 @@ func (c *Client) UpdateTemplate(ctx context.Context, zone string, template *Temp
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}

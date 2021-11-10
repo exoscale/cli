@@ -112,7 +112,7 @@ func (c *Client) CreatePrivateNetwork(
 	res, err := oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (c *Client) DeletePrivateNetwork(ctx context.Context, zone string, privateN
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, zone string, privateN
 		apiv2.WithZone(ctx, zone),
 		*privateNetwork.ID,
 		oapi.UpdatePrivateNetworkJSONRequestBody{
-			Description: privateNetwork.Description,
+			Description: oapi.NilableString(privateNetwork.Description),
 			EndIp: func() (ip *string) {
 				if privateNetwork.EndIP != nil {
 					v := privateNetwork.EndIP.String()
@@ -243,7 +243,7 @@ func (c *Client) UpdatePrivateNetwork(ctx context.Context, zone string, privateN
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 	if err != nil {
 		return err
 	}
@@ -284,7 +284,7 @@ func (c *Client) UpdatePrivateNetworkInstanceIPAddress(
 	_, err = oapi.NewPoller().
 		WithTimeout(c.timeout).
 		WithInterval(c.pollInterval).
-		Poll(ctx, c.OperationPoller(zone, *resp.JSON200.Id))
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
 
 	return err
 }
