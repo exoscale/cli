@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.47.1
+
+### Bug Fixes
+
+- Fix a bug crashing deprecated commands.
+- Improve formatting of the "Available Versions" column for the `exo dbaas type list` command output.
+
+
 ## 1.47.0
 
 ### Changes
