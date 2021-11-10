@@ -312,6 +312,8 @@ func init() {
 
 	// FIXME: remove this someday.
 	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolUpdateCmd{
+		cliCommandSettings: defaultCLICmdSettings(),
+
 		TemplateFilter: defaultTemplateFilter,
 	}))
 }
