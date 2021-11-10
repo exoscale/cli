@@ -4,8 +4,8 @@
 
 ### Bug Fixes
 
-- Fix a bug crashing deprecated commands.
-- Improve formatting of the "Available Versions" column for the `exo dbaas type list` command output.
+- Fix a bug crashing deprecated commands
+- Improve formatting of the "Available Versions" column for the `exo dbaas type list` command output
 
 
 ## 1.47.0
