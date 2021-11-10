@@ -12,6 +12,7 @@ type securityGroupDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
+	DeleteRules   bool   `cli-short:"r" cli-usage:"delete rules before deleting the Security Group"`
 	SecurityGroup string `cli-arg:"#" cli-usage:"SECURITY-GROUP-NAME|ID"`
 
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
@@ -46,6 +47,14 @@ func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting Security Group %s...", c.SecurityGroup), func() {
+		if c.DeleteRules {
+			for _, rule := range securityGroup.Rules {
+				if err = cs.DeleteSecurityGroupRule(ctx, zone, securityGroup, rule); err != nil {
+					return
+				}
+			}
+		}
+
 		err = cs.DeleteSecurityGroup(ctx, zone, securityGroup)
 	})
 	if err != nil {
