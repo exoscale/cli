@@ -15,6 +15,7 @@ const (
 	limitInstanceGPUs      = "gpu"
 	limitInstanceSnapshots = "snapshot"
 	limitInstanceTemplates = "template"
+	limitNLB               = "network-load-balancer"
 	limitPrivateNetworks   = "private-network"
 	limitSKSClusters       = "sks-cluster"
 	limitSOSBuckets        = "bucket"
@@ -48,6 +49,7 @@ Supported output template annotations: %s`,
 			limitInstanceGPUs:      "Compute instance GPUs",
 			limitInstanceSnapshots: "Compute instance snapshots",
 			limitInstanceTemplates: "Compute instance templates",
+			limitNLB:               "Network Load Balancers",
 			limitPrivateNetworks:   "Private networks",
 			limitSKSClusters:       "SKS clusters",
 			limitSOSBuckets:        "SOS buckets",
