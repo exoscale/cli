@@ -627,6 +627,32 @@ type DbaasBackupConfig struct {
 	RecoveryMode *string `json:"recovery-mode,omitempty"`
 }
 
+// DbaasIntegration defines model for dbaas-integration.
+type DbaasIntegration struct {
+	// The description of the destination service types.
+	DestDescription *string `json:"dest-description,omitempty"`
+
+	// A list of the destination service types the integration supports.
+	DestServiceTypes *[]string `json:"dest-service-types,omitempty"`
+
+	// A JSON schema of additional settings of the integration.
+	Settings *struct {
+		AdditionalProperties *bool                   `json:"additionalProperties,omitempty"`
+		Properties           *map[string]interface{} `json:"properties,omitempty"`
+		Title                *string                 `json:"title,omitempty"`
+		Type                 *string                 `json:"type,omitempty"`
+	} `json:"settings,omitempty"`
+
+	// The description of the source service types.
+	SourceDescription *string `json:"source-description,omitempty"`
+
+	// A list of the source service types the integration supports.
+	SourceServiceTypes *[]string `json:"source-service-types,omitempty"`
+
+	// The type of the integration.
+	Type *string `json:"type,omitempty"`
+}
+
 // Automatic maintenance settings
 type DbaasNodeState struct {
 	// Name of the service node
@@ -1086,8 +1112,10 @@ type DbaasServicePg struct {
 
 	// PG connection information properties
 	ConnectionInfo *struct {
-		Params  *[]map[string]interface{} `json:"params,omitempty"`
-		Standby *[]map[string]interface{} `json:"standby,omitempty"`
+		Params *[]struct {
+			AdditionalProperties map[string]string `json:"-"`
+		} `json:"params,omitempty"`
+		Standby *[]string                 `json:"standby,omitempty"`
 		Syncing *[]map[string]interface{} `json:"syncing,omitempty"`
 		Uri     *[]string                 `json:"uri,omitempty"`
 	} `json:"connection-info,omitempty"`
@@ -1607,6 +1635,9 @@ type InstanceType struct {
 
 	// Instance type size
 	Size *InstanceTypeSize `json:"size,omitempty"`
+
+	// Instance Type available zones
+	Zones *[]ZoneName `json:"zones,omitempty"`
 }
 
 // Instance type family
@@ -2160,11 +2191,10 @@ type TemplateVisibility string
 
 // Zone
 type Zone struct {
-	// Zone short name
 	Name *ZoneName `json:"name,omitempty"`
 }
 
-// Zone short name
+// ZoneName defines model for zone-name.
 type ZoneName string
 
 // CreateAccessKeyJSONBody defines parameters for CreateAccessKey.
@@ -2232,9 +2262,6 @@ type CreateDbaasServiceKafkaJSONBody struct {
 	// Subscription plan
 	Plan string `json:"plan"`
 
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
-
 	// Enable Schema-Registry service
 	SchemaRegistryEnabled *bool `json:"schema-registry-enabled,omitempty"`
 
@@ -2292,9 +2319,6 @@ type UpdateDbaasServiceKafkaJSONBody struct {
 	// Subscription plan
 	Plan *string `json:"plan,omitempty"`
 
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
-
 	// Enable Schema-Registry service
 	SchemaRegistryEnabled *bool `json:"schema-registry-enabled,omitempty"`
 
@@ -2348,9 +2372,6 @@ type CreateDbaasServiceMysqlJSONBody struct {
 	// Subscription plan
 	Plan string `json:"plan"`
 
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
-
 	// ISO time of a backup to recover from for services that support arbitrary times
 	RecoveryBackupTime *string `json:"recovery-backup-time,omitempty"`
 
@@ -2397,9 +2418,6 @@ type UpdateDbaasServiceMysqlJSONBody struct {
 
 	// Subscription plan
 	Plan *string `json:"plan,omitempty"`
-
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
 
 	// Service is protected against termination and powering off
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
@@ -2450,9 +2468,6 @@ type CreateDbaasServicePgJSONBody struct {
 
 	// Subscription plan
 	Plan string `json:"plan"`
-
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
 
 	// ISO time of a backup to recover from for services that support arbitrary times
 	RecoveryBackupTime *string `json:"recovery-backup-time,omitempty"`
@@ -2515,9 +2530,6 @@ type UpdateDbaasServicePgJSONBody struct {
 	// Subscription plan
 	Plan *string `json:"plan,omitempty"`
 
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
-
 	// Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.
 	SharedBuffersPercentage *int64                        `json:"shared-buffers-percentage,omitempty"`
 	SynchronousReplication  *EnumPgSynchronousReplication `json:"synchronous-replication,omitempty"`
@@ -2558,9 +2570,6 @@ type CreateDbaasServiceRedisJSONBody struct {
 	// Subscription plan
 	Plan string `json:"plan"`
 
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
-
 	// Name of a backup to recover from for services that support backup names
 	RecoveryBackupName *string `json:"recovery-backup-name,omitempty"`
 
@@ -2593,9 +2602,6 @@ type UpdateDbaasServiceRedisJSONBody struct {
 
 	// Subscription plan
 	Plan *string `json:"plan,omitempty"`
-
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
 
 	// Redis.conf settings
 	RedisSettings *map[string]interface{} `json:"redis-settings,omitempty"`
@@ -2656,9 +2662,6 @@ type UpdateDbaasServiceJSONBody struct {
 
 	// Subscription plan
 	Plan *string `json:"plan,omitempty"`
-
-	// Power-on the service (true) or power-off (false)
-	Powered *bool `json:"powered,omitempty"`
 
 	// Service is protected against termination and powering off
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
@@ -3755,6 +3758,12 @@ type ClientInterface interface {
 	// GetDbaasCaCertificate request
 	GetDbaasCaCertificate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListDbaasIntegrationSettings request
+	ListDbaasIntegrationSettings(ctx context.Context, integrationType string, sourceType string, destType string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListDbaasIntegrationTypes request
+	ListDbaasIntegrationTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetDbaasServiceKafka request
 	GetDbaasServiceKafka(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4401,6 +4410,30 @@ func (c *Client) GetAntiAffinityGroup(ctx context.Context, id string, reqEditors
 
 func (c *Client) GetDbaasCaCertificate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetDbaasCaCertificateRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListDbaasIntegrationSettings(ctx context.Context, integrationType string, sourceType string, destType string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDbaasIntegrationSettingsRequest(c.Server, integrationType, sourceType, destType)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListDbaasIntegrationTypes(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDbaasIntegrationTypesRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -6953,6 +6986,81 @@ func NewGetDbaasCaCertificateRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/dbaas-ca-certificate")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListDbaasIntegrationSettingsRequest generates requests for ListDbaasIntegrationSettings
+func NewListDbaasIntegrationSettingsRequest(server string, integrationType string, sourceType string, destType string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "integration-type", runtime.ParamLocationPath, integrationType)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "source-type", runtime.ParamLocationPath, sourceType)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam2 string
+
+	pathParam2, err = runtime.StyleParamWithLocation("simple", false, "dest-type", runtime.ParamLocationPath, destType)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-integration-settings/%s/%s/%s", pathParam0, pathParam1, pathParam2)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListDbaasIntegrationTypesRequest generates requests for ListDbaasIntegrationTypes
+func NewListDbaasIntegrationTypesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-integration-types")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -12257,6 +12365,12 @@ type ClientWithResponsesInterface interface {
 	// GetDbaasCaCertificate request
 	GetDbaasCaCertificateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasCaCertificateResponse, error)
 
+	// ListDbaasIntegrationSettings request
+	ListDbaasIntegrationSettingsWithResponse(ctx context.Context, integrationType string, sourceType string, destType string, reqEditors ...RequestEditorFn) (*ListDbaasIntegrationSettingsResponse, error)
+
+	// ListDbaasIntegrationTypes request
+	ListDbaasIntegrationTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasIntegrationTypesResponse, error)
+
 	// GetDbaasServiceKafka request
 	GetDbaasServiceKafkaWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceKafkaResponse, error)
 
@@ -13003,6 +13117,60 @@ func (r GetDbaasCaCertificateResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetDbaasCaCertificateResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListDbaasIntegrationSettingsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		// The JSON schema representing the settings for the given integration type, source, and destination service types.
+		Settings *struct {
+			AdditionalProperties *bool                   `json:"additionalProperties,omitempty"`
+			Properties           *map[string]interface{} `json:"properties,omitempty"`
+			Title                *string                 `json:"title,omitempty"`
+			Type                 *string                 `json:"type,omitempty"`
+		} `json:"settings,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDbaasIntegrationSettingsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDbaasIntegrationSettingsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListDbaasIntegrationTypesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		DbaasIntegrations *[]DbaasIntegration `json:"dbaas-integrations,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListDbaasIntegrationTypesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListDbaasIntegrationTypesResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -16138,6 +16306,24 @@ func (c *ClientWithResponses) GetDbaasCaCertificateWithResponse(ctx context.Cont
 	return ParseGetDbaasCaCertificateResponse(rsp)
 }
 
+// ListDbaasIntegrationSettingsWithResponse request returning *ListDbaasIntegrationSettingsResponse
+func (c *ClientWithResponses) ListDbaasIntegrationSettingsWithResponse(ctx context.Context, integrationType string, sourceType string, destType string, reqEditors ...RequestEditorFn) (*ListDbaasIntegrationSettingsResponse, error) {
+	rsp, err := c.ListDbaasIntegrationSettings(ctx, integrationType, sourceType, destType, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDbaasIntegrationSettingsResponse(rsp)
+}
+
+// ListDbaasIntegrationTypesWithResponse request returning *ListDbaasIntegrationTypesResponse
+func (c *ClientWithResponses) ListDbaasIntegrationTypesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDbaasIntegrationTypesResponse, error) {
+	rsp, err := c.ListDbaasIntegrationTypes(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDbaasIntegrationTypesResponse(rsp)
+}
+
 // GetDbaasServiceKafkaWithResponse request returning *GetDbaasServiceKafkaResponse
 func (c *ClientWithResponses) GetDbaasServiceKafkaWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceKafkaResponse, error) {
 	rsp, err := c.GetDbaasServiceKafka(ctx, name, reqEditors...)
@@ -18026,6 +18212,68 @@ func ParseGetDbaasCaCertificateResponse(rsp *http.Response) (*GetDbaasCaCertific
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
 			Certificate *string `json:"certificate,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListDbaasIntegrationSettingsResponse parses an HTTP response from a ListDbaasIntegrationSettingsWithResponse call
+func ParseListDbaasIntegrationSettingsResponse(rsp *http.Response) (*ListDbaasIntegrationSettingsResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListDbaasIntegrationSettingsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			// The JSON schema representing the settings for the given integration type, source, and destination service types.
+			Settings *struct {
+				AdditionalProperties *bool                   `json:"additionalProperties,omitempty"`
+				Properties           *map[string]interface{} `json:"properties,omitempty"`
+				Title                *string                 `json:"title,omitempty"`
+				Type                 *string                 `json:"type,omitempty"`
+			} `json:"settings,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListDbaasIntegrationTypesResponse parses an HTTP response from a ListDbaasIntegrationTypesWithResponse call
+func ParseListDbaasIntegrationTypesResponse(rsp *http.Response) (*ListDbaasIntegrationTypesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListDbaasIntegrationTypesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			DbaasIntegrations *[]DbaasIntegration `json:"dbaas-integrations,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
