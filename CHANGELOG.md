@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.47.2
+
+### Bug Fixes
+
+- `exo dbaas show`: fix a crash with `pg`-type services
+- `exo limits`: add missing entry for NLBs
+
+
 ## 1.47.1
 
 ### Bug Fixes
