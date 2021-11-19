@@ -7,6 +7,21 @@ import (
 	"github.com/exoscale/egoscale/v2/oapi"
 )
 
+// IAMAccessKeyResource represents an API resource accessible to an IAM access key.
+type IAMAccessKeyResource struct {
+	Domain       string
+	ResourceName string
+	ResourceType string
+}
+
+func iamAccessKeyResourceFromAPI(r *oapi.AccessKeyResource) *IAMAccessKeyResource {
+	return &IAMAccessKeyResource{
+		Domain:       string(*r.Domain),
+		ResourceName: *r.ResourceName,
+		ResourceType: string(*r.ResourceType),
+	}
+}
+
 // IAMAccessKeyOperation represents an API operation supported by an IAM access key.
 type IAMAccessKeyOperation struct {
 	Name string
@@ -37,6 +52,26 @@ func CreateIAMAccessKeyWithOperations(v []string) CreateIAMAccessKeyOpt {
 	}
 }
 
+// CreateIAMAccessKeyWithResources sets a restricted list of API resources to the IAM access key.
+func CreateIAMAccessKeyWithResources(v []IAMAccessKeyResource) CreateIAMAccessKeyOpt {
+	return func(b *oapi.CreateAccessKeyJSONRequestBody) {
+		if len(v) > 0 {
+			b.Resources = func() *[]oapi.AccessKeyResource {
+				list := make([]oapi.AccessKeyResource, len(v))
+				for i, r := range v {
+					r := r
+					list[i] = oapi.AccessKeyResource{
+						Domain:       (*oapi.AccessKeyResourceDomain)(&r.Domain),
+						ResourceName: &r.ResourceName,
+						ResourceType: (*oapi.AccessKeyResourceResourceType)(&r.ResourceType),
+					}
+				}
+				return &list
+			}()
+		}
+	}
+}
+
 // CreateIAMAccessKeyWithTags sets a restricted list of API operation tags to the IAM access key.
 func CreateIAMAccessKeyWithTags(v []string) CreateIAMAccessKeyOpt {
 	return func(b *oapi.CreateAccessKeyJSONRequestBody) {
@@ -51,6 +86,7 @@ type IAMAccessKey struct {
 	Key        *string `req-for:"delete"`
 	Name       *string
 	Operations *[]string
+	Resources  *[]IAMAccessKeyResource
 	Secret     *string
 	Tags       *[]string
 	Type       *string
@@ -62,10 +98,20 @@ func iamAccessKeyFromAPI(k *oapi.AccessKey) *IAMAccessKey {
 		Key:        k.Key,
 		Name:       k.Name,
 		Operations: k.Operations,
-		Secret:     k.Secret,
-		Tags:       k.Tags,
-		Type:       (*string)(k.Type),
-		Version:    (*string)(k.Version),
+		Resources: func() *[]IAMAccessKeyResource {
+			if k.Resources != nil {
+				list := make([]IAMAccessKeyResource, len(*k.Resources))
+				for i, r := range *k.Resources {
+					list[i] = *iamAccessKeyResourceFromAPI(&r)
+				}
+				return &list
+			}
+			return nil
+		}(),
+		Secret:  k.Secret,
+		Tags:    k.Tags,
+		Type:    (*string)(k.Type),
+		Version: (*string)(k.Version),
 	}
 }
 

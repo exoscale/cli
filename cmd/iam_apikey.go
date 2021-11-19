@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"sort"
+	"time"
 
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -12,6 +14,15 @@ import (
 var apiKeyCmd = &cobra.Command{
 	Use:   "apikey",
 	Short: "API Keys management",
+	PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		fmt.Fprintln(os.Stderr,
+			`**********************************************************************
+The "exo iam apikey" commands are deprecated and will be removed in a future
+version, please use "exo iam access-key" replacement commands.
+**********************************************************************`)
+		time.Sleep(3 * time.Second)
+	},
+	Hidden: true,
 }
 
 func getAPIKeyByKey(key string) (*egoscale.APIKey, error) {
