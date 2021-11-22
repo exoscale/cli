@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type dbServiceDeleteCmd struct {
+type dbaasServiceDeleteCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
@@ -19,18 +19,18 @@ type dbServiceDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbServiceDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *dbaasServiceDeleteCmd) cmdAliases() []string { return gRemoveAlias }
 
-func (c *dbServiceDeleteCmd) cmdShort() string { return "Delete a Database Service" }
+func (c *dbaasServiceDeleteCmd) cmdShort() string { return "Delete a Database Service" }
 
-func (c *dbServiceDeleteCmd) cmdLong() string { return "" }
+func (c *dbaasServiceDeleteCmd) cmdLong() string { return "" }
 
-func (c *dbServiceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	if !c.Force {
@@ -51,7 +51,7 @@ func (c *dbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceDeleteCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceDeleteCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

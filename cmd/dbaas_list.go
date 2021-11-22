@@ -9,20 +9,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type dbServiceListItemOutput struct {
+type dbaasServiceListItemOutput struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
 	Plan string `json:"plan"`
 	Zone string `json:"zone"`
 }
 
-type dbServiceListOutput []dbServiceListItemOutput
+type dbaasServiceListOutput []dbaasServiceListItemOutput
 
-func (o *dbServiceListOutput) toJSON()  { outputJSON(o) }
-func (o *dbServiceListOutput) toText()  { outputText(o) }
-func (o *dbServiceListOutput) toTable() { outputTable(o) }
+func (o *dbaasServiceListOutput) toJSON()  { outputJSON(o) }
+func (o *dbaasServiceListOutput) toText()  { outputText(o) }
+func (o *dbaasServiceListOutput) toTable() { outputTable(o) }
 
-type dbServiceListCmd struct {
+type dbaasServiceListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
@@ -30,22 +30,22 @@ type dbServiceListCmd struct {
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *dbServiceListCmd) cmdAliases() []string { return gListAlias }
+func (c *dbaasServiceListCmd) cmdAliases() []string { return gListAlias }
 
-func (c *dbServiceListCmd) cmdShort() string { return "List Database Services" }
+func (c *dbaasServiceListCmd) cmdShort() string { return "List Database Services" }
 
-func (c *dbServiceListCmd) cmdLong() string {
+func (c *dbaasServiceListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Database Services.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&dbServiceListItemOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&dbaasServiceListItemOutput{}), ", "))
 }
 
-func (c *dbServiceListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
 
 	if c.Zone != "" {
@@ -54,8 +54,8 @@ func (c *dbServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		zones = allZones
 	}
 
-	out := make(dbServiceListOutput, 0)
-	res := make(chan dbServiceListItemOutput)
+	out := make(dbaasServiceListOutput, 0)
+	res := make(chan dbaasServiceListItemOutput)
 	defer close(res)
 
 	go func() {
@@ -72,7 +72,7 @@ func (c *dbServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		for _, dbService := range list {
-			res <- dbServiceListItemOutput{
+			res <- dbaasServiceListItemOutput{
 				Name: *dbService.Name,
 				Type: *dbService.Type,
 				Plan: *dbService.Plan,
@@ -91,7 +91,7 @@ func (c *dbServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceListCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceListCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

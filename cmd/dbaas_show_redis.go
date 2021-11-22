@@ -72,7 +72,7 @@ func formatDatabaseServiceRedisTable(t *table.Table, o *dbServiceRedisShowOutput
 	}()})
 }
 
-func (c *dbServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (outputter, error) {
+func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (outputter, error) {
 	res, err := cs.GetDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		return nil, err

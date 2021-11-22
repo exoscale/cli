@@ -4,11 +4,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var dbTypeCmd = &cobra.Command{
+var dbaasTypeCmd = &cobra.Command{
 	Use:   "type",
 	Short: "Database Services types management",
 }
 
 func init() {
-	dbaasCmd.AddCommand(dbTypeCmd)
+	dbaasCmd.AddCommand(dbaasTypeCmd)
 }

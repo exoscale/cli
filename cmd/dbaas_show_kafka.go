@@ -138,7 +138,7 @@ func formatDatabaseServiceKafkaTable(t *table.Table, o *dbServiceKafkaShowOutput
 	}()})
 }
 
-func (c *dbServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (outputter, error) {
+func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (outputter, error) {
 	res, err := cs.GetDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		return nil, err

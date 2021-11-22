@@ -8,11 +8,10 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
 )
 
-type dbTypePlanListItemOutput struct {
+type dbaasTypePlanListItemOutput struct {
 	Name       string `json:"name"`
 	Nodes      int64  `json:"nodes"`
 	NodeCPUs   int64  `json:"node_cpus"`
@@ -21,11 +20,11 @@ type dbTypePlanListItemOutput struct {
 	Authorized bool   `json:"authorized"`
 }
 
-type dbTypePlanListOutput []dbTypePlanListItemOutput
+type dbaasTypePlanListOutput []dbaasTypePlanListItemOutput
 
-func (o *dbTypePlanListOutput) toJSON() { outputJSON(o) }
-func (o *dbTypePlanListOutput) toText() { outputText(o) }
-func (o *dbTypePlanListOutput) toTable() {
+func (o *dbaasTypePlanListOutput) toJSON() { outputJSON(o) }
+func (o *dbaasTypePlanListOutput) toText() { outputText(o) }
+func (o *dbaasTypePlanListOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Name", "# Nodes", "# CPUs", "Node Memory", "Disk Space", "Authorized"})
 	defer t.Render()
@@ -42,16 +41,16 @@ func (o *dbTypePlanListOutput) toTable() {
 	}
 }
 
-type dbTypeShowOutput struct {
+type dbaasTypeShowOutput struct {
 	Name              string   `json:"name"`
 	Description       string   `json:"description"`
 	AvailableVersions []string `json:"available_versions"`
 	DefaultVersion    string   `json:"default_version"`
 }
 
-func (o *dbTypeShowOutput) toJSON() { outputJSON(o) }
-func (o *dbTypeShowOutput) toText() { outputText(o) }
-func (o *dbTypeShowOutput) toTable() {
+func (o *dbaasTypeShowOutput) toJSON() { outputJSON(o) }
+func (o *dbaasTypeShowOutput) toText() { outputText(o) }
+func (o *dbaasTypeShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
@@ -77,7 +76,7 @@ var (
 	redisSettings = []string{"redis"}
 )
 
-type dbTypeShowCmd struct {
+type dbaasTypeShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
@@ -88,11 +87,11 @@ type dbTypeShowCmd struct {
 	ShowSettings string `cli-flag:"settings" cli-usage:"show settings supported by the Database Service type"`
 }
 
-func (c *dbTypeShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *dbaasTypeShowCmd) cmdAliases() []string { return gShowAlias }
 
-func (c *dbTypeShowCmd) cmdShort() string { return "Show a Database Service type details" }
+func (c *dbaasTypeShowCmd) cmdShort() string { return "Show a Database Service type details" }
 
-func (c *dbTypeShowCmd) cmdLong() string {
+func (c *dbaasTypeShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Database Service type details.
 
 Supported Database Service type settings:
@@ -111,15 +110,15 @@ Supported output template annotations:
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
 		strings.Join(redisSettings, ", "),
-		strings.Join(outputterTemplateAnnotations(&dbTypeShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbTypePlanListItemOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
+		strings.Join(outputterTemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
 
-func (c *dbTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
@@ -131,9 +130,9 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.ShowPlans {
-		out := make(dbTypePlanListOutput, len(dt.Plans))
+		out := make(dbaasTypePlanListOutput, len(dt.Plans))
 		for i := range dt.Plans {
-			out[i] = dbTypePlanListItemOutput{
+			out[i] = dbaasTypePlanListItemOutput{
 				Name:       *dt.Plans[i].Name,
 				Nodes:      *dt.Plans[i].Nodes,
 				NodeCPUs:   *dt.Plans[i].NodeCPUs,
@@ -174,7 +173,7 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				settings = *res.JSON200.Settings.SchemaRegistry.Properties
 			}
 
-			c.showSettings(settings)
+			dbaasShowSettings(settings)
 
 		case "mysql":
 			if !isInList(mysqlSettings, c.ShowSettings) {
@@ -195,7 +194,7 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				settings = *res.JSON200.Settings.Mysql.Properties
 			}
 
-			c.showSettings(settings)
+			dbaasShowSettings(settings)
 
 		case "pg":
 			if !isInList(pgSettings, c.ShowSettings) {
@@ -220,7 +219,7 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				settings = *res.JSON200.Settings.Pglookout.Properties
 			}
 
-			c.showSettings(settings)
+			dbaasShowSettings(settings)
 
 		case "redis":
 			if !isInList(redisSettings, c.ShowSettings) {
@@ -241,13 +240,13 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				settings = *res.JSON200.Settings.Redis.Properties
 			}
 
-			c.showSettings(settings)
+			dbaasShowSettings(settings)
 		}
 
 		return nil
 	}
 
-	return c.outputFunc(&dbTypeShowOutput{
+	return c.outputFunc(&dbaasTypeShowOutput{
 		Name:        *dt.Name,
 		Description: defaultString(dt.Description, ""),
 		AvailableVersions: func() (v []string) {
@@ -260,61 +259,8 @@ func (c *dbTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}, nil)
 }
 
-func (c *dbTypeShowCmd) showSettings(settings map[string]interface{}) {
-	t := table.NewTable(os.Stdout)
-	defer t.Render()
-
-	t.SetHeader([]string{"key", "type", "description"})
-
-	for k, v := range settings {
-		s, ok := v.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		row := []string{k}
-
-		typ := "-"
-		if v, ok := s["type"]; ok {
-			typ = fmt.Sprint(v)
-		}
-		row = append(row, typ)
-
-		var description string
-		if v, ok := s["description"]; ok {
-			description = wordwrap.WrapString(v.(string), 50)
-
-			if v, ok := s["enum"]; ok {
-				description = fmt.Sprintf("%s\n  * Supported values:\n%s", description, func() string {
-					values := make([]string, len(v.([]interface{})))
-					for i, val := range v.([]interface{}) {
-						values[i] = fmt.Sprintf("    - %v", val)
-					}
-					return strings.Join(values, "\n")
-				}())
-			}
-
-			min, hasMin := s["minimum"]
-			max, hasMax := s["maximum"]
-			if hasMin && hasMax {
-				description = fmt.Sprintf("%s\n  * Minimum: %v / Maximum: %v", description, min, max)
-			}
-
-			if v, ok := s["default"]; ok {
-				description = fmt.Sprintf("%s\n  * Default: %v", description, v)
-			}
-
-			if v, ok := s["example"]; ok {
-				description = fmt.Sprintf("%s\n  * Example: %v", description, v)
-			}
-		}
-		row = append(row, description)
-
-		t.Append(row)
-	}
-}
-
 func init() {
-	cobra.CheckErr(registerCLICommand(dbTypeCmd, &dbTypeShowCmd{
+	cobra.CheckErr(registerCLICommand(dbaasTypeCmd, &dbaasTypeShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

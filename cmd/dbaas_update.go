@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type dbServiceUpdateCmd struct {
+type dbaasServiceUpdateCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
@@ -56,11 +56,11 @@ type dbServiceUpdateCmd struct {
 	RedisSettings string   `cli-flag:"redis-settings" cli-usage:"Redis configuration settings (JSON format)" cli-hidden:""`
 }
 
-func (c *dbServiceUpdateCmd) cmdAliases() []string { return nil }
+func (c *dbaasServiceUpdateCmd) cmdAliases() []string { return nil }
 
-func (c *dbServiceUpdateCmd) cmdShort() string { return "Update Database Service" }
+func (c *dbaasServiceUpdateCmd) cmdShort() string { return "Update Database Service" }
 
-func (c *dbServiceUpdateCmd) cmdLong() string {
+func (c *dbaasServiceUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates a Database Service.
 
 Supported values for --maintenance-dow: %s
@@ -71,7 +71,7 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *dbServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-kafka"):
 		cmdShowHelpFlags(cmd.Flags(), "kafka-")
@@ -91,7 +91,7 @@ func (c *dbServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	if (cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
 		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) &&
 		(!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
@@ -138,7 +138,7 @@ func (c *dbServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceUpdateCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceUpdateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
