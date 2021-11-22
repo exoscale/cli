@@ -10,17 +10,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type dbTypeListItemOutput struct {
+type dbaasTypeListItemOutput struct {
 	Name              string   `json:"name"`
 	AvailableVersions []string `json:"available_versions"`
 	DefaultVersion    string   `json:"default_version"`
 }
 
-type dbTypeListOutput []dbTypeListItemOutput
+type dbaasTypeListOutput []dbaasTypeListItemOutput
 
-func (o *dbTypeListOutput) toJSON() { outputJSON(o) }
-func (o *dbTypeListOutput) toText() { outputText(o) }
-func (o *dbTypeListOutput) toTable() {
+func (o *dbaasTypeListOutput) toJSON() { outputJSON(o) }
+func (o *dbaasTypeListOutput) toText() { outputText(o) }
+func (o *dbaasTypeListOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Name", "Available Versions", "Default Version"})
 	defer t.Render()
@@ -34,28 +34,28 @@ func (o *dbTypeListOutput) toTable() {
 	}
 }
 
-type dbTypeListCmd struct {
+type dbaasTypeListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *dbTypeListCmd) cmdAliases() []string { return nil }
+func (c *dbaasTypeListCmd) cmdAliases() []string { return nil }
 
-func (c *dbTypeListCmd) cmdShort() string { return "List Database Service types" }
+func (c *dbaasTypeListCmd) cmdShort() string { return "List Database Service types" }
 
-func (c *dbTypeListCmd) cmdLong() string {
+func (c *dbaasTypeListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Database Service types.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&dbTypeListItemOutput{}), ", "))
+		strings.Join(outputterTemplateAnnotations(&dbaasTypeListItemOutput{}), ", "))
 }
 
-func (c *dbTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
@@ -66,10 +66,10 @@ func (c *dbTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := make(dbTypeListOutput, 0)
+	out := make(dbaasTypeListOutput, 0)
 
 	for _, t := range dbTypes {
-		out = append(out, dbTypeListItemOutput{
+		out = append(out, dbaasTypeListItemOutput{
 			Name:           *t.Name,
 			DefaultVersion: defaultString(t.DefaultVersion, "-"),
 			AvailableVersions: func() (v []string) {
@@ -85,7 +85,7 @@ func (c *dbTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbTypeCmd, &dbTypeListCmd{
+	cobra.CheckErr(registerCLICommand(dbaasTypeCmd, &dbaasTypeListCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

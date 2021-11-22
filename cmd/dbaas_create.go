@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type dbServiceCreateCmd struct {
+type dbaasServiceCreateCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
@@ -68,11 +68,11 @@ type dbServiceCreateCmd struct {
 	RedisSettings           string   `cli-flag:"redis-settings" cli-usage:"Redis configuration settings (JSON format)" cli-hidden:""`
 }
 
-func (c *dbServiceCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *dbaasServiceCreateCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *dbServiceCreateCmd) cmdShort() string { return "Create a Database Service" }
+func (c *dbaasServiceCreateCmd) cmdShort() string { return "Create a Database Service" }
 
-func (c *dbServiceCreateCmd) cmdLong() string {
+func (c *dbaasServiceCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Database Service.
 
 Supported values for --maintenance-dow: %s
@@ -82,7 +82,7 @@ Supported output template annotations: %s`,
 		strings.Join(outputterTemplateAnnotations(&dbServiceShowOutput{}), ", "))
 }
 
-func (c *dbServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-kafka"):
 		cmdShowHelpFlags(cmd.Flags(), "kafka-")
@@ -102,7 +102,7 @@ func (c *dbServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	if (cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
 		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) &&
 		(!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
@@ -128,7 +128,7 @@ func (c *dbServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceCreateCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		TerminationProtection: true,

@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (c *dbServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) error {
+func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
@@ -142,7 +142,7 @@ func (c *dbServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return c.outputFunc((&dbServiceShowCmd{
+		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceKafka(ctx))

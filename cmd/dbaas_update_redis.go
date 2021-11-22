@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (c *dbServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) error {
+func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
@@ -76,7 +76,7 @@ func (c *dbServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return c.outputFunc((&dbServiceShowCmd{
+		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceRedis(ctx))

@@ -113,7 +113,7 @@ func (o *dbServiceShowOutput) toTable() {
 	}
 }
 
-type dbServiceShowCmd struct {
+type dbaasServiceShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
@@ -127,11 +127,11 @@ type dbServiceShowCmd struct {
 	Zone              string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbServiceShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *dbaasServiceShowCmd) cmdAliases() []string { return gShowAlias }
 
-func (c *dbServiceShowCmd) cmdShort() string { return "Show a Database Service details" }
+func (c *dbaasServiceShowCmd) cmdShort() string { return "Show a Database Service details" }
 
-func (c *dbServiceShowCmd) cmdLong() string {
+func (c *dbaasServiceShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Database Service details.
 
 Supported output template annotations:
@@ -178,12 +178,12 @@ Supported output template annotations:
 		strings.Join(outputterTemplateAnnotations(&dbServiceNotificationListItemOutput{}), ", "))
 }
 
-func (c *dbServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	databaseServices, err := cs.ListDatabaseServices(ctx, c.Zone)
@@ -220,7 +220,7 @@ func (c *dbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbServiceShowCmd{
+	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

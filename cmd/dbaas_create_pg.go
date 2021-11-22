@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (c *dbServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
+func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 	var err error
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
@@ -111,7 +111,7 @@ func (c *dbServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 	}
 
 	if !gQuiet {
-		return c.outputFunc((&dbServiceShowCmd{
+		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServicePG(ctx))

@@ -76,7 +76,7 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 	}()})
 }
 
-func (c *dbServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (outputter, error) {
+func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (outputter, error) {
 	res, err := cs.GetDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		return nil, err
