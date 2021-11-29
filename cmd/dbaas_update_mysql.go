@@ -81,9 +81,10 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 	}
 
 	if updated {
-		fmt.Printf("Updating Database Service %q...\n", c.Name)
-
-		res, err := cs.UpdateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		var res *oapi.UpdateDbaasServiceMysqlResponse
+		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
+			res, err = cs.UpdateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		})
 		if err != nil {
 			return err
 		}

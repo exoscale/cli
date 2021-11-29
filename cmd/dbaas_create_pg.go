@@ -100,9 +100,10 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 		databaseService.PgSettings = &settings
 	}
 
-	fmt.Printf("Creating Database Service %q...\n", c.Name)
-
-	res, err := cs.CreateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+	var res *oapi.CreateDbaasServicePgResponse
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+		res, err = cs.CreateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+	})
 	if err != nil {
 		return err
 	}

@@ -51,9 +51,10 @@ func (c *dbaasServiceCreateCmd) createRedis(_ *cobra.Command, _ []string) error 
 		databaseService.RedisSettings = &settings
 	}
 
-	fmt.Printf("Creating Database Service %q...\n", c.Name)
-
-	res, err := cs.CreateDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+	var res *oapi.CreateDbaasServiceRedisResponse
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+		res, err = cs.CreateDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+	})
 	if err != nil {
 		return err
 	}

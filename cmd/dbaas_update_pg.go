@@ -105,9 +105,10 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 	}
 
 	if updated {
-		fmt.Printf("Updating Database Service %q...\n", c.Name)
-
-		res, err := cs.UpdateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		var res *oapi.UpdateDbaasServicePgResponse
+		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
+			res, err = cs.UpdateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		})
 		if err != nil {
 			return err
 		}
