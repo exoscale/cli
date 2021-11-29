@@ -75,9 +75,10 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 		databaseService.MysqlSettings = &settings
 	}
 
-	fmt.Printf("Creating Database Service %q...\n", c.Name)
-
-	res, err := cs.CreateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+	var res *oapi.CreateDbaasServiceMysqlResponse
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+		res, err = cs.CreateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+	})
 	if err != nil {
 		return err
 	}

@@ -94,9 +94,10 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		databaseService.SchemaRegistrySettings = &settings
 	}
 
-	fmt.Printf("Creating Database Service %q...\n", c.Name)
-
-	res, err := cs.CreateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+	var res *oapi.CreateDbaasServiceKafkaResponse
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+		res, err = cs.CreateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+	})
 	if err != nil {
 		return err
 	}
