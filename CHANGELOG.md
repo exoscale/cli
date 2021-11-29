@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.48.0
+
+### Changes
+
+- `exo iam apikey *` commands are now deprecated, replaced by `exo iam access-key *`
+
+### Features
+
+- New `exo iam access-key *` commands
+- New `exo dbaas metrics` command
+- New `exo dbaas metrics` command
+
+
 ## 1.47.2
 
 ### Bug Fixes
