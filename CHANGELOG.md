@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.48.1
+
+### Bug Fixes
+
+- `exo compute sks`: fix a crash in the `create` command
+
+
 ## 1.48.0
 
 ### Changes
