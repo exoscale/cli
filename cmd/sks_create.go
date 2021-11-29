@@ -169,7 +169,12 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				}
 				return
 			}(),
-			Name: nonEmptyStringPtr(c.NodepoolName),
+			Name: nonEmptyStringPtr(func() string {
+				if c.NodepoolName != "" {
+					return c.NodepoolName
+				}
+				return c.Name
+			}()),
 			Size: &c.NodepoolSize,
 		}
 
