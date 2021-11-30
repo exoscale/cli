@@ -102,8 +102,8 @@ func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := dbServiceLogsOutput{
-		FirstLogOffset: *res.JSON200.FirstLogOffset,
-		Offset:         *res.JSON200.Offset,
+		FirstLogOffset: defaultString(res.JSON200.FirstLogOffset, "-"),
+		Offset:         defaultString(res.JSON200.Offset, "-"),
 		Logs:           make([]dbServiceLogsItemOutput, len(*res.JSON200.Logs)),
 	}
 
