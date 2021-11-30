@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.48.2
+
+### Bug Fixes
+
+- `exo dbaas`: fix a crash in the `logs` command
+
+
 ## 1.48.1
 
 ### Bug Fixes
