@@ -47,7 +47,7 @@ type sksCreateCmd struct {
 	OIDCGroupsClaim            string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
 	OIDCGroupsPrefix           string            `cli-flag:"oidc-groups-prefix" cli-usage:"OpenID prefix prepended to group claims"`
 	OIDCIssuerURL              string            `cli-flag:"oidc-issuer-url" cli-usage:"OpenID provider URL"`
-	OIDCRequiredClaim          string            `cli-flag:"oidc-required-claim" cli-usage:"a key=value pair that describes a required claim in the OpenID Token"`
+	OIDCRequiredClaim          map[string]string `cli-flag:"oidc-required-claim" cli-usage:"OpenID token required claim (format: key=value)"`
 	OIDCUsernameClaim          string            `cli-flag:"oidc-username-claim" cli-usage:"OpenID JWT claim to use as the user name"`
 	OIDCUsernamePrefix         string            `cli-flag:"oidc-username-prefix" cli-usage:"OpenID prefix prepended to username claims"`
 	ServiceLevel               string            `cli-usage:"SKS cluster control plane service level (starter|pro)"`
@@ -140,11 +140,16 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	var opts []egoscale.CreateSKSClusterOpt
 	if c.OIDCClientID != "" {
 		opts = append(opts, egoscale.CreateSKSClusterWithOIDC(&egoscale.SKSClusterOIDCConfig{
-			ClientID:       &c.OIDCClientID,
-			GroupsClaim:    nonEmptyStringPtr(c.OIDCGroupsClaim),
-			GroupsPrefix:   nonEmptyStringPtr(c.OIDCGroupsPrefix),
-			IssuerURL:      &c.OIDCIssuerURL,
-			RequiredClaim:  nonEmptyStringPtr(c.OIDCRequiredClaim),
+			ClientID:     &c.OIDCClientID,
+			GroupsClaim:  nonEmptyStringPtr(c.OIDCGroupsClaim),
+			GroupsPrefix: nonEmptyStringPtr(c.OIDCGroupsPrefix),
+			IssuerURL:    &c.OIDCIssuerURL,
+			RequiredClaim: func() (v *map[string]string) {
+				if len(c.OIDCRequiredClaim) > 0 {
+					v = &c.OIDCRequiredClaim
+				}
+				return
+			}(),
 			UsernameClaim:  nonEmptyStringPtr(c.OIDCUsernameClaim),
 			UsernamePrefix: nonEmptyStringPtr(c.OIDCUsernamePrefix),
 		}))

@@ -2147,14 +2147,19 @@ type SksOidc struct {
 	// OpenID provider URL
 	IssuerUrl string `json:"issuer-url"`
 
-	// A key=value pair that describes a required claim in the ID Token
-	RequiredClaim *string `json:"required-claim,omitempty"`
+	// A key value map that describes a required claim in the ID Token
+	RequiredClaim *SksOidc_RequiredClaim `json:"required-claim,omitempty"`
 
 	// JWT claim to use as the user name
 	UsernameClaim *string `json:"username-claim,omitempty"`
 
 	// Prefix prepended to username claims
 	UsernamePrefix *string `json:"username-prefix,omitempty"`
+}
+
+// A key value map that describes a required claim in the ID Token
+type SksOidc_RequiredClaim struct {
+	AdditionalProperties map[string]string `json:"-"`
 }
 
 // Snapshot
@@ -3755,6 +3760,59 @@ func (a *SksNodepoolTaints) UnmarshalJSON(b []byte) error {
 
 // Override default JSON handling for SksNodepoolTaints to handle AdditionalProperties
 func (a SksNodepoolTaints) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
+// Getter for additional properties for SksOidc_RequiredClaim. Returns the specified
+// element and whether it was found
+func (a SksOidc_RequiredClaim) Get(fieldName string) (value string, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for SksOidc_RequiredClaim
+func (a *SksOidc_RequiredClaim) Set(fieldName string, value string) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]string)
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for SksOidc_RequiredClaim to handle AdditionalProperties
+func (a *SksOidc_RequiredClaim) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]string)
+		for fieldName, fieldBuf := range object {
+			var fieldVal string
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for SksOidc_RequiredClaim to handle AdditionalProperties
+func (a SksOidc_RequiredClaim) MarshalJSON() ([]byte, error) {
 	var err error
 	object := make(map[string]json.RawMessage)
 
