@@ -140,7 +140,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.83.2
+# github.com/exoscale/egoscale v0.84.0
 ## explicit
 github.com/exoscale/egoscale
 github.com/exoscale/egoscale/v2

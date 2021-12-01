@@ -15,7 +15,7 @@ type SKSClusterOIDCConfig struct {
 	GroupsClaim    *string
 	GroupsPrefix   *string
 	IssuerURL      *string `req-for:"create"`
-	RequiredClaim  *string
+	RequiredClaim  *map[string]string
 	UsernameClaim  *string
 	UsernamePrefix *string
 }
@@ -32,11 +32,16 @@ func CreateSKSClusterWithOIDC(v *SKSClusterOIDCConfig) CreateSKSClusterOpt {
 
 		if v != nil {
 			b.Oidc = &oapi.SksOidc{
-				ClientId:       *v.ClientID,
-				GroupsClaim:    v.GroupsClaim,
-				GroupsPrefix:   v.GroupsPrefix,
-				IssuerUrl:      *v.IssuerURL,
-				RequiredClaim:  v.RequiredClaim,
+				ClientId:     *v.ClientID,
+				GroupsClaim:  v.GroupsClaim,
+				GroupsPrefix: v.GroupsPrefix,
+				IssuerUrl:    *v.IssuerURL,
+				RequiredClaim: func() *oapi.SksOidc_RequiredClaim {
+					if v.RequiredClaim != nil {
+						return &oapi.SksOidc_RequiredClaim{AdditionalProperties: *v.RequiredClaim}
+					}
+					return nil
+				}(),
 				UsernameClaim:  v.UsernameClaim,
 				UsernamePrefix: v.UsernamePrefix,
 			}

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.84.0
+------
+
+- change: v2: `SKSClusterOIDCConfig` struct field `RequiredClaim` now is a `map[string]string` type instead of a string
+
 0.83.2
 ------
 
