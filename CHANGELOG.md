@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.49.0
+
+### Changes
+
+- `exo compute sks create`: flag `--oidc-required-claim` value type is now string *stringToString* instead of *string*
+
+
 ## 1.48.2
 
 ### Bug Fixes
