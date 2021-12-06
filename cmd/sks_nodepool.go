@@ -15,7 +15,7 @@ var sksNodepoolCmd = &cobra.Command{
 }
 
 // parseSKSNodepoolTaint parses a CLI-formatted Kubernetes Node taint
-// description formatted as KEY=VALUE:EFFECT, and returns descrete values
+// description formatted as KEY=VALUE:EFFECT, and returns discrete values
 // for the taint key as well as the value/effect as egoscale.SKSNodepoolTaint,
 // or an error if the input value parsing failed.
 func parseSKSNodepoolTaint(v string) (string, *egoscale.SKSNodepoolTaint, error) {
