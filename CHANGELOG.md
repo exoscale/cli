@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.49.1
+
+### Bug Fixes
+
+- `exo compute instance-template register`: fix `--from-snapshot` flag
+
+
 ## 1.49.0
 
 ### Changes
