@@ -100,8 +100,8 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 			return fmt.Errorf("error retrieving snapshot export information: %w", err)
 		}
 
-		c.URL = *snapshotExport.PresignedURL
-		c.Checksum = *snapshotExport.MD5sum
+		template.URL = snapshotExport.PresignedURL
+		template.Checksum = snapshotExport.MD5sum
 
 		// Pre-setting the new template properties from the source template.
 		instance, err := cs.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
