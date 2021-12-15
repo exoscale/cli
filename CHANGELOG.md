@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.49.2
+
+- `exo dbaas`: fix a crash in the `show` command
+
+
 ## 1.49.1
 
 ### Bug Fixes
