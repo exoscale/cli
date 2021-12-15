@@ -2,8 +2,6 @@ run:
   timeout: 10m
 
 linters-settings:
-  gocyclo:
-    min-complexity: 28
   goimports:
     local-prefixes: github.com
 
@@ -13,7 +11,6 @@ linters:
     - errcheck
     - exportloopref
     - gocritic
-    - gocyclo
     - goimports
     - gosimple
     - govet

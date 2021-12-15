@@ -153,6 +153,15 @@ const (
 	EnumComponentUsageReplica EnumComponentUsage = "replica"
 )
 
+// Defines values for EnumIntegrationTypes.
+const (
+	EnumIntegrationTypesDatasource EnumIntegrationTypes = "datasource"
+
+	EnumIntegrationTypesMetrics EnumIntegrationTypes = "metrics"
+
+	EnumIntegrationTypesReadReplica EnumIntegrationTypes = "read_replica"
+)
+
 // Defines values for EnumKafkaAclPermissions.
 const (
 	EnumKafkaAclPermissionsAdmin EnumKafkaAclPermissions = "admin"
@@ -1304,9 +1313,9 @@ type DbaasServiceRedis struct {
 
 	// Redis connection information properties
 	ConnectionInfo *struct {
-		Password *string                   `json:"password,omitempty"`
-		Slave    *[]map[string]interface{} `json:"slave,omitempty"`
-		Uri      *[]string                 `json:"uri,omitempty"`
+		Password *string   `json:"password,omitempty"`
+		Slave    *[]string `json:"slave,omitempty"`
+		Uri      *[]string `json:"uri,omitempty"`
 	} `json:"connection-info,omitempty"`
 
 	// Service creation timestamp (ISO 8601)
@@ -1524,6 +1533,9 @@ type EnumComponentRoute string
 
 // EnumComponentUsage defines model for enum-component-usage.
 type EnumComponentUsage string
+
+// EnumIntegrationTypes defines model for enum-integration-types.
+type EnumIntegrationTypes string
 
 // EnumKafkaAclPermissions defines model for enum-kafka-acl-permissions.
 type EnumKafkaAclPermissions string
@@ -2295,17 +2307,14 @@ type CreateAntiAffinityGroupJSONBody struct {
 
 // CreateDbaasIntegrationJSONBody defines parameters for CreateDbaasIntegration.
 type CreateDbaasIntegrationJSONBody struct {
-	// A destination service
-	DestService string `json:"dest-service"`
+	DestService DbaasServiceName `json:"dest-service"`
 
 	// Integration type
 	IntegrationType string `json:"integration-type"`
 
 	// Integration settings
-	Settings *map[string]interface{} `json:"settings,omitempty"`
-
-	// A source service
-	SourceService string `json:"source-service"`
+	Settings      *map[string]interface{} `json:"settings,omitempty"`
+	SourceService DbaasServiceName        `json:"source-service"`
 }
 
 // UpdateDbaasIntegrationJSONBody defines parameters for UpdateDbaasIntegration.
@@ -2324,6 +2333,16 @@ type CreateDbaasServiceKafkaJSONBody struct {
 		// Enable SASL authentication
 		Sasl *bool `json:"sasl,omitempty"`
 	} `json:"authentication-methods,omitempty"`
+
+	// Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.
+	Integrations *[]struct {
+		DestService *DbaasServiceName `json:"dest-service,omitempty"`
+
+		// Integration settings
+		Settings      *map[string]interface{} `json:"settings,omitempty"`
+		SourceService *DbaasServiceName       `json:"source-service,omitempty"`
+		Type          EnumIntegrationTypes    `json:"type"`
+	} `json:"integrations,omitempty"`
 
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
 	IpFilter *[]string `json:"ip-filter,omitempty"`
@@ -2444,6 +2463,16 @@ type CreateDbaasServiceMysqlJSONBody struct {
 	BinlogRetentionPeriod *int64            `json:"binlog-retention-period,omitempty"`
 	ForkFromService       *DbaasServiceName `json:"fork-from-service,omitempty"`
 
+	// Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.
+	Integrations *[]struct {
+		DestService *DbaasServiceName `json:"dest-service,omitempty"`
+
+		// Integration settings
+		Settings      *map[string]interface{} `json:"settings,omitempty"`
+		SourceService *DbaasServiceName       `json:"source-service,omitempty"`
+		Type          EnumIntegrationTypes    `json:"type"`
+	} `json:"integrations,omitempty"`
+
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
 	IpFilter *[]string `json:"ip-filter,omitempty"`
 
@@ -2534,6 +2563,16 @@ type CreateDbaasServicePgJSONBody struct {
 		BackupMinute *int64 `json:"backup-minute,omitempty"`
 	} `json:"backup-schedule,omitempty"`
 	ForkFromService *DbaasServiceName `json:"fork-from-service,omitempty"`
+
+	// Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.
+	Integrations *[]struct {
+		DestService *DbaasServiceName `json:"dest-service,omitempty"`
+
+		// Integration settings
+		Settings      *map[string]interface{} `json:"settings,omitempty"`
+		SourceService *DbaasServiceName       `json:"source-service,omitempty"`
+		Type          EnumIntegrationTypes    `json:"type"`
+	} `json:"integrations,omitempty"`
 
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
 	IpFilter *[]string `json:"ip-filter,omitempty"`
@@ -2644,6 +2683,16 @@ type UpdateDbaasServicePgJSONBodyMaintenanceDow string
 // CreateDbaasServiceRedisJSONBody defines parameters for CreateDbaasServiceRedis.
 type CreateDbaasServiceRedisJSONBody struct {
 	ForkFromService *DbaasServiceName `json:"fork-from-service,omitempty"`
+
+	// Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.
+	Integrations *[]struct {
+		DestService *DbaasServiceName `json:"dest-service,omitempty"`
+
+		// Integration settings
+		Settings      *map[string]interface{} `json:"settings,omitempty"`
+		SourceService *DbaasServiceName       `json:"source-service,omitempty"`
+		Type          EnumIntegrationTypes    `json:"type"`
+	} `json:"integrations,omitempty"`
 
 	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
 	IpFilter *[]string `json:"ip-filter,omitempty"`
@@ -13954,7 +14003,7 @@ func (r GetDbaasServiceMysqlResponse) StatusCode() int {
 type CreateDbaasServiceMysqlResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *DbaasServicePg
+	JSON200      *DbaasServiceMysql
 }
 
 // Status returns HTTPResponse.Status
@@ -19326,7 +19375,7 @@ func ParseCreateDbaasServiceMysqlResponse(rsp *http.Response) (*CreateDbaasServi
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DbaasServicePg
+		var dest DbaasServiceMysql
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

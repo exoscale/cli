@@ -83,7 +83,7 @@ func ClientOptWithPollInterval(v time.Duration) ClientOpt {
 	}
 }
 
-// ClientOptWithTrace returns a ClientOpt enabling HTTP request/reponse tracing.
+// ClientOptWithTrace returns a ClientOpt enabling HTTP request/response tracing.
 func ClientOptWithTrace() ClientOpt {
 	return func(c *Client) error {
 		c.trace = true
@@ -199,7 +199,7 @@ func (c *Client) SetTimeout(v time.Duration) {
 	c.timeout = v
 }
 
-// SetTrace enables or disables HTTP request/reponse tracing.
+// SetTrace enables or disables HTTP request/response tracing.
 func (c *Client) SetTrace(enabled bool) {
 	c.trace = enabled
 }

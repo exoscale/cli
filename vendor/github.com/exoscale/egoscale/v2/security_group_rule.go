@@ -106,11 +106,16 @@ func (c *Client) CreateSecurityGroupRule(
 	// identify the rule that wasn't there before.
 	// Note: in case of multiple rules creation in parallel this technique is subject
 	// to race condition as we could return an unrelated rule. To prevent this, we
-	// also compare the protocol/start port/end port parameters of the new rule to the
-	// ones specified in the input rule parameter.
-	rules := make(map[string]struct{})
-	for _, r := range securityGroup.Rules {
-		rules[*r.ID] = struct{}{}
+	// also compare the properties of the new rule to the ones specified in the input
+	// rule parameter.
+	sgCurrent, err := c.GetSecurityGroup(ctx, zone, *securityGroup.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	currentRules := make(map[string]struct{})
+	for _, r := range sgCurrent.Rules {
+		currentRules[*r.ID] = struct{}{}
 	}
 
 	resp, err := c.AddRuleToSecurityGroupWithResponse(
@@ -166,10 +171,41 @@ func (c *Client) CreateSecurityGroupRule(
 		return nil, err
 	}
 
-	// Look for an unknown rule: if we find one we hope it's the one we've just created.
+	// Look for an unknown rule which properties match the one we've just created.
 	for _, r := range sgUpdated.Rules {
-		if _, ok := rules[*r.ID]; !ok && (*r.FlowDirection == *rule.FlowDirection && *r.Protocol == *rule.Protocol) {
-			return r, nil
+		if _, ok := currentRules[*r.ID]; !ok {
+			if *r.FlowDirection == *rule.FlowDirection && *r.Protocol == *rule.Protocol {
+				if rule.Description != nil && r.Description != nil && *r.Description != *rule.Description {
+					continue
+				}
+
+				if rule.StartPort != nil && r.StartPort != nil && *r.StartPort != *rule.StartPort {
+					continue
+				}
+
+				if rule.EndPort != nil && r.EndPort != nil && *r.EndPort != *rule.EndPort {
+					continue
+				}
+
+				if rule.Network != nil && r.Network != nil && r.Network.String() != rule.Network.String() {
+					continue
+				}
+
+				if rule.SecurityGroupID != nil && r.SecurityGroupID != nil &&
+					*r.SecurityGroupID != *rule.SecurityGroupID {
+					continue
+				}
+
+				if rule.ICMPType != nil && r.ICMPType != nil && *r.ICMPType != *rule.ICMPType {
+					continue
+				}
+
+				if rule.ICMPCode != nil && r.ICMPCode != nil && *r.ICMPCode != *rule.ICMPCode {
+					continue
+				}
+
+				return r, nil
+			}
 		}
 	}
 

@@ -100,8 +100,8 @@ github.com/dlclark/regexp2 v1.2.0 h1:8sAhBGEM0dRWogWqWyQeIJnxjWO6oIjl8FKqREDsGfk
 github.com/dlclark/regexp2 v1.2.0/go.mod h1:2pZnwuY/m+8K6iRw6wQdMtk+rH5tNGR1i55kozfMjCc=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
-github.com/exoscale/egoscale v0.84.0 h1:Belx+jVUXwhf11SBB5hZY6t27Aghi7vWf85kdMwiL84=
-github.com/exoscale/egoscale v0.84.0/go.mod h1:C1e4bJE8Ml1GylP14hOMGdCfgDDf9hMLsbny1QWsemw=
+github.com/exoscale/egoscale v0.84.3 h1:rxcezgxnBBPD6E5oykKKR/lumNUIreKJB8Wlalg9Vbg=
+github.com/exoscale/egoscale v0.84.3/go.mod h1:C1e4bJE8Ml1GylP14hOMGdCfgDDf9hMLsbny1QWsemw=
 github.com/exoscale/openapi-cli-generator v1.1.0 h1:fYjmPqHR5vxlOBrbvde7eo7bISNQIFxsGn4A5/acwKA=
 github.com/exoscale/openapi-cli-generator v1.1.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
