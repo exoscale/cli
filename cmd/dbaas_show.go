@@ -13,6 +13,32 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type dbServiceIntegrationListItemOutput struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"`
+	Source      string `json:"source"`
+	Destination string `json:"destination"`
+}
+
+type dbServiceIntegrationListOutput []dbServiceIntegrationListItemOutput
+
+func (o *dbServiceIntegrationListOutput) toJSON() { outputJSON(o) }
+func (o *dbServiceIntegrationListOutput) toText() { outputText(o) }
+func (o *dbServiceIntegrationListOutput) toTable() {
+	t := table.NewTable(os.Stdout)
+	defer t.Render()
+
+	t.SetHeader([]string{"ID", "Type", "Source", "Destination"})
+	for _, integration := range *o {
+		t.Append([]string{
+			integration.ID,
+			integration.Type,
+			integration.Source,
+			integration.Destination,
+		})
+	}
+}
+
 type dbServiceNotificationListItemOutput struct {
 	Level   string `json:"level"`
 	Message string `json:"message"`
@@ -121,6 +147,7 @@ type dbaasServiceShowCmd struct {
 	Name string `cli-arg:"#"`
 
 	ShowBackups       bool   `cli-flag:"backups" cli-usage:"show Database Service backups"`
+	ShowIntegrations  bool   `cli-flag:"integrations" cli-usage:"show Database Service integrations"`
 	ShowNotifications bool   `cli-flag:"notifications" cli-usage:"show Database Service notifications"`
 	ShowSettings      string `cli-flag:"settings" cli-usage:"show Database Service settings (see \"exo dbaas type show --help\" for supported settings)"`
 	ShowURI           bool   `cli-flag:"uri" cli-usage:"show Database Service connection URI"`
