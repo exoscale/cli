@@ -130,6 +130,20 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		}
 		return &out, nil
 
+	case c.ShowIntegrations:
+		out := make(dbServiceIntegrationListOutput, 0)
+		if databaseService.Integrations != nil {
+			for _, i := range *databaseService.Integrations {
+				out = append(out, dbServiceIntegrationListItemOutput{
+					ID:          *i.Id,
+					Type:        *i.Type,
+					Source:      *i.Source,
+					Destination: *i.Dest,
+				})
+			}
+		}
+		return &out, nil
+
 	case c.ShowNotifications:
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
