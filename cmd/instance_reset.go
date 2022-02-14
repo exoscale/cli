@@ -41,6 +41,7 @@ Supported output template annotations: %s`,
 
 func (c *instanceResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
+	cmdSetTemplateFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 

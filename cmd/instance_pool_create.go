@@ -115,6 +115,7 @@ in a future release, please use "--instance-type" instead.
 	}
 
 	cmdSetZoneFlagFromDefault(cmd)
+	cmdSetTemplateFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
@@ -253,7 +254,6 @@ func init() {
 		DiskSize:       50,
 		InstanceType:   fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
 		Size:           1,
-		Template:       defaultTemplate,
 		TemplateFilter: defaultTemplateFilter,
 	}))
 
@@ -264,7 +264,6 @@ func init() {
 		DiskSize:       50,
 		InstanceType:   fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
 		Size:           1,
-		Template:       defaultTemplate,
 		TemplateFilter: defaultTemplateFilter,
 	}))
 }
