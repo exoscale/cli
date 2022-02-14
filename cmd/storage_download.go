@@ -224,6 +224,12 @@ func (c *storageClient) downloadFile(bucket string, object *s3types.Object, dst 
 		),
 	)
 
+	// Workaround required to avoid the io.Reader from hanging when uploading empty files
+	// (see https://github.com/vbauerster/mpb/issues/7#issuecomment-518756758)
+	if object.Size == 0 {
+		bar.SetTotal(100, true)
+	}
+
 	f, err := os.OpenFile(dst, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err

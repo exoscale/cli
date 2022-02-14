@@ -290,13 +290,15 @@ func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
 	}
 
 	var contentType string
-	buf := make([]byte, 512) // http.DetectContentType() only looks at the first 512 bytes of the file.
-	if _, err = f.Read(buf); err != nil {
-		return err
-	}
-	contentType = http.DetectContentType(buf)
-	if _, err = f.Seek(0, 0); err != nil {
-		return err
+	if fileInfo.Size() >= 512 {
+		buf := make([]byte, 512) // http.DetectContentType() only looks at the first 512 bytes of the file.
+		if _, err = f.Read(buf); err != nil {
+			return err
+		}
+		contentType = http.DetectContentType(buf)
+		if _, err = f.Seek(0, 0); err != nil {
+			return err
+		}
 	}
 
 	// Because we wrap the input with a ProxyReader to render a progress bar
