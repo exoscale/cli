@@ -77,7 +77,6 @@ func cmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 // default template setting if set. This is a convenience helper, there is no guarantee that the flag will be
 // set once this function returns.
 func cmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
-	fmt.Print(cmd.Flag("template").Value.String())
 	if cmd.Flag("template").Value.String() == "" {
 		cmd.Flag("template").Value.Set(gCurrentAccount.DefaultTemplate) // nolint:errcheck
 	}
