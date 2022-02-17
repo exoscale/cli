@@ -55,6 +55,10 @@ func nonEmptyStringPtr(s string) *string {
 	return nil
 }
 
+func isEmptyStringPtr(s *string) bool {
+	return s == nil || *s == ""
+}
+
 // sliceToMap returns a map[string]string from a slice of KEY=VALUE formatted
 // strings.
 // This function is used to obtain a map[string]string from CLI flags, as the
