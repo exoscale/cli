@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.49.3
+
+### Bug Fixes
+
+- `exo compute`: fix to use defaultTemplate from current account
+
+- `exo storage`: fix empty object upload and download
+
 ## 1.49.2
 
 - `exo dbaas`: fix a crash in the `show` command
@@ -728,12 +736,12 @@
 
 ### Bug fixes
 
-* Fix bug when you use an API key with sos/* rights only (#217) 
+* Fix bug when you use an API key with sos/* rights only (#217)
 
 ### Changes
 
-* Changes the number of requests to minio before returning an error in `exo sos` (#213) 
-* Improves the output of the `exo iam apikey operations` command (#212) 
+* Changes the number of requests to minio before returning an error in `exo sos` (#213)
+* Improves the output of the `exo iam apikey operations` command (#212)
 
 
 ## 1.8.0
@@ -788,9 +796,9 @@
 * `exo vm create` now sets the service offering to *Medium* by default
 * `exo sos create` now checks if user-specified zone exists (#183)
 * `exo vm` lifecycle commands (`start`, `stop`...) are now more efficient with multiple instances (#134)
-* On Windows, `exo sos` commands now require an external file containing the Exoscale SOS secure certificate chain. Use 
+* On Windows, `exo sos` commands now require an external file containing the Exoscale SOS secure certificate chain. Use
   the `exo sos --help` for more information regarding this issue.
-  
+
 
 
 ## 1.5.1
@@ -849,7 +857,7 @@
 - exoscale/feat/updateIpAddress
 - Add the `eip update` command
 - exoscale/mcorbin/ch1915/eip-health-check
-- eip_create/eip-show: support for healthchecks 
+- eip_create/eip-show: support for healthchecks
 
 
 ## 1.1.4
