@@ -5,7 +5,7 @@ package oapi
 
 import "context"
 
-//go:generate oapi-codegen -generate types,client -package oapi -o oapi.gen.go ../../public-api.json
+//go:generate oapi-codegen -generate types,client -package oapi -o oapi.gen.go source.json
 
 type oapiClient interface {
 	ClientWithResponsesInterface

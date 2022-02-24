@@ -997,3 +997,12 @@ func (m *oapiClientMock) UpgradeSksClusterServiceLevelWithResponse(
 	args := m.Called(ctx, id, reqEditors)
 	return args.Get(0).(*oapi.UpgradeSksClusterServiceLevelResponse), args.Error(1)
 }
+
+func (m *oapiClientMock) GetDbaasMigrationStatusWithResponse(
+	ctx context.Context,
+	name oapi.DbaasServiceName,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.GetDbaasMigrationStatusResponse, error) {
+	args := m.Called(ctx, name, reqEditors)
+	return args.Get(0).(*oapi.GetDbaasMigrationStatusResponse), args.Error(1)
+}
