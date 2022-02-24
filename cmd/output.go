@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -133,6 +134,75 @@ func outputText(o interface{}) {
 	}
 }
 
+// outputTableHeaders turns CamelCase field names into eye-friendlier labels.
+// If the field has an `outputLabel` tag, use its value to override the header label.
+func outputTableHeaders(t reflect.Type) []string {
+	headers := make([]string, 0, t.NumField())
+	for i := 0; i < t.NumField(); i++ {
+		// Check if the field has to be skipped.
+		if l, ok := t.Field(i).Tag.Lookup("output"); ok {
+			if l == "-" {
+				continue
+			}
+		}
+
+		label := strings.Join(camelcase.Split(t.Field(i).Name), " ")
+		if l, ok := t.Field(i).Tag.Lookup("outputLabel"); ok {
+			label = l
+		}
+		headers = append(headers, label)
+	}
+
+	return headers
+}
+
+// outputTableRow turns the fields of an item into a table row
+func outputTableRow(item reflect.Value) []string {
+	row := []string{}
+	for i := 0; i < item.NumField(); i++ {
+		field := item.Field(i)
+		// Check if the field has to be skipped.
+		if l, ok := item.Type().Field(i).Tag.Lookup("output"); ok {
+			if l == "-" {
+				continue
+			}
+		}
+
+		switch field.Kind() {
+		case reflect.Slice:
+			// If the field value is a slice and is empty,
+			// print "n/a" instead of an empty slice.
+			if field.Len() == 0 {
+				row = append(row, "n/a")
+			} else {
+				row = append(row, fmt.Sprint(field.Interface()))
+			}
+
+		case reflect.Map:
+			// If the field value is a map and is empty,
+			// print "n/a" instead of an empty map.
+			if field.Len() == 0 {
+				row = append(row, "n/a")
+			} else {
+				row = append(row, fmt.Sprint(field.Interface()))
+			}
+
+		case reflect.Ptr:
+			// If the field value is a nil pointer, print "n/a" instead of <nil>
+			if field.IsNil() {
+				row = append(row, "n/a")
+			} else {
+				row = append(row, fmt.Sprint(field.Elem().Interface()))
+			}
+
+		default:
+			row = append(row, fmt.Sprint(field.Interface()))
+		}
+	}
+
+	return row
+}
+
 // outputTable prints a table-formatted rendering of o to the terminal.
 // If the object is of iterable type (slice only), each item is printed in a
 // table row, with a header containing one column per type field. Otherwise,
@@ -151,23 +221,7 @@ func outputTable(o interface{}) {
 		t = v.Type().Elem()
 	}
 
-	// Turn CamelCase field names into eye-friendlier labels.
-	// If the field has an `outputLabel` tag, use its value to override the header label.
-	headers := make([]string, 0)
-	for i := 0; i < t.NumField(); i++ {
-		// Check if the field has to be skipped.
-		if l, ok := t.Field(i).Tag.Lookup("output"); ok {
-			if l == "-" {
-				continue
-			}
-		}
-
-		label := strings.Join(camelcase.Split(t.Field(i).Name), " ")
-		if l, ok := t.Field(i).Tag.Lookup("outputLabel"); ok {
-			label = l
-		}
-		headers = append(headers, label)
-	}
+	headers := outputTableHeaders(t)
 
 	// If the outputter interface is iterable (slice only), we loop over the
 	// items and display each one in a table row.
@@ -175,50 +229,7 @@ func outputTable(o interface{}) {
 		tab.SetHeader(headers)
 
 		for i := 0; i < reflect.Indirect(v).Len(); i++ {
-			item := reflect.Indirect(v).Index(i)
-			row := make([]string, 0)
-
-			for j := 0; j < item.NumField(); j++ {
-				field := item.Field(j)
-				// Check if the field has to be skipped.
-				if l, ok := item.Type().Field(j).Tag.Lookup("output"); ok {
-					if l == "-" {
-						continue
-					}
-				}
-
-				switch field.Kind() {
-				case reflect.Slice:
-					// If the field value is a slice and is empty,
-					// print "n/a" instead of an empty slice.
-					if field.Len() == 0 {
-						row = append(row, "n/a")
-					} else {
-						row = append(row, fmt.Sprint(field.Interface()))
-					}
-
-				case reflect.Map:
-					// If the field value is a map and is empty,
-					// print "n/a" instead of an empty map.
-					if field.Len() == 0 {
-						row = append(row, "n/a")
-					} else {
-						row = append(row, fmt.Sprint(field.Interface()))
-					}
-
-				case reflect.Ptr:
-					// If the field value is a nil pointer, print "n/a" instead of <nil>
-					if field.IsNil() {
-						row = append(row, "n/a")
-					} else {
-						row = append(row, fmt.Sprint(field.Interface()))
-					}
-
-				default:
-					row = append(row, fmt.Sprint(field.Interface()))
-				}
-			}
-
+			row := outputTableRow(reflect.Indirect(v).Index(i))
 			tab.Append(row)
 		}
 
@@ -255,8 +266,17 @@ func outputTable(o interface{}) {
 			if n := v.Field(i).Len(); n == 0 {
 				tab.Append([]string{label, "n/a"})
 			} else {
-				items := v.Field(i).Interface().([]string)
-				tab.Append([]string{label, strings.Join(items, "\n")})
+				var embeddedBuf bytes.Buffer
+				embeddedTable := table.NewEmbeddedTable(&embeddedBuf)
+				embeddedTable.SetHeader(outputTableHeaders(v.Field(i).Type().Elem()))
+
+				for j := 0; j < reflect.Indirect(v.Field(i)).Len(); j++ {
+					row := outputTableRow(reflect.Indirect(v.Field(i)).Index(j))
+					embeddedTable.Append(row)
+				}
+
+				embeddedTable.Render()
+				tab.Append([]string{label, embeddedBuf.String()})
 			}
 
 		case reflect.Map:
@@ -279,7 +299,7 @@ func outputTable(o interface{}) {
 			if v.Field(i).IsNil() {
 				tab.Append([]string{label, "n/a"})
 			} else {
-				tab.Append([]string{label, fmt.Sprint(v.Field(i).Interface())})
+				tab.Append([]string{label, fmt.Sprint(v.Field(i).Elem().Interface())})
 			}
 
 		default:
