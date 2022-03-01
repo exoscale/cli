@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -78,4 +79,49 @@ func sliceToMap(v []string) (map[string]string, error) {
 	}
 
 	return m, nil
+}
+
+// versionMajor returns major part of a version number (given "x.y(.z)", returns "x").
+// If the input version is not in semver format, returns 0.
+func versionMajor(version string) uint32 {
+	parts := strings.Split(version, ".")
+
+	if len(parts) > 0 {
+		v, e := strconv.ParseUint(parts[0], 10, 32)
+		if e != nil {
+			return 0
+		}
+
+		return uint32(v)
+	}
+
+	return 0
+}
+
+// versionMinor returns minor part of a version number (given "x.y(.z)", returns "y").
+// If the input version is not in semver format, returns 0.
+func versionMinor(version string) uint32 {
+	parts := strings.Split(version, ".")
+
+	if len(parts) > 1 {
+		v, e := strconv.ParseUint(parts[1], 10, 32)
+		if e != nil {
+			return 0
+		}
+
+		return uint32(v)
+	}
+
+	return 0
+}
+
+// versionIsNewer returns true if new version has potential deprecation
+func versionIsNewer(old, new string) bool {
+	return (versionMajor(new) >= versionMajor(old)) ||
+		(versionMajor(new) == versionMajor(old) && versionMinor(new) >= versionMinor(old))
+}
+
+// versionsAreEquivalent returns true if new and old versions both have same major and minor numbers
+func versionsAreEquivalent(a, b string) bool {
+	return (versionMajor(b) == versionMajor(a) && versionMinor(b) == versionMinor(a))
 }

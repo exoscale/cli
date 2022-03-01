@@ -41,20 +41,29 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		deprecatedResources, err := cs.ListSKSClusterDeprecatedResources(
-			ctx,
-			c.Zone,
-			cluster,
-		)
-		if err != nil {
-			return fmt.Errorf("error retrieving deprecated resources: %w", err)
-		}
+		if versionIsNewer(c.Version, *cluster.Version) {
+			deprecatedResources, err := cs.ListSKSClusterDeprecatedResources(
+				ctx,
+				c.Zone,
+				cluster,
+			)
+			if err != nil {
+				return fmt.Errorf("error retrieving deprecated resources: %w", err)
+			}
 
-		if len(deprecatedResources) > 0 {
-			fmt.Println("Some resources in your cluster are using deprecated APIs:")
+			removedDeprecatedResources := []*v2.SKSClusterDeprecatedResource{}
+			for _, resource := range deprecatedResources {
+				if versionsAreEquivalent(*resource.RemovedRelease, *cluster.Version) {
+					removedDeprecatedResources = append(removedDeprecatedResources, resource)
+				}
+			}
 
-			for _, t := range deprecatedResources {
-				fmt.Println("- " + formatDeprecatedResource(t))
+			if len(removedDeprecatedResources) > 0 {
+				fmt.Println("Some resources in your cluster are using deprecated APIs:")
+
+				for _, t := range removedDeprecatedResources {
+					fmt.Println("- " + formatDeprecatedResource(t))
+				}
 			}
 		}
 
