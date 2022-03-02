@@ -217,3 +217,88 @@ func (c *Client) ListDatabaseServices(ctx context.Context, zone string) ([]*Data
 
 	return list, nil
 }
+
+type DatabaseMigrationStatusDetailsStatus string
+
+const (
+	DatabaseMigrationStatusDone    DatabaseMigrationStatusDetailsStatus = "done"
+	DatabaseMigrationStatusFailed  DatabaseMigrationStatusDetailsStatus = "failed"
+	DatabaseMigrationStatusRunning DatabaseMigrationStatusDetailsStatus = "running"
+	DatabaseMigrationStatusSyncing DatabaseMigrationStatusDetailsStatus = "syncing"
+)
+
+type DatabaseMigrationRedisMasterLinkStatus string
+
+// Defines values for MasterLinkStatus.
+const (
+	MasterLinkStatusDown DatabaseMigrationRedisMasterLinkStatus = "down"
+
+	MasterLinkStatusUp DatabaseMigrationRedisMasterLinkStatus = "up"
+)
+
+type DatabaseMigrationStatusDetails struct {
+	// Migrated db name (PG) or number (Redis)
+	DBName *string
+
+	// Error message in case that migration has failed
+	Error *string
+
+	// Migration method
+	Method *string
+	Status *DatabaseMigrationStatusDetailsStatus
+}
+
+type DatabaseMigrationStatus struct {
+	// Migration status per database
+	Details []DatabaseMigrationStatusDetails
+
+	// Error message in case that migration has failed
+	Error *string
+
+	// Redis only: how many seconds since last I/O with redis master
+	MasterLastIOSecondsAgo *int64
+	MasterLinkStatus       *DatabaseMigrationRedisMasterLinkStatus
+
+	// Migration method. Empty in case of multiple methods or error
+	Method *string
+
+	// Migration status
+	Status *string
+}
+
+func databaseMigrationStatusFromAPI(in *oapi.DbaasMigrationStatus) *DatabaseMigrationStatus {
+	if in == nil {
+		return nil
+	}
+
+	out := &DatabaseMigrationStatus{
+		Details:                []DatabaseMigrationStatusDetails{},
+		Error:                  in.Error,
+		MasterLastIOSecondsAgo: in.MasterLastIoSecondsAgo,
+		MasterLinkStatus:       (*DatabaseMigrationRedisMasterLinkStatus)(in.MasterLinkStatus),
+		Method:                 in.Method,
+		Status:                 in.Status,
+	}
+
+	if in.Details != nil {
+		for _, d := range *in.Details {
+			out.Details = append(out.Details, DatabaseMigrationStatusDetails{
+				DBName: d.Dbname,
+				Error:  d.Error,
+				Method: d.Method,
+				Status: (*DatabaseMigrationStatusDetailsStatus)(d.Status),
+			})
+		}
+	}
+
+	return out
+}
+
+func (c *Client) GetDatabaseMigrationStatus(ctx context.Context, zone string, name string) (*DatabaseMigrationStatus, error) {
+	resp, err := c.GetDbaasMigrationStatusWithResponse(apiv2.WithZone(ctx, zone), oapi.DbaasServiceName(name))
+	if err != nil {
+		return nil, err
+	}
+
+	return databaseMigrationStatusFromAPI(resp.JSON200), nil
+}
