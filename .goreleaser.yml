@@ -1,5 +1,9 @@
 project_name: exoscale-cli
 
+before:
+  hooks:
+    - make manpages completions sos-certificates
+
 builds:
   - binary: exo
     env:
@@ -26,8 +30,6 @@ builds:
         goarch: arm
       - goos: openbsd
         goarch: arm64
-    hooks:
-      pre: make manpages completions sos-certificates
 
 # macOS Universal Binaries
 universal_binaries:
