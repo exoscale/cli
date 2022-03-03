@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.50.0
+
+### Features
+
+- `exo dbaas migration status`: get the status of a dbaas migration
+
+
 ## 1.49.3
 
 ### Bug Fixes
