@@ -27,7 +27,8 @@ builds:
       - goos: openbsd
         goarch: arm64
     hooks:
-      pre: make manpages completions sos-certificates
+      # we need bash for brace expansion
+      pre: make SHELL=/bin/bash manpages completions sos-certificates
 
 # macOS Universal Binaries
 universal_binaries:
