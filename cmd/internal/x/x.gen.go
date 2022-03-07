@@ -490,266 +490,6 @@ func XGetDbaasCaCertificate(params *viper.Viper) (*gentleman.Response, map[strin
 	return resp, decoded, nil
 }
 
-// XCreateDbaasIntegration Create a new DBaaS integration between two services
-func XCreateDbaasIntegration(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "create-dbaas-integration"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/dbaas-integration"
-
-	req := cli.Client.Post().URL(url)
-
-	if body != "" {
-		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
-	}
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XListDbaasIntegrationSettings Get DBaaS integration settings
-func XListDbaasIntegrationSettings(paramIntegrationType string, paramSourceType string, paramDestType string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "list-dbaas-integration-settings"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/dbaas-integration-settings/{integration-type}/{source-type}/{dest-type}"
-	url = strings.Replace(url, "{integration-type}", paramIntegrationType, 1)
-	url = strings.Replace(url, "{source-type}", paramSourceType, 1)
-	url = strings.Replace(url, "{dest-type}", paramDestType, 1)
-
-	req := cli.Client.Get().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XListDbaasIntegrationTypes Get DBaaS integration types
-func XListDbaasIntegrationTypes(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "list-dbaas-integration-types"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/dbaas-integration-types"
-
-	req := cli.Client.Get().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XDeleteDbaasIntegration Delete a DBaaS Integration
-func XDeleteDbaasIntegration(paramIntegrationUuid string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "delete-dbaas-integration"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/dbaas-integration/{integration-uuid}"
-	url = strings.Replace(url, "{integration-uuid}", paramIntegrationUuid, 1)
-
-	req := cli.Client.Delete().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XGetDbaasIntegration Get a DBaaS Integration
-func XGetDbaasIntegration(paramIntegrationUuid string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "get-dbaas-integration"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/dbaas-integration/{integration-uuid}"
-	url = strings.Replace(url, "{integration-uuid}", paramIntegrationUuid, 1)
-
-	req := cli.Client.Get().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
-// XUpdateDbaasIntegration Update a existing DBaaS integration
-func XUpdateDbaasIntegration(paramIntegrationUuid string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "update-dbaas-integration"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/dbaas-integration/{integration-uuid}"
-	url = strings.Replace(url, "{integration-uuid}", paramIntegrationUuid, 1)
-
-	req := cli.Client.Put().URL(url)
-
-	if body != "" {
-		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
-	}
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
 // XCreateDbaasServiceKafka Create a DBaaS Kafka service
 func XCreateDbaasServiceKafka(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-dbaas-service-kafka"
@@ -1897,6 +1637,95 @@ func XGetDbaasSettingsRedis(params *viper.Viper) (*gentleman.Response, map[strin
 	}
 
 	url := server + "/dbaas-settings-redis"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XCreateDbaasTaskMigrationCheck Create a DBaaS task to check migration
+func XCreateDbaasTaskMigrationCheck(paramService string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-dbaas-task-migration-check"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-task-migration-check/{service}"
+	url = strings.Replace(url, "{service}", paramService, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetDbaasTask Get a DBaaS task
+func XGetDbaasTask(paramService string, paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dbaas-task"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-task/{service}/{id}"
+	url = strings.Replace(url, "{service}", paramService, 1)
+	url = strings.Replace(url, "{id}", paramId, 1)
 
 	req := cli.Client.Get().URL(url)
 
@@ -3279,6 +3108,52 @@ func XResetInstanceField(paramId string, paramField string, params *viper.Viper)
 	return resp, decoded, nil
 }
 
+// XAddInstanceProtection Set instance destruction protection
+func XAddInstanceProtection(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "add-instance-protection"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/instance/{id}:add-protection"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateSnapshot Create a Snapshot of a Compute instance
 func XCreateSnapshot(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-snapshot"
@@ -3338,6 +3213,52 @@ func XRebootInstance(paramId string, params *viper.Viper, body string) (*gentlem
 	}
 
 	url := server + "/instance/{id}:reboot"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XRemoveInstanceProtection Remove instance destruction protection
+func XRemoveInstanceProtection(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "remove-instance-protection"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/instance/{id}:remove-protection"
 	url = strings.Replace(url, "{id}", paramId, 1)
 
 	req := cli.Client.Put().URL(url)
@@ -7232,224 +7153,6 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "create-dbaas-integration",
-			Short:   "Create a new DBaaS integration between two services",
-			Long:    cli.Markdown("Create a new DBaaS integration between two services\n## Request Schema (application/json)\n\nproperties:\n  dest-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integration-type:\n    description: Integration type\n    minLength: 1\n    type: string\n  settings:\n    description: Integration settings\n    type: object\n  source-service:\n    $ref: '#/components/schemas/dbaas-service-name'\nrequired:\n- integration-type\n- source-service\n- dest-service\ntype: object\n"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(0),
-			Run: func(cmd *cobra.Command, args []string) {
-				body, err := cli.GetBody("application/json", args[0:])
-				if err != nil {
-					log.Fatal().Err(err).Msg("Unable to get body")
-				}
-
-				_, decoded, err := XCreateDbaasIntegration(params, body)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "list-dbaas-integration-settings integration-type source-type dest-type",
-			Short:   "Get DBaaS integration settings",
-			Long:    cli.Markdown("Get DBaaS integration settings"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(3),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XListDbaasIntegrationSettings(args[0], args[1], args[2], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "list-dbaas-integration-types",
-			Short:   "Get DBaaS integration types",
-			Long:    cli.Markdown("Get DBaaS integration types"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(0),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XListDbaasIntegrationTypes(params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "delete-dbaas-integration integration-uuid",
-			Short:   "Delete a DBaaS Integration",
-			Long:    cli.Markdown("Delete a DBaaS Integration"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XDeleteDbaasIntegration(args[0], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "get-dbaas-integration integration-uuid",
-			Short:   "Get a DBaaS Integration",
-			Long:    cli.Markdown("Get a DBaaS Integration"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XGetDbaasIntegration(args[0], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "update-dbaas-integration integration-uuid",
-			Short:   "Update a existing DBaaS integration",
-			Long:    cli.Markdown("Update a existing DBaaS integration\n## Request Schema (application/json)\n\nproperties:\n  settings:\n    description: Integration settings\n    type: object\nrequired:\n- settings\ntype: object\n"),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-				body, err := cli.GetBody("application/json", args[1:])
-				if err != nil {
-					log.Fatal().Err(err).Msg("Unable to get body")
-				}
-
-				_, decoded, err := XUpdateDbaasIntegration(args[0], params, body)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-kafka name",
 			Short:   "Create a DBaaS Kafka service",
 			Long:    cli.Markdown("Create a DBaaS Kafka service\n## Request Schema (application/json)\n\nproperties:\n  authentication-methods:\n    description: Kafka authentication methods\n    properties:\n      certificate:\n        description: Enable certificate/SSL authentication\n        type: boolean\n      sasl:\n        description: Enable SASL authentication\n        type: boolean\n    type: object\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  kafka-connect-enabled:\n    description: Allow clients to connect to kafka_connect from the public internet for service nodes that are in a project VPC or another type of private network\n    type: boolean\n  kafka-connect-settings:\n    description: Kafka Connect configuration values\n    type: object\n  kafka-rest-enabled:\n    description: Enable Kafka-REST service\n    type: boolean\n  kafka-rest-settings:\n    description: Kafka REST configuration\n    type: object\n  kafka-settings:\n    description: Kafka-specific settings\n    type: object\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  schema-registry-enabled:\n    description: Enable Schema-Registry service\n    type: boolean\n  schema-registry-settings:\n    description: Schema Registry configuration\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: Kafka major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
@@ -7600,7 +7303,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-mysql name",
 			Short:   "Create a DBaaS MySQL service",
-			Long:    cli.Markdown("Create a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector.\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-pg-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  mysql-settings:\n    description: MySQL-specific settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: MySQL major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector.\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  mysql-settings:\n    description: MySQL-specific settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  version:\n    description: MySQL major version\n    minLength: 1\n    type: string\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -7674,7 +7377,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-mysql name",
 			Short:   "Update a DBaaS MySQL service",
-			Long:    cli.Markdown("Update a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector.\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-pg-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  mysql-settings:\n    description: MySQL-specific settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS MySQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  binlog-retention-period:\n    description: The minimum amount of time in seconds to keep binlog entries before deletion. This may be extended for services that require binlog entries for longer than the default for example if using the MySQL Debezium Kafka connector.\n    format: int64\n    maximum: 86400\n    minimum: 600\n    type: integer\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  mysql-settings:\n    description: MySQL-specific settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -7826,7 +7529,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-pg name",
 			Short:   "Create a DBaaS PostgreSQL service",
-			Long:    cli.Markdown("Create a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-pg-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: PostgreSQL major version\n    minLength: 1\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: PostgreSQL major version\n    minLength: 1\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -7900,7 +7603,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-pg name",
 			Short:   "Update a DBaaS PostgreSQL service",
-			Long:    cli.Markdown("Update a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-pg-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -7939,7 +7642,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-redis name",
 			Short:   "Create a DBaaS Redis service",
-			Long:    cli.Markdown("Create a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-pg-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-name:\n    description: Name of a backup to recover from for services that support backup names\n    minLength: 1\n    type: string\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("Create a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-name:\n    description: Name of a backup to recover from for services that support backup names\n    minLength: 1\n    type: string\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -8013,7 +7716,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-service-redis name",
 			Short:   "Update a DBaaS Redis service",
-			Long:    cli.Markdown("Update a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-pg-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
+			Long:    cli.Markdown("Update a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -8416,6 +8119,80 @@ func xRegister(subcommand bool) {
 			Run: func(cmd *cobra.Command, args []string) {
 
 				_, decoded, err := XGetDbaasSettingsRedis(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-dbaas-task-migration-check service",
+			Short:   "Create a DBaaS task to check migration",
+			Long:    cli.Markdown("Create a DBaaS task to check migration\n## Request Schema (application/json)\n\nproperties:\n  ignore-dbs:\n    description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n    maxLength: 2048\n    minLength: 1\n    type: string\n  method:\n    $ref: '#/components/schemas/enum-migration-method'\n  source-service-uri:\n    description: Service URI of the source MySQL or PostgreSQL database with admin credentials.\n    maxLength: 512\n    minLength: 1\n    type: string\nrequired:\n- source-service-uri\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateDbaasTaskMigrationCheck(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-dbaas-task service id",
+			Short:   "Get a DBaaS task",
+			Long:    cli.Markdown("Get a DBaaS task"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDbaasTask(args[0], args[1], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -9210,7 +8987,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-instance-pool id",
 			Short:   "Update an Instance Pool",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Pool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  description:\n    description: Instance Pool description\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\n  disk-size:\n    description: Instances disk size in GB\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  elastic-ips:\n    description: Instances Elastic IPs\n    items:\n      $ref: '#/components/schemas/elastic-ip'\n    type: array\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool)'\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  ipv6-enabled:\n    description: Enable IPv6 for instances\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance Pool name\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Instance Pool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network'\n    type: array\n    uniqueItems: true\n  security-groups:\n    description: Instance Pool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key'\n  template:\n    $ref: '#/components/schemas/template'\n  user-data:\n    description: Instances Cloud-init user-data\n    minLength: 1\n    nullable: true\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Pool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    nullable: true\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  description:\n    description: Instance Pool description\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\n  disk-size:\n    description: Instances disk size in GB\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  elastic-ips:\n    description: Instances Elastic IPs\n    items:\n      $ref: '#/components/schemas/elastic-ip'\n    nullable: true\n    type: array\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool)'\n    nullable: true\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  ipv6-enabled:\n    description: Enable IPv6 for instances\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance Pool name\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Instance Pool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network'\n    nullable: true\n    type: array\n    uniqueItems: true\n  security-groups:\n    description: Instance Pool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    nullable: true\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key'\n  template:\n    $ref: '#/components/schemas/template'\n  user-data:\n    description: Instances Cloud-init user-data\n    minLength: 1\n    nullable: true\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -9574,6 +9351,45 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "add-instance-protection id",
+			Short:   "Set instance destruction protection",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XAddInstanceProtection(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-snapshot id",
 			Short:   "Create a Snapshot of a Compute instance",
 			Long:    cli.Markdown(""),
@@ -9625,6 +9441,45 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XRebootInstance(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "remove-instance-protection id",
+			Short:   "Remove instance destruction protection",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XRemoveInstanceProtection(args[0], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
