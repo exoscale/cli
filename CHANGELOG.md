@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.51.0
+
+### Features
+
+- `exo compute sks deprecated-resources`: list deprecated resources that will be removed in a future version of Kubernetes
+
+### Changes
+
+- `exo compute sks upgrade`: now warns about deprecated resources if target version doesn't support them anymore.
+
 ## 1.50.0
 
 ### Features
