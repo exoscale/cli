@@ -266,17 +266,26 @@ func outputTable(o interface{}) {
 			if n := v.Field(i).Len(); n == 0 {
 				tab.Append([]string{label, "n/a"})
 			} else {
-				var embeddedBuf bytes.Buffer
-				embeddedTable := table.NewEmbeddedTable(&embeddedBuf)
-				embeddedTable.SetHeader(outputTableHeaders(v.Field(i).Type().Elem()))
+				switch v.Field(i).Type().Elem().Kind() {
+				case reflect.Struct:
+					var embeddedBuf bytes.Buffer
+					embeddedTable := table.NewEmbeddedTable(&embeddedBuf)
 
-				for j := 0; j < reflect.Indirect(v.Field(i)).Len(); j++ {
-					row := outputTableRow(reflect.Indirect(v.Field(i)).Index(j))
-					embeddedTable.Append(row)
+					embeddedTable.SetHeader(outputTableHeaders(v.Field(i).Type().Elem()))
+
+					for j := 0; j < reflect.Indirect(v.Field(i)).Len(); j++ {
+						row := outputTableRow(reflect.Indirect(v.Field(i)).Index(j))
+						embeddedTable.Append(row)
+					}
+
+					embeddedTable.Render()
+					tab.Append([]string{label, embeddedBuf.String()})
+				case reflect.String:
+					items := v.Field(i).Interface().([]string)
+					tab.Append([]string{label, strings.Join(items, "\n")})
+				default:
+					tab.Append([]string{label, "(type not supported)\n"})
 				}
-
-				embeddedTable.Render()
-				tab.Append([]string{label, embeddedBuf.String()})
 			}
 
 		case reflect.Map:
