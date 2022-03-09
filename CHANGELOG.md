@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.51.3
+
+### Bug Fixes
+
+- Fix panic while rendering the table output of some commands (#439)
+
 ## 1.51.0
 
 ### Features
