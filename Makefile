@@ -11,9 +11,11 @@ OAS_FILE := public-api.json
 x-cmd: ## Generates code for "exo x" experimental subcommands
 	@if [ ! -f "$(shell go env GOPATH)/bin/openapi-cli-generator" ]; then
 		echo "openapi-cli-generator tool not found, downloading"
-		go get -u github.com/exoscale/openapi-cli-generator
+		go install github.com/exoscale/openapi-cli-generator@latest
 	fi
-	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go $(OAS_FILE)
+	wget -q https://openapi-v2.exoscale.com/source.json
+	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go source.json
+	@rm source.json
 
 .PHONY: docker
 docker: ## Builds a Docker image containing the exo CLI
