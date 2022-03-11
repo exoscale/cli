@@ -9,6 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	sksNodepoolAddonLinbit = "linbit"
+)
+
 type sksNodepoolAddCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
@@ -24,6 +28,7 @@ type sksNodepoolAddCmd struct {
 	InstancePrefix     string   `cli-usage:"string to prefix Nodepool member names with"`
 	InstanceType       string   `cli-usage:"Nodepool Compute instances type"`
 	Labels             []string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
+	Linbit             bool     `cli-usage:"Create nodes with non-stadard partitioning for Linstor"`
 	PrivateNetworks    []string `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	SecurityGroups     []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Size               int64    `cli-usage:"Nodepool size"`
@@ -62,6 +67,24 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return fmt.Errorf("error retrieving cluster: %w", err)
 	}
+
+	addOns := map[string]struct{}{
+		sksNodepoolAddonLinbit: {},
+	}
+	nodepool.AddOns = func() (v *[]string) {
+		if !c.Linbit {
+			delete(addOns, sksNodepoolAddonLinbit)
+		}
+
+		if len(addOns) > 0 {
+			list := make([]string, 0)
+			for k := range addOns {
+				list = append(list, k)
+			}
+			v = &list
+		}
+		return
+	}()
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
 		nodepoolAntiAffinityGroupIDs := make([]string, l)
