@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.51.3
+
+### Features
+
+- `exo compute sks nodepool add`: add `linbit` flag to allow a non-standard partitioning scheme on nodes
+
 ## 1.51.2
 
 ### Bug Fixes
