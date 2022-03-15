@@ -490,6 +490,266 @@ func XGetDbaasCaCertificate(params *viper.Viper) (*gentleman.Response, map[strin
 	return resp, decoded, nil
 }
 
+// XCreateDbaasIntegration Create a new DBaaS integration between two services
+func XCreateDbaasIntegration(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-dbaas-integration"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-integration"
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListDbaasIntegrationSettings Get DBaaS integration settings
+func XListDbaasIntegrationSettings(paramIntegrationType string, paramSourceType string, paramDestType string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-dbaas-integration-settings"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-integration-settings/{integration-type}/{source-type}/{dest-type}"
+	url = strings.Replace(url, "{integration-type}", paramIntegrationType, 1)
+	url = strings.Replace(url, "{source-type}", paramSourceType, 1)
+	url = strings.Replace(url, "{dest-type}", paramDestType, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XListDbaasIntegrationTypes Get DBaaS integration types
+func XListDbaasIntegrationTypes(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "list-dbaas-integration-types"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-integration-types"
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteDbaasIntegration Delete a DBaaS Integration
+func XDeleteDbaasIntegration(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-dbaas-integration"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-integration/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetDbaasIntegration Get a DBaaS Integration
+func XGetDbaasIntegration(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dbaas-integration"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-integration/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateDbaasIntegration Update a existing DBaaS integration
+func XUpdateDbaasIntegration(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-dbaas-integration"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-integration/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateDbaasServiceKafka Create a DBaaS Kafka service
 func XCreateDbaasServiceKafka(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-dbaas-service-kafka"
@@ -7126,6 +7386,224 @@ func xRegister(subcommand bool) {
 			Run: func(cmd *cobra.Command, args []string) {
 
 				_, decoded, err := XGetDbaasCaCertificate(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-dbaas-integration",
+			Short:   "Create a new DBaaS integration between two services",
+			Long:    cli.Markdown("Create a new DBaaS integration between two services\n## Request Schema (application/json)\n\nproperties:\n  dest-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integration-type:\n    description: Integration type\n    minLength: 1\n    type: string\n  settings:\n    description: Integration settings\n    type: object\n  source-service:\n    $ref: '#/components/schemas/dbaas-service-name'\nrequired:\n- integration-type\n- source-service\n- dest-service\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[0:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateDbaasIntegration(params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-dbaas-integration-settings integration-type source-type dest-type",
+			Short:   "Get DBaaS integration settings",
+			Long:    cli.Markdown("Get DBaaS integration settings"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(3),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListDbaasIntegrationSettings(args[0], args[1], args[2], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "list-dbaas-integration-types",
+			Short:   "Get DBaaS integration types",
+			Long:    cli.Markdown("Get DBaaS integration types"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(0),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XListDbaasIntegrationTypes(params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-dbaas-integration id",
+			Short:   "Delete a DBaaS Integration",
+			Long:    cli.Markdown("Delete a DBaaS Integration"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteDbaasIntegration(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-dbaas-integration id",
+			Short:   "Get a DBaaS Integration",
+			Long:    cli.Markdown("Get a DBaaS Integration"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDbaasIntegration(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-dbaas-integration id",
+			Short:   "Update a existing DBaaS integration",
+			Long:    cli.Markdown("Update a existing DBaaS integration\n## Request Schema (application/json)\n\nproperties:\n  settings:\n    description: Integration settings\n    type: object\nrequired:\n- settings\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateDbaasIntegration(args[0], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
