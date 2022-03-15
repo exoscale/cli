@@ -9,10 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	sksNodepoolAddonLinbit = "linbit"
-)
-
 type sksNodepoolAddCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
