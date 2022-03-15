@@ -68,23 +68,16 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving cluster: %w", err)
 	}
 
-	addOns := map[string]struct{}{
-		sksNodepoolAddonLinbit: {},
+	addOns := map[string]bool{
+		"linbit": c.Linbit,
 	}
-	nodepool.AddOns = func() (v *[]string) {
-		if !c.Linbit {
-			delete(addOns, sksNodepoolAddonLinbit)
-		}
 
-		if len(addOns) > 0 {
-			list := make([]string, 0)
-			for k := range addOns {
-				list = append(list, k)
-			}
-			v = &list
+	nodepool.AddOns = &[]string{}
+	for k, v := range addOns {
+		if v {
+			*nodepool.AddOns = append(*nodepool.AddOns, k)
 		}
-		return
-	}()
+	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
 		nodepoolAntiAffinityGroupIDs := make([]string, l)
