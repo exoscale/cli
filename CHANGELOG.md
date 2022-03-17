@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.51.3
+## 1.52.0
 
 ### Features
 
