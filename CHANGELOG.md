@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.52.1 (UNRELEASED)
+## 1.52.1
 
 ### Bug Fixes
 
