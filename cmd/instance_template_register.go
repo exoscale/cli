@@ -115,9 +115,26 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		}
 
 		template.BootMode = srcTemplate.BootMode
-		template.PasswordEnabled = srcTemplate.PasswordEnabled
-		template.SSHKeyEnabled = srcTemplate.SSHKeyEnabled
-		template.DefaultUser = srcTemplate.DefaultUser
+
+		// Above properties are inherited from snapshot source template, unless otherwise specified
+		// by the user from the command line
+		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DisablePassword)) {
+			template.PasswordEnabled = &passwordEnabled
+		} else {
+			template.PasswordEnabled = srcTemplate.PasswordEnabled
+		}
+
+		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DisableSSHKey)) {
+			template.SSHKeyEnabled = &sshKeyEnabled
+		} else {
+			template.SSHKeyEnabled = srcTemplate.SSHKeyEnabled
+		}
+
+		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Username)) {
+			template.DefaultUser = nonEmptyStringPtr(c.Username)
+		} else {
+			template.DefaultUser = srcTemplate.DefaultUser
+		}
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.BootMode)) {

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.52.1 (UNRELEASED)
+
+### Bug Fixes
+
+- `exo compute instance-template register` with `--from-snapshot`: now handle correctly '--disable-password', '--disable-ssh-key', and '--username' flags.
+
+### Changes
+
+- Now built with go 1.17
+
 ## 1.52.0
 
 ### Features
