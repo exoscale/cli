@@ -1,21 +1,22 @@
 include go.mk/init.mk
 
 PROJECT_URL = https://github.com/exoscale/cli
-
 GO_BIN_OUTPUT_NAME := exo
-
 OAS_FILE := public-api.json
+RM = rm -rf
+
+$(OAS_FILE):
+	wget -O public-api.json -q https://openapi-v2.exoscale.com/source.json
 
 .PHONY:
 .ONESHELL:
-x-cmd: ## Generates code for "exo x" experimental subcommands
+x-cmd: $(OAS_FILE) ## Generates code for "exo x" experimental subcommands
 	@if [ ! -f "$(shell go env GOPATH)/bin/openapi-cli-generator" ]; then
 		echo "openapi-cli-generator tool not found, downloading"
 		go install github.com/exoscale/openapi-cli-generator@latest
 	fi
 	wget -q https://openapi-v2.exoscale.com/source.json
-	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go source.json
-	@rm source.json
+	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go $(OAS_FILE)
 
 .PHONY: docker
 docker: ## Builds a Docker image containing the exo CLI
@@ -56,4 +57,4 @@ completions:
 
 .PHONY: clean
 clean::
-	rm -rf contrib/completion manpage
+	$(RM) contrib/completion manpage $(OAS_FILE)
