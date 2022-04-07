@@ -20,4 +20,4 @@ jobs:
     - name: Run tests and attempt building
       run: |
         git submodule update --init --recursive go.mk
-        PATH=$(go env GOPATH)/bin:$PATH make lint test build
+        PATH=$(go env GOPATH)/bin:$PATH make test build
