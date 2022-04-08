@@ -1328,6 +1328,142 @@ func XUpdateDbaasServicePg(paramName string, params *viper.Viper, body string) (
 	return resp, decoded, nil
 }
 
+// XCreateDbaasPgConnectionPool Create a DBaaS PostgreSQL connection pool
+func XCreateDbaasPgConnectionPool(paramServiceName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-dbaas-pg-connection-pool"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-postgres/{service-name}/connection-pool"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteDbaasPgConnectionPool Delete a DBaaS PostgreSQL connection pool
+func XDeleteDbaasPgConnectionPool(paramServiceName string, paramConnectionPoolName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-dbaas-pg-connection-pool"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-postgres/{service-name}/connection-pool/{connection-pool-name}"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+	url = strings.Replace(url, "{connection-pool-name}", paramConnectionPoolName, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateDbaasPgConnectionPool Update a DBaaS PostgreSQL connection pool
+func XUpdateDbaasPgConnectionPool(paramServiceName string, paramConnectionPoolName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-dbaas-pg-connection-pool"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-postgres/{service-name}/connection-pool/{connection-pool-name}"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+	url = strings.Replace(url, "{connection-pool-name}", paramConnectionPoolName, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateDbaasServiceRedis Create a DBaaS Redis service
 func XCreateDbaasServiceRedis(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-dbaas-service-redis"
@@ -2138,50 +2274,8 @@ func XListDnsDomains(params *viper.Viper) (*gentleman.Response, map[string]inter
 	return resp, decoded, nil
 }
 
-// XGetDnsDomain Retrieve DNS domain details
-func XGetDnsDomain(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
-	handlerPath := "get-dns-domain"
-	if xSubcommand {
-		handlerPath = "x " + handlerPath
-	}
-
-	server := viper.GetString("server")
-	if server == "" {
-		server = xServers()[viper.GetInt("server-index")]["url"]
-	}
-
-	url := server + "/dns-domain/{id}"
-	url = strings.Replace(url, "{id}", paramId, 1)
-
-	req := cli.Client.Get().URL(url)
-
-	cli.HandleBefore(handlerPath, params, req)
-
-	resp, err := req.Do()
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "Request failed")
-	}
-
-	var decoded map[string]interface{}
-
-	if resp.StatusCode < 400 {
-		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
-			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
-		}
-	} else {
-		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
-	}
-
-	after := cli.HandleAfter(handlerPath, params, resp, decoded)
-	if after != nil {
-		decoded = after.(map[string]interface{})
-	}
-
-	return resp, decoded, nil
-}
-
 // XListDnsDomainRecords List DNS domain records
-func XListDnsDomainRecords(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+func XListDnsDomainRecords(paramDomainId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-dns-domain-records"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
@@ -2192,8 +2286,8 @@ func XListDnsDomainRecords(paramId string, params *viper.Viper) (*gentleman.Resp
 		server = xServers()[viper.GetInt("server-index")]["url"]
 	}
 
-	url := server + "/dns-domain/{id}/record"
-	url = strings.Replace(url, "{id}", paramId, 1)
+	url := server + "/dns-domain/{domain-id}/record"
+	url = strings.Replace(url, "{domain-id}", paramDomainId, 1)
 
 	req := cli.Client.Get().URL(url)
 
@@ -2223,7 +2317,7 @@ func XListDnsDomainRecords(paramId string, params *viper.Viper) (*gentleman.Resp
 }
 
 // XGetDnsDomainRecord Retrieve DNS domain record details
-func XGetDnsDomainRecord(paramId string, paramRecordId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+func XGetDnsDomainRecord(paramDomainId string, paramRecordId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-dns-domain-record"
 	if xSubcommand {
 		handlerPath = "x " + handlerPath
@@ -2234,9 +2328,51 @@ func XGetDnsDomainRecord(paramId string, paramRecordId string, params *viper.Vip
 		server = xServers()[viper.GetInt("server-index")]["url"]
 	}
 
-	url := server + "/dns-domain/{id}/record/{record-id}"
-	url = strings.Replace(url, "{id}", paramId, 1)
+	url := server + "/dns-domain/{domain-id}/record/{record-id}"
+	url = strings.Replace(url, "{domain-id}", paramDomainId, 1)
 	url = strings.Replace(url, "{record-id}", paramRecordId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XGetDnsDomain Retrieve DNS domain details
+func XGetDnsDomain(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dns-domain"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dns-domain/{id}"
+	url = strings.Replace(url, "{id}", paramId, 1)
 
 	req := cli.Client.Get().URL(url)
 
@@ -8118,6 +8254,119 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "create-dbaas-pg-connection-pool service-name",
+			Short:   "Create a DBaaS PostgreSQL connection pool",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  database-name:\n    $ref: '#/components/schemas/dbaas-pg-pool-database-name'\n  mode:\n    $ref: '#/components/schemas/enum-pg-pool-mode'\n  name:\n    $ref: '#/components/schemas/dbaas-pg-pool-name'\n  size:\n    $ref: '#/components/schemas/dbaas-pg-pool-size'\n  username:\n    $ref: '#/components/schemas/dbaas-pg-pool-username'\nrequired:\n- name\n- database-name\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateDbaasPgConnectionPool(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-dbaas-pg-connection-pool service-name connection-pool-name",
+			Short:   "Delete a DBaaS PostgreSQL connection pool",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteDbaasPgConnectionPool(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-dbaas-pg-connection-pool service-name connection-pool-name",
+			Short:   "Update a DBaaS PostgreSQL connection pool",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  database-name:\n    $ref: '#/components/schemas/dbaas-pg-pool-database-name'\n  mode:\n    $ref: '#/components/schemas/enum-pg-pool-mode'\n  size:\n    $ref: '#/components/schemas/dbaas-pg-pool-size'\n  username:\n    $ref: '#/components/schemas/dbaas-pg-pool-username'\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateDbaasPgConnectionPool(args[0], args[1], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-redis name",
 			Short:   "Create a DBaaS Redis service",
 			Long:    cli.Markdown("Create a DBaaS Redis service\n## Request Schema (application/json)\n\nproperties:\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-name:\n    description: Name of a backup to recover from for services that support backup names\n    minLength: 1\n    type: string\n  redis-settings:\n    description: Redis.conf settings\n    type: object\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\nrequired:\n- plan\ntype: object\n"),
@@ -8803,42 +9052,7 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "get-dns-domain id",
-			Short:   "Retrieve DNS domain details",
-			Long:    cli.Markdown(""),
-			Example: examples,
-			Args:    cobra.MinimumNArgs(1),
-			Run: func(cmd *cobra.Command, args []string) {
-
-				_, decoded, err := XGetDnsDomain(args[0], params)
-				if err != nil {
-					log.Fatal().Err(err).Msg("Error calling operation")
-				}
-
-				if err := cli.Formatter.Format(decoded); err != nil {
-					log.Fatal().Err(err).Msg("Formatting failed")
-				}
-
-			},
-		}
-
-		root.AddCommand(cmd)
-
-		cli.SetCustomFlags(cmd)
-
-		if cmd.Flags().HasFlags() {
-			params.BindPFlags(cmd.Flags())
-		}
-
-	}()
-
-	func() {
-		params := viper.New()
-
-		var examples string
-
-		cmd := &cobra.Command{
-			Use:     "list-dns-domain-records id",
+			Use:     "list-dns-domain-records domain-id",
 			Short:   "List DNS domain records",
 			Long:    cli.Markdown(""),
 			Example: examples,
@@ -8873,7 +9087,7 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
-			Use:     "get-dns-domain-record id record-id",
+			Use:     "get-dns-domain-record domain-id record-id",
 			Short:   "Retrieve DNS domain record details",
 			Long:    cli.Markdown(""),
 			Example: examples,
@@ -8881,6 +9095,41 @@ func xRegister(subcommand bool) {
 			Run: func(cmd *cobra.Command, args []string) {
 
 				_, decoded, err := XGetDnsDomainRecord(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-dns-domain id",
+			Short:   "Retrieve DNS domain details",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDnsDomain(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -11691,7 +11940,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-sks-cluster id",
 			Short:   "Update an SKS cluster",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  auto-upgrade:\n    description: Enable auto upgrade of the control plane to the latest patch version available\n    type: boolean\n  description:\n    description: Cluster description\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Cluster name\n    maxLength: 255\n    minLength: 1\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Cluster addons\n    items:\n      enum:\n      - exoscale-cloud-controller\n      - metrics-server\n      type: string\n    type: array\n    uniqueItems: true\n  auto-upgrade:\n    description: Enable auto upgrade of the control plane to the latest patch version available\n    type: boolean\n  description:\n    description: Cluster description\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Cluster name\n    maxLength: 255\n    minLength: 1\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
