@@ -48,6 +48,14 @@ type dbaasServiceCreateCmd struct {
 	MysqlRecoveryBackupTime string   `cli-flag:"mysql-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
 	MysqlSettings           string   `cli-flag:"mysql-settings" cli-usage:"MySQL configuration settings (JSON format)" cli-hidden:""`
 	MysqlVersion            string   `cli-flag:"mysql-version" cli-usage:"MySQL major version" cli-hidden:""`
+	MysqlMigrationHost      string   `cli-flag:"mysql-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
+	MysqlMigrationPort      int64    `cli-flag:"mysql-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
+	MysqlMigrationPassword  string   `cli-flag:"mysql-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
+	MysqlMigrationSSL       bool     `cli-flag:"mysql-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
+	MysqlMigrationUsername  string   `cli-flag:"mysql-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
+	MysqlMigrationDbName    string   `cli-flag:"mysql-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
+	MysqlMigrationMethod    string   `cli-flag:"mysql-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
+	MysqlMigrationIgnoreDbs []string `cli-flag:"mysql-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
 
 	// "pg" type specific flags
 	PGAdminPassword      string   `cli-flag:"pg-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
