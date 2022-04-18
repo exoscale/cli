@@ -46,8 +46,13 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		databaseService.Maintenance.Dow = oapi.CreateDbaasServiceKafkaJSONBodyMaintenanceDow(c.MaintenanceDOW)
-		databaseService.Maintenance.Time = c.MaintenanceTime
+		databaseService.Maintenance = &struct {
+			Dow  oapi.CreateDbaasServiceKafkaJSONBodyMaintenanceDow `json:"dow"`
+			Time string                                             `json:"time"`
+		}{
+			Dow:  oapi.CreateDbaasServiceKafkaJSONBodyMaintenanceDow(c.MaintenanceDOW),
+			Time: c.MaintenanceTime,
+		}
 	}
 
 	if c.KafkaConnectSettings != "" {
