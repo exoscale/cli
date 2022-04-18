@@ -111,6 +111,10 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 		}
 	}
 
+	if c.MysqlBinlogRetentionPeriod > 0 {
+		databaseService.BinlogRetentionPeriod = &c.MysqlBinlogRetentionPeriod
+	}
+
 	var res *oapi.CreateDbaasServiceMysqlResponse
 	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
 		res, err = cs.CreateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)

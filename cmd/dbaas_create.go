@@ -40,22 +40,23 @@ type dbaasServiceCreateCmd struct {
 	KafkaVersion                string   `cli-flag:"kafka-version" cli-usage:"Kafka major version" cli-hidden:""`
 
 	// "mysql" type specific flags
-	MysqlAdminPassword      string   `cli-flag:"mysql-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
-	MysqlAdminUsername      string   `cli-flag:"mysql-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
-	MysqlBackupSchedule     string   `cli-flag:"mysql-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
-	MysqlForkFrom           string   `cli-flag:"mysql-fork-from" cli-usage:"name of a Database Service to fork from"`
-	MysqlIPFilter           []string `cli-flag:"mysql-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	MysqlRecoveryBackupTime string   `cli-flag:"mysql-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
-	MysqlSettings           string   `cli-flag:"mysql-settings" cli-usage:"MySQL configuration settings (JSON format)" cli-hidden:""`
-	MysqlVersion            string   `cli-flag:"mysql-version" cli-usage:"MySQL major version" cli-hidden:""`
-	MysqlMigrationHost      string   `cli-flag:"mysql-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
-	MysqlMigrationPort      int64    `cli-flag:"mysql-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
-	MysqlMigrationPassword  string   `cli-flag:"mysql-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
-	MysqlMigrationSSL       bool     `cli-flag:"mysql-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
-	MysqlMigrationUsername  string   `cli-flag:"mysql-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
-	MysqlMigrationDbName    string   `cli-flag:"mysql-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
-	MysqlMigrationMethod    string   `cli-flag:"mysql-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
-	MysqlMigrationIgnoreDbs []string `cli-flag:"mysql-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+	MysqlAdminPassword         string   `cli-flag:"mysql-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
+	MysqlAdminUsername         string   `cli-flag:"mysql-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
+	MysqlBackupSchedule        string   `cli-flag:"mysql-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
+	MysqlForkFrom              string   `cli-flag:"mysql-fork-from" cli-usage:"name of a Database Service to fork from"`
+	MysqlIPFilter              []string `cli-flag:"mysql-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	MysqlRecoveryBackupTime    string   `cli-flag:"mysql-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
+	MysqlSettings              string   `cli-flag:"mysql-settings" cli-usage:"MySQL configuration settings (JSON format)" cli-hidden:""`
+	MysqlVersion               string   `cli-flag:"mysql-version" cli-usage:"MySQL major version" cli-hidden:""`
+	MysqlMigrationHost         string   `cli-flag:"mysql-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
+	MysqlMigrationPort         int64    `cli-flag:"mysql-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
+	MysqlMigrationPassword     string   `cli-flag:"mysql-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
+	MysqlMigrationSSL          bool     `cli-flag:"mysql-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
+	MysqlMigrationUsername     string   `cli-flag:"mysql-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
+	MysqlMigrationDbName       string   `cli-flag:"mysql-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
+	MysqlMigrationMethod       string   `cli-flag:"mysql-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
+	MysqlMigrationIgnoreDbs    []string `cli-flag:"mysql-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+	MysqlBinlogRetentionPeriod int64    `cli-flag:"mysql-binlog-retention-period" cli-usage:"the minimum amount of time in seconds to keep binlog entries before deletion" cli-hidden:""`
 
 	// "pg" type specific flags
 	PGAdminPassword      string   `cli-flag:"pg-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`

@@ -112,6 +112,11 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MysqlBinlogRetentionPeriod)) {
+		databaseService.BinlogRetentionPeriod = &c.MysqlBinlogRetentionPeriod
+		updated = true
+	}
+
 	if updated {
 		var res *oapi.UpdateDbaasServiceMysqlResponse
 		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
