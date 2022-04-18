@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -60,6 +61,37 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 		databaseService.RedisSettings = &settings
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.RedisMigrationHost)) {
+		databaseService.Migration = &struct {
+			Dbname    *string                     `json:"dbname,omitempty"`
+			Host      string                      `json:"host"`
+			IgnoreDbs *string                     `json:"ignore-dbs,omitempty"`
+			Method    *oapi.EnumPgMigrationMethod `json:"method,omitempty"`
+			Password  *string                     `json:"password,omitempty"`
+			Port      int64                       `json:"port"`
+			Ssl       *bool                       `json:"ssl,omitempty"`
+			Username  *string                     `json:"username,omitempty"`
+		}{
+			Host:     c.RedisMigrationHost,
+			Port:     c.RedisMigrationPort,
+			Password: nonEmptyStringPtr(c.RedisMigrationPassword),
+			Username: nonEmptyStringPtr(c.RedisMigrationUsername),
+			Dbname:   nonEmptyStringPtr(c.RedisMigrationDbName),
+		}
+		if c.RedisMigrationSSL {
+			databaseService.Migration.Ssl = &c.RedisMigrationSSL
+		}
+		if c.RedisMigrationMethod != "" {
+			method := oapi.EnumPgMigrationMethod(c.RedisMigrationMethod)
+			databaseService.Migration.Method = &method
+		}
+		if len(c.RedisMigrationIgnoreDbs) > 0 {
+			dbsJoin := strings.Join(c.RedisMigrationIgnoreDbs, ",")
+			databaseService.Migration.IgnoreDbs = &dbsJoin
+		}
 		updated = true
 	}
 
