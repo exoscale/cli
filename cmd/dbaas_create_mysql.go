@@ -64,8 +64,13 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		databaseService.Maintenance.Dow = oapi.CreateDbaasServiceMysqlJSONBodyMaintenanceDow(c.MaintenanceDOW)
-		databaseService.Maintenance.Time = c.MaintenanceTime
+		databaseService.Maintenance = &struct {
+			Dow  oapi.CreateDbaasServiceMysqlJSONBodyMaintenanceDow `json:"dow"`
+			Time string                                             `json:"time"`
+		}{
+			Dow:  oapi.CreateDbaasServiceMysqlJSONBodyMaintenanceDow(c.MaintenanceDOW),
+			Time: c.MaintenanceTime,
+		}
 	}
 
 	if c.MysqlSettings != "" {
