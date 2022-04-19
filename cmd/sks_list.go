@@ -55,12 +55,13 @@ func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(sksClusterListOutput, 0)
 	res := make(chan sksClusterListItemOutput)
-	defer close(res)
+	done := make(chan struct{})
 
 	go func() {
 		for cluster := range res {
 			out = append(out, cluster)
 		}
+		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
@@ -84,6 +85,9 @@ func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		_, _ = fmt.Fprintf(os.Stderr,
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
+
+	close(res)
+	<-done
 
 	return c.outputFunc(&out, nil)
 }

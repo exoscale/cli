@@ -57,12 +57,13 @@ func (c *instancePoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(instancePoolListOutput, 0)
 	res := make(chan instancePoolListItemOutput)
-	defer close(res)
+	done := make(chan struct{})
 
 	go func() {
 		for instancePool := range res {
 			out = append(out, instancePool)
 		}
+		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
@@ -88,6 +89,9 @@ func (c *instancePoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		_, _ = fmt.Fprintf(os.Stderr,
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
+
+	close(res)
+	<-done
 
 	return c.outputFunc(&out, nil)
 }
