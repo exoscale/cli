@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.53.0 (UNRELEASED)
+
+### Features
+- `exo dbaas create`, `exo dbaas update`: add dbaas migration configuration, add `--mysql-binlog-retention-period` to configure binlog entries retention.
+
+### Bug Fixes
+
+- `exo dbaas create`: fix panic when using `--maintenance-dow` and `--maintenance-time`.
+- `exo * list`: fix race condition in most list commands.
+
 ## 1.52.1
 
 ### Bug Fixes
