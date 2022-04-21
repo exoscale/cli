@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -101,6 +102,37 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 		databaseService.PgSettings = &settings
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PGMigrationHost)) {
+		databaseService.Migration = &struct {
+			Dbname    *string                     `json:"dbname,omitempty"`
+			Host      string                      `json:"host"`
+			IgnoreDbs *string                     `json:"ignore-dbs,omitempty"`
+			Method    *oapi.EnumPgMigrationMethod `json:"method,omitempty"`
+			Password  *string                     `json:"password,omitempty"`
+			Port      int64                       `json:"port"`
+			Ssl       *bool                       `json:"ssl,omitempty"`
+			Username  *string                     `json:"username,omitempty"`
+		}{
+			Host:     c.PGMigrationHost,
+			Port:     c.PGMigrationPort,
+			Password: nonEmptyStringPtr(c.PGMigrationPassword),
+			Username: nonEmptyStringPtr(c.PGMigrationUsername),
+			Dbname:   nonEmptyStringPtr(c.PGMigrationDbName),
+		}
+		if c.PGMigrationSSL {
+			databaseService.Migration.Ssl = &c.PGMigrationSSL
+		}
+		if c.PGMigrationMethod != "" {
+			method := oapi.EnumPgMigrationMethod(c.PGMigrationMethod)
+			databaseService.Migration.Method = &method
+		}
+		if len(c.MysqlMigrationIgnoreDbs) > 0 {
+			dbsJoin := strings.Join(c.PGMigrationIgnoreDbs, ",")
+			databaseService.Migration.IgnoreDbs = &dbsJoin
+		}
 		updated = true
 	}
 

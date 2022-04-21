@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -39,8 +40,13 @@ func (c *dbaasServiceCreateCmd) createRedis(_ *cobra.Command, _ []string) error 
 	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		databaseService.Maintenance.Dow = oapi.CreateDbaasServiceRedisJSONBodyMaintenanceDow(c.MaintenanceDOW)
-		databaseService.Maintenance.Time = c.MaintenanceTime
+		databaseService.Maintenance = &struct {
+			Dow  oapi.CreateDbaasServiceRedisJSONBodyMaintenanceDow `json:"dow"`
+			Time string                                             `json:"time"`
+		}{
+			Dow:  oapi.CreateDbaasServiceRedisJSONBodyMaintenanceDow(c.MaintenanceDOW),
+			Time: c.MaintenanceTime,
+		}
 	}
 
 	if c.RedisSettings != "" {
@@ -49,6 +55,36 @@ func (c *dbaasServiceCreateCmd) createRedis(_ *cobra.Command, _ []string) error 
 			return fmt.Errorf("invalid settings: %w", err)
 		}
 		databaseService.RedisSettings = &settings
+	}
+
+	if c.RedisMigrationHost != "" {
+		databaseService.Migration = &struct {
+			Dbname    *string                     `json:"dbname,omitempty"`
+			Host      string                      `json:"host"`
+			IgnoreDbs *string                     `json:"ignore-dbs,omitempty"`
+			Method    *oapi.EnumPgMigrationMethod `json:"method,omitempty"`
+			Password  *string                     `json:"password,omitempty"`
+			Port      int64                       `json:"port"`
+			Ssl       *bool                       `json:"ssl,omitempty"`
+			Username  *string                     `json:"username,omitempty"`
+		}{
+			Host:     c.RedisMigrationHost,
+			Port:     c.RedisMigrationPort,
+			Password: nonEmptyStringPtr(c.RedisMigrationPassword),
+			Username: nonEmptyStringPtr(c.RedisMigrationUsername),
+			Dbname:   nonEmptyStringPtr(c.RedisMigrationDbName),
+		}
+		if c.RedisMigrationSSL {
+			databaseService.Migration.Ssl = &c.RedisMigrationSSL
+		}
+		if c.RedisMigrationMethod != "" {
+			method := oapi.EnumPgMigrationMethod(c.RedisMigrationMethod)
+			databaseService.Migration.Method = &method
+		}
+		if len(c.RedisMigrationIgnoreDbs) > 0 {
+			dbsJoin := strings.Join(c.RedisMigrationIgnoreDbs, ",")
+			databaseService.Migration.IgnoreDbs = &dbsJoin
+		}
 	}
 
 	var res *oapi.CreateDbaasServiceRedisResponse
