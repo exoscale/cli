@@ -58,7 +58,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(instanceSnapshotListOutput, 0)
 	res := make(chan instanceSnapshotListItemOutput)
-	defer close(res)
+	done := make(chan struct{})
 
 	instances := make(map[string]*egoscale.Instance) // For caching
 
@@ -66,6 +66,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		for dt := range res {
 			out = append(out, dt)
 		}
+		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
@@ -100,6 +101,9 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		_, _ = fmt.Fprintf(os.Stderr,
 			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
+
+	close(res)
+	<-done
 
 	return c.outputFunc(&out, nil)
 }
