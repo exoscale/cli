@@ -1,4 +1,5 @@
 include go.mk/init.mk
+include go.mk/public.mk
 
 PROJECT_URL = https://github.com/exoscale/cli
 GO_BIN_OUTPUT_NAME := exo

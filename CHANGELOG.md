@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.53.0 (UNRELEASED)
+## 1.53.0
 
 ### Features
 - `exo dbaas create`, `exo dbaas update`: add dbaas migration configuration, add `--mysql-binlog-retention-period` to configure binlog entries retention.
