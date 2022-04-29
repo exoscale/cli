@@ -98,13 +98,13 @@ func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
 	}
 }
 
-func getUserDataFromFile(path string) (string, error) {
+func getUserDataFromFile(path string, compress bool) (string, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
 
-	userData, err := encodeUserData(data)
+	userData, err := encodeUserData(data, compress)
 	if err != nil {
 		return "", err
 	}
@@ -116,21 +116,25 @@ func getUserDataFromFile(path string) (string, error) {
 	return userData, nil
 }
 
-func encodeUserData(data []byte) (string, error) {
-	b := new(bytes.Buffer)
-	gz := gzip.NewWriter(b)
+func encodeUserData(data []byte, compress bool) (string, error) {
+	if compress {
+		b := new(bytes.Buffer)
+		gz := gzip.NewWriter(b)
 
-	if _, err := gz.Write(data); err != nil {
-		return "", err
-	}
-	if err := gz.Flush(); err != nil {
-		return "", err
-	}
-	if err := gz.Close(); err != nil {
-		return "", err
+		if _, err := gz.Write(data); err != nil {
+			return "", err
+		}
+		if err := gz.Flush(); err != nil {
+			return "", err
+		}
+		if err := gz.Close(); err != nil {
+			return "", err
+		}
+
+		data = b.Bytes()
 	}
 
-	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
+	return base64.StdEncoding.EncodeToString(data), nil
 }
 
 func decodeUserData(data string) (string, error) {
@@ -138,24 +142,33 @@ func decodeUserData(data string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	userData := string(base64Decoded)
 
-	gz, err := gzip.NewReader(bytes.NewReader(base64Decoded))
+	gzipped, err := isGzipContentType(bytes.NewBuffer(base64Decoded))
 	if err != nil {
-		// User data are not compressed, returning as-is.
-		if errors.Is(err, gzip.ErrHeader) {
-			return string(base64Decoded), nil
+		return "", err
+	}
+
+	if gzipped {
+		gz, err := gzip.NewReader(bytes.NewReader(base64Decoded))
+		if err != nil {
+			// User data are not compressed, returning as-is.
+			if errors.Is(err, gzip.ErrHeader) {
+				return string(base64Decoded), nil
+			}
+
+			return "", err
 		}
+		defer gz.Close()
 
-		return "", err
+		data, err := ioutil.ReadAll(gz)
+		if err != nil {
+			return "", err
+		}
+		userData = string(data)
 	}
-	defer gz.Close()
 
-	userData, err := ioutil.ReadAll(gz)
-	if err != nil {
-		return "", err
-	}
-
-	return string(userData), nil
+	return userData, nil
 }
 
 func init() {

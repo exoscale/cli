@@ -15,10 +15,11 @@ type instanceUpdateCmd struct {
 
 	Instance string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	CloudInitFile string            `cli-flag:"cloud-init" cli-short:"c" cli-usage:"instance cloud-init user data configuration file path"`
-	Labels        map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
-	Name          string            `cli-short:"n" cli-usage:"instance name"`
-	Zone          string            `cli-short:"z" cli-usage:"instance zone"`
+	CloudInitFile     string            `cli-flag:"cloud-init" cli-short:"c" cli-usage:"instance cloud-init user data configuration file path"`
+	CloudInitCompress bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
+	Labels            map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
+	Name              string            `cli-short:"n" cli-usage:"instance name"`
+	Zone              string            `cli-short:"z" cli-usage:"instance zone"`
 }
 
 func (c *instanceUpdateCmd) cmdAliases() []string { return nil }
@@ -59,7 +60,7 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.CloudInitFile)) {
-		userData, err := getUserDataFromFile(c.CloudInitFile)
+		userData, err := getUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}

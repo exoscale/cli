@@ -41,8 +41,12 @@ var vmUpdateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		userDataCompress, err := cmd.Flags().GetBool("cloud-init-compress")
+		if err != nil {
+			return err
+		}
 		if userDataPath != "" {
-			vmEdit.UserData, err = getUserDataFromFile(userDataPath)
+			vmEdit.UserData, err = getUserDataFromFile(userDataPath, userDataCompress)
 			if err != nil {
 				return err
 			}
@@ -80,6 +84,7 @@ var vmUpdateCmd = &cobra.Command{
 func init() {
 	vmUpdateCmd.Flags().String("name", "", "instance display name")
 	vmUpdateCmd.Flags().String("cloud-init-file", "", "path to a cloud-init user data file")
+	vmUpdateCmd.Flags().BoolP("cloud-init-compress", "", false, "compress instance cloud-init user data")
 	vmUpdateCmd.Flags().String("reverse-dns", "", "instance reverse DNS record")
 	vmCmd.AddCommand(vmUpdateCmd)
 }

@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"strconv"
 	"strings"
 )
@@ -124,4 +126,14 @@ func versionIsNewer(old, new string) bool {
 // versionsAreEquivalent returns true if new and old versions both have same major and minor numbers
 func versionsAreEquivalent(a, b string) bool {
 	return (versionMajor(b) == versionMajor(a) && versionMinor(b) == versionMinor(a))
+}
+
+func isGzipContentType(out io.Reader) (bool, error) {
+	buffer := make([]byte, 512)
+	_, err := out.Read(buffer)
+	if err != nil {
+		return false, err
+	}
+
+	return http.DetectContentType(buffer) == "application/x-gzip", nil
 }
