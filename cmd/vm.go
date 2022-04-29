@@ -142,33 +142,24 @@ func decodeUserData(data string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	userData := string(base64Decoded)
 
-	gzipped, err := isGzipContentType(bytes.NewBuffer(base64Decoded))
+	gz, err := gzip.NewReader(bytes.NewReader(base64Decoded))
+	if err != nil {
+		// User data are not compressed, returning as-is.
+		if errors.Is(err, gzip.ErrHeader) {
+			return string(base64Decoded), nil
+		}
+
+		return "", err
+	}
+	defer gz.Close()
+
+	userData, err := ioutil.ReadAll(gz)
 	if err != nil {
 		return "", err
 	}
 
-	if gzipped {
-		gz, err := gzip.NewReader(bytes.NewReader(base64Decoded))
-		if err != nil {
-			// User data are not compressed, returning as-is.
-			if errors.Is(err, gzip.ErrHeader) {
-				return string(base64Decoded), nil
-			}
-
-			return "", err
-		}
-		defer gz.Close()
-
-		data, err := ioutil.ReadAll(gz)
-		if err != nil {
-			return "", err
-		}
-		userData = string(data)
-	}
-
-	return userData, nil
+	return string(userData), nil
 }
 
 func init() {
