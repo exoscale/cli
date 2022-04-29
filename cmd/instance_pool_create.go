@@ -18,6 +18,7 @@ type instancePoolCreateCmd struct {
 
 	AntiAffinityGroups []string          `cli-flag:"anti-affinity-group" cli-short:"a" cli-usage:"managed Compute instances Anti-Affinity Group NAME|ID (can be specified multiple times)"`
 	CloudInitFile      string            `cli-flag:"cloud-init" cli-short:"c" cli-usage:"cloud-init user data configuration file path"`
+	CloudInitCompress  bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
 	DeployTarget       string            `cli-usage:"managed Compute instances Deploy Target NAME|ID"`
 	Description        string            `cli-usage:"Instance Pool description"`
 	Disk               int64             `cli-flag:"disk" cli-short:"d" cli-usage:"[DEPRECATED] use --disk-size"`
@@ -222,7 +223,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	instancePool.TemplateID = &templateID
 
 	if c.CloudInitFile != "" {
-		userData, err := getUserDataFromFile(c.CloudInitFile)
+		userData, err := getUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}

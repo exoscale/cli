@@ -98,13 +98,13 @@ func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
 	}
 }
 
-func getUserDataFromFile(path string) (string, error) {
+func getUserDataFromFile(path string, compress bool) (string, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
 
-	userData, err := encodeUserData(data)
+	userData, err := encodeUserData(data, compress)
 	if err != nil {
 		return "", err
 	}
@@ -116,21 +116,25 @@ func getUserDataFromFile(path string) (string, error) {
 	return userData, nil
 }
 
-func encodeUserData(data []byte) (string, error) {
-	b := new(bytes.Buffer)
-	gz := gzip.NewWriter(b)
+func encodeUserData(data []byte, compress bool) (string, error) {
+	if compress {
+		b := new(bytes.Buffer)
+		gz := gzip.NewWriter(b)
 
-	if _, err := gz.Write(data); err != nil {
-		return "", err
-	}
-	if err := gz.Flush(); err != nil {
-		return "", err
-	}
-	if err := gz.Close(); err != nil {
-		return "", err
+		if _, err := gz.Write(data); err != nil {
+			return "", err
+		}
+		if err := gz.Flush(); err != nil {
+			return "", err
+		}
+		if err := gz.Close(); err != nil {
+			return "", err
+		}
+
+		data = b.Bytes()
 	}
 
-	return base64.StdEncoding.EncodeToString(b.Bytes()), nil
+	return base64.StdEncoding.EncodeToString(data), nil
 }
 
 func decodeUserData(data string) (string, error) {

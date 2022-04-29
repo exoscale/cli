@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/base64"
 	"fmt"
 	"os"
 	"strings"
@@ -161,12 +160,12 @@ func showVMUserData(name string) error {
 		return err
 	}
 
-	userData, err := base64.StdEncoding.DecodeString(resp.(*egoscale.VirtualMachineUserData).UserData)
+	userData, err := decodeUserData(resp.(*egoscale.VirtualMachineUserData).UserData)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(string(userData))
+	fmt.Println(userData)
 
 	return nil
 }

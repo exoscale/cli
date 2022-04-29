@@ -26,6 +26,7 @@ type instanceCreateCmd struct {
 
 	AntiAffinityGroups []string          `cli-flag:"anti-affinity-group" cli-usage:"instance Anti-Affinity Group NAME|ID (can be specified multiple times)"`
 	CloudInitFile      string            `cli-flag:"cloud-init" cli-usage:"instance cloud-init user data configuration file path"`
+	CloudInitCompress  bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
 	DeployTarget       string            `cli-usage:"instance Deploy Target NAME|ID"`
 	DiskSize           int64             `cli-usage:"instance disk size"`
 	IPv6               bool              `cli-flag:"ipv6" cli-usage:"enable IPv6 on instance"`
@@ -184,7 +185,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.CloudInitFile != "" {
-		userData, err := getUserDataFromFile(c.CloudInitFile)
+		userData, err := getUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
