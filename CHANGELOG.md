@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.54.0
+
+### Features
+- `exo compute instance create`, `exo compute instance-pool create`: remove default Cloud-Init compression on Instance creation, add `--cloud-init-compress` to compress the Instance Cloud-Init user-data.
+
 ## 1.53.0
 
 ### Features
