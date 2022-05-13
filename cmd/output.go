@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -430,4 +431,12 @@ For the complete Go templating reference, see https://godoc.org/text/template
 `,
 	},
 	)
+}
+
+func Int64PtrFormatOutput(n *int64) string {
+	if n != nil {
+		return strconv.FormatInt(*n, 10)
+	}
+
+	return "n/a"
 }

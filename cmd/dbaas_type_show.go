@@ -7,6 +7,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
+	exo "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -39,6 +40,31 @@ func (o *dbaasTypePlanListOutput) toTable() {
 			fmt.Sprint(p.Authorized),
 		})
 	}
+}
+
+type dbaasTypePlanBackupOutput struct {
+	Interval                   *int64  `json:"interval"`
+	MaxCount                   *int64  `json:"max_count"`
+	RecoveryMode               *string `json:"recovery_mode"`
+	FrequentIntervalMinutes    *int64  `json:"frequent_interval_minutes"`
+	FrequentOldestAgeMinutes   *int64  `json:"frequent_oldest_age_minutes"`
+	InfrequentIntervalMinutes  *int64  `json:"infrequent_interval_minutes"`
+	InfrequentOldestAgeMinutes *int64  `json:"infrequent_oldest_age_minutes"`
+}
+
+func (o *dbaasTypePlanBackupOutput) toJSON() { outputJSON(o) }
+func (o *dbaasTypePlanBackupOutput) toText() { outputText(o) }
+func (o *dbaasTypePlanBackupOutput) toTable() {
+	t := table.NewTable(os.Stdout)
+	defer t.Render()
+
+	t.Append([]string{"Backup interval (hours)", Int64PtrFormatOutput(o.Interval)})
+	t.Append([]string{"Max backups", Int64PtrFormatOutput(o.MaxCount)})
+	t.Append([]string{"Recovery mode", defaultString(o.RecoveryMode, "")})
+	t.Append([]string{"Frequent backup interval", Int64PtrFormatOutput(o.FrequentIntervalMinutes)})
+	t.Append([]string{"Frequent backup max age", Int64PtrFormatOutput(o.FrequentOldestAgeMinutes)})
+	t.Append([]string{"Infrequent backup interval", Int64PtrFormatOutput(o.InfrequentIntervalMinutes)})
+	t.Append([]string{"Infrequent backup max age", Int64PtrFormatOutput(o.InfrequentOldestAgeMinutes)})
 }
 
 type dbaasTypeShowOutput struct {
@@ -83,8 +109,9 @@ type dbaasTypeShowCmd struct {
 
 	Name string `cli-arg:"#"`
 
-	ShowPlans    bool   `cli-flag:"plans" cli-usage:"list plans offered for the Database Service type"`
-	ShowSettings string `cli-flag:"settings" cli-usage:"show settings supported by the Database Service type"`
+	ShowPlans        bool   `cli-flag:"plans" cli-usage:"list plans offered for the Database Service type"`
+	ShowSettings     string `cli-flag:"settings" cli-usage:"show settings supported by the Database Service type"`
+	ShowBackupConfig string `cli-flag:"backup-config" cli-usage:"show backup configuration for the Database Service type and Plan"`
 }
 
 func (c *dbaasTypeShowCmd) cmdAliases() []string { return gShowAlias }
@@ -244,6 +271,28 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		return nil
+	}
+
+	if c.ShowBackupConfig != "" {
+		var bc *exo.DatabaseBackupConfig
+		for _, plan := range dt.Plans {
+			if *plan.Name == c.ShowBackupConfig {
+				bc = plan.BackupConfig
+				break
+			}
+		}
+		if bc == nil {
+			return fmt.Errorf("%q is not a valid plan", c.ShowBackupConfig)
+		}
+		return c.outputFunc(&dbaasTypePlanBackupOutput{
+			Interval:                   bc.Interval,
+			MaxCount:                   bc.MaxCount,
+			RecoveryMode:               bc.RecoveryMode,
+			FrequentIntervalMinutes:    bc.FrequentIntervalMinutes,
+			FrequentOldestAgeMinutes:   bc.FrequentOldestAgeMinutes,
+			InfrequentIntervalMinutes:  bc.InfrequentIntervalMinutes,
+			InfrequentOldestAgeMinutes: bc.InfrequentOldestAgeMinutes,
+		}, nil)
 	}
 
 	return c.outputFunc(&dbaasTypeShowOutput{
