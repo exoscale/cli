@@ -589,7 +589,8 @@ func (c *Client) ListInstances(ctx context.Context, zone string, opts ...ListIns
 		opt(&params)
 	}
 
-	resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &params)
+	// resp, err := c.ListInstancesWithResponse(apiv2.WithZone(ctx, zone), &params)
+	resp, err := c.ListInstancesWithResponse(ctx, &params)
 	if err != nil {
 		return nil, err
 	}
