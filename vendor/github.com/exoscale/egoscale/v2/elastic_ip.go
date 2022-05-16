@@ -167,7 +167,7 @@ func (c *Client) GetElasticIP(ctx context.Context, zone, id string) (*ElasticIP,
 func (c *Client) ListElasticIPs(ctx context.Context, zone string) ([]*ElasticIP, error) {
 	list := make([]*ElasticIP, 0)
 
-	resp, err := c.ListElasticIpsWithResponse(apiv2.WithZone(ctx, zone))
+	resp, err := c.ListElasticIpsWithResponse(ctx)
 	if err != nil {
 		return nil, err
 	}
