@@ -1,13 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -77,10 +77,11 @@ func (c *instanceTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *instanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
-	)
+	// ctx := exoapi.WithEndpoint(
+	// 	gContext,
+	// 	exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+	// )
+	ctx := context.TODO()
 
 	instanceTypes, err := cs.ListInstanceTypes(ctx, gCurrentAccount.DefaultZone)
 	if err != nil {

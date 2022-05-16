@@ -35,7 +35,7 @@ func instanceTypeFromAPI(t *oapi.InstanceType) *InstanceType {
 func (c *Client) ListInstanceTypes(ctx context.Context, zone string) ([]*InstanceType, error) {
 	list := make([]*InstanceType, 0)
 
-	resp, err := c.ListInstanceTypesWithResponse(apiv2.WithZone(ctx, zone))
+	resp, err := c.ListInstanceTypesWithResponse(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c *Client) ListInstanceTypes(ctx context.Context, zone string) ([]*Instanc
 
 // GetInstanceType returns the Instance type corresponding to the specified ID.
 func (c *Client) GetInstanceType(ctx context.Context, zone, id string) (*InstanceType, error) {
-	resp, err := c.GetInstanceTypeWithResponse(apiv2.WithZone(ctx, zone), id)
+	resp, err := c.GetInstanceTypeWithResponse(ctx, id)
 	if err != nil {
 		return nil, err
 	}
