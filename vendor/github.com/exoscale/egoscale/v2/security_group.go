@@ -94,7 +94,11 @@ func (c *Client) CreateSecurityGroup(
 		return nil, err
 	}
 
-	return c.GetSecurityGroup(ctx, zone, *res.(*oapi.Reference).Id)
+	return c.GetSecurityGroup(ctx, zone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 }
 
 // DeleteSecurityGroup deletes a Security Group.

@@ -180,7 +180,11 @@ func (c *Client) CreateSKSCluster(
 		return nil, err
 	}
 
-	return c.GetSKSCluster(ctx, zone, *res.(*oapi.Reference).Id)
+	return c.GetSKSCluster(ctx, zone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 }
 
 // DeleteSKSCluster deletes an SKS cluster.

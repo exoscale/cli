@@ -1,6 +1,21 @@
 Changelog
 =========
 
+0.88.1
+------
+
+- fix: v2: aligns request signing with public API by urlencoding path in the signature
+
+0.88.0
+------
+
+- feature: v2: WaitInstancePoolConverged allows to waits until an instance pool's VMs are provisioned
+
+0.87.0
+------
+
+- v2: refresh openapi generated code + fix missing type oapi.Reference
+
 0.86.0
 ------
 

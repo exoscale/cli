@@ -83,14 +83,14 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 
 	if c.MysqlMigrationHost != "" {
 		databaseService.Migration = &struct {
-			Dbname    *string                     `json:"dbname,omitempty"`
-			Host      string                      `json:"host"`
-			IgnoreDbs *string                     `json:"ignore-dbs,omitempty"`
-			Method    *oapi.EnumPgMigrationMethod `json:"method,omitempty"`
-			Password  *string                     `json:"password,omitempty"`
-			Port      int64                       `json:"port"`
-			Ssl       *bool                       `json:"ssl,omitempty"`
-			Username  *string                     `json:"username,omitempty"`
+			Dbname    *string                   `json:"dbname,omitempty"`
+			Host      string                    `json:"host"`
+			IgnoreDbs *string                   `json:"ignore-dbs,omitempty"`
+			Method    *oapi.EnumMigrationMethod `json:"method,omitempty"`
+			Password  *string                   `json:"password,omitempty"`
+			Port      int64                     `json:"port"`
+			Ssl       *bool                     `json:"ssl,omitempty"`
+			Username  *string                   `json:"username,omitempty"`
 		}{
 			Host:     c.MysqlMigrationHost,
 			Port:     c.MysqlMigrationPort,
@@ -102,7 +102,7 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 			databaseService.Migration.Ssl = &c.MysqlMigrationSSL
 		}
 		if c.MysqlMigrationMethod != "" {
-			method := oapi.EnumPgMigrationMethod(c.MysqlMigrationMethod)
+			method := oapi.EnumMigrationMethod(c.MysqlMigrationMethod)
 			databaseService.Migration.Method = &method
 		}
 		if len(c.MysqlMigrationIgnoreDbs) > 0 {

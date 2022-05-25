@@ -108,14 +108,14 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 
 	if c.PGMigrationHost != "" {
 		databaseService.Migration = &struct {
-			Dbname    *string                     `json:"dbname,omitempty"`
-			Host      string                      `json:"host"`
-			IgnoreDbs *string                     `json:"ignore-dbs,omitempty"`
-			Method    *oapi.EnumPgMigrationMethod `json:"method,omitempty"`
-			Password  *string                     `json:"password,omitempty"`
-			Port      int64                       `json:"port"`
-			Ssl       *bool                       `json:"ssl,omitempty"`
-			Username  *string                     `json:"username,omitempty"`
+			Dbname    *string                   `json:"dbname,omitempty"`
+			Host      string                    `json:"host"`
+			IgnoreDbs *string                   `json:"ignore-dbs,omitempty"`
+			Method    *oapi.EnumMigrationMethod `json:"method,omitempty"`
+			Password  *string                   `json:"password,omitempty"`
+			Port      int64                     `json:"port"`
+			Ssl       *bool                     `json:"ssl,omitempty"`
+			Username  *string                   `json:"username,omitempty"`
 		}{
 			Host:     c.PGMigrationHost,
 			Port:     c.PGMigrationPort,
@@ -127,7 +127,7 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 			databaseService.Migration.Ssl = &c.PGMigrationSSL
 		}
 		if c.PGMigrationMethod != "" {
-			method := oapi.EnumPgMigrationMethod(c.PGMigrationMethod)
+			method := oapi.EnumMigrationMethod(c.PGMigrationMethod)
 			databaseService.Migration.Method = &method
 		}
 		if len(c.PGMigrationIgnoreDbs) > 0 {

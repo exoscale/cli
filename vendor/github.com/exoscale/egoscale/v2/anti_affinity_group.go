@@ -61,7 +61,11 @@ func (c *Client) CreateAntiAffinityGroup(
 		return nil, err
 	}
 
-	return c.GetAntiAffinityGroup(ctx, zone, *res.(*oapi.Reference).Id)
+	return c.GetAntiAffinityGroup(ctx, zone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 }
 
 // DeleteAntiAffinityGroup deletes an Anti-Affinity Group.

@@ -392,7 +392,11 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 		return nil, err
 	}
 
-	return c.GetInstance(ctx, zone, *res.(*oapi.Reference).Id)
+	return c.GetInstance(ctx, zone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 }
 
 // CreateInstanceSnapshot creates a Snapshot of a Compute instance storage volume.
@@ -414,7 +418,11 @@ func (c *Client) CreateInstanceSnapshot(ctx context.Context, zone string, instan
 		return nil, err
 	}
 
-	return c.GetSnapshot(ctx, zone, *res.(*oapi.Reference).Id)
+	return c.GetSnapshot(ctx, zone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 }
 
 // DeleteInstance deletes a Compute instance.

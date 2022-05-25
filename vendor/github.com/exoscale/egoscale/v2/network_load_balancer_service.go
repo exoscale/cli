@@ -164,7 +164,11 @@ func (c *Client) CreateNetworkLoadBalancerService(
 		return nil, err
 	}
 
-	nlbUpdated, err := c.GetNetworkLoadBalancer(ctx, zone, *res.(*oapi.Reference).Id)
+	nlbUpdated, err := c.GetNetworkLoadBalancer(ctx, zone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 	if err != nil {
 		return nil, err
 	}

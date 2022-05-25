@@ -166,7 +166,11 @@ func (c *Client) CreateSecurityGroupRule(
 		return nil, err
 	}
 
-	sgUpdated, err := c.GetSecurityGroup(ctx, zone, *res.(*oapi.Reference).Id)
+	sgUpdated, err := c.GetSecurityGroup(ctx, zone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 	if err != nil {
 		return nil, err
 	}
