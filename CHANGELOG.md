@@ -1,13 +1,25 @@
 # Changelog
 
+## 1.55.0
+
+### Features
+
+- `exo dbaas type show`: add `--backup-config` to print backup configuration for service type and plan.
+
+### Bug Fixes
+
+- Fix request signature bug with unsafe characters in the URL path.
+
 ## 1.54.0
 
 ### Features
+
 - `exo compute instance create`, `exo compute instance-pool create`: remove default Cloud-Init compression on Instance creation, add `--cloud-init-compress` to compress the Instance Cloud-Init user-data.
 
 ## 1.53.0
 
 ### Features
+
 - `exo dbaas create`, `exo dbaas update`: add dbaas migration configuration, add `--mysql-binlog-retention-period` to configure binlog entries retention.
 
 ### Bug Fixes
