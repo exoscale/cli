@@ -25,6 +25,7 @@ type sksCreateCmd struct {
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
 	AutoUpgrade                bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
+	CNI                        string            `cli-usage:"CNI plugin to deploy. e.g. 'calico', or 'cilium'"`
 	Description                string            `cli-usage:"SKS cluster description"`
 	KubernetesVersion          string            `cli-usage:"SKS cluster control plane Kubernetes version"`
 	Labels                     map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
@@ -85,7 +86,7 @@ func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	cluster := &egoscale.SKSCluster{
 		AutoUpgrade: &c.AutoUpgrade,
-		CNI:         &defaultSKSClusterCNI,
+		CNI:         &c.CNI,
 		Description: nonEmptyStringPtr(c.Description),
 		Labels: func() (v *map[string]string) {
 			if len(c.Labels) > 0 {
@@ -268,6 +269,7 @@ func init() {
 	cobra.CheckErr(registerCLICommand(sksCmd, &sksCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
+		CNI:                  defaultSKSClusterCNI,
 		KubernetesVersion:    "latest",
 		NodepoolDiskSize:     50,
 		NodepoolInstanceType: defaultServiceOffering,
@@ -278,6 +280,7 @@ func init() {
 	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
+		CNI:                  defaultSKSClusterCNI,
 		KubernetesVersion:    "latest",
 		NodepoolDiskSize:     50,
 		NodepoolInstanceType: defaultServiceOffering,
