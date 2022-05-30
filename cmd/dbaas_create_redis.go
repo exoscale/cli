@@ -59,14 +59,14 @@ func (c *dbaasServiceCreateCmd) createRedis(_ *cobra.Command, _ []string) error 
 
 	if c.RedisMigrationHost != "" {
 		databaseService.Migration = &struct {
-			Dbname    *string                     `json:"dbname,omitempty"`
-			Host      string                      `json:"host"`
-			IgnoreDbs *string                     `json:"ignore-dbs,omitempty"`
-			Method    *oapi.EnumPgMigrationMethod `json:"method,omitempty"`
-			Password  *string                     `json:"password,omitempty"`
-			Port      int64                       `json:"port"`
-			Ssl       *bool                       `json:"ssl,omitempty"`
-			Username  *string                     `json:"username,omitempty"`
+			Dbname    *string                   `json:"dbname,omitempty"`
+			Host      string                    `json:"host"`
+			IgnoreDbs *string                   `json:"ignore-dbs,omitempty"`
+			Method    *oapi.EnumMigrationMethod `json:"method,omitempty"`
+			Password  *string                   `json:"password,omitempty"`
+			Port      int64                     `json:"port"`
+			Ssl       *bool                     `json:"ssl,omitempty"`
+			Username  *string                   `json:"username,omitempty"`
 		}{
 			Host:     c.RedisMigrationHost,
 			Port:     c.RedisMigrationPort,
@@ -78,7 +78,7 @@ func (c *dbaasServiceCreateCmd) createRedis(_ *cobra.Command, _ []string) error 
 			databaseService.Migration.Ssl = &c.RedisMigrationSSL
 		}
 		if c.RedisMigrationMethod != "" {
-			method := oapi.EnumPgMigrationMethod(c.RedisMigrationMethod)
+			method := oapi.EnumMigrationMethod(c.RedisMigrationMethod)
 			databaseService.Migration.Method = &method
 		}
 		if len(c.RedisMigrationIgnoreDbs) > 0 {

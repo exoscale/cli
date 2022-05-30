@@ -229,7 +229,13 @@ func (c *Client) CreateInstancePool(
 		return nil, err
 	}
 
-	return c.GetInstancePool(ctx, zone, *res.(*oapi.Reference).Id)
+	instancePoolID := *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id
+
+	return c.GetInstancePool(ctx, zone, instancePoolID)
 }
 
 // DeleteInstancePool deletes an Instance Pool.
@@ -460,4 +466,26 @@ func (c *Client) UpdateInstancePool(ctx context.Context, zone string, instancePo
 	}
 
 	return nil
+}
+
+func (c *Client) WaitInstancePoolConverged(ctx context.Context, zone string, instancePoolID string) error {
+	_, err := oapi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, instancePoolPoller(c, zone, instancePoolID))
+	return err
+}
+
+func instancePoolPoller(client oapi.ClientWithResponsesInterface, zone string, id string) oapi.PollFunc {
+	return func(ctx context.Context) (bool, interface{}, error) {
+		resp, err := client.GetInstancePoolWithResponse(apiv2.WithZone(ctx, zone), id)
+		if err != nil {
+			return true, nil, err
+		}
+
+		if *resp.JSON200.Size != int64(len(*resp.JSON200.Instances)) {
+			return false, nil, nil
+		}
+		return true, nil, nil
+	}
 }

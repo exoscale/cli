@@ -93,7 +93,11 @@ func (c *Client) CopyTemplate(ctx context.Context, zone string, template *Templa
 		return nil, err
 	}
 
-	return c.GetTemplate(ctx, dstZone, *res.(*oapi.Reference).Id)
+	return c.GetTemplate(ctx, dstZone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 }
 
 // DeleteTemplate deletes a Template.
@@ -185,7 +189,11 @@ func (c *Client) RegisterTemplate(ctx context.Context, zone string, template *Te
 		return nil, err
 	}
 
-	return c.GetTemplate(ctx, zone, *res.(*oapi.Reference).Id)
+	return c.GetTemplate(ctx, zone, *res.(*struct {
+		Command *string `json:"command,omitempty"`
+		Id      *string `json:"id,omitempty"` // revive:disable-line
+		Link    *string `json:"link,omitempty"`
+	}).Id)
 }
 
 // UpdateTemplate updates a Template.
