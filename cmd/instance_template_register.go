@@ -24,6 +24,7 @@ type instanceTemplateRegisterCmd struct {
 	DisablePassword bool   `cli-usage:"disable password-based authentication"`
 	DisableSSHKey   bool   `cli-flag:"disable-ssh-key" cli-usage:"disable SSH key-based authentication"`
 	FromSnapshot    string `cli-usage:"ID of a Compute instance snapshot to register as template"`
+	Timeout         int64  `cli-usage:"registration timeout duration in seconds"`
 	Username        string `cli-usage:"template default username"`
 	Zone            string `cli-short:"z" cli-usage:"zone to register the template into (default: current account's default zone)"`
 }
@@ -67,9 +68,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		err      error
 	)
 
-	// Template registration can take a _long time_, raising
-	// the Exoscale API client timeout as a precaution.
-	cs.Client.SetTimeout(time.Hour)
+	cs.Client.SetTimeout(time.Duration(c.Timeout) * time.Second)
 
 	ctx := exoapi.WithEndpoint(
 		gContext,
@@ -175,5 +174,9 @@ func init() {
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		BootMode: "legacy",
+
+		// Template registration can take a _long time_, raising
+		// the Exoscale API client timeout to 1h by default as a precaution.
+		Timeout: 3600,
 	}))
 }
