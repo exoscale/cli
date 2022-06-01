@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.56.0
+
+### Features
+
+- `exo compute sks create`: add `--cni` to specify the CNI plugin to deploy (conflicts with `--no-cni`, default to 'calico').
+- `exo compute instance-template register`: add `--timeout` to configure registration timeout (default to 1h).
+
 ## 1.55.0
 
 ### Features
