@@ -44,7 +44,8 @@ certificates.
 Example usage:
 
     # Obtain "cluster-admin" credentials
-    $ exo sks kubeconfig my-cluster admin \
+    $ exo compute sks kubeconfig my-cluster admin \
+     	--zone de-fra-1 \
         -g system:masters \
         -t $((86400 * 7)) > $HOME/.kube/my-cluster.config
     $ kubeconfig --kubeconfig=$HOME/.kube/my-cluster.config get pods
