@@ -51,7 +51,7 @@ type dbaasServiceLogsCmd struct {
 	Name string `cli-arg:"#"`
 
 	Limit  int64  `cli-short:"l" cli-usage:"number of log messages to retrieve"`
-	Offset string `cli-short:"o" cli-usage:"log listing offset"`
+	Offset string `cli-short:"o" cli-usage:"opaque offset identifier (can be found in the JSON output of the command)"`
 	Sort   string `cli-usage:"log messages sorting order (asc|desc)"`
 	Zone   string `cli-short:"z" cli-usage:"Database Service zone"`
 }
