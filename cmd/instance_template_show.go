@@ -23,6 +23,7 @@ type instanceTemplateShowOutput struct {
 	Size            int64  `json:"size"`
 	Version         string `json:"version"`
 	Build           string `json:"build"`
+	Maintainer      string `json:"maintainer"`
 	DefaultUser     string `json:"default_user"`
 	SSHKeyEnabled   bool   `json:"ssh_key_enabled"`
 	PasswordEnabled bool   `json:"password_enabled"`
@@ -47,6 +48,7 @@ func (o *instanceTemplateShowOutput) toTable() {
 	t.Append([]string{"Size", humanize.IBytes(uint64(o.Size))})
 	t.Append([]string{"Version", o.Version})
 	t.Append([]string{"Build", o.Build})
+	t.Append([]string{"Maintainer", o.Maintainer})
 	t.Append([]string{"Default User", o.DefaultUser})
 	t.Append([]string{"SSH key enabled", fmt.Sprint(o.SSHKeyEnabled)})
 	t.Append([]string{"Password enabled", fmt.Sprint(o.PasswordEnabled)})
@@ -131,6 +133,7 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Size:            *template.Size,
 		Version:         defaultString(template.Version, ""),
 		Build:           defaultString(template.Build, ""),
+		Maintainer:      defaultString(template.Maintainer, ""),
 		Checksum:        *template.Checksum,
 		DefaultUser:     defaultString(template.DefaultUser, ""),
 		SSHKeyEnabled:   *template.SSHKeyEnabled,

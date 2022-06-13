@@ -21,6 +21,9 @@ type instanceTemplateRegisterCmd struct {
 
 	BootMode        string `cli-usage:"template boot mode (legacy|uefi)"`
 	Description     string `cli-usage:"template description"`
+	Build           string `cli-usage:"template build"`
+	Version         string `cli-usage:"template version"`
+	Maintainer      string `cli-usage:"template maintainer"`
 	DisablePassword bool   `cli-usage:"disable password-based authentication"`
 	DisableSSHKey   bool   `cli-flag:"disable-ssh-key" cli-usage:"disable SSH key-based authentication"`
 	FromSnapshot    string `cli-usage:"ID of a Compute instance snapshot to register as template"`
@@ -82,6 +85,9 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		Checksum:        nonEmptyStringPtr(c.Checksum),
 		DefaultUser:     nonEmptyStringPtr(c.Username),
 		Description:     nonEmptyStringPtr(c.Description),
+		Build:           nonEmptyStringPtr(c.Build),
+		Version:         nonEmptyStringPtr(c.Version),
+		Maintainer:      nonEmptyStringPtr(c.Maintainer),
 		Name:            &c.Name,
 		PasswordEnabled: &passwordEnabled,
 		SSHKeyEnabled:   &sshKeyEnabled,
@@ -158,6 +164,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 			Size:            *template.Size,
 			Version:         defaultString(template.Version, ""),
 			Build:           defaultString(template.Build, ""),
+			Maintainer:      defaultString(template.Maintainer, ""),
 			Checksum:        *template.Checksum,
 			DefaultUser:     defaultString(template.DefaultUser, ""),
 			SSHKeyEnabled:   *template.SSHKeyEnabled,
