@@ -232,11 +232,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 					for _, pool := range *databaseService.ConnectionPools {
 						v = append(v, dbServicePGConnectionPool{
 							ConnectionURI: pool.ConnectionUri,
-							Database:      pool.Database,
+							Database:      string(pool.Database),
 							Mode:          string(pool.Mode),
-							Name:          pool.Name,
-							Size:          pool.Size,
-							Username:      pool.Username,
+							Name:          string(pool.Name),
+							Size:          int64(pool.Size),
+							Username:      string(pool.Username),
 						})
 					}
 				}

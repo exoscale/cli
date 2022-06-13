@@ -128,9 +128,43 @@ const (
 
 // Defines values for DnsDomainRecordType.
 const (
-	DnsDomainRecordTypeNs DnsDomainRecordType = "ns"
+	DnsDomainRecordTypeA DnsDomainRecordType = "A"
 
-	DnsDomainRecordTypeSoa DnsDomainRecordType = "soa"
+	DnsDomainRecordTypeAAAA DnsDomainRecordType = "AAAA"
+
+	DnsDomainRecordTypeALIAS DnsDomainRecordType = "ALIAS"
+
+	DnsDomainRecordTypeCAA DnsDomainRecordType = "CAA"
+
+	DnsDomainRecordTypeCNAME DnsDomainRecordType = "CNAME"
+
+	DnsDomainRecordTypeDNSKEY DnsDomainRecordType = "DNSKEY"
+
+	DnsDomainRecordTypeDS DnsDomainRecordType = "DS"
+
+	DnsDomainRecordTypeHINFO DnsDomainRecordType = "HINFO"
+
+	DnsDomainRecordTypeMX DnsDomainRecordType = "MX"
+
+	DnsDomainRecordTypeNAPTR DnsDomainRecordType = "NAPTR"
+
+	DnsDomainRecordTypeNS DnsDomainRecordType = "NS"
+
+	DnsDomainRecordTypePOOL DnsDomainRecordType = "POOL"
+
+	DnsDomainRecordTypePTR DnsDomainRecordType = "PTR"
+
+	DnsDomainRecordTypeSOA DnsDomainRecordType = "SOA"
+
+	DnsDomainRecordTypeSPF DnsDomainRecordType = "SPF"
+
+	DnsDomainRecordTypeSRV DnsDomainRecordType = "SRV"
+
+	DnsDomainRecordTypeSSHFP DnsDomainRecordType = "SSHFP"
+
+	DnsDomainRecordTypeTXT DnsDomainRecordType = "TXT"
+
+	DnsDomainRecordTypeURL DnsDomainRecordType = "URL"
 )
 
 // Defines values for ElasticIpHealthcheckMode.
@@ -466,6 +500,8 @@ const (
 // Defines values for SksClusterCni.
 const (
 	SksClusterCniCalico SksClusterCni = "calico"
+
+	SksClusterCniCilium SksClusterCni = "cilium"
 )
 
 // Defines values for SksClusterLevel.
@@ -563,8 +599,6 @@ const (
 	ZoneNameChDk2 ZoneName = "ch-dk-2"
 
 	ZoneNameChGva2 ZoneName = "ch-gva-2"
-
-	ZoneNameChZrh1 ZoneName = "ch-zrh-1"
 
 	ZoneNameDeFra1 ZoneName = "de-fra-1"
 
@@ -807,6 +841,18 @@ type DbaasNodeStateProgressUpdate struct {
 
 // Key identifying this phase
 type DbaasNodeStateProgressUpdatePhase string
+
+// DbaasPgDatabaseName defines model for dbaas-pg-database-name.
+type DbaasPgDatabaseName string
+
+// DbaasPgPoolName defines model for dbaas-pg-pool-name.
+type DbaasPgPoolName string
+
+// DbaasPgPoolSize defines model for dbaas-pg-pool-size.
+type DbaasPgPoolSize int64
+
+// DbaasPgPoolUsername defines model for dbaas-pg-pool-username.
+type DbaasPgPoolUsername string
 
 // DBaaS plan
 type DbaasPlan struct {
@@ -1346,24 +1392,19 @@ type DbaasServicePg struct {
 	// PostgreSQL PGBouncer connection pools
 	ConnectionPools *[]struct {
 		// Connection URI for the DB pool
-		ConnectionUri string `json:"connection-uri"`
-
-		// Service database name
-		Database string         `json:"database"`
-		Mode     EnumPgPoolMode `json:"mode"`
-
-		// Connection pool name
-		Name string `json:"name"`
-
-		// Size of PGBouncer's PostgreSQL side connection pool
-		Size int64 `json:"size"`
-
-		// Pool username
-		Username string `json:"username"`
+		ConnectionUri string              `json:"connection-uri"`
+		Database      DbaasPgDatabaseName `json:"database"`
+		Mode          EnumPgPoolMode      `json:"mode"`
+		Name          DbaasPgPoolName     `json:"name"`
+		Size          DbaasPgPoolSize     `json:"size"`
+		Username      DbaasPgPoolUsername `json:"username"`
 	} `json:"connection-pools,omitempty"`
 
 	// Service creation timestamp (ISO 8601)
 	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// List of PostgreSQL databases
+	Databases *[]DbaasPgDatabaseName `json:"databases,omitempty"`
 
 	// TODO UNIT disk space for data storage
 	DiskSize *int64 `json:"disk-size,omitempty"`
@@ -1621,19 +1662,19 @@ type DnsDomainRecord struct {
 	Name *string `json:"name,omitempty"`
 
 	// DNS domain record priority
-	Priority *int64 `json:"priority,omitempty"`
+	Priority *int64 `json:"priority"`
 
 	// DNS domain record TTL
 	Ttl *int64 `json:"ttl,omitempty"`
 
-	// DNS domain record priority
+	// DNS domain record type
 	Type *DnsDomainRecordType `json:"type,omitempty"`
 
 	// DNS domain record update date
 	UpdatedAt *time.Time `json:"updated-at,omitempty"`
 }
 
-// DNS domain record priority
+// DNS domain record type
 type DnsDomainRecordType string
 
 // Elastic IP
@@ -1829,6 +1870,9 @@ type InstancePool struct {
 
 	// Resource manager
 	Manager *Manager `json:"manager,omitempty"`
+
+	// Minimum number of running instances
+	MinAvailable *int64 `json:"min-available,omitempty"`
 
 	// Instance Pool name
 	Name *string `json:"name,omitempty"`
@@ -2446,6 +2490,9 @@ type Template struct {
 
 	// Template visibility
 	Visibility *TemplateVisibility `json:"visibility,omitempty"`
+
+	// Zones availability
+	Zones *[]ZoneName `json:"zones,omitempty"`
 }
 
 // Boot mode (default: legacy)
@@ -3259,6 +3306,48 @@ type CreateDbaasTaskMigrationCheckJSONBody struct {
 	SourceServiceUri string `json:"source-service-uri"`
 }
 
+// CreateDnsDomainJSONBody defines parameters for CreateDnsDomain.
+type CreateDnsDomainJSONBody struct {
+	// Domain name
+	UnicodeName *string `json:"unicode-name,omitempty"`
+}
+
+// CreateDnsDomainRecordJSONBody defines parameters for CreateDnsDomainRecord.
+type CreateDnsDomainRecordJSONBody struct {
+	// DNS domain record content
+	Content string `json:"content"`
+
+	// DNS domain record name
+	Name string `json:"name"`
+
+	// DNS domain record priority
+	Priority *int64 `json:"priority,omitempty"`
+
+	// DNS domain record TTL
+	Ttl *int64 `json:"ttl,omitempty"`
+
+	// DNS domain record type
+	Type CreateDnsDomainRecordJSONBodyType `json:"type"`
+}
+
+// CreateDnsDomainRecordJSONBodyType defines parameters for CreateDnsDomainRecord.
+type CreateDnsDomainRecordJSONBodyType string
+
+// UpdateDnsDomainRecordJSONBody defines parameters for UpdateDnsDomainRecord.
+type UpdateDnsDomainRecordJSONBody struct {
+	// DNS domain record content
+	Content *string `json:"content,omitempty"`
+
+	// DNS domain record name
+	Name *string `json:"name,omitempty"`
+
+	// DNS domain record priority
+	Priority *int64 `json:"priority,omitempty"`
+
+	// DNS domain record TTL
+	Ttl *int64 `json:"ttl,omitempty"`
+}
+
 // CreateElasticIpJSONBody defines parameters for CreateElasticIp.
 type CreateElasticIpJSONBody struct {
 	// Elastic IP description
@@ -3370,6 +3459,9 @@ type CreateInstancePoolJSONBody struct {
 	Ipv6Enabled *bool   `json:"ipv6-enabled,omitempty"`
 	Labels      *Labels `json:"labels,omitempty"`
 
+	// Minimum number of running instances
+	MinAvailable *int64 `json:"min-available,omitempty"`
+
 	// Instance Pool name
 	Name string `json:"name"`
 
@@ -3418,6 +3510,9 @@ type UpdateInstancePoolJSONBody struct {
 	// Enable IPv6 for instances
 	Ipv6Enabled *bool   `json:"ipv6-enabled,omitempty"`
 	Labels      *Labels `json:"labels,omitempty"`
+
+	// Minimum number of running instances
+	MinAvailable *int64 `json:"min-available"`
 
 	// Instance Pool name
 	Name *string `json:"name,omitempty"`
@@ -3610,7 +3705,7 @@ type CreatePrivateNetworkJSONBody struct {
 // UpdatePrivateNetworkJSONBody defines parameters for UpdatePrivateNetwork.
 type UpdatePrivateNetworkJSONBody struct {
 	// Private Network description
-	Description *string `json:"description,omitempty"`
+	Description *string `json:"description"`
 
 	// Private Network end IP address
 	EndIp  *string `json:"end-ip,omitempty"`
@@ -3769,6 +3864,9 @@ type ListSksClusterVersionsParams struct {
 
 // UpdateSksClusterJSONBody defines parameters for UpdateSksCluster.
 type UpdateSksClusterJSONBody struct {
+	// Cluster addons
+	Addons *[]UpdateSksClusterJSONBodyAddons `json:"addons,omitempty"`
+
 	// Enable auto upgrade of the control plane to the latest patch version available
 	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
 
@@ -3779,6 +3877,9 @@ type UpdateSksClusterJSONBody struct {
 	// Cluster name
 	Name *string `json:"name,omitempty"`
 }
+
+// UpdateSksClusterJSONBodyAddons defines parameters for UpdateSksCluster.
+type UpdateSksClusterJSONBodyAddons string
 
 // GetSksClusterAuthorityCertParamsAuthority defines parameters for GetSksClusterAuthorityCert.
 type GetSksClusterAuthorityCertParamsAuthority string
@@ -3884,6 +3985,9 @@ type PromoteSnapshotToTemplateJSONBody struct {
 	// Template default user
 	DefaultUser *string `json:"default-user,omitempty"`
 
+	// Template description
+	Description *string `json:"description,omitempty"`
+
 	// Template name
 	Name string `json:"name"`
 
@@ -3922,6 +4026,9 @@ type RegisterTemplateJSONBody struct {
 	// Boot mode (default: legacy)
 	BootMode *RegisterTemplateJSONBodyBootMode `json:"boot-mode,omitempty"`
 
+	// Template build
+	Build *string `json:"build,omitempty"`
+
 	// Template MD5 checksum
 	Checksum string `json:"checksum"`
 
@@ -3930,6 +4037,9 @@ type RegisterTemplateJSONBody struct {
 
 	// Template description
 	Description *string `json:"description,omitempty"`
+
+	// Template maintainer
+	Maintainer *string `json:"maintainer,omitempty"`
 
 	// Template name
 	Name string `json:"name"`
@@ -3945,6 +4055,9 @@ type RegisterTemplateJSONBody struct {
 
 	// Template source URL
 	Url string `json:"url"`
+
+	// Template version
+	Version *string `json:"version,omitempty"`
 }
 
 // RegisterTemplateJSONBodyBootMode defines parameters for RegisterTemplate.
@@ -4015,6 +4128,15 @@ type GetDbaasServiceMetricsJSONRequestBody GetDbaasServiceMetricsJSONBody
 
 // CreateDbaasTaskMigrationCheckJSONRequestBody defines body for CreateDbaasTaskMigrationCheck for application/json ContentType.
 type CreateDbaasTaskMigrationCheckJSONRequestBody CreateDbaasTaskMigrationCheckJSONBody
+
+// CreateDnsDomainJSONRequestBody defines body for CreateDnsDomain for application/json ContentType.
+type CreateDnsDomainJSONRequestBody CreateDnsDomainJSONBody
+
+// CreateDnsDomainRecordJSONRequestBody defines body for CreateDnsDomainRecord for application/json ContentType.
+type CreateDnsDomainRecordJSONRequestBody CreateDnsDomainRecordJSONBody
+
+// UpdateDnsDomainRecordJSONRequestBody defines body for UpdateDnsDomainRecord for application/json ContentType.
+type UpdateDnsDomainRecordJSONRequestBody UpdateDnsDomainRecordJSONBody
 
 // CreateElasticIpJSONRequestBody defines body for CreateElasticIp for application/json ContentType.
 type CreateElasticIpJSONRequestBody CreateElasticIpJSONBody
@@ -4611,14 +4733,38 @@ type ClientInterface interface {
 	// ListDnsDomains request
 	ListDnsDomains(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetDnsDomain request
-	GetDnsDomain(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateDnsDomain request with any body
+	CreateDnsDomainWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDnsDomain(ctx context.Context, body CreateDnsDomainJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListDnsDomainRecords request
-	ListDnsDomainRecords(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListDnsDomainRecords(ctx context.Context, domainId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDnsDomainRecord request with any body
+	CreateDnsDomainRecordWithBody(ctx context.Context, domainId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDnsDomainRecord(ctx context.Context, domainId string, body CreateDnsDomainRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDnsDomainRecord request
+	DeleteDnsDomainRecord(ctx context.Context, domainId string, recordId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDnsDomainRecord request
-	GetDnsDomainRecord(ctx context.Context, id int64, recordId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetDnsDomainRecord(ctx context.Context, domainId string, recordId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateDnsDomainRecord request with any body
+	UpdateDnsDomainRecordWithBody(ctx context.Context, domainId string, recordId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateDnsDomainRecord(ctx context.Context, domainId string, recordId string, body UpdateDnsDomainRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDnsDomain request
+	DeleteDnsDomain(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDnsDomain request
+	GetDnsDomain(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDnsDomainZoneFile request
+	GetDnsDomainZoneFile(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListElasticIps request
 	ListElasticIps(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5820,7 +5966,127 @@ func (c *Client) ListDnsDomains(ctx context.Context, reqEditors ...RequestEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetDnsDomain(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateDnsDomainWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDnsDomainRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDnsDomain(ctx context.Context, body CreateDnsDomainJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDnsDomainRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListDnsDomainRecords(ctx context.Context, domainId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListDnsDomainRecordsRequest(c.Server, domainId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDnsDomainRecordWithBody(ctx context.Context, domainId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDnsDomainRecordRequestWithBody(c.Server, domainId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDnsDomainRecord(ctx context.Context, domainId string, body CreateDnsDomainRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDnsDomainRecordRequest(c.Server, domainId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDnsDomainRecord(ctx context.Context, domainId string, recordId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDnsDomainRecordRequest(c.Server, domainId, recordId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDnsDomainRecord(ctx context.Context, domainId string, recordId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDnsDomainRecordRequest(c.Server, domainId, recordId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDnsDomainRecordWithBody(ctx context.Context, domainId string, recordId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDnsDomainRecordRequestWithBody(c.Server, domainId, recordId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDnsDomainRecord(ctx context.Context, domainId string, recordId string, body UpdateDnsDomainRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDnsDomainRecordRequest(c.Server, domainId, recordId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDnsDomain(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDnsDomainRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDnsDomain(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetDnsDomainRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -5832,20 +6098,8 @@ func (c *Client) GetDnsDomain(ctx context.Context, id int64, reqEditors ...Reque
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListDnsDomainRecords(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListDnsDomainRecordsRequest(c.Server, id)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetDnsDomainRecord(ctx context.Context, id int64, recordId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetDnsDomainRecordRequest(c.Server, id, recordId)
+func (c *Client) GetDnsDomainZoneFile(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDnsDomainZoneFileRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -9438,8 +9692,299 @@ func NewListDnsDomainsRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewCreateDnsDomainRequest calls the generic CreateDnsDomain builder with application/json body
+func NewCreateDnsDomainRequest(server string, body CreateDnsDomainJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDnsDomainRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateDnsDomainRequestWithBody generates requests for CreateDnsDomain with any type of body
+func NewCreateDnsDomainRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dns-domain")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListDnsDomainRecordsRequest generates requests for ListDnsDomainRecords
+func NewListDnsDomainRecordsRequest(server string, domainId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "domain-id", runtime.ParamLocationPath, domainId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dns-domain/%s/record", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateDnsDomainRecordRequest calls the generic CreateDnsDomainRecord builder with application/json body
+func NewCreateDnsDomainRecordRequest(server string, domainId string, body CreateDnsDomainRecordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDnsDomainRecordRequestWithBody(server, domainId, "application/json", bodyReader)
+}
+
+// NewCreateDnsDomainRecordRequestWithBody generates requests for CreateDnsDomainRecord with any type of body
+func NewCreateDnsDomainRecordRequestWithBody(server string, domainId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "domain-id", runtime.ParamLocationPath, domainId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dns-domain/%s/record", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDnsDomainRecordRequest generates requests for DeleteDnsDomainRecord
+func NewDeleteDnsDomainRecordRequest(server string, domainId string, recordId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "domain-id", runtime.ParamLocationPath, domainId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "record-id", runtime.ParamLocationPath, recordId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dns-domain/%s/record/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetDnsDomainRecordRequest generates requests for GetDnsDomainRecord
+func NewGetDnsDomainRecordRequest(server string, domainId string, recordId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "domain-id", runtime.ParamLocationPath, domainId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "record-id", runtime.ParamLocationPath, recordId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dns-domain/%s/record/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateDnsDomainRecordRequest calls the generic UpdateDnsDomainRecord builder with application/json body
+func NewUpdateDnsDomainRecordRequest(server string, domainId string, recordId string, body UpdateDnsDomainRecordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateDnsDomainRecordRequestWithBody(server, domainId, recordId, "application/json", bodyReader)
+}
+
+// NewUpdateDnsDomainRecordRequestWithBody generates requests for UpdateDnsDomainRecord with any type of body
+func NewUpdateDnsDomainRecordRequestWithBody(server string, domainId string, recordId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "domain-id", runtime.ParamLocationPath, domainId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "record-id", runtime.ParamLocationPath, recordId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dns-domain/%s/record/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDnsDomainRequest generates requests for DeleteDnsDomain
+func NewDeleteDnsDomainRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dns-domain/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetDnsDomainRequest generates requests for GetDnsDomain
-func NewGetDnsDomainRequest(server string, id int64) (*http.Request, error) {
+func NewGetDnsDomainRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -9472,8 +10017,8 @@ func NewGetDnsDomainRequest(server string, id int64) (*http.Request, error) {
 	return req, nil
 }
 
-// NewListDnsDomainRecordsRequest generates requests for ListDnsDomainRecords
-func NewListDnsDomainRecordsRequest(server string, id int64) (*http.Request, error) {
+// NewGetDnsDomainZoneFileRequest generates requests for GetDnsDomainZoneFile
+func NewGetDnsDomainZoneFileRequest(server string, id string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -9488,48 +10033,7 @@ func NewListDnsDomainRecordsRequest(server string, id int64) (*http.Request, err
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/dns-domain/%s/record", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetDnsDomainRecordRequest generates requests for GetDnsDomainRecord
-func NewGetDnsDomainRecordRequest(server string, id int64, recordId int64) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	var pathParam1 string
-
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "record-id", runtime.ParamLocationPath, recordId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/dns-domain/%s/record/%s", pathParam0, pathParam1)
+	operationPath := fmt.Sprintf("/dns-domain/%s/zone", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -14081,14 +14585,38 @@ type ClientWithResponsesInterface interface {
 	// ListDnsDomains request
 	ListDnsDomainsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListDnsDomainsResponse, error)
 
-	// GetDnsDomain request
-	GetDnsDomainWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*GetDnsDomainResponse, error)
+	// CreateDnsDomain request with any body
+	CreateDnsDomainWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDnsDomainResponse, error)
+
+	CreateDnsDomainWithResponse(ctx context.Context, body CreateDnsDomainJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDnsDomainResponse, error)
 
 	// ListDnsDomainRecords request
-	ListDnsDomainRecordsWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*ListDnsDomainRecordsResponse, error)
+	ListDnsDomainRecordsWithResponse(ctx context.Context, domainId string, reqEditors ...RequestEditorFn) (*ListDnsDomainRecordsResponse, error)
+
+	// CreateDnsDomainRecord request with any body
+	CreateDnsDomainRecordWithBodyWithResponse(ctx context.Context, domainId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDnsDomainRecordResponse, error)
+
+	CreateDnsDomainRecordWithResponse(ctx context.Context, domainId string, body CreateDnsDomainRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDnsDomainRecordResponse, error)
+
+	// DeleteDnsDomainRecord request
+	DeleteDnsDomainRecordWithResponse(ctx context.Context, domainId string, recordId string, reqEditors ...RequestEditorFn) (*DeleteDnsDomainRecordResponse, error)
 
 	// GetDnsDomainRecord request
-	GetDnsDomainRecordWithResponse(ctx context.Context, id int64, recordId int64, reqEditors ...RequestEditorFn) (*GetDnsDomainRecordResponse, error)
+	GetDnsDomainRecordWithResponse(ctx context.Context, domainId string, recordId string, reqEditors ...RequestEditorFn) (*GetDnsDomainRecordResponse, error)
+
+	// UpdateDnsDomainRecord request with any body
+	UpdateDnsDomainRecordWithBodyWithResponse(ctx context.Context, domainId string, recordId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDnsDomainRecordResponse, error)
+
+	UpdateDnsDomainRecordWithResponse(ctx context.Context, domainId string, recordId string, body UpdateDnsDomainRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDnsDomainRecordResponse, error)
+
+	// DeleteDnsDomain request
+	DeleteDnsDomainWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteDnsDomainResponse, error)
+
+	// GetDnsDomain request
+	GetDnsDomainWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetDnsDomainResponse, error)
+
+	// GetDnsDomainZoneFile request
+	GetDnsDomainZoneFileWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetDnsDomainZoneFileResponse, error)
 
 	// ListElasticIps request
 	ListElasticIpsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListElasticIpsResponse, error)
@@ -15714,14 +16242,14 @@ func (r ListDnsDomainsResponse) StatusCode() int {
 	return 0
 }
 
-type GetDnsDomainResponse struct {
+type CreateDnsDomainResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *DnsDomain
 }
 
 // Status returns HTTPResponse.Status
-func (r GetDnsDomainResponse) Status() string {
+func (r CreateDnsDomainResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -15729,7 +16257,7 @@ func (r GetDnsDomainResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetDnsDomainResponse) StatusCode() int {
+func (r CreateDnsDomainResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -15760,6 +16288,50 @@ func (r ListDnsDomainRecordsResponse) StatusCode() int {
 	return 0
 }
 
+type CreateDnsDomainRecordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDnsDomainRecordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDnsDomainRecordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDnsDomainRecordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDnsDomainRecordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDnsDomainRecordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetDnsDomainRecordResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -15776,6 +16348,94 @@ func (r GetDnsDomainRecordResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetDnsDomainRecordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateDnsDomainRecordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateDnsDomainRecordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateDnsDomainRecordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDnsDomainResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDnsDomainResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDnsDomainResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDnsDomainResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DnsDomain
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDnsDomainResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDnsDomainResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDnsDomainZoneFileResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *string
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDnsDomainZoneFileResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDnsDomainZoneFileResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -18749,8 +19409,95 @@ func (c *ClientWithResponses) ListDnsDomainsWithResponse(ctx context.Context, re
 	return ParseListDnsDomainsResponse(rsp)
 }
 
+// CreateDnsDomainWithBodyWithResponse request with arbitrary body returning *CreateDnsDomainResponse
+func (c *ClientWithResponses) CreateDnsDomainWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDnsDomainResponse, error) {
+	rsp, err := c.CreateDnsDomainWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDnsDomainResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDnsDomainWithResponse(ctx context.Context, body CreateDnsDomainJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDnsDomainResponse, error) {
+	rsp, err := c.CreateDnsDomain(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDnsDomainResponse(rsp)
+}
+
+// ListDnsDomainRecordsWithResponse request returning *ListDnsDomainRecordsResponse
+func (c *ClientWithResponses) ListDnsDomainRecordsWithResponse(ctx context.Context, domainId string, reqEditors ...RequestEditorFn) (*ListDnsDomainRecordsResponse, error) {
+	rsp, err := c.ListDnsDomainRecords(ctx, domainId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListDnsDomainRecordsResponse(rsp)
+}
+
+// CreateDnsDomainRecordWithBodyWithResponse request with arbitrary body returning *CreateDnsDomainRecordResponse
+func (c *ClientWithResponses) CreateDnsDomainRecordWithBodyWithResponse(ctx context.Context, domainId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDnsDomainRecordResponse, error) {
+	rsp, err := c.CreateDnsDomainRecordWithBody(ctx, domainId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDnsDomainRecordResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDnsDomainRecordWithResponse(ctx context.Context, domainId string, body CreateDnsDomainRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDnsDomainRecordResponse, error) {
+	rsp, err := c.CreateDnsDomainRecord(ctx, domainId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDnsDomainRecordResponse(rsp)
+}
+
+// DeleteDnsDomainRecordWithResponse request returning *DeleteDnsDomainRecordResponse
+func (c *ClientWithResponses) DeleteDnsDomainRecordWithResponse(ctx context.Context, domainId string, recordId string, reqEditors ...RequestEditorFn) (*DeleteDnsDomainRecordResponse, error) {
+	rsp, err := c.DeleteDnsDomainRecord(ctx, domainId, recordId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDnsDomainRecordResponse(rsp)
+}
+
+// GetDnsDomainRecordWithResponse request returning *GetDnsDomainRecordResponse
+func (c *ClientWithResponses) GetDnsDomainRecordWithResponse(ctx context.Context, domainId string, recordId string, reqEditors ...RequestEditorFn) (*GetDnsDomainRecordResponse, error) {
+	rsp, err := c.GetDnsDomainRecord(ctx, domainId, recordId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDnsDomainRecordResponse(rsp)
+}
+
+// UpdateDnsDomainRecordWithBodyWithResponse request with arbitrary body returning *UpdateDnsDomainRecordResponse
+func (c *ClientWithResponses) UpdateDnsDomainRecordWithBodyWithResponse(ctx context.Context, domainId string, recordId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDnsDomainRecordResponse, error) {
+	rsp, err := c.UpdateDnsDomainRecordWithBody(ctx, domainId, recordId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDnsDomainRecordResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateDnsDomainRecordWithResponse(ctx context.Context, domainId string, recordId string, body UpdateDnsDomainRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDnsDomainRecordResponse, error) {
+	rsp, err := c.UpdateDnsDomainRecord(ctx, domainId, recordId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDnsDomainRecordResponse(rsp)
+}
+
+// DeleteDnsDomainWithResponse request returning *DeleteDnsDomainResponse
+func (c *ClientWithResponses) DeleteDnsDomainWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteDnsDomainResponse, error) {
+	rsp, err := c.DeleteDnsDomain(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDnsDomainResponse(rsp)
+}
+
 // GetDnsDomainWithResponse request returning *GetDnsDomainResponse
-func (c *ClientWithResponses) GetDnsDomainWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*GetDnsDomainResponse, error) {
+func (c *ClientWithResponses) GetDnsDomainWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetDnsDomainResponse, error) {
 	rsp, err := c.GetDnsDomain(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -18758,22 +19505,13 @@ func (c *ClientWithResponses) GetDnsDomainWithResponse(ctx context.Context, id i
 	return ParseGetDnsDomainResponse(rsp)
 }
 
-// ListDnsDomainRecordsWithResponse request returning *ListDnsDomainRecordsResponse
-func (c *ClientWithResponses) ListDnsDomainRecordsWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*ListDnsDomainRecordsResponse, error) {
-	rsp, err := c.ListDnsDomainRecords(ctx, id, reqEditors...)
+// GetDnsDomainZoneFileWithResponse request returning *GetDnsDomainZoneFileResponse
+func (c *ClientWithResponses) GetDnsDomainZoneFileWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetDnsDomainZoneFileResponse, error) {
+	rsp, err := c.GetDnsDomainZoneFile(ctx, id, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseListDnsDomainRecordsResponse(rsp)
-}
-
-// GetDnsDomainRecordWithResponse request returning *GetDnsDomainRecordResponse
-func (c *ClientWithResponses) GetDnsDomainRecordWithResponse(ctx context.Context, id int64, recordId int64, reqEditors ...RequestEditorFn) (*GetDnsDomainRecordResponse, error) {
-	rsp, err := c.GetDnsDomainRecord(ctx, id, recordId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetDnsDomainRecordResponse(rsp)
+	return ParseGetDnsDomainZoneFileResponse(rsp)
 }
 
 // ListElasticIpsWithResponse request returning *ListElasticIpsResponse
@@ -21495,15 +22233,15 @@ func ParseListDnsDomainsResponse(rsp *http.Response) (*ListDnsDomainsResponse, e
 	return response, nil
 }
 
-// ParseGetDnsDomainResponse parses an HTTP response from a GetDnsDomainWithResponse call
-func ParseGetDnsDomainResponse(rsp *http.Response) (*GetDnsDomainResponse, error) {
+// ParseCreateDnsDomainResponse parses an HTTP response from a CreateDnsDomainWithResponse call
+func ParseCreateDnsDomainResponse(rsp *http.Response) (*CreateDnsDomainResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetDnsDomainResponse{
+	response := &CreateDnsDomainResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -21549,6 +22287,58 @@ func ParseListDnsDomainRecordsResponse(rsp *http.Response) (*ListDnsDomainRecord
 	return response, nil
 }
 
+// ParseCreateDnsDomainRecordResponse parses an HTTP response from a CreateDnsDomainRecordWithResponse call
+func ParseCreateDnsDomainRecordResponse(rsp *http.Response) (*CreateDnsDomainRecordResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDnsDomainRecordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDnsDomainRecordResponse parses an HTTP response from a DeleteDnsDomainRecordWithResponse call
+func ParseDeleteDnsDomainRecordResponse(rsp *http.Response) (*DeleteDnsDomainRecordResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDnsDomainRecordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetDnsDomainRecordResponse parses an HTTP response from a GetDnsDomainRecordWithResponse call
 func ParseGetDnsDomainRecordResponse(rsp *http.Response) (*GetDnsDomainRecordResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -21565,6 +22355,110 @@ func ParseGetDnsDomainRecordResponse(rsp *http.Response) (*GetDnsDomainRecordRes
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest DnsDomainRecord
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateDnsDomainRecordResponse parses an HTTP response from a UpdateDnsDomainRecordWithResponse call
+func ParseUpdateDnsDomainRecordResponse(rsp *http.Response) (*UpdateDnsDomainRecordResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateDnsDomainRecordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDnsDomainResponse parses an HTTP response from a DeleteDnsDomainWithResponse call
+func ParseDeleteDnsDomainResponse(rsp *http.Response) (*DeleteDnsDomainResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDnsDomainResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetDnsDomainResponse parses an HTTP response from a GetDnsDomainWithResponse call
+func ParseGetDnsDomainResponse(rsp *http.Response) (*GetDnsDomainResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDnsDomainResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DnsDomain
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetDnsDomainZoneFileResponse parses an HTTP response from a GetDnsDomainZoneFileWithResponse call
+func ParseGetDnsDomainZoneFileResponse(rsp *http.Response) (*GetDnsDomainZoneFileResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDnsDomainZoneFileResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest string
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
