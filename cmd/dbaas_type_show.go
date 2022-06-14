@@ -128,6 +128,7 @@ Supported Database Service type settings:
 * %s
 * %s
 * %s
+* %s
 
 Supported output template annotations:
 

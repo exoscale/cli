@@ -23,7 +23,7 @@ type dbServiceOpensearchComponentsShowOutput struct {
 }
 
 type dbServiceOpensearchConnectionInfoShowOutput struct {
-	DashboardUri string   `json:"dashboard-uri,omitempty"`
+	DashboardURI string   `json:"dashboard-uri,omitempty"`
 	Password     string   `json:"password,omitempty"`
 	URI          []string `json:"uri,omitempty"`
 	Username     string   `json:"username,omitempty"`
@@ -266,7 +266,7 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 			Version:    defaultString(db.Version, ""),
 			Components: components,
 			ConnectionInfo: dbServiceOpensearchConnectionInfoShowOutput{
-				DashboardUri: *db.ConnectionInfo.DashboardUri,
+				DashboardURI: *db.ConnectionInfo.DashboardUri,
 				Password:     *db.ConnectionInfo.Password,
 				URI:          *db.ConnectionInfo.Uri,
 				Username:     *db.ConnectionInfo.Username,
