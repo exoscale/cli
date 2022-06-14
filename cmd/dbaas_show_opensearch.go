@@ -47,6 +47,12 @@ type dbServiceOpensearchUserShowOutput struct {
 	Username string `json:"username,omitempty"`
 }
 
+type dbServiceOpensearchIndexPatternShowOutput struct {
+	MaxIndexCount    int64  `json:"max-index-count,omitempty"`
+	Pattern          string `json:"pattern,omitempty"`
+	SortingAlgorithm string `json:"sorting-algorithm,omitempty"`
+}
+
 type dbServiceOpensearchShowOutput struct {
 	IPFilter                 []string                                    `json:"ip_filter"`
 	URI                      string                                      `json:"uri"`
@@ -55,7 +61,7 @@ type dbServiceOpensearchShowOutput struct {
 	Components               []dbServiceOpensearchComponentsShowOutput   `json:"components,omitempty"`
 	ConnectionInfo           dbServiceOpensearchConnectionInfoShowOutput `json:"connection-info,omitempty"`
 	Description              string                                      `json:"description,omitempty"`
-	IndexPatterns            string                                      `json:"index-patterns,omitempty"`
+	IndexPatterns            []dbServiceOpensearchIndexPatternShowOutput `json:"index-patterns,omitempty"`
 	IndexTemplate            *dbServiceOpensearchIndexTemplateShowOutput `json:"index-template,omitempty"`
 	KeepIndexRefreshInterval bool                                        `json:"keep-index-refresh-interval,omitempty"`
 	MaxIndexCount            int64                                       `json:"max-index-count,omitempty"`
@@ -71,49 +77,49 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 	buf := bytes.NewBuffer(nil)
 	et := table.NewEmbeddedTable(buf)
 	for _, c := range o.Components {
-		et.Append([]string{
-			c.Component,
-			fmt.Sprintf("%s:%d", c.Host, c.Port),
-			"route:" + c.Route,
-			"usage:" + c.Usage,
-		})
+		et.SetHeader([]string{"Name", "host:port", "route", "usage"})
+		et.Append([]string{c.Component, fmt.Sprintf("%s:%d", c.Host, c.Port), c.Route, c.Usage})
 	}
+	et.Render()
 	t.Append([]string{"Components", buf.String()})
 
 	t.Append([]string{"Description", o.Description})
-	t.Append([]string{"IndexPatterns", o.IndexPatterns})
 
 	buf.Reset()
 	et = table.NewEmbeddedTable(buf)
-	if o.IndexTemplate != nil {
-		et.Append([]string{
-			"MappingNestedObjectsLimit:" + strconv.FormatInt(o.IndexTemplate.MappingNestedObjectsLimit, 10),
-			"NumberOfReplicas:" + strconv.FormatInt(o.IndexTemplate.NumberOfReplicas, 10),
-			"NumberOfShards:" + strconv.FormatInt(o.IndexTemplate.NumberOfShards, 10),
-		})
+	if o.IndexPatterns != nil {
+		et.SetHeader([]string{"Pattern", "Max Index Count", "Sorting Algorithm"})
+		for _, i := range o.IndexPatterns {
+			et.Append([]string{i.Pattern, strconv.FormatInt(i.MaxIndexCount, 10), i.SortingAlgorithm})
+		}
 	}
-	t.Append([]string{"IndexTemplate", buf.String()})
+	et.Render()
+	t.Append([]string{"IndexPatterns", buf.String()})
+
+	var indexTemplate string
+	if o.IndexTemplate != nil {
+		indexTemplate = fmt.Sprintf("MappingNestedObjectsLimit:%d NumberOfReplicas:%d NumberOfShards:%d",
+			o.IndexTemplate.MappingNestedObjectsLimit,
+			o.IndexTemplate.NumberOfReplicas,
+			o.IndexTemplate.NumberOfShards)
+	}
+	t.Append([]string{"IndexTemplate", indexTemplate})
 
 	t.Append([]string{"KeepIndexRefreshInterval", fmt.Sprint(o.KeepIndexRefreshInterval)})
 	t.Append([]string{"MaxIndexCount", strconv.FormatInt(o.MaxIndexCount, 10)})
 
-	buf.Reset()
-	et = table.NewEmbeddedTable(buf)
+	var dashboard string
 	if o.Dashboard != nil {
-		et.Append([]string{
-			"Enabled:" + fmt.Sprint(o.Dashboard.Enabled),
-			"MaxOldSpaceSize:" + strconv.FormatInt(o.Dashboard.MaxOldSpaceSize, 10),
-			"OpensearchRequestTimeout:" + strconv.FormatInt(o.Dashboard.OpensearchRequestTimeout, 10),
-		})
+		dashboard = fmt.Sprintf("Enabled:%v MaxOldSpaceSize: %d OpensearchRequestTimeout: %d",
+			o.Dashboard.Enabled, o.Dashboard.MaxOldSpaceSize, o.Dashboard.OpensearchRequestTimeout)
 	}
-	t.Append([]string{"Dashboard", buf.String()})
+	t.Append([]string{"Dashboard", dashboard})
 
 	var users string
 	for _, u := range o.Users {
-		users += fmt.Sprintf("%s (%s)", u.Username, u.Type)
+		users += fmt.Sprintf("%s (%s)\n", u.Username, u.Type)
 	}
 	t.Append([]string{"Users", users})
-
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context) (outputter, error) {
@@ -203,12 +209,14 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 		}
 	}
 
-	var indexPatterns []byte
+	var indexPatterns []dbServiceOpensearchIndexPatternShowOutput
 	if db.IndexPatterns != nil {
-		var err error
-		indexPatterns, err = json.Marshal(*db.IndexPatterns)
-		if err != nil {
-			return nil, fmt.Errorf("failed to encode IndexPatterns: %s", err)
+		for _, i := range *db.IndexPatterns {
+			indexPatterns = append(indexPatterns, dbServiceOpensearchIndexPatternShowOutput{
+				MaxIndexCount:    *i.MaxIndexCount,
+				Pattern:          *i.Pattern,
+				SortingAlgorithm: string(*i.SortingAlgorithm),
+			})
 		}
 	}
 
@@ -227,6 +235,17 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 			Enabled:                  *db.OpensearchDashboards.Enabled,
 			MaxOldSpaceSize:          *db.OpensearchDashboards.MaxOldSpaceSize,
 			OpensearchRequestTimeout: *db.OpensearchDashboards.OpensearchRequestTimeout,
+		}
+	}
+
+	var users []dbServiceOpensearchUserShowOutput
+	if db.Users != nil {
+		for _, u := range *db.Users {
+			users = append(users, dbServiceOpensearchUserShowOutput{
+				Password: *u.Password,
+				Type:     *u.Type,
+				Username: *u.Username,
+			})
 		}
 	}
 
@@ -272,12 +291,12 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 				Username:     *db.ConnectionInfo.Username,
 			},
 			Description:              *db.Description,
-			IndexPatterns:            string(indexPatterns),
+			IndexPatterns:            indexPatterns,
 			IndexTemplate:            indexTemplate,
 			KeepIndexRefreshInterval: *db.KeepIndexRefreshInterval,
 			MaxIndexCount:            *db.MaxIndexCount,
 			Dashboard:                dashboard,
-			Users:                    []dbServiceOpensearchUserShowOutput{},
+			Users:                    users,
 		},
 	}, nil
 }
