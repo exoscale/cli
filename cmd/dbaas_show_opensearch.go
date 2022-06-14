@@ -110,7 +110,7 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 
 	var dashboard string
 	if o.Dashboard != nil {
-		dashboard = fmt.Sprintf("Enabled:%v MaxOldSpaceSize: %d OpensearchRequestTimeout: %d",
+		dashboard = fmt.Sprintf("Enabled:%v MaxOldSpaceSize:%d OpensearchRequestTimeout:%d",
 			o.Dashboard.Enabled, o.Dashboard.MaxOldSpaceSize, o.Dashboard.OpensearchRequestTimeout)
 	}
 	t.Append([]string{"Dashboard", dashboard})
