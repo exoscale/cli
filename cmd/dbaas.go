@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -152,4 +153,19 @@ func dbaasShowSettings(settings map[string]interface{}) {
 
 		t.Append(row)
 	}
+}
+
+func dbaasGetType(ctx context.Context, name, zone string) (string, error) {
+	dbs, err := cs.ListDatabaseServices(ctx, zone)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve database type: %s", err)
+	}
+
+	for _, db := range dbs {
+		if *db.Name == name {
+			return *db.Type, nil
+		}
+	}
+
+	return "", fmt.Errorf("%q Database Service not found in zone %q", name, zone)
 }

@@ -17,10 +17,12 @@ type dbaasServiceCreateCmd struct {
 	Plan string `cli-arg:"#"`
 	Name string `cli-arg:"#"`
 
-	HelpKafka             bool   `cli-usage:"show usage for flags specific to the kafka type"`
-	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
-	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
-	HelpRedis             bool   `cli-usage:"show usage for flags specific to the redis type"`
+	HelpKafka      bool `cli-usage:"show usage for flags specific to the kafka type"`
+	HelpOpensearch bool `cli-usage:"show usage for flags specific to the opensearch type"`
+	HelpMysql      bool `cli-usage:"show usage for flags specific to the mysql type"`
+	HelpPg         bool `cli-usage:"show usage for flags specific to the pg type"`
+	HelpRedis      bool `cli-usage:"show usage for flags specific to the redis type"`
+
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
 	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
@@ -38,6 +40,23 @@ type dbaasServiceCreateCmd struct {
 	KafkaSchemaRegistrySettings string   `cli-flag:"kafka-schema-registry-settings" cli-usage:"Schema Registry configuration settings (JSON format)" cli-hidden:""`
 	KafkaSettings               string   `cli-flag:"kafka-settings" cli-usage:"Kafka configuration settings (JSON format)" cli-hidden:""`
 	KafkaVersion                string   `cli-flag:"kafka-version" cli-usage:"Kafka major version" cli-hidden:""`
+
+	// "opensearch" type specific flags
+	OpensearchForkFromService                        string   `cli-flag:"opensearch-fork-from-service" cli-usage:"Service name"`
+	OpensearchIndexPatterns                          string   `cli-flag:"opensearch-index-patterns" cli-usage:"JSON max-index-count/pattern/sorting-algorithm"`
+	OpensearchIndexTemplateMappingNestedObjectsLimit int64    `cli-flag:"opensearch-index-template-mapping-nested-objects-limit" cli-usage:"The maximum number of nested cli-flag objects that a single document can contain across all nested types. Default is 10000." cli-hidden:""`
+	OpensearchIndexTemplateNumberOfReplicas          int64    `cli-hidden:""cli-flag:"opensearch-index-template-number-of-replicas" cli-usage:"The number of replicas each primary shard has." cli-hidden:""`
+	OpensearchIndexTemplateNumberOfShards            int64    `cli-flag:"opensearch-index-template-number-of-shards" cli-usage:"The number of primary shards that an index should have." cli-hidden:""`
+	OpensearchIPFilter                               []string `cli-flag:"opensearch-ip-filter" cli-usage:"Allow incoming connections from CIDR address block" cli-hidden:""`
+	OpensearchKeepIndexRefreshInterval               bool     `cli-flag:"opensearch-keep-index-refresh-interval" cli-usage:"index.refresh_interval is reset to default value for every index to be sure that indices are always visible to search. Set to true disable this." cli-hidden:""`
+	OpensearchMaxIndexCount                          int64    `cli-flag:"opensearch-max-index-count" cli-usage:"Maximum number of indexes to keep before deleting the oldest one" cli-hidden:""`
+	OpensearchDashboardEnabled                       bool     `cli-flag:"opensearch-dashboard-enabled" cli-usage:"Enable or disable OpenSearch Dashboards (default: true)" cli-hidden:""`
+	OpensearchDashboardMaxOldSpaceSize               int64    `cli-flag:"opensearch-dashboard-max-old-space-size" cli-usage:"Memory limit in MiB for OpenSearch Dashboards. Note: The memory reserved by OpenSearch Dashboards is not available for OpenSearch. (default: 128)" cli-hidden:""`
+	OpensearchDashboardRequestTimeout                int64    `cli-flag:"opensearch-dashboard-request-timeout" cli-usage:"Timeout in milliseconds for requests made by OpenSearch Dashboards towards OpenSearch (default: 30000)" cli-hidden:""`
+	OpensearchSettings                               string   `cli-flag:"opensearch-settings" cli-usage:"OpenSearch-specific settings (JSON)" cli-hidden:""`
+	OpensearchPlan                                   string   `cli-flag:"opensearch-plan" cli-usage:"Subscription plan" cli-hidden:""`
+	OpensearchRecoveryBackupName                     string   `cli-flag:"opensearch-recovery-backup-name" cli-usage:"Name of a backup to recover from for services that support backup names" cli-hidden:""`
+	OpensearchVersion                                string   `cli-flag:"opensearch-version" cli-usage:"OpenSearch major version" cli-hidden:""`
 
 	// "mysql" type specific flags
 	MysqlAdminPassword         string   `cli-flag:"mysql-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
@@ -112,6 +131,9 @@ func (c *dbaasServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 	case cmd.Flags().Changed("help-kafka"):
 		cmdShowHelpFlags(cmd.Flags(), "kafka-")
 		os.Exit(0)
+	case cmd.Flags().Changed("help-opensearch"):
+		cmdShowHelpFlags(cmd.Flags(), "opensearch-")
+		os.Exit(0)
 	case cmd.Flags().Changed("help-mysql"):
 		cmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
@@ -141,6 +163,8 @@ func (c *dbaasServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 	switch c.Type {
 	case "kafka":
 		return c.createKafka(cmd, args)
+	case "opensearch":
+		return c.createOpensearch(cmd, args)
 	case "mysql":
 		return c.createMysql(cmd, args)
 	case "pg":
