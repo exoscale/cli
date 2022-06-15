@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.88.2
+----
+
+- feature: v2: add support for Build, Maintainer and Version attributes to RegisterTemplate
+
 0.88.1
 ------
 
