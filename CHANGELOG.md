@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.57.0
+
+### Features
+
+- `exo compute instance-template register`: add `--build`, `--version` and `--maintainer` to set template metadata.
+- `exo dbaas logs --help`: explain how to use `--offset`.
+
 ## 1.56.0
 
 ### Features
