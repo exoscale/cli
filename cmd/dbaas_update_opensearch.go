@@ -122,7 +122,7 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 
 		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), db.IndexPatterns)
 		if err != nil {
-			return fmt.Errorf("failed to decode Opensearch index patterns JSON: %s", err)
+			return fmt.Errorf("failed to decode Opensearch index patterns JSON: %w", err)
 		}
 		updated = true
 	}
