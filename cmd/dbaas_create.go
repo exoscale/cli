@@ -17,10 +17,12 @@ type dbaasServiceCreateCmd struct {
 	Plan string `cli-arg:"#"`
 	Name string `cli-arg:"#"`
 
-	HelpKafka             bool   `cli-usage:"show usage for flags specific to the kafka type"`
-	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
-	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
-	HelpRedis             bool   `cli-usage:"show usage for flags specific to the redis type"`
+	HelpKafka      bool `cli-usage:"show usage for flags specific to the kafka type"`
+	HelpOpensearch bool `cli-usage:"show usage for flags specific to the opensearch type"`
+	HelpMysql      bool `cli-usage:"show usage for flags specific to the mysql type"`
+	HelpPg         bool `cli-usage:"show usage for flags specific to the pg type"`
+	HelpRedis      bool `cli-usage:"show usage for flags specific to the redis type"`
+
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
 	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
 	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
@@ -39,13 +41,29 @@ type dbaasServiceCreateCmd struct {
 	KafkaSettings               string   `cli-flag:"kafka-settings" cli-usage:"Kafka configuration settings (JSON format)" cli-hidden:""`
 	KafkaVersion                string   `cli-flag:"kafka-version" cli-usage:"Kafka major version" cli-hidden:""`
 
+	// "opensearch" type specific flags
+	OpensearchForkFromService                        string   `cli-flag:"opensearch-fork-from-service" cli-usage:"Service name" cli-hidden:""`
+	OpensearchIndexPatterns                          string   `cli-flag:"opensearch-index-patterns" cli-usage:"JSON Array of index patterns (https://openapi-v2.exoscale.com/#operation-get-dbaas-service-opensearch-200-index-patterns)" cli-hidden:""`
+	OpensearchIndexTemplateMappingNestedObjectsLimit int64    `cli-flag:"opensearch-index-template-mapping-nested-objects-limit" cli-usage:"The maximum number of nested cli-flag objects that a single document can contain across all nested types. Default is 10000." cli-hidden:""`
+	OpensearchIndexTemplateNumberOfReplicas          int64    `cli-flag:"opensearch-index-template-number-of-replicas" cli-usage:"The number of replicas each primary shard has." cli-hidden:""`
+	OpensearchIndexTemplateNumberOfShards            int64    `cli-flag:"opensearch-index-template-number-of-shards" cli-usage:"The number of primary shards that an index should have." cli-hidden:""`
+	OpensearchIPFilter                               []string `cli-flag:"opensearch-ip-filter" cli-usage:"Allow incoming connections from CIDR address block" cli-hidden:""`
+	OpensearchKeepIndexRefreshInterval               bool     `cli-flag:"opensearch-keep-index-refresh-interval" cli-usage:"index.refresh_interval is reset to default value for every index to be sure that indices are always visible to search. Set to true disable this." cli-hidden:""`
+	OpensearchMaxIndexCount                          int64    `cli-flag:"opensearch-max-index-count" cli-usage:"Maximum number of indexes to keep before deleting the oldest one" cli-hidden:""`
+	OpensearchDashboardEnabled                       bool     `cli-flag:"opensearch-dashboard-enabled" cli-usage:"Enable or disable OpenSearch Dashboards (default: true)" cli-hidden:""`
+	OpensearchDashboardMaxOldSpaceSize               int64    `cli-flag:"opensearch-dashboard-max-old-space-size" cli-usage:"Memory limit in MiB for OpenSearch Dashboards. Note: The memory reserved by OpenSearch Dashboards is not available for OpenSearch. (default: 128)" cli-hidden:""`
+	OpensearchDashboardRequestTimeout                int64    `cli-flag:"opensearch-dashboard-request-timeout" cli-usage:"Timeout in milliseconds for requests made by OpenSearch Dashboards towards OpenSearch (default: 30000)" cli-hidden:""`
+	OpensearchSettings                               string   `cli-flag:"opensearch-settings" cli-usage:"OpenSearch-specific settings (JSON)" cli-hidden:""`
+	OpensearchRecoveryBackupName                     string   `cli-flag:"opensearch-recovery-backup-name" cli-usage:"Name of a backup to recover from for services that support backup names" cli-hidden:""`
+	OpensearchVersion                                string   `cli-flag:"opensearch-version" cli-usage:"OpenSearch major version" cli-hidden:""`
+
 	// "mysql" type specific flags
 	MysqlAdminPassword         string   `cli-flag:"mysql-admin-password" cli-usage:"custom password for admin user" cli-hidden:""`
 	MysqlAdminUsername         string   `cli-flag:"mysql-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
 	MysqlBackupSchedule        string   `cli-flag:"mysql-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
-	MysqlForkFrom              string   `cli-flag:"mysql-fork-from" cli-usage:"name of a Database Service to fork from"`
+	MysqlForkFrom              string   `cli-flag:"mysql-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
 	MysqlIPFilter              []string `cli-flag:"mysql-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	MysqlRecoveryBackupTime    string   `cli-flag:"mysql-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
+	MysqlRecoveryBackupTime    string   `cli-flag:"mysql-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service" cli-hidden:""`
 	MysqlSettings              string   `cli-flag:"mysql-settings" cli-usage:"MySQL configuration settings (JSON format)" cli-hidden:""`
 	MysqlVersion               string   `cli-flag:"mysql-version" cli-usage:"MySQL major version" cli-hidden:""`
 	MysqlMigrationHost         string   `cli-flag:"mysql-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
@@ -63,10 +81,10 @@ type dbaasServiceCreateCmd struct {
 	PGAdminUsername      string   `cli-flag:"pg-admin-username" cli-usage:"custom username for admin user" cli-hidden:""`
 	PGBackupSchedule     string   `cli-flag:"pg-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
 	PGBouncerSettings    string   `cli-flag:"pg-bouncer-settings" cli-usage:"PgBouncer configuration settings (JSON format)" cli-hidden:""`
-	PGForkFrom           string   `cli-flag:"pg-fork-from" cli-usage:"name of a Database Service to fork from"`
+	PGForkFrom           string   `cli-flag:"pg-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
 	PGIPFilter           []string `cli-flag:"pg-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
 	PGLookoutSettings    string   `cli-flag:"pg-lookout-settings" cli-usage:"pglookout configuration settings (JSON format)" cli-hidden:""`
-	PGRecoveryBackupTime string   `cli-flag:"pg-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service"`
+	PGRecoveryBackupTime string   `cli-flag:"pg-recovery-backup-time" cli-usage:"the timestamp of the backup to restore when forking from a Database Service" cli-hidden:""`
 	PGSettings           string   `cli-flag:"pg-settings" cli-usage:"PostgreSQL configuration settings (JSON format)" cli-hidden:""`
 	PGVersion            string   `cli-flag:"pg-version" cli-usage:"PostgreSQL major version" cli-hidden:""`
 	PGMigrationHost      string   `cli-flag:"pg-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
@@ -79,9 +97,9 @@ type dbaasServiceCreateCmd struct {
 	PGMigrationIgnoreDbs []string `cli-flag:"pg-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
 
 	// "redis" type specific flags
-	RedisForkFrom           string   `cli-flag:"redis-fork-from" cli-usage:"name of a Database Service to fork from"`
+	RedisForkFrom           string   `cli-flag:"redis-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
 	RedisIPFilter           []string `cli-flag:"redis-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	RedisRecoveryBackupName string   `cli-flag:"redis-recovery-backup-name" cli-usage:"the name of the backup to restore when forking from a Database Service"`
+	RedisRecoveryBackupName string   `cli-flag:"redis-recovery-backup-name" cli-usage:"the name of the backup to restore when forking from a Database Service" cli-hidden:""`
 	RedisSettings           string   `cli-flag:"redis-settings" cli-usage:"Redis configuration settings (JSON format)" cli-hidden:""`
 	RedisMigrationHost      string   `cli-flag:"redis-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
 	RedisMigrationPort      int64    `cli-flag:"redis-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
@@ -112,6 +130,9 @@ func (c *dbaasServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 	case cmd.Flags().Changed("help-kafka"):
 		cmdShowHelpFlags(cmd.Flags(), "kafka-")
 		os.Exit(0)
+	case cmd.Flags().Changed("help-opensearch"):
+		cmdShowHelpFlags(cmd.Flags(), "opensearch-")
+		os.Exit(0)
 	case cmd.Flags().Changed("help-mysql"):
 		cmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
@@ -141,6 +162,8 @@ func (c *dbaasServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 	switch c.Type {
 	case "kafka":
 		return c.createKafka(cmd, args)
+	case "opensearch":
+		return c.createOpensearch(cmd, args)
 	case "mysql":
 		return c.createMysql(cmd, args)
 	case "pg":

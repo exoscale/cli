@@ -87,7 +87,8 @@ func (o *dbaasTypeShowOutput) toTable() {
 }
 
 var (
-	kafkaSettings = []string{
+	opensearchSettings = []string{"opensearch"}
+	kafkaSettings      = []string{
 		"kafka",
 		"kafka-rest",
 		"kafka-connect",
@@ -127,12 +128,14 @@ Supported Database Service type settings:
 * %s
 * %s
 * %s
+* %s
 
 Supported output template annotations:
 
 * When showing a Database Service: %s
 
 * When listing Database Service plans: %s`,
+		strings.Join(opensearchSettings, ", "),
 		strings.Join(kafkaSettings, ", "),
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
@@ -198,6 +201,27 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				settings = *res.JSON200.Settings.KafkaRest.Properties
 			case "schema-registry":
 				settings = *res.JSON200.Settings.SchemaRegistry.Properties
+			}
+
+			dbaasShowSettings(settings)
+
+		case "opensearch":
+			if !isInList(opensearchSettings, c.ShowSettings) {
+				return fmt.Errorf(
+					"invalid settings value %q, expected one of: %s",
+					c.ShowSettings,
+					strings.Join(opensearchSettings, ", "),
+				)
+			}
+
+			res, err := cs.GetDbaasSettingsOpensearchWithResponse(ctx)
+			if err != nil {
+				return err
+			}
+
+			switch c.ShowSettings {
+			case "opensearch":
+				settings = *res.JSON200.Settings.Opensearch.Properties
 			}
 
 			dbaasShowSettings(settings)

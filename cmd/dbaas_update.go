@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -18,6 +17,7 @@ type dbaasServiceUpdateCmd struct {
 	Name string `cli-arg:"#"`
 
 	HelpKafka             bool   `cli-usage:"show usage for flags specific to the kafka type"`
+	HelpOpensearch        bool   `cli-usage:"show usage for flags specific to the opensearch type"`
 	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
 	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
 	HelpRedis             bool   `cli-usage:"show usage for flags specific to the redis type"`
@@ -38,6 +38,19 @@ type dbaasServiceUpdateCmd struct {
 	KafkaRESTSettings           string   `cli-flag:"kafka-rest-settings" cli-usage:"Kafka REST configuration settings (JSON format)" cli-hidden:""`
 	KafkaSchemaRegistrySettings string   `cli-flag:"kafka-schema-registry-settings" cli-usage:"Schema Registry configuration settings (JSON format)" cli-hidden:""`
 	KafkaSettings               string   `cli-flag:"kafka-settings" cli-usage:"Kafka configuration settings (JSON format)" cli-hidden:""`
+
+	// "opensearch" type specific flags
+	OpensearchMaxIndexCount                          int64    `cli-flag:"opensearch-max-index-count" cli-usage:"Maximum number of indexes to keep before deleting the oldest one" cli-hidden:""`
+	OpensearchKeepIndexRefreshInterval               bool     `cli-flag:"opensearch-keep-index-refresh-interval" cli-usage:"index.refresh_interval is reset to default value for every index to be sure that indices are always visible to search. Set to true disable this." cli-hidden:""`
+	OpensearchIPFilter                               []string `cli-flag:"opensearch-ip-filter" cli-usage:"Allow incoming connections from CIDR address block" cli-hidden:""`
+	OpensearchIndexPatterns                          string   `cli-flag:"opensearch-index-patterns" cli-usage:"JSON Array of index patterns (https://openapi-v2.exoscale.com/#operation-get-dbaas-service-opensearch-200-index-patterns)" cli-hidden:""`
+	OpensearchIndexTemplateMappingNestedObjectsLimit int64    `cli-flag:"opensearch-index-template-mapping-nested-objects-limit" cli-usage:"The maximum number of nested cli-flag objects that a single document can contain across all nested types. Default is 10000." cli-hidden:""`
+	OpensearchIndexTemplateNumberOfReplicas          int64    `cli-flag:"opensearch-index-template-number-of-replicas" cli-usage:"The number of replicas each primary shard has." cli-hidden:""`
+	OpensearchIndexTemplateNumberOfShards            int64    `cli-flag:"opensearch-index-template-number-of-shards" cli-usage:"The number of primary shards that an index should have." cli-hidden:""`
+	OpensearchSettings                               string   `cli-flag:"opensearch-settings" cli-usage:"OpenSearch-specific settings (JSON)" cli-hidden:""`
+	OpensearchDashboardEnabled                       bool     `cli-flag:"opensearch-dashboard-enabled" cli-usage:"Enable or disable OpenSearch Dashboards (default: true)" cli-hidden:""`
+	OpensearchDashboardMaxOldSpaceSize               int64    `cli-flag:"opensearch-dashboard-max-old-space-size" cli-usage:"Memory limit in MiB for OpenSearch Dashboards. Note: The memory reserved by OpenSearch Dashboards is not available for OpenSearch. (default: 128)" cli-hidden:""`
+	OpensearchDashboardRequestTimeout                int64    `cli-flag:"opensearch-dashboard-request-timeout" cli-usage:"Timeout in milliseconds for requests made by OpenSearch Dashboards towards OpenSearch (default: 30000)" cli-hidden:""`
 
 	// "mysql" type specific flags
 	MysqlBackupSchedule        string   `cli-flag:"mysql-backup-schedule" cli-usage:"automated backup schedule (format: HH:MM)" cli-hidden:""`
@@ -101,6 +114,9 @@ func (c *dbaasServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 	case cmd.Flags().Changed("help-kafka"):
 		cmdShowHelpFlags(cmd.Flags(), "kafka-")
 		os.Exit(0)
+	case cmd.Flags().Changed("help-opensearch"):
+		cmdShowHelpFlags(cmd.Flags(), "opensearch-")
+		os.Exit(0)
 	case cmd.Flags().Changed("help-mysql"):
 		cmdShowHelpFlags(cmd.Flags(), "mysql-")
 		os.Exit(0)
@@ -129,28 +145,16 @@ func (c *dbaasServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	databaseServices, err := cs.ListDatabaseServices(ctx, c.Zone)
+	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	var (
-		ok              bool
-		databaseService *egoscale.DatabaseService
-	)
-	for _, databaseService = range databaseServices {
-		if *databaseService.Name == c.Name {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("%q Database Service not found", c.Name)
-	}
-
-	switch *databaseService.Type {
+	switch dbType {
 	case "kafka":
 		return c.updateKafka(cmd, args)
+	case "opensearch":
+		return c.updateOpensearch(cmd, args)
 	case "mysql":
 		return c.updateMysql(cmd, args)
 	case "pg":

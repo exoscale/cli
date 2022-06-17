@@ -8,7 +8,6 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
-	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -68,10 +67,11 @@ type dbServiceShowOutput struct {
 	UpdateDate            time.Time                       `json:"update_date"`
 	Zone                  string                          `json:"zone"`
 
-	Kafka *dbServiceKafkaShowOutput `json:"kafka,omitempty"`
-	Mysql *dbServiceMysqlShowOutput `json:"mysql,omitempty"`
-	PG    *dbServicePGShowOutput    `json:"pg,omitempty"`
-	Redis *dbServiceRedisShowOutput `json:"redis,omitempty"`
+	Kafka      *dbServiceKafkaShowOutput      `json:"kafka,omitempty"`
+	Mysql      *dbServiceMysqlShowOutput      `json:"mysql,omitempty"`
+	PG         *dbServicePGShowOutput         `json:"pg,omitempty"`
+	Redis      *dbServiceRedisShowOutput      `json:"redis,omitempty"`
+	Opensearch *dbServiceOpensearchShowOutput `json:"opensearch,omitempty"`
 }
 
 func (o *dbServiceShowOutput) toJSON() { outputJSON(o) }
@@ -104,6 +104,8 @@ func (o *dbServiceShowOutput) toTable() {
 	switch {
 	case o.Kafka != nil:
 		formatDatabaseServiceKafkaTable(t, o.Kafka)
+	case o.Opensearch != nil:
+		formatDatabaseServiceOpensearchTable(t, o.Opensearch)
 	case o.Mysql != nil:
 		formatDatabaseServiceMysqlTable(t, o.Mysql)
 	case o.PG != nil:
@@ -143,6 +145,7 @@ Supported output template annotations:
     - .Kafka.Components[]: %s
     - .Kafka.ConnectionInfo: %s
     - .Kafka.Users[]: %s
+  - .Opensearch: %s
   - .Mysql: %s
     - .Mysql.Components[]: %s
     - .Mysql.Users[]: %s
@@ -164,6 +167,7 @@ Supported output template annotations:
 		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaComponentShowOutput{}), ", "),
 		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaConnectionInfoShowOutput{}), ", "),
 		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaUserShowOutput{}), ", "),
+		strings.Join(outputterTemplateAnnotations(&dbServiceOpensearchShowOutput{}), ", "),
 		strings.Join(outputterTemplateAnnotations(&dbServiceMysqlShowOutput{}), ", "),
 		strings.Join(outputterTemplateAnnotations(&dbServiceMysqlComponentShowOutput{}), ", "),
 		strings.Join(outputterTemplateAnnotations(&dbServiceMysqlUserShowOutput{}), ", "),
@@ -186,28 +190,16 @@ func (c *dbaasServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	databaseServices, err := cs.ListDatabaseServices(ctx, c.Zone)
+	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	var (
-		ok              bool
-		databaseService *egoscale.DatabaseService
-	)
-	for _, databaseService = range databaseServices {
-		if *databaseService.Name == c.Name {
-			ok = true
-			break
-		}
-	}
-	if !ok {
-		return fmt.Errorf("%q Database Service not found", c.Name)
-	}
-
-	switch *databaseService.Type {
+	switch dbType {
 	case "kafka":
 		return c.outputFunc(c.showDatabaseServiceKafka(ctx))
+	case "opensearch":
+		return c.outputFunc(c.showDatabaseServiceOpensearch(ctx))
 	case "mysql":
 		return c.outputFunc(c.showDatabaseServiceMysql(ctx))
 	case "pg":
@@ -215,7 +207,7 @@ func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	case "redis":
 		return c.outputFunc(c.showDatabaseServiceRedis(ctx))
 	default:
-		return fmt.Errorf("unsupported service type %q", *databaseService.Type)
+		return fmt.Errorf("unsupported service type %q", dbType)
 	}
 }
 
