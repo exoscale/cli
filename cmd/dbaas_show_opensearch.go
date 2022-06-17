@@ -182,16 +182,19 @@ func opensearchShowNotifications(db *oapi.DbaasServiceOpensearch) (outputter, er
 }
 
 func opensearchShowBackups(db *oapi.DbaasServiceOpensearch) (outputter, error) {
-	out := make(dbServiceBackupListOutput, 0)
-	if db.Backups != nil {
-		for _, b := range *db.Backups {
-			out = append(out, dbServiceBackupListItemOutput{
-				Date: b.BackupTime,
-				Name: b.BackupName,
-				Size: b.DataSize,
-			})
-		}
+	if db.Backups == nil {
+		return &dbServiceBackupListOutput{}, nil
 	}
+
+	out := make(dbServiceBackupListOutput, 0, len(*db.Backups))
+	for _, b := range *db.Backups {
+		out = append(out, dbServiceBackupListItemOutput{
+			Date: b.BackupTime,
+			Name: b.BackupName,
+			Size: b.DataSize,
+		})
+	}
+
 	return &out, nil
 }
 
