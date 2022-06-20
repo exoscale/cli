@@ -1006,3 +1006,97 @@ func (m *oapiClientMock) GetDbaasMigrationStatusWithResponse(
 	args := m.Called(ctx, name, reqEditors)
 	return args.Get(0).(*oapi.GetDbaasMigrationStatusResponse), args.Error(1)
 }
+
+func (m *oapiClientMock) ListDnsDomainsWithResponse(
+	ctx context.Context,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.ListDnsDomainsResponse, error) {
+	args := m.Called(ctx, reqEditors)
+	return args.Get(0).(*oapi.ListDnsDomainsResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) GetDnsDomainWithResponse(
+	ctx context.Context,
+	id string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.GetDnsDomainResponse, error) {
+	args := m.Called(ctx, id, reqEditors)
+	return args.Get(0).(*oapi.GetDnsDomainResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) CreateDnsDomainWithResponse(
+	ctx context.Context,
+	body oapi.CreateDnsDomainJSONRequestBody,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.CreateDnsDomainResponse, error) {
+	args := m.Called(ctx, body, reqEditors)
+	return args.Get(0).(*oapi.CreateDnsDomainResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) DeleteDnsDomainWithResponse(
+	ctx context.Context,
+	id string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.DeleteDnsDomainResponse, error) {
+	args := m.Called(ctx, id, reqEditors)
+	return args.Get(0).(*oapi.DeleteDnsDomainResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) GetDnsDomainZoneFileWithResponse(
+	ctx context.Context,
+	id string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.GetDnsDomainZoneFileResponse, error) {
+	args := m.Called(ctx, id, reqEditors)
+	return args.Get(0).(*oapi.GetDnsDomainZoneFileResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) ListDnsDomainRecordsWithResponse(
+	ctx context.Context,
+	id string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.ListDnsDomainRecordsResponse, error) {
+	args := m.Called(ctx, id, reqEditors)
+	return args.Get(0).(*oapi.ListDnsDomainRecordsResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) GetDnsDomainRecordWithResponse(
+	ctx context.Context,
+	domainId string,
+	recordId string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.GetDnsDomainRecordResponse, error) {
+	args := m.Called(ctx, domainId, recordId, reqEditors)
+	return args.Get(0).(*oapi.GetDnsDomainRecordResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) CreateDnsDomainRecordWithResponse(
+	ctx context.Context,
+	domainId string,
+	body oapi.CreateDnsDomainRecordJSONRequestBody,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.CreateDnsDomainRecordResponse, error) {
+	args := m.Called(ctx, domainId, body, reqEditors)
+	return args.Get(0).(*oapi.CreateDnsDomainRecordResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) DeleteDnsDomainRecordWithResponse(
+	ctx context.Context,
+	domainId string,
+	recordId string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.DeleteDnsDomainRecordResponse, error) {
+	args := m.Called(ctx, domainId, recordId, reqEditors)
+	return args.Get(0).(*oapi.DeleteDnsDomainRecordResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) UpdateDnsDomainRecordWithResponse(
+	ctx context.Context,
+	domainId string,
+	recordId string,
+	body oapi.UpdateDnsDomainRecordJSONRequestBody,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.UpdateDnsDomainRecordResponse, error) {
+	args := m.Called(ctx, domainId, recordId, body, reqEditors)
+	return args.Get(0).(*oapi.UpdateDnsDomainRecordResponse), args.Error(1)
+}
