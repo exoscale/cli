@@ -440,3 +440,19 @@ func Int64PtrFormatOutput(n *int64) string {
 
 	return "n/a"
 }
+
+func StrPtrFormatOutput(s *string) string {
+	if s != nil {
+		return *s
+	}
+
+	return "n/a"
+}
+
+func DatePtrFormatOutput(t *time.Time) string {
+	if t != nil {
+		return t.String()
+	}
+
+	return "n/a"
+}

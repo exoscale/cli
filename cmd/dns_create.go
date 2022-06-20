@@ -3,35 +3,43 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/exoscale/egoscale"
+	exo "github.com/exoscale/egoscale/v2"
 	"github.com/spf13/cobra"
 )
 
-var dnsCreateCmd = &cobra.Command{
-	Use:     "create DOMAIN",
-	Short:   "Create a domain",
-	Aliases: gCreateAlias,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return cmd.Usage()
-		}
-		resp, err := createDomain(args[0])
-		if err != nil {
-			return err
-		}
-
-		if !gQuiet {
-			fmt.Printf("Domain %q was created successfully\n", resp.Name)
-		}
-
-		return nil
-	},
-}
-
-func createDomain(domainName string) (*egoscale.DNSDomain, error) {
-	return csDNS.CreateDomain(gContext, domainName)
-}
-
 func init() {
-	dnsCmd.AddCommand(dnsCreateCmd)
+	dnsCmd.AddCommand(&cobra.Command{
+		Use:     "create DOMAIN-NAME",
+		Short:   "Create a domain",
+		Aliases: gCreateAlias,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 {
+				return cmd.Usage()
+			}
+
+			return createDomain(args[0])
+		},
+	})
+}
+
+func createDomain(domainName string) error {
+	var err error
+	domain := &exo.DNSDomain{}
+
+	decorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
+		domain, err = cs.CreateDNSDomain(
+			gContext,
+			gCurrentAccount.DefaultZone,
+			&exo.DNSDomain{UnicodeName: &domainName},
+		)
+	})
+	if err != nil {
+		return err
+	}
+
+	if !gQuiet {
+		fmt.Printf("Domain %q was created successfully\n", *domain.UnicodeName)
+	}
+
+	return nil
 }
