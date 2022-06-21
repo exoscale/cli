@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/exoscale/egoscale"
-	exo "github.com/exoscale/egoscale/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -113,25 +111,4 @@ func showDNS(ident, name string, types []string) (outputter, error) {
 	}
 
 	return &out, nil
-}
-
-// domainFromIdent will return full DNSDomain struct from either Domain Name or ID.
-func domainFromIdent(ident string) (*exo.DNSDomain, error) {
-	_, err := egoscale.ParseUUID(ident)
-	if err == nil {
-		return cs.GetDNSDomain(gContext, gCurrentAccount.DefaultZone, ident)
-	}
-
-	domains, err := cs.ListDNSDomains(gContext, gCurrentAccount.DefaultZone)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, domain := range domains {
-		if *domain.UnicodeName == ident {
-			return &domain, nil
-		}
-	}
-
-	return nil, fmt.Errorf("domain %q not found", ident)
 }

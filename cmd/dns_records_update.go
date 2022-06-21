@@ -11,7 +11,7 @@ func init() {
 	for i := egoscale.A; i <= egoscale.URL; i++ {
 		recordType := egoscale.Record.String(i)
 		cmdUpdateRecord := &cobra.Command{
-			Use:   fmt.Sprintf("%s DOMAIN-NAME|ID RECORD-ID", recordType),
+			Use:   fmt.Sprintf("%s DOMAIN-NAME|ID RECORD-NAME|ID", recordType),
 			Short: fmt.Sprintf("Update %s record type to a domain", recordType),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) < 2 {
@@ -53,7 +53,7 @@ func init() {
 					priority = &t
 				}
 
-				return updateDomainRecord(args[0], args[1], name, content, ttl, priority)
+				return updateDomainRecord(args[0], args[1], recordType, name, content, ttl, priority)
 			},
 		}
 
@@ -66,13 +66,17 @@ func init() {
 	}
 }
 
-func updateDomainRecord(domainIdent, recordID string, name, content *string, ttl, priority *int64) error {
+func updateDomainRecord(
+	domainIdent, recordIdent, recordType string,
+	name, content *string,
+	ttl, priority *int64,
+) error {
 	domain, err := domainFromIdent(domainIdent)
 	if err != nil {
 		return err
 	}
 
-	record, err := cs.GetDNSDomainRecord(gContext, gCurrentAccount.DefaultZone, *domain.ID, recordID)
+	record, err := domainRecordFromIdent(*domain.ID, recordIdent, &recordType)
 	if err != nil {
 		return err
 	}
@@ -90,7 +94,7 @@ func updateDomainRecord(domainIdent, recordID string, name, content *string, ttl
 		record.Priority = priority
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", recordID), func() {
+	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", *record.ID), func() {
 		err = cs.UpdateDNSDomainRecord(gContext, gCurrentAccount.DefaultZone, *domain.ID, record)
 	})
 	if err != nil {
@@ -98,7 +102,7 @@ func updateDomainRecord(domainIdent, recordID string, name, content *string, ttl
 	}
 
 	if !gQuiet {
-		fmt.Printf("Record %q was updated successfully\n", recordID)
+		fmt.Printf("Record %q was updated successfully\n", *record.ID)
 	}
 
 	return nil

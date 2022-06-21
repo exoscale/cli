@@ -3,13 +3,12 @@ package cmd
 import (
 	"fmt"
 
-	exo "github.com/exoscale/egoscale/v2"
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	dnsRemoveCmd := &cobra.Command{
-		Use:     "remove DOMAIN-NAME|ID RECORD-ID",
+		Use:     "remove DOMAIN-NAME|ID RECORD-NAME|ID",
 		Short:   "Remove a domain record",
 		Aliases: gRemoveAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -29,22 +28,27 @@ func init() {
 	dnsCmd.AddCommand(dnsRemoveCmd)
 }
 
-func removeDomainRecord(ident, recordID string, force bool) error {
-	domain, err := domainFromIdent(ident)
+func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
+	domain, err := domainFromIdent(domainIdent)
 	if err != nil {
 		return err
 	}
 
-	if !force && !askQuestion(fmt.Sprintf("Are you sure you want to delete record %q?", recordID)) {
+	record, err := domainRecordFromIdent(*domain.ID, recordIdent, nil)
+	if err != nil {
+		return err
+	}
+
+	if !force && !askQuestion(fmt.Sprintf("Are you sure you want to delete record %q?", *record.ID)) {
 		return nil
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting DNS domain %q...", *domain.UnicodeName), func() {
+	decorateAsyncOperation(fmt.Sprintf("Deleting DNS record %q...", *domain.UnicodeName), func() {
 		err = cs.DeleteDNSDomainRecord(
 			gContext,
 			gCurrentAccount.DefaultZone,
 			*domain.ID,
-			&exo.DNSDomainRecord{ID: &recordID},
+			record,
 		)
 	})
 	if err != nil {
@@ -52,7 +56,7 @@ func removeDomainRecord(ident, recordID string, force bool) error {
 	}
 
 	if !gQuiet {
-		fmt.Printf("Record %q removed successfully from %q\n", recordID, *domain.UnicodeName)
+		fmt.Printf("Record %q removed successfully from %q\n", *record.ID, *domain.UnicodeName)
 	}
 
 	return nil
