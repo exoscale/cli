@@ -11,6 +11,7 @@ import (
 
 var sksAuthorityCertAuthorities = []string{
 	"aggregation",
+	"control-plane",
 	"kubelet",
 }
 
