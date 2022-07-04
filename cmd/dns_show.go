@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -15,8 +14,8 @@ type dnsShowItemOutput struct {
 	Name       string `json:"name"`
 	RecordType string `json:"record_type"`
 	Content    string `json:"content"`
-	Prio       string `json:"prio,omitempty"`
-	TTL        string `json:"ttl,omitempty"`
+	Prio       int64  `json:"prio,omitempty"`
+	TTL        int64  `json:"ttl,omitempty"`
 	CreatedAt  string `json:"created_at,omitempty" output:"-"`
 	UpdatedAt  string `json:"updated_at,omitempty" output:"-"`
 }
@@ -97,14 +96,19 @@ func showDNS(ident, name string, types []string) (outputter, error) {
 			priority = *record.Priority
 		}
 
+		var ttl int64
+		if record.TTL != nil {
+			ttl = *record.TTL
+		}
+
 		out = append(out, dnsShowItemOutput{
 			ID:         *record.ID,
 			DomainID:   *domain.ID,
 			Name:       *record.Name,
 			RecordType: *record.Type,
 			Content:    StrPtrFormatOutput(record.Content),
-			TTL:        Int64PtrFormatOutput(record.TTL),
-			Prio:       strconv.FormatInt(priority, 10),
+			TTL:        ttl,
+			Prio:       priority,
 			CreatedAt:  DatePtrFormatOutput(record.CreatedAt),
 			UpdatedAt:  DatePtrFormatOutput(record.UpdatedAt),
 		})
