@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -43,9 +44,10 @@ func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
 		return nil
 	}
 
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Deleting DNS record %q...", *domain.UnicodeName), func() {
 		err = cs.DeleteDNSDomainRecord(
-			gContext,
+			ctx,
 			gCurrentAccount.DefaultZone,
 			*domain.ID,
 			record,

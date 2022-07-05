@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	exoapi "github.com/exoscale/egoscale/v2/api"
+
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -51,7 +53,8 @@ Supported output template annotations: %s`,
 }
 
 func listDomains(filters []string) (outputter, error) {
-	domains, err := cs.ListDNSDomains(gContext, gCurrentAccount.DefaultZone)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	domains, err := cs.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +69,7 @@ func listDomains(filters []string) (outputter, error) {
 
 		if len(filters) == 0 {
 			out = append(out, o)
-			break
+			continue
 		}
 
 		s := strings.ToLower(fmt.Sprintf("%s#%s", o.ID, o.Name))

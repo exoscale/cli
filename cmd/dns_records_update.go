@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/exoscale/egoscale"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -94,8 +95,9 @@ func updateDomainRecord(
 		record.Priority = priority
 	}
 
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", *record.ID), func() {
-		err = cs.UpdateDNSDomainRecord(gContext, gCurrentAccount.DefaultZone, *domain.ID, record)
+		err = cs.UpdateDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, record)
 	})
 	if err != nil {
 		return err

@@ -6,6 +6,7 @@ import (
 
 	"github.com/exoscale/egoscale"
 	exo "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -16,12 +17,13 @@ var dnsCmd = &cobra.Command{
 
 // domainFromIdent returns a DNS domain from identifier (domain name or ID).
 func domainFromIdent(ident string) (*exo.DNSDomain, error) {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	_, err := egoscale.ParseUUID(ident)
 	if err == nil {
-		return cs.GetDNSDomain(gContext, gCurrentAccount.DefaultZone, ident)
+		return cs.GetDNSDomain(ctx, gCurrentAccount.DefaultZone, ident)
 	}
 
-	domains, err := cs.ListDNSDomains(gContext, gCurrentAccount.DefaultZone)
+	domains, err := cs.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}
@@ -37,12 +39,13 @@ func domainFromIdent(ident string) (*exo.DNSDomain, error) {
 
 // domainRecordFromIdent returns a DNS record from identifier (record name or ID) and optional type
 func domainRecordFromIdent(domainID, ident string, rType *string) (*exo.DNSDomainRecord, error) {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	_, err := egoscale.ParseUUID(ident)
 	if err == nil {
-		return cs.GetDNSDomainRecord(gContext, gCurrentAccount.DefaultZone, domainID, ident)
+		return cs.GetDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, domainID, ident)
 	}
 
-	records, err := cs.ListDNSDomainRecords(gContext, gCurrentAccount.DefaultZone, domainID)
+	records, err := cs.ListDNSDomainRecords(ctx, gCurrentAccount.DefaultZone, domainID)
 	if err != nil {
 		return nil, err
 	}

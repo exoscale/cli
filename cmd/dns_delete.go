@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -38,9 +39,10 @@ func deleteDomain(ident string, force bool) error {
 		return nil
 	}
 
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Deleting DNS domain %q...", *domain.UnicodeName), func() {
 		err = cs.DeleteDNSDomain(
-			gContext,
+			ctx,
 			gCurrentAccount.DefaultZone,
 			domain,
 		)

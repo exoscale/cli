@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	exo "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -26,9 +27,10 @@ func createDomain(domainName string) error {
 	var err error
 	domain := &exo.DNSDomain{}
 
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
 		domain, err = cs.CreateDNSDomain(
-			gContext,
+			ctx,
 			gCurrentAccount.DefaultZone,
 			&exo.DNSDomain{UnicodeName: &domainName},
 		)

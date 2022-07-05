@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -65,7 +66,8 @@ func showDNS(ident, name string, types []string) (outputter, error) {
 		return nil, err
 	}
 
-	records, err := cs.ListDNSDomainRecords(gContext, gCurrentAccount.DefaultZone, *domain.ID)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	records, err := cs.ListDNSDomainRecords(ctx, gCurrentAccount.DefaultZone, *domain.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +88,7 @@ func showDNS(ident, name string, types []string) (outputter, error) {
 			}
 		}
 
-		record, err := cs.GetDNSDomainRecord(gContext, gCurrentAccount.DefaultZone, *domain.ID, *r.ID)
+		record, err := cs.GetDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, *r.ID)
 		if err != nil {
 			return nil, err
 		}
