@@ -79,7 +79,7 @@ const (
 	defaultConfigFileName     = "exoscale"
 	defaultInstanceType       = "medium"
 	defaultInstanceTypeFamily = "standard"
-	defaultTemplate           = "Linux Ubuntu 20.04 LTS 64-bit"
+	defaultTemplate           = "Linux Ubuntu 22.04 LTS 64-bit"
 	defaultTemplateVisibility = "public"
 	defaultTemplateFilter     = "featured"
 	defaultSosEndpoint        = "https://sos-{zone}.exo.io"
