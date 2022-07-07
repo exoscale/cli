@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.89.0
+----
+
+- feature: v2: add support for DNS management
+
 0.88.2
 ----
 

@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/exoscale/egoscale"
+	exo "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -11,32 +15,62 @@ var dnsCmd = &cobra.Command{
 	Short: "DNS cmd lets you host your zones and manage records",
 }
 
-// getRecordIDByName get record ID by name
-func getRecordIDByName(domainName, recordName string) (int64, error) {
-	records, err := csDNS.GetRecords(gContext, domainName)
-	if err != nil {
-		return 0, err
+// domainFromIdent returns a DNS domain from identifier (domain name or ID).
+func domainFromIdent(ident string) (*exo.DNSDomain, error) {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	_, err := egoscale.ParseUUID(ident)
+	if err == nil {
+		return cs.GetDNSDomain(ctx, gCurrentAccount.DefaultZone, ident)
 	}
 
-	resRecID := []int64{}
+	domains, err := cs.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, domain := range domains {
+		if *domain.UnicodeName == ident {
+			return &domain, nil
+		}
+	}
+
+	return nil, fmt.Errorf("domain %q not found", ident)
+}
+
+// domainRecordFromIdent returns a DNS record from identifier (record name or ID) and optional type
+func domainRecordFromIdent(domainID, ident string, rType *string) (*exo.DNSDomainRecord, error) {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	_, err := egoscale.ParseUUID(ident)
+	if err == nil {
+		return cs.GetDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, domainID, ident)
+	}
+
+	records, err := cs.ListDNSDomainRecords(ctx, gCurrentAccount.DefaultZone, domainID)
+	if err != nil {
+		return nil, err
+	}
+
+	var foundRecord *exo.DNSDomainRecord
 
 	for _, r := range records {
-		id := fmt.Sprintf("%d", r.ID)
-		if id == recordName {
-			return r.ID, nil
+		if rType != nil && *r.Type != *rType {
+			continue
 		}
-		if recordName == r.Name {
-			resRecID = append(resRecID, r.ID)
+
+		if ident == *r.Name {
+			if foundRecord != nil {
+				return nil, errors.New("more than one records were found")
+			}
+			t := r
+			foundRecord = &t
 		}
-	}
-	if len(resRecID) > 1 {
-		return 0, fmt.Errorf("more than one records were found")
-	}
-	if len(resRecID) == 1 {
-		return resRecID[0], nil
 	}
 
-	return 0, fmt.Errorf("no records were found")
+	if foundRecord == nil {
+		return nil, fmt.Errorf("no records were found")
+	}
+
+	return foundRecord, nil
 }
 
 func init() {

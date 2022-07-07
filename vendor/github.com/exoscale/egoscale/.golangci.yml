@@ -25,3 +25,10 @@ linters:
     - unused
     - varcheck
   disable-all: true
+
+issues:
+  exclude-rules:
+    # stop revive from complaining about naming issues that originate from oapi generated code.
+    - path: v2/client_mock.go
+      linters:
+        - revive

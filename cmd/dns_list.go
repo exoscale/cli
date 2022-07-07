@@ -5,14 +5,15 @@ import (
 	"os"
 	"strings"
 
+	exoapi "github.com/exoscale/egoscale/v2/api"
+
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
 type dnsListItemOutput struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	UnicodeName string `json:"unicode_name,omitempty"`
+	ID   string `json:"id"`
+	Name string `json:"name,omitempty"`
 }
 
 type dnsListOutput []dnsListItemOutput
@@ -26,14 +27,9 @@ func (o *dnsListOutput) toTable() {
 	t.SetHeader([]string{"ID", "Name"})
 
 	for _, i := range *o {
-		name := i.Name
-		if i.UnicodeName != i.Name {
-			name = fmt.Sprintf("%s (%s)", i.Name, i.UnicodeName)
-		}
-
 		t.Append([]string{
-			fmt.Sprint(i.ID),
-			name,
+			i.ID,
+			i.Name,
 		})
 	}
 
@@ -57,7 +53,8 @@ Supported output template annotations: %s`,
 }
 
 func listDomains(filters []string) (outputter, error) {
-	domains, err := csDNS.GetDomains(gContext)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	domains, err := cs.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}
@@ -65,29 +62,25 @@ func listDomains(filters []string) (outputter, error) {
 	out := dnsListOutput{}
 
 	for _, d := range domains {
-		keep := true
-		if len(filters) > 0 {
-			keep = false
-			s := strings.ToLower(fmt.Sprintf("%d#%s#%s", d.ID, d.Name, d.UnicodeName))
-
-			for _, filter := range filters {
-				substr := strings.ToLower(filter)
-				if strings.Contains(s, substr) {
-					keep = true
-					break
-				}
-			}
+		o := dnsListItemOutput{
+			ID:   StrPtrFormatOutput(d.ID),
+			Name: StrPtrFormatOutput(d.UnicodeName),
 		}
 
-		if !keep {
+		if len(filters) == 0 {
+			out = append(out, o)
 			continue
 		}
 
-		out = append(out, dnsListItemOutput{
-			ID:          d.ID,
-			Name:        d.Name,
-			UnicodeName: d.UnicodeName,
-		})
+		s := strings.ToLower(fmt.Sprintf("%s#%s", o.ID, o.Name))
+
+		for _, filter := range filters {
+			substr := strings.ToLower(filter)
+			if strings.Contains(s, substr) {
+				out = append(out, o)
+				break
+			}
+		}
 	}
 
 	return &out, nil

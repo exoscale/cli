@@ -36,7 +36,6 @@ var gAllAccount *config
 
 //egoscale client
 var cs *egoscale.Client
-var csDNS *egoscale.Client
 var csRunstatus *egoscale.Client
 
 //Aliases

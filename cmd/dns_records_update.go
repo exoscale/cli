@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/exoscale/egoscale"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -11,61 +12,100 @@ func init() {
 	for i := egoscale.A; i <= egoscale.URL; i++ {
 		recordType := egoscale.Record.String(i)
 		cmdUpdateRecord := &cobra.Command{
-			Use:   fmt.Sprintf("%s DOMAIN RECORD-NAME|ID", recordType),
+			Use:   fmt.Sprintf("%s DOMAIN-NAME|ID RECORD-NAME|ID", recordType),
 			Short: fmt.Sprintf("Update %s record type to a domain", recordType),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				if len(args) < 2 {
 					return cmd.Usage()
 				}
 
-				recordID, err := getRecordIDByName(args[0], args[1])
-				if err != nil {
-					return err
+				var name, content *string
+				var ttl, priority *int64
+
+				if cmd.Flags().Changed("name") {
+					t, err := cmd.Flags().GetString("name")
+					if err != nil {
+						return err
+					}
+					name = &t
 				}
 
-				name, err := cmd.Flags().GetString("name")
-				if err != nil {
-					return err
-				}
-				addr, err := cmd.Flags().GetString("content")
-				if err != nil {
-					return err
-				}
-				ttl, err := cmd.Flags().GetInt("ttl")
-				if err != nil {
-					return err
+				if cmd.Flags().Changed("content") {
+					t, err := cmd.Flags().GetString("content")
+					if err != nil {
+						return err
+					}
+					content = &t
 				}
 
-				domain, err := csDNS.GetDomain(gContext, args[0])
-				if err != nil {
-					return err
+				if cmd.Flags().Changed("ttl") {
+					t, err := cmd.Flags().GetInt64("ttl")
+					if err != nil {
+						return err
+					}
+					ttl = &t
 				}
 
-				_, err = csDNS.UpdateRecord(gContext, args[0], egoscale.UpdateDNSRecord{
-					ID:         recordID,
-					DomainID:   domain.ID,
-					TTL:        ttl,
-					RecordType: recordType,
-					Name:       name,
-					Content:    addr,
-				})
-				if err != nil {
-					return err
+				if cmd.Flags().Changed("priority") {
+					t, err := cmd.Flags().GetInt64("priority")
+					if err != nil {
+						return err
+					}
+					priority = &t
 				}
 
-				if !gQuiet {
-					fmt.Printf("Record %q was updated successfully to %q\n", cmd.Name(), args[0])
-				}
-
-				return nil
+				return updateDomainRecord(args[0], args[1], recordType, name, content, ttl, priority)
 			},
 		}
 
 		cmdUpdateRecord.Flags().StringP("name", "n", "", "Update name")
 		cmdUpdateRecord.Flags().StringP("content", "c", "", "Update Content")
-		cmdUpdateRecord.Flags().IntP("ttl", "t", 0, "Update ttl")
-		cmdUpdateRecord.Flags().IntP("priority", "p", 0, "Update priority")
+		cmdUpdateRecord.Flags().Int64P("ttl", "t", 0, "Update ttl")
+		cmdUpdateRecord.Flags().Int64P("priority", "p", 0, "Update priority")
 
 		dnsUpdateCmd.AddCommand(cmdUpdateRecord)
 	}
+}
+
+func updateDomainRecord(
+	domainIdent, recordIdent, recordType string,
+	name, content *string,
+	ttl, priority *int64,
+) error {
+	domain, err := domainFromIdent(domainIdent)
+	if err != nil {
+		return err
+	}
+
+	record, err := domainRecordFromIdent(*domain.ID, recordIdent, &recordType)
+	if err != nil {
+		return err
+	}
+
+	if name != nil {
+		record.Name = name
+	}
+	if content != nil {
+		record.Content = content
+	}
+	if ttl != nil {
+		record.TTL = ttl
+	}
+	if priority != nil {
+		record.Priority = priority
+	}
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", *record.ID), func() {
+		err = cs.UpdateDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, record)
+	})
+	if err != nil {
+		return err
+	}
+
+	if !gQuiet {
+		fmt.Printf("Record %q was updated successfully\n", *record.ID)
+	}
+
+	return nil
 }

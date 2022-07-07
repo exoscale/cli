@@ -91,10 +91,6 @@ func buildClient() {
 	}
 	cs.Client = clientExoV2
 
-	csDNS = egoscale.NewClient(gCurrentAccount.DNSEndpoint,
-		gCurrentAccount.Key,
-		gCurrentAccount.APISecret())
-
 	csRunstatus = egoscale.NewClient(gCurrentAccount.RunstatusEndpoint,
 		gCurrentAccount.Key,
 		gCurrentAccount.APISecret())
