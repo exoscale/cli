@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.58.0
+
+### Features
+
+- New `exo dbaas` type: OpenSearch.
+- Default instance template updated: Linux Ubuntu 22.04 LTS.
+- `exo dns`: now uses exoscale v2 API.
+- `exo sks`: new CA option `control-plane`.
+
 ## 1.57.0
 
 ### Features
