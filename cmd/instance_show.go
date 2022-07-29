@@ -87,13 +87,8 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		DiskSize:           humanize.IBytes(uint64(*instance.DiskSize << 30)),
 		ElasticIPs:         make([]string, 0),
 		ID:                 *instance.ID,
-		IPAddress:          instance.PublicIPAddress.String(),
-		IPv6Address: func() string {
-			if instance.IPv6Address != nil {
-				return instance.IPv6Address.String()
-			}
-			return "-"
-		}(),
+		IPAddress:          defaultIp(instance.PublicIPAddress, "-"),
+		IPv6Address:        defaultIp(instance.IPv6Address, "-"),
 		Labels: func() (v map[string]string) {
 			if instance.Labels != nil {
 				v = *instance.Labels

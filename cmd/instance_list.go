@@ -95,7 +95,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				Name:      *i.Name,
 				Zone:      zone,
 				Type:      fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size),
-				IPAddress: i.PublicIPAddress.String(),
+				IPAddress: defaultIp(i.PublicIPAddress, "-"),
 				State:     *i.State,
 			}
 		}
