@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"net"
 	"strconv"
 	"strings"
 )
@@ -42,6 +43,15 @@ func defaultString(s *string, def string) string {
 func defaultBool(b *bool, def bool) bool {
 	if b != nil {
 		return *b
+	}
+
+	return def
+}
+
+// defaultIP returns the IP as string if not nil, otherwise the default value specified.
+func defaultIp(i *net.IP, def string) string {
+	if i != nil {
+		return i.String()
 	}
 
 	return def
