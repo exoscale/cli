@@ -14,6 +14,8 @@ import (
 type elasticIPShowOutput struct {
 	ID                       string         `json:"id"`
 	IPAddress                string         `json:"ip_address"`
+	AddressFamily            string         `json:"address_family"`
+	CIDR                     string         `json:"cidr"`
 	Description              string         `json:"description"`
 	Zone                     string         `json:"zone"`
 	Type                     string         `json:"type"`
@@ -37,6 +39,8 @@ func (o *elasticIPShowOutput) toTable() {
 
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"IP Address", o.IPAddress})
+	t.Append([]string{"Address Family", o.AddressFamily})
+	t.Append([]string{"CIDR", o.CIDR})
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"Type", o.Type})
@@ -95,11 +99,13 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := elasticIPShowOutput{
-		ID:          *elasticIP.ID,
-		IPAddress:   elasticIP.IPAddress.String(),
-		Description: defaultString(elasticIP.Description, ""),
-		Zone:        c.Zone,
-		Type:        "manual",
+		ID:            *elasticIP.ID,
+		IPAddress:     elasticIP.IPAddress.String(),
+		AddressFamily: defaultString(elasticIP.AddressFamily, ""),
+		CIDR:          defaultString(elasticIP.CIDR, ""),
+		Description:   defaultString(elasticIP.Description, ""),
+		Zone:          c.Zone,
+		Type:          "manual",
 	}
 
 	if elasticIP.Healthcheck != nil {

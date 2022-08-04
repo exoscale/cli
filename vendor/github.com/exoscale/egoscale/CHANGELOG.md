@@ -1,13 +1,18 @@
 Changelog
 =========
 
+0.90.0
+------
+
+- feature: v2: add support for Elastic IPv6
+
 0.89.0
-----
+------
 
 - feature: v2: add support for DNS management
 
 0.88.2
-----
+------
 
 - feature: v2: add support for Build, Maintainer and Version attributes to RegisterTemplate
 
