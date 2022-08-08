@@ -24,11 +24,13 @@ type ElasticIPHealthcheck struct {
 
 // ElasticIP represents an Elastic IP.
 type ElasticIP struct {
-	Description *string
-	Healthcheck *ElasticIPHealthcheck
-	ID          *string `req-for:"update,delete"`
-	IPAddress   *net.IP
-	Zone        *string
+	Description   *string
+	Healthcheck   *ElasticIPHealthcheck
+	ID            *string `req-for:"update,delete"`
+	IPAddress     *net.IP
+	Zone          *string
+	CIDR          *string
+	AddressFamily *string
 }
 
 func elasticIPFromAPI(e *oapi.ElasticIp, zone string) *ElasticIP {
@@ -56,9 +58,11 @@ func elasticIPFromAPI(e *oapi.ElasticIp, zone string) *ElasticIP {
 			}
 			return nil
 		}(),
-		ID:        e.Id,
-		IPAddress: &ipAddress,
-		Zone:      &zone,
+		ID:            e.Id,
+		IPAddress:     &ipAddress,
+		Zone:          &zone,
+		CIDR:          e.Cidr,
+		AddressFamily: (*string)(e.Addressfamily),
 	}
 }
 
@@ -73,10 +77,16 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 		}
 	}
 
+	var addressFamily *oapi.CreateElasticIpJSONBodyAddressfamily
+	if elasticIP.AddressFamily != nil {
+		addressFamily = (*oapi.CreateElasticIpJSONBodyAddressfamily)(elasticIP.AddressFamily)
+	}
+
 	resp, err := c.CreateElasticIpWithResponse(
 		apiv2.WithZone(ctx, zone),
 		oapi.CreateElasticIpJSONRequestBody{
-			Description: elasticIP.Description,
+			Description:   elasticIP.Description,
+			Addressfamily: addressFamily,
 			Healthcheck: func() *oapi.ElasticIpHealthcheck {
 				if hc := elasticIP.Healthcheck; hc != nil {
 					var (
