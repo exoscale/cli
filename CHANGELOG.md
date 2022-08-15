@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.59.0
+
+### Features
+
+- `exo compute elastic-ip`: added IPv6 support.
+- `exo x`: update commands.
+
+### Bug Fixes
+
+- `exo dbaas show opensearch`: fixed panic on nil value in response.
+- `exo compute instance list`: fixed panic when instance has no IP.
+
 ## 1.58.0
 
 ### Features
