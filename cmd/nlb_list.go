@@ -73,16 +73,11 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		for _, nlb := range list {
-			ip := ""
-			if nlb.IPAddress != nil {
-				ip = nlb.IPAddress.String()
-			}
-
 			res <- nlbListItemOutput{
 				ID:        *nlb.ID,
 				Name:      *nlb.Name,
 				Zone:      zone,
-				IPAddress: ip,
+				IPAddress: defaultIP(nlb.IPAddress, ""),
 			}
 		}
 

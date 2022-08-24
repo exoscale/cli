@@ -49,7 +49,7 @@ func defaultBool(b *bool, def bool) bool {
 }
 
 // defaultIP returns the IP as string if not nil, otherwise the default value specified.
-func defaultIp(i *net.IP, def string) string {
+func defaultIP(i *net.IP, def string) string {
 	if i != nil {
 		return i.String()
 	}
