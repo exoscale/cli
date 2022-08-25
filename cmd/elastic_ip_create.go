@@ -16,7 +16,7 @@ type elasticIPCreateCmd struct {
 	_ bool `cli-cmd:"create"`
 
 	Description               string `cli-usage:"Elastic IP description"`
-	IPv6                      bool   `cli-flag:"ipv6" cli-usage:"create IPv6 Elastic IP address instead of IPv4"`
+	IPv6                      bool   `cli-flag:"ipv6" cli-usage:"create Elastic IPv6 prefix"`
 	HealthcheckInterval       int64  `cli-usage:"managed Elastic IP health checking interval in seconds"`
 	HealthcheckMode           string `cli-usage:"managed Elastic IP health checking mode (tcp|http|https)"`
 	HealthcheckPort           int64  `cli-usage:"managed Elastic IP health checking port"`
