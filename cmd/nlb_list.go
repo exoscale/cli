@@ -77,7 +77,7 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				ID:        *nlb.ID,
 				Name:      *nlb.Name,
 				Zone:      zone,
-				IPAddress: nlb.IPAddress.String(),
+				IPAddress: defaultIP(nlb.IPAddress, ""),
 			}
 		}
 
