@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.59.1
+
+### Bug Fixes
+
+- Fix panic in nlb list if a NLB doesn't have an IP yet (#468)
+
 ## 1.59.0
 
 ### Features
