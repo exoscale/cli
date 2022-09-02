@@ -174,11 +174,6 @@ Supported output template annotations:
 				key    string
 			)
 
-			certsFile, err := cmd.Flags().GetString("certs-file")
-			if err != nil {
-				return err
-			}
-
 			parts := strings.SplitN(args[0], "/", 2)
 			bucket = parts[0]
 			if len(parts) > 1 {
@@ -186,7 +181,6 @@ Supported output template annotations:
 			}
 
 			storage, err := newStorageClient(
-				storageClientOptWithCertsFile(certsFile),
 				storageClientOptZoneFromBucket(bucket),
 			)
 			if err != nil {

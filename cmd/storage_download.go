@@ -74,11 +74,6 @@ Examples:
 			dst = "./"
 		)
 
-		certsFile, err := cmd.Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
 		dryRun, err := cmd.Flags().GetBool("dry-run")
 		if err != nil {
 			return err
@@ -112,7 +107,6 @@ Examples:
 		}
 
 		storage, err := newStorageClient(
-			storageClientOptWithCertsFile(certsFile),
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {

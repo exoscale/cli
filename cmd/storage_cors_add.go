@@ -90,13 +90,7 @@ Example:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		bucket := args[0]
 
-		certsFile, err := cmd.Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
 		storage, err := newStorageClient(
-			storageClientOptWithCertsFile(certsFile),
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {

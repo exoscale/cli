@@ -31,11 +31,6 @@ var storagePresignCmd = &cobra.Command{
 			key    string
 		)
 
-		certsFile, err := cmd.Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
 		expires, err := cmd.Flags().GetDuration("expires")
 		if err != nil {
 			return err
@@ -50,7 +45,6 @@ var storagePresignCmd = &cobra.Command{
 		bucket, key = parts[0], parts[1]
 
 		storage, err := newStorageClient(
-			storageClientOptWithCertsFile(certsFile),
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {

@@ -32,12 +32,8 @@ docker: ## Builds a Docker image containing the exo CLI
 docker-push: ## Pushes the Docker image to the public Docker registry
 	docker push exoscale/cli:latest && docker push exoscale/cli:${VERSION}
 
-.PHONY: sos-certificates
-sos-certificates:
-	curl -sL --output sos-certs.pem https://www.exoscale.com/static/files/sos-certs.pem
-
 .PHONY: release
-release: sos-certificates
+release:
 	$(MAKE) PROJECT_URL=$(PROJECT_URL) VERSION=$(VERSION) -f go.mk/public.mk release-default
 
 manpage:

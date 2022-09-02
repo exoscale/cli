@@ -25,12 +25,7 @@ var downloadCmd = &cobra.Command{
 		objectName := args[1]
 		localFilePath := args[2]
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}

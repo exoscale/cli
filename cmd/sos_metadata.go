@@ -29,12 +29,7 @@ var sosAddMetadataCmd = &cobra.Command{
 		object := args[1]
 		k, v := args[2], args[3]
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}
@@ -87,12 +82,7 @@ var sosRemoveMetadataCmd = &cobra.Command{
 		bucket := args[0]
 		object := args[1]
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}
@@ -151,12 +141,7 @@ var sosShowMetadataCmd = &cobra.Command{
 		bucket := args[0]
 		object := args[1]
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}

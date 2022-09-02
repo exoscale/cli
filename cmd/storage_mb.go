@@ -34,11 +34,6 @@ Supported output template annotations: %s`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		bucket := args[0]
 
-		certsFile, err := cmd.Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
 		zone, err := cmd.Flags().GetString("zone")
 		if err != nil {
 			return err
@@ -50,7 +45,6 @@ Supported output template annotations: %s`,
 		}
 
 		storage, err := newStorageClient(
-			storageClientOptWithCertsFile(certsFile),
 			storageClientOptWithZone(zone),
 		)
 		if err != nil {

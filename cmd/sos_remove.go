@@ -40,12 +40,7 @@ var removeCmd = &cobra.Command{
 			objects = args[1:]
 		}
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}

@@ -66,11 +66,6 @@ Supported output template annotations: %s`,
 			headers []string
 		)
 
-		certsFile, err := cmd.Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
 		recursive, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
 			return err
@@ -80,7 +75,6 @@ Supported output template annotations: %s`,
 		bucket, prefix = parts[0], parts[1]
 
 		storage, err := newStorageClient(
-			storageClientOptWithCertsFile(certsFile),
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
