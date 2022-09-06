@@ -106,12 +106,7 @@ var sosShowCmd = &cobra.Command{
 }
 
 func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
-	certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-	if err != nil {
-		return nil, err
-	}
-
-	sosClient, err := newSOSClient(certsFile)
+	sosClient, err := newSOSClient()
 	if err != nil {
 		return nil, err
 	}

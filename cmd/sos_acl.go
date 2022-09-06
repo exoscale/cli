@@ -84,12 +84,7 @@ specify "/" as prefix.`,
 			return fmt.Errorf("error: You have to choose one flag")
 		}
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}
@@ -356,12 +351,7 @@ var sosRemoveACLCmd = &cobra.Command{
 			return fmt.Errorf("error: You have to choose one flag")
 		}
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}
@@ -475,12 +465,7 @@ var sosShowACLCmd = &cobra.Command{
 		bucket := args[0]
 		object := args[1]
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}

@@ -2,7 +2,7 @@ project_name: exoscale-cli
 
 before:
   hooks:
-    - make manpages completions sos-certificates
+    - make manpages completions
 
 builds:
   - binary: exo
@@ -41,7 +41,6 @@ archives:
       - goos: windows
         format: zip
     files:
-      - sos-certs.pem
       - LICENSE
       - contrib/completion/**/*
       - manpage/*

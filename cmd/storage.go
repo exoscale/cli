@@ -5,8 +5,6 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -61,73 +59,13 @@ func init() {
 			}()),
 		}
 
-		// On Windows, check if the SOS certificate bundle file exists besides the exo binary
-		// or if the user has specified an alternative one elsewhere.
-		if runtime.GOOS == "windows" {
-			certsFile, err := cmd.Flags().GetString("certs-file")
-			if err != nil {
-				return err
-			}
-
-			// If no certificates bundle file path is specified explicitly, look for the fallback
-			// location (<path to `exo` base directory>/sos-certs.pem).
-			if certsFile == "" {
-				binPath, err := os.Executable()
-				if err != nil {
-					return fmt.Errorf("unable to retrieve the executable path: %w", err)
-				}
-
-				certsFile = filepath.Join(path.Dir(binPath), "sos-certs.pem")
-				println(path.Join(path.Dir(binPath), "sos-certs.pem"))
-
-				// Set the value for the --certs-file flag to the fallback certs file path.
-				_ = cmd.Flag("certs-file").Value.Set(certsFile)
-			}
-
-			if _, err = os.Stat(certsFile); err != nil {
-				if os.IsNotExist(err) {
-					_, _ = fmt.Fprintln(os.Stderr, `error: missing SOS certificates file.
-
-It seems you are running on Windows and your "sos-certs.pem" file is missing.
-Please download and extract all files from the exo CLI release, not just the
-executable. Run the "exo storage --help" command for more information.`)
-					os.Exit(1)
-				}
-				return err
-			}
-		}
-
 		return nil
 	}
-	storageCmd.PersistentFlags().String("certs-file", "",
-		"Path to file containing additional SOS API X.509 certificates")
 	RootCmd.AddCommand(storageCmd)
 }
 
 var storageCmdLongHelp = func() string {
 	long := "Manage Exoscale Object Storage"
-
-	if runtime.GOOS == "windows" {
-		long += `
-
-IMPORTANT: Due to a bug in the Microsoft Windows support in the Go
-programming language (https://github.com/golang/go/issues/16736) Windows
-users are required to extract the sos-certs.pem file next to their exo.exe
-file from the archive. You can obtain a fresh copy of the exo CLI from
-this address:
-
-    https://github.com/exoscale/cli/releases
-
-The required file can also be obtained from the following address:
-
-    https://www.exoscale.com/static/files/sos-certs.pem
-
-If you have located your certificate chain in a different location you
-can also use the '--certs-file' parameter to indicate the location.
-
-We apologize for the inconvenience.
-`
-	}
 	return long
 }
 
@@ -135,7 +73,6 @@ type storageClient struct {
 	*s3.Client
 
 	zone      string
-	certsFile string
 }
 
 // forEachObject is a convenience wrapper to execute a callback function on
@@ -247,10 +184,6 @@ func storageClientOptWithZone(zone string) storageClientOpt {
 	return func(c *storageClient) error { c.zone = zone; return nil }
 }
 
-func storageClientOptWithCertsFile(certsFile string) storageClientOpt {
-	return func(c *storageClient) error { c.certsFile = certsFile; return nil }
-}
-
 func storageClientOptZoneFromBucket(bucket string) storageClientOpt {
 	return func(c *storageClient) error {
 		cfg, err := awsconfig.LoadDefaultConfig(
@@ -298,13 +231,6 @@ func newStorageClient(opts ...storageClientOpt) (*storageClient, error) {
 		}
 	}
 
-	if client.certsFile != "" {
-		r, err := os.Open(client.certsFile)
-		if err != nil {
-			return nil, fmt.Errorf("unable to read certificates from file: %w", err)
-		}
-		caCerts = r
-	}
 
 	cfg, err := awsconfig.LoadDefaultConfig(
 		gContext,

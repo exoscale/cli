@@ -103,11 +103,6 @@ Supported output template annotations:
 			return output(listStorageBuckets())
 		}
 
-		certsFile, err := cmd.Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
 		recursive, err := cmd.Flags().GetBool("recursive")
 		if err != nil {
 			return err
@@ -125,7 +120,6 @@ Supported output template annotations:
 		}
 
 		storage, err := newStorageClient(
-			storageClientOptWithCertsFile(certsFile),
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {

@@ -22,12 +22,7 @@ var sosDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}

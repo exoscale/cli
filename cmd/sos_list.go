@@ -21,7 +21,7 @@ var sosListCmd = &cobra.Command{
 	Use:   "list [BUCKET/PATH]",
 	Short: "List buckets and files",
 	Long: `This command lists all your buckets or all the files stored in the specified bucket.
-	
+
 Note: the buckets size reported is computed daily, it may not be the actual size at the time of listing.`,
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -35,12 +35,7 @@ Note: the buckets size reported is computed daily, it may not be the actual size
 			return err
 		}
 
-		certsFile, err := cmd.Parent().Flags().GetString("certs-file")
-		if err != nil {
-			return err
-		}
-
-		sosClient, err := newSOSClient(certsFile)
+		sosClient, err := newSOSClient()
 		if err != nil {
 			return err
 		}

@@ -340,8 +340,6 @@ golang.org/x/lint
 # golang.org/x/net v0.0.0-20210913180222-943fd674d43e
 ## explicit
 golang.org/x/net/http/httpguts
-golang.org/x/net/http2
-golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/publicsuffix
 # golang.org/x/sys v0.0.0-20211103235746-7861aae1554b
