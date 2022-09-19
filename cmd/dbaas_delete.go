@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -44,6 +45,9 @@ func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		err = cs.DeleteDatabaseService(ctx, c.Zone, &egoscale.DatabaseService{Name: &c.Name})
 	})
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 

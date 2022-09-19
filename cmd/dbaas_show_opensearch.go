@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/mitchellh/go-wordwrap"
 )
@@ -125,6 +127,9 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context) (outputter, error) {
 	res, err := cs.GetDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return nil, err
 	}
 	if res.StatusCode() != http.StatusOK {

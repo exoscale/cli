@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -142,6 +143,9 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 			res, err = cs.UpdateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 		})
 		if err != nil {
+			if errors.Is(err, exoapi.ErrNotFound) {
+				return fmt.Errorf("resource not found in zone %q", c.Zone)
+			}
 			return err
 		}
 		if res.StatusCode() != http.StatusOK {

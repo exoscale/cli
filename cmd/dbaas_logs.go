@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -95,6 +96,9 @@ func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		},
 	)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 	if res.StatusCode() != http.StatusOK {
