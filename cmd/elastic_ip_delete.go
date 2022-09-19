@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -36,6 +37,9 @@ func (c *elasticIPDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 
