@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.59.2
+
+### Bug Fixes
+
+- Fix panic in nlb show if a NLB doesn't have an IP yet (#473)
+- Remove SOS certs that were shipped as a workaround with Windows releases (#470)
+
 ## 1.59.1
 
 ### Bug Fixes

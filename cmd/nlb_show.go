@@ -126,7 +126,7 @@ func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Description:  defaultString(nlb.Description, ""),
 		CreationDate: nlb.CreatedAt.String(),
 		Zone:         c.Zone,
-		IPAddress:    nlb.IPAddress.String(),
+		IPAddress:    defaultIP(nlb.IPAddress, ""),
 		State:        *nlb.State,
 		Services:     svcOut,
 		Labels: func() (v map[string]string) {
