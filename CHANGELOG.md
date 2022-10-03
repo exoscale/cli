@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.59.2
+## 1.59.3
 
 ### Bug Fixes
 
