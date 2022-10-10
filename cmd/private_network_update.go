@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -48,6 +49,9 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 

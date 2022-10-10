@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -60,6 +61,9 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -133,6 +134,9 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 

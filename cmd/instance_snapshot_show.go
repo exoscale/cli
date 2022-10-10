@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -56,6 +57,9 @@ func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return fmt.Errorf("error retrieving Compute instance snapshot: %w", err)
 	}
 

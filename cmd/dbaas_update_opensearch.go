@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -134,6 +135,9 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 			res, err = cs.UpdateDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name), db)
 		})
 		if err != nil {
+			if errors.Is(err, exoapi.ErrNotFound) {
+				return fmt.Errorf("resource not found in zone %q", c.Zone)
+			}
 			return err
 		}
 		if res.StatusCode() != http.StatusOK {

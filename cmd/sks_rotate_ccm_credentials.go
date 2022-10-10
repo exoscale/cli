@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -39,6 +40,9 @@ func (c *sksRotateCCMCredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error 
 
 	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	v2 "github.com/exoscale/egoscale/v2"
@@ -43,6 +44,9 @@ func (c *dbaasMigrationStatusCmd) cmdRun(cmd *cobra.Command, args []string) erro
 
 	res, err := cs.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return fmt.Errorf("failed to retrieve migration status: %s", err)
 	}
 

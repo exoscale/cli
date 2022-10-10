@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/mitchellh/go-wordwrap"
 )
@@ -79,6 +81,9 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (outputter, error) {
 	res, err := cs.GetDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return nil, err
 	}
 	if res.StatusCode() != http.StatusOK {

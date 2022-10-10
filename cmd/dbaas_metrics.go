@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -45,6 +46,9 @@ func (c *dbaasServiceMetricsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		oapi.GetDbaasServiceMetricsJSONRequestBody{Period: (*oapi.GetDbaasServiceMetricsJSONBodyPeriod)(&c.Period)},
 	)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 	if res.StatusCode() != http.StatusOK {

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -55,6 +56,9 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 

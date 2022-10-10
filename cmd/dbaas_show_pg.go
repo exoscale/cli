@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/mitchellh/go-wordwrap"
 )
@@ -109,6 +111,9 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (outputter, error) {
 	res, err := cs.GetDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return nil, err
 	}
 	if res.StatusCode() != http.StatusOK {

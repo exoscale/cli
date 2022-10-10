@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -81,6 +82,9 @@ func (c *instanceSSHCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 
