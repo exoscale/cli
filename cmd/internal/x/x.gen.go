@@ -3863,6 +3863,48 @@ func XCreateSnapshot(paramId string, params *viper.Viper, body string) (*gentlem
 	return resp, decoded, nil
 }
 
+// XRevealInstancePassword Reveal the password used during instance creation or the latest password reset.
+func XRevealInstancePassword(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "reveal-instance-password"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/instance/{id}:password"
+	url = strings.Replace(url, "{id}", paramId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XRebootInstance Reboot a Compute instance
 func XRebootInstance(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "reboot-instance"
@@ -5540,7 +5582,7 @@ func XCreateSecurityGroup(params *viper.Viper, body string) (*gentleman.Response
 	return resp, decoded, nil
 }
 
-// XListSecurityGroups List Security Groups
+// XListSecurityGroups List Security Groups.
 func XListSecurityGroups(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-security-groups"
 	if xSubcommand {
@@ -5555,6 +5597,11 @@ func XListSecurityGroups(params *viper.Viper) (*gentleman.Response, map[string]i
 	url := server + "/security-group"
 
 	req := cli.Client.Get().URL(url)
+
+	paramVisibility := params.GetString("visibility")
+	if paramVisibility != "" {
+		req = req.AddQuery("visibility", fmt.Sprintf("%v", paramVisibility))
+	}
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -10246,7 +10293,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-instance",
 			Short:   "Create a Compute instance",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  disk-size:\n    description: Instance disk size in GB\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  ipv6-enabled:\n    description: 'Enable IPv6. DEPRECATED: use `public-ip-assignments`.'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance name\n    maxLength: 255\n    minLength: 1\n    type: string\n  public-ip-assignment:\n    $ref: '#/components/schemas/public-ip-assignment'\n  security-groups:\n    description: Instance Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key'\n  template:\n    $ref: '#/components/schemas/template'\n  user-data:\n    description: Instance Cloud-init user-data\n    minLength: 1\n    type: string\nrequired:\n- disk-size\n- instance-type\n- template\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  auto-start:\n    description: 'Start Instance on creation (default: true)'\n    type: boolean\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  disk-size:\n    description: Instance disk size in GB\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  ipv6-enabled:\n    description: 'Enable IPv6. DEPRECATED: use `public-ip-assignments`.'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance name\n    maxLength: 255\n    minLength: 1\n    type: string\n  public-ip-assignment:\n    $ref: '#/components/schemas/public-ip-assignment'\n  security-groups:\n    description: Instance Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key'\n  template:\n    $ref: '#/components/schemas/template'\n  user-data:\n    description: Instance Cloud-init user-data\n    minLength: 1\n    type: string\nrequired:\n- disk-size\n- instance-type\n- template\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -10882,6 +10929,41 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XCreateSnapshot(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "reveal-instance-password id",
+			Short:   "Reveal the password used during instance creation or the latest password reset.",
+			Long:    cli.Markdown("Reveal the password used during instance creation or the latest password reset.\n            This is only available for VMs created against templates having the `password-enabled`\n            property set to `true`.\n\n            Passwords are transiently stored for at most 24 hours and intended to be retrieved shortly after\n            creation or resets."),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XRevealInstancePassword(args[0], params)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -12320,8 +12402,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-security-groups",
-			Short:   "List Security Groups",
-			Long:    cli.Markdown(""),
+			Short:   "List Security Groups.",
+			Long:    cli.Markdown("Lists security groups. When visibility is set to public, lists public security groups.\nPublic security groups are objects maintained by Exoscale which contain source addresses for\nrelevant services hosted by Exoscale. They can be used a source in ingress rules and as a destination\nin egress rules."),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -12339,6 +12421,8 @@ func xRegister(subcommand bool) {
 		}
 
 		root.AddCommand(cmd)
+
+		cmd.Flags().String("visibility", "", "")
 
 		cli.SetCustomFlags(cmd)
 
