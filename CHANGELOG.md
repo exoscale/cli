@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.60.0
+
+### Features
+
+- `config`: allow specifying a default output format (#476)
+- Update 'Not Found' error message to include search zone where relevant (#472)
+- Updated `exo x`
+
 ## 1.59.3
 
 ### Bug Fixes
