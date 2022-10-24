@@ -36,6 +36,7 @@ type account struct {
 	DefaultSSHKey        string
 	DefaultTemplate      string
 	DefaultRunstatusPage string
+	DefaultOutputFormat  string
 	CustomHeaders        map[string]string
 }
 
@@ -172,6 +173,7 @@ func saveConfig(filePath string, newAccounts *config) error {
 		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["key"] = acc.Key
 		accounts[i]["defaultZone"] = acc.DefaultZone
+		accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
 		accounts[i]["environment"] = acc.Environment
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey

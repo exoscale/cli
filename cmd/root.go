@@ -275,12 +275,6 @@ func initConfig() {
 		log.Fatalf("default account not defined")
 	}
 
-	if gOutputFormat == "" {
-		if gOutputFormat = config.DefaultOutputFormat; gOutputFormat == "" {
-			gOutputFormat = defaultOutputFormat
-		}
-	}
-
 	if gAccountName == "" {
 		gAccountName = config.DefaultAccount
 	}
@@ -313,6 +307,16 @@ func initConfig() {
 
 	if gCurrentAccount.DefaultZone == "" {
 		gCurrentAccount.DefaultZone = defaultZone
+	}
+
+	// if an output format isn't specified via cli argument, use
+	// the current account default format
+	if gOutputFormat == "" {
+		if gCurrentAccount.DefaultOutputFormat != "" {
+			gOutputFormat = gCurrentAccount.DefaultOutputFormat
+		} else {
+			gOutputFormat = defaultOutputFormat
+		}
 	}
 
 	if gCurrentAccount.DNSEndpoint == "" {
