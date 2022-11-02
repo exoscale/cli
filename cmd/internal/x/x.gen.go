@@ -24,6 +24,11 @@ func xServers() []map[string]string {
 			"description": "",
 			"url":         "https://api-{zone}.exoscale.com/v2",
 		},
+
+		map[string]string{
+			"description": "",
+			"url":         "https://ppapi-{zone}.exoscale.com/v2",
+		},
 	}
 }
 
@@ -884,6 +889,362 @@ func XUpdateDbaasServiceKafka(paramName string, params *viper.Viper, body string
 	return resp, decoded, nil
 }
 
+// XGetDbaasKafkaAclConfig Get DBaaS kafka ACL configuration
+func XGetDbaasKafkaAclConfig(paramName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dbaas-kafka-acl-config"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{name}/acl-config"
+	url = strings.Replace(url, "{name}", paramName, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XCreateDbaasKafkaSchemaRegistryAclConfig Add a Kafka Schema Registry ACL entry
+func XCreateDbaasKafkaSchemaRegistryAclConfig(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-dbaas-kafka-schema-registry-acl-config"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{name}/schema-registry/acl-config"
+	url = strings.Replace(url, "{name}", paramName, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteDbaasKafkaSchemaRegistryAclConfig Delete a Kafka ACL entry
+func XDeleteDbaasKafkaSchemaRegistryAclConfig(paramName string, paramAclId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-dbaas-kafka-schema-registry-acl-config"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{name}/schema-registry/acl-config/{acl-id}"
+	url = strings.Replace(url, "{name}", paramName, 1)
+	url = strings.Replace(url, "{acl-id}", paramAclId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XCreateDbaasKafkaTopicAclConfig Add a Kafka topic ACL entry
+func XCreateDbaasKafkaTopicAclConfig(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-dbaas-kafka-topic-acl-config"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{name}/topic/acl-config"
+	url = strings.Replace(url, "{name}", paramName, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteDbaasKafkaTopicAclConfig Delete a Kafka ACL entry
+func XDeleteDbaasKafkaTopicAclConfig(paramName string, paramAclId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-dbaas-kafka-topic-acl-config"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{name}/topic/acl-config/{acl-id}"
+	url = strings.Replace(url, "{name}", paramName, 1)
+	url = strings.Replace(url, "{acl-id}", paramAclId, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XCreateDbaasKafkaUser Create a DBaaS Kafka user
+func XCreateDbaasKafkaUser(paramServiceName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-dbaas-kafka-user"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{service-name}/user"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteDbaasKafkaUser Delete a DBaaS kafka user
+func XDeleteDbaasKafkaUser(paramServiceName string, paramUsername string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-dbaas-kafka-user"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{service-name}/user/{username}"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+	url = strings.Replace(url, "{username}", paramUsername, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XResetDbaasKafkaUserPassword Reset the credentials of a DBaaS Kafka user
+func XResetDbaasKafkaUserPassword(paramServiceName string, paramUsername string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "reset-dbaas-kafka-user-password"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{service-name}/user/{username}/password/reset"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+	url = strings.Replace(url, "{username}", paramUsername, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XGetDbaasMigrationStatus Get a DBaaS migration status
 func XGetDbaasMigrationStatus(paramName string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-dbaas-migration-status"
@@ -1393,6 +1754,189 @@ func XStopDbaasPgMigration(paramName string, params *viper.Viper, body string) (
 
 	if body != "" {
 		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XCreateDbaasPostgresUser Create a DBaaS Postgres user
+func XCreateDbaasPostgresUser(paramServiceName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "create-dbaas-postgres-user"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-postgres/{service-name}/user"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XDeleteDbaasPostgresUser Delete a DBaaS Postgres user
+func XDeleteDbaasPostgresUser(paramServiceName string, paramUsername string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "delete-dbaas-postgres-user"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-postgres/{service-name}/user/{username}"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+	url = strings.Replace(url, "{username}", paramUsername, 1)
+
+	req := cli.Client.Delete().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateDbaasPostgresAllowReplication Update access control for one service user
+func XUpdateDbaasPostgresAllowReplication(paramServiceName string, paramUsername string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-dbaas-postgres-allow-replication"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-postgres/{service-name}/user/{username}/allow-replication"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+	url = strings.Replace(url, "{username}", paramUsername, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XResetDbaasPostgresUserPassword Reset the credentials of a DBaaS Postgres user
+func XResetDbaasPostgresUserPassword(paramServiceName string, paramUsername string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "reset-dbaas-postgres-user-password"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-postgres/{service-name}/user/{username}/password/reset"
+	url = strings.Replace(url, "{service-name}", paramServiceName, 1)
+	url = strings.Replace(url, "{username}", paramUsername, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
 	}
 
 	cli.HandleBefore(handlerPath, params, req)
@@ -8382,7 +8926,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "get-dbaas-service-kafka name",
 			Short:   "Get a DBaaS Kafka service",
-			Long:    cli.Markdown("Get a DBaaS Kafka service"),
+			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -8427,6 +8971,302 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XUpdateDbaasServiceKafka(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "get-dbaas-kafka-acl-config name",
+			Short:   "Get DBaaS kafka ACL configuration",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDbaasKafkaAclConfig(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-dbaas-kafka-schema-registry-acl-config name",
+			Short:   "Add a Kafka Schema Registry ACL entry",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  id:\n    $ref: '#/components/schemas/dbaas-kafka-acl-id'\n  permission:\n    description: Kafka Schema Registry permission\n    enum:\n    - schema_registry_read\n    - schema_registry_write\n    type: string\n  resource:\n    description: Kafka Schema Registry name or pattern\n    maxLength: 249\n    minLength: 1\n    type: string\n  username:\n    description: Kafka username or username pattern\n    maxLength: 64\n    minLength: 1\n    type: string\nrequired:\n- username\n- resource\n- permission\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateDbaasKafkaSchemaRegistryAclConfig(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-dbaas-kafka-schema-registry-acl-config name acl-id",
+			Short:   "Delete a Kafka ACL entry",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteDbaasKafkaSchemaRegistryAclConfig(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-dbaas-kafka-topic-acl-config name",
+			Short:   "Add a Kafka topic ACL entry",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  id:\n    $ref: '#/components/schemas/dbaas-kafka-acl-id'\n  permission:\n    description: Kafka permission\n    enum:\n    - admin\n    - read\n    - readwrite\n    - write\n    type: string\n  topic:\n    description: Kafka topic name or pattern\n    maxLength: 249\n    minLength: 1\n    type: string\n  username:\n    description: Kafka username or username pattern\n    maxLength: 64\n    minLength: 1\n    type: string\nrequired:\n- username\n- topic\n- permission\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateDbaasKafkaTopicAclConfig(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-dbaas-kafka-topic-acl-config name acl-id",
+			Short:   "Delete a Kafka ACL entry",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteDbaasKafkaTopicAclConfig(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-dbaas-kafka-user service-name",
+			Short:   "Create a DBaaS Kafka user",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  username:\n    $ref: '#/components/schemas/dbaas-user-username'\nrequired:\n- username\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateDbaasKafkaUser(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-dbaas-kafka-user service-name username",
+			Short:   "Delete a DBaaS kafka user",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteDbaasKafkaUser(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "reset-dbaas-kafka-user-password service-name username",
+			Short:   "Reset the credentials of a DBaaS Kafka user",
+			Long:    cli.Markdown("If no password is provided one will be generated automatically.\n## Request Schema (application/json)\n\nproperties:\n  password:\n    $ref: '#/components/schemas/dbaas-user-password'\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XResetDbaasKafkaUserPassword(args[0], args[1], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -8756,7 +9596,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-pg name",
 			Short:   "Create a DBaaS PostgreSQL service",
-			Long:    cli.Markdown("Create a DBaaS PostgreSQL service\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: PostgreSQL major version\n    minLength: 1\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: PostgreSQL major version\n    minLength: 1\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -8879,6 +9719,158 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XStopDbaasPgMigration(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "create-dbaas-postgres-user service-name",
+			Short:   "Create a DBaaS Postgres user",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  allow-replication:\n    type: boolean\n  username:\n    $ref: '#/components/schemas/dbaas-user-username'\nrequired:\n- username\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XCreateDbaasPostgresUser(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "delete-dbaas-postgres-user service-name username",
+			Short:   "Delete a DBaaS Postgres user",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XDeleteDbaasPostgresUser(args[0], args[1], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-dbaas-postgres-allow-replication service-name username",
+			Short:   "Update access control for one service user",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  allow-replication:\n    type: boolean\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateDbaasPostgresAllowReplication(args[0], args[1], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "reset-dbaas-postgres-user-password service-name username",
+			Short:   "Reset the credentials of a DBaaS Postgres user",
+			Long:    cli.Markdown("If no password is provided one will be generated automatically.\n## Request Schema (application/json)\n\nproperties:\n  password:\n    $ref: '#/components/schemas/dbaas-user-password'\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(2),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[2:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XResetDbaasPostgresUserPassword(args[0], args[1], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -11741,7 +12733,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-private-network",
 			Short:   "Create a Private Network",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Private Network description\n    maxLength: 255\n    minLength: 1\n    type: string\n  end-ip:\n    description: Private Network end IP address\n    format: ipv4\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Private Network name\n    maxLength: 255\n    minLength: 1\n    type: string\n  netmask:\n    description: Private Network netmask\n    format: ipv4\n    type: string\n  start-ip:\n    description: Private Network start IP address\n    format: ipv4\n    type: string\nrequired:\n- name\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Private Network description\n    maxLength: 255\n    type: string\n  end-ip:\n    description: Private Network end IP address\n    format: ipv4\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Private Network name\n    maxLength: 255\n    minLength: 1\n    type: string\n  netmask:\n    description: Private Network netmask\n    format: ipv4\n    type: string\n  start-ip:\n    description: Private Network start IP address\n    format: ipv4\n    type: string\nrequired:\n- name\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -11885,7 +12877,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-private-network id",
 			Short:   "Update a Private Network",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Private Network description\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\n  end-ip:\n    description: Private Network end IP address\n    format: ipv4\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Private Network name\n    maxLength: 255\n    minLength: 1\n    type: string\n  netmask:\n    description: Private Network netmask\n    format: ipv4\n    type: string\n  start-ip:\n    description: Private Network start IP address\n    format: ipv4\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Private Network description\n    maxLength: 255\n    type: string\n  end-ip:\n    description: Private Network end IP address\n    format: ipv4\n    type: string\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Private Network name\n    maxLength: 255\n    minLength: 1\n    type: string\n  netmask:\n    description: Private Network netmask\n    format: ipv4\n    type: string\n  start-ip:\n    description: Private Network start IP address\n    format: ipv4\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
