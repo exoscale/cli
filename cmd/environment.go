@@ -40,6 +40,7 @@ variables supported:
   * EXOSCALE_API_KEY: the Exoscale client API key
   * EXOSCALE_API_SECRET: the Exoscale client API secret
   * EXOSCALE_API_ENDPOINT: the Exoscale (Compute) API endpoint to use
+  * EXOSCALE_API_TIMEOUT: the Exoscale API timeout in minutes
 
 Note: to override the current profile API credentials, *both* EXOSCALE_API_KEY
 and EXOSCALE_API_SECRET variables have to be set.
