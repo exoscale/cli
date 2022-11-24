@@ -9,6 +9,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/exoscale/egoscale"
@@ -333,6 +334,16 @@ func initConfig() {
 
 	if gCurrentAccount.RunstatusEndpoint == "" {
 		gCurrentAccount.RunstatusEndpoint = defaultRunstatusEndpoint
+	}
+
+	if gCurrentAccount.ClientTimeout == 0 {
+		gCurrentAccount.ClientTimeout = defaultClientTimeout
+	}
+	clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
+	if clientTimeoutFromEnv != "" {
+		if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {
+			gCurrentAccount.ClientTimeout = t
+		}
 	}
 
 	gCurrentAccount.Endpoint = strings.TrimRight(gCurrentAccount.Endpoint, "/")
