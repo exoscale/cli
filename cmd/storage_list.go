@@ -36,7 +36,7 @@ func (o *storageListObjectsOutput) toTable() {
 
 	for _, f := range *o {
 		if f.Dir {
-			_, _ = fmt.Fprintf(table, " \tDIR \t%s/\n", f.Path)
+			_, _ = fmt.Fprintf(table, " \tDIR \t%s\n", f.Path)
 		} else {
 			_, _ = fmt.Fprintf(table, "%s\t%6s \t%s\n", f.LastModified, humanize.IBytes(uint64(f.Size)), f.Path)
 		}
@@ -192,7 +192,7 @@ func (c *storageClient) listObjects(bucket, prefix string, recursive, stream boo
 						fmt.Println(dir)
 					} else {
 						dirsOut = append(out, storageListObjectsItemOutput{
-							Path: strings.TrimSuffix(dir, "/"),
+							Path: dir,
 							Dir:  true,
 						})
 					}
