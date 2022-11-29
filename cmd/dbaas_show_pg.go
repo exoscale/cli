@@ -262,15 +262,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 				if databaseService.Users != nil {
 					for _, u := range *databaseService.Users {
 						v = append(v, dbServicePGUserShowOutput{
-							AllowReplication: func() (v bool) {
-								if u.AccessControl != nil {
-									v = defaultBool(u.AccessControl.AllowReplication, false)
-								}
-								return
-							}(),
-							Password: defaultString(u.Password, ""),
-							Type:     defaultString(u.Type, ""),
-							Username: defaultString(u.Username, ""),
+							AllowReplication: defaultBool(u.AllowReplication, false),
+							Password:         defaultString(u.Password, ""),
+							Type:             u.Type,
+							Username:         u.Username,
 						})
 					}
 				}
