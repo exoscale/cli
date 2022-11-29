@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sort"
@@ -46,7 +45,7 @@ func responseKey(key string) (string, bool) {
 }
 
 func (client *Client) parseResponse(resp *http.Response, apiName string) (json.RawMessage, error) {
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

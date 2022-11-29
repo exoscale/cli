@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -108,7 +108,7 @@ func (client *Client) runstatusRequest(ctx context.Context, uri string, structPa
 		return nil, fmt.Errorf(`response %d content-type expected to be "application/json", got %q`, resp.StatusCode, contentType)
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

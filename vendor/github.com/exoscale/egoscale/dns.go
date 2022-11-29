@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -347,7 +347,7 @@ func (client *Client) dnsRequest(ctx context.Context, uri string, urlValues url.
 		return nil, fmt.Errorf(`response content-type expected to be "application/json", got %q`, contentType)
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
