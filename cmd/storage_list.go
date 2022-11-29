@@ -189,7 +189,7 @@ func (c *storageClient) listObjects(bucket, prefix string, recursive, stream boo
 				dir := aws.ToString(cp.Prefix)
 				if _, ok := dirs[dir]; !ok {
 					if stream {
-						fmt.Println(dir + "/")
+						fmt.Println(dir)
 					} else {
 						dirsOut = append(out, storageListObjectsItemOutput{
 							Path: strings.TrimSuffix(dir, "/"),
