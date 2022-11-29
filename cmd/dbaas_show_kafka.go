@@ -141,17 +141,26 @@ func formatDatabaseServiceKafkaTable(t *table.Table, o *dbServiceKafkaShowOutput
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (outputter, error) {
-	res, err := cs.GetDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	serviceRes, err := cs.GetDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return nil, err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("API request error: unexpected status %s", res.Status())
+	if serviceRes.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("API request error: unexpected status %s", serviceRes.Status())
 	}
-	databaseService := res.JSON200
+	databaseService := serviceRes.JSON200
+
+	aclRes, err := cs.GetDbaasKafkaAclConfigWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	if err != nil {
+		return nil, err
+	}
+	if aclRes.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("API request error: unexpected status %s", aclRes.Status())
+	}
+	aclConfig := aclRes.JSON200
 
 	switch {
 	case c.ShowBackups:
@@ -241,10 +250,10 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 
 		Kafka: &dbServiceKafkaShowOutput{
 			ACL: func() (v []dbServiceKafkaACLShowOutput) {
-				if databaseService.Acl != nil {
-					for _, acl := range *databaseService.Acl {
+				if aclConfig != nil {
+					for _, acl := range *aclConfig.TopicAcl {
 						v = append(v, dbServiceKafkaACLShowOutput{
-							ID:         *acl.Id,
+							ID:         string(*acl.Id),
 							Permission: string(acl.Permission),
 							Topic:      acl.Topic,
 							Username:   acl.Username,
