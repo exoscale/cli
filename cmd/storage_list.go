@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -37,7 +36,7 @@ func (o *storageListObjectsOutput) toTable() {
 
 	for _, f := range *o {
 		if f.Dir {
-			_, _ = fmt.Fprintf(table, " \tDIR \t%s/\n", f.Path)
+			_, _ = fmt.Fprintf(table, " \tDIR \t%s\n", f.Path)
 		} else {
 			_, _ = fmt.Fprintf(table, "%s\t%6s \t%s\n", f.LastModified, humanize.IBytes(uint64(f.Size)), f.Path)
 		}
@@ -164,41 +163,45 @@ func listStorageBuckets() (outputter, error) {
 }
 
 func (c *storageClient) listObjects(bucket, prefix string, recursive, stream bool) (outputter, error) {
-	dirs := make(map[string]struct{})
 	out := make(storageListObjectsOutput, 0)
+	dirs := make(map[string]struct{})            // for deduplication of common prefixes (folders)
+	dirsOut := make(storageListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
 
 	var ct string
 	for {
-		res, err := c.ListObjectsV2(gContext, &s3.ListObjectsV2Input{
+		req := s3.ListObjectsV2Input{
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
 			ContinuationToken: aws.String(ct),
-		})
+		}
+		if !recursive {
+			req.Delimiter = aws.String("/")
+		}
+
+		res, err := c.ListObjectsV2(gContext, &req)
 		if err != nil {
 			return nil, err
 		}
 		ct = aws.ToString(res.NextContinuationToken)
 
-		for _, o := range res.Contents {
-			// If not invoked in recursive mode, split object keys on the "/" separator then return
-			// a "directory" placeholder for the base prefix and hide objects "below" the prefix.
-			parts := strings.SplitN(strings.TrimPrefix(aws.ToString(o.Key), prefix), "/", 2)
-			if len(parts) > 1 && !recursive {
-				dir := path.Base(parts[0])
+		if !recursive {
+			for _, cp := range res.CommonPrefixes {
+				dir := aws.ToString(cp.Prefix)
 				if _, ok := dirs[dir]; !ok {
 					if stream {
-						fmt.Println(dir + "/")
+						fmt.Println(dir)
 					} else {
-						out = append(out, storageListObjectsItemOutput{
+						dirsOut = append(dirsOut, storageListObjectsItemOutput{
 							Path: dir,
 							Dir:  true,
 						})
 					}
 					dirs[dir] = struct{}{}
 				}
-				continue
 			}
+		}
 
+		for _, o := range res.Contents {
 			if stream {
 				fmt.Println(aws.ToString(o.Key))
 			} else {
@@ -213,6 +216,11 @@ func (c *storageClient) listObjects(bucket, prefix string, recursive, stream boo
 		if !res.IsTruncated {
 			break
 		}
+	}
+
+	// To be user friendly, we are going to push dir records to the top of the output list
+	if !stream && !recursive {
+		out = append(dirsOut, out...)
 	}
 
 	return &out, nil
