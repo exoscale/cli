@@ -191,7 +191,7 @@ func (c *storageClient) listObjects(bucket, prefix string, recursive, stream boo
 					if stream {
 						fmt.Println(dir)
 					} else {
-						dirsOut = append(out, storageListObjectsItemOutput{
+						dirsOut = append(dirsOut, storageListObjectsItemOutput{
 							Path: dir,
 							Dir:  true,
 						})
