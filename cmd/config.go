@@ -37,6 +37,7 @@ type account struct {
 	DefaultTemplate      string
 	DefaultRunstatusPage string
 	DefaultOutputFormat  string
+	ClientTimeout        int
 	CustomHeaders        map[string]string
 }
 
@@ -87,6 +88,7 @@ const (
 	defaultRunstatusEndpoint  = "https://api.runstatus.com"
 	defaultZone               = "ch-dk-2"
 	defaultOutputFormat       = "table"
+	defaultClientTimeout      = 10
 )
 
 var configCmd = &cobra.Command{
@@ -174,6 +176,7 @@ func saveConfig(filePath string, newAccounts *config) error {
 		accounts[i]["key"] = acc.Key
 		accounts[i]["defaultZone"] = acc.DefaultZone
 		accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
+		accounts[i]["clientTimeout"] = acc.ClientTimeout
 		accounts[i]["environment"] = acc.Environment
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey

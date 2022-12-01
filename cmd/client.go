@@ -73,7 +73,7 @@ func buildClient() {
 		gCurrentAccount.Key,
 		gCurrentAccount.APISecret(),
 		exov2.ClientOptWithAPIEndpoint(gCurrentAccount.Endpoint),
-		exov2.ClientOptWithTimeout(5*time.Minute),
+		exov2.ClientOptWithTimeout(time.Minute*time.Duration(gCurrentAccount.ClientTimeout)),
 		exov2.ClientOptWithHTTPClient(func() *http.Client {
 			return &http.Client{
 				Transport: newCLIRoundTripper(http.DefaultTransport, gCurrentAccount.CustomHeaders),

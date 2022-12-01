@@ -17,6 +17,7 @@ type configShowOutput struct {
 	StorageAPIEndpoint string `json:"storage_api_endpoint,omitempty"`
 	DNSAPIEndpoint     string `json:"dns_api_endpoint,omitempty" outputLabel:"DNS API Endpoint"`
 	ConfigFile         string `json:"config_file" outputLabel:"Configuration File"`
+	ClientTimeout      int    `json:"client_timeout" outputLabel:"API Timeout (in minutes)"`
 }
 
 func (o *configShowOutput) Type() string { return "Account" }
@@ -69,6 +70,7 @@ func showConfig(name string) (outputter, error) {
 		ComputeAPIEndpoint: account.Endpoint,
 		StorageAPIEndpoint: account.SosEndpoint,
 		DNSAPIEndpoint:     account.DNSEndpoint,
+		ClientTimeout:      account.ClientTimeout,
 	}
 
 	return &out, nil
