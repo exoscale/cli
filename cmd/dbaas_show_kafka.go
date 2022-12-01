@@ -250,7 +250,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 
 		Kafka: &dbServiceKafkaShowOutput{
 			ACL: func() (v []dbServiceKafkaACLShowOutput) {
-				if aclConfig != nil {
+				if aclConfig.TopicAcl != nil {
 					for _, acl := range *aclConfig.TopicAcl {
 						v = append(v, dbServiceKafkaACLShowOutput{
 							ID:         string(*acl.Id),
