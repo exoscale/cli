@@ -153,7 +153,7 @@ func (c *Client) GetSecurityGroup(ctx context.Context, zone, id string) (*Securi
 func (c *Client) ListSecurityGroups(ctx context.Context, zone string) ([]*SecurityGroup, error) {
 	list := make([]*SecurityGroup, 0)
 
-	resp, err := c.ListSecurityGroupsWithResponse(apiv2.WithZone(ctx, zone))
+	resp, err := c.ListSecurityGroupsWithResponse(apiv2.WithZone(ctx, zone), &oapi.ListSecurityGroupsParams{})
 	if err != nil {
 		return nil, err
 	}

@@ -57,7 +57,7 @@ func securityGroupRuleFromAPI(r *oapi.SecurityGroupRule) *SecurityGroupRule {
 		Protocol: (*string)(r.Protocol),
 		SecurityGroupID: func() (v *string) {
 			if r.SecurityGroup != nil {
-				v = &r.SecurityGroup.Id
+				v = r.SecurityGroup.Id
 			}
 			return
 		}(),
@@ -142,7 +142,7 @@ func (c *Client) CreateSecurityGroupRule(
 			Protocol: oapi.AddRuleToSecurityGroupJSONBodyProtocol(*rule.Protocol),
 			SecurityGroup: func() (v *oapi.SecurityGroupResource) {
 				if rule.SecurityGroupID != nil {
-					v = &oapi.SecurityGroupResource{Id: *rule.SecurityGroupID}
+					v = &oapi.SecurityGroupResource{Id: rule.SecurityGroupID}
 				}
 				return
 			}(),

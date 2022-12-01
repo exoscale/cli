@@ -6,7 +6,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/url"
 )
@@ -252,7 +252,7 @@ func (userdata VirtualMachineUserData) Decode() (string, error) {
 	}
 	defer gr.Close() // nolint: errcheck
 
-	str, err := ioutil.ReadAll(gr)
+	str, err := io.ReadAll(gr)
 	if err != nil {
 		return "", err
 	}

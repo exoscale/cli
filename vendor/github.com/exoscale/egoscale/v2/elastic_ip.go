@@ -28,6 +28,7 @@ type ElasticIP struct {
 	Healthcheck   *ElasticIPHealthcheck
 	ID            *string `req-for:"update,delete"`
 	IPAddress     *net.IP
+	Labels        *map[string]string
 	Zone          *string
 	CIDR          *string
 	AddressFamily *string
@@ -58,8 +59,14 @@ func elasticIPFromAPI(e *oapi.ElasticIp, zone string) *ElasticIP {
 			}
 			return nil
 		}(),
-		ID:            e.Id,
-		IPAddress:     &ipAddress,
+		ID:        e.Id,
+		IPAddress: &ipAddress,
+		Labels: func() (v *map[string]string) {
+			if e.Labels != nil && len(e.Labels.AdditionalProperties) > 0 {
+				v = &e.Labels.AdditionalProperties
+			}
+			return
+		}(),
 		Zone:          &zone,
 		CIDR:          e.Cidr,
 		AddressFamily: (*string)(e.Addressfamily),
@@ -108,6 +115,12 @@ func (c *Client) CreateElasticIP(ctx context.Context, zone string, elasticIP *El
 					}
 				}
 				return nil
+			}(),
+			Labels: func() (v *oapi.Labels) {
+				if elasticIP.Labels != nil {
+					v = &oapi.Labels{AdditionalProperties: *elasticIP.Labels}
+				}
+				return
 			}(),
 		})
 	if err != nil {
@@ -240,6 +253,12 @@ func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *El
 					}
 				}
 				return nil
+			}(),
+			Labels: func() (v *oapi.Labels) {
+				if elasticIP.Labels != nil {
+					v = &oapi.Labels{AdditionalProperties: *elasticIP.Labels}
+				}
+				return
 			}(),
 		})
 	if err != nil {

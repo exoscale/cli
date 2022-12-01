@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -127,7 +127,7 @@ func NewClient(endpoint, apiKey, apiSecret string, opts ...ClientOpt) *Client {
 		Timeout:       DefaultTimeout,
 		Expiration:    10 * time.Minute,
 		RetryStrategy: MonotonicRetryStrategyFunc(2),
-		Logger:        log.New(ioutil.Discard, "", 0),
+		Logger:        log.New(io.Discard, "", 0),
 	}
 
 	for _, opt := range opts {
@@ -175,7 +175,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 			Message string `json:"message"`
 		}
 
-		data, err := ioutil.ReadAll(resp.Body)
+		data, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("error reading response body: %s", err)
 		}

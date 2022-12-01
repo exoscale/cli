@@ -1,6 +1,32 @@
 Changelog
 =========
 
+0.91.0
+------
+
+- feature: v2: add `Client.FindDatabaseService()` method
+
+0.90.4
+------
+
+- fix: v2: seg fault when listing security groups
+
+0.90.3
+------
+
+- feature: v2: add labels support for Elastic IPs
+
+0.90.2
+------
+
+- fix: v2: silence retryable HTTP client debug logs
+
+0.90.1
+------
+
+- feature: v2: retryable HTTP client by default
+- change: no HOST header override for IP address endpoints
+
 0.90.0
 ------
 

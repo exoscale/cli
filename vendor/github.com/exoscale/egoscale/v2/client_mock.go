@@ -686,6 +686,7 @@ func (m *oapiClientMock) ListQuotasWithResponse(
 
 func (m *oapiClientMock) ListSecurityGroupsWithResponse(
 	ctx context.Context,
+	params *oapi.ListSecurityGroupsParams,
 	reqEditors ...oapi.RequestEditorFn,
 ) (*oapi.ListSecurityGroupsResponse, error) {
 	args := m.Called(ctx, reqEditors)
