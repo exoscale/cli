@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.61.0
+
+### Features
+
+- `storage list`: using delimiter to speed up listing of objects (#479)
+- New configuration parameter (`clientTimeout`) to set API timeout (#478)
+- Updated `dbaas show` for ACL API changes (#480)
+- Updated `exo x`
+
 ## 1.60.0
 
 ### Features
