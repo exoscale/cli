@@ -21,6 +21,7 @@ type instanceUpdateCmd struct {
 	Labels            map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	Name              string            `cli-short:"n" cli-usage:"instance name"`
 	Zone              string            `cli-short:"z" cli-usage:"instance zone"`
+	ReverseDNS        string            `cli-usage:"Reverse DNS Domain"`
 }
 
 func (c *instanceUpdateCmd) cmdAliases() []string { return nil }
@@ -41,7 +42,7 @@ func (c *instanceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	var updated bool
+	var updatedInstance, updatedRDNS bool
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
@@ -55,12 +56,12 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
 		instance.Labels = &c.Labels
-		updated = true
+		updatedInstance = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
 		instance.Name = &c.Name
-		updated = true
+		updatedInstance = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.CloudInitFile)) {
@@ -69,15 +70,30 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
 		instance.UserData = &userData
-		updated = true
+		updatedInstance = true
 	}
 
-	if updated {
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ReverseDNS)) {
+		updatedRDNS = true
+	}
+
+	if updatedInstance || updatedRDNS {
 		decorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
-			if err = cs.UpdateInstance(ctx, c.Zone, instance); err != nil {
-				return
+			if updatedInstance {
+				if err = cs.UpdateInstance(ctx, c.Zone, instance); err != nil {
+					return
+				}
+			}
+
+			if updatedRDNS {
+				if c.ReverseDNS == "" {
+					err = cs.DeleteInstanceReverseDNS(ctx, c.Zone, *instance.ID)
+				} else {
+					err = cs.UpdateInstanceReverseDNS(ctx, c.Zone, *instance.ID, c.ReverseDNS)
+				}
 			}
 		})
+
 		if err != nil {
 			return err
 		}
