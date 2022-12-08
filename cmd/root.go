@@ -192,6 +192,10 @@ func initConfig() {
 		}
 		gCurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(gCurrentAccount.Endpoint)
 
+		if gCurrentAccount.ClientTimeout == 0 {
+			gCurrentAccount.ClientTimeout = defaultClientTimeout
+		}
+
 		gAllAccount = &config{
 			DefaultAccount: gCurrentAccount.Name,
 			Accounts:       []account{*gCurrentAccount},
