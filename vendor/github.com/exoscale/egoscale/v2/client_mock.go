@@ -1101,3 +1101,59 @@ func (m *oapiClientMock) UpdateDnsDomainRecordWithResponse(
 	args := m.Called(ctx, domainId, recordId, body, reqEditors)
 	return args.Get(0).(*oapi.UpdateDnsDomainRecordResponse), args.Error(1)
 }
+
+func (m *oapiClientMock) GetReverseDnsInstanceWithResponse(
+	ctx context.Context,
+	id string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.GetReverseDnsInstanceResponse, error) {
+	args := m.Called(ctx, id, reqEditors)
+	return args.Get(0).(*oapi.GetReverseDnsInstanceResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) DeleteReverseDnsInstanceWithResponse(
+	ctx context.Context,
+	id string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.DeleteReverseDnsInstanceResponse, error) {
+	args := m.Called(ctx, id, reqEditors)
+	return args.Get(0).(*oapi.DeleteReverseDnsInstanceResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) UpdateReverseDnsInstanceWithResponse(
+	ctx context.Context,
+	id string,
+	body oapi.UpdateReverseDnsInstanceJSONRequestBody,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.UpdateReverseDnsInstanceResponse, error) {
+	args := m.Called(ctx, id, body, reqEditors)
+	return args.Get(0).(*oapi.UpdateReverseDnsInstanceResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) GetReverseDnsElasticIpWithResponse(
+	ctx context.Context,
+	id string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.GetReverseDnsElasticIpResponse, error) {
+	args := m.Called(ctx, id, reqEditors)
+	return args.Get(0).(*oapi.GetReverseDnsElasticIpResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) DeleteReverseDnsElasticIpWithResponse(
+	ctx context.Context,
+	id string,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.DeleteReverseDnsElasticIpResponse, error) {
+	args := m.Called(ctx, id, reqEditors)
+	return args.Get(0).(*oapi.DeleteReverseDnsElasticIpResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) UpdateReverseDnsElasticIpWithResponse(
+	ctx context.Context,
+	id string,
+	body oapi.UpdateReverseDnsElasticIpJSONRequestBody,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.UpdateReverseDnsElasticIpResponse, error) {
+	args := m.Called(ctx, id, body, reqEditors)
+	return args.Get(0).(*oapi.UpdateReverseDnsElasticIpResponse), args.Error(1)
+}
