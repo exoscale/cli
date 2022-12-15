@@ -33,6 +33,7 @@ type instanceCreateCmd struct {
 	InstanceType       string            `cli-usage:"instance type (format: [FAMILY.]SIZE)"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
+	PrivateInstance    bool              `cli-flag:"private-instance" cli-usage:"enable private instance to be created"`
 	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
 	Template           string            `cli-usage:"instance template NAME|ID"`
@@ -81,6 +82,11 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}(),
 		Name:   &c.Name,
 		SSHKey: nonEmptyStringPtr(c.SSHKey),
+	}
+
+	if c.PrivateInstance {
+		t := "none"
+		instance.PublicIPAssignment = &t
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))

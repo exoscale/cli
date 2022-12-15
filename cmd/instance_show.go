@@ -19,6 +19,7 @@ type instanceShowOutput struct {
 	Zone               string            `json:"zoneid"`
 	AntiAffinityGroups []string          `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
 	SecurityGroups     []string          `json:"security_groups"`
+	PrivateInstance    string            `json:"private-instance" outputLabel:"Private Instance"`
 	PrivateNetworks    []string          `json:"private_networks"`
 	ElasticIPs         []string          `json:"elastic_ips" outputLabel:"Elastic IPs"`
 	IPAddress          string            `json:"ip_address"`
@@ -106,6 +107,11 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		SecurityGroups:  make([]string, 0),
 		State:           *instance.State,
 		Zone:            c.Zone,
+	}
+
+	out.PrivateInstance = "No"
+	if *instance.PublicIPAssignment == "none" {
+		out.PrivateInstance = "Yes"
 	}
 
 	if instance.AntiAffinityGroupIDs != nil {
