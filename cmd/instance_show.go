@@ -110,7 +110,7 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	out.PrivateInstance = "No"
-	if *instance.PublicIPAssignment == "none" {
+	if instance.PublicIPAssignment != nil && *instance.PublicIPAssignment == "none" {
 		out.PrivateInstance = "Yes"
 	}
 
