@@ -27,6 +27,7 @@ type instanceShowOutput struct {
 	DiskSize           string            `json:"disk_size"`
 	State              string            `json:"state"`
 	Labels             map[string]string `json:"labels"`
+	ReverseDNS         string            `json:"reverse_dns" outputLabel:"Reverse DNS"`
 }
 
 func (o *instanceShowOutput) Type() string { return "Compute instance" }
@@ -158,6 +159,17 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 	out.Template = *template.Name
+
+	rdns, err := cs.GetInstanceReverseDNS(ctx, c.Zone, *instance.ID)
+	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			out.ReverseDNS = ""
+		} else {
+			return err
+		}
+	}
+
+	out.ReverseDNS = rdns
 
 	return c.outputFunc(&out, nil)
 }

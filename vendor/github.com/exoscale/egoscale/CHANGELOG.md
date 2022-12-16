@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.92.0
+------
+
+- feature: v2: implement reverse DNS management
+
 0.91.0
 ------
 

@@ -29,6 +29,7 @@ type elasticIPUpdateCmd struct {
 	HealthcheckTimeout        int64  `cli-usage:"managed Elastic IP health checking timeout in seconds"`
 	HealthcheckURI            string `cli-usage:"managed Elastic IP health checking URI (required in http(s) mode)"`
 	Zone                      string `cli-short:"z" cli-usage:"Elastic IP zone"`
+	ReverseDNS                string `cli-usage:"Reverse DNS Domain"`
 }
 
 func (c *elasticIPUpdateCmd) cmdAliases() []string { return nil }
@@ -50,7 +51,7 @@ func (c *elasticIPUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	var updated bool
+	var updatedInstance, updatedRDNS bool
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
@@ -64,7 +65,7 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
 		elasticIP.Description = &c.Description
-		updated = true
+		updatedInstance = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckMode)) {
@@ -72,7 +73,11 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			elasticIP.Healthcheck = new(egoscale.ElasticIPHealthcheck)
 		}
 		elasticIP.Healthcheck.Mode = &c.HealthcheckMode
-		updated = true
+		updatedInstance = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ReverseDNS)) {
+		updatedRDNS = true
 	}
 
 	for _, flag := range []string{
@@ -93,57 +98,70 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if flag := mustCLICommandFlagName(c, &c.HealthcheckInterval); cmd.Flags().Changed(flag) {
 		interval := time.Duration(c.HealthcheckInterval) * time.Second
 		elasticIP.Healthcheck.Interval = &interval
-		updated = true
+		updatedInstance = true
 	}
 
 	if flag := mustCLICommandFlagName(c, &c.HealthcheckPort); cmd.Flags().Changed(flag) {
 		port := uint16(c.HealthcheckPort)
 		elasticIP.Healthcheck.Port = &port
-		updated = true
+		updatedInstance = true
 	}
 
 	if flag := mustCLICommandFlagName(c, &c.HealthcheckStrikesFail); cmd.Flags().Changed(flag) {
 		elasticIP.Healthcheck.StrikesFail = &c.HealthcheckStrikesFail
-		updated = true
+		updatedInstance = true
 	}
 
 	if flag := mustCLICommandFlagName(c, &c.HealthcheckStrikesOK); cmd.Flags().Changed(flag) {
 		elasticIP.Healthcheck.StrikesOK = &c.HealthcheckStrikesOK
-		updated = true
+		updatedInstance = true
 	}
 
 	if flag := mustCLICommandFlagName(c, &c.HealthcheckStrikesOK); cmd.Flags().Changed(flag) {
 		elasticIP.Healthcheck.StrikesOK = &c.HealthcheckStrikesOK
-		updated = true
+		updatedInstance = true
 	}
 
 	if elasticIP.Healthcheck != nil && *elasticIP.Healthcheck.Mode == "https" {
 		if flag := mustCLICommandFlagName(c, &c.HealthcheckTLSSSkipVerify); cmd.Flags().Changed(flag) {
 			elasticIP.Healthcheck.TLSSkipVerify = &c.HealthcheckTLSSSkipVerify
-			updated = true
+			updatedInstance = true
 		}
 
 		if flag := mustCLICommandFlagName(c, &c.HealthcheckTLSSNI); cmd.Flags().Changed(flag) {
 			elasticIP.Healthcheck.TLSSNI = &c.HealthcheckTLSSNI
-			updated = true
+			updatedInstance = true
 		}
 	}
 
 	if flag := mustCLICommandFlagName(c, &c.HealthcheckTimeout); cmd.Flags().Changed(flag) {
 		timeout := time.Duration(c.HealthcheckTimeout) * time.Second
 		elasticIP.Healthcheck.Timeout = &timeout
-		updated = true
+		updatedInstance = true
 	}
 
 	if flag := mustCLICommandFlagName(c, &c.HealthcheckURI); cmd.Flags().Changed(flag) {
 		elasticIP.Healthcheck.URI = &c.HealthcheckURI
-		updated = true
+		updatedInstance = true
 	}
 
-	if updated {
+	if updatedInstance || updatedRDNS {
 		decorateAsyncOperation(fmt.Sprintf("Updating Elastic IP %s...", c.ElasticIP), func() {
-			err = cs.UpdateElasticIP(ctx, c.Zone, elasticIP)
+			if updatedInstance {
+				if err = cs.UpdateElasticIP(ctx, c.Zone, elasticIP); err != nil {
+					return
+				}
+			}
+
+			if updatedRDNS {
+				if c.ReverseDNS == "" {
+					err = cs.DeleteElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
+				} else {
+					err = cs.UpdateElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID, c.ReverseDNS)
+				}
+			}
 		})
+
 		if err != nil {
 			return err
 		}

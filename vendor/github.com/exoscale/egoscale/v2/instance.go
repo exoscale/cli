@@ -827,3 +827,59 @@ func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Inst
 
 	return nil
 }
+
+// GetInstanceReverseDNS returns the Reverse DNS record corresponding to the specified Instance ID.
+func (c *Client) GetInstanceReverseDNS(ctx context.Context, zone, id string) (string, error) {
+	resp, err := c.GetReverseDnsInstanceWithResponse(apiv2.WithZone(ctx, zone), id)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.JSON200 == nil || resp.JSON200.DomainName == nil {
+		return "", apiv2.ErrNotFound
+	}
+
+	return string(*resp.JSON200.DomainName), nil
+}
+
+// DeleteInstanceReverseDNS deletes a Reverse DNS record of a Compute Instance.
+func (c *Client) DeleteInstanceReverseDNS(ctx context.Context, zone string, id string) error {
+	resp, err := c.DeleteReverseDnsInstanceWithResponse(apiv2.WithZone(ctx, zone), id)
+	if err != nil {
+		return err
+	}
+
+	_, err = oapi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateInstanceReverseDNS updates a Reverse DNS record for a Compute Instance.
+func (c *Client) UpdateInstanceReverseDNS(ctx context.Context, zone, id, domain string) error {
+	resp, err := c.UpdateReverseDnsInstanceWithResponse(
+		apiv2.WithZone(ctx, zone),
+		id,
+		oapi.UpdateReverseDnsInstanceJSONRequestBody{
+			DomainName: &domain,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = oapi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -275,3 +275,59 @@ func (c *Client) UpdateElasticIP(ctx context.Context, zone string, elasticIP *El
 
 	return nil
 }
+
+// GetElasticIPReverseDNS returns the Reverse DNS record corresponding to the specified Elastic IP ID.
+func (c *Client) GetElasticIPReverseDNS(ctx context.Context, zone, id string) (string, error) {
+	resp, err := c.GetReverseDnsElasticIpWithResponse(apiv2.WithZone(ctx, zone), id)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.JSON200 == nil || resp.JSON200.DomainName == nil {
+		return "", apiv2.ErrNotFound
+	}
+
+	return string(*resp.JSON200.DomainName), nil
+}
+
+// DeleteElasticIPReverseDNS deletes a Reverse DNS record of a Elastic IP.
+func (c *Client) DeleteElasticIPReverseDNS(ctx context.Context, zone string, id string) error {
+	resp, err := c.DeleteReverseDnsElasticIpWithResponse(apiv2.WithZone(ctx, zone), id)
+	if err != nil {
+		return err
+	}
+
+	_, err = oapi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateElasticIPReverseDNS updates a Reverse DNS record for a ElasticIP.
+func (c *Client) UpdateElasticIPReverseDNS(ctx context.Context, zone, id, domain string) error {
+	resp, err := c.UpdateReverseDnsElasticIpWithResponse(
+		apiv2.WithZone(ctx, zone),
+		id,
+		oapi.UpdateReverseDnsElasticIpJSONRequestBody{
+			DomainName: &domain,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = oapi.NewPoller().
+		WithTimeout(c.timeout).
+		WithInterval(c.pollInterval).
+		Poll(ctx, oapi.OperationPoller(c, zone, *resp.JSON200.Id))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
