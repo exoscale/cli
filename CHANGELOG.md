@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.62.0
+
+### Features
+
+- `compute instance update`, `compute elastic-ip update`: add support for Reverse DNS using `--reverse-dns` flag (#482)
+
 ## 1.61.0
 
 ### Features
