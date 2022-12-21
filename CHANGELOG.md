@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.63.0
+
+### Features
+
+-  `compute private instance support`: new `--private-instance` flag (#483)
+
 ## 1.62.0
 
 ### Features
