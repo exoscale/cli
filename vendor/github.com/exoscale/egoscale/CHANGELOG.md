@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.93.0
+------
+
+- feature: v2: implement publicIpAssignment for Instances
+
 0.92.0
 ------
 
