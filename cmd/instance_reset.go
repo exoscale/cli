@@ -67,24 +67,15 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var template *egoscale.Template
 	if c.Template != "" {
-		templates, err := cs.ListTemplates(
-			ctx,
-			c.Zone,
-			egoscale.ListTemplatesWithVisibility(c.TemplateVisibility),
-		)
+		template, err = cs.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
 		if err != nil {
-			return fmt.Errorf("error retrieving templates: %w", err)
+			return fmt.Errorf(
+				"no template %q found with visibility %s in zone %s",
+				c.Template,
+				c.TemplateVisibility,
+				c.Zone,
+			)
 		}
-		for _, t := range templates {
-			if *t.ID == c.Template || *t.Name == c.Template {
-				template = t
-				break
-			}
-		}
-		if template == nil {
-			return fmt.Errorf("no template %q found with visibility %s", c.Template, c.TemplateVisibility)
-		}
-
 		opts = append(opts, egoscale.ResetInstanceWithTemplate(template))
 	}
 

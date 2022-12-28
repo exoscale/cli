@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -65,6 +66,12 @@ func (c *instanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	)
 	if err != nil {
 		return err
+	}
+
+	// Sort private templates by name for better visibility
+	// Public templates are sorted by Family
+	if c.Visibility == "private" {
+		sort.Sort(egoscale.ByName{Templates: templates})
 	}
 
 	out := make(instanceTemplateListOutput, 0)

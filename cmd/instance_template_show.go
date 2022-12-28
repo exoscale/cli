@@ -7,7 +7,6 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
-	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -91,35 +90,14 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
 	)
 
-	// Opportunistic shortcut in case the template is referenced by ID.
-	template, _ := cs.Client.GetTemplate(ctx, c.Zone, c.Template)
-
-	if template == nil {
-		var templateID string
-
-		templates, err := cs.ListTemplates(ctx, c.Zone, egoscale.ListTemplatesWithVisibility(c.Visibility))
-		if err != nil {
-			return fmt.Errorf("error retrieving templates: %w", err)
-		}
-		for _, template := range templates {
-			if *template.ID == c.Template || *template.Name == c.Template {
-				templateID = *template.ID
-				break
-			}
-		}
-		if templateID == "" {
-			return fmt.Errorf(
-				"no template %q found with visibility %s in zone %s",
-				c.Template,
-				c.Visibility,
-				c.Zone,
-			)
-		}
-
-		template, err = cs.Client.GetTemplate(ctx, c.Zone, templateID)
-		if err != nil {
-			return fmt.Errorf("error retrieving template: %w", err)
-		}
+	template, err := cs.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)
+	if err != nil {
+		return fmt.Errorf(
+			"no template %q found with visibility %s in zone %s",
+			c.Template,
+			c.Visibility,
+			c.Zone,
+		)
 	}
 
 	return c.outputFunc(&instanceTemplateShowOutput{
