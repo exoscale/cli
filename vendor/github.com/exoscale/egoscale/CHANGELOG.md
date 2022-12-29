@@ -1,6 +1,18 @@
 Changelog
 =========
 
+0.95.0
+------
+
+- feature: v2: add `Client.FindTemplate()` method
+- fix: v2: error for `Client.GetTemplateByName()`
+
+0.94.0
+------
+
+- feature: v2: add `Client.GetTemplateByName()` method
+- feature: v2: implement sort.Interface for []*Template by CreatedAt or by Name
+
 0.93.0
 ------
 
