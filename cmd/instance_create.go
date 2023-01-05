@@ -172,23 +172,16 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instance.SSHKey = sshKey.Name
 	}
 
-	templates, err := cs.ListTemplates(
-		ctx,
-		c.Zone,
-		egoscale.ListTemplatesWithVisibility(c.TemplateVisibility),
-	)
+	template, err := cs.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
 	if err != nil {
-		return fmt.Errorf("error retrieving templates: %w", err)
+		return fmt.Errorf(
+			"no template %q found with visibility %s in zone %s",
+			c.Template,
+			c.TemplateVisibility,
+			c.Zone,
+		)
 	}
-	for _, template := range templates {
-		if *template.ID == c.Template || *template.Name == c.Template {
-			instance.TemplateID = template.ID
-			break
-		}
-	}
-	if instance.TemplateID == nil {
-		return fmt.Errorf("no template %q found with visibility %s", c.Template, c.TemplateVisibility)
-	}
+	instance.TemplateID = template.ID
 
 	if c.CloudInitFile != "" {
 		userData, err := getUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)

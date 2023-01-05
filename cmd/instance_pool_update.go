@@ -38,7 +38,8 @@ type instancePoolUpdateCmd struct {
 	ServiceOffering    string            `cli-short:"o" cli-usage:"[DEPRECATED] use --instance-type"`
 	Size               int64             `cli-usage:"[DEPRECATED] use the 'exo compute instance-pool scale' command"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
-	TemplateFilter     string            `cli-usage:"managed Compute instances template filter"`
+	TemplateFilter     string            `cli-usage:"[DEPRECATED] use --template-visibility"`
+	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
 	Zone               string            `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
@@ -118,6 +119,21 @@ in a future release, please use "--instance-type" instead.
 		}
 	}
 
+	// TODO: remove this once the `--template-filter` flag is retired.
+	if cmd.Flags().Changed("template-filter") {
+		cmd.PrintErr(`**********************************************************************
+WARNING: flag "--template-filter" has been deprecated and will be removed in
+a future release, please use "--template-visibility" instead.
+**********************************************************************
+`)
+		if !cmd.Flags().Changed("template-visibility") {
+			templateFilterFlag := cmd.Flags().Lookup("template-filter")
+			if err := cmd.Flags().Set("template-visibility", templateFilterFlag.Value.String()); err != nil {
+				return err
+			}
+		}
+	}
+
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
@@ -126,11 +142,6 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
-
-	zoneV1, err := getZoneByNameOrID(c.Zone)
-	if err != nil {
-		return err
-	}
 
 	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
@@ -246,21 +257,16 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Template)) {
-		templateFilter, err := validateTemplateFilter(c.TemplateFilter)
+		template, err := cs.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
 		if err != nil {
-			return err
+			return fmt.Errorf(
+				"no template %q found with visibility %s in zone %s",
+				c.Template,
+				c.TemplateVisibility,
+				c.Zone,
+			)
 		}
-
-		templateFlagVal, err := cmd.Flags().GetString("template")
-		if err != nil {
-			return err
-		}
-		template, err := getTemplateByNameOrID(zoneV1.ID, templateFlagVal, templateFilter)
-		if err != nil {
-			return fmt.Errorf("error retrieving template: %w", err)
-		}
-		templateID := template.ID.String()
-		instancePool.TemplateID = &templateID
+		instancePool.TemplateID = template.ID
 		updated = true
 	}
 
@@ -312,13 +318,13 @@ func init() {
 	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolUpdateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
-		TemplateFilter: defaultTemplateFilter,
+		TemplateVisibility: defaultTemplateVisibility,
 	}))
 
 	// FIXME: remove this someday.
 	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolUpdateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
-		TemplateFilter: defaultTemplateFilter,
+		TemplateVisibility: defaultTemplateVisibility,
 	}))
 }
