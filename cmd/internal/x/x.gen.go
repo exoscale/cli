@@ -931,6 +931,52 @@ func XGetDbaasKafkaAclConfig(paramName string, params *viper.Viper) (*gentleman.
 	return resp, decoded, nil
 }
 
+// XStartDbaasKafkaMaintenance Initiate Kafka maintenance update
+func XStartDbaasKafkaMaintenance(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "start-dbaas-kafka-maintenance"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-kafka/{name}/maintenance/start"
+	url = strings.Replace(url, "{name}", paramName, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateDbaasKafkaSchemaRegistryAclConfig Add a Kafka Schema Registry ACL entry
 func XCreateDbaasKafkaSchemaRegistryAclConfig(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-dbaas-kafka-schema-registry-acl-config"
@@ -1421,6 +1467,52 @@ func XUpdateDbaasServiceMysql(paramName string, params *viper.Viper, body string
 	return resp, decoded, nil
 }
 
+// XStartDbaasMysqlMaintenance Initiate MySQL maintenance update
+func XStartDbaasMysqlMaintenance(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "start-dbaas-mysql-maintenance"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-mysql/{name}/maintenance/start"
+	url = strings.Replace(url, "{name}", paramName, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XStopDbaasMysqlMigration Stop a DBaaS MySQL migration
 func XStopDbaasMysqlMigration(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "stop-dbaas-mysql-migration"
@@ -1601,6 +1693,52 @@ func XUpdateDbaasServiceOpensearch(paramName string, params *viper.Viper, body s
 	return resp, decoded, nil
 }
 
+// XStartDbaasOpensearchMaintenance Initiate OpenSearch maintenance update
+func XStartDbaasOpensearchMaintenance(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "start-dbaas-opensearch-maintenance"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-opensearch/{name}/maintenance/start"
+	url = strings.Replace(url, "{name}", paramName, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XCreateDbaasServicePg Create a DBaaS PostgreSQL service
 func XCreateDbaasServicePg(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-dbaas-service-pg"
@@ -1708,6 +1846,52 @@ func XUpdateDbaasServicePg(paramName string, params *viper.Viper, body string) (
 
 	if body != "" {
 		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XStartDbaasPgMaintenance Initiate PostgreSQL maintenance update
+func XStartDbaasPgMaintenance(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "start-dbaas-pg-maintenance"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-postgres/{name}/maintenance/start"
+	url = strings.Replace(url, "{name}", paramName, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
 	}
 
 	cli.HandleBefore(handlerPath, params, req)
@@ -2071,6 +2255,52 @@ func XUpdateDbaasServiceRedis(paramName string, params *viper.Viper, body string
 
 	if body != "" {
 		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XStartDbaasRedisMaintenance Initiate Redis maintenance update
+func XStartDbaasRedisMaintenance(paramName string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "start-dbaas-redis-maintenance"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-redis/{name}/maintenance/start"
+	url = strings.Replace(url, "{name}", paramName, 1)
+
+	req := cli.Client.Put().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "").BodyString(body)
 	}
 
 	cli.HandleBefore(handlerPath, params, req)
@@ -8260,12 +8490,12 @@ func xRegister(subcommand bool) {
 		root = &cobra.Command{
 			Use:   "x",
 			Short: "Exoscale Public API",
-			Long:  cli.Markdown("\nInfrastructure automation API, allowing programmatic access to all Exoscale products and services.\n\nThe [OpenAPI Specification](http://spec.openapis.org/oas/v3.0.3.html) source of this documentation can be obtained here:\n\n* [JSON format](https://bump.sh/doc/exoscale-api.json)\n* [YAML format](https://bump.sh/doc/exoscale-api.yaml)"),
+			Long:  cli.Markdown("\nInfrastructure automation API, allowing programmatic access to all Exoscale products and services.\n\nThe [OpenAPI Specification](http://spec.openapis.org/oas/v3.0.3.html) source of this documentation can be obtained here:\n\n* [JSON format](https://openapi-v2.exoscale.com/source.json)\n* [YAML format](https://openapi-v2.exoscale.com/source.yaml)"),
 		}
 		xSubcommand = true
 	} else {
 		cli.Root.Short = "Exoscale Public API"
-		cli.Root.Long = cli.Markdown("\nInfrastructure automation API, allowing programmatic access to all Exoscale products and services.\n\nThe [OpenAPI Specification](http://spec.openapis.org/oas/v3.0.3.html) source of this documentation can be obtained here:\n\n* [JSON format](https://bump.sh/doc/exoscale-api.json)\n* [YAML format](https://bump.sh/doc/exoscale-api.yaml)")
+		cli.Root.Long = cli.Markdown("\nInfrastructure automation API, allowing programmatic access to all Exoscale products and services.\n\nThe [OpenAPI Specification](http://spec.openapis.org/oas/v3.0.3.html) source of this documentation can be obtained here:\n\n* [JSON format](https://openapi-v2.exoscale.com/source.json)\n* [YAML format](https://openapi-v2.exoscale.com/source.yaml)")
 	}
 
 	func() {
@@ -8490,7 +8720,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-anti-affinity-group",
 			Short:   "Create an Anti-affinity Group",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Anti-affinity Group description\n    maxLength: 255\n    minLength: 1\n    type: string\n  name:\n    description: Anti-affinity Group name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Anti-affinity Group description\n    maxLength: 255\n    type: string\n  name:\n    description: Anti-affinity Group name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -9033,6 +9263,45 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "start-dbaas-kafka-maintenance name",
+			Short:   "Initiate Kafka maintenance update",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XStartDbaasKafkaMaintenance(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-dbaas-kafka-schema-registry-acl-config name",
 			Short:   "Add a Kafka Schema Registry ACL entry",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  id:\n    $ref: '#/components/schemas/dbaas-kafka-acl-id'\n  permission:\n    description: Kafka Schema Registry permission\n    enum:\n    - schema_registry_read\n    - schema_registry_write\n    type: string\n  resource:\n    description: Kafka Schema Registry name or pattern\n    maxLength: 249\n    minLength: 1\n    type: string\n  username:\n    description: Kafka username or username pattern\n    maxLength: 64\n    minLength: 1\n    type: string\nrequired:\n- username\n- resource\n- permission\ntype: object\n"),
@@ -9442,6 +9711,45 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "start-dbaas-mysql-maintenance name",
+			Short:   "Initiate MySQL maintenance update",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XStartDbaasMysqlMaintenance(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "stop-dbaas-mysql-migration name",
 			Short:   "Stop a DBaaS MySQL migration",
 			Long:    cli.Markdown(""),
@@ -9594,6 +9902,45 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "start-dbaas-opensearch-maintenance name",
+			Short:   "Initiate OpenSearch maintenance update",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XStartDbaasOpensearchMaintenance(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "create-dbaas-service-pg name",
 			Short:   "Create a DBaaS PostgreSQL service",
 			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  admin-password:\n    description: Custom password for admin user. Defaults to random string. This must be set only when a new service is being created.\n    maxLength: 256\n    minLength: 8\n    pattern: ^[a-zA-Z0-9-_]+$\n    type: string\n  admin-username:\n    description: Custom username for admin user. This must be set only when a new service is being created.\n    maxLength: 64\n    minLength: 1\n    pattern: ^[_A-Za-z0-9][-._A-Za-z0-9]{0,63}$\n    type: string\n  backup-schedule:\n    properties:\n      backup-hour:\n        description: The hour of day (in UTC) when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 23\n        minimum: 0\n        type: integer\n      backup-minute:\n        description: The minute of an hour when backup for the service is started. New backup is only started if previous backup has already completed.\n        format: int64\n        maximum: 59\n        minimum: 0\n        type: integer\n    type: object\n  fork-from-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integrations:\n    description: Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.\n    items:\n      properties:\n        dest-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        settings:\n          description: Integration settings\n          type: object\n        source-service:\n          $ref: '#/components/schemas/dbaas-service-name'\n        type:\n          $ref: '#/components/schemas/enum-integration-types'\n      required:\n      - type\n      type: object\n    type: array\n  ip-filter:\n    description: Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'\n    items:\n      type: string\n    type: array\n  maintenance:\n    description: Automatic maintenance settings\n    properties:\n      dow:\n        description: Day of week for installing updates\n        enum:\n        - saturday\n        - tuesday\n        - never\n        - wednesday\n        - sunday\n        - friday\n        - monday\n        - thursday\n        type: string\n      time:\n        description: Time for installing updates, UTC\n        maxLength: 8\n        minLength: 8\n        type: string\n    required:\n    - dow\n    - time\n    type: object\n  migration:\n    description: Migrate data from existing server\n    properties:\n      dbname:\n        description: Database name for bootstrapping the initial connection\n        maxLength: 63\n        minLength: 1\n        type: string\n      host:\n        description: Hostname or IP address of the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      ignore-dbs:\n        description: Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)\n        maxLength: 2048\n        minLength: 1\n        type: string\n      method:\n        $ref: '#/components/schemas/enum-migration-method'\n      password:\n        description: Password for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n      port:\n        description: Port number of the server where to migrate data from\n        format: int64\n        maximum: 65535\n        minimum: 1\n        type: integer\n      ssl:\n        description: The server where to migrate data from is secured with SSL\n        type: boolean\n      username:\n        description: User name for authentication with the server where to migrate data from\n        maxLength: 255\n        minLength: 1\n        type: string\n    required:\n    - host\n    - port\n    type: object\n  pg-settings:\n    description: PostgreSQL-specific settings\n    type: object\n  pgbouncer-settings:\n    description: PGBouncer connection pooling settings\n    type: object\n  pglookout-settings:\n    description: PGLookout settings\n    type: object\n  plan:\n    description: Subscription plan\n    maxLength: 128\n    minLength: 1\n    type: string\n  recovery-backup-time:\n    description: ISO time of a backup to recover from for services that support arbitrary times\n    minLength: 1\n    type: string\n  shared-buffers-percentage:\n    description: Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.\n    format: int64\n    maximum: 60\n    minimum: 20\n    type: integer\n  synchronous-replication:\n    $ref: '#/components/schemas/enum-pg-synchronous-replication'\n  termination-protection:\n    description: Service is protected against termination and powering off\n    type: boolean\n  timescaledb-settings:\n    description: TimescaleDB extension configuration values\n    type: object\n  variant:\n    $ref: '#/components/schemas/enum-pg-variant'\n  version:\n    description: PostgreSQL major version\n    minLength: 1\n    type: string\n  work-mem:\n    description: Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).\n    format: int64\n    maximum: 1024\n    minimum: 1\n    type: integer\nrequired:\n- plan\ntype: object\n"),
@@ -9680,6 +10027,45 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XUpdateDbaasServicePg(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "start-dbaas-pg-maintenance name",
+			Short:   "Initiate PostgreSQL maintenance update",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XStartDbaasPgMaintenance(args[0], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -9984,6 +10370,45 @@ func xRegister(subcommand bool) {
 				}
 
 				_, decoded, err := XUpdateDbaasServiceRedis(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "start-dbaas-redis-maintenance name",
+			Short:   "Initiate Redis maintenance update",
+			Long:    cli.Markdown(""),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XStartDbaasRedisMaintenance(args[0], params, body)
 				if err != nil {
 					log.Fatal().Err(err).Msg("Error calling operation")
 				}
@@ -10951,7 +11376,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-elastic-ip",
 			Short:   "Create an Elastic IP",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addressfamily:\n    description: 'Elastic IP address family (default: inet4)'\n    enum:\n    - inet4\n    - inet6\n    type: string\n  description:\n    description: Elastic IP description\n    maxLength: 255\n    minLength: 1\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/elastic-ip-healthcheck'\n  labels:\n    $ref: '#/components/schemas/labels'\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addressfamily:\n    description: 'Elastic IP address family (default: :inet4)'\n    enum:\n    - inet4\n    - inet6\n    type: string\n  description:\n    description: Elastic IP description\n    maxLength: 255\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/elastic-ip-healthcheck'\n  labels:\n    $ref: '#/components/schemas/labels'\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -11095,7 +11520,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-elastic-ip id",
 			Short:   "Update an Elastic IP",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Elastic IP description\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/elastic-ip-healthcheck'\n  labels:\n    $ref: '#/components/schemas/labels'\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Elastic IP description\n    maxLength: 255\n    type: string\n  healthcheck:\n    $ref: '#/components/schemas/elastic-ip-healthcheck'\n  labels:\n    $ref: '#/components/schemas/labels'\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -11285,7 +11710,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-instance",
 			Short:   "Create a Compute instance",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  auto-start:\n    description: 'Start Instance on creation (default: true)'\n    type: boolean\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  disk-size:\n    description: Instance disk size in GB\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  ipv6-enabled:\n    description: 'Enable IPv6. DEPRECATED: use `public-ip-assignments`.'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance name\n    maxLength: 255\n    minLength: 1\n    type: string\n  public-ip-assignment:\n    $ref: '#/components/schemas/public-ip-assignment'\n  security-groups:\n    description: Instance Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key'\n  template:\n    $ref: '#/components/schemas/template'\n  user-data:\n    description: Instance Cloud-init user-data\n    minLength: 1\n    type: string\nrequired:\n- disk-size\n- instance-type\n- template\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Instance Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  auto-start:\n    description: 'Start Instance on creation (default: true)'\n    type: boolean\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  disk-size:\n    description: Instance disk size in GB\n    format: int64\n    maximum: 50000\n    minimum: 10\n    type: integer\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  ipv6-enabled:\n    description: 'Enable IPv6. DEPRECATED: use `public-ip-assignments`.'\n    type: boolean\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Instance name\n    maxLength: 255\n    minLength: 1\n    type: string\n  public-ip-assignment:\n    $ref: '#/components/schemas/public-ip-assignment'\n  security-groups:\n    description: Instance Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  ssh-key:\n    $ref: '#/components/schemas/ssh-key'\n  ssh-keys:\n    description: Instance SSH Keys\n    items:\n      $ref: '#/components/schemas/ssh-key'\n    type: array\n    uniqueItems: true\n  template:\n    $ref: '#/components/schemas/template'\n  user-data:\n    description: Instance Cloud-init user-data\n    minLength: 1\n    type: string\nrequired:\n- disk-size\n- instance-type\n- template\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -13356,7 +13781,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-security-group",
 			Short:   "Create a Security Group",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Security Group description\n    maxLength: 255\n    minLength: 1\n    type: string\n  name:\n    description: Security Group name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Security Group description\n    maxLength: 255\n    type: string\n  name:\n    description: Security Group name\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -13502,7 +13927,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "add-rule-to-security-group id",
 			Short:   "Create a Security Group rule",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Security Group rule description\n    maxLength: 255\n    minLength: 1\n    type: string\n  end-port:\n    description: End port of the range\n    format: int64\n    maximum: 65535\n    minimum: 1\n    type: integer\n  flow-direction:\n    description: Network flow direction to match\n    enum:\n    - ingress\n    - egress\n    type: string\n  icmp:\n    description: 'ICMP details (default: -1 (ANY))'\n    properties:\n      code:\n        format: int64\n        maximum: 254\n        minimum: -1\n        type: integer\n      type:\n        format: int64\n        maximum: 254\n        minimum: -1\n        type: integer\n    type: object\n  network:\n    description: CIDR-formatted network allowed\n    type: string\n  protocol:\n    description: Network protocol\n    enum:\n    - tcp\n    - esp\n    - icmp\n    - udp\n    - gre\n    - ah\n    - ipip\n    - icmpv6\n    type: string\n  security-group:\n    $ref: '#/components/schemas/security-group-resource'\n  start-port:\n    description: Start port of the range\n    format: int64\n    maximum: 65535\n    minimum: 1\n    type: integer\nrequired:\n- flow-direction\n- protocol\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Security Group rule description\n    maxLength: 255\n    type: string\n  end-port:\n    description: End port of the range\n    format: int64\n    maximum: 65535\n    minimum: 1\n    type: integer\n  flow-direction:\n    description: Network flow direction to match\n    enum:\n    - ingress\n    - egress\n    type: string\n  icmp:\n    description: 'ICMP details (default: -1 (ANY))'\n    properties:\n      code:\n        format: int64\n        maximum: 254\n        minimum: -1\n        type: integer\n      type:\n        format: int64\n        maximum: 254\n        minimum: -1\n        type: integer\n    type: object\n  network:\n    description: CIDR-formatted network allowed\n    type: string\n  protocol:\n    description: Network protocol\n    enum:\n    - tcp\n    - esp\n    - icmp\n    - udp\n    - gre\n    - ah\n    - ipip\n    - icmpv6\n    type: string\n  security-group:\n    $ref: '#/components/schemas/security-group-resource'\n  start-port:\n    description: Start port of the range\n    format: int64\n    maximum: 65535\n    minimum: 1\n    type: integer\nrequired:\n- flow-direction\n- protocol\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -14061,7 +14486,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-sks-nodepool id",
 			Short:   "Create a new SKS Nodepool",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Nodepool addons\n    items:\n      enum:\n      - linbit\n      type: string\n    type: array\n    uniqueItems: true\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    minLength: 1\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GB\n    format: int64\n    maximum: 50000\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool)'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Nodepool name\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network'\n    type: array\n    uniqueItems: true\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  size:\n    description: Number of instances\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\nrequired:\n- name\n- size\n- disk-size\n- instance-type\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Nodepool addons\n    items:\n      enum:\n      - storage-lvm\n      type: string\n    type: array\n    uniqueItems: true\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    minLength: 1\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GB\n    format: int64\n    maximum: 50000\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool)'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Nodepool name\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network'\n    type: array\n    uniqueItems: true\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  size:\n    description: Number of instances\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\nrequired:\n- name\n- size\n- disk-size\n- instance-type\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -14950,7 +15375,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "register-template",
 			Short:   "Register a Template",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  boot-mode:\n    description: 'Boot mode (default: legacy)'\n    enum:\n    - legacy\n    - uefi\n    type: string\n  build:\n    description: Template build\n    maxLength: 255\n    minLength: 1\n    type: string\n  checksum:\n    description: Template MD5 checksum\n    minLength: 1\n    type: string\n  default-user:\n    description: Template default user\n    maxLength: 255\n    minLength: 1\n    type: string\n  description:\n    description: Template description\n    maxLength: 255\n    minLength: 1\n    type: string\n  maintainer:\n    description: Template maintainer\n    maxLength: 255\n    minLength: 1\n    type: string\n  name:\n    description: Template name\n    maxLength: 255\n    minLength: 1\n    type: string\n  password-enabled:\n    description: Enable password-based login\n    type: boolean\n  size:\n    description: Template size\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  ssh-key-enabled:\n    description: Enable SSH key-based login\n    type: boolean\n  url:\n    description: Template source URL\n    minLength: 1\n    type: string\n  version:\n    description: Template version\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\n- url\n- checksum\n- ssh-key-enabled\n- password-enabled\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  boot-mode:\n    description: 'Boot mode (default: legacy)'\n    enum:\n    - legacy\n    - uefi\n    type: string\n  build:\n    description: Template build\n    maxLength: 255\n    minLength: 1\n    type: string\n  checksum:\n    description: Template MD5 checksum\n    minLength: 1\n    type: string\n  default-user:\n    description: Template default user\n    maxLength: 255\n    minLength: 1\n    type: string\n  description:\n    description: Template description\n    maxLength: 255\n    type: string\n  maintainer:\n    description: Template maintainer\n    maxLength: 255\n    minLength: 1\n    type: string\n  name:\n    description: Template name\n    maxLength: 255\n    minLength: 1\n    type: string\n  password-enabled:\n    description: Enable password-based login\n    type: boolean\n  size:\n    description: Template size\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  ssh-key-enabled:\n    description: Enable SSH key-based login\n    type: boolean\n  url:\n    description: Template source URL\n    minLength: 1\n    type: string\n  version:\n    description: Template version\n    maxLength: 255\n    minLength: 1\n    type: string\nrequired:\n- name\n- url\n- checksum\n- ssh-key-enabled\n- password-enabled\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -15098,7 +15523,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-template id",
 			Short:   "Update template attributes",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Template Description\n    maxLength: 255\n    minLength: 1\n    nullable: true\n    type: string\n  name:\n    description: Template name\n    maxLength: 255\n    minLength: 1\n    type: string\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  description:\n    description: Template Description\n    maxLength: 255\n    type: string\n  name:\n    description: Template name\n    maxLength: 255\n    minLength: 1\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {

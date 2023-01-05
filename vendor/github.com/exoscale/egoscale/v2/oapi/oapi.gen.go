@@ -570,7 +570,7 @@ const (
 
 // Defines values for SksNodepoolAddons.
 const (
-	SksNodepoolAddonsLinbit SksNodepoolAddons = "linbit"
+	SksNodepoolAddonsStorageLvm SksNodepoolAddons = "storage-lvm"
 )
 
 // Defines values for SksNodepoolState.
@@ -1921,6 +1921,9 @@ type Instance struct {
 	// SSH key
 	SshKey *SshKey `json:"ssh-key,omitempty"`
 
+	// Instance SSH Keys
+	SshKeys *[]SshKey `json:"ssh-keys,omitempty"`
+
 	// Instance state
 	State *InstanceState `json:"state,omitempty"`
 
@@ -2289,7 +2292,8 @@ type SecurityGroupResource struct {
 }
 
 // Whether this points to a public security group. This is only valid when in the context of
-//                    a rule addition which uses a public security group as a source or destination.
+//
+//	a rule addition which uses a public security group as a source or destination.
 type SecurityGroupResourceVisibility string
 
 // Security Group rule
@@ -3521,7 +3525,7 @@ type CreateElasticIpJSONBodyAddressfamily string
 // UpdateElasticIpJSONBody defines parameters for UpdateElasticIp.
 type UpdateElasticIpJSONBody struct {
 	// Elastic IP description
-	Description *string `json:"description"`
+	Description *string `json:"description,omitempty"`
 
 	// Elastic IP address healthcheck
 	Healthcheck *ElasticIpHealthcheck `json:"healthcheck,omitempty"`
@@ -3588,6 +3592,9 @@ type CreateInstanceJSONBody struct {
 
 	// SSH key
 	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instance SSH Keys
+	SshKeys *[]SshKey `json:"ssh-keys,omitempty"`
 
 	// Instance template
 	Template Template `json:"template"`
@@ -4257,7 +4264,7 @@ type CopyTemplateJSONBody struct {
 // UpdateTemplateJSONBody defines parameters for UpdateTemplate.
 type UpdateTemplateJSONBody struct {
 	// Template Description
-	Description *string `json:"description"`
+	Description *string `json:"description,omitempty"`
 
 	// Template name
 	Name *string `json:"name,omitempty"`
@@ -4839,6 +4846,9 @@ type ClientInterface interface {
 	// GetDbaasKafkaAclConfig request
 	GetDbaasKafkaAclConfig(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// StartDbaasKafkaMaintenance request
+	StartDbaasKafkaMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateDbaasKafkaSchemaRegistryAclConfig request with any body
 	CreateDbaasKafkaSchemaRegistryAclConfigWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4884,6 +4894,9 @@ type ClientInterface interface {
 
 	UpdateDbaasServiceMysql(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceMysqlJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// StartDbaasMysqlMaintenance request
+	StartDbaasMysqlMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// StopDbaasMysqlMigration request
 	StopDbaasMysqlMigration(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4900,6 +4913,9 @@ type ClientInterface interface {
 
 	UpdateDbaasServiceOpensearch(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceOpensearchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// StartDbaasOpensearchMaintenance request
+	StartDbaasOpensearchMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetDbaasServicePg request
 	GetDbaasServicePg(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -4912,6 +4928,9 @@ type ClientInterface interface {
 	UpdateDbaasServicePgWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateDbaasServicePg(ctx context.Context, name DbaasServiceName, body UpdateDbaasServicePgJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// StartDbaasPgMaintenance request
+	StartDbaasPgMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// StopDbaasPgMigration request
 	StopDbaasPgMigration(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4946,6 +4965,9 @@ type ClientInterface interface {
 	UpdateDbaasServiceRedisWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateDbaasServiceRedis(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceRedisJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// StartDbaasRedisMaintenance request
+	StartDbaasRedisMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// StopDbaasRedisMigration request
 	StopDbaasRedisMigration(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5794,6 +5816,18 @@ func (c *Client) GetDbaasKafkaAclConfig(ctx context.Context, name DbaasServiceNa
 	return c.Client.Do(req)
 }
 
+func (c *Client) StartDbaasKafkaMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartDbaasKafkaMaintenanceRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateDbaasKafkaSchemaRegistryAclConfigWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateDbaasKafkaSchemaRegistryAclConfigRequestWithBody(c.Server, name, contentType, body)
 	if err != nil {
@@ -5998,6 +6032,18 @@ func (c *Client) UpdateDbaasServiceMysql(ctx context.Context, name DbaasServiceN
 	return c.Client.Do(req)
 }
 
+func (c *Client) StartDbaasMysqlMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartDbaasMysqlMaintenanceRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) StopDbaasMysqlMigration(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewStopDbaasMysqlMigrationRequest(c.Server, name)
 	if err != nil {
@@ -6070,6 +6116,18 @@ func (c *Client) UpdateDbaasServiceOpensearch(ctx context.Context, name DbaasSer
 	return c.Client.Do(req)
 }
 
+func (c *Client) StartDbaasOpensearchMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartDbaasOpensearchMaintenanceRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetDbaasServicePg(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetDbaasServicePgRequest(c.Server, name)
 	if err != nil {
@@ -6120,6 +6178,18 @@ func (c *Client) UpdateDbaasServicePgWithBody(ctx context.Context, name DbaasSer
 
 func (c *Client) UpdateDbaasServicePg(ctx context.Context, name DbaasServiceName, body UpdateDbaasServicePgJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateDbaasServicePgRequest(c.Server, name, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) StartDbaasPgMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartDbaasPgMaintenanceRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -6276,6 +6346,18 @@ func (c *Client) UpdateDbaasServiceRedisWithBody(ctx context.Context, name Dbaas
 
 func (c *Client) UpdateDbaasServiceRedis(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceRedisJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateDbaasServiceRedisRequest(c.Server, name, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) StartDbaasRedisMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartDbaasRedisMaintenanceRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -9321,6 +9403,40 @@ func NewGetDbaasKafkaAclConfigRequest(server string, name DbaasServiceName) (*ht
 	return req, nil
 }
 
+// NewStartDbaasKafkaMaintenanceRequest generates requests for StartDbaasKafkaMaintenance
+func NewStartDbaasKafkaMaintenanceRequest(server string, name DbaasServiceName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-kafka/%s/maintenance/start", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateDbaasKafkaSchemaRegistryAclConfigRequest calls the generic CreateDbaasKafkaSchemaRegistryAclConfig builder with application/json body
 func NewCreateDbaasKafkaSchemaRegistryAclConfigRequest(server string, name DbaasServiceName, body CreateDbaasKafkaSchemaRegistryAclConfigJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -9801,6 +9917,40 @@ func NewUpdateDbaasServiceMysqlRequestWithBody(server string, name DbaasServiceN
 	return req, nil
 }
 
+// NewStartDbaasMysqlMaintenanceRequest generates requests for StartDbaasMysqlMaintenance
+func NewStartDbaasMysqlMaintenanceRequest(server string, name DbaasServiceName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-mysql/%s/maintenance/start", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewStopDbaasMysqlMigrationRequest generates requests for StopDbaasMysqlMigration
 func NewStopDbaasMysqlMigrationRequest(server string, name DbaasServiceName) (*http.Request, error) {
 	var err error
@@ -9963,6 +10113,40 @@ func NewUpdateDbaasServiceOpensearchRequestWithBody(server string, name DbaasSer
 	return req, nil
 }
 
+// NewStartDbaasOpensearchMaintenanceRequest generates requests for StartDbaasOpensearchMaintenance
+func NewStartDbaasOpensearchMaintenanceRequest(server string, name DbaasServiceName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-opensearch/%s/maintenance/start", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetDbaasServicePgRequest generates requests for GetDbaasServicePg
 func NewGetDbaasServicePgRequest(server string, name DbaasServiceName) (*http.Request, error) {
 	var err error
@@ -10087,6 +10271,40 @@ func NewUpdateDbaasServicePgRequestWithBody(server string, name DbaasServiceName
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewStartDbaasPgMaintenanceRequest generates requests for StartDbaasPgMaintenance
+func NewStartDbaasPgMaintenanceRequest(server string, name DbaasServiceName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-postgres/%s/maintenance/start", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -10445,6 +10663,40 @@ func NewUpdateDbaasServiceRedisRequestWithBody(server string, name DbaasServiceN
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewStartDbaasRedisMaintenanceRequest generates requests for StartDbaasRedisMaintenance
+func NewStartDbaasRedisMaintenanceRequest(server string, name DbaasServiceName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-redis/%s/maintenance/start", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -16081,6 +16333,9 @@ type ClientWithResponsesInterface interface {
 	// GetDbaasKafkaAclConfig request
 	GetDbaasKafkaAclConfigWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasKafkaAclConfigResponse, error)
 
+	// StartDbaasKafkaMaintenance request
+	StartDbaasKafkaMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasKafkaMaintenanceResponse, error)
+
 	// CreateDbaasKafkaSchemaRegistryAclConfig request with any body
 	CreateDbaasKafkaSchemaRegistryAclConfigWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasKafkaSchemaRegistryAclConfigResponse, error)
 
@@ -16126,6 +16381,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateDbaasServiceMysqlWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceMysqlJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceMysqlResponse, error)
 
+	// StartDbaasMysqlMaintenance request
+	StartDbaasMysqlMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasMysqlMaintenanceResponse, error)
+
 	// StopDbaasMysqlMigration request
 	StopDbaasMysqlMigrationWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StopDbaasMysqlMigrationResponse, error)
 
@@ -16142,6 +16400,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateDbaasServiceOpensearchWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceOpensearchJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceOpensearchResponse, error)
 
+	// StartDbaasOpensearchMaintenance request
+	StartDbaasOpensearchMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasOpensearchMaintenanceResponse, error)
+
 	// GetDbaasServicePg request
 	GetDbaasServicePgWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServicePgResponse, error)
 
@@ -16154,6 +16415,9 @@ type ClientWithResponsesInterface interface {
 	UpdateDbaasServicePgWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasServicePgResponse, error)
 
 	UpdateDbaasServicePgWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasServicePgJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServicePgResponse, error)
+
+	// StartDbaasPgMaintenance request
+	StartDbaasPgMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasPgMaintenanceResponse, error)
 
 	// StopDbaasPgMigration request
 	StopDbaasPgMigrationWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StopDbaasPgMigrationResponse, error)
@@ -16188,6 +16452,9 @@ type ClientWithResponsesInterface interface {
 	UpdateDbaasServiceRedisWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceRedisResponse, error)
 
 	UpdateDbaasServiceRedisWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceRedisJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceRedisResponse, error)
+
+	// StartDbaasRedisMaintenance request
+	StartDbaasRedisMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasRedisMaintenanceResponse, error)
 
 	// StopDbaasRedisMigration request
 	StopDbaasRedisMigrationWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StopDbaasRedisMigrationResponse, error)
@@ -17194,6 +17461,28 @@ func (r GetDbaasKafkaAclConfigResponse) StatusCode() int {
 	return 0
 }
 
+type StartDbaasKafkaMaintenanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r StartDbaasKafkaMaintenanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartDbaasKafkaMaintenanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateDbaasKafkaSchemaRegistryAclConfigResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -17436,6 +17725,28 @@ func (r UpdateDbaasServiceMysqlResponse) StatusCode() int {
 	return 0
 }
 
+type StartDbaasMysqlMaintenanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r StartDbaasMysqlMaintenanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartDbaasMysqlMaintenanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type StopDbaasMysqlMigrationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -17524,6 +17835,28 @@ func (r UpdateDbaasServiceOpensearchResponse) StatusCode() int {
 	return 0
 }
 
+type StartDbaasOpensearchMaintenanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r StartDbaasOpensearchMaintenanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartDbaasOpensearchMaintenanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetDbaasServicePgResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -17584,6 +17917,28 @@ func (r UpdateDbaasServicePgResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateDbaasServicePgResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type StartDbaasPgMaintenanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r StartDbaasPgMaintenanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartDbaasPgMaintenanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -17760,6 +18115,28 @@ func (r UpdateDbaasServiceRedisResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateDbaasServiceRedisResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type StartDbaasRedisMaintenanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r StartDbaasRedisMaintenanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartDbaasRedisMaintenanceResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -21239,6 +21616,15 @@ func (c *ClientWithResponses) GetDbaasKafkaAclConfigWithResponse(ctx context.Con
 	return ParseGetDbaasKafkaAclConfigResponse(rsp)
 }
 
+// StartDbaasKafkaMaintenanceWithResponse request returning *StartDbaasKafkaMaintenanceResponse
+func (c *ClientWithResponses) StartDbaasKafkaMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasKafkaMaintenanceResponse, error) {
+	rsp, err := c.StartDbaasKafkaMaintenance(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartDbaasKafkaMaintenanceResponse(rsp)
+}
+
 // CreateDbaasKafkaSchemaRegistryAclConfigWithBodyWithResponse request with arbitrary body returning *CreateDbaasKafkaSchemaRegistryAclConfigResponse
 func (c *ClientWithResponses) CreateDbaasKafkaSchemaRegistryAclConfigWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasKafkaSchemaRegistryAclConfigResponse, error) {
 	rsp, err := c.CreateDbaasKafkaSchemaRegistryAclConfigWithBody(ctx, name, contentType, body, reqEditors...)
@@ -21386,6 +21772,15 @@ func (c *ClientWithResponses) UpdateDbaasServiceMysqlWithResponse(ctx context.Co
 	return ParseUpdateDbaasServiceMysqlResponse(rsp)
 }
 
+// StartDbaasMysqlMaintenanceWithResponse request returning *StartDbaasMysqlMaintenanceResponse
+func (c *ClientWithResponses) StartDbaasMysqlMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasMysqlMaintenanceResponse, error) {
+	rsp, err := c.StartDbaasMysqlMaintenance(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartDbaasMysqlMaintenanceResponse(rsp)
+}
+
 // StopDbaasMysqlMigrationWithResponse request returning *StopDbaasMysqlMigrationResponse
 func (c *ClientWithResponses) StopDbaasMysqlMigrationWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StopDbaasMysqlMigrationResponse, error) {
 	rsp, err := c.StopDbaasMysqlMigration(ctx, name, reqEditors...)
@@ -21438,6 +21833,15 @@ func (c *ClientWithResponses) UpdateDbaasServiceOpensearchWithResponse(ctx conte
 	return ParseUpdateDbaasServiceOpensearchResponse(rsp)
 }
 
+// StartDbaasOpensearchMaintenanceWithResponse request returning *StartDbaasOpensearchMaintenanceResponse
+func (c *ClientWithResponses) StartDbaasOpensearchMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasOpensearchMaintenanceResponse, error) {
+	rsp, err := c.StartDbaasOpensearchMaintenance(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartDbaasOpensearchMaintenanceResponse(rsp)
+}
+
 // GetDbaasServicePgWithResponse request returning *GetDbaasServicePgResponse
 func (c *ClientWithResponses) GetDbaasServicePgWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServicePgResponse, error) {
 	rsp, err := c.GetDbaasServicePg(ctx, name, reqEditors...)
@@ -21479,6 +21883,15 @@ func (c *ClientWithResponses) UpdateDbaasServicePgWithResponse(ctx context.Conte
 		return nil, err
 	}
 	return ParseUpdateDbaasServicePgResponse(rsp)
+}
+
+// StartDbaasPgMaintenanceWithResponse request returning *StartDbaasPgMaintenanceResponse
+func (c *ClientWithResponses) StartDbaasPgMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasPgMaintenanceResponse, error) {
+	rsp, err := c.StartDbaasPgMaintenance(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartDbaasPgMaintenanceResponse(rsp)
 }
 
 // StopDbaasPgMigrationWithResponse request returning *StopDbaasPgMigrationResponse
@@ -21591,6 +22004,15 @@ func (c *ClientWithResponses) UpdateDbaasServiceRedisWithResponse(ctx context.Co
 		return nil, err
 	}
 	return ParseUpdateDbaasServiceRedisResponse(rsp)
+}
+
+// StartDbaasRedisMaintenanceWithResponse request returning *StartDbaasRedisMaintenanceResponse
+func (c *ClientWithResponses) StartDbaasRedisMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasRedisMaintenanceResponse, error) {
+	rsp, err := c.StartDbaasRedisMaintenance(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartDbaasRedisMaintenanceResponse(rsp)
 }
 
 // StopDbaasRedisMigrationWithResponse request returning *StopDbaasRedisMigrationResponse
@@ -23827,6 +24249,32 @@ func ParseGetDbaasKafkaAclConfigResponse(rsp *http.Response) (*GetDbaasKafkaAclC
 	return response, nil
 }
 
+// ParseStartDbaasKafkaMaintenanceResponse parses an HTTP response from a StartDbaasKafkaMaintenanceWithResponse call
+func ParseStartDbaasKafkaMaintenanceResponse(rsp *http.Response) (*StartDbaasKafkaMaintenanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartDbaasKafkaMaintenanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateDbaasKafkaSchemaRegistryAclConfigResponse parses an HTTP response from a CreateDbaasKafkaSchemaRegistryAclConfigWithResponse call
 func ParseCreateDbaasKafkaSchemaRegistryAclConfigResponse(rsp *http.Response) (*CreateDbaasKafkaSchemaRegistryAclConfigResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -24113,6 +24561,32 @@ func ParseUpdateDbaasServiceMysqlResponse(rsp *http.Response) (*UpdateDbaasServi
 	return response, nil
 }
 
+// ParseStartDbaasMysqlMaintenanceResponse parses an HTTP response from a StartDbaasMysqlMaintenanceWithResponse call
+func ParseStartDbaasMysqlMaintenanceResponse(rsp *http.Response) (*StartDbaasMysqlMaintenanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartDbaasMysqlMaintenanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseStopDbaasMysqlMigrationResponse parses an HTTP response from a StopDbaasMysqlMigrationWithResponse call
 func ParseStopDbaasMysqlMigrationResponse(rsp *http.Response) (*StopDbaasMysqlMigrationResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -24217,6 +24691,32 @@ func ParseUpdateDbaasServiceOpensearchResponse(rsp *http.Response) (*UpdateDbaas
 	return response, nil
 }
 
+// ParseStartDbaasOpensearchMaintenanceResponse parses an HTTP response from a StartDbaasOpensearchMaintenanceWithResponse call
+func ParseStartDbaasOpensearchMaintenanceResponse(rsp *http.Response) (*StartDbaasOpensearchMaintenanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartDbaasOpensearchMaintenanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetDbaasServicePgResponse parses an HTTP response from a GetDbaasServicePgWithResponse call
 func ParseGetDbaasServicePgResponse(rsp *http.Response) (*GetDbaasServicePgResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -24278,6 +24778,32 @@ func ParseUpdateDbaasServicePgResponse(rsp *http.Response) (*UpdateDbaasServiceP
 	}
 
 	response := &UpdateDbaasServicePgResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseStartDbaasPgMaintenanceResponse parses an HTTP response from a StartDbaasPgMaintenanceWithResponse call
+func ParseStartDbaasPgMaintenanceResponse(rsp *http.Response) (*StartDbaasPgMaintenanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartDbaasPgMaintenanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -24486,6 +25012,32 @@ func ParseUpdateDbaasServiceRedisResponse(rsp *http.Response) (*UpdateDbaasServi
 	}
 
 	response := &UpdateDbaasServiceRedisResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseStartDbaasRedisMaintenanceResponse parses an HTTP response from a StartDbaasRedisMaintenanceWithResponse call
+func ParseStartDbaasRedisMaintenanceResponse(rsp *http.Response) (*StartDbaasRedisMaintenanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartDbaasRedisMaintenanceResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
