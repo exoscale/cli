@@ -25,10 +25,11 @@ type sksNodepoolAddCmd struct {
 	InstancePrefix     string   `cli-usage:"string to prefix Nodepool member names with"`
 	InstanceType       string   `cli-usage:"Nodepool Compute instances type"`
 	Labels             []string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
-	Linbit             bool     `cli-usage:"Create nodes with non-stadard partitioning for Linstor"`
+	Linbit             bool     `cli-usage:"[DEPRECATED] use --storage-lvm"`
 	PrivateNetworks    []string `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	SecurityGroups     []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Size               int64    `cli-usage:"Nodepool size"`
+	StorageLvm         bool     `cli-usage:"Create nodes with non-standard partitioning for persistent storage"`
 	Taints             []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
 	Zone               string   `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
@@ -46,6 +47,11 @@ Supported output template annotations: %s`,
 
 func (c *sksNodepoolAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
+
+	if cmd.Flags().Changed("linbit") {
+		return fmt.Errorf("flag \"--linbit\" has been deprecated, please use \"--storage-lvm\" instead")
+	}
+
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
@@ -69,7 +75,7 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	addOns := map[string]bool{
-		"linbit": c.Linbit,
+		"storage-lvm": c.StorageLvm,
 	}
 
 	nodepool.AddOns = &[]string{}

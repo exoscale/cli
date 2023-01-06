@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.96.0
+------
+
+- v2: refresh openapi generated code
+- feature: v2: rename SKS nodepool addon
+
+
 0.95.0
 ------
 
