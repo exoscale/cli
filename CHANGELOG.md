@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.64.0
+
+### Features
+
+- SKS nodepool: add `storage-lvm` addon (#486)
+- Instance Pool: Deprecates `--template-filter` in favor of `--template-visibility` (#485)
+- Updated `exo x`
+
+### Bug Fixes
+
+- Don't panic on nil pointer in dbaas opensearch commands (#484)
+- Improve search template by name (#485)
+
 ## 1.63.0
 
 ### Features
