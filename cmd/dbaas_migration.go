@@ -4,7 +4,7 @@ import "github.com/spf13/cobra"
 
 var dbaasMigrationCmd = &cobra.Command{
 	Use:     "migration",
-	Short:   "migration status/check",
+	Short:   "control database migration",
 	Aliases: []string{"c"},
 }
 
