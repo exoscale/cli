@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -37,20 +38,32 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 
 	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
 	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 
-	decorateAsyncOperation("Stopping Database Migration...", func() {
-		switch dbType {
-		case "mysql":
-			err = cs.StopMysqlDatabaseMigration(ctx, c.Zone, c.Name)
-		case "pg":
-			err = cs.StopPgDatabaseMigration(ctx, c.Zone, c.Name)
-		case "redis":
-			err = cs.StopRedisDatabaseMigration(ctx, c.Zone, c.Name)
-		default:
-			err = fmt.Errorf("migrations not supported for database type %q", dbType)
+	var stopMigrationFuncs = map[string]func(context.Context, string, string) error{
+		"mysql": cs.StopMysqlDatabaseMigration,
+		"pg":    cs.StopPgDatabaseMigration,
+		"redis": cs.StopRedisDatabaseMigration,
+	}
+
+	if _, ok := stopMigrationFuncs[dbType]; !ok {
+		err = fmt.Errorf("migrations not supported for database type %q", dbType)
+	}
+
+	_, err = cs.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
+	if err != nil {
+		if errors.Is(err, exoapi.ErrNotFound) {
+			return fmt.Errorf("migration for database %q not running in zone %q", c.Name, c.Zone)
 		}
+		return fmt.Errorf("failed to retrieve migration status: %s", err)
+	}
+
+	decorateAsyncOperation("Stopping Database Migration...", func() {
+		err = stopMigrationFuncs[dbType](ctx, c.Zone, c.Name)
 	})
 
 	if err != nil {
