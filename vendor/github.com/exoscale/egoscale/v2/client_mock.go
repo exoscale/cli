@@ -1157,3 +1157,30 @@ func (m *oapiClientMock) UpdateReverseDnsElasticIpWithResponse(
 	args := m.Called(ctx, id, body, reqEditors)
 	return args.Get(0).(*oapi.UpdateReverseDnsElasticIpResponse), args.Error(1)
 }
+
+func (m *oapiClientMock) StopDbaasRedisMigrationWithResponse(
+	ctx context.Context,
+	name oapi.DbaasServiceName,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.StopDbaasRedisMigrationResponse, error) {
+	args := m.Called(ctx, name, reqEditors)
+	return args.Get(0).(*oapi.StopDbaasRedisMigrationResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) StopDbaasPgMigrationWithResponse(
+	ctx context.Context,
+	name oapi.DbaasServiceName,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.StopDbaasPgMigrationResponse, error) {
+	args := m.Called(ctx, name, reqEditors)
+	return args.Get(0).(*oapi.StopDbaasPgMigrationResponse), args.Error(1)
+}
+
+func (m *oapiClientMock) StopDbaasMysqlMigrationWithResponse(
+	ctx context.Context,
+	name oapi.DbaasServiceName,
+	reqEditors ...oapi.RequestEditorFn,
+) (*oapi.StopDbaasMysqlMigrationResponse, error) {
+	args := m.Called(ctx, name, reqEditors)
+	return args.Get(0).(*oapi.StopDbaasMysqlMigrationResponse), args.Error(1)
+}

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.97.0
+------
+
+- v2: database migration stop methods for databases supporting it: Redis, PostgreSQL, MySQL
+
 0.96.0
 ------
 
