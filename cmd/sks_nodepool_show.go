@@ -28,6 +28,7 @@ type sksNodepoolShowOutput struct {
 	State              string            `json:"state"`
 	Taints             []string          `json:"taints"`
 	Labels             map[string]string `json:"labels"`
+	AddOns             []string          `json:"addons"`
 }
 
 func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
@@ -86,6 +87,12 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := sksNodepoolShowOutput{
+		AddOns: func() (v []string) {
+			if nodepool.AddOns != nil {
+				v = *nodepool.AddOns
+			}
+			return
+		}(),
 		AntiAffinityGroups: make([]string, 0),
 		CreationDate:       nodepool.CreatedAt.String(),
 		Description:        defaultString(nodepool.Description, ""),
