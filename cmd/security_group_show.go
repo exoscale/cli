@@ -217,15 +217,15 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	for _, instance := range instances {
 		publicIP := emptyIPAddressVisualization
-		if !instance.PublicIPAddress.IsUnspecified() || len(*instance.PublicIPAddress) > 0 {
+		if instance.PublicIPAddress != nil && (!instance.PublicIPAddress.IsUnspecified() || len(*instance.PublicIPAddress) > 0) {
 			publicIP = instance.PublicIPAddress.String()
 		}
 
 		out.Instances = append(out.Instances, securityGroupInstanceOutput{
-			Name:     *instance.Name,
+			Name:     utils.GetDefaultStringOrZero(instance.Name, "-"),
 			PublicIP: publicIP,
-			ID:       *instance.ID,
-			Zone:     *instance.Zone,
+			ID:       utils.GetDefaultStringOrZero(instance.ID, "-"),
+			Zone:     utils.GetDefaultStringOrZero(instance.Zone, "-"),
 		})
 	}
 

@@ -36,3 +36,11 @@ func GetInstancesInSecurityGroup(ctx context.Context, client *egoscale.Client, s
 
 	return instancesInSG, nil
 }
+
+func GetDefaultStringOrZero(v *string, defaultStr string) string {
+	if v == nil {
+		return defaultStr
+	}
+
+	return *v
+}
