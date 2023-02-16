@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -25,12 +26,20 @@ type securityGroupRuleOutput struct {
 }
 
 type securityGroupShowOutput struct {
-	ID              string                    `json:"id"`
-	Name            string                    `json:"name"`
-	Description     string                    `json:"description"`
-	ExternalSources []string                  `json:"external_sources"`
-	IngressRules    []securityGroupRuleOutput `json:"ingress_rules"`
-	EgressRules     []securityGroupRuleOutput `json:"egress_rules"`
+	ID              string                        `json:"id"`
+	Name            string                        `json:"name"`
+	Description     string                        `json:"description"`
+	ExternalSources []string                      `json:"external_sources"`
+	IngressRules    []securityGroupRuleOutput     `json:"ingress_rules"`
+	EgressRules     []securityGroupRuleOutput     `json:"egress_rules"`
+	Instances       []securityGroupInstanceOutput `json:"instances"`
+}
+
+type securityGroupInstanceOutput struct {
+	Name     string `json:"name"`
+	PublicIP string `json:"public_ip"`
+	ID       string `json:"id"`
+	Zone     string `json:"zone"`
 }
 
 func (o *securityGroupShowOutput) toJSON() { outputJSON(o) }
@@ -76,6 +85,31 @@ func (o *securityGroupShowOutput) toTable() {
 
 			return buf.String()
 		}
+
+		return "-"
+	}
+
+	formatInstances := func(instances []securityGroupInstanceOutput) string {
+		if len(instances) > 0 {
+			buf := bytes.NewBuffer(nil)
+			at := table.NewEmbeddedTable(buf)
+			at.SetHeader([]string{" "})
+			at.SetAlignment(tablewriter.ALIGN_LEFT)
+
+			for _, instance := range instances {
+				r := []string{instance.Name, instance.ID}
+
+				r = append(r, instance.PublicIP)
+				r = append(r, instance.Zone)
+
+				at.Append(r)
+			}
+
+			at.Render()
+
+			return buf.String()
+		}
+
 		return "-"
 	}
 
@@ -89,6 +123,7 @@ func (o *securityGroupShowOutput) toTable() {
 	t.Append([]string{"Ingress Rules", formatRule(o.IngressRules)})
 	t.Append([]string{"Egress Rules", formatRule(o.EgressRules)})
 	t.Append([]string{"External Sources", formatExternalSources(o.ExternalSources)})
+	t.Append([]string{"Instances", formatInstances(o.Instances)})
 }
 
 type securityGroupShowCmd struct {
@@ -173,6 +208,25 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		} else {
 			out.EgressRules = append(out.EgressRules, or)
 		}
+	}
+
+	instances, err := utils.GetInstancesInSecurityGroup(ctx, cs, *securityGroup.ID, zone)
+	if err != nil {
+		return fmt.Errorf("error retrieving instances in Security Group: %w", err)
+	}
+
+	for _, instance := range instances {
+		publicIP := emptyIPAddressVisualization
+		if !instance.PublicIPAddress.IsUnspecified() || len(*instance.PublicIPAddress) > 0 {
+			publicIP = instance.PublicIPAddress.String()
+		}
+
+		out.Instances = append(out.Instances, securityGroupInstanceOutput{
+			Name:     *instance.Name,
+			PublicIP: publicIP,
+			ID:       *instance.ID,
+			Zone:     *instance.Zone,
+		})
 	}
 
 	return c.outputFunc(&out, nil)

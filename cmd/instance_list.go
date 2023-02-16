@@ -10,6 +10,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	emptyIPAddressVisualization = "-"
+)
+
 type instanceListItemOutput struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
@@ -95,7 +99,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				Name:      *i.Name,
 				Zone:      zone,
 				Type:      fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size),
-				IPAddress: defaultIP(i.PublicIPAddress, "-"),
+				IPAddress: defaultIP(i.PublicIPAddress, emptyIPAddressVisualization),
 				State:     *i.State,
 			}
 		}
