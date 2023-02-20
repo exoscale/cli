@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -138,10 +139,10 @@ a future release, please use "--template-visibility" instead.
 
 func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	instancePool := &egoscale.InstancePool{
-		Description:    nonEmptyStringPtr(c.Description),
+		Description:    utils.NonEmptyStringPtr(c.Description),
 		DiskSize:       &c.DiskSize,
 		IPv6Enabled:    &c.IPv6,
-		InstancePrefix: nonEmptyStringPtr(c.InstancePrefix),
+		InstancePrefix: utils.NonEmptyStringPtr(c.InstancePrefix),
 		Labels: func() (v *map[string]string) {
 			if len(c.Labels) > 0 {
 				return &c.Labels
@@ -149,7 +150,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			return
 		}(),
 		Name:   &c.Name,
-		SSHKey: nonEmptyStringPtr(c.SSHKey),
+		SSHKey: utils.NonEmptyStringPtr(c.SSHKey),
 		Size:   &c.Size,
 	}
 

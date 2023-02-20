@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -59,8 +60,8 @@ func (o *elasticIPShowOutput) toTable() {
 		t.Append([]string{"Healthcheck Strikes OK", fmt.Sprint(*o.HealthcheckStrikesOK)})
 		t.Append([]string{"Healthcheck Strikes Fail", fmt.Sprint(*o.HealthcheckStrikesFail)})
 		if *o.HealthcheckMode == "https" {
-			t.Append([]string{"Healthcheck TLS SNI", defaultString(o.HealthcheckTLSSNI, "")})
-			t.Append([]string{"Healthcheck TLS Skip Verification", fmt.Sprint(defaultBool(o.HealthcheckTLSSkipVerify, false))})
+			t.Append([]string{"Healthcheck TLS SNI", utils.DefaultString(o.HealthcheckTLSSNI, "")})
+			t.Append([]string{"Healthcheck TLS Skip Verification", fmt.Sprint(utils.DefaultBool(o.HealthcheckTLSSkipVerify, false))})
 		}
 	}
 }
@@ -108,9 +109,9 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	out := elasticIPShowOutput{
 		ID:            *elasticIP.ID,
 		IPAddress:     elasticIP.IPAddress.String(),
-		AddressFamily: defaultString(elasticIP.AddressFamily, ""),
-		CIDR:          defaultString(elasticIP.CIDR, ""),
-		Description:   defaultString(elasticIP.Description, ""),
+		AddressFamily: utils.DefaultString(elasticIP.AddressFamily, ""),
+		CIDR:          utils.DefaultString(elasticIP.CIDR, ""),
+		Description:   utils.DefaultString(elasticIP.Description, ""),
 		Zone:          c.Zone,
 		Type:          "manual",
 	}

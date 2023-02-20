@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -149,7 +150,7 @@ func (c *storageClient) setBucketACL(bucket string, acl *storageACL) error {
 	s3ACL := s3.PutBucketAclInput{Bucket: aws.String(bucket)}
 
 	if acl.Canned != "" {
-		if !isInList(s3BucketCannedACLToStrings(), acl.Canned) {
+		if !utils.IsInList(s3BucketCannedACLToStrings(), acl.Canned) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
 				acl.Canned,
 				strings.Join(s3BucketCannedACLToStrings(), ", "))
@@ -188,7 +189,7 @@ func (c *storageClient) setObjectACL(bucket, key string, acl *storageACL) error 
 	}
 
 	if acl.Canned != "" {
-		if !isInList(s3ObjectCannedACLToStrings(), acl.Canned) {
+		if !utils.IsInList(s3ObjectCannedACLToStrings(), acl.Canned) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
 				acl.Canned,
 				strings.Join(s3ObjectCannedACLToStrings(), ", "))

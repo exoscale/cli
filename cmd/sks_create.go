@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -87,7 +88,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	cluster := &egoscale.SKSCluster{
 		AutoUpgrade: &c.AutoUpgrade,
 		CNI:         &c.CNI,
-		Description: nonEmptyStringPtr(c.Description),
+		Description: utils.NonEmptyStringPtr(c.Description),
 		Labels: func() (v *map[string]string) {
 			if len(c.Labels) > 0 {
 				return &c.Labels
@@ -142,8 +143,8 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.OIDCClientID != "" {
 		opts = append(opts, egoscale.CreateSKSClusterWithOIDC(&egoscale.SKSClusterOIDCConfig{
 			ClientID:     &c.OIDCClientID,
-			GroupsClaim:  nonEmptyStringPtr(c.OIDCGroupsClaim),
-			GroupsPrefix: nonEmptyStringPtr(c.OIDCGroupsPrefix),
+			GroupsClaim:  utils.NonEmptyStringPtr(c.OIDCGroupsClaim),
+			GroupsPrefix: utils.NonEmptyStringPtr(c.OIDCGroupsPrefix),
 			IssuerURL:    &c.OIDCIssuerURL,
 			RequiredClaim: func() (v *map[string]string) {
 				if len(c.OIDCRequiredClaim) > 0 {
@@ -151,8 +152,8 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				}
 				return
 			}(),
-			UsernameClaim:  nonEmptyStringPtr(c.OIDCUsernameClaim),
-			UsernamePrefix: nonEmptyStringPtr(c.OIDCUsernamePrefix),
+			UsernameClaim:  utils.NonEmptyStringPtr(c.OIDCUsernameClaim),
+			UsernamePrefix: utils.NonEmptyStringPtr(c.OIDCUsernamePrefix),
 		}))
 	}
 
@@ -166,16 +167,16 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if c.NodepoolSize > 0 {
 		nodepool := &egoscale.SKSNodepool{
-			Description:    nonEmptyStringPtr(c.NodepoolDescription),
+			Description:    utils.NonEmptyStringPtr(c.NodepoolDescription),
 			DiskSize:       &c.NodepoolDiskSize,
-			InstancePrefix: nonEmptyStringPtr(c.NodepoolInstancePrefix),
+			InstancePrefix: utils.NonEmptyStringPtr(c.NodepoolInstancePrefix),
 			Labels: func() (v *map[string]string) {
 				if len(c.NodepoolLabels) > 0 {
 					return &c.NodepoolLabels
 				}
 				return
 			}(),
-			Name: nonEmptyStringPtr(func() string {
+			Name: utils.NonEmptyStringPtr(func() string {
 				if c.NodepoolName != "" {
 					return c.NodepoolName
 				}

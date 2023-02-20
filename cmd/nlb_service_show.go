@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -137,7 +138,7 @@ func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	out := nlbServiceShowOutput{
 		ID:             *svc.ID,
 		Name:           *svc.Name,
-		Description:    defaultString(svc.Description, ""),
+		Description:    utils.DefaultString(svc.Description, ""),
 		InstancePoolID: *svc.InstancePoolID,
 		Protocol:       *svc.Protocol,
 		Port:           *svc.Port,
@@ -151,8 +152,8 @@ func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			Interval: *svc.Healthcheck.Interval,
 			Timeout:  *svc.Healthcheck.Timeout,
 			Retries:  *svc.Healthcheck.Retries,
-			URI:      defaultString(svc.Healthcheck.URI, ""),
-			TLSSNI:   defaultString(svc.Healthcheck.TLSSNI, ""),
+			URI:      utils.DefaultString(svc.Healthcheck.URI, ""),
+			TLSSNI:   utils.DefaultString(svc.Healthcheck.TLSSNI, ""),
 		},
 
 		HealthcheckStatus: func() []nlbServerStatusShowOutput {

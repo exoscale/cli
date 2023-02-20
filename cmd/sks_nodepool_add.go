@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -57,9 +58,9 @@ func (c *sksNodepoolAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	nodepool := &egoscale.SKSNodepool{
-		Description:    nonEmptyStringPtr(c.Description),
+		Description:    utils.NonEmptyStringPtr(c.Description),
 		DiskSize:       &c.DiskSize,
-		InstancePrefix: nonEmptyStringPtr(c.InstancePrefix),
+		InstancePrefix: utils.NonEmptyStringPtr(c.InstancePrefix),
 		Name:           &c.Name,
 		Size:           &c.Size,
 	}
@@ -114,7 +115,7 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if len(c.Labels) > 0 {
 		labels := make(map[string]string)
 		if len(c.Labels) > 0 {
-			labels, err = sliceToMap(c.Labels)
+			labels, err = utils.SliceToMap(c.Labels)
 			if err != nil {
 				return fmt.Errorf("label: %w", err)
 			}

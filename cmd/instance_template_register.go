@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -82,16 +83,16 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	sshKeyEnabled := !c.DisableSSHKey
 
 	template = &egoscale.Template{
-		Checksum:        nonEmptyStringPtr(c.Checksum),
-		DefaultUser:     nonEmptyStringPtr(c.Username),
-		Description:     nonEmptyStringPtr(c.Description),
-		Build:           nonEmptyStringPtr(c.Build),
-		Version:         nonEmptyStringPtr(c.Version),
-		Maintainer:      nonEmptyStringPtr(c.Maintainer),
+		Checksum:        utils.NonEmptyStringPtr(c.Checksum),
+		DefaultUser:     utils.NonEmptyStringPtr(c.Username),
+		Description:     utils.NonEmptyStringPtr(c.Description),
+		Build:           utils.NonEmptyStringPtr(c.Build),
+		Version:         utils.NonEmptyStringPtr(c.Version),
+		Maintainer:      utils.NonEmptyStringPtr(c.Maintainer),
 		Name:            &c.Name,
 		PasswordEnabled: &passwordEnabled,
 		SSHKeyEnabled:   &sshKeyEnabled,
-		URL:             nonEmptyStringPtr(c.URL),
+		URL:             utils.NonEmptyStringPtr(c.URL),
 	}
 
 	if c.FromSnapshot != "" {
@@ -136,7 +137,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		}
 
 		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Username)) {
-			template.DefaultUser = nonEmptyStringPtr(c.Username)
+			template.DefaultUser = utils.NonEmptyStringPtr(c.Username)
 		} else {
 			template.DefaultUser = srcTemplate.DefaultUser
 		}
@@ -156,17 +157,17 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	if !gQuiet {
 		return c.outputFunc(&instanceTemplateShowOutput{
 			ID:              *template.ID,
-			Family:          defaultString(template.Family, ""),
+			Family:          utils.DefaultString(template.Family, ""),
 			Name:            *template.Name,
-			Description:     defaultString(template.Description, ""),
+			Description:     utils.DefaultString(template.Description, ""),
 			CreationDate:    template.CreatedAt.String(),
 			Visibility:      *template.Visibility,
 			Size:            *template.Size,
-			Version:         defaultString(template.Version, ""),
-			Build:           defaultString(template.Build, ""),
-			Maintainer:      defaultString(template.Maintainer, ""),
+			Version:         utils.DefaultString(template.Version, ""),
+			Build:           utils.DefaultString(template.Build, ""),
+			Maintainer:      utils.DefaultString(template.Maintainer, ""),
 			Checksum:        *template.Checksum,
-			DefaultUser:     defaultString(template.DefaultUser, ""),
+			DefaultUser:     utils.DefaultString(template.DefaultUser, ""),
 			SSHKeyEnabled:   *template.SSHKeyEnabled,
 			PasswordEnabled: *template.PasswordEnabled,
 			BootMode:        *template.BootMode,

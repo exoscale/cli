@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/mitchellh/go-wordwrap"
@@ -220,7 +221,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 		return nil, nil
 
 	case c.ShowURI:
-		fmt.Println(defaultString(databaseService.Uri, ""))
+		fmt.Println(utils.DefaultString(databaseService.Uri, ""))
 		return nil, nil
 	}
 
@@ -265,8 +266,8 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 
 			AuthenticationMethods: func() (v dbServiceKafkaAuthenticationShowOutput) {
 				if databaseService.AuthenticationMethods != nil {
-					v.Certificate = defaultBool(databaseService.AuthenticationMethods.Certificate, false)
-					v.SASL = defaultBool(databaseService.AuthenticationMethods.Sasl, false)
+					v.Certificate = utils.DefaultBool(databaseService.AuthenticationMethods.Certificate, false)
+					v.SASL = utils.DefaultBool(databaseService.AuthenticationMethods.Sasl, false)
 				}
 				return
 			}(),
@@ -277,7 +278,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 						v = append(v, dbServiceKafkaComponentShowOutput{
 							Component:            c.Component,
 							Host:                 c.Host,
-							AuthenticationMethod: defaultString((*string)(c.KafkaAuthenticationMethod), "-"),
+							AuthenticationMethod: utils.DefaultString((*string)(c.KafkaAuthenticationMethod), "-"),
 							Port:                 c.Port,
 							Route:                string(c.Route),
 							Usage:                string(c.Usage),
@@ -302,9 +303,9 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 				return
 			}(),
 
-			KafkaConnectEnabled:   defaultBool(databaseService.KafkaConnectEnabled, false),
-			KafkaRESTEnabled:      defaultBool(databaseService.KafkaRestEnabled, false),
-			SchemaRegistryEnabled: defaultBool(databaseService.SchemaRegistryEnabled, false),
+			KafkaConnectEnabled:   utils.DefaultBool(databaseService.KafkaConnectEnabled, false),
+			KafkaRESTEnabled:      utils.DefaultBool(databaseService.KafkaRestEnabled, false),
+			SchemaRegistryEnabled: utils.DefaultBool(databaseService.SchemaRegistryEnabled, false),
 
 			URI:       *databaseService.Uri,
 			URIParams: *databaseService.UriParams,
@@ -316,16 +317,16 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 							AccessCert:       u.AccessCert,
 							AccessCertExpiry: u.AccessCertExpiry,
 							AccessKey:        u.AccessKey,
-							Password:         defaultString(u.Password, ""),
-							Type:             defaultString(u.Type, ""),
-							Username:         defaultString(u.Username, ""),
+							Password:         utils.DefaultString(u.Password, ""),
+							Type:             utils.DefaultString(u.Type, ""),
+							Username:         utils.DefaultString(u.Username, ""),
 						})
 					}
 				}
 				return
 			}(),
 
-			Version: defaultString(databaseService.Version, ""),
+			Version: utils.DefaultString(databaseService.Version, ""),
 		},
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	v2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -45,7 +46,7 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if versionIsNewer(c.Version, *cluster.Version) {
+		if utils.VersionIsNewer(c.Version, *cluster.Version) {
 			deprecatedResources, err := cs.ListSKSClusterDeprecatedResources(
 				ctx,
 				c.Zone,
@@ -57,7 +58,7 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 			removedDeprecatedResources := []*v2.SKSClusterDeprecatedResource{}
 			for _, resource := range deprecatedResources {
-				if versionsAreEquivalent(*resource.RemovedRelease, *cluster.Version) {
+				if utils.VersionsAreEquivalent(*resource.RemovedRelease, *cluster.Version) {
 					removedDeprecatedResources = append(removedDeprecatedResources, resource)
 				}
 			}
@@ -102,21 +103,21 @@ func formatDeprecatedResource(deprecatedResource *v2.SKSClusterDeprecatedResourc
 	var version string
 	var resource string
 
-	if !isEmptyStringPtr(deprecatedResource.Group) && !isEmptyStringPtr(deprecatedResource.Version) {
+	if !utils.IsEmptyStringPtr(deprecatedResource.Group) && !utils.IsEmptyStringPtr(deprecatedResource.Version) {
 		version = *deprecatedResource.Group + "/" + *deprecatedResource.Version
 	}
 
-	if !isEmptyStringPtr(deprecatedResource.Resource) {
+	if !utils.IsEmptyStringPtr(deprecatedResource.Resource) {
 		resource = *deprecatedResource.Resource
 
-		if !isEmptyStringPtr(deprecatedResource.SubResource) {
+		if !utils.IsEmptyStringPtr(deprecatedResource.SubResource) {
 			resource += " (" + *deprecatedResource.SubResource + " subresource)"
 		}
 	}
 
 	deprecationNotice := strings.Join([]string{version, resource}, " ")
 
-	if !isEmptyStringPtr(deprecatedResource.RemovedRelease) {
+	if !utils.IsEmptyStringPtr(deprecatedResource.RemovedRelease) {
 		return "Removed in Kubernetes v" + *deprecatedResource.RemovedRelease + ": " + deprecationNotice
 	}
 

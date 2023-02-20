@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -57,7 +58,7 @@ func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	return c.outputFunc(&deployTargetShowOutput{
 		ID:          *dt.ID,
 		Name:        *dt.Name,
-		Description: defaultString(dt.Description, ""),
+		Description: utils.DefaultString(dt.Description, ""),
 		Type:        *dt.Type,
 		Zone:        c.Zone,
 	}, nil)

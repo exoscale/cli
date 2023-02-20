@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -18,7 +19,7 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 	databaseService := oapi.CreateDbaasServiceMysqlJSONRequestBody{
 		Plan:                  c.Plan,
 		TerminationProtection: &c.TerminationProtection,
-		Version:               nonEmptyStringPtr(c.MysqlVersion),
+		Version:               utils.NonEmptyStringPtr(c.MysqlVersion),
 	}
 
 	settingsSchema, err := cs.GetDbaasSettingsMysqlWithResponse(ctx)
@@ -94,9 +95,9 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 		}{
 			Host:     c.MysqlMigrationHost,
 			Port:     c.MysqlMigrationPort,
-			Password: nonEmptyStringPtr(c.MysqlMigrationPassword),
-			Username: nonEmptyStringPtr(c.MysqlMigrationUsername),
-			Dbname:   nonEmptyStringPtr(c.MysqlMigrationDbName),
+			Password: utils.NonEmptyStringPtr(c.MysqlMigrationPassword),
+			Username: utils.NonEmptyStringPtr(c.MysqlMigrationUsername),
+			Dbname:   utils.NonEmptyStringPtr(c.MysqlMigrationDbName),
 		}
 		if c.MysqlMigrationSSL {
 			databaseService.Migration.Ssl = &c.MysqlMigrationSSL

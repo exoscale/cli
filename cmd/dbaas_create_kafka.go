@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -20,7 +21,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		Plan:                  c.Plan,
 		SchemaRegistryEnabled: &c.KafkaEnableSchemaRegistry,
 		TerminationProtection: &c.TerminationProtection,
-		Version:               nonEmptyStringPtr(c.KafkaVersion),
+		Version:               utils.NonEmptyStringPtr(c.KafkaVersion),
 	}
 
 	settingsSchema, err := cs.GetDbaasSettingsKafkaWithResponse(ctx)

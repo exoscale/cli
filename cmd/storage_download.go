@@ -13,6 +13,7 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -208,7 +209,7 @@ func (c *storageClient) downloadFile(bucket string, object *s3types.Object, dst 
 	bar := pb.AddBar(
 		object.Size,
 		mpb.PrependDecorators(
-			decor.Name(ellipString(aws.ToString(object.Key), maxFilenameLen),
+			decor.Name(utils.EllipString(aws.ToString(object.Key), maxFilenameLen),
 				decor.WC{W: maxFilenameLen, C: decor.DidentRight}),
 		),
 		mpb.AppendDecorators(

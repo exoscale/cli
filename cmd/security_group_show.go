@@ -171,7 +171,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	out := securityGroupShowOutput{
 		ID:              *securityGroup.ID,
 		Name:            *securityGroup.Name,
-		Description:     defaultString(securityGroup.Description, ""),
+		Description:     utils.DefaultString(securityGroup.Description, ""),
 		ExternalSources: externalSources,
 		IngressRules:    make([]securityGroupRuleOutput, 0),
 		EgressRules:     make([]securityGroupRuleOutput, 0),
@@ -180,7 +180,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	for _, rule := range securityGroup.Rules {
 		or := securityGroupRuleOutput{
 			ID:          *rule.ID,
-			Description: defaultString(rule.Description, ""),
+			Description: utils.DefaultString(rule.Description, ""),
 			ICMPCode:    rule.ICMPCode,
 			ICMPType:    rule.ICMPType,
 			Network: func() *string {

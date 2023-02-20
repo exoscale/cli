@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/mitchellh/go-wordwrap"
@@ -177,7 +178,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		return nil, nil
 
 	case c.ShowURI:
-		fmt.Println(defaultString(databaseService.Uri, ""))
+		fmt.Println(utils.DefaultString(databaseService.Uri, ""))
 		return nil, nil
 	}
 
@@ -262,8 +263,8 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 				if databaseService.Users != nil {
 					for _, u := range *databaseService.Users {
 						v = append(v, dbServicePGUserShowOutput{
-							AllowReplication: defaultBool(u.AllowReplication, false),
-							Password:         defaultString(u.Password, ""),
+							AllowReplication: utils.DefaultBool(u.AllowReplication, false),
+							Password:         utils.DefaultString(u.Password, ""),
 							Type:             u.Type,
 							Username:         u.Username,
 						})
@@ -272,7 +273,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 				return
 			}(),
 
-			Version: defaultString(databaseService.Version, ""),
+			Version: utils.DefaultString(databaseService.Version, ""),
 		},
 	}
 

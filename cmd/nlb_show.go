@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -123,10 +124,10 @@ func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	out := nlbShowOutput{
 		ID:           *nlb.ID,
 		Name:         *nlb.Name,
-		Description:  defaultString(nlb.Description, ""),
+		Description:  utils.DefaultString(nlb.Description, ""),
 		CreationDate: nlb.CreatedAt.String(),
 		Zone:         c.Zone,
-		IPAddress:    defaultIP(nlb.IPAddress, ""),
+		IPAddress:    utils.DefaultIP(nlb.IPAddress, ""),
 		State:        *nlb.State,
 		Services:     svcOut,
 		Labels: func() (v map[string]string) {

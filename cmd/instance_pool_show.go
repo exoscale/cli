@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -90,12 +91,12 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	out := instancePoolShowOutput{
 		AntiAffinityGroups: make([]string, 0),
-		Description:        defaultString(instancePool.Description, ""),
+		Description:        utils.DefaultString(instancePool.Description, ""),
 		DiskSize:           humanize.IBytes(uint64(*instancePool.DiskSize << 30)),
 		ElasticIPs:         make([]string, 0),
 		ID:                 *instancePool.ID,
-		IPv6:               defaultBool(instancePool.IPv6Enabled, false),
-		InstancePrefix:     defaultString(instancePool.InstancePrefix, ""),
+		IPv6:               utils.DefaultBool(instancePool.IPv6Enabled, false),
+		InstancePrefix:     utils.DefaultString(instancePool.InstancePrefix, ""),
 		Instances:          make([]string, 0),
 		Labels: func() (v map[string]string) {
 			if instancePool.Labels != nil {
@@ -105,7 +106,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}(),
 		Name:            *instancePool.Name,
 		PrivateNetworks: make([]string, 0),
-		SSHKey:          defaultString(instancePool.SSHKey, "-"),
+		SSHKey:          utils.DefaultString(instancePool.SSHKey, "-"),
 		SecurityGroups:  make([]string, 0),
 		Size:            *instancePool.Size,
 		State:           *instancePool.State,

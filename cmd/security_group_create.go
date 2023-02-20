@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -42,7 +43,7 @@ func (c *securityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
 	securityGroup := &egoscale.SecurityGroup{
-		Description: nonEmptyStringPtr(c.Description),
+		Description: utils.NonEmptyStringPtr(c.Description),
 		Name:        &c.Name,
 	}
 

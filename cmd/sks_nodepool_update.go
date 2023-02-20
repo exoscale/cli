@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -124,7 +125,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
 		labels := make(map[string]string)
 		if len(c.Labels) > 0 {
-			labels, err = sliceToMap(c.Labels)
+			labels, err = utils.SliceToMap(c.Labels)
 			if err != nil {
 				return fmt.Errorf("label: %w", err)
 			}
