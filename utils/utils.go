@@ -41,14 +41,6 @@ func GetInstancesInSecurityGroup(ctx context.Context, client *egoscale.Client, s
 	return instancesInSG, nil
 }
 
-func GetDefaultStringOrZero(v *string, defaultStr string) string {
-	if v == nil {
-		return defaultStr
-	}
-
-	return *v
-}
-
 // IsInList returns true if v exists in the specified list, false otherwise.
 func IsInList(list []string, v string) bool {
 	for _, lv := range list {

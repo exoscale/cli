@@ -222,10 +222,10 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		out.Instances = append(out.Instances, securityGroupInstanceOutput{
-			Name:     utils.GetDefaultStringOrZero(instance.Name, "-"),
+			Name:     utils.DefaultString(instance.Name, "-"),
 			PublicIP: publicIP,
-			ID:       utils.GetDefaultStringOrZero(instance.ID, "-"),
-			Zone:     utils.GetDefaultStringOrZero(instance.Zone, "-"),
+			ID:       utils.DefaultString(instance.ID, "-"),
+			Zone:     utils.DefaultString(instance.Zone, "-"),
 		})
 	}
 
