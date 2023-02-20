@@ -90,27 +90,27 @@ func (o *securityGroupShowOutput) toTable() {
 	}
 
 	formatInstances := func(instances []securityGroupInstanceOutput) string {
-		if len(instances) > 0 {
-			buf := bytes.NewBuffer(nil)
-			at := table.NewEmbeddedTable(buf)
-			at.SetHeader([]string{" "})
-			at.SetAlignment(tablewriter.ALIGN_LEFT)
-
-			for _, instance := range instances {
-				r := []string{instance.Name, instance.ID}
-
-				r = append(r, instance.PublicIP)
-				r = append(r, instance.Zone)
-
-				at.Append(r)
-			}
-
-			at.Render()
-
-			return buf.String()
+		if len(instances) < 1 {
+			return "-"
 		}
 
-		return "-"
+		buf := bytes.NewBuffer(nil)
+		at := table.NewEmbeddedTable(buf)
+		at.SetHeader([]string{" "})
+		at.SetAlignment(tablewriter.ALIGN_LEFT)
+
+		for _, instance := range instances {
+			r := []string{instance.Name, instance.ID}
+
+			r = append(r, instance.PublicIP)
+			r = append(r, instance.Zone)
+
+			at.Append(r)
+		}
+
+		at.Render()
+
+		return buf.String()
 	}
 
 	t := table.NewTable(os.Stdout)
