@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/mitchellh/go-wordwrap"
@@ -145,7 +146,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context)
 	case c.ShowSettings != "":
 		return nil, opensearchShowSettings(c.ShowSettings, res.JSON200)
 	case c.ShowURI:
-		fmt.Println(defaultString(res.JSON200.Uri, ""))
+		fmt.Println(utils.DefaultString(res.JSON200.Uri, ""))
 		return nil, nil
 	default:
 		return opensearchShowDatabase(res.JSON200, c.Zone)
@@ -222,8 +223,8 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 	if db.IndexPatterns != nil {
 		for _, i := range *db.IndexPatterns {
 			indexPatterns = append(indexPatterns, dbServiceOpensearchIndexPatternShowOutput{
-				MaxIndexCount: defaultInt64(i.MaxIndexCount, 0),
-				Pattern:       defaultString(i.Pattern, ""),
+				MaxIndexCount: utils.DefaultInt64(i.MaxIndexCount, 0),
+				Pattern:       utils.DefaultString(i.Pattern, ""),
 				SortingAlgorithm: func() string {
 					if i.SortingAlgorithm != nil {
 						return string(*i.SortingAlgorithm)
@@ -237,18 +238,18 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 	var indexTemplate *dbServiceOpensearchIndexTemplateShowOutput
 	if db.IndexTemplate != nil {
 		indexTemplate = &dbServiceOpensearchIndexTemplateShowOutput{
-			MappingNestedObjectsLimit: defaultInt64(db.IndexTemplate.MappingNestedObjectsLimit, 0),
-			NumberOfReplicas:          defaultInt64(db.IndexTemplate.NumberOfReplicas, 0),
-			NumberOfShards:            defaultInt64(db.IndexTemplate.NumberOfShards, 0),
+			MappingNestedObjectsLimit: utils.DefaultInt64(db.IndexTemplate.MappingNestedObjectsLimit, 0),
+			NumberOfReplicas:          utils.DefaultInt64(db.IndexTemplate.NumberOfReplicas, 0),
+			NumberOfShards:            utils.DefaultInt64(db.IndexTemplate.NumberOfShards, 0),
 		}
 	}
 
 	var dashboard *dbServiceOpensearchDashboardShowOutput
 	if db.OpensearchDashboards != nil {
 		dashboard = &dbServiceOpensearchDashboardShowOutput{
-			Enabled:                  defaultBool(db.OpensearchDashboards.Enabled, false),
-			MaxOldSpaceSize:          defaultInt64(db.OpensearchDashboards.MaxOldSpaceSize, 0),
-			OpensearchRequestTimeout: defaultInt64(db.OpensearchDashboards.OpensearchRequestTimeout, 0),
+			Enabled:                  utils.DefaultBool(db.OpensearchDashboards.Enabled, false),
+			MaxOldSpaceSize:          utils.DefaultInt64(db.OpensearchDashboards.MaxOldSpaceSize, 0),
+			OpensearchRequestTimeout: utils.DefaultInt64(db.OpensearchDashboards.OpensearchRequestTimeout, 0),
 		}
 	}
 
@@ -256,9 +257,9 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 	if db.Users != nil {
 		for _, u := range *db.Users {
 			users = append(users, dbServiceOpensearchUserShowOutput{
-				Password: defaultString(u.Password, ""),
-				Type:     defaultString(u.Type, ""),
-				Username: defaultString(u.Username, ""),
+				Password: utils.DefaultString(u.Password, ""),
+				Type:     utils.DefaultString(u.Type, ""),
+				Username: utils.DefaultString(u.Username, ""),
 			})
 		}
 	}
@@ -274,23 +275,23 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 			}
 			return time.Time{}
 		}(),
-		Nodes:      defaultInt64(db.NodeCount, 0),
-		NodeCPUs:   defaultInt64(db.NodeCpuCount, 0),
-		NodeMemory: defaultInt64(db.NodeMemory, 0),
+		Nodes:      utils.DefaultInt64(db.NodeCount, 0),
+		NodeCPUs:   utils.DefaultInt64(db.NodeCpuCount, 0),
+		NodeMemory: utils.DefaultInt64(db.NodeMemory, 0),
 		UpdateDate: func() time.Time {
 			if db.UpdatedAt != nil {
 				return *db.UpdatedAt
 			}
 			return time.Time{}
 		}(),
-		DiskSize: defaultInt64(db.DiskSize, 0),
+		DiskSize: utils.DefaultInt64(db.DiskSize, 0),
 		State: func() string {
 			if db.State != nil {
 				return string(*db.State)
 			}
 			return ""
 		}(),
-		TerminationProtection: defaultBool(db.TerminationProtection, false),
+		TerminationProtection: utils.DefaultBool(db.TerminationProtection, false),
 
 		Maintenance: func() (v *dbServiceMaintenanceShowOutput) {
 			if db.Maintenance != nil {
@@ -309,31 +310,31 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 				}
 				return
 			}(),
-			URI: defaultString(db.Uri, ""),
+			URI: utils.DefaultString(db.Uri, ""),
 			URIParams: func() map[string]interface{} {
 				if db.UriParams != nil {
 					return *db.UriParams
 				}
 				return map[string]interface{}{}
 			}(),
-			Version:    defaultString(db.Version, ""),
+			Version:    utils.DefaultString(db.Version, ""),
 			Components: components,
 			ConnectionInfo: dbServiceOpensearchConnectionInfoShowOutput{
-				DashboardURI: defaultString(db.ConnectionInfo.DashboardUri, ""),
-				Password:     defaultString(db.ConnectionInfo.Password, ""),
+				DashboardURI: utils.DefaultString(db.ConnectionInfo.DashboardUri, ""),
+				Password:     utils.DefaultString(db.ConnectionInfo.Password, ""),
 				URI: func() []string {
 					if db.ConnectionInfo.Uri != nil {
 						return *db.ConnectionInfo.Uri
 					}
 					return []string{}
 				}(),
-				Username: defaultString(db.ConnectionInfo.Username, ""),
+				Username: utils.DefaultString(db.ConnectionInfo.Username, ""),
 			},
-			Description:              defaultString(db.Description, ""),
+			Description:              utils.DefaultString(db.Description, ""),
 			IndexPatterns:            indexPatterns,
 			IndexTemplate:            indexTemplate,
-			KeepIndexRefreshInterval: defaultBool(db.KeepIndexRefreshInterval, false),
-			MaxIndexCount:            defaultInt64(db.MaxIndexCount, 0),
+			KeepIndexRefreshInterval: utils.DefaultBool(db.KeepIndexRefreshInterval, false),
+			MaxIndexCount:            utils.DefaultInt64(db.MaxIndexCount, 0),
 			Dashboard:                dashboard,
 			Users:                    users,
 		},

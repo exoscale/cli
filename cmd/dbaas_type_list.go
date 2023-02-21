@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -71,7 +72,7 @@ func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	for _, t := range dbTypes {
 		out = append(out, dbaasTypeListItemOutput{
 			Name:           *t.Name,
-			DefaultVersion: defaultString(t.DefaultVersion, "-"),
+			DefaultVersion: utils.DefaultString(t.DefaultVersion, "-"),
 			AvailableVersions: func() (v []string) {
 				if t.AvailableVersions != nil {
 					v = *t.AvailableVersions

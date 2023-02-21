@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -119,9 +120,9 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		}{
 			Host:     c.PGMigrationHost,
 			Port:     c.PGMigrationPort,
-			Password: nonEmptyStringPtr(c.PGMigrationPassword),
-			Username: nonEmptyStringPtr(c.PGMigrationUsername),
-			Dbname:   nonEmptyStringPtr(c.PGMigrationDbName),
+			Password: utils.NonEmptyStringPtr(c.PGMigrationPassword),
+			Username: utils.NonEmptyStringPtr(c.PGMigrationUsername),
+			Dbname:   utils.NonEmptyStringPtr(c.PGMigrationDbName),
 		}
 		if c.PGMigrationSSL {
 			databaseService.Migration.Ssl = &c.PGMigrationSSL

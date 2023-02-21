@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -77,7 +78,7 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				ID:        *nlb.ID,
 				Name:      *nlb.Name,
 				Zone:      zone,
-				IPAddress: defaultIP(nlb.IPAddress, ""),
+				IPAddress: utils.DefaultIP(nlb.IPAddress, ""),
 			}
 		}
 

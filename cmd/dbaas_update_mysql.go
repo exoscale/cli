@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -95,9 +96,9 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 		}{
 			Host:     c.MysqlMigrationHost,
 			Port:     c.MysqlMigrationPort,
-			Password: nonEmptyStringPtr(c.MysqlMigrationPassword),
-			Username: nonEmptyStringPtr(c.MysqlMigrationUsername),
-			Dbname:   nonEmptyStringPtr(c.MysqlMigrationDbName),
+			Password: utils.NonEmptyStringPtr(c.MysqlMigrationPassword),
+			Username: utils.NonEmptyStringPtr(c.MysqlMigrationUsername),
+			Dbname:   utils.NonEmptyStringPtr(c.MysqlMigrationDbName),
 		}
 		if c.MysqlMigrationSSL {
 			databaseService.Migration.Ssl = &c.MysqlMigrationSSL

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -91,8 +92,8 @@ func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		c.Name,
 		oapi.GetDbaasServiceLogsJSONRequestBody{
 			Limit:     &c.Limit,
-			Offset:    nonEmptyStringPtr(c.Offset),
-			SortOrder: (*oapi.EnumSortOrder)(nonEmptyStringPtr(c.Sort)),
+			Offset:    utils.NonEmptyStringPtr(c.Offset),
+			SortOrder: (*oapi.EnumSortOrder)(utils.NonEmptyStringPtr(c.Sort)),
 		},
 	)
 	if err != nil {
@@ -106,8 +107,8 @@ func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := dbServiceLogsOutput{
-		FirstLogOffset: defaultString(res.JSON200.FirstLogOffset, "-"),
-		Offset:         defaultString(res.JSON200.Offset, "-"),
+		FirstLogOffset: utils.DefaultString(res.JSON200.FirstLogOffset, "-"),
+		Offset:         utils.DefaultString(res.JSON200.Offset, "-"),
 		Logs:           make([]dbServiceLogsItemOutput, len(*res.JSON200.Logs)),
 	}
 
@@ -118,9 +119,9 @@ func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 		out.Logs[i].Time = ts
 
-		out.Logs[i].Node = defaultString(log.Node, "-")
-		out.Logs[i].Unit = defaultString(log.Unit, "-")
-		out.Logs[i].Message = defaultString(log.Message, "-")
+		out.Logs[i].Node = utils.DefaultString(log.Node, "-")
+		out.Logs[i].Unit = utils.DefaultString(log.Unit, "-")
+		out.Logs[i].Message = utils.DefaultString(log.Message, "-")
 	}
 
 	return c.outputFunc(&out, nil)

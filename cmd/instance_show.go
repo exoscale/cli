@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -93,8 +94,8 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		DiskSize:           humanize.IBytes(uint64(*instance.DiskSize << 30)),
 		ElasticIPs:         make([]string, 0),
 		ID:                 *instance.ID,
-		IPAddress:          defaultIP(instance.PublicIPAddress, "-"),
-		IPv6Address:        defaultIP(instance.IPv6Address, "-"),
+		IPAddress:          utils.DefaultIP(instance.PublicIPAddress, "-"),
+		IPv6Address:        utils.DefaultIP(instance.IPv6Address, "-"),
 		Labels: func() (v map[string]string) {
 			if instance.Labels != nil {
 				v = *instance.Labels
@@ -103,7 +104,7 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}(),
 		Name:            *instance.Name,
 		PrivateNetworks: make([]string, 0),
-		SSHKey:          defaultString(instance.SSHKey, "-"),
+		SSHKey:          utils.DefaultString(instance.SSHKey, "-"),
 		SecurityGroups:  make([]string, 0),
 		State:           *instance.State,
 		Zone:            c.Zone,

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/mitchellh/go-wordwrap"
@@ -139,7 +140,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 		return nil, nil
 
 	case c.ShowURI:
-		fmt.Println(defaultString(databaseService.Uri, ""))
+		fmt.Println(utils.DefaultString(databaseService.Uri, ""))
 		return nil, nil
 	}
 
@@ -197,9 +198,9 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 				if databaseService.Users != nil {
 					for _, u := range *databaseService.Users {
 						v = append(v, dbServiceRedisUserShowOutput{
-							Password: defaultString(u.Password, ""),
-							Type:     defaultString(u.Type, ""),
-							Username: defaultString(u.Username, ""),
+							Password: utils.DefaultString(u.Password, ""),
+							Type:     utils.DefaultString(u.Type, ""),
+							Username: utils.DefaultString(u.Username, ""),
 						})
 					}
 				}

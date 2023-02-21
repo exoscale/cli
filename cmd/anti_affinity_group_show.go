@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -57,7 +58,7 @@ func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	out := antiAffinityGroupShowOutput{
 		ID:          *antiAffinityGroup.ID,
 		Name:        *antiAffinityGroup.Name,
-		Description: defaultString(antiAffinityGroup.Description, ""),
+		Description: utils.DefaultString(antiAffinityGroup.Description, ""),
 	}
 
 	if antiAffinityGroup.InstanceIDs != nil {

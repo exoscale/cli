@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -78,9 +79,9 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 		}{
 			Host:     c.RedisMigrationHost,
 			Port:     c.RedisMigrationPort,
-			Password: nonEmptyStringPtr(c.RedisMigrationPassword),
-			Username: nonEmptyStringPtr(c.RedisMigrationUsername),
-			Dbname:   nonEmptyStringPtr(c.RedisMigrationDbName),
+			Password: utils.NonEmptyStringPtr(c.RedisMigrationPassword),
+			Username: utils.NonEmptyStringPtr(c.RedisMigrationUsername),
+			Dbname:   utils.NonEmptyStringPtr(c.RedisMigrationDbName),
 		}
 		if c.RedisMigrationSSL {
 			databaseService.Migration.Ssl = &c.RedisMigrationSSL

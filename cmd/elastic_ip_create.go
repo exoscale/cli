@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -73,17 +74,17 @@ func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		if c.HealthcheckMode == "https" {
 			healthcheck.TLSSkipVerify = &c.HealthcheckTLSSSkipVerify
-			healthcheck.TLSSNI = nonEmptyStringPtr(c.HealthcheckTLSSNI)
+			healthcheck.TLSSNI = utils.NonEmptyStringPtr(c.HealthcheckTLSSNI)
 		}
 	}
 
 	elasticIP := &egoscale.ElasticIP{
-		Description: nonEmptyStringPtr(c.Description),
+		Description: utils.NonEmptyStringPtr(c.Description),
 		Healthcheck: healthcheck,
 	}
 
 	if c.IPv6 {
-		elasticIP.AddressFamily = nonEmptyStringPtr("inet6")
+		elasticIP.AddressFamily = utils.NonEmptyStringPtr("inet6")
 	}
 
 	var err error

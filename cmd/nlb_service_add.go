@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -61,15 +62,15 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	)
 
 	service := &egoscale.NetworkLoadBalancerService{
-		Description: nonEmptyStringPtr(c.Description),
+		Description: utils.NonEmptyStringPtr(c.Description),
 		Healthcheck: &egoscale.NetworkLoadBalancerServiceHealthcheck{
 			Interval: &hcInterval,
 			Mode:     &c.HealthcheckMode,
 			Port:     &hcPort,
 			Retries:  &c.HealthcheckRetries,
-			TLSSNI:   nonEmptyStringPtr(c.HealthcheckTLSSNI),
+			TLSSNI:   utils.NonEmptyStringPtr(c.HealthcheckTLSSNI),
 			Timeout:  &hcTimeout,
-			URI:      nonEmptyStringPtr(c.HealthcheckURI),
+			URI:      utils.NonEmptyStringPtr(c.HealthcheckURI),
 		},
 		Name:       &c.Name,
 		Port:       &port,

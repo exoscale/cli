@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -39,7 +40,7 @@ func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	nlb := &egoscale.NetworkLoadBalancer{
-		Description: nonEmptyStringPtr(c.Description),
+		Description: utils.NonEmptyStringPtr(c.Description),
 		Labels: func() (v *map[string]string) {
 			if len(c.Labels) > 0 {
 				return &c.Labels

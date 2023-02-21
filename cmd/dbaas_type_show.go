@@ -7,6 +7,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exo "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -60,7 +61,7 @@ func (o *dbaasTypePlanBackupOutput) toTable() {
 
 	t.Append([]string{"Backup interval (hours)", Int64PtrFormatOutput(o.Interval)})
 	t.Append([]string{"Max backups", Int64PtrFormatOutput(o.MaxCount)})
-	t.Append([]string{"Recovery mode", defaultString(o.RecoveryMode, "")})
+	t.Append([]string{"Recovery mode", utils.DefaultString(o.RecoveryMode, "")})
 	t.Append([]string{"Frequent backup interval", Int64PtrFormatOutput(o.FrequentIntervalMinutes)})
 	t.Append([]string{"Frequent backup max age", Int64PtrFormatOutput(o.FrequentOldestAgeMinutes)})
 	t.Append([]string{"Infrequent backup interval", Int64PtrFormatOutput(o.InfrequentIntervalMinutes)})
@@ -179,7 +180,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		switch c.Name {
 		case "kafka":
-			if !isInList(kafkaSettings, c.ShowSettings) {
+			if !utils.IsInList(kafkaSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
@@ -206,7 +207,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			dbaasShowSettings(settings)
 
 		case "opensearch":
-			if !isInList(opensearchSettings, c.ShowSettings) {
+			if !utils.IsInList(opensearchSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
@@ -227,7 +228,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			dbaasShowSettings(settings)
 
 		case "mysql":
-			if !isInList(mysqlSettings, c.ShowSettings) {
+			if !utils.IsInList(mysqlSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
@@ -248,7 +249,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			dbaasShowSettings(settings)
 
 		case "pg":
-			if !isInList(pgSettings, c.ShowSettings) {
+			if !utils.IsInList(pgSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
@@ -273,7 +274,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			dbaasShowSettings(settings)
 
 		case "redis":
-			if !isInList(redisSettings, c.ShowSettings) {
+			if !utils.IsInList(redisSettings, c.ShowSettings) {
 				return fmt.Errorf(
 					"invalid settings value %q, expected one of: %s",
 					c.ShowSettings,
@@ -321,14 +322,14 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	return c.outputFunc(&dbaasTypeShowOutput{
 		Name:        *dt.Name,
-		Description: defaultString(dt.Description, ""),
+		Description: utils.DefaultString(dt.Description, ""),
 		AvailableVersions: func() (v []string) {
 			if dt.AvailableVersions != nil {
 				v = *dt.AvailableVersions
 			}
 			return
 		}(),
-		DefaultVersion: defaultString(dt.DefaultVersion, "-"),
+		DefaultVersion: utils.DefaultString(dt.DefaultVersion, "-"),
 	}, nil)
 }
 

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -114,7 +115,7 @@ func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		ID:          *privateNetwork.ID,
 		Zone:        c.Zone,
 		Name:        *privateNetwork.Name,
-		Description: defaultString(privateNetwork.Description, ""),
+		Description: utils.DefaultString(privateNetwork.Description, ""),
 		Type:        "manual",
 	}
 

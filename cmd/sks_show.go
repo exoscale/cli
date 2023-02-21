@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -130,9 +131,9 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				}
 				return
 			}(),
-			CNI:          defaultString(cluster.CNI, "-"),
+			CNI:          utils.DefaultString(cluster.CNI, "-"),
 			CreationDate: cluster.CreatedAt.String(),
-			Description:  defaultString(cluster.Description, ""),
+			Description:  utils.DefaultString(cluster.Description, ""),
 			Endpoint:     *cluster.Endpoint,
 			ID:           *cluster.ID,
 			Labels: func() (v map[string]string) {

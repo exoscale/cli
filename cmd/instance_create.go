@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -81,7 +82,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			return
 		}(),
 		Name:   &c.Name,
-		SSHKey: nonEmptyStringPtr(c.SSHKey),
+		SSHKey: utils.NonEmptyStringPtr(c.SSHKey),
 	}
 
 	if c.PrivateInstance {

@@ -15,6 +15,7 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -72,7 +73,7 @@ Examples:
 		if err != nil {
 			return err
 		}
-		if acl != "" && !isInList(s3ObjectCannedACLToStrings(), acl) {
+		if acl != "" && !utils.IsInList(s3ObjectCannedACLToStrings(), acl) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
 				acl, strings.Join(s3ObjectCannedACLToStrings(), ", "))
 		}
@@ -269,7 +270,7 @@ func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
 
 	bar := pb.AddBar(fileInfo.Size(),
 		mpb.PrependDecorators(
-			decor.Name(ellipString(file, maxFilenameLen), decor.WC{W: maxFilenameLen, C: decor.DidentRight}),
+			decor.Name(utils.EllipString(file, maxFilenameLen), decor.WC{W: maxFilenameLen, C: decor.DidentRight}),
 		),
 		mpb.AppendDecorators(
 			decor.CountersKibiByte("% .2f / % .2f", decor.WCSyncWidthR),

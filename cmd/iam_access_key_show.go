@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -39,7 +40,7 @@ func (o *iamAccessKeyShowOutput) toTable() {
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Type", o.Type})
 	t.Append([]string{"API Key", o.APIKey})
-	t.Append([]string{"API Secret", defaultString(o.APISecret, strings.Repeat("*", 43))})
+	t.Append([]string{"API Secret", utils.DefaultString(o.APISecret, strings.Repeat("*", 43))})
 
 	if o.Operations != nil {
 		t.Append([]string{"Operations", strings.Join(*o.Operations, "\n")})

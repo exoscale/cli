@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -95,11 +96,11 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}(),
 		AntiAffinityGroups: make([]string, 0),
 		CreationDate:       nodepool.CreatedAt.String(),
-		Description:        defaultString(nodepool.Description, ""),
+		Description:        utils.DefaultString(nodepool.Description, ""),
 		DiskSize:           *nodepool.DiskSize,
 		ID:                 *nodepool.ID,
 		InstancePoolID:     *nodepool.InstancePoolID,
-		InstancePrefix:     defaultString(nodepool.InstancePrefix, ""),
+		InstancePrefix:     utils.DefaultString(nodepool.InstancePrefix, ""),
 		Labels: func() (v map[string]string) {
 			if nodepool.Labels != nil {
 				v = *nodepool.Labels

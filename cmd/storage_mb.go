@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -74,7 +75,7 @@ func (c *storageClient) createBucket(name, acl string) error {
 	s3Bucket := s3.CreateBucketInput{Bucket: aws.String(name)}
 
 	if acl != "" {
-		if !isInList(s3BucketCannedACLToStrings(), acl) {
+		if !utils.IsInList(s3BucketCannedACLToStrings(), acl) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
 				acl,
 				strings.Join(s3BucketCannedACLToStrings(), ", "))

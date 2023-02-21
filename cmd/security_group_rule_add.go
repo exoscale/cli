@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -71,12 +72,12 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	c.Protocol = strings.ToLower(c.Protocol)
-	if !isInList(securityGroupRuleProtocols, c.Protocol) {
+	if !utils.IsInList(securityGroupRuleProtocols, c.Protocol) {
 		return fmt.Errorf("unsupported network protocol %q", c.Protocol)
 	}
 
 	securityGroupRule := &egoscale.SecurityGroupRule{
-		Description:   nonEmptyStringPtr(c.Description),
+		Description:   utils.NonEmptyStringPtr(c.Description),
 		FlowDirection: &c.FlowDirection,
 		Protocol:      &c.Protocol,
 	}

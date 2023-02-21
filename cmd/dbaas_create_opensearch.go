@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -16,12 +17,12 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	db := oapi.CreateDbaasServiceOpensearchJSONRequestBody{
-		ForkFromService:          (*oapi.DbaasServiceName)(nonEmptyStringPtr(c.OpensearchForkFromService)),
+		ForkFromService:          (*oapi.DbaasServiceName)(utils.NonEmptyStringPtr(c.OpensearchForkFromService)),
 		KeepIndexRefreshInterval: &c.OpensearchKeepIndexRefreshInterval,
 		Plan:                     c.Plan,
-		RecoveryBackupName:       nonEmptyStringPtr(c.OpensearchRecoveryBackupName),
+		RecoveryBackupName:       utils.NonEmptyStringPtr(c.OpensearchRecoveryBackupName),
 		TerminationProtection:    &c.TerminationProtection,
-		Version:                  nonEmptyStringPtr(c.OpensearchVersion),
+		Version:                  utils.NonEmptyStringPtr(c.OpensearchVersion),
 		OpensearchDashboards: &struct {
 			Enabled                  *bool  "json:\"enabled,omitempty\""
 			MaxOldSpaceSize          *int64 "json:\"max-old-space-size,omitempty\""

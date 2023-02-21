@@ -5,9 +5,14 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
+)
+
+const (
+	emptyIPAddressVisualization = "-"
 )
 
 type instanceListItemOutput struct {
@@ -95,7 +100,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				Name:      *i.Name,
 				Zone:      zone,
 				Type:      fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size),
-				IPAddress: defaultIP(i.PublicIPAddress, "-"),
+				IPAddress: utils.DefaultIP(i.PublicIPAddress, emptyIPAddressVisualization),
 				State:     *i.State,
 			}
 		}

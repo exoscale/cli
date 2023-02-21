@@ -7,6 +7,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -103,17 +104,17 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	return c.outputFunc(&instanceTemplateShowOutput{
 		ID:              *template.ID,
 		Zone:            c.Zone,
-		Family:          defaultString(template.Family, ""),
+		Family:          utils.DefaultString(template.Family, ""),
 		Name:            *template.Name,
-		Description:     defaultString(template.Description, ""),
+		Description:     utils.DefaultString(template.Description, ""),
 		CreationDate:    template.CreatedAt.String(),
 		Visibility:      *template.Visibility,
 		Size:            *template.Size,
-		Version:         defaultString(template.Version, ""),
-		Build:           defaultString(template.Build, ""),
-		Maintainer:      defaultString(template.Maintainer, ""),
+		Version:         utils.DefaultString(template.Version, ""),
+		Build:           utils.DefaultString(template.Build, ""),
+		Maintainer:      utils.DefaultString(template.Maintainer, ""),
 		Checksum:        *template.Checksum,
-		DefaultUser:     defaultString(template.DefaultUser, ""),
+		DefaultUser:     utils.DefaultString(template.DefaultUser, ""),
 		SSHKeyEnabled:   *template.SSHKeyEnabled,
 		PasswordEnabled: *template.PasswordEnabled,
 		BootMode:        *template.BootMode,
