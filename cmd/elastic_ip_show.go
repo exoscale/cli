@@ -22,6 +22,7 @@ type elasticIPShowOutput struct {
 	Zone                     string         `json:"zone"`
 	Type                     string         `json:"type"`
 	ReverseDNS               string         `json:"reverse_dns"`
+	Instances                string         `json:"instances"`
 	HealthcheckMode          *string        `json:"healthcheck_mode,omitempty"`
 	HealthcheckPort          *uint16        `json:"healthcheck_port,omitempty"`
 	HealthcheckURI           *string        `json:"healthcheck_uri,omitempty"`
@@ -48,6 +49,7 @@ func (o *elasticIPShowOutput) toTable() {
 	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"Type", o.Type})
 	t.Append([]string{"Reverse DNS", o.ReverseDNS})
+	t.Append([]string{"Instances", o.Instances})
 
 	if o.Type == "managed" {
 		t.Append([]string{"Healthcheck Mode", *o.HealthcheckMode})
@@ -126,6 +128,15 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out.ReverseDNS = rdns
+
+	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, cs, *elasticIP.ID, c.Zone)
+	if err != nil {
+		return err
+	}
+
+	for _, instance := range attachedInstances {
+		out.Instances += *instance.Name + " "
+	}
 
 	if elasticIP.Healthcheck != nil {
 		out.Type = "managed"
