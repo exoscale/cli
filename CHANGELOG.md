@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.65.0
+
+### Features
+
+- `exo dbaas migration stop`: new command to stop database migration (#487)
+- `exo compute security-group`: show instances in security group (#489)
+- `exo compute sks nodepool`: show addons (#488)
+
 ## 1.64.0
 
 ### Features
