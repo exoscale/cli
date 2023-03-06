@@ -76,6 +76,15 @@ func ListInstancesByManagerType(v string) ListInstancesOpt {
 	}
 }
 
+// ListInstancesByIpAddress sets a Compute instances listing filter based on an IP Address.
+func ListInstancesByIpAddress(v string) ListInstancesOpt {
+	return func(p *oapi.ListInstancesParams) {
+		if v != "" {
+			p.IpAddress = &v
+		}
+	}
+}
+
 // ResetInstanceOpt represents a ResetInstance operation option.
 type ResetInstanceOpt func(*oapi.ResetInstanceJSONRequestBody)
 
@@ -124,7 +133,7 @@ func instanceFromAPI(i *oapi.Instance, zone string) *Instance {
 		CreatedAt: i.CreatedAt,
 		DeployTargetID: func() (v *string) {
 			if i.DeployTarget != nil {
-				v = i.DeployTarget.Id
+				v = &i.DeployTarget.Id
 			}
 			return
 		}(),
@@ -275,7 +284,9 @@ func (c *Client) AttachInstanceToPrivateNetwork(
 		opt(&body)
 	}
 
-	body.Instance = oapi.Instance{Id: instance.ID}
+	a := oapi.AttachInstanceToPrivateNetworkJSONBody{}
+	a.Instance.Id = instance.ID
+	body.Instance = a.Instance
 
 	resp, err := c.AttachInstanceToPrivateNetworkWithResponse(apiv2.WithZone(ctx, zone), *privateNetwork.ID, body)
 	if err != nil {
@@ -348,7 +359,7 @@ func (c *Client) CreateInstance(ctx context.Context, zone string, instance *Inst
 			}(),
 			DeployTarget: func() (v *oapi.DeployTarget) {
 				if instance.DeployTargetID != nil {
-					v = &oapi.DeployTarget{Id: instance.DeployTargetID}
+					v = &oapi.DeployTarget{Id: *instance.DeployTargetID}
 				}
 				return
 			}(),

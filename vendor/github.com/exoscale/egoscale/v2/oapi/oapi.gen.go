@@ -305,6 +305,29 @@ const (
 	EnumSortOrderDesc EnumSortOrder = "desc"
 )
 
+// Defines values for IamPolicyDefaultServiceStrategy.
+const (
+	IamPolicyDefaultServiceStrategyAllow IamPolicyDefaultServiceStrategy = "allow"
+
+	IamPolicyDefaultServiceStrategyDeny IamPolicyDefaultServiceStrategy = "deny"
+)
+
+// Defines values for IamServicePolicyType.
+const (
+	IamServicePolicyTypeAllow IamServicePolicyType = "allow"
+
+	IamServicePolicyTypeDeny IamServicePolicyType = "deny"
+
+	IamServicePolicyTypeRules IamServicePolicyType = "rules"
+)
+
+// Defines values for IamServicePolicyRuleAction.
+const (
+	IamServicePolicyRuleActionAllow IamServicePolicyRuleAction = "allow"
+
+	IamServicePolicyRuleActionDeny IamServicePolicyRuleAction = "deny"
+)
+
 // Defines values for InstanceState.
 const (
 	InstanceStateDestroyed InstanceState = "destroyed"
@@ -631,6 +654,8 @@ const (
 // Defines values for ZoneName.
 const (
 	ZoneNameAtVie1 ZoneName = "at-vie-1"
+
+	ZoneNameAtVie2 ZoneName = "at-vie-2"
 
 	ZoneNameBgSof1 ZoneName = "bg-sof-1"
 
@@ -1051,6 +1076,7 @@ type DbaasServiceKafka struct {
 	ConnectionInfo *struct {
 		AccessCert  *string   `json:"access-cert,omitempty"`
 		AccessKey   *string   `json:"access-key,omitempty"`
+		ConnectUri  *string   `json:"connect-uri,omitempty"`
 		Nodes       *[]string `json:"nodes,omitempty"`
 		RegistryUri *string   `json:"registry-uri,omitempty"`
 		RestUri     *string   `json:"rest-uri,omitempty"`
@@ -1712,7 +1738,7 @@ type DeployTarget struct {
 	Description *string `json:"description,omitempty"`
 
 	// Deploy Target ID
-	Id *string `json:"id,omitempty"`
+	Id string `json:"id"`
 
 	// Deploy Target name
 	Name *string `json:"name,omitempty"`
@@ -1796,13 +1822,13 @@ type ElasticIpAddressfamily string
 
 // Elastic IP address healthcheck
 type ElasticIpHealthcheck struct {
-	// Interval between the checks (default: 10)
+	// Interval between the checks in seconds (default: 10)
 	Interval *int64 `json:"interval,omitempty"`
 
-	// Healthcheck mode
+	// Health check mode
 	Mode ElasticIpHealthcheckMode `json:"mode"`
 
-	// Healthcheck port
+	// Health check port
 	Port int64 `json:"port"`
 
 	// Number of attempts before considering the target unhealthy (default: 3)
@@ -1811,20 +1837,20 @@ type ElasticIpHealthcheck struct {
 	// Number of attempts before considering the target healthy (default: 2)
 	StrikesOk *int64 `json:"strikes-ok,omitempty"`
 
-	// Healthcheck timeout value (default: 2)
+	// Health check timeout value in seconds (default: 2)
 	Timeout *int64 `json:"timeout,omitempty"`
 
 	// Skip TLS verification
 	TlsSkipVerify *bool `json:"tls-skip-verify,omitempty"`
 
-	// SNI domain for HTTPS healthchecks
+	// An optional domain or subdomain to check TLS against
 	TlsSni *string `json:"tls-sni,omitempty"`
 
-	// Healthcheck URI
+	// An endpoint to use for the health check, for example '/status'
 	Uri *string `json:"uri,omitempty"`
 }
 
-// Healthcheck mode
+// Health check mode
 type ElasticIpHealthcheckMode string
 
 // EnumComponentRoute defines model for enum-component-route.
@@ -1863,14 +1889,126 @@ type EnumServiceState string
 // EnumSortOrder defines model for enum-sort-order.
 type EnumSortOrder string
 
-// A notable event which happened on the infrastructure
+// A notable Mutation Event which happened on the infrastructure
 type Event struct {
-	// Event payload. This is a free-form map
-	Payload *map[string]interface{} `json:"payload,omitempty"`
+	// Body parameters (free form map)
+	BodyParams *map[string]interface{} `json:"body-params,omitempty"`
+
+	// Operation processing time
+	ElapsedMs *int64 `json:"elapsed-ms,omitempty"`
+
+	// Query string parameters (free form map)
+	GetParams *map[string]interface{} `json:"get-params,omitempty"`
+
+	// Operation handler name
+	Handler *string `json:"handler,omitempty"`
+
+	// Operation message
+	Message *string `json:"message,omitempty"`
+
+	// URI path parameters (free form map)
+	PathParams *map[string]interface{} `json:"path-params,omitempty"`
+
+	// Client IP address
+	RemoteAddr *string `json:"remote-addr,omitempty"`
+
+	// Operation unique identifier
+	RequestId *string `json:"request-id,omitempty"`
+
+	// Operation HTTP status
+	Status *int64 `json:"status,omitempty"`
 
 	// Time at which the event happened, millisecond resolution
 	Timestamp *time.Time `json:"timestamp,omitempty"`
+
+	// Operation request URI
+	Uri *string `json:"uri,omitempty"`
+
+	// Operation targeted zone
+	Zone *string `json:"zone,omitempty"`
 }
+
+// IAM API Key
+type IamApiKey struct {
+	// IAM API Key
+	Key *string `json:"key,omitempty"`
+
+	// IAM API Key name
+	Name *string `json:"name,omitempty"`
+
+	// IAM API Key Role ID
+	RoleId *string `json:"role-id,omitempty"`
+}
+
+// IAM API Key
+type IamApiKeyCreated struct {
+	// IAM API Key
+	Key *string `json:"key,omitempty"`
+
+	// IAM API Key name
+	Name *string `json:"name,omitempty"`
+
+	// IAM API Key Role ID
+	RoleId *string `json:"role-id,omitempty"`
+
+	// IAM API Key Secret
+	Secret *string `json:"secret,omitempty"`
+}
+
+// Policy
+type IamPolicy struct {
+	// IAM default service strategy
+	DefaultServiceStrategy IamPolicyDefaultServiceStrategy `json:"default-service-strategy"`
+
+	// IAM services
+	Services IamPolicy_Services `json:"services"`
+}
+
+// IAM default service strategy
+type IamPolicyDefaultServiceStrategy string
+
+// IAM services
+type IamPolicy_Services struct {
+	AdditionalProperties map[string]IamServicePolicy `json:"-"`
+}
+
+// IAM Role
+type IamRole struct {
+	// IAM Role description
+	Description *string `json:"description,omitempty"`
+
+	// IAM Role mutability
+	Editable *bool `json:"editable,omitempty"`
+
+	// IAM Role ID
+	Id     *string `json:"id,omitempty"`
+	Labels *Labels `json:"labels,omitempty"`
+
+	// IAM Role name
+	Name *string `json:"name,omitempty"`
+
+	// Policy
+	Policy *IamPolicy `json:"policy,omitempty"`
+}
+
+// IamServicePolicy defines model for iam-service-policy.
+type IamServicePolicy struct {
+	Rules *[]IamServicePolicyRule `json:"rules,omitempty"`
+	Type  *IamServicePolicyType   `json:"type,omitempty"`
+}
+
+// IamServicePolicyType defines model for IamServicePolicy.Type.
+type IamServicePolicyType string
+
+// IamServicePolicyRule defines model for iam-service-policy-rule.
+type IamServicePolicyRule struct {
+	Action     *IamServicePolicyRuleAction `json:"action,omitempty"`
+	Expression *string                     `json:"expression,omitempty"`
+	Resources  *[]string                   `json:"resources,omitempty"`
+}
+
+// IamServicePolicyRuleAction defines model for IamServicePolicyRule.Action.
+type IamServicePolicyRuleAction string
 
 // Instance
 type Instance struct {
@@ -1997,6 +2135,9 @@ type InstancePool struct {
 
 	// SSH key
 	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instances SSH keys
+	SshKeys *[]SshKey `json:"ssh-keys,omitempty"`
 
 	// Instance Pool state
 	State *InstancePoolState `json:"state,omitempty"`
@@ -2657,6 +2798,15 @@ type CreateAntiAffinityGroupJSONBody struct {
 
 	// Anti-affinity Group name
 	Name string `json:"name"`
+}
+
+// CreateApiKeyJSONBody defines parameters for CreateApiKey.
+type CreateApiKeyJSONBody struct {
+	// IAM API Key Name
+	Name string `json:"name"`
+
+	// IAM API Key Role ID
+	RoleId string `json:"role-id"`
 }
 
 // CreateDbaasIntegrationJSONBody defines parameters for CreateDbaasIntegration.
@@ -3508,7 +3658,7 @@ type UpdateDnsDomainRecordJSONBody struct {
 
 // CreateElasticIpJSONBody defines parameters for CreateElasticIp.
 type CreateElasticIpJSONBody struct {
-	// Elastic IP address family (default: inet4)
+	// Elastic IP address family (default: :inet4)
 	Addressfamily *CreateElasticIpJSONBodyAddressfamily `json:"addressfamily,omitempty"`
 
 	// Elastic IP description
@@ -3553,10 +3703,40 @@ type ListEventsParams struct {
 	To   *time.Time `json:"to,omitempty"`
 }
 
+// UpdateIamOrganizationPolicyJSONBody defines parameters for UpdateIamOrganizationPolicy.
+type UpdateIamOrganizationPolicyJSONBody IamPolicy
+
+// CreateIamRoleJSONBody defines parameters for CreateIamRole.
+type CreateIamRoleJSONBody struct {
+	// IAM Role description
+	Description *string `json:"description,omitempty"`
+
+	// Make IAM Role editable (default: true)
+	Editable *bool   `json:"editable,omitempty"`
+	Labels   *Labels `json:"labels,omitempty"`
+
+	// IAM Role name
+	Name string `json:"name"`
+
+	// Policy
+	Policy *IamPolicy `json:"policy,omitempty"`
+}
+
+// UpdateIamRoleJSONBody defines parameters for UpdateIamRole.
+type UpdateIamRoleJSONBody struct {
+	// IAM Role description
+	Description *string `json:"description,omitempty"`
+	Labels      *Labels `json:"labels,omitempty"`
+}
+
+// UpdateIamRolePolicyJSONBody defines parameters for UpdateIamRolePolicy.
+type UpdateIamRolePolicyJSONBody IamPolicy
+
 // ListInstancesParams defines parameters for ListInstances.
 type ListInstancesParams struct {
 	ManagerId   *string                         `json:"manager-id,omitempty"`
 	ManagerType *ListInstancesParamsManagerType `json:"manager-type,omitempty"`
+	IpAddress   *string                         `json:"ip-address,omitempty"`
 }
 
 // ListInstancesParamsManagerType defines parameters for ListInstances.
@@ -3648,6 +3828,9 @@ type CreateInstancePoolJSONBody struct {
 
 	// SSH key
 	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instances SSH Keys
+	SshKeys *[]SshKey `json:"ssh-keys,omitempty"`
 
 	// Instance template
 	Template Template `json:"template"`
@@ -3900,8 +4083,11 @@ type ResetPrivateNetworkFieldParamsField string
 
 // AttachInstanceToPrivateNetworkJSONBody defines parameters for AttachInstanceToPrivateNetwork.
 type AttachInstanceToPrivateNetworkJSONBody struct {
-	// Instance
-	Instance Instance `json:"instance"`
+	// Compute instance
+	Instance struct {
+		// Instance ID
+		Id *string `json:"id,omitempty"`
+	} `json:"instance"`
 
 	// Static IP address lease for the corresponding network interface
 	Ip *string `json:"ip,omitempty"`
@@ -4276,6 +4462,9 @@ type CreateAccessKeyJSONRequestBody CreateAccessKeyJSONBody
 // CreateAntiAffinityGroupJSONRequestBody defines body for CreateAntiAffinityGroup for application/json ContentType.
 type CreateAntiAffinityGroupJSONRequestBody CreateAntiAffinityGroupJSONBody
 
+// CreateApiKeyJSONRequestBody defines body for CreateApiKey for application/json ContentType.
+type CreateApiKeyJSONRequestBody CreateApiKeyJSONBody
+
 // CreateDbaasIntegrationJSONRequestBody defines body for CreateDbaasIntegration for application/json ContentType.
 type CreateDbaasIntegrationJSONRequestBody CreateDbaasIntegrationJSONBody
 
@@ -4362,6 +4551,18 @@ type AttachInstanceToElasticIpJSONRequestBody AttachInstanceToElasticIpJSONBody
 
 // DetachInstanceFromElasticIpJSONRequestBody defines body for DetachInstanceFromElasticIp for application/json ContentType.
 type DetachInstanceFromElasticIpJSONRequestBody DetachInstanceFromElasticIpJSONBody
+
+// UpdateIamOrganizationPolicyJSONRequestBody defines body for UpdateIamOrganizationPolicy for application/json ContentType.
+type UpdateIamOrganizationPolicyJSONRequestBody UpdateIamOrganizationPolicyJSONBody
+
+// CreateIamRoleJSONRequestBody defines body for CreateIamRole for application/json ContentType.
+type CreateIamRoleJSONRequestBody CreateIamRoleJSONBody
+
+// UpdateIamRoleJSONRequestBody defines body for UpdateIamRole for application/json ContentType.
+type UpdateIamRoleJSONRequestBody UpdateIamRoleJSONBody
+
+// UpdateIamRolePolicyJSONRequestBody defines body for UpdateIamRolePolicy for application/json ContentType.
+type UpdateIamRolePolicyJSONRequestBody UpdateIamRolePolicyJSONBody
 
 // CreateInstanceJSONRequestBody defines body for CreateInstance for application/json ContentType.
 type CreateInstanceJSONRequestBody CreateInstanceJSONBody
@@ -4485,6 +4686,59 @@ type CopyTemplateJSONRequestBody CopyTemplateJSONBody
 
 // UpdateTemplateJSONRequestBody defines body for UpdateTemplate for application/json ContentType.
 type UpdateTemplateJSONRequestBody UpdateTemplateJSONBody
+
+// Getter for additional properties for IamPolicy_Services. Returns the specified
+// element and whether it was found
+func (a IamPolicy_Services) Get(fieldName string) (value IamServicePolicy, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for IamPolicy_Services
+func (a *IamPolicy_Services) Set(fieldName string, value IamServicePolicy) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]IamServicePolicy)
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for IamPolicy_Services to handle AdditionalProperties
+func (a *IamPolicy_Services) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]IamServicePolicy)
+		for fieldName, fieldBuf := range object {
+			var fieldVal IamServicePolicy
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for IamPolicy_Services to handle AdditionalProperties
+func (a IamPolicy_Services) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
 
 // Getter for additional properties for Labels. Returns the specified
 // element and whether it was found
@@ -4805,6 +5059,20 @@ type ClientInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroup(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListApiKeys request
+	ListApiKeys(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateApiKey request with any body
+	CreateApiKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateApiKey(ctx context.Context, body CreateApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteApiKey request
+	DeleteApiKey(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApiKey request
+	GetApiKey(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetDbaasCaCertificate request
 	GetDbaasCaCertificate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -5093,6 +5361,38 @@ type ClientInterface interface {
 
 	// ListEvents request
 	ListEvents(ctx context.Context, params *ListEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetIamOrganizationPolicy request
+	GetIamOrganizationPolicy(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateIamOrganizationPolicy request with any body
+	UpdateIamOrganizationPolicyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateIamOrganizationPolicy(ctx context.Context, body UpdateIamOrganizationPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListIamRoles request
+	ListIamRoles(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateIamRole request with any body
+	CreateIamRoleWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateIamRole(ctx context.Context, body CreateIamRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteIamRole request
+	DeleteIamRole(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetIamRole request
+	GetIamRole(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateIamRole request with any body
+	UpdateIamRoleWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateIamRole(ctx context.Context, id string, body UpdateIamRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateIamRolePolicy request with any body
+	UpdateIamRolePolicyWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateIamRolePolicy(ctx context.Context, id string, body UpdateIamRolePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListInstances request
 	ListInstances(ctx context.Context, params *ListInstancesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5626,6 +5926,66 @@ func (c *Client) DeleteAntiAffinityGroup(ctx context.Context, id string, reqEdit
 
 func (c *Client) GetAntiAffinityGroup(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAntiAffinityGroupRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListApiKeys(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListApiKeysRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateApiKeyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateApiKeyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateApiKey(ctx context.Context, body CreateApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateApiKeyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteApiKey(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteApiKeyRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApiKey(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiKeyRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -6898,6 +7258,150 @@ func (c *Client) DetachInstanceFromElasticIp(ctx context.Context, id string, bod
 
 func (c *Client) ListEvents(ctx context.Context, params *ListEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListEventsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetIamOrganizationPolicy(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetIamOrganizationPolicyRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIamOrganizationPolicyWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIamOrganizationPolicyRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIamOrganizationPolicy(ctx context.Context, body UpdateIamOrganizationPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIamOrganizationPolicyRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListIamRoles(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListIamRolesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateIamRoleWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateIamRoleRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateIamRole(ctx context.Context, body CreateIamRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateIamRoleRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteIamRole(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteIamRoleRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetIamRole(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetIamRoleRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIamRoleWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIamRoleRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIamRole(ctx context.Context, id string, body UpdateIamRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIamRoleRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIamRolePolicyWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIamRolePolicyRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateIamRolePolicy(ctx context.Context, id string, body UpdateIamRolePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateIamRolePolicyRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -8967,6 +9471,141 @@ func NewGetAntiAffinityGroupRequest(server string, id string) (*http.Request, er
 	}
 
 	operationPath := fmt.Sprintf("/anti-affinity-group/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListApiKeysRequest generates requests for ListApiKeys
+func NewListApiKeysRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api-key")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateApiKeyRequest calls the generic CreateApiKey builder with application/json body
+func NewCreateApiKeyRequest(server string, body CreateApiKeyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateApiKeyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateApiKeyRequestWithBody generates requests for CreateApiKey with any type of body
+func NewCreateApiKeyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api-key")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteApiKeyRequest generates requests for DeleteApiKey
+func NewDeleteApiKeyRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api-key/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetApiKeyRequest generates requests for GetApiKey
+func NewGetApiKeyRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api-key/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -12001,6 +12640,302 @@ func NewListEventsRequest(server string, params *ListEventsParams) (*http.Reques
 	return req, nil
 }
 
+// NewGetIamOrganizationPolicyRequest generates requests for GetIamOrganizationPolicy
+func NewGetIamOrganizationPolicyRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/iam-organization-policy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateIamOrganizationPolicyRequest calls the generic UpdateIamOrganizationPolicy builder with application/json body
+func NewUpdateIamOrganizationPolicyRequest(server string, body UpdateIamOrganizationPolicyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateIamOrganizationPolicyRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewUpdateIamOrganizationPolicyRequestWithBody generates requests for UpdateIamOrganizationPolicy with any type of body
+func NewUpdateIamOrganizationPolicyRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/iam-organization-policy")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewListIamRolesRequest generates requests for ListIamRoles
+func NewListIamRolesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/iam-role")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateIamRoleRequest calls the generic CreateIamRole builder with application/json body
+func NewCreateIamRoleRequest(server string, body CreateIamRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateIamRoleRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateIamRoleRequestWithBody generates requests for CreateIamRole with any type of body
+func NewCreateIamRoleRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/iam-role")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteIamRoleRequest generates requests for DeleteIamRole
+func NewDeleteIamRoleRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/iam-role/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetIamRoleRequest generates requests for GetIamRole
+func NewGetIamRoleRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/iam-role/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateIamRoleRequest calls the generic UpdateIamRole builder with application/json body
+func NewUpdateIamRoleRequest(server string, id string, body UpdateIamRoleJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateIamRoleRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateIamRoleRequestWithBody generates requests for UpdateIamRole with any type of body
+func NewUpdateIamRoleRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/iam-role/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateIamRolePolicyRequest calls the generic UpdateIamRolePolicy builder with application/json body
+func NewUpdateIamRolePolicyRequest(server string, id string, body UpdateIamRolePolicyJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateIamRolePolicyRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateIamRolePolicyRequestWithBody generates requests for UpdateIamRolePolicy with any type of body
+func NewUpdateIamRolePolicyRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/iam-role/%s:policy", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewListInstancesRequest generates requests for ListInstances
 func NewListInstancesRequest(server string, params *ListInstancesParams) (*http.Request, error) {
 	var err error
@@ -12041,6 +12976,22 @@ func NewListInstancesRequest(server string, params *ListInstancesParams) (*http.
 	if params.ManagerType != nil {
 
 		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "manager-type", runtime.ParamLocationQuery, *params.ManagerType); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+	}
+
+	if params.IpAddress != nil {
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ip-address", runtime.ParamLocationQuery, *params.IpAddress); err != nil {
 			return nil, err
 		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 			return nil, err
@@ -16292,6 +17243,20 @@ type ClientWithResponsesInterface interface {
 	// GetAntiAffinityGroup request
 	GetAntiAffinityGroupWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetAntiAffinityGroupResponse, error)
 
+	// ListApiKeys request
+	ListApiKeysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListApiKeysResponse, error)
+
+	// CreateApiKey request with any body
+	CreateApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApiKeyResponse, error)
+
+	CreateApiKeyWithResponse(ctx context.Context, body CreateApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApiKeyResponse, error)
+
+	// DeleteApiKey request
+	DeleteApiKeyWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteApiKeyResponse, error)
+
+	// GetApiKey request
+	GetApiKeyWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetApiKeyResponse, error)
+
 	// GetDbaasCaCertificate request
 	GetDbaasCaCertificateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasCaCertificateResponse, error)
 
@@ -16580,6 +17545,38 @@ type ClientWithResponsesInterface interface {
 
 	// ListEvents request
 	ListEventsWithResponse(ctx context.Context, params *ListEventsParams, reqEditors ...RequestEditorFn) (*ListEventsResponse, error)
+
+	// GetIamOrganizationPolicy request
+	GetIamOrganizationPolicyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetIamOrganizationPolicyResponse, error)
+
+	// UpdateIamOrganizationPolicy request with any body
+	UpdateIamOrganizationPolicyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIamOrganizationPolicyResponse, error)
+
+	UpdateIamOrganizationPolicyWithResponse(ctx context.Context, body UpdateIamOrganizationPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIamOrganizationPolicyResponse, error)
+
+	// ListIamRoles request
+	ListIamRolesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListIamRolesResponse, error)
+
+	// CreateIamRole request with any body
+	CreateIamRoleWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIamRoleResponse, error)
+
+	CreateIamRoleWithResponse(ctx context.Context, body CreateIamRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateIamRoleResponse, error)
+
+	// DeleteIamRole request
+	DeleteIamRoleWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteIamRoleResponse, error)
+
+	// GetIamRole request
+	GetIamRoleWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetIamRoleResponse, error)
+
+	// UpdateIamRole request with any body
+	UpdateIamRoleWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIamRoleResponse, error)
+
+	UpdateIamRoleWithResponse(ctx context.Context, id string, body UpdateIamRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIamRoleResponse, error)
+
+	// UpdateIamRolePolicy request with any body
+	UpdateIamRolePolicyWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIamRolePolicyResponse, error)
+
+	UpdateIamRolePolicyWithResponse(ctx context.Context, id string, body UpdateIamRolePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIamRolePolicyResponse, error)
 
 	// ListInstances request
 	ListInstancesWithResponse(ctx context.Context, params *ListInstancesParams, reqEditors ...RequestEditorFn) (*ListInstancesResponse, error)
@@ -17201,6 +18198,96 @@ func (r GetAntiAffinityGroupResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetAntiAffinityGroupResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListApiKeysResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		ApiKeys *[]IamApiKey `json:"api-keys,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListApiKeysResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListApiKeysResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateApiKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IamApiKeyCreated
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateApiKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateApiKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteApiKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteApiKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteApiKeyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApiKeyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IamApiKey
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiKeyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiKeyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -18816,7 +19903,9 @@ func (r GetDnsDomainResponse) StatusCode() int {
 type GetDnsDomainZoneFileResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *string
+	JSON200      *struct {
+		ZoneFile *string `json:"zone-file,omitempty"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -19029,6 +20118,184 @@ func (r ListEventsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ListEventsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetIamOrganizationPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]IamPolicy
+}
+
+// Status returns HTTPResponse.Status
+func (r GetIamOrganizationPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetIamOrganizationPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateIamOrganizationPolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateIamOrganizationPolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateIamOrganizationPolicyResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListIamRolesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		IamRoles *[]IamRole `json:"iam-roles,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r ListIamRolesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListIamRolesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateIamRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateIamRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateIamRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteIamRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteIamRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteIamRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetIamRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *IamRole
+}
+
+// Status returns HTTPResponse.Status
+func (r GetIamRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetIamRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateIamRoleResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateIamRoleResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateIamRoleResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateIamRolePolicyResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateIamRolePolicyResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateIamRolePolicyResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -21485,6 +22752,50 @@ func (c *ClientWithResponses) GetAntiAffinityGroupWithResponse(ctx context.Conte
 	return ParseGetAntiAffinityGroupResponse(rsp)
 }
 
+// ListApiKeysWithResponse request returning *ListApiKeysResponse
+func (c *ClientWithResponses) ListApiKeysWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListApiKeysResponse, error) {
+	rsp, err := c.ListApiKeys(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListApiKeysResponse(rsp)
+}
+
+// CreateApiKeyWithBodyWithResponse request with arbitrary body returning *CreateApiKeyResponse
+func (c *ClientWithResponses) CreateApiKeyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateApiKeyResponse, error) {
+	rsp, err := c.CreateApiKeyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateApiKeyResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateApiKeyWithResponse(ctx context.Context, body CreateApiKeyJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateApiKeyResponse, error) {
+	rsp, err := c.CreateApiKey(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateApiKeyResponse(rsp)
+}
+
+// DeleteApiKeyWithResponse request returning *DeleteApiKeyResponse
+func (c *ClientWithResponses) DeleteApiKeyWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteApiKeyResponse, error) {
+	rsp, err := c.DeleteApiKey(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteApiKeyResponse(rsp)
+}
+
+// GetApiKeyWithResponse request returning *GetApiKeyResponse
+func (c *ClientWithResponses) GetApiKeyWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetApiKeyResponse, error) {
+	rsp, err := c.GetApiKey(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiKeyResponse(rsp)
+}
+
 // GetDbaasCaCertificateWithResponse request returning *GetDbaasCaCertificateResponse
 func (c *ClientWithResponses) GetDbaasCaCertificateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasCaCertificateResponse, error) {
 	rsp, err := c.GetDbaasCaCertificate(ctx, reqEditors...)
@@ -22408,6 +23719,110 @@ func (c *ClientWithResponses) ListEventsWithResponse(ctx context.Context, params
 		return nil, err
 	}
 	return ParseListEventsResponse(rsp)
+}
+
+// GetIamOrganizationPolicyWithResponse request returning *GetIamOrganizationPolicyResponse
+func (c *ClientWithResponses) GetIamOrganizationPolicyWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetIamOrganizationPolicyResponse, error) {
+	rsp, err := c.GetIamOrganizationPolicy(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetIamOrganizationPolicyResponse(rsp)
+}
+
+// UpdateIamOrganizationPolicyWithBodyWithResponse request with arbitrary body returning *UpdateIamOrganizationPolicyResponse
+func (c *ClientWithResponses) UpdateIamOrganizationPolicyWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIamOrganizationPolicyResponse, error) {
+	rsp, err := c.UpdateIamOrganizationPolicyWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIamOrganizationPolicyResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateIamOrganizationPolicyWithResponse(ctx context.Context, body UpdateIamOrganizationPolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIamOrganizationPolicyResponse, error) {
+	rsp, err := c.UpdateIamOrganizationPolicy(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIamOrganizationPolicyResponse(rsp)
+}
+
+// ListIamRolesWithResponse request returning *ListIamRolesResponse
+func (c *ClientWithResponses) ListIamRolesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListIamRolesResponse, error) {
+	rsp, err := c.ListIamRoles(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListIamRolesResponse(rsp)
+}
+
+// CreateIamRoleWithBodyWithResponse request with arbitrary body returning *CreateIamRoleResponse
+func (c *ClientWithResponses) CreateIamRoleWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateIamRoleResponse, error) {
+	rsp, err := c.CreateIamRoleWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateIamRoleResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateIamRoleWithResponse(ctx context.Context, body CreateIamRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateIamRoleResponse, error) {
+	rsp, err := c.CreateIamRole(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateIamRoleResponse(rsp)
+}
+
+// DeleteIamRoleWithResponse request returning *DeleteIamRoleResponse
+func (c *ClientWithResponses) DeleteIamRoleWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteIamRoleResponse, error) {
+	rsp, err := c.DeleteIamRole(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteIamRoleResponse(rsp)
+}
+
+// GetIamRoleWithResponse request returning *GetIamRoleResponse
+func (c *ClientWithResponses) GetIamRoleWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetIamRoleResponse, error) {
+	rsp, err := c.GetIamRole(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetIamRoleResponse(rsp)
+}
+
+// UpdateIamRoleWithBodyWithResponse request with arbitrary body returning *UpdateIamRoleResponse
+func (c *ClientWithResponses) UpdateIamRoleWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIamRoleResponse, error) {
+	rsp, err := c.UpdateIamRoleWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIamRoleResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateIamRoleWithResponse(ctx context.Context, id string, body UpdateIamRoleJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIamRoleResponse, error) {
+	rsp, err := c.UpdateIamRole(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIamRoleResponse(rsp)
+}
+
+// UpdateIamRolePolicyWithBodyWithResponse request with arbitrary body returning *UpdateIamRolePolicyResponse
+func (c *ClientWithResponses) UpdateIamRolePolicyWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateIamRolePolicyResponse, error) {
+	rsp, err := c.UpdateIamRolePolicyWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIamRolePolicyResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateIamRolePolicyWithResponse(ctx context.Context, id string, body UpdateIamRolePolicyJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateIamRolePolicyResponse, error) {
+	rsp, err := c.UpdateIamRolePolicy(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateIamRolePolicyResponse(rsp)
 }
 
 // ListInstancesWithResponse request returning *ListInstancesResponse
@@ -23941,6 +25356,112 @@ func ParseGetAntiAffinityGroupResponse(rsp *http.Response) (*GetAntiAffinityGrou
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest AntiAffinityGroup
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListApiKeysResponse parses an HTTP response from a ListApiKeysWithResponse call
+func ParseListApiKeysResponse(rsp *http.Response) (*ListApiKeysResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListApiKeysResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			ApiKeys *[]IamApiKey `json:"api-keys,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateApiKeyResponse parses an HTTP response from a CreateApiKeyWithResponse call
+func ParseCreateApiKeyResponse(rsp *http.Response) (*CreateApiKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateApiKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IamApiKeyCreated
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteApiKeyResponse parses an HTTP response from a DeleteApiKeyWithResponse call
+func ParseDeleteApiKeyResponse(rsp *http.Response) (*DeleteApiKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteApiKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApiKeyResponse parses an HTTP response from a GetApiKeyWithResponse call
+func ParseGetApiKeyResponse(rsp *http.Response) (*GetApiKeyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiKeyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IamApiKey
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -25840,7 +27361,9 @@ func ParseGetDnsDomainZoneFileResponse(rsp *http.Response) (*GetDnsDomainZoneFil
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest string
+		var dest struct {
+			ZoneFile *string `json:"zone-file,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -26077,6 +27600,216 @@ func ParseListEventsResponse(rsp *http.Response) (*ListEventsResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest []Event
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetIamOrganizationPolicyResponse parses an HTTP response from a GetIamOrganizationPolicyWithResponse call
+func ParseGetIamOrganizationPolicyResponse(rsp *http.Response) (*GetIamOrganizationPolicyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetIamOrganizationPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []IamPolicy
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateIamOrganizationPolicyResponse parses an HTTP response from a UpdateIamOrganizationPolicyWithResponse call
+func ParseUpdateIamOrganizationPolicyResponse(rsp *http.Response) (*UpdateIamOrganizationPolicyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateIamOrganizationPolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListIamRolesResponse parses an HTTP response from a ListIamRolesWithResponse call
+func ParseListIamRolesResponse(rsp *http.Response) (*ListIamRolesResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListIamRolesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			IamRoles *[]IamRole `json:"iam-roles,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateIamRoleResponse parses an HTTP response from a CreateIamRoleWithResponse call
+func ParseCreateIamRoleResponse(rsp *http.Response) (*CreateIamRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateIamRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteIamRoleResponse parses an HTTP response from a DeleteIamRoleWithResponse call
+func ParseDeleteIamRoleResponse(rsp *http.Response) (*DeleteIamRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteIamRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetIamRoleResponse parses an HTTP response from a GetIamRoleWithResponse call
+func ParseGetIamRoleResponse(rsp *http.Response) (*GetIamRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetIamRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest IamRole
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateIamRoleResponse parses an HTTP response from a UpdateIamRoleWithResponse call
+func ParseUpdateIamRoleResponse(rsp *http.Response) (*UpdateIamRoleResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateIamRoleResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateIamRolePolicyResponse parses an HTTP response from a UpdateIamRolePolicyWithResponse call
+func ParseUpdateIamRolePolicyResponse(rsp *http.Response) (*UpdateIamRolePolicyResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateIamRolePolicyResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

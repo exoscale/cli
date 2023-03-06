@@ -134,7 +134,7 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	out.ReverseDNS = rdns
 
-	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, cs, *elasticIP.ID, c.Zone)
+	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, cs, elasticIP.IPAddress.String(), c.Zone)
 	if err != nil {
 		return err
 	}
