@@ -77,7 +77,7 @@ func ListInstancesByManagerType(v string) ListInstancesOpt {
 }
 
 // ListInstancesByIpAddress sets a Compute instances listing filter based on an IP Address.
-func ListInstancesByIpAddress(v string) ListInstancesOpt {
+func ListInstancesByIpAddress(v string) ListInstancesOpt { //nolint:revive
 	return func(p *oapi.ListInstancesParams) {
 		if v != "" {
 			p.IpAddress = &v

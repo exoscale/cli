@@ -60,9 +60,7 @@ func (template Template) ListRequest() (ListCommand, error) {
 		*req.ShowRemoved = true
 	}
 
-	for i := range template.Tags {
-		req.Tags = append(req.Tags, template.Tags[i])
-	}
+	req.Tags = append(req.Tags, template.Tags...)
 
 	return req, nil
 }

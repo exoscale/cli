@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.98.0
+------
+
+- v2: refresh openapi generated code
+- feature: v2: add an option to the ListInstances call that allows users to filter by IP address
+
 0.97.0
 ------
 

@@ -138,9 +138,7 @@ func (vm VirtualMachine) ListRequest() (ListCommand, error) {
 		req.IPAddress = nic.IPAddress
 	}
 
-	for i := range vm.Tags {
-		req.Tags = append(req.Tags, vm.Tags[i])
-	}
+	req.Tags = append(req.Tags, vm.Tags...)
 
 	return req, nil
 }

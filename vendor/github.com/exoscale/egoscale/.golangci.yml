@@ -9,7 +9,6 @@ linters-settings:
 
 linters:
   enable:
-    - deadcode
     - errcheck
     - exportloopref
     - gocritic
@@ -21,9 +20,7 @@ linters:
     - nakedret
     - revive
     - staticcheck
-    - structcheck
     - unused
-    - varcheck
   disable-all: true
 
 issues:
