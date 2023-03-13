@@ -105,6 +105,10 @@ github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/exoscale/egoscale v0.97.0 h1:9DRSdFxepQrm/BOX/tvMXmfeN7d1row9N/+D9wrFp8E=
 github.com/exoscale/egoscale v0.97.0/go.mod h1:BAb9p4rmyU+Wl400CJZO5270H2sXtdsZjLcm5xMKkz4=
+github.com/exoscale/egoscale v0.97.1-0.20230306134401-d4c9cc9c4a41 h1:zCjiXiBG/MZWtIk7T34HI4lOqop5Ig+SJDkgLK7lRAw=
+github.com/exoscale/egoscale v0.97.1-0.20230306134401-d4c9cc9c4a41/go.mod h1:BAb9p4rmyU+Wl400CJZO5270H2sXtdsZjLcm5xMKkz4=
+github.com/exoscale/egoscale v0.98.0 h1:XCmY0mRYUJMR4tmf9CHxocGRP+g4IhLUv9KUf4M/o00=
+github.com/exoscale/egoscale v0.98.0/go.mod h1:BAb9p4rmyU+Wl400CJZO5270H2sXtdsZjLcm5xMKkz4=
 github.com/exoscale/openapi-cli-generator v1.1.0 h1:fYjmPqHR5vxlOBrbvde7eo7bISNQIFxsGn4A5/acwKA=
 github.com/exoscale/openapi-cli-generator v1.1.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=

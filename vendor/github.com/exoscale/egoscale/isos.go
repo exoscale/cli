@@ -28,9 +28,7 @@ func (iso ISO) ListRequest() (ListCommand, error) {
 		*req.IsReady = true
 	}
 
-	for i := range iso.Tags {
-		req.Tags = append(req.Tags, iso.Tags[i])
-	}
+	req.Tags = append(req.Tags, iso.Tags...)
 
 	return req, nil
 }

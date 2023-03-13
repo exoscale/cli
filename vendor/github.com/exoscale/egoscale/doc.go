@@ -177,4 +177,5 @@ An Elastic IP is a way to attach an IP address to many Virtual Machines. The API
 See: https://community.exoscale.com/documentation/compute/eip/
 
 */
+//nolint:goimports
 package egoscale

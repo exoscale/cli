@@ -31,6 +31,10 @@ func GetInstancesInSecurityGroup(ctx context.Context, client *egoscale.Client, s
 
 	var instancesInSG []*v2.Instance
 	for _, instance := range allInstances {
+		if instance.SecurityGroupIDs == nil {
+			continue
+		}
+
 		for _, sgID := range *instance.SecurityGroupIDs {
 			if sgID == securityGroupID {
 				instancesInSG = append(instancesInSG, instance)
@@ -39,6 +43,15 @@ func GetInstancesInSecurityGroup(ctx context.Context, client *egoscale.Client, s
 	}
 
 	return instancesInSG, nil
+}
+
+func GetInstancesAttachedToEIP(ctx context.Context, client *egoscale.Client, elasticIPID, zone string) ([]*v2.Instance, error) {
+	instances, err := client.ListInstances(ctx, zone, v2.ListInstancesByIpAddress(elasticIPID))
+	if err != nil {
+		return nil, err
+	}
+
+	return instances, nil
 }
 
 // IsInList returns true if v exists in the specified list, false otherwise.
