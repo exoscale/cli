@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.66.0
+
+### Features
+
+- `exo compute elastic-ip show <elastic ip>`: show names of instances attached to EIP (#490)
+
 ## 1.65.0
 
 ### Features
