@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -37,10 +36,6 @@ func (c *instanceSnapshotCreateCmd) cmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *instanceSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	// Snapshot creation can take a _long time_, raising
-	// the Exoscale API client timeout as a precaution.
-	cs.Client.SetTimeout(time.Hour)
-
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
 	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
