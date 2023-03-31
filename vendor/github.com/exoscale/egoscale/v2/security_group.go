@@ -167,6 +167,25 @@ func (c *Client) ListSecurityGroups(ctx context.Context, zone string) ([]*Securi
 	return list, nil
 }
 
+// FindSecurityGroups returns the list of existing Security Groups.
+// The `params` allows specifying standard filters.
+func (c *Client) FindSecurityGroups(ctx context.Context, zone string, params *oapi.ListSecurityGroupsParams) ([]*SecurityGroup, error) {
+	list := make([]*SecurityGroup, 0)
+
+	resp, err := c.ListSecurityGroupsWithResponse(apiv2.WithZone(ctx, zone), params)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.JSON200.SecurityGroups != nil {
+		for i := range *resp.JSON200.SecurityGroups {
+			list = append(list, securityGroupFromAPI(&(*resp.JSON200.SecurityGroups)[i]))
+		}
+	}
+
+	return list, nil
+}
+
 // RemoveExternalSourceFromSecurityGroup removes an external source from
 // a Security Group. This operation is idempotent.
 func (c *Client) RemoveExternalSourceFromSecurityGroup(

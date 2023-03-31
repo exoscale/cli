@@ -808,6 +808,19 @@ func (c *Client) StopInstance(ctx context.Context, zone string, instance *Instan
 	return nil
 }
 
+// RevealInstancePassword retrieves a recently started instance's root password if possible.
+func (c *Client) RevealInstancePassword(ctx context.Context, zone string, instance *Instance) (string, error) {
+	resp, err := c.RevealInstancePasswordWithResponse(apiv2.WithZone(ctx, zone), *instance.ID)
+	if err != nil {
+		return "", err
+	}
+	// If the password is unavailable, return an empty string
+	if resp.JSON200.Password == nil {
+		return "", nil
+	}
+	return *resp.JSON200.Password, nil
+}
+
 // UpdateInstance updates a Compute instance.
 func (c *Client) UpdateInstance(ctx context.Context, zone string, instance *Instance) error {
 	if err := validateOperationParams(instance, "update"); err != nil {
