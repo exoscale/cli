@@ -5,12 +5,14 @@ import (
 	"strings"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
 )
 
 type securityGroupListItemOutput struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Visibility string `json:"visibility"`
 }
 
 type securityGroupListOutput []securityGroupListItemOutput
@@ -23,6 +25,8 @@ type securityGroupListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
+
+	Visibility string `cli-usage:"Security Group visibility: private (default) or public"`
 }
 
 func (c *securityGroupListCmd) cmdAliases() []string { return gListAlias }
@@ -46,7 +50,13 @@ func (c *securityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
 	)
 
-	securityGroups, err := cs.ListSecurityGroups(ctx, gCurrentAccount.DefaultZone)
+	params := &oapi.ListSecurityGroupsParams{}
+	if len(c.Visibility) > 0 {
+		params = &oapi.ListSecurityGroupsParams{
+			Visibility: (*oapi.ListSecurityGroupsParamsVisibility)(&c.Visibility),
+		}
+	}
+	securityGroups, err := cs.FindSecurityGroups(ctx, gCurrentAccount.DefaultZone, params)
 	if err != nil {
 		return err
 	}
@@ -54,10 +64,14 @@ func (c *securityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	out := make(securityGroupListOutput, 0)
 
 	for _, t := range securityGroups {
-		out = append(out, securityGroupListItemOutput{
-			ID:   *t.ID,
-			Name: *t.Name,
-		})
+		sg := securityGroupListItemOutput{Name: *t.Name}
+		if t.ID != nil {
+			sg.ID = *t.ID
+			sg.Visibility = "private"
+		} else {
+			sg.Visibility = "public"
+		}
+		out = append(out, sg)
 	}
 
 	return c.outputFunc(&out, nil)

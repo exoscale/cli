@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.99.0
+------
+
+- feature: v2: add RevealInstancePassword
+
+0.98.1
+------
+
+- feature: v2: add FindSecurityGroups with parameter support
+
 0.98.0
 ------
 
