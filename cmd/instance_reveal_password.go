@@ -51,7 +51,7 @@ func (c *instanceRevealCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	pwd, err := cs.RevealInstancePassword(ctx, c.Zone, instance)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	out := instanceRevealOutput{
