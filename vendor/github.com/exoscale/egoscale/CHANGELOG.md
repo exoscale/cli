@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.100.0
+-------
+
+- feature: v2: allow supply security group rules referencing public security groups.
+
 0.99.0
 ------
 

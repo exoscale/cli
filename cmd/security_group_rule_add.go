@@ -31,14 +31,15 @@ type securityGroupAddRuleCmd struct {
 
 	SecurityGroup string `cli-arg:"#" cli-usage:"SECURITY-GROUP-ID|NAME"`
 
-	Description         string `cli-usage:"rule description"`
-	FlowDirection       string `cli-flag:"flow" cli-usage:"rule network flow direction (ingress|egress)"`
-	ICMPCode            int64  `cli-usage:"rule ICMP code"`
-	ICMPType            int64  `cli-usage:"rule ICMP type"`
-	Port                string `cli-usage:"rule network port (format: PORT|START-END)"`
-	Protocol            string `cli-usage:"rule network protocol"`
-	TargetNetwork       string `cli-flag:"network" cli-usage:"rule target network address (in CIDR format)"`
-	TargetSecurityGroup string `cli-flag:"security-group" cli-usage:"rule target Security Group NAME|ID"`
+	Description               string `cli-usage:"rule description"`
+	FlowDirection             string `cli-flag:"flow" cli-usage:"rule network flow direction (ingress|egress)"`
+	ICMPCode                  int64  `cli-usage:"rule ICMP code"`
+	ICMPType                  int64  `cli-usage:"rule ICMP type"`
+	Port                      string `cli-usage:"rule network port (format: PORT|START-END)"`
+	Protocol                  string `cli-usage:"rule network protocol"`
+	TargetNetwork             string `cli-flag:"network" cli-usage:"rule target network address (in CIDR format)"`
+	TargetSecurityGroup       string `cli-flag:"security-group" cli-usage:"rule target Security Group NAME|ID"`
+	TargetPublicSecurityGroup string `cli-flag:"public-security-group" cli-usage:"rule target Public Security Group NAME"`
 }
 
 func (c *securityGroupAddRuleCmd) cmdAliases() []string { return nil }
@@ -82,7 +83,10 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Protocol:      &c.Protocol,
 	}
 
-	if (c.TargetNetwork == "" && c.TargetSecurityGroup == "") || (c.TargetNetwork != "" && c.TargetSecurityGroup != "") {
+	if (c.TargetNetwork == "" && c.TargetSecurityGroup == "" && c.TargetPublicSecurityGroup == "") ||
+		(c.TargetNetwork != "" && c.TargetSecurityGroup != "") ||
+		(c.TargetNetwork != "" && c.TargetPublicSecurityGroup != "") ||
+		(c.TargetSecurityGroup != "" && c.TargetPublicSecurityGroup != "") {
 		return fmt.Errorf("either a target network address or Security Group name/ID must be specified")
 	}
 
@@ -92,6 +96,11 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("unable to retrieve Security Group %q: %w", c.TargetSecurityGroup, err)
 		}
 		securityGroupRule.SecurityGroupID = targetSecurityGroup.ID
+	} else if c.TargetPublicSecurityGroup != "" {
+
+		visibility := "public"
+		securityGroupRule.Visibility = &visibility
+		securityGroupRule.SecurityGroupName = &c.TargetPublicSecurityGroup
 	} else {
 		_, network, err := net.ParseCIDR(c.TargetNetwork)
 		if err != nil {

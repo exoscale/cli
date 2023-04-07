@@ -65,7 +65,7 @@ func (o *securityGroupShowOutput) toTable() {
 				if rule.Network != nil {
 					r = append(r, *rule.Network)
 				} else {
-					r = append(r, "SG:"+*rule.SecurityGroup)
+					r = append(r, *rule.SecurityGroup)
 				}
 
 				if strings.HasPrefix(rule.Protocol, "icmp") {
@@ -200,7 +200,12 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
-			or.SecurityGroup = ruleSecurityGroup.Name
+			ruleSG := "SG:" + *ruleSecurityGroup.Name
+			or.SecurityGroup = &ruleSG
+		}
+		if rule.SecurityGroupName != nil {
+			ruleSG := "PUBLIC-SG:" + *rule.SecurityGroupName
+			or.SecurityGroup = &ruleSG
 		}
 
 		if *rule.FlowDirection == "ingress" {
