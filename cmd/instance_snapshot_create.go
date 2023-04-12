@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -47,6 +49,9 @@ func (c *instanceSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	decorateAsyncOperation(fmt.Sprintf("Creating snapshot of instance %q...", c.Instance), func() {
 		snapshot, err = cs.CreateInstanceSnapshot(ctx, c.Zone, instance)
 		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				err = fmt.Errorf("Request timeout reached. Snapshot creation is not canceled and might still be running, check the status with: exo c i snapshot list")
+			}
 			return
 		}
 	})

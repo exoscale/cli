@@ -88,7 +88,7 @@ const (
 	defaultRunstatusEndpoint  = "https://api.runstatus.com"
 	defaultZone               = "ch-dk-2"
 	defaultOutputFormat       = "table"
-	defaultClientTimeout      = 10
+	defaultClientTimeout      = 20
 )
 
 var configCmd = &cobra.Command{
