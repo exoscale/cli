@@ -61,5 +61,16 @@ The `exo` CLI contains documentation for all of its commands, you can explore th
 Additional information and tutorials are available [on Exoscale's community website][communitydoc].
 
 
+## Integrations
+
+### Fig
+
+When using [Fig](https://fig.io) you can run this command to output Fig completion spec:
+
+```
+exo integrations generate-fig-spec
+```
+
+
 [releases]: https://github.com/exoscale/cli/releases
 [communitydoc]: https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/
