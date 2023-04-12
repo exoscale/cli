@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.67.0
+
+### Features
+
+- `exo compute instance reveal-password`: new command that prints the password of a Compute instance (#494)
+- `exo compute security-group list`: added flag `--visibility` to chose between private and public security groups (#494)
+- `exo compute security-group rule add`: support creating rules referencing public groups (#495)
+- Updated `exo x`
+
 ## 1.66.0
 
 ### Features
