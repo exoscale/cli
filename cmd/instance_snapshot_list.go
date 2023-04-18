@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -60,7 +61,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	res := make(chan instanceSnapshotListItemOutput)
 	done := make(chan struct{})
 
-	instances := make(map[string]*egoscale.Instance) // For caching
+	var instances sync.Map
 
 	go func() {
 		for dt := range res {
@@ -77,13 +78,16 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		for _, s := range list {
-			instance, cached := instances[*s.InstanceID]
-			if !cached {
+			var instance *egoscale.Instance
+			instanceI, cached := instances.Load(*s.InstanceID)
+			if cached {
+				instance = instanceI.(*egoscale.Instance)
+			} else {
 				instance, err = cs.GetInstance(ctx, zone, *s.InstanceID)
 				if err != nil {
 					return fmt.Errorf("unable to retrieve Compute instance %q: %w", *s.InstanceID, err)
 				}
-				instances[*s.InstanceID] = instance
+				instances.Store(*s.InstanceID, instance)
 			}
 
 			res <- instanceSnapshotListItemOutput{
