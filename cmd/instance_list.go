@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -66,7 +67,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	res := make(chan instanceListItemOutput)
 	done := make(chan struct{})
 
-	instanceTypes := make(map[string]*egoscale.InstanceType) // For caching
+	var instanceTypes sync.Map
 
 	go func() {
 		for instance := range res {
@@ -83,8 +84,11 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		for _, i := range list {
-			instanceType, cached := instanceTypes[*i.InstanceTypeID]
-			if !cached {
+			var instanceType *egoscale.InstanceType
+			instanceTypeI, cached := instanceTypes.Load(*i.InstanceTypeID)
+			if cached {
+				instanceType = instanceTypeI.(*egoscale.InstanceType)
+			} else {
 				instanceType, err = cs.GetInstanceType(ctx, zone, *i.InstanceTypeID)
 				if err != nil {
 					return fmt.Errorf(
@@ -92,7 +96,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 						*i.InstanceTypeID,
 						err)
 				}
-				instanceTypes[*i.InstanceTypeID] = instanceType
+				instanceTypes.Store(*i.InstanceTypeID, instanceType)
 			}
 
 			res <- instanceListItemOutput{
