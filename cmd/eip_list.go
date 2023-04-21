@@ -41,7 +41,7 @@ Supported output template annotations: %s`,
 		},
 	}
 
-	eipListCmd.Flags().StringP("zone", "z", "", "Show IPs from given zone")
+	eipListCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Show IPs from given zone")
 	eipCmd.AddCommand(eipListCmd)
 }
 

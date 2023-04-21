@@ -119,7 +119,7 @@ func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 func init() {
 	privnetCreateCmd.Flags().StringP("description", "d", "", "Private network description")
 	privnetCreateCmd.Flags().StringP("cidrmask", "c", "", "the cidrmask of the network. Required for managed networks.")
-	privnetCreateCmd.Flags().StringP("zone", "z", "", "Assign Private Network to a zone")
+	privnetCreateCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Assign Private Network to a zone")
 
 	startIP := new(ipValue)
 	endIP := new(ipValue)

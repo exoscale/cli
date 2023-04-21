@@ -41,7 +41,7 @@ Supported output template annotations: %s`,
 		},
 	}
 
-	privnetListCmd.Flags().StringP("zone", "z", "", "Show Private Networks only in specified zone")
+	privnetListCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Show Private Networks only in specified zone")
 	privnetCmd.AddCommand(privnetListCmd)
 }
 

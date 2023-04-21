@@ -244,6 +244,6 @@ func init() {
 	coiCmd.Flags().StringSlice("private-network", nil, "Private Network name/ID")
 	coiCmd.Flags().StringSlice("security-group", nil, "Security Group name/ID")
 	coiCmd.Flags().StringP("service-offering", "o", "medium", serviceOfferingHelp)
-	coiCmd.Flags().StringP("zone", "z", "", zoneHelp)
+	coiCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneHelp)
 	labCmd.AddCommand(coiCmd)
 }

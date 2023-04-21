@@ -26,7 +26,7 @@ func init() {
 	templateListCmd.Flags().BoolP("community", "", false, "List community templates")
 	templateListCmd.Flags().BoolP("featured", "", false, "List featured templates")
 	templateListCmd.Flags().BoolP("mine", "", false, "List your templates")
-	templateListCmd.Flags().StringP("zone", "z", "", "Name of the zone (default: current account's default zone)")
+	templateListCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Name of the zone (default: current account's default zone)")
 	templateCmd.AddCommand(templateListCmd)
 }
 

@@ -202,7 +202,7 @@ func createVM(deployVM *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine
 }
 
 func init() {
-	vmCreateCmd.Flags().StringP("zone", "z", "", zoneHelp)
+	vmCreateCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	vmCreateCmd.Flags().StringP("template", "t", defaultTemplate, "template NAME|ID")
 	vmCreateCmd.Flags().StringP("template-filter", "", defaultTemplateFilter, templateFilterHelp)
 	vmCreateCmd.Flags().StringP("service-offering", "o", defaultServiceOffering, serviceOfferingHelp)
