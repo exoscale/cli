@@ -70,7 +70,7 @@ Supported output template annotations: %s`,
 				Type:       string(apiKey.Type),
 			}
 
-			if err := output(&o, err); err != nil {
+			if err := printOutput(&o, err); err != nil {
 				return err
 			}
 		}

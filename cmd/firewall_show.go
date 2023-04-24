@@ -39,7 +39,7 @@ Supported output template annotations: %s`,
 				return errors.New("show expects one Security Group by name or id")
 			}
 
-			return output(showFirewall(args[0]))
+			return printOutput(showFirewall(args[0]))
 		},
 	})
 }

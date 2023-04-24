@@ -172,7 +172,7 @@ Supported output template annotations: %s`,
 		vm := resp[0].resp.(*egoscale.VirtualMachine)
 
 		if !gQuiet {
-			return output(showVM(vm.Name))
+			return printOutput(showVM(vm.Name))
 		}
 
 		return nil

@@ -26,7 +26,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		return output(createAffinityGroup(args[0], desc))
+		return printOutput(createAffinityGroup(args[0], desc))
 	},
 }
 

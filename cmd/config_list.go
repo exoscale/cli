@@ -47,7 +47,7 @@ Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&configListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listConfigs(), nil)
+			return printOutput(listConfigs(), nil)
 		},
 	})
 }

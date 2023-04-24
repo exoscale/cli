@@ -33,7 +33,7 @@ Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&firewallListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listSecurityGroups(args))
+			return printOutput(listSecurityGroups(args))
 		},
 	})
 }

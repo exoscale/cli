@@ -72,7 +72,7 @@ var privnetCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		return output(createPrivnet(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value()))
+		return printOutput(createPrivnet(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value()))
 	},
 }
 

@@ -35,7 +35,7 @@ Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&snapshotListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listSnapshots(args))
+			return printOutput(listSnapshots(args))
 		},
 	})
 }

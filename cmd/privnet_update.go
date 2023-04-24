@@ -74,7 +74,7 @@ var privnetUpdateCmd = &cobra.Command{
 			return err
 		}
 
-		return output(showPrivnet(updatedPrivnet))
+		return printOutput(showPrivnet(updatedPrivnet))
 	},
 }
 

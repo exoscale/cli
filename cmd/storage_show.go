@@ -185,10 +185,10 @@ Supported output template annotations:
 			}
 
 			if key == "" {
-				return output(storage.ShowBucket(bucket))
+				return printOutput(storage.ShowBucket(bucket))
 			}
 
-			return output(storage.ShowObject(bucket, key))
+			return printOutput(storage.ShowObject(bucket, key))
 		},
 	})
 }

@@ -46,7 +46,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showDNS(args[0], name, args[1:]))
+			return printOutput(showDNS(args[0], name, args[1:]))
 		},
 	}
 

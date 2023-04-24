@@ -151,7 +151,7 @@ Supported output template annotations: %s`,
 		}
 
 		if !gQuiet {
-			return output(showVM(vm.ID.String()))
+			return printOutput(showVM(vm.ID.String()))
 		}
 
 		return nil

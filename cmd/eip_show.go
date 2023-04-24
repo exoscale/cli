@@ -82,7 +82,7 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return output(showEIP(args[0]))
+			return printOutput(showEIP(args[0]))
 		},
 	})
 }

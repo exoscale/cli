@@ -98,7 +98,7 @@ Example:
 		}
 
 		if !gQuiet {
-			return output(storage.ShowBucket(bucket))
+			return printOutput(storage.ShowBucket(bucket))
 		}
 
 		return nil

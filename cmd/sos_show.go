@@ -102,7 +102,7 @@ var sosShowCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		return output(showSOS(args[0], args[1], cmd))
+		return printOutput(showSOS(args[0], args[1], cmd))
 	},
 }
 

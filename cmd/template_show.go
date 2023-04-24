@@ -71,7 +71,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showTemplate(template))
+			return printOutput(showTemplate(template))
 		},
 	}
 

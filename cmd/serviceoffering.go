@@ -35,7 +35,7 @@ func init() {
 Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&serviceOfferingListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listServiceOfferings())
+			return printOutput(listServiceOfferings())
 		},
 	})
 }

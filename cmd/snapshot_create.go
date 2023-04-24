@@ -22,7 +22,7 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return output(createSnapshot(args[0]))
+			return printOutput(createSnapshot(args[0]))
 		},
 	})
 }

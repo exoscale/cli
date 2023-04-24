@@ -44,7 +44,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showSnapshot(snapshot))
+			return printOutput(showSnapshot(snapshot))
 		},
 	})
 }

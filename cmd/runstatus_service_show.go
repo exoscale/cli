@@ -48,7 +48,7 @@ Supported output template annotations: %s`,
 				service = args[1]
 			}
 
-			return output(runstatusShowService(page, service))
+			return printOutput(runstatusShowService(page, service))
 		},
 	})
 }

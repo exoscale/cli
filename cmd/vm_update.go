@@ -74,7 +74,7 @@ var vmUpdateCmd = &cobra.Command{
 		}
 
 		if !gQuiet {
-			return output(showVM(vm.ID.String()))
+			return printOutput(showVM(vm.ID.String()))
 		}
 
 		return nil

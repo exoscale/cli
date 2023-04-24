@@ -73,7 +73,7 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 
 		switch ownershipCommand {
 		case objOwnershipStatus:
-			return output(storage.GetBucketObjectOwnership(cmd.Context(), bucket))
+			return printOutput(storage.GetBucketObjectOwnership(cmd.Context(), bucket))
 		case objOwnershipObjectWriter:
 			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipObjectWriter)
 		case objOwnershipBucketOwnerPreferred:

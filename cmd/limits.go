@@ -75,7 +75,7 @@ Supported output template annotations: %s`,
 			})
 		}
 
-		return output(&out, nil)
+		return printOutput(&out, nil)
 	},
 }
 

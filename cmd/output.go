@@ -26,7 +26,7 @@ type outputter interface {
 
 // output prints an outputter interface to the terminal, formatted according
 // to the global format specified as CLI flag.
-func output(o outputter, err error) error {
+func printOutput(o outputter, err error) error {
 	if err != nil {
 		return err
 	}

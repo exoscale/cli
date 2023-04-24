@@ -38,7 +38,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(listEIP(zone))
+			return printOutput(listEIP(zone))
 		},
 	}
 

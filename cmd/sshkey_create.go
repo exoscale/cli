@@ -40,7 +40,7 @@ Supported output template annotations: %s`,
 			}
 
 			if !gQuiet {
-				return output(&sshkeyCreateOutput{
+				return printOutput(&sshkeyCreateOutput{
 					Name:        sshKey.Name,
 					Fingerprint: sshKey.Fingerprint,
 					PrivateKey:  sshKey.PrivateKey,

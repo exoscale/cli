@@ -70,7 +70,7 @@ Supported output template annotations: %s`,
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.ShowObject(bucket, prefix))
+			return printOutput(storage.ShowObject(bucket, prefix))
 		}
 
 		if !gQuiet {

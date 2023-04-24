@@ -32,7 +32,7 @@ Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&affinityGroupListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listAffinityGroups())
+			return printOutput(listAffinityGroups())
 		},
 	})
 }

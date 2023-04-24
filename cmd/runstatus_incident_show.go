@@ -92,7 +92,7 @@ Supported output template annotations: %s`,
 				incident = args[1]
 			}
 
-			return output(showRunstatusIncident(page, incident))
+			return printOutput(showRunstatusIncident(page, incident))
 		},
 	})
 }

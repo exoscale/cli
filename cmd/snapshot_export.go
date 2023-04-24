@@ -52,7 +52,7 @@ Supported output template annotations: %s`,
 		}
 
 		if !cmd.Flags().Changed("download") {
-			return output(&snapshotExportOutput{
+			return printOutput(&snapshotExportOutput{
 				URL:      snapshot.PresignedURL,
 				Checksum: snapshot.MD5sum,
 			}, nil)

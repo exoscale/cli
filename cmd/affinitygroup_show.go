@@ -40,7 +40,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showAffinityGroup(ag))
+			return printOutput(showAffinityGroup(ag))
 		},
 	})
 }

@@ -46,7 +46,7 @@ Supported output template annotations: %s`,
 			})
 		}
 
-		return output(&o, err)
+		return printOutput(&o, err)
 	},
 }
 

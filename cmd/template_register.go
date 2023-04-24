@@ -111,7 +111,7 @@ Supported output template annotations: %s`,
 			req.URL = snapshot.PresignedURL
 		}
 
-		return output(templateRegister(req, zone))
+		return printOutput(templateRegister(req, zone))
 	},
 }
 

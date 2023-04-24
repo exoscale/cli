@@ -31,7 +31,7 @@ Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&runstatusPageListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listRunstatusPages(args))
+			return printOutput(listRunstatusPages(args))
 		},
 	})
 }

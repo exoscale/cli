@@ -34,7 +34,7 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return output(uploadSSHKey(args[0], args[1]))
+			return printOutput(uploadSSHKey(args[0], args[1]))
 		},
 	})
 }

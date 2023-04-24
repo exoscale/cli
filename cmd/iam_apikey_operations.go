@@ -30,7 +30,7 @@ Optional patterns can be provided to filter results by compute, DNS, IAM or SOS 
 Supported output template annotations: %s`,
 		strings.Join(output.OutputterTemplateAnnotations(&apiKeyOperationsItemOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return output(listAPIKeyOperations(args))
+		return printOutput(listAPIKeyOperations(args))
 	},
 }
 

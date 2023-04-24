@@ -31,7 +31,7 @@ Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&sshkeyListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listSSHKey(args))
+			return printOutput(listSSHKey(args))
 		},
 	})
 }

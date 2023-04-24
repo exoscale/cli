@@ -70,7 +70,7 @@ Supported output template annotations: %s`,
 			templateFilter = "featured"
 		}
 
-		return output(listTemplates(templateFilter, zone, args))
+		return printOutput(listTemplates(templateFilter, zone, args))
 	},
 }
 

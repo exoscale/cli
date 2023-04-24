@@ -41,7 +41,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showPrivnet(privnet))
+			return printOutput(showPrivnet(privnet))
 		},
 	})
 }

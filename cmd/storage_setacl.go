@@ -111,7 +111,7 @@ Supported output template annotations:
 			}
 
 			if !gQuiet {
-				return output(storage.ShowBucket(bucket))
+				return printOutput(storage.ShowBucket(bucket))
 			}
 			return nil
 		}
@@ -121,7 +121,7 @@ Supported output template annotations:
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.ShowObject(bucket, prefix))
+			return printOutput(storage.ShowObject(bucket, prefix))
 		}
 
 		if !gQuiet {

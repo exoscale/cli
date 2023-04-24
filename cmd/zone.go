@@ -49,7 +49,7 @@ func init() {
 Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&zoneListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listZones())
+			return printOutput(listZones())
 		},
 	})
 }

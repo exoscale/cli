@@ -121,7 +121,7 @@ Supported output template annotations: %s`,
 				return errors.New("show expects a page name")
 			}
 
-			return output(showRunstatusPage(args[0]))
+			return printOutput(showRunstatusPage(args[0]))
 		},
 	})
 }

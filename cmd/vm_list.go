@@ -46,7 +46,7 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			return output(listVMs())
+			return printOutput(listVMs())
 		},
 	})
 }

@@ -49,7 +49,7 @@ func init() {
 					maintenance = args[1]
 				}
 
-				return output(showRunstatusMaintenance(page, maintenance))
+				return printOutput(showRunstatusMaintenance(page, maintenance))
 			},
 		})
 }

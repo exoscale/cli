@@ -57,7 +57,7 @@ Supported output template annotations: %s`,
 				return showVMUserData(args[0])
 			}
 
-			return output(showVM(args[0]))
+			return printOutput(showVM(args[0]))
 		},
 	}
 

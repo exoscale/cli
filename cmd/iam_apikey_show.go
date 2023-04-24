@@ -46,7 +46,7 @@ Supported output template annotations: %s`,
 			Type:       string(apiKey.Type),
 		}
 
-		return output(&o, err)
+		return printOutput(&o, err)
 	},
 }
 

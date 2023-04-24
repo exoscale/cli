@@ -43,7 +43,7 @@ Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&runstatusIncidentListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(runstatusListIncidents(args))
+			return printOutput(runstatusListIncidents(args))
 		},
 	})
 }

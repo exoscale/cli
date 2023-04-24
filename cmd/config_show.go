@@ -45,7 +45,7 @@ Supported output template annotations: %s`,
 				name = args[0]
 			}
 
-			return output(showConfig(name))
+			return printOutput(showConfig(name))
 		},
 	})
 }

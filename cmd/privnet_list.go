@@ -38,7 +38,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(listPrivnets(zone))
+			return printOutput(listPrivnets(zone))
 		},
 	}
 

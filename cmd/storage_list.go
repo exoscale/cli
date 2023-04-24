@@ -98,7 +98,7 @@ Supported output template annotations:
 		)
 
 		if len(args) == 0 {
-			return output(listStorageBuckets())
+			return printOutput(listStorageBuckets())
 		}
 
 		recursive, err := cmd.Flags().GetBool("recursive")
@@ -124,7 +124,7 @@ Supported output template annotations:
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return output(storage.ListObjects(bucket, prefix, recursive, stream))
+		return printOutput(storage.ListObjects(bucket, prefix, recursive, stream))
 	},
 }
 
