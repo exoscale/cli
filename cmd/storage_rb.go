@@ -1,13 +1,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/smithy-go"
 	"github.com/spf13/cobra"
 )
 
@@ -66,42 +62,4 @@ func init() {
 	storageRbCmd.Flags().BoolP("recursive", "r", false,
 		"empty the bucket before deleting it")
 	storageCmd.AddCommand(storageRbCmd)
-}
-
-func (c storageClient) deleteBucket(bucket string, recursive bool) error {
-	if recursive {
-		if _, err := c.deleteObjects(bucket, "", true); err != nil {
-			return fmt.Errorf("error deleting objects: %s", err)
-		}
-	}
-
-	// Delete dangling multipart uploads preventing bucket deletion.
-	res, err := c.ListMultipartUploads(gContext, &s3.ListMultipartUploadsInput{
-		Bucket: aws.String(bucket),
-	})
-	if err != nil {
-		return fmt.Errorf("error listing dangling multipart uploads: %w", err)
-	}
-	for _, mp := range res.Uploads {
-		if _, err = c.AbortMultipartUpload(gContext, &s3.AbortMultipartUploadInput{
-			Bucket:   aws.String(bucket),
-			Key:      mp.Key,
-			UploadId: mp.UploadId,
-		}); err != nil {
-			return fmt.Errorf("error aborting dangling multipart upload: %w", err)
-		}
-	}
-
-	if _, err := c.DeleteBucket(gContext, &s3.DeleteBucketInput{Bucket: aws.String(bucket)}); err != nil {
-		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) {
-			if apiErr.ErrorCode() == "BucketNotEmpty" {
-				return errors.New("bucket is not empty, either delete files before or use flag `-r`")
-			}
-		}
-
-		return fmt.Errorf("unable to retrieve bucket CORS configuration: %w", err)
-	}
-
-	return nil
 }

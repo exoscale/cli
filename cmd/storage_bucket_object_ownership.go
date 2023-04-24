@@ -1,14 +1,10 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
@@ -110,51 +106,4 @@ func (o *storageBucketObjectOwnershipOutput) toTable() {
 	t.Append([]string{"Bucket", o.Bucket})
 	// TODO naming?
 	t.Append([]string{"Object Ownership", o.ObjectOwnership})
-}
-
-func (c storageClient) getBucketObjectOwnership(ctx context.Context, bucket string) (outputter, error) {
-	params := s3.GetBucketOwnershipControlsInput{
-		Bucket: aws.String(bucket),
-	}
-
-	resp, err := c.GetBucketOwnershipControls(ctx, &params)
-	if err != nil {
-		// TODO wrap
-		return nil, err
-	}
-
-	out := storageBucketObjectOwnershipOutput{
-		Bucket:          bucket,
-		ObjectOwnership: string(resp.OwnershipControls.Rules[0].ObjectOwnership),
-	}
-
-	return &out, nil
-}
-
-type BucketObjectOwnership string
-
-const (
-	ObjectOwnershipObjectWriter         BucketObjectOwnership = BucketObjectOwnership(types.ObjectOwnershipObjectWriter)
-	ObjectOwnershipBucketOwnerPreferred BucketObjectOwnership = BucketObjectOwnership(types.ObjectOwnershipBucketOwnerPreferred)
-	ObjectOwnershipBucketOwnerEnforced  BucketObjectOwnership = "BucketOwnerEnforced"
-)
-
-func (c storageClient) setBucketObjectOwnership(ctx context.Context, bucket string, ownership BucketObjectOwnership) error {
-	params := s3.PutBucketOwnershipControlsInput{
-		Bucket: aws.String(bucket),
-		OwnershipControls: &types.OwnershipControls{
-			Rules: []types.OwnershipControlsRule{
-				{
-					ObjectOwnership: types.ObjectOwnership(ownership),
-				},
-			}},
-	}
-
-	resp, err := c.PutBucketOwnershipControls(ctx, &params)
-	if err != nil {
-		// TODO wrap
-		return err
-	}
-
-	return nil
 }
