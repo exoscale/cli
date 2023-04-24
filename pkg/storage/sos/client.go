@@ -20,7 +20,7 @@ type Client struct {
 // forEachObject is a convenience wrapper to execute a callback function on
 // each object listed in the specified bucket/prefix. Upon callback function
 // error, the whole processing ends.
-func (c *Client) forEachObject(bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
+func (c *Client) ForEachObject(bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
 	// The "/" value can be used at command-level to mean that we want to
 	// list from the root of the bucket, but the actual bucket root is an
 	// empty prefix.
@@ -79,7 +79,7 @@ func (c *Client) forEachObject(bucket, prefix string, recursive bool, fn func(*s
 // copyObject is a helper function to be used in commands involving object
 // copying such as metadata/headers manipulation, retrieving information about
 // the targeted object for a later copy.
-func (c *Client) copyObject(bucket, key string) (*s3.CopyObjectInput, error) {
+func (c *Client) CopyObject(bucket, key string) (*s3.CopyObjectInput, error) {
 	srcObject, err := c.GetObject(gContext, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),

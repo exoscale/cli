@@ -11,7 +11,7 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-func (c *Client) createBucket(name, acl string) error {
+func (c *Client) CreateBucket(name, acl string) error {
 	s3Bucket := s3.CreateBucketInput{Bucket: aws.String(name)}
 
 	if acl != "" {
@@ -28,7 +28,7 @@ func (c *Client) createBucket(name, acl string) error {
 	return err
 }
 
-func (c *Client) showBucket(bucket string) (outputter, error) {
+func (c *Client) ShowBucket(bucket string) (outputter, error) {
 	acl, err := c.GetBucketAcl(gContext, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
