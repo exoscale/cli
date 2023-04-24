@@ -52,7 +52,7 @@ func (c *Client) deleteObjectMetadata(bucket, key string, mdKeys []string) error
 	return err
 }
 
-func (c *Client) deleteObjectsMetadata(bucket, prefix string, mdKeys []string, recursive bool) error {
+func (c *Client) DeleteObjectsMetadata(bucket, prefix string, mdKeys []string, recursive bool) error {
 	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.deleteObjectMetadata(bucket, aws.ToString(o.Key), mdKeys)
 	})

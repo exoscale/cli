@@ -78,7 +78,7 @@ func (c *Client) deleteObjectHeaders(bucket, key string, headers []string) error
 	return err
 }
 
-func (c *Client) deleteObjectsHeaders(bucket, prefix string, headers []string, recursive bool) error {
+func (c *Client) DeleteObjectsHeaders(bucket, prefix string, headers []string, recursive bool) error {
 	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.deleteObjectHeaders(bucket, aws.ToString(o.Key), headers)
 	})

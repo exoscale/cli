@@ -20,7 +20,7 @@ import (
 	"github.com/vbauerster/mpb/v4/decor"
 )
 
-func (c *Client) deleteObjects(bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
+func (c *Client) DeleteObjects(bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
 	deleteList := make([]s3types.ObjectIdentifier, 0)
 	err := c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		deleteList = append(deleteList, s3types.ObjectIdentifier{Key: o.Key})
