@@ -8,8 +8,18 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
+)
+
+const (
+	objOwnershipOpArgIndex           = 0
+	objOwnershipBucketArgIndex       = 1
+	objOwnershipStatus               = "status"
+	objOwnershipObjectWriter         = "object-writer"
+	objOwnershipBucketOwnerEnforced  = "bucket-owner-enforced"
+	objOwnershipBucketOwnerPreferred = "bucket-owner-preferred"
 )
 
 func init() {
@@ -29,7 +39,17 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		permittedOps := make(map[string]struct{}, 4)
+		permittedOps[objOwnershipStatus] = struct{}{}
+		permittedOps[objOwnershipObjectWriter] = struct{}{}
+		permittedOps[objOwnershipBucketOwnerEnforced] = struct{}{}
+		permittedOps[objOwnershipBucketOwnerPreferred] = struct{}{}
+
+		if _, ok := permittedOps[args[objOwnershipOpArgIndex]]; !ok {
+			cmdExitOnUsageError(cmd, "invalid operation")
+		}
+
+		args[objOwnershipBucketArgIndex] = strings.TrimPrefix(args[objOwnershipBucketArgIndex], storageBucketPrefix)
 
 		cmdSetZoneFlagFromDefault(cmd)
 
@@ -37,8 +57,8 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ownershipCommand := args[0]
-		bucket := args[1]
+		ownershipCommand := args[objOwnershipOpArgIndex]
+		bucket := args[objOwnershipBucketArgIndex]
 
 		fmt.Println(ownershipCommand)
 
@@ -54,7 +74,18 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return output(storage.getBucketObjectOwnership(cmd.Context(), bucket))
+		switch ownershipCommand {
+		case objOwnershipStatus:
+			return output(storage.getBucketObjectOwnership(cmd.Context(), bucket))
+		case objOwnershipObjectWriter:
+			return storage.setBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipObjectWriter)
+		case objOwnershipBucketOwnerPreferred:
+			return storage.setBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipBucketOwnerPreferred)
+		case objOwnershipBucketOwnerEnforced:
+			return storage.setBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipBucketOwnerEnforced)
+		}
+
+		return fmt.Errorf("invalid operation")
 	},
 }
 
@@ -76,7 +107,8 @@ func (o *storageBucketObjectOwnershipOutput) toTable() {
 	t.SetHeader([]string{"Bucket Object Ownership"})
 
 	t.Append([]string{"Bucket", o.Bucket})
-	t.Append([]string{"Zone", o.ObjectOwnership})
+	// TODO naming?
+	t.Append([]string{"Object Ownership", o.ObjectOwnership})
 }
 
 func (c storageClient) getBucketObjectOwnership(ctx context.Context, bucket string) (outputter, error) {
@@ -84,7 +116,7 @@ func (c storageClient) getBucketObjectOwnership(ctx context.Context, bucket stri
 		Bucket: aws.String(bucket),
 	}
 
-	resp, err := c.GetBucketOwnershipControls(gContext, &params)
+	resp, err := c.GetBucketOwnershipControls(ctx, &params)
 	if err != nil {
 		// TODO wrap
 		return nil, err
@@ -96,4 +128,32 @@ func (c storageClient) getBucketObjectOwnership(ctx context.Context, bucket stri
 	}
 
 	return &out, nil
+}
+
+type BucketObjectOwnership string
+
+const (
+	ObjectOwnershipObjectWriter         BucketObjectOwnership = BucketObjectOwnership(types.ObjectOwnershipObjectWriter)
+	ObjectOwnershipBucketOwnerPreferred BucketObjectOwnership = BucketObjectOwnership(types.ObjectOwnershipBucketOwnerPreferred)
+	ObjectOwnershipBucketOwnerEnforced  BucketObjectOwnership = "BucketOwnerEnforced"
+)
+
+func (c storageClient) setBucketObjectOwnership(ctx context.Context, bucket string, ownership BucketObjectOwnership) error {
+	params := s3.PutBucketOwnershipControlsInput{
+		Bucket: aws.String(bucket),
+		OwnershipControls: &types.OwnershipControls{
+			Rules: []types.OwnershipControlsRule{
+				{
+					ObjectOwnership: types.ObjectOwnership(ownership),
+				},
+			}},
+	}
+
+	resp, err := c.PutBucketOwnershipControls(ctx, &params)
+	if err != nil {
+		// TODO wrap
+		return err
+	}
+
+	return nil
 }
