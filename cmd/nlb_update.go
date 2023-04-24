@@ -30,7 +30,7 @@ func (c *nlbUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates a Network Load Balancer.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&nlbShowOutput{}), ", "),
+		strings.Join(output.output.OutputterTemplateAnnotations(&nlbShowOutput{}), ", "),
 	)
 }
 

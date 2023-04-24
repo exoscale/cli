@@ -18,7 +18,7 @@ var vmCreateCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command deploys a new Compute instance.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+		strings.Join(output.output.OutputterTemplateAnnotations(&vmShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

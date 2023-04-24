@@ -24,11 +24,6 @@ var (
 		Long:             storageCmdLongHelp(),
 		TraverseChildren: true,
 	}
-
-	// storageCommonConfigOptFns represents the list of AWS SDK configuration options common
-	// to all commands. In addition to those, some commands can/must set additional options
-	// specific to their execution context.
-	storageCommonConfigOptFns []func(*awsconfig.LoadOptions) error
 )
 
 func init() {

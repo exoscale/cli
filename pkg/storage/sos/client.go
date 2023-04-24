@@ -1,15 +1,25 @@
 package sos
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"path"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
+	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+)
+
+var (
+	// storageCommonConfigOptFns represents the list of AWS SDK configuration options common
+	// to all commands. In addition to those, some commands can/must set additional options
+	// specific to their execution context.
+	storageCommonConfigOptFns []func(*awsconfig.LoadOptions) error
 )
 
 type Client struct {
@@ -21,7 +31,7 @@ type Client struct {
 // forEachObject is a convenience wrapper to execute a callback function on
 // each object listed in the specified bucket/prefix. Upon callback function
 // error, the whole processing ends.
-func (c *Client) ForEachObject(bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
+func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
 	// The "/" value can be used at command-level to mean that we want to
 	// list from the root of the bucket, but the actual bucket root is an
 	// empty prefix.
@@ -33,7 +43,7 @@ func (c *Client) ForEachObject(bucket, prefix string, recursive bool, fn func(*s
 
 	var ct string
 	for {
-		res, err := c.ListObjectsV2(gContext, &s3.ListObjectsV2Input{
+		res, err := c.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
 			ContinuationToken: aws.String(ct),
@@ -80,8 +90,8 @@ func (c *Client) ForEachObject(bucket, prefix string, recursive bool, fn func(*s
 // copyObject is a helper function to be used in commands involving object
 // copying such as metadata/headers manipulation, retrieving information about
 // the targeted object for a later copy.
-func (c *Client) CopyObject(bucket, key string) (*s3.CopyObjectInput, error) {
-	srcObject, err := c.GetObject(gContext, &s3.GetObjectInput{
+func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyObjectInput, error) {
+	srcObject, err := c.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -92,7 +102,7 @@ func (c *Client) CopyObject(bucket, key string) (*s3.CopyObjectInput, error) {
 	// Object ACL are reset during a CopyObject operation,
 	// we must set them explicitly on the copied object.
 
-	acl, err := c.GetObjectAcl(gContext, &s3.GetObjectAclInput{
+	acl, err := c.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -127,17 +137,17 @@ func ClientOptWithZone(zone string) ClientOpt {
 	return func(c *Client) error { c.zone = zone; return nil }
 }
 
-func ClientOptZoneFromBucket(bucket string) ClientOpt {
+func ClientOptZoneFromBucket(ctx context.Context, zone, endpoint, bucket string) ClientOpt {
 	return func(c *Client) error {
 		cfg, err := awsconfig.LoadDefaultConfig(
-			gContext,
+			ctx,
 			append(storageCommonConfigOptFns,
 				awsconfig.WithEndpointResolver(aws.EndpointResolverFunc(
 					func(service, region string) (aws.Endpoint, error) {
 						sosURL := strings.Replace(
-							gCurrentAccount.SosEndpoint,
+							endpoint,
 							"{zone}",
-							gCurrentAccount.DefaultZone,
+							zone,
 							1,
 						)
 						return aws.Endpoint{URL: sosURL}, nil
@@ -147,7 +157,7 @@ func ClientOptZoneFromBucket(bucket string) ClientOpt {
 			return err
 		}
 
-		region, err := s3manager.GetBucketRegion(gContext, s3.NewFromConfig(cfg), bucket, func(o *s3.Options) {
+		region, err := s3manager.GetBucketRegion(ctx, s3.NewFromConfig(cfg), bucket, func(o *s3.Options) {
 			o.UsePathStyle = true
 		})
 		if err != nil {
@@ -159,10 +169,31 @@ func ClientOptZoneFromBucket(bucket string) ClientOpt {
 	}
 }
 
-func NewStorageClient(opts ...ClientOpt) (*Client, error) {
+type Account struct {
+	Name                 string
+	Account              string
+	Endpoint             string
+	ComputeEndpoint      string // legacy config.
+	DNSEndpoint          string
+	SosEndpoint          string
+	RunstatusEndpoint    string
+	Environment          string
+	Key                  string
+	Secret               string
+	SecretCommand        []string
+	DefaultZone          string
+	DefaultSSHKey        string
+	DefaultTemplate      string
+	DefaultRunstatusPage string
+	DefaultOutputFormat  string
+	ClientTimeout        int
+	CustomHeaders        map[string]string
+}
+
+func NewStorageClient(ctx context.Context, account *Account, opts ...ClientOpt) (*Client, error) {
 	var (
 		client = Client{
-			zone: gCurrentAccount.DefaultZone,
+			zone: account.DefaultZone,
 		}
 
 		caCerts io.Reader
@@ -175,13 +206,13 @@ func NewStorageClient(opts ...ClientOpt) (*Client, error) {
 	}
 
 	cfg, err := awsconfig.LoadDefaultConfig(
-		gContext,
+		ctx,
 		append(storageCommonConfigOptFns,
 			awsconfig.WithRegion(client.zone),
 
 			awsconfig.WithEndpointResolver(aws.EndpointResolverFunc(
 				func(service, region string) (aws.Endpoint, error) {
-					sosURL := strings.Replace(gCurrentAccount.SosEndpoint, "{zone}", client.zone, 1)
+					sosURL := strings.Replace(account.SosEndpoint, "{zone}", client.zone, 1)
 					return aws.Endpoint{
 						URL:           sosURL,
 						SigningRegion: client.zone,
@@ -189,8 +220,8 @@ func NewStorageClient(opts ...ClientOpt) (*Client, error) {
 				})),
 
 			awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
-				gCurrentAccount.Key,
-				gCurrentAccount.APISecret(),
+				account.Key,
+				account.APISecret(),
 				"")),
 
 			awsconfig.WithCustomCABundle(caCerts),

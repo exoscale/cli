@@ -77,7 +77,7 @@ If you do not want to use a Cloud Controller Manager, add the
 cluster has been created.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksShowOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&sksShowOutput{}), ", "))
 }
 
 func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

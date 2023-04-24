@@ -136,7 +136,7 @@ func getCommaflag(p string) []string {
 
 // cliCommandSettings represents a CLI command settings.
 type cliCommandSettings struct {
-	outputFunc func(o outputter, err error) error
+	outputFunc func(o output.Outputter, err error) error
 }
 
 // defaultCLICmdSettings returns a cliCommandSettings struct initialized

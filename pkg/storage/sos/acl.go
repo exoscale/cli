@@ -1,6 +1,7 @@
 package sos
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -30,7 +31,7 @@ type ACL struct {
 	FullControl string `json:"full_control"`
 }
 
-func (c *Client) SetBucketACL(bucket string, acl *ACL) error {
+func (c *Client) SetBucketACL(ctx context.Context, bucket string, acl *ACL) error {
 	s3ACL := s3.PutBucketAclInput{Bucket: aws.String(bucket)}
 
 	if acl.Canned != "" {
@@ -47,7 +48,7 @@ func (c *Client) SetBucketACL(bucket string, acl *ACL) error {
 		// As a safety precaution, if the caller didn't explicitly set a Grantee
 		// with the FULL_CONTROL permission we set it to the current bucket owner.
 		if acl.FullControl == "" {
-			curACL, err := c.GetBucketAcl(gContext, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
+			curACL, err := c.GetBucketAcl(ctx, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
 			if err != nil {
 				return fmt.Errorf("unable to retrieve current ACL: %w", err)
 			}
@@ -59,14 +60,14 @@ func (c *Client) SetBucketACL(bucket string, acl *ACL) error {
 		}
 	}
 
-	if _, err := c.PutBucketAcl(gContext, &s3ACL); err != nil {
+	if _, err := c.PutBucketAcl(ctx, &s3ACL); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *Client) SetObjectACL(bucket, key string, acl *ACL) error {
+func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL) error {
 	s3ACL := s3.PutObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -86,7 +87,7 @@ func (c *Client) SetObjectACL(bucket, key string, acl *ACL) error {
 		// As a safety precaution, if the caller didn't explicitly set a Grantee
 		// with the FULL_CONTROL permission we set it to the current object owner.
 		if acl.FullControl == "" {
-			curACL, err := c.GetObjectAcl(gContext, &s3.GetObjectAclInput{
+			curACL, err := c.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 				Bucket: s3ACL.Bucket,
 				Key:    s3ACL.Key,
 			})
@@ -101,16 +102,16 @@ func (c *Client) SetObjectACL(bucket, key string, acl *ACL) error {
 		}
 	}
 
-	if _, err := c.PutObjectAcl(gContext, &s3ACL); err != nil {
+	if _, err := c.PutObjectAcl(ctx, &s3ACL); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *Client) SetObjectsACL(bucket, prefix string, acl *ACL, recursive bool) error {
-	return c.ForEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.SetObjectACL(bucket, aws.ToString(o.Key), acl)
+func (c *Client) SetObjectsACL(ctx context.Context, bucket, prefix string, acl *ACL, recursive bool) error {
+	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+		return c.SetObjectACL(ctx, bucket, aws.ToString(o.Key), acl)
 	})
 }
 
@@ -174,8 +175,8 @@ func (a ACL) toS3Grants() []s3types.Grant {
 	return grants
 }
 
-// storageACLFromS3 converts an S3 ACL Grant to the local ACL representation.
-func storageACLFromS3(grants []s3types.Grant) ACL {
+// ACLFromS3 converts an S3 ACL Grant to the local ACL representation.
+func ACLFromS3(grants []s3types.Grant) ACL {
 	acl := ACL{
 		Read:        "-",
 		Write:       "-",

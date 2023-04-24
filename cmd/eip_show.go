@@ -75,7 +75,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows an Elastic IP details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&eipShowOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&eipShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -87,7 +87,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func showEIP(v string) (outputter, error) {
+func showEIP(v string) (output.Outputter, error) {
 	eip, err := getElasticIPByAddressOrID(v)
 	if err != nil {
 		return nil, err

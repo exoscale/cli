@@ -47,14 +47,14 @@ func init() {
 		Long: fmt.Sprintf(`This command lists available Exoscale zones.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&zoneListOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&zoneListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listZones())
 		},
 	})
 }
 
-func listZones() (outputter, error) {
+func listZones() (output.Outputter, error) {
 	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err

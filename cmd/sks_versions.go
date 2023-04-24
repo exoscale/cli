@@ -35,7 +35,7 @@ func (c *sksVersionsCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists supported SKS cluster versions.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksClusterVersionsItemOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&sksClusterVersionsItemOutput{}), ", "))
 }
 
 func (c *sksVersionsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

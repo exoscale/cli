@@ -32,7 +32,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Security Group details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&firewallShowOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&firewallShowOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -44,7 +44,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func showFirewall(name string) (outputter, error) {
+func showFirewall(name string) (output.Outputter, error) {
 	sg, err := getSecurityGroupByNameOrID(name)
 	if err != nil {
 		return nil, err

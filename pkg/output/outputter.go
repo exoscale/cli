@@ -28,6 +28,19 @@ func JSON(o interface{}) {
 	fmt.Println(string(j))
 }
 
+// Outputter is an interface that must to be implemented by the commands output
+// objects. In addition to the methods, types implementing this interface can
+// also use struct tags to modify the output logic:
+//   - output:"-" is similar to package encoding/json, i.e. that a field with
+//     this tag will not be displayed
+//   - outputLabel:"..." overrides the string displayed as label, which by
+//     default is the field's CamelCase named split with spaces
+type Outputter interface {
+	toTable()
+	toJSON()
+	toText()
+}
+
 // Text prints a template-based plain text rendering of o to the
 // terminal. If the object is of iterable type (slice only), each item is
 // printed on a new line. If none is provided by the user, the default

@@ -126,7 +126,7 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 	t.Append([]string{"Users", users})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context) (outputter, error) {
+func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context) (output.Outputter, error) {
 	res, err := cs.GetDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
@@ -174,7 +174,7 @@ func opensearchShowSettings(setting string, db *oapi.DbaasServiceOpensearch) err
 	return nil
 }
 
-func opensearchShowNotifications(db *oapi.DbaasServiceOpensearch) (outputter, error) {
+func opensearchShowNotifications(db *oapi.DbaasServiceOpensearch) (output.Outputter, error) {
 	out := make(dbServiceNotificationListOutput, 0)
 	if db.Notifications != nil {
 		for _, n := range *db.Notifications {
@@ -188,7 +188,7 @@ func opensearchShowNotifications(db *oapi.DbaasServiceOpensearch) (outputter, er
 	return &out, nil
 }
 
-func opensearchShowBackups(db *oapi.DbaasServiceOpensearch) (outputter, error) {
+func opensearchShowBackups(db *oapi.DbaasServiceOpensearch) (output.Outputter, error) {
 	if db.Backups == nil {
 		return &dbServiceBackupListOutput{}, nil
 	}
@@ -205,7 +205,7 @@ func opensearchShowBackups(db *oapi.DbaasServiceOpensearch) (outputter, error) {
 	return &out, nil
 }
 
-func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outputter, error) {
+func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (output.Outputter, error) {
 	var components []dbServiceOpensearchComponentsShowOutput
 	if db.Components != nil {
 		for _, c := range *db.Components {

@@ -40,7 +40,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing runstat.us incidents.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&runstatusIncidentListOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&runstatusIncidentListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(runstatusListIncidents(args))
@@ -48,7 +48,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func runstatusListIncidents(pageNames []string) (outputter, error) {
+func runstatusListIncidents(pageNames []string) (output.Outputter, error) {
 	pages, err := getRunstatusPages(pageNames)
 	if err != nil {
 		return nil, err

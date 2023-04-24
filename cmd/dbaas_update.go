@@ -106,7 +106,7 @@ Supported values for --maintenance-dow: %s
 
 Supported output template annotations: %s`,
 		strings.Join(dbServiceMaintenanceDOWs, ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&dbServiceShowOutput{}), ", "),
+		strings.Join(output.output.OutputterTemplateAnnotations(&dbServiceShowOutput{}), ", "),
 	)
 }
 

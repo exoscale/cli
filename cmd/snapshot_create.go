@@ -16,7 +16,7 @@ func init() {
 		Long: fmt.Sprintf(`This command creates a snapshot of a Compute instance volume.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
 		Aliases: gCreateAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -28,7 +28,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func createSnapshot(vmID string) (outputter, error) {
+func createSnapshot(vmID string) (output.Outputter, error) {
 	vm, err := getVirtualMachineByNameOrID(vmID)
 	if err != nil {
 		return nil, err

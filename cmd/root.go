@@ -26,7 +26,7 @@ var gConfigFilePath string
 
 // current Account information
 var gAccountName string
-var gCurrentAccount = &account{
+var gCurrentAccount = &sos.Account{
 	DefaultZone:     defaultZone,
 	DefaultTemplate: defaultTemplate,
 	Endpoint:        defaultEndpoint,

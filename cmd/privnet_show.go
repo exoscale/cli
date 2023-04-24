@@ -30,7 +30,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Private Network details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&privnetShowOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&privnetShowOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
@@ -46,7 +46,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func showPrivnet(privnet *egoscale.Network) (outputter, error) {
+func showPrivnet(privnet *egoscale.Network) (output.Outputter, error) {
 	out := privnetShowOutput{
 		ID:          privnet.ID.String(),
 		Name:        privnet.Name,

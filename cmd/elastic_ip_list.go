@@ -38,7 +38,7 @@ func (c *elasticIPListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute Elastic IPs.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&elasticIPListItemOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&elasticIPListItemOutput{}), ", "))
 }
 
 func (c *elasticIPListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

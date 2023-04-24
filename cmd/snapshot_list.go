@@ -32,7 +32,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Compute instance disk snapshots.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&snapshotListOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&snapshotListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listSnapshots(args))
@@ -40,7 +40,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func listSnapshots(instances []string) (outputter, error) {
+func listSnapshots(instances []string) (output.Outputter, error) {
 	out := snapshotListOutput{}
 
 	if len(instances) == 0 {

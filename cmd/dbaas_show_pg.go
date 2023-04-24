@@ -109,7 +109,7 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (outputter, error) {
+func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output.Outputter, error) {
 	res, err := cs.GetDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {

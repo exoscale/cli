@@ -38,7 +38,7 @@ func (c *privateNetworkListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Private Networks.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkListItemOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&privateNetworkListItemOutput{}), ", "))
 }
 
 func (c *privateNetworkListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

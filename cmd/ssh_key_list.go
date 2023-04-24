@@ -34,7 +34,7 @@ func (c *computeSSHKeyListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists SSH keys.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&computeSSHKeyListItemOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&computeSSHKeyListItemOutput{}), ", "))
 }
 
 func (c *computeSSHKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

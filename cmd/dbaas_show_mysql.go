@@ -79,7 +79,7 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (outputter, error) {
+func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (output.Outputter, error) {
 	res, err := cs.GetDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {

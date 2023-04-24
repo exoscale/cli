@@ -27,7 +27,7 @@ func init() {
 		Long: fmt.Sprintf(`This command uploads a locally existing SSH key.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&sshkeyUploadOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&sshkeyUploadOutput{}), ", ")),
 		Aliases: gUploadAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 2 {
@@ -39,7 +39,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func uploadSSHKey(name, publicKeyPath string) (outputter, error) {
+func uploadSSHKey(name, publicKeyPath string) (output.Outputter, error) {
 	pbk, err := ioutil.ReadFile(publicKeyPath)
 	if err != nil {
 		return nil, err

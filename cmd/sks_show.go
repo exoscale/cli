@@ -97,7 +97,7 @@ func (c *sksShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an SKS cluster details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksShowOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&sksShowOutput{}), ", "))
 }
 
 func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

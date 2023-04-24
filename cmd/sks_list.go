@@ -38,7 +38,7 @@ func (c *sksListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists SKS clusters.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksClusterListItemOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&sksClusterListItemOutput{}), ", "))
 }
 
 func (c *sksListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

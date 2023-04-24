@@ -28,7 +28,7 @@ func (c *securityGroupAddSourceCmd) cmdLong() string {
 	return fmt.Sprintf(`This command adds an external source to a Compute instance Security Group.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
 func (c *securityGroupAddSourceCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

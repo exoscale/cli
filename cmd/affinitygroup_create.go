@@ -31,7 +31,7 @@ Supported output template annotations: %s`,
 	},
 }
 
-func createAffinityGroup(name, desc string) (outputter, error) {
+func createAffinityGroup(name, desc string) (output.Outputter, error) {
 	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
 		Name:        name,
 		Description: desc,

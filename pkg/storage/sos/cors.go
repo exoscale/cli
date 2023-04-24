@@ -1,6 +1,7 @@
 package sos
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -9,8 +10,8 @@ import (
 	"github.com/aws/smithy-go"
 )
 
-func (c *Client) DeleteBucketCORS(bucket string) error {
-	_, err := c.DeleteBucketCors(gContext, &s3.DeleteBucketCorsInput{Bucket: &bucket})
+func (c *Client) DeleteBucketCORS(ctx context.Context, bucket string) error {
+	_, err := c.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{Bucket: &bucket})
 	return err
 }
 
@@ -20,8 +21,8 @@ type CORSRule struct {
 	AllowedHeaders []string `json:"allowed_headers,omitempty"`
 }
 
-func (c *Client) AddBucketCORSRule(bucket string, cors *CORSRule) error {
-	curCORS, err := c.GetBucketCors(gContext, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
+func (c *Client) AddBucketCORSRule(ctx context.Context, bucket string, cors *CORSRule) error {
+	curCORS, err := c.GetBucketCors(ctx, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
 	if err != nil {
 		var apiErr smithy.APIError
 		if errors.As(err, &apiErr) {
@@ -35,7 +36,7 @@ func (c *Client) AddBucketCORSRule(bucket string, cors *CORSRule) error {
 		}
 	}
 
-	_, err = c.PutBucketCors(gContext, &s3.PutBucketCorsInput{
+	_, err = c.PutBucketCors(ctx, &s3.PutBucketCorsInput{
 		Bucket: &bucket,
 		CORSConfiguration: &s3types.CORSConfiguration{
 			CORSRules: append(curCORS.CORSRules, cors.toS3()),

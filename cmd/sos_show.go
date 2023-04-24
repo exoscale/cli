@@ -106,7 +106,7 @@ var sosShowCmd = &cobra.Command{
 	},
 }
 
-func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
+func showSOS(bucket, object string, cmd *cobra.Command) (output.Outputter, error) {
 	sosClient, err := newSOSClient()
 	if err != nil {
 		return nil, err

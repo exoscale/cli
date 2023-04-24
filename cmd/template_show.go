@@ -34,7 +34,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Compute instance template details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&templateShowOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&templateShowOutput{}), ", ")),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				cmdExitOnUsageError(cmd, "invalid arguments")
@@ -80,7 +80,7 @@ Supported output template annotations: %s`,
 	templateCmd.AddCommand(templateShowCmd)
 }
 
-func showTemplate(template *egoscale.Template) (outputter, error) {
+func showTemplate(template *egoscale.Template) (output.Outputter, error) {
 	out := templateShowOutput{
 		ID:           template.ID.String(),
 		Name:         template.Name,

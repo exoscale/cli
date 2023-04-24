@@ -75,7 +75,7 @@ func formatDatabaseServiceRedisTable(t *table.Table, o *dbServiceRedisShowOutput
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (outputter, error) {
+func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (output.Outputter, error) {
 	res, err := cs.GetDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {

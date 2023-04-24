@@ -16,7 +16,7 @@ var templateRegisterCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command registers a new Compute instance template.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&templateShowOutput{}), ", ")),
+		strings.Join(output.output.OutputterTemplateAnnotations(&templateShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -116,7 +116,7 @@ Supported output template annotations: %s`,
 	},
 }
 
-func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) (outputter, error) {
+func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) (output.Outputter, error) {
 	z, err := getZoneByNameOrID(zone)
 	if err != nil {
 		return nil, err

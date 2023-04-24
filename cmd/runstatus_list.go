@@ -28,7 +28,7 @@ func init() {
 Optional patterns can be provided to filter results by name.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&runstatusPageListOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&runstatusPageListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listRunstatusPages(args))
@@ -36,7 +36,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func listRunstatusPages(filters []string) (outputter, error) {
+func listRunstatusPages(filters []string) (output.Outputter, error) {
 	pages, err := csRunstatus.ListRunstatusPages(gContext)
 	if err != nil {
 		return nil, err

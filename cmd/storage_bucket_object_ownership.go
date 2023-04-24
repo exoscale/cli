@@ -2,12 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
-	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
-	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
 
@@ -90,21 +87,4 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 var storageBucketObjectOwnershipCmdLongHelp = func() string {
 	// TODO
 	return "Manage the Object Ownership setting of a Storage Bucket"
-}
-
-type storageBucketObjectOwnershipOutput struct {
-	Bucket          string `json:"bucket"`
-	ObjectOwnership string `json:"objectOwnership"`
-}
-
-func (o *storageBucketObjectOwnershipOutput) toJSON() { output.JSON(o) }
-func (o *storageBucketObjectOwnershipOutput) toText() { output.Text(o) }
-func (o *storageBucketObjectOwnershipOutput) toTable() {
-	t := table.NewTable(os.Stdout)
-	defer t.Render()
-	t.SetHeader([]string{"Bucket Object Ownership"})
-
-	t.Append([]string{"Bucket", o.Bucket})
-	// TODO naming?
-	t.Append([]string{"Object Ownership", o.ObjectOwnership})
 }

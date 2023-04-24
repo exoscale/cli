@@ -57,7 +57,7 @@ func (c *instancePoolShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an Instance Pool details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instancePoolShowOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&instancePoolShowOutput{}), ", "))
 }
 
 func (c *instancePoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

@@ -54,7 +54,7 @@ func init() {
 		})
 }
 
-func showRunstatusMaintenance(p, m string) (outputter, error) {
+func showRunstatusMaintenance(p, m string) (output.Outputter, error) {
 	page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: p})
 	if err != nil {
 		return nil, err

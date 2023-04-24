@@ -141,7 +141,7 @@ func formatDatabaseServiceKafkaTable(t *table.Table, o *dbServiceKafkaShowOutput
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (outputter, error) {
+func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (output.Outputter, error) {
 	serviceRes, err := cs.GetDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {

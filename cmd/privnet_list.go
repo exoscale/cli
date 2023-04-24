@@ -30,7 +30,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Private Networks.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&privnetListOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&privnetListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zone, err := cmd.Flags().GetString("zone")
@@ -46,7 +46,7 @@ Supported output template annotations: %s`,
 	privnetCmd.AddCommand(privnetListCmd)
 }
 
-func listPrivnets(zone string) (outputter, error) {
+func listPrivnets(zone string) (output.Outputter, error) {
 	out := privnetListOutput{}
 
 	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})

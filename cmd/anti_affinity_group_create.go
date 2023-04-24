@@ -31,7 +31,7 @@ func (c *antiAffinityGroupCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Anti-Affinity Group.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
 }
 
 func (c *antiAffinityGroupCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

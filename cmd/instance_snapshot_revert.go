@@ -38,7 +38,7 @@ LOST.
 /!\ **************************************************************** /!\
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
 func (c *instanceSnapshotRevertCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

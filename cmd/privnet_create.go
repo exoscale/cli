@@ -85,7 +85,7 @@ func isEmptyArgs(args ...string) bool {
 	return false
 }
 
-func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) (outputter, error) {
+func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) (output.Outputter, error) {
 	zone, err := getZoneByNameOrID(zoneName)
 	if err != nil {
 		return nil, err

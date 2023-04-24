@@ -42,7 +42,7 @@ func (c *instanceSnapshotListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing Compute instance snapshots.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceSnapshotListOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&instanceSnapshotListOutput{}), ", "))
 }
 
 func (c *instanceSnapshotListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

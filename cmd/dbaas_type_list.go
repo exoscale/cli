@@ -50,7 +50,7 @@ func (c *dbaasTypeListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Database Service types.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&dbaasTypeListItemOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&dbaasTypeListItemOutput{}), ", "))
 }
 
 func (c *dbaasTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

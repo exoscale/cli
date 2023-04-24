@@ -37,7 +37,7 @@ THIS OPERATION EFFECTIVELY WIPES ALL DATA STORED ON THE INSTANCE'S DISK
 /!\ **************************************************************** /!\
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
 func (c *instanceResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

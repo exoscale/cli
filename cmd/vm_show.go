@@ -41,7 +41,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Compute instance details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&vmShowOutput{}), ", ")),
 		Aliases:           gShowAlias,
 		ValidArgsFunction: completeVMNames,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -65,7 +65,7 @@ Supported output template annotations: %s`,
 	vmCmd.AddCommand(vmShowCmd)
 }
 
-func showVM(name string) (outputter, error) {
+func showVM(name string) (output.Outputter, error) {
 	vm, err := getVirtualMachineByNameOrID(name)
 	if err != nil {
 		return nil, err

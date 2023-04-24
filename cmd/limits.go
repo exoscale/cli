@@ -40,7 +40,7 @@ var limitsCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command lists the safety limits currently enforced on your account.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&LimitsOutput{}), ", ")),
+		strings.Join(output.output.OutputterTemplateAnnotations(&LimitsOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resourceLimitLabels := map[string]string{
 			limitComputeInstances:  "Compute instances",

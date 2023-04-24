@@ -16,6 +16,7 @@ import (
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -548,7 +549,7 @@ func (c *Client) ShowObject(bucket, key string) (output.Outputter, error) {
 		Bucket:       bucket,
 		LastModified: object.LastModified.Format(storageTimestampFormat),
 		Size:         object.ContentLength,
-		ACL:          storageACLFromS3(acl.Grants),
+		ACL:          ACLFromS3(acl.Grants),
 		Metadata:     object.Metadata,
 		Headers:      storageObjectHeadersFromS3(object),
 		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.zone, bucket, key),

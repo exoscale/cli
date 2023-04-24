@@ -28,7 +28,7 @@ func (c *securityGroupRemoveSourceCmd) cmdLong() string {
 	return fmt.Sprintf(`This command removes an external source from a Compute instance Security Group.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
+		strings.Join(output.output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
 func (c *securityGroupRemoveSourceCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

@@ -12,22 +12,9 @@ import (
 	"github.com/vbauerster/mpb/v4/decor"
 )
 
-// outputter is an interface that must to be implemented by the commands output
-// objects. In addition to the methods, types implementing this interface can
-// also use struct tags to modify the output logic:
-//   - output:"-" is similar to package encoding/json, i.e. that a field with
-//     this tag will not be displayed
-//   - outputLabel:"..." overrides the string displayed as label, which by
-//     default is the field's CamelCase named split with spaces
-type outputter interface {
-	toTable()
-	toJSON()
-	toText()
-}
-
 // output prints an outputter interface to the terminal, formatted according
 // to the global format specified as CLI flag.
-func printOutput(o outputter, err error) error {
+func printOutput(o output.Outputter, err error) error {
 	if err != nil {
 		return err
 	}

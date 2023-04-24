@@ -114,7 +114,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a runstat.us page details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&runstatusPageShowOutput{}), ", ")),
+			strings.Join(output.output.OutputterTemplateAnnotations(&runstatusPageShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -126,7 +126,7 @@ Supported output template annotations: %s`,
 	})
 }
 
-func showRunstatusPage(name string) (outputter, error) {
+func showRunstatusPage(name string) (output.Outputter, error) {
 	page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: name})
 	if err != nil {
 		return nil, err
