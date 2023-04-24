@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )

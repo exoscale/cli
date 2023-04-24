@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"

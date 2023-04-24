@@ -38,7 +38,6 @@ type sosClient struct {
 	*minio.Client
 }
 
-
 func newSOSClient() (*sosClient, error) {
 	var (
 		c   sosClient

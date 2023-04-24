@@ -143,7 +143,7 @@ type cliCommandSettings struct {
 // with default values.
 func defaultCLICmdSettings() cliCommandSettings {
 	return cliCommandSettings{
-		outputFunc: output,
+		outputFunc: printOutput,
 	}
 }
 
@@ -207,14 +207,14 @@ func mustCLICommandFlagName(c cliCommand, field interface{}) string {
 
 // cliCommandFlagSet generates a pflag.FlagSet struct from the specified
 // cliCommand struct tags. Supported tags are:
-//   * cli-flag:"<flag name>": override the flag name derived by default from
+//   - cli-flag:"<flag name>": override the flag name derived by default from
 //     the struct field name (e.g.: cliCommand.SomeArg -> "--some-arg").
-//   * cli-short:"<character>": an optional short version of the flag, e.g.
+//   - cli-short:"<character>": an optional short version of the flag, e.g.
 //     Zone string `cli-short:"z"` generates the CLI flag "--zone, -z".
-//   * cli-usage:"<usage help>": an optional string to use as flag usage
+//   - cli-usage:"<usage help>": an optional string to use as flag usage
 //     help message. For positional arguments, this field is used as argument
 //     label for the "use" command help.
-//   * cli-hidden:"": mark the corresponding flag "hidden".
+//   - cli-hidden:"": mark the corresponding flag "hidden".
 func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 	cv := reflect.ValueOf(c)
@@ -306,10 +306,10 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 
 // cliCommandUse generates a string to be used as value for the cobra.Command
 // "Use" field from the specified cliCommand struct tags. Supported tags are:
-//   * cli-cmd:"<command name>": the name of the command (required).
-//   * cli-usage:"<usage help>": an optional string to use as argument label
+//   - cli-cmd:"<command name>": the name of the command (required).
+//   - cli-usage:"<usage help>": an optional string to use as argument label
 //     for the "use" command help.
-//   * cli-arg:"<p>": declare a command line positional argument. Depending
+//   - cli-arg:"<p>": declare a command line positional argument. Depending
 //     on the type of the structure field (string or []string), the value of
 //     <p> can either be "#" to declare a single argument which position
 //     matches the one of the corresponding *ARGUMENT field* in the struct

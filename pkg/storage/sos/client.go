@@ -158,7 +158,7 @@ func ClientOptZoneFromBucket(bucket string) ClientOpt {
 	}
 }
 
-func newStorageClient(opts ...ClientOpt) (*Client, error) {
+func NewStorageClient(opts ...ClientOpt) (*Client, error) {
 	var (
 		client = Client{
 			zone: gCurrentAccount.DefaultZone,

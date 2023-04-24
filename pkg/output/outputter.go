@@ -137,13 +137,13 @@ func outputTableRow(item reflect.Value) []string {
 	return row
 }
 
-// OutputTable prints a table-formatted rendering of o to the terminal.
+// Table prints a table-formatted rendering of o to the terminal.
 // If the object is of iterable type (slice only), each item is printed in a
 // table row, with a header containing one column per type field. Otherwise,
 // each field of the object is printed in a key/value formatted table, and a
 // header is printed if the item type implements an optional (Type() string)
 // method.
-func OutputTable(o interface{}) {
+func Table(o interface{}) {
 	tab := table.NewTable(os.Stdout)
 
 	v := reflect.ValueOf(o)

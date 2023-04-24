@@ -49,7 +49,7 @@ func getInt64CustomFlag(cmd *cobra.Command, name string) (int64PtrValue, error) 
 	return int64PtrValue{}, fmt.Errorf("unable to get flag %q", name)
 }
 
-//ip flag
+// ip flag
 type ipValue struct {
 	IP *net.IP
 }
