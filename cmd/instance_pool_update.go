@@ -51,7 +51,7 @@ func (c *instancePoolUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an Instance Pool.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&instancePoolShowOutput{}), ", "),
 	)
 }
 

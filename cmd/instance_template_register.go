@@ -43,7 +43,7 @@ func (c *instanceTemplateRegisterCmd) cmdLong() string {
 	return fmt.Sprintf(`This command registers a new Compute instance template.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
 }
 
 func (c *instanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

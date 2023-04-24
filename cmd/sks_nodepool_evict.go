@@ -36,7 +36,7 @@ Note: Kubernetes Nodes should be drained from their workload prior to being
 evicted from their Nodepool, e.g. using "kubectl drain".
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
 func (c *sksNodepoolEvictCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

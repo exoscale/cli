@@ -147,8 +147,8 @@ func (c *securityGroupShowCmd) cmdLong() string {
 Supported output template annotations for Security Group: %s
 
 Supported output template annotations for Security Group rules: %s`,
-		strings.Join(outputterTemplateAnnotations(&securityGroupShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&securityGroupRuleOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&securityGroupRuleOutput{}), ", "))
 }
 
 func (c *securityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

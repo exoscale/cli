@@ -92,8 +92,8 @@ func (c *privateNetworkShowCmd) cmdLong() string {
 Supported output template annotations for Private Network: %s
 
 Supported output template annotations for Private Network leases: %s`,
-		strings.Join(outputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&privateNetworkLeaseOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkLeaseOutput{}), ", "))
 }
 
 func (c *privateNetworkShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

@@ -33,7 +33,7 @@ func (c *privateNetworkUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates a Compute instance Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "),
 	)
 }
 

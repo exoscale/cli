@@ -108,7 +108,7 @@ func (c *nlbServiceShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Network Load Balancer service details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbServiceShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&nlbServiceShowOutput{}), ", "))
 }
 
 func (c *nlbServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

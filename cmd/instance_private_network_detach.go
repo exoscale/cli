@@ -30,7 +30,7 @@ func (c *instancePrivnetDetachCmd) cmdLong() string {
 	return fmt.Sprintf(`This command detaches a Compute instance from a Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "),
 	)
 }
 

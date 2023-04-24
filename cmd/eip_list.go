@@ -30,7 +30,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Elastic IP addresses.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&eipListOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&eipListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zone, err := cmd.Flags().GetString("zone")

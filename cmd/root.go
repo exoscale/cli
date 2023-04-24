@@ -23,7 +23,7 @@ var gConfig *viper.Viper
 var gConfigFolder string
 var gConfigFilePath string
 
-//current Account information
+// current Account information
 var gAccountName string
 var gCurrentAccount = &account{
 	DefaultZone:     defaultZone,
@@ -35,11 +35,11 @@ var gCurrentAccount = &account{
 
 var gAllAccount *config
 
-//egoscale client
+// egoscale client
 var cs *egoscale.Client
 var csRunstatus *egoscale.Client
 
-//Aliases
+// Aliases
 var gListAlias = []string{"ls"}
 var gRemoveAlias = []string{"rm"}
 var gDeleteAlias = []string{"del"}
@@ -69,8 +69,7 @@ var versionCmd = &cobra.Command{
 }
 
 var (
-	gOutputFormat   string
-	gOutputTemplate string
+	gOutputFormat string
 
 	gQuiet bool
 )
@@ -111,7 +110,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&gConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
 	RootCmd.PersistentFlags().StringVarP(&gAccountName, "use-account", "A", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
 	RootCmd.PersistentFlags().StringVarP(&gOutputFormat, "output-format", "O", "", "Output format (table|json|text), see \"exo output --help\" for more information")
-	RootCmd.PersistentFlags().StringVar(&gOutputTemplate, "output-template", "", "Template to use if output format is \"text\"")
+	RootCmd.PersistentFlags().StringVar(&output.GOutputTemplate, "output-template", "", "Template to use if output format is \"text\"")
 	RootCmd.PersistentFlags().BoolVarP(&gQuiet, "quiet", "Q", false, "Quiet mode (disable non-essential command output)")
 	RootCmd.AddCommand(versionCmd)
 
@@ -377,7 +376,6 @@ func buildDNSAPIEndpoint(defaultEndpoint string) string {
 // getCmdPosition returns a command position by fetching os.args and ignoring flags
 //
 // example: "$ exo -r preprod vm create" vm position is 1 and create is 2
-//
 func getCmdPosition(cmd string) int {
 	count := 1
 

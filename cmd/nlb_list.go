@@ -40,7 +40,7 @@ func (c *nlbListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Network Load Balancers.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbListItemOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&nlbListItemOutput{}), ", "))
 }
 
 func (c *nlbListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

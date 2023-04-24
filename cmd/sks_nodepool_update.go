@@ -41,7 +41,7 @@ func (c *sksNodepoolUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an SKS Nodepool.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "),
 	)
 }
 

@@ -33,7 +33,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a snapshot details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()

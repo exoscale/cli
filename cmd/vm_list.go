@@ -39,7 +39,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Compute instances.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&vmListOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&vmListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {

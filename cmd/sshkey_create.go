@@ -27,7 +27,7 @@ func init() {
 		Long: fmt.Sprintf(`This command creates an SSH key.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&sshkeyCreateOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&sshkeyCreateOutput{}), ", ")),
 		Aliases: gCreateAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {

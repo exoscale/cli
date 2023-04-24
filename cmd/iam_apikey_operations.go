@@ -28,7 +28,7 @@ var apiKeyOperationsCmd = &cobra.Command{
 Optional patterns can be provided to filter results by compute, DNS, IAM or SOS operations.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&apiKeyOperationsItemOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&apiKeyOperationsItemOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return output(listAPIKeyOperations(args))
 	},

@@ -23,7 +23,7 @@ Note: the "Content-Type" header cannot be removed, it is reset to its default
 value "application/binary".
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

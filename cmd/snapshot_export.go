@@ -35,7 +35,7 @@ var snapshotExportCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command exports a volume snapshot.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&snapshotExportOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&snapshotExportOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return cmd.Usage()

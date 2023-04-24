@@ -13,6 +13,10 @@ import (
 	"github.com/fatih/camelcase"
 )
 
+var (
+	GOutputTemplate string
+)
+
 // JSON prints a JSON-formatted rendering of o to the terminal.
 func JSON(o interface{}) {
 	j, err := json.Marshal(o)
@@ -24,15 +28,15 @@ func JSON(o interface{}) {
 	fmt.Println(string(j))
 }
 
-// OutputText prints a template-based plain text rendering of o to the
+// Text prints a template-based plain text rendering of o to the
 // terminal. If the object is of iterable type (slice only), each item is
 // printed on a new line. If none is provided by the user, the default
 // template prints all fields separated by a tabulation character.
-func OutputText(o interface{}) {
-	tpl := gOutputTemplate
+func Text(o interface{}) {
+	tpl := GOutputTemplate
 
 	if tpl == "" {
-		tplFields := outputterTemplateAnnotations(o)
+		tplFields := OutputterTemplateAnnotations(o)
 		for i := range tplFields {
 			tplFields[i] = "{{" + tplFields[i] + "}}"
 		}
@@ -247,4 +251,25 @@ func OutputTable(o interface{}) {
 	}
 
 	tab.Render()
+}
+
+// OutputterTemplateAnnotations returns a list of annotations available for use
+// with an output template.
+func OutputterTemplateAnnotations(o interface{}) []string {
+	annotations := make([]string, 0)
+
+	v := reflect.ValueOf(o)
+	v = reflect.Indirect(v)
+	t := v.Type()
+
+	// If the outputter interface is iterable (slice only), use the element type
+	if v.Kind() == reflect.Slice {
+		t = v.Type().Elem()
+	}
+
+	for i := 0; i < t.NumField(); i++ {
+		annotations = append(annotations, "."+t.Field(i).Name)
+	}
+
+	return annotations
 }

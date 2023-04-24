@@ -42,7 +42,7 @@ func (c *elasticIPUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates a Compute instance Elastic IP.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&elasticIPShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&elasticIPShowOutput{}), ", "))
 }
 
 func (c *elasticIPUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

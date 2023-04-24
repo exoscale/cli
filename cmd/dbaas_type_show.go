@@ -142,8 +142,8 @@ Supported output template annotations:
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
 		strings.Join(redisSettings, ", "),
-		strings.Join(outputterTemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
 
 func (c *dbaasTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

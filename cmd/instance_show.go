@@ -57,7 +57,7 @@ func (c *instanceShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
 func (c *instanceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

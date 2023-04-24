@@ -30,7 +30,7 @@ func (c *securityGroupDeleteRuleCmd) cmdLong() string {
 	return fmt.Sprintf(`This command deletes a rule from a Compute instance Security Group.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
 func (c *securityGroupDeleteRuleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

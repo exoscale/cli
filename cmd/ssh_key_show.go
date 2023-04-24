@@ -37,7 +37,7 @@ func (c *computeSSHKeyShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an SSH key details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
 }
 
 func (c *computeSSHKeyShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

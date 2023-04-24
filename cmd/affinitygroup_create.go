@@ -14,7 +14,7 @@ var affinitygroupCreateCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command creates an Anti-Affinity Group.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

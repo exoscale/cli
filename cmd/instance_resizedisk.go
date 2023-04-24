@@ -29,7 +29,7 @@ func (c *instanceResizeDiskCmd) cmdLong() string {
 	return fmt.Sprintf(`This commands grows a Compute instance's disk to a larger size.'
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
 func (c *instanceResizeDiskCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

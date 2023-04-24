@@ -41,7 +41,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Compute instance details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&vmShowOutput{}), ", ")),
 		Aliases:           gShowAlias,
 		ValidArgsFunction: completeVMNames,
 		RunE: func(cmd *cobra.Command, args []string) error {

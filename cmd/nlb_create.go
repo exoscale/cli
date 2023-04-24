@@ -30,7 +30,7 @@ func (c *nlbCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Network Load Balancer.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&nlbShowOutput{}), ", "))
 }
 
 func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

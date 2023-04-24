@@ -55,7 +55,7 @@ Supported network protocols: %s
 
 Supported output template annotations: %s`,
 		strings.Join(securityGroupRuleProtocols, ", "),
-		strings.Join(outputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
 func (c *securityGroupAddRuleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

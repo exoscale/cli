@@ -35,7 +35,7 @@ func (c *iamAccessKeyListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing IAM access keys.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&iamAccessKeyListOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&iamAccessKeyListOutput{}), ", "))
 }
 
 func (c *iamAccessKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

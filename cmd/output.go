@@ -3,7 +3,6 @@ package cmd
 import (
 	"io"
 	"os"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -36,7 +35,7 @@ func output(o outputter, err error) error {
 		return nil
 	}
 
-	if gOutputTemplate != "" {
+	if output.GOutputTemplate != "" {
 		o.toText()
 		return nil
 	}
@@ -53,27 +52,6 @@ func output(o outputter, err error) error {
 	}
 
 	return nil
-}
-
-// outputterTemplateAnnotations returns a list of annotations available for use
-// with an output template.
-func outputterTemplateAnnotations(o interface{}) []string {
-	annotations := make([]string, 0)
-
-	v := reflect.ValueOf(o)
-	v = reflect.Indirect(v)
-	t := v.Type()
-
-	// If the outputter interface is iterable (slice only), use the element type
-	if v.Kind() == reflect.Slice {
-		t = v.Type().Elem()
-	}
-
-	for i := 0; i < t.NumField(); i++ {
-		annotations = append(annotations, "."+t.Field(i).Name)
-	}
-
-	return annotations
 }
 
 // decorateAsyncOperation is a cosmetic helper intended for wrapping long
