@@ -3,22 +3,17 @@ package cmd
 import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
-type storageCORSRule struct {
-	AllowedOrigins []string `json:"allowed_origins,omitempty"`
-	AllowedMethods []string `json:"allowed_methods,omitempty"`
-	AllowedHeaders []string `json:"allowed_headers,omitempty"`
-}
-
-// storageCORSRulesFromS3 converts a list of S3 CORS rules to a list of
-// storageCORSRule.
-func storageCORSRulesFromS3(v *s3.GetBucketCorsOutput) []storageCORSRule {
-	rules := make([]storageCORSRule, 0)
+// CORSRulesFromS3 converts a list of S3 CORS rules to a list of
+// CORSRule.
+func CORSRulesFromS3(v *s3.GetBucketCorsOutput) []sos.CORSRule {
+	rules := make([]sos.CORSRule, 0)
 
 	for _, rule := range v.CORSRules {
-		rules = append(rules, storageCORSRule{
+		rules = append(rules, sos.CORSRule{
 			AllowedOrigins: rule.AllowedOrigins,
 			AllowedMethods: rule.AllowedMethods,
 			AllowedHeaders: rule.AllowedHeaders,
@@ -28,8 +23,8 @@ func storageCORSRulesFromS3(v *s3.GetBucketCorsOutput) []storageCORSRule {
 	return rules
 }
 
-// toS3 converts a storageCORSRule object to the S3 CORS rule format.
-func (r *storageCORSRule) toS3() s3types.CORSRule {
+// toS3 converts a sos.CORSRule object to the S3 CORS rule format.
+func (r *sos.CORSRule) toS3() s3types.CORSRule {
 	return s3types.CORSRule{
 		AllowedOrigins: r.AllowedOrigins,
 		AllowedMethods: r.AllowedMethods,

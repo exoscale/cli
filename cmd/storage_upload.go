@@ -4,17 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 )
-
-type storageUploadConfig struct {
-	bucket    string
-	prefix    string
-	acl       string
-	recursive bool
-	dryRun    bool
-}
 
 var storageUploadCmd = &cobra.Command{
 	Use:     "upload FILE... sos://BUCKET/[PREFIX/]",
@@ -91,14 +84,14 @@ Examples:
 			prefix = "/"
 		}
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return storage.UploadFiles(sources, &storageUploadConfig{
+		return storage.UploadFiles(sources, &sos.StorageUploadConfig{
 			bucket:    bucket,
 			prefix:    prefix,
 			acl:       acl,

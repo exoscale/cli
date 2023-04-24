@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
@@ -74,7 +75,7 @@ argument with "/":
 			}
 		}
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {

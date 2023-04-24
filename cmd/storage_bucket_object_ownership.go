@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -64,7 +65,7 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 			return err
 		}
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptWithZone(zone),
 		)
 		if err != nil {
@@ -75,11 +76,11 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 		case objOwnershipStatus:
 			return printOutput(storage.GetBucketObjectOwnership(cmd.Context(), bucket))
 		case objOwnershipObjectWriter:
-			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipObjectWriter)
+			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, sos.ObjectOwnershipObjectWriter)
 		case objOwnershipBucketOwnerPreferred:
-			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipBucketOwnerPreferred)
+			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, sos.ObjectOwnershipBucketOwnerPreferred)
 		case objOwnershipBucketOwnerEnforced:
-			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipBucketOwnerEnforced)
+			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, sos.ObjectOwnershipBucketOwnerEnforced)
 		}
 
 		return fmt.Errorf("invalid operation")

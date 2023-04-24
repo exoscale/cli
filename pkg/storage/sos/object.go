@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/exoscale/cli/utils"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -91,7 +92,18 @@ func (c *Client) GenPresignedURL(method, bucket, key string, expires time.Durati
 	return psURL.URL, nil
 }
 
-func (c *Client) DownloadFiles(config *storageDownloadConfig) error {
+type DownloadConfig struct {
+	bucket      string
+	prefix      string
+	source      string
+	destination string
+	objects     []*s3types.Object
+	recursive   bool
+	overwrite   bool
+	dryRun      bool
+}
+
+func (c *Client) DownloadFiles(config *DownloadConfig) error {
 	if len(config.objects) > 1 && !strings.HasSuffix(config.destination, "/") {
 		return errors.New(`multiple files to download, destination must end with "/"`)
 	}
@@ -208,7 +220,7 @@ func (c *Client) DownloadFile(bucket string, object *s3types.Object, dst string)
 	return err
 }
 
-func (c *Client) ListObjects(bucket, prefix string, recursive, stream bool) (outputter, error) {
+func (c *Client) ListObjects(bucket, prefix string, recursive, stream bool) (output.Outputter, error) {
 	out := make(storageListObjectsOutput, 0)
 	dirs := make(map[string]struct{})            // for deduplication of common prefixes (folders)
 	dirsOut := make(storageListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
@@ -272,7 +284,15 @@ func (c *Client) ListObjects(bucket, prefix string, recursive, stream bool) (out
 	return &out, nil
 }
 
-func (c *Client) UploadFiles(sources []string, config *storageUploadConfig) error {
+type StorageUploadConfig struct {
+	bucket    string
+	prefix    string
+	acl       string
+	recursive bool
+	dryRun    bool
+}
+
+func (c *Client) UploadFiles(sources []string, config *StorageUploadConfig) error {
 	if len(sources) > 1 && !strings.HasSuffix(config.prefix, "/") {
 		return errors.New(`multiple files to upload, destination must end with "/"`)
 	}
@@ -506,7 +526,7 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 	return endOffset - curOffset, nil
 }
 
-func (c *Client) ShowObject(bucket, key string) (outputter, error) {
+func (c *Client) ShowObject(bucket, key string) (output.Outputter, error) {
 	object, err := c.GetObject(gContext, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),

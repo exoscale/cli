@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -14,17 +15,17 @@ const (
 	storageCORSAddCmdFlagAllowedHeader = "allowed-header"
 )
 
-// storageCORSRuleFromCmdFlags returns a non-nil pointer to a storageCORSRule struct if at least
+// CORSRuleFromCmdFlags returns a non-nil pointer to a sos.CORSRule struct if at least
 // one of the CORS-related command flags is set.
-func storageCORSRuleFromCmdFlags(flags *pflag.FlagSet) *storageCORSRule {
-	var cors *storageCORSRule
+func CORSRuleFromCmdFlags(flags *pflag.FlagSet) *sos.CORSRule {
+	var cors *sos.CORSRule
 
 	flags.VisitAll(func(flag *pflag.Flag) {
 		switch flag.Name {
 		case storageCORSAddCmdFlagAllowedOrigin:
 			if v, _ := flags.GetStringSlice(storageCORSAddCmdFlagAllowedOrigin); len(v) > 0 {
 				if cors == nil {
-					cors = &storageCORSRule{}
+					cors = &sos.CORSRule{}
 				}
 
 				cors.AllowedOrigins = v
@@ -33,7 +34,7 @@ func storageCORSRuleFromCmdFlags(flags *pflag.FlagSet) *storageCORSRule {
 		case storageCORSAddCmdFlagAllowedMethod:
 			if v, _ := flags.GetStringSlice(storageCORSAddCmdFlagAllowedMethod); len(v) > 0 {
 				if cors == nil {
-					cors = &storageCORSRule{}
+					cors = &sos.CORSRule{}
 				}
 
 				cors.AllowedMethods = v
@@ -42,7 +43,7 @@ func storageCORSRuleFromCmdFlags(flags *pflag.FlagSet) *storageCORSRule {
 		case storageCORSAddCmdFlagAllowedHeader:
 			if v, _ := flags.GetStringSlice(storageCORSAddCmdFlagAllowedHeader); len(v) > 0 {
 				if cors == nil {
-					cors = &storageCORSRule{}
+					cors = &sos.CORSRule{}
 				}
 
 				cors.AllowedHeaders = v
@@ -85,14 +86,14 @@ Example:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		bucket := args[0]
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		cors := storageCORSRuleFromCmdFlags(cmd.Flags())
+		cors := sos.CORSRuleFromCmdFlags(cmd.Flags())
 		if err := storage.AddBucketCORSRule(bucket, cors); err != nil {
 			return fmt.Errorf("unable to add rule to the bucket CORS configuration: %w", err)
 		}

@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/table"
 )
 
@@ -18,7 +19,7 @@ type storageShowBucketOutput struct {
 	Name string            `json:"name"`
 	Zone string            `json:"zone"`
 	ACL  storageACL        `json:"acl"`
-	CORS []storageCORSRule `json:"cors"`
+	CORS []sos.CORSRule `json:"cors"`
 }
 
 func (o *storageShowBucketOutput) toJSON() { output.JSON(o) }
@@ -177,7 +178,7 @@ Supported output template annotations:
 				key = parts[1]
 			}
 
-			storage, err := newStorageClient(
+			storage, err := sos.NewStorageClient(
 				storageClientOptZoneFromBucket(bucket),
 			)
 			if err != nil {

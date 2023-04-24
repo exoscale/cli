@@ -17,10 +17,10 @@ func (c *Client) CreateBucket(name, acl string) error {
 	s3Bucket := s3.CreateBucketInput{Bucket: aws.String(name)}
 
 	if acl != "" {
-		if !utils.IsInList(s3BucketCannedACLToStrings(), acl) {
+		if !utils.IsInList(S3BucketCannedACLToStrings(), acl) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
 				acl,
-				strings.Join(s3BucketCannedACLToStrings(), ", "))
+				strings.Join(S3BucketCannedACLToStrings(), ", "))
 		}
 
 		s3Bucket.ACL = s3types.BucketCannedACL(acl)
@@ -30,7 +30,7 @@ func (c *Client) CreateBucket(name, acl string) error {
 	return err
 }
 
-func (c *Client) ShowBucket(bucket string) (outputter, error) {
+func (c *Client) ShowBucket(bucket string) (output.Outputter, error) {
 	acl, err := c.GetBucketAcl(gContext, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
@@ -60,7 +60,7 @@ func (c *Client) ShowBucket(bucket string) (outputter, error) {
 	return &out, nil
 }
 
-func (c Client) GetBucketObjectOwnership(ctx context.Context, bucket string) (outputter, error) {
+func (c Client) GetBucketObjectOwnership(ctx context.Context, bucket string) (output.Outputter, error) {
 	params := s3.GetBucketOwnershipControlsInput{
 		Bucket: aws.String(bucket),
 	}

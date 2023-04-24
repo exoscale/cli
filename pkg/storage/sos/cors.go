@@ -14,7 +14,13 @@ func (c *Client) DeleteBucketCORS(bucket string) error {
 	return err
 }
 
-func (c *Client) AddBucketCORSRule(bucket string, cors *storageCORSRule) error {
+type CORSRule struct {
+	AllowedOrigins []string `json:"allowed_origins,omitempty"`
+	AllowedMethods []string `json:"allowed_methods,omitempty"`
+	AllowedHeaders []string `json:"allowed_headers,omitempty"`
+}
+
+func (c *Client) AddBucketCORSRule(bucket string, cors *CORSRule) error {
 	curCORS, err := c.GetBucketCors(gContext, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
 	if err != nil {
 		var apiErr smithy.APIError

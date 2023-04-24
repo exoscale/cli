@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -58,7 +59,7 @@ Supported output template annotations: %s`,
 		parts := strings.SplitN(args[0], "/", 2)
 		bucket, prefix = parts[0], parts[1]
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {

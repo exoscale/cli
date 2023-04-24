@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +38,7 @@ var storageCORSDeleteCmd = &cobra.Command{
 			}
 		}
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {

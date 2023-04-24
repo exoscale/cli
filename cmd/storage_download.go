@@ -5,19 +5,9 @@ import (
 	"strings"
 
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
-
-type storageDownloadConfig struct {
-	bucket      string
-	prefix      string
-	source      string
-	destination string
-	objects     []*s3types.Object
-	recursive   bool
-	overwrite   bool
-	dryRun      bool
-}
 
 var storageDownloadCmd = &cobra.Command{
 	Use:     "download sos://BUCKET/[OBJECT|PREFIX/] [DESTINATION]",
@@ -96,7 +86,7 @@ Examples:
 			return fmt.Errorf("%q is a directory, use flag `-r` to download recursively", src)
 		}
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {

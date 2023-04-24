@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +43,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptWithZone(zone),
 		)
 		if err != nil {

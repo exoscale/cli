@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +42,7 @@ var storagePresignCmd = &cobra.Command{
 		parts := strings.SplitN(args[0], "/", 2)
 		bucket, key = parts[0], parts[1]
 
-		storage, err := newStorageClient(
+		storage, err := sos.NewStorageClient(
 			storageClientOptZoneFromBucket(bucket),
 		)
 		if err != nil {
