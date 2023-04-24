@@ -76,12 +76,12 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.addObjectsMetadata(bucket, prefix, metadata, recursive); err != nil {
+		if err := storage.AddObjectsMetadata(bucket, prefix, metadata, recursive); err != nil {
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.showObject(bucket, prefix))
+			return output(storage.ShowObject(bucket, prefix))
 		}
 
 		if !gQuiet {

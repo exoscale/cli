@@ -92,12 +92,12 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		if err := storage.deleteObjectsHeaders(bucket, prefix, headers, recursive); err != nil {
+		if err := storage.DeleteObjectsHeaders(bucket, prefix, headers, recursive); err != nil {
 			return fmt.Errorf("unable to add headers to object: %w", err)
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.showObject(bucket, prefix))
+			return output(storage.ShowObject(bucket, prefix))
 		}
 
 		if !gQuiet {

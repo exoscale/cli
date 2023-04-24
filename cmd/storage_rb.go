@@ -45,7 +45,7 @@ var storageRbCmd = &cobra.Command{
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.deleteBucket(bucket, recursive); err != nil {
+		if err := storage.DeleteBucket(bucket, recursive); err != nil {
 			return fmt.Errorf("unable to delete bucket: %w", err)
 		}
 

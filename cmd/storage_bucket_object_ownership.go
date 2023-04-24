@@ -73,13 +73,13 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 
 		switch ownershipCommand {
 		case objOwnershipStatus:
-			return output(storage.getBucketObjectOwnership(cmd.Context(), bucket))
+			return output(storage.GetBucketObjectOwnership(cmd.Context(), bucket))
 		case objOwnershipObjectWriter:
-			return storage.setBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipObjectWriter)
+			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipObjectWriter)
 		case objOwnershipBucketOwnerPreferred:
-			return storage.setBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipBucketOwnerPreferred)
+			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipBucketOwnerPreferred)
 		case objOwnershipBucketOwnerEnforced:
-			return storage.setBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipBucketOwnerEnforced)
+			return storage.SetBucketObjectOwnership(cmd.Context(), bucket, ObjectOwnershipBucketOwnerEnforced)
 		}
 
 		return fmt.Errorf("invalid operation")

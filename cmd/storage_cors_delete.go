@@ -44,7 +44,7 @@ var storageCORSDeleteCmd = &cobra.Command{
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.deleteBucketCORS(bucket); err != nil {
+		if err := storage.DeleteBucketCORS(bucket); err != nil {
 			return fmt.Errorf("unable to delete bucket CORS configuration: %w", err)
 		}
 

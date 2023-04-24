@@ -124,7 +124,7 @@ Supported output template annotations:
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return output(storage.listObjects(bucket, prefix, recursive, stream))
+		return output(storage.ListObjects(bucket, prefix, recursive, stream))
 	},
 }
 

@@ -48,12 +48,12 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.createBucket(bucket, acl); err != nil {
+		if err := storage.CreateBucket(bucket, acl); err != nil {
 			return fmt.Errorf("unable to create bucket: %w", err)
 		}
 
 		if !gQuiet {
-			return output(storage.showBucket(bucket))
+			return output(storage.ShowBucket(bucket))
 		}
 
 		return nil

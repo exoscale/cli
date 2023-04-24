@@ -98,7 +98,7 @@ Examples:
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return storage.uploadFiles(sources, &storageUploadConfig{
+		return storage.UploadFiles(sources, &storageUploadConfig{
 			bucket:    bucket,
 			prefix:    prefix,
 			acl:       acl,

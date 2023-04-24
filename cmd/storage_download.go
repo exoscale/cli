@@ -104,14 +104,14 @@ Examples:
 		}
 
 		objects := make([]*s3types.Object, 0)
-		if err := storage.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
+		if err := storage.ForEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 			objects = append(objects, o)
 			return nil
 		}); err != nil {
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 
-		return storage.downloadFiles(&storageDownloadConfig{
+		return storage.DownloadFiles(&storageDownloadConfig{
 			bucket:      bucket,
 			prefix:      prefix,
 			source:      src,

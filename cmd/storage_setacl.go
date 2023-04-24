@@ -106,22 +106,22 @@ Supported output template annotations:
 		}
 
 		if prefix == "" {
-			if err := storage.setBucketACL(bucket, acl); err != nil {
+			if err := storage.SetBucketACL(bucket, acl); err != nil {
 				return fmt.Errorf("unable to set ACL: %w", err)
 			}
 
 			if !gQuiet {
-				return output(storage.showBucket(bucket))
+				return output(storage.ShowBucket(bucket))
 			}
 			return nil
 		}
 
-		if err := storage.setObjectsACL(bucket, prefix, acl, recursive); err != nil {
+		if err := storage.SetObjectsACL(bucket, prefix, acl, recursive); err != nil {
 			return fmt.Errorf("unable to set ACL: %w", err)
 		}
 
 		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.showObject(bucket, prefix))
+			return output(storage.ShowObject(bucket, prefix))
 		}
 
 		if !gQuiet {

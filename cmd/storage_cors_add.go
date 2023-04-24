@@ -93,12 +93,12 @@ Example:
 		}
 
 		cors := storageCORSRuleFromCmdFlags(cmd.Flags())
-		if err := storage.addBucketCORSRule(bucket, cors); err != nil {
+		if err := storage.AddBucketCORSRule(bucket, cors); err != nil {
 			return fmt.Errorf("unable to add rule to the bucket CORS configuration: %w", err)
 		}
 
 		if !gQuiet {
-			return output(storage.showBucket(bucket))
+			return output(storage.ShowBucket(bucket))
 		}
 
 		return nil
