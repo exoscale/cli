@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +19,9 @@ type eipListItemOutput struct {
 
 type eipListOutput []eipListItemOutput
 
-func (o *eipListOutput) toJSON()  { outputJSON(o) }
-func (o *eipListOutput) toText()  { outputText(o) }
-func (o *eipListOutput) toTable() { outputTable(o) }
+func (o *eipListOutput) toJSON()  { output.JSON(o) }
+func (o *eipListOutput) toText()  { output.Text(o) }
+func (o *eipListOutput) toTable() { output.Table(o) }
 
 func init() {
 	eipListCmd := &cobra.Command{

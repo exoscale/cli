@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -25,8 +26,8 @@ type instanceTypeListOutput struct {
 	verbose bool
 }
 
-func (o *instanceTypeListOutput) toJSON() { outputJSON(o.data) }
-func (o *instanceTypeListOutput) toText() { outputText(o.data) }
+func (o *instanceTypeListOutput) toJSON() { output.JSON(o.data) }
+func (o *instanceTypeListOutput) toText() { output.Text(o.data) }
 func (o *instanceTypeListOutput) toTable() {
 	header := []string{"ID", "Family", "Size"}
 	if o.verbose {

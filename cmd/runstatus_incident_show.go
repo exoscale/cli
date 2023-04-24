@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -29,9 +30,9 @@ type runstatusIncidentShowOutput struct {
 	Events           []runstatusIncidentEventShowOutput `json:"events,omitempty"`
 }
 
-func (o *runstatusIncidentShowOutput) toJSON() { outputJSON(o) }
+func (o *runstatusIncidentShowOutput) toJSON() { output.JSON(o) }
 
-func (o *runstatusIncidentShowOutput) toText() { outputText(o) }
+func (o *runstatusIncidentShowOutput) toText() { output.Text(o) }
 
 func (o *runstatusIncidentShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)

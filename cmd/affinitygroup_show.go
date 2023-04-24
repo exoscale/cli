@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +17,9 @@ type affinityGroupShowOutput struct {
 }
 
 func (o *affinityGroupShowOutput) Type() string { return "Anti-Affinity Group" }
-func (o *affinityGroupShowOutput) toJSON()      { outputJSON(o) }
-func (o *affinityGroupShowOutput) toText()      { outputText(o) }
-func (o *affinityGroupShowOutput) toTable()     { outputTable(o) }
+func (o *affinityGroupShowOutput) toJSON()      { output.JSON(o) }
+func (o *affinityGroupShowOutput) toText()      { output.Text(o) }
+func (o *affinityGroupShowOutput) toTable()     { output.Table(o) }
 
 func init() {
 	affinitygroupCmd.AddCommand(&cobra.Command{

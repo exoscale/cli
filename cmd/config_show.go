@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -21,9 +22,9 @@ type configShowOutput struct {
 }
 
 func (o *configShowOutput) Type() string { return "Account" }
-func (o *configShowOutput) toJSON()      { outputJSON(o) }
-func (o *configShowOutput) toText()      { outputText(o) }
-func (o *configShowOutput) toTable()     { outputTable(o) }
+func (o *configShowOutput) toJSON()      { output.JSON(o) }
+func (o *configShowOutput) toText()      { output.Text(o) }
+func (o *configShowOutput) toTable()     { output.Table(o) }
 
 func init() {
 	configCmd.AddCommand(&cobra.Command{

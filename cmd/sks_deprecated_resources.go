@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +20,9 @@ type sksListDeprecatedResourcesItemOutput struct {
 
 type sksListDeprecatedResourcesOutput []sksListDeprecatedResourcesItemOutput
 
-func (o *sksListDeprecatedResourcesOutput) toJSON()  { outputJSON(o) }
-func (o *sksListDeprecatedResourcesOutput) toText()  { outputText(o) }
-func (o *sksListDeprecatedResourcesOutput) toTable() { outputTable(o) }
+func (o *sksListDeprecatedResourcesOutput) toJSON()  { output.JSON(o) }
+func (o *sksListDeprecatedResourcesOutput) toText()  { output.Text(o) }
+func (o *sksListDeprecatedResourcesOutput) toTable() { output.Table(o) }
 
 type sksDeprecatedResourcesCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

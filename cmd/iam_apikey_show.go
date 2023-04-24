@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +16,9 @@ type apiKeyShowItemOutput struct {
 	Type       string   `json:"type"`
 }
 
-func (o *apiKeyShowItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyShowItemOutput) toText()  { outputText(o) }
-func (o *apiKeyShowItemOutput) toTable() { outputTable(o) }
+func (o *apiKeyShowItemOutput) toJSON()  { output.JSON(o) }
+func (o *apiKeyShowItemOutput) toText()  { output.Text(o) }
+func (o *apiKeyShowItemOutput) toTable() { output.Table(o) }
 
 var apiKeyShowCmd = &cobra.Command{
 	Use:   "show KEY|NAME",

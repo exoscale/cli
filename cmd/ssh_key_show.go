@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -14,9 +15,9 @@ type computeSSHKeyShowOutput struct {
 }
 
 func (o *computeSSHKeyShowOutput) Type() string { return "SSH key" }
-func (o *computeSSHKeyShowOutput) toJSON()      { outputJSON(o) }
-func (o *computeSSHKeyShowOutput) toText()      { outputText(o) }
-func (o *computeSSHKeyShowOutput) toTable()     { outputTable(o) }
+func (o *computeSSHKeyShowOutput) toJSON()      { output.JSON(o) }
+func (o *computeSSHKeyShowOutput) toText()      { output.Text(o) }
+func (o *computeSSHKeyShowOutput) toTable()     { output.Table(o) }
 
 type computeSSHKeyShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

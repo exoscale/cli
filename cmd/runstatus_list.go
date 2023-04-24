@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +16,9 @@ type runstatusPageListItemOutput struct {
 
 type runstatusPageListOutput []runstatusPageListItemOutput
 
-func (o *runstatusPageListOutput) toJSON()  { outputJSON(o) }
-func (o *runstatusPageListOutput) toText()  { outputText(o) }
-func (o *runstatusPageListOutput) toTable() { outputTable(o) }
+func (o *runstatusPageListOutput) toJSON()  { output.JSON(o) }
+func (o *runstatusPageListOutput) toText()  { output.Text(o) }
+func (o *runstatusPageListOutput) toTable() { output.Table(o) }
 
 func init() {
 	runstatusCmd.AddCommand(&cobra.Command{

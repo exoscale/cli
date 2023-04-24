@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -19,9 +20,9 @@ type nlbListItemOutput struct {
 
 type nlbListOutput []nlbListItemOutput
 
-func (o *nlbListOutput) toJSON()  { outputJSON(o) }
-func (o *nlbListOutput) toText()  { outputText(o) }
-func (o *nlbListOutput) toTable() { outputTable(o) }
+func (o *nlbListOutput) toJSON()  { output.JSON(o) }
+func (o *nlbListOutput) toText()  { output.Text(o) }
+func (o *nlbListOutput) toTable() { output.Table(o) }
 
 type nlbListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

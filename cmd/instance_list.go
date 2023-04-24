@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -27,9 +28,9 @@ type instanceListItemOutput struct {
 
 type instanceListOutput []instanceListItemOutput
 
-func (o *instanceListOutput) toJSON()  { outputJSON(o) }
-func (o *instanceListOutput) toText()  { outputText(o) }
-func (o *instanceListOutput) toTable() { outputTable(o) }
+func (o *instanceListOutput) toJSON()  { output.JSON(o) }
+func (o *instanceListOutput) toText()  { output.Text(o) }
+func (o *instanceListOutput) toTable() { output.Table(o) }
 
 type instanceListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +20,9 @@ type vmListItemOutput struct {
 
 type vmListOutput []vmListItemOutput
 
-func (o *vmListOutput) toJSON()  { outputJSON(o) }
-func (o *vmListOutput) toText()  { outputText(o) }
-func (o *vmListOutput) toTable() { outputTable(o) }
+func (o *vmListOutput) toJSON()  { output.JSON(o) }
+func (o *vmListOutput) toText()  { output.Text(o) }
+func (o *vmListOutput) toTable() { output.Table(o) }
 func (o *vmListOutput) names() []string {
 	names := make([]string, len(*o))
 	for i, item := range *o {

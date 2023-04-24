@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +19,9 @@ type privnetListItemOutput struct {
 
 type privnetListOutput []privnetListItemOutput
 
-func (o *privnetListOutput) toJSON()  { outputJSON(o) }
-func (o *privnetListOutput) toText()  { outputText(o) }
-func (o *privnetListOutput) toTable() { outputTable(o) }
+func (o *privnetListOutput) toJSON()  { output.JSON(o) }
+func (o *privnetListOutput) toText()  { output.Text(o) }
+func (o *privnetListOutput) toTable() { output.Table(o) }
 
 func init() {
 	privnetListCmd := &cobra.Command{

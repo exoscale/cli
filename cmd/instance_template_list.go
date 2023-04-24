@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -19,9 +20,9 @@ type instanceTemplateListItemOutput struct {
 
 type instanceTemplateListOutput []instanceTemplateListItemOutput
 
-func (o *instanceTemplateListOutput) toJSON()  { outputJSON(o) }
-func (o *instanceTemplateListOutput) toText()  { outputText(o) }
-func (o *instanceTemplateListOutput) toTable() { outputTable(o) }
+func (o *instanceTemplateListOutput) toJSON()  { output.JSON(o) }
+func (o *instanceTemplateListOutput) toText()  { output.Text(o) }
+func (o *instanceTemplateListOutput) toTable() { output.Table(o) }
 
 type instanceTemplateListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

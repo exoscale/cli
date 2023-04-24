@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -19,9 +20,9 @@ type runstatusMaintenanceListItemOutput struct {
 
 type runstatusMaintenanceListOutput []runstatusMaintenanceListItemOutput
 
-func (o *runstatusMaintenanceListOutput) toJSON()  { outputJSON(o) }
-func (o *runstatusMaintenanceListOutput) toText()  { outputText(o) }
-func (o *runstatusMaintenanceListOutput) toTable() { outputTable(o) }
+func (o *runstatusMaintenanceListOutput) toJSON()  { output.JSON(o) }
+func (o *runstatusMaintenanceListOutput) toText()  { output.Text(o) }
+func (o *runstatusMaintenanceListOutput) toTable() { output.Table(o) }
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(&cobra.Command{

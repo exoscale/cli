@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -28,8 +29,8 @@ type sksShowOutput struct {
 	Nodepools    []sksNodepoolShowOutput `json:"nodepools"`
 }
 
-func (o *sksShowOutput) toJSON() { outputJSON(o) }
-func (o *sksShowOutput) toText() { outputText(o) }
+func (o *sksShowOutput) toJSON() { output.JSON(o) }
+func (o *sksShowOutput) toText() { output.Text(o) }
 func (o *sksShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"SKS Cluster"})

@@ -2,18 +2,15 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"os"
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/smithy-go"
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 )
 
@@ -24,8 +21,8 @@ type storageShowBucketOutput struct {
 	CORS []storageCORSRule `json:"cors"`
 }
 
-func (o *storageShowBucketOutput) toJSON() { outputJSON(o) }
-func (o *storageShowBucketOutput) toText() { outputText(o) }
+func (o *storageShowBucketOutput) toJSON() { output.JSON(o) }
+func (o *storageShowBucketOutput) toText() { output.Text(o) }
 func (o *storageShowBucketOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
@@ -84,8 +81,8 @@ type storageShowObjectOutput struct {
 	URL          string            `json:"url"`
 }
 
-func (o *storageShowObjectOutput) toJSON() { outputJSON(o) }
-func (o *storageShowObjectOutput) toText() { outputText(o) }
+func (o *storageShowObjectOutput) toJSON() { output.JSON(o) }
+func (o *storageShowObjectOutput) toText() { output.Text(o) }
 func (o *storageShowObjectOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
@@ -194,65 +191,4 @@ Supported output template annotations:
 			return output(storage.showObject(bucket, key))
 		},
 	})
-}
-
-func (c *storageClient) showBucket(bucket string) (outputter, error) {
-	acl, err := c.GetBucketAcl(gContext, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
-	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
-	}
-
-	cors, err := c.GetBucketCors(gContext, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
-	if err != nil {
-		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) {
-			if apiErr.ErrorCode() == "NoSuchCORSConfiguration" {
-				cors = &s3.GetBucketCorsOutput{}
-			}
-		}
-
-		if cors == nil {
-			return nil, fmt.Errorf("unable to retrieve bucket CORS configuration: %w", err)
-		}
-	}
-
-	out := storageShowBucketOutput{
-		Name: bucket,
-		Zone: c.zone,
-		ACL:  storageACLFromS3(acl.Grants),
-		CORS: storageCORSRulesFromS3(cors),
-	}
-
-	return &out, nil
-}
-
-func (c *storageClient) showObject(bucket, key string) (outputter, error) {
-	object, err := c.GetObject(gContext, &s3.GetObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve object information: %w", err)
-	}
-
-	acl, err := c.GetObjectAcl(gContext, &s3.GetObjectAclInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
-	}
-
-	out := storageShowObjectOutput{
-		Path:         key,
-		Bucket:       bucket,
-		LastModified: object.LastModified.Format(storageTimestampFormat),
-		Size:         object.ContentLength,
-		ACL:          storageACLFromS3(acl.Grants),
-		Metadata:     object.Metadata,
-		Headers:      storageObjectHeadersFromS3(object),
-		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.zone, bucket, key),
-	}
-
-	return &out, nil
 }

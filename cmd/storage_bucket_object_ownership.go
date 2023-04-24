@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -99,8 +100,8 @@ type storageBucketObjectOwnershipOutput struct {
 	ObjectOwnership string `json:"objectOwnership"`
 }
 
-func (o *storageBucketObjectOwnershipOutput) toJSON() { outputJSON(o) }
-func (o *storageBucketObjectOwnershipOutput) toText() { outputText(o) }
+func (o *storageBucketObjectOwnershipOutput) toJSON() { output.JSON(o) }
+func (o *storageBucketObjectOwnershipOutput) toText() { output.Text(o) }
 func (o *storageBucketObjectOwnershipOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()

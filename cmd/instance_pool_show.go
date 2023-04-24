@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -33,9 +34,9 @@ type instancePoolShowOutput struct {
 }
 
 func (o *instancePoolShowOutput) Type() string { return "Instance Pool" }
-func (o *instancePoolShowOutput) toJSON()      { outputJSON(o) }
-func (o *instancePoolShowOutput) toText()      { outputText(o) }
-func (o *instancePoolShowOutput) toTable()     { outputTable(o) }
+func (o *instancePoolShowOutput) toJSON()      { output.JSON(o) }
+func (o *instancePoolShowOutput) toText()      { output.Text(o) }
+func (o *instancePoolShowOutput) toTable()     { output.Table(o) }
 
 type instancePoolShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

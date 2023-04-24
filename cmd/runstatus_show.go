@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -42,9 +43,9 @@ type runstatusPageShowOutput struct {
 	Maintenances []runstatusPageMaintenanceShowOutput `json:"maintenances,omitempty"`
 }
 
-func (o *runstatusPageShowOutput) toJSON() { outputJSON(o) }
+func (o *runstatusPageShowOutput) toJSON() { output.JSON(o) }
 
-func (o *runstatusPageShowOutput) toText() { outputText(o) }
+func (o *runstatusPageShowOutput) toText() { output.Text(o) }
 
 func (o *runstatusPageShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)

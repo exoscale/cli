@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +17,9 @@ type apiKeyOperationsItemOutput struct {
 	SOS     []string `json:"sos,omitempty"`
 }
 
-func (o *apiKeyOperationsItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyOperationsItemOutput) toText()  { outputText(o) }
-func (o *apiKeyOperationsItemOutput) toTable() { outputTable(o) }
+func (o *apiKeyOperationsItemOutput) toJSON()  { output.JSON(o) }
+func (o *apiKeyOperationsItemOutput) toText()  { output.Text(o) }
+func (o *apiKeyOperationsItemOutput) toTable() { output.Table(o) }
 
 var apiKeyOperationsCmd = &cobra.Command{
 	Use:   "operations [FILTER]...",

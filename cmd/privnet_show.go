@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +19,9 @@ type privnetShowOutput struct {
 }
 
 func (o *privnetShowOutput) Type() string { return "Private Network" }
-func (o *privnetShowOutput) toJSON()      { outputJSON(o) }
-func (o *privnetShowOutput) toText()      { outputText(o) }
-func (o *privnetShowOutput) toTable()     { outputTable(o) }
+func (o *privnetShowOutput) toJSON()      { output.JSON(o) }
+func (o *privnetShowOutput) toText()      { output.Text(o) }
+func (o *privnetShowOutput) toTable()     { output.Table(o) }
 
 func init() {
 	privnetCmd.AddCommand(&cobra.Command{

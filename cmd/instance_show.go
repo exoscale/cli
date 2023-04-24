@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -33,9 +34,9 @@ type instanceShowOutput struct {
 }
 
 func (o *instanceShowOutput) Type() string { return "Compute instance" }
-func (o *instanceShowOutput) toJSON()      { outputJSON(o) }
-func (o *instanceShowOutput) toText()      { outputText(o) }
-func (o *instanceShowOutput) toTable()     { outputTable(o) }
+func (o *instanceShowOutput) toJSON()      { output.JSON(o) }
+func (o *instanceShowOutput) toText()      { output.Text(o) }
+func (o *instanceShowOutput) toTable()     { output.Table(o) }
 
 type instanceShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

@@ -4,10 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -69,21 +65,4 @@ func init() {
 		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(s3BucketCannedACLToStrings(), "|")))
 	storageMbCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	storageCmd.AddCommand(storageMbCmd)
-}
-
-func (c *storageClient) createBucket(name, acl string) error {
-	s3Bucket := s3.CreateBucketInput{Bucket: aws.String(name)}
-
-	if acl != "" {
-		if !utils.IsInList(s3BucketCannedACLToStrings(), acl) {
-			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
-				acl,
-				strings.Join(s3BucketCannedACLToStrings(), ", "))
-		}
-
-		s3Bucket.ACL = s3types.BucketCannedACL(acl)
-	}
-
-	_, err := c.CreateBucket(gContext, &s3Bucket)
-	return err
 }

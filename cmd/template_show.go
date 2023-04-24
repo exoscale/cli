@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -22,9 +23,9 @@ type templateShowOutput struct {
 }
 
 func (o *templateShowOutput) Type() string { return "Template" }
-func (o *templateShowOutput) toJSON()      { outputJSON(o) }
-func (o *templateShowOutput) toText()      { outputText(o) }
-func (o *templateShowOutput) toTable()     { outputTable(o) }
+func (o *templateShowOutput) toJSON()      { output.JSON(o) }
+func (o *templateShowOutput) toText()      { output.Text(o) }
+func (o *templateShowOutput) toTable()     { output.Table(o) }
 
 func init() {
 	templateShowCmd := &cobra.Command{

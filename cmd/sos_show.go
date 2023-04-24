@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -32,9 +33,9 @@ type sosShowOutput struct {
 	Headers  []sosHeadersShowOutput  `json:"headers"`
 }
 
-func (o *sosShowOutput) toJSON() { outputJSON(o) }
+func (o *sosShowOutput) toJSON() { output.JSON(o) }
 
-func (o *sosShowOutput) toText() { outputText(o) }
+func (o *sosShowOutput) toText() { output.Text(o) }
 
 func (o *sosShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)

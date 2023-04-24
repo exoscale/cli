@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
@@ -24,9 +25,9 @@ type snapshotExportOutput struct {
 	Checksum string `json:"checksum"`
 }
 
-func (o *snapshotExportOutput) toJSON()  { outputJSON(o) }
-func (o *snapshotExportOutput) toText()  { outputText(o) }
-func (o *snapshotExportOutput) toTable() { outputTable(o) }
+func (o *snapshotExportOutput) toJSON()  { output.JSON(o) }
+func (o *snapshotExportOutput) toText()  { output.Text(o) }
+func (o *snapshotExportOutput) toTable() { output.Table(o) }
 
 var snapshotExportCmd = &cobra.Command{
 	Use:   "export ID",

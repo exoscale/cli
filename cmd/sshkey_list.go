@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +16,9 @@ type sshkeyListItemOutput struct {
 
 type sshkeyListOutput []sshkeyListItemOutput
 
-func (o *sshkeyListOutput) toJSON()  { outputJSON(o) }
-func (o *sshkeyListOutput) toText()  { outputText(o) }
-func (o *sshkeyListOutput) toTable() { outputTable(o) }
+func (o *sshkeyListOutput) toJSON()  { output.JSON(o) }
+func (o *sshkeyListOutput) toText()  { output.Text(o) }
+func (o *sshkeyListOutput) toTable() { output.Table(o) }
 
 func init() {
 	sshkeyCmd.AddCommand(&cobra.Command{

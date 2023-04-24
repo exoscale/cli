@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +20,9 @@ type runstatusMaintenanceShowOutput struct {
 }
 
 func (o *runstatusMaintenanceShowOutput) Type() string { return "Maintenance" }
-func (o *runstatusMaintenanceShowOutput) toJSON()      { outputJSON(o) }
-func (o *runstatusMaintenanceShowOutput) toText()      { outputText(o) }
-func (o *runstatusMaintenanceShowOutput) toTable()     { outputTable(o) }
+func (o *runstatusMaintenanceShowOutput) toJSON()      { output.JSON(o) }
+func (o *runstatusMaintenanceShowOutput) toText()      { output.Text(o) }
+func (o *runstatusMaintenanceShowOutput) toTable()     { output.Table(o) }
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -15,9 +16,9 @@ type instanceSnapshotExportOutput struct {
 	Checksum string `json:"checksum"`
 }
 
-func (o *instanceSnapshotExportOutput) toJSON()  { outputJSON(o) }
-func (o *instanceSnapshotExportOutput) toText()  { outputText(o) }
-func (o *instanceSnapshotExportOutput) toTable() { outputTable(o) }
+func (o *instanceSnapshotExportOutput) toJSON()  { output.JSON(o) }
+func (o *instanceSnapshotExportOutput) toText()  { output.Text(o) }
+func (o *instanceSnapshotExportOutput) toTable() { output.Table(o) }
 
 type instanceSnapshotExportCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

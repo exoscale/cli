@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -18,9 +19,9 @@ type templateListItemOutput struct {
 
 type templateListOutput []templateListItemOutput
 
-func (o *templateListOutput) toJSON()  { outputJSON(o) }
-func (o *templateListOutput) toText()  { outputText(o) }
-func (o *templateListOutput) toTable() { outputTable(o) }
+func (o *templateListOutput) toJSON()  { output.JSON(o) }
+func (o *templateListOutput) toText()  { output.Text(o) }
+func (o *templateListOutput) toTable() { output.Table(o) }
 
 func init() {
 	templateListCmd.Flags().BoolP("community", "", false, "List community templates")

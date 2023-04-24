@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/output"
 	v2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -35,9 +36,9 @@ func (c *dbaasMigrationStatusCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 
 type databaseMigrationStatus v2.DatabaseMigrationStatus
 
-func (o *databaseMigrationStatus) toJSON()  { outputJSON(o) }
-func (o *databaseMigrationStatus) toText()  { outputText(o) }
-func (o *databaseMigrationStatus) toTable() { outputTable(o) }
+func (o *databaseMigrationStatus) toJSON()  { output.JSON(o) }
+func (o *databaseMigrationStatus) toText()  { output.Text(o) }
+func (o *databaseMigrationStatus) toTable() { output.Table(o) }
 
 func (c *dbaasMigrationStatusCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))

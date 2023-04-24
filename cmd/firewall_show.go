@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -20,9 +21,9 @@ type firewallShowItemOutput struct {
 
 type firewallShowOutput []firewallShowItemOutput
 
-func (o *firewallShowOutput) toJSON()  { outputJSON(o) }
-func (o *firewallShowOutput) toText()  { outputText(o) }
-func (o *firewallShowOutput) toTable() { outputTable(o) }
+func (o *firewallShowOutput) toJSON()  { output.JSON(o) }
+func (o *firewallShowOutput) toText()  { output.Text(o) }
+func (o *firewallShowOutput) toTable() { output.Table(o) }
 
 func init() {
 	firewallCmd.AddCommand(&cobra.Command{

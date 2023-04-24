@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -34,8 +35,8 @@ type elasticIPShowOutput struct {
 	HealthcheckTLSSkipVerify *bool          `json:"healthcheck_tls_skip_verify,omitempty"`
 }
 
-func (o *elasticIPShowOutput) toJSON() { outputJSON(o) }
-func (o *elasticIPShowOutput) toText() { outputText(o) }
+func (o *elasticIPShowOutput) toJSON() { output.JSON(o) }
+func (o *elasticIPShowOutput) toText() { output.Text(o) }
 func (o *elasticIPShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Elastic IP"})

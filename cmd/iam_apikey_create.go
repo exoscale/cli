@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +20,9 @@ type apiKeyCreateItemOutput struct {
 	Type       string   `json:"type"`
 }
 
-func (o *apiKeyCreateItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyCreateItemOutput) toText()  { outputText(o) }
-func (o *apiKeyCreateItemOutput) toTable() { outputTable(o) }
+func (o *apiKeyCreateItemOutput) toJSON()  { output.JSON(o) }
+func (o *apiKeyCreateItemOutput) toText()  { output.Text(o) }
+func (o *apiKeyCreateItemOutput) toTable() { output.Table(o) }
 
 // apiKeyCreateCmd represents an API key creation command
 var apiKeyCreateCmd = &cobra.Command{

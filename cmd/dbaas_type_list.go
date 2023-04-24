@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -19,8 +20,8 @@ type dbaasTypeListItemOutput struct {
 
 type dbaasTypeListOutput []dbaasTypeListItemOutput
 
-func (o *dbaasTypeListOutput) toJSON() { outputJSON(o) }
-func (o *dbaasTypeListOutput) toText() { outputText(o) }
+func (o *dbaasTypeListOutput) toJSON() { output.JSON(o) }
+func (o *dbaasTypeListOutput) toText() { output.Text(o) }
 func (o *dbaasTypeListOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Name", "Available Versions", "Default Version"})

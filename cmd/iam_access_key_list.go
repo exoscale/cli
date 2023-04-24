@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +17,9 @@ type iamAccessKeyListItemOutput struct {
 
 type iamAccessKeyListOutput []iamAccessKeyListItemOutput
 
-func (o *iamAccessKeyListOutput) toJSON()  { outputJSON(o) }
-func (o *iamAccessKeyListOutput) toText()  { outputText(o) }
-func (o *iamAccessKeyListOutput) toTable() { outputTable(o) }
+func (o *iamAccessKeyListOutput) toJSON()  { output.JSON(o) }
+func (o *iamAccessKeyListOutput) toText()  { output.Text(o) }
+func (o *iamAccessKeyListOutput) toTable() { output.Table(o) }
 
 type iamAccessKeyListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

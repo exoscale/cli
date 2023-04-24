@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -21,9 +22,9 @@ type instanceSnapshotListItemOutput struct {
 
 type instanceSnapshotListOutput []instanceSnapshotListItemOutput
 
-func (o *instanceSnapshotListOutput) toJSON()  { outputJSON(o) }
-func (o *instanceSnapshotListOutput) toText()  { outputText(o) }
-func (o *instanceSnapshotListOutput) toTable() { outputTable(o) }
+func (o *instanceSnapshotListOutput) toJSON()  { output.JSON(o) }
+func (o *instanceSnapshotListOutput) toText()  { output.Text(o) }
+func (o *instanceSnapshotListOutput) toTable() { output.Table(o) }
 
 type instanceSnapshotListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

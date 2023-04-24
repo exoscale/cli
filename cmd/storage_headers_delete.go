@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 )
 
@@ -126,42 +124,4 @@ func init() {
 	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(storageObjectHeaderExpires), false,
 		`delete the "Expires" header`)
 	storageHeaderCmd.AddCommand(storageHeaderDeleteCmd)
-}
-
-func (c *storageClient) deleteObjectHeaders(bucket, key string, headers []string) error {
-	object, err := c.copyObject(bucket, key)
-	if err != nil {
-		return err
-	}
-
-	for _, header := range headers {
-		switch header {
-		case storageObjectHeaderCacheControl:
-			object.CacheControl = nil
-
-		case storageObjectHeaderContentDisposition:
-			object.ContentDisposition = nil
-
-		case storageObjectHeaderContentEncoding:
-			object.ContentEncoding = nil
-
-		case storageObjectHeaderContentLanguage:
-			object.ContentLanguage = nil
-
-		case storageObjectHeaderContentType:
-			object.ContentType = aws.String("application/binary")
-
-		case storageObjectHeaderExpires:
-			object.Expires = nil
-		}
-	}
-
-	_, err = c.CopyObject(gContext, object)
-	return err
-}
-
-func (c *storageClient) deleteObjectsHeaders(bucket, prefix string, headers []string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.deleteObjectHeaders(bucket, aws.ToString(o.Key), headers)
-	})
 }

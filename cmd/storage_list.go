@@ -7,9 +7,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -23,8 +22,8 @@ type storageListObjectsItemOutput struct {
 
 type storageListObjectsOutput []storageListObjectsItemOutput
 
-func (o *storageListObjectsOutput) toJSON() { outputJSON(o) }
-func (o *storageListObjectsOutput) toText() { outputText(o) }
+func (o *storageListObjectsOutput) toJSON() { output.JSON(o) }
+func (o *storageListObjectsOutput) toText() { output.Text(o) }
 func (o *storageListObjectsOutput) toTable() {
 	table := tabwriter.NewWriter(os.Stdout,
 		0,
@@ -52,8 +51,8 @@ type storageListBucketsItemOutput struct {
 
 type storageListBucketsOutput []storageListBucketsItemOutput
 
-func (o *storageListBucketsOutput) toJSON() { outputJSON(o) }
-func (o *storageListBucketsOutput) toText() { outputText(o) }
+func (o *storageListBucketsOutput) toJSON() { output.JSON(o) }
+func (o *storageListBucketsOutput) toText() { output.Text(o) }
 func (o *storageListBucketsOutput) toTable() {
 	table := tabwriter.NewWriter(os.Stdout,
 		0,
@@ -157,70 +156,6 @@ func listStorageBuckets() (outputter, error) {
 			Size:    b.Usage,
 			Created: created.Format(storageTimestampFormat),
 		})
-	}
-
-	return &out, nil
-}
-
-func (c *storageClient) listObjects(bucket, prefix string, recursive, stream bool) (outputter, error) {
-	out := make(storageListObjectsOutput, 0)
-	dirs := make(map[string]struct{})            // for deduplication of common prefixes (folders)
-	dirsOut := make(storageListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
-
-	var ct string
-	for {
-		req := s3.ListObjectsV2Input{
-			Bucket:            aws.String(bucket),
-			Prefix:            aws.String(prefix),
-			ContinuationToken: aws.String(ct),
-		}
-		if !recursive {
-			req.Delimiter = aws.String("/")
-		}
-
-		res, err := c.ListObjectsV2(gContext, &req)
-		if err != nil {
-			return nil, err
-		}
-		ct = aws.ToString(res.NextContinuationToken)
-
-		if !recursive {
-			for _, cp := range res.CommonPrefixes {
-				dir := aws.ToString(cp.Prefix)
-				if _, ok := dirs[dir]; !ok {
-					if stream {
-						fmt.Println(dir)
-					} else {
-						dirsOut = append(dirsOut, storageListObjectsItemOutput{
-							Path: dir,
-							Dir:  true,
-						})
-					}
-					dirs[dir] = struct{}{}
-				}
-			}
-		}
-
-		for _, o := range res.Contents {
-			if stream {
-				fmt.Println(aws.ToString(o.Key))
-			} else {
-				out = append(out, storageListObjectsItemOutput{
-					Path:         aws.ToString(o.Key),
-					Size:         o.Size,
-					LastModified: o.LastModified.Format(storageTimestampFormat),
-				})
-			}
-		}
-
-		if !res.IsTruncated {
-			break
-		}
-	}
-
-	// To be user friendly, we are going to push dir records to the top of the output list
-	if !stream && !recursive {
-		out = append(dirsOut, out...)
 	}
 
 	return &out, nil

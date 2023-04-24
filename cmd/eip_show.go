@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -31,9 +32,9 @@ type eipShowOutput struct {
 	Instances   []string                  `json:"instances"`
 }
 
-func (o *eipShowOutput) toJSON() { outputJSON(o) }
+func (o *eipShowOutput) toJSON() { output.JSON(o) }
 
-func (o *eipShowOutput) toText() { outputText(o) }
+func (o *eipShowOutput) toText() { output.Text(o) }
 
 func (o *eipShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)

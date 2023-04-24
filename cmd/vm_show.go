@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -29,9 +30,9 @@ type vmShowOutput struct {
 }
 
 func (o *vmShowOutput) Type() string { return "Instance" }
-func (o *vmShowOutput) toJSON()      { outputJSON(o) }
-func (o *vmShowOutput) toText()      { outputText(o) }
-func (o *vmShowOutput) toTable()     { outputTable(o) }
+func (o *vmShowOutput) toJSON()      { output.JSON(o) }
+func (o *vmShowOutput) toText()      { output.Text(o) }
+func (o *vmShowOutput) toTable()     { output.Table(o) }
 
 func init() {
 	vmShowCmd := &cobra.Command{

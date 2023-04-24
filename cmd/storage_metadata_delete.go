@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 )
 
@@ -78,27 +76,4 @@ func init() {
 	storageMetadataDeleteCmd.Flags().BoolP("recursive", "r", false,
 		"delete metadata recursively (with object prefix only)")
 	storageMetadataCmd.AddCommand(storageMetadataDeleteCmd)
-}
-
-func (c *storageClient) deleteObjectMetadata(bucket, key string, mdKeys []string) error {
-	object, err := c.copyObject(bucket, key)
-	if err != nil {
-		return err
-	}
-
-	for _, k := range mdKeys {
-		if _, ok := object.Metadata[k]; !ok {
-			return fmt.Errorf("key %q not found in current metadata", k)
-		}
-		delete(object.Metadata, k)
-	}
-
-	_, err = c.CopyObject(gContext, object)
-	return err
-}
-
-func (c *storageClient) deleteObjectsMetadata(bucket, prefix string, mdKeys []string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.deleteObjectMetadata(bucket, aws.ToString(o.Key), mdKeys)
-	})
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +19,9 @@ type deployTargetListItemOutput struct {
 
 type deployTargetListOutput []deployTargetListItemOutput
 
-func (o *deployTargetListOutput) toJSON()  { outputJSON(o) }
-func (o *deployTargetListOutput) toText()  { outputText(o) }
-func (o *deployTargetListOutput) toTable() { outputTable(o) }
+func (o *deployTargetListOutput) toJSON()  { output.JSON(o) }
+func (o *deployTargetListOutput) toText()  { output.Text(o) }
+func (o *deployTargetListOutput) toTable() { output.Table(o) }
 
 type deployTargetListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

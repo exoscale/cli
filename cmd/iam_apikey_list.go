@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +17,9 @@ type apiKeyItem struct {
 
 type apiKeyListItemOutput []apiKeyItem
 
-func (o *apiKeyListItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyListItemOutput) toText()  { outputText(o) }
-func (o *apiKeyListItemOutput) toTable() { outputTable(o) }
+func (o *apiKeyListItemOutput) toJSON()  { output.JSON(o) }
+func (o *apiKeyListItemOutput) toText()  { output.Text(o) }
+func (o *apiKeyListItemOutput) toTable() { output.Table(o) }
 
 var apiKeyListCmd = &cobra.Command{
 	Use:   "list",

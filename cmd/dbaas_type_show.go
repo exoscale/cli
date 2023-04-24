@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exo "github.com/exoscale/egoscale/v2"
@@ -24,8 +25,8 @@ type dbaasTypePlanListItemOutput struct {
 
 type dbaasTypePlanListOutput []dbaasTypePlanListItemOutput
 
-func (o *dbaasTypePlanListOutput) toJSON() { outputJSON(o) }
-func (o *dbaasTypePlanListOutput) toText() { outputText(o) }
+func (o *dbaasTypePlanListOutput) toJSON() { output.JSON(o) }
+func (o *dbaasTypePlanListOutput) toText() { output.Text(o) }
 func (o *dbaasTypePlanListOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Name", "# Nodes", "# CPUs", "Node Memory", "Disk Space", "Authorized"})
@@ -53,8 +54,8 @@ type dbaasTypePlanBackupOutput struct {
 	InfrequentOldestAgeMinutes *int64  `json:"infrequent_oldest_age_minutes"`
 }
 
-func (o *dbaasTypePlanBackupOutput) toJSON() { outputJSON(o) }
-func (o *dbaasTypePlanBackupOutput) toText() { outputText(o) }
+func (o *dbaasTypePlanBackupOutput) toJSON() { output.JSON(o) }
+func (o *dbaasTypePlanBackupOutput) toText() { output.Text(o) }
 func (o *dbaasTypePlanBackupOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
@@ -75,8 +76,8 @@ type dbaasTypeShowOutput struct {
 	DefaultVersion    string   `json:"default_version"`
 }
 
-func (o *dbaasTypeShowOutput) toJSON() { outputJSON(o) }
-func (o *dbaasTypeShowOutput) toText() { outputText(o) }
+func (o *dbaasTypeShowOutput) toJSON() { output.JSON(o) }
+func (o *dbaasTypeShowOutput) toText() { output.Text(o) }
 func (o *dbaasTypeShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()

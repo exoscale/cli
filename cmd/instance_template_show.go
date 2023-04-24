@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -31,8 +32,8 @@ type instanceTemplateShowOutput struct {
 	Checksum        string `json:"checksum"`
 }
 
-func (o *instanceTemplateShowOutput) toJSON() { outputJSON(o) }
-func (o *instanceTemplateShowOutput) toText() { outputText(o) }
+func (o *instanceTemplateShowOutput) toJSON() { output.JSON(o) }
+func (o *instanceTemplateShowOutput) toText() { output.Text(o) }
 func (o *instanceTemplateShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Template"})

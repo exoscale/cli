@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -31,8 +32,8 @@ type privateNetworkShowOutput struct {
 	Leases      []privateNetworkLeaseOutput `json:"leases,omitempty"`
 }
 
-func (o *privateNetworkShowOutput) toJSON() { outputJSON(o) }
-func (o *privateNetworkShowOutput) toText() { outputText(o) }
+func (o *privateNetworkShowOutput) toJSON() { output.JSON(o) }
+func (o *privateNetworkShowOutput) toText() { output.Text(o) }
 func (o *privateNetworkShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Private Network"})

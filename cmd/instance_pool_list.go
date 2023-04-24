@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +20,9 @@ type instancePoolListItemOutput struct {
 
 type instancePoolListOutput []instancePoolListItemOutput
 
-func (o *instancePoolListOutput) toJSON()  { outputJSON(o) }
-func (o *instancePoolListOutput) toText()  { outputText(o) }
-func (o *instancePoolListOutput) toTable() { outputTable(o) }
+func (o *instancePoolListOutput) toJSON()  { output.JSON(o) }
+func (o *instancePoolListOutput) toText()  { output.Text(o) }
+func (o *instancePoolListOutput) toTable() { output.Table(o) }
 
 type instancePoolListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

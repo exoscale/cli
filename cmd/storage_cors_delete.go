@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/spf13/cobra"
 )
 
@@ -60,9 +59,4 @@ var storageCORSDeleteCmd = &cobra.Command{
 func init() {
 	storageCORSDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	storageCORSCmd.AddCommand(storageCORSDeleteCmd)
-}
-
-func (c *storageClient) deleteBucketCORS(bucket string) error {
-	_, err := c.DeleteBucketCors(gContext, &s3.DeleteBucketCorsInput{Bucket: &bucket})
-	return err
 }

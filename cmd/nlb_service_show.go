@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -43,8 +44,8 @@ type nlbServiceShowOutput struct {
 	State             string                          `json:"state"`
 }
 
-func (o *nlbServiceShowOutput) toJSON() { outputJSON(o) }
-func (o *nlbServiceShowOutput) toText() { outputText(o) }
+func (o *nlbServiceShowOutput) toJSON() { output.JSON(o) }
+func (o *nlbServiceShowOutput) toText() { output.Text(o) }
 func (o *nlbServiceShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"NLB Service"})

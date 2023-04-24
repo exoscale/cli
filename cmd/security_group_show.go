@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -42,8 +43,8 @@ type securityGroupInstanceOutput struct {
 	Zone     string `json:"zone"`
 }
 
-func (o *securityGroupShowOutput) toJSON() { outputJSON(o) }
-func (o *securityGroupShowOutput) toText() { outputText(o) }
+func (o *securityGroupShowOutput) toJSON() { output.JSON(o) }
+func (o *securityGroupShowOutput) toText() { output.Text(o) }
 func (o *securityGroupShowOutput) toTable() {
 	formatExternalSources := func(sources []string) string {
 		if len(sources) > 0 {

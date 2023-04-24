@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +18,9 @@ type elasticIPListItemOutput struct {
 
 type elasticIPListOutput []elasticIPListItemOutput
 
-func (o *elasticIPListOutput) toJSON()  { outputJSON(o) }
-func (o *elasticIPListOutput) toText()  { outputText(o) }
-func (o *elasticIPListOutput) toTable() { outputTable(o) }
+func (o *elasticIPListOutput) toJSON()  { output.JSON(o) }
+func (o *elasticIPListOutput) toText()  { output.Text(o) }
+func (o *elasticIPListOutput) toTable() { output.Table(o) }
 
 type elasticIPListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

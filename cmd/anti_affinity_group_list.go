@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +16,9 @@ type antiAffinityGroupListItemOutput struct {
 
 type antiAffinityGroupListOutput []antiAffinityGroupListItemOutput
 
-func (o *antiAffinityGroupListOutput) toJSON()  { outputJSON(o) }
-func (o *antiAffinityGroupListOutput) toText()  { outputText(o) }
-func (o *antiAffinityGroupListOutput) toTable() { outputTable(o) }
+func (o *antiAffinityGroupListOutput) toJSON()  { output.JSON(o) }
+func (o *antiAffinityGroupListOutput) toText()  { output.Text(o) }
+func (o *antiAffinityGroupListOutput) toTable() { output.Table(o) }
 
 type antiAffinityGroupListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

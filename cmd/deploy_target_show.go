@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -17,9 +18,9 @@ type deployTargetShowOutput struct {
 	Zone        string `json:"zone"`
 }
 
-func (o *deployTargetShowOutput) toJSON()  { outputJSON(o) }
-func (o *deployTargetShowOutput) toText()  { outputText(o) }
-func (o *deployTargetShowOutput) toTable() { outputTable(o) }
+func (o *deployTargetShowOutput) toJSON()  { output.JSON(o) }
+func (o *deployTargetShowOutput) toText()  { output.Text(o) }
+func (o *deployTargetShowOutput) toTable() { output.Table(o) }
 
 type deployTargetShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

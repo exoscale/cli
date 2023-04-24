@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -20,8 +21,8 @@ type dbServiceNotificationListItemOutput struct {
 
 type dbServiceNotificationListOutput []dbServiceNotificationListItemOutput
 
-func (o *dbServiceNotificationListOutput) toJSON() { outputJSON(o) }
-func (o *dbServiceNotificationListOutput) toText() { outputText(o) }
+func (o *dbServiceNotificationListOutput) toJSON() { output.JSON(o) }
+func (o *dbServiceNotificationListOutput) toText() { output.Text(o) }
 func (o *dbServiceNotificationListOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
@@ -43,9 +44,9 @@ type dbServiceBackupListItemOutput struct {
 
 type dbServiceBackupListOutput []dbServiceBackupListItemOutput
 
-func (o *dbServiceBackupListOutput) toJSON()  { outputJSON(o) }
-func (o *dbServiceBackupListOutput) toText()  { outputText(o) }
-func (o *dbServiceBackupListOutput) toTable() { outputTable(o) }
+func (o *dbServiceBackupListOutput) toJSON()  { output.JSON(o) }
+func (o *dbServiceBackupListOutput) toText()  { output.Text(o) }
+func (o *dbServiceBackupListOutput) toTable() { output.Table(o) }
 
 type dbServiceMaintenanceShowOutput struct {
 	DOW  string `json:"dow"`
@@ -74,8 +75,8 @@ type dbServiceShowOutput struct {
 	Opensearch *dbServiceOpensearchShowOutput `json:"opensearch,omitempty"`
 }
 
-func (o *dbServiceShowOutput) toJSON() { outputJSON(o) }
-func (o *dbServiceShowOutput) toText() { outputText(o) }
+func (o *dbServiceShowOutput) toJSON() { output.JSON(o) }
+func (o *dbServiceShowOutput) toText() { output.Text(o) }
 func (o *dbServiceShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Database Service"})

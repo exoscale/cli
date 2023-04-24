@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -19,8 +20,8 @@ type iamAccessKeyListOperationsItemOutput struct {
 
 type iamAccessKeyListOperationsOutput []iamAccessKeyListOperationsItemOutput
 
-func (o *iamAccessKeyListOperationsOutput) toJSON() { outputJSON(o) }
-func (o *iamAccessKeyListOperationsOutput) toText() { outputText(o) }
+func (o *iamAccessKeyListOperationsOutput) toJSON() { output.JSON(o) }
+func (o *iamAccessKeyListOperationsOutput) toText() { output.Text(o) }
 func (o *iamAccessKeyListOperationsOutput) toTable() {
 	operationByTag := make(map[string][]string)
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -21,8 +22,8 @@ type instanceTypeShowOutput struct {
 	Authorized bool   `json:"authorized"`
 }
 
-func (o *instanceTypeShowOutput) toJSON() { outputJSON(o) }
-func (o *instanceTypeShowOutput) toText() { outputText(o) }
+func (o *instanceTypeShowOutput) toJSON() { output.JSON(o) }
+func (o *instanceTypeShowOutput) toText() { output.Text(o) }
 func (o *instanceTypeShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Instance Type"})

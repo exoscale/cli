@@ -5,8 +5,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 )
 
@@ -103,39 +101,4 @@ func init() {
 	storageDeleteCmd.Flags().BoolP("recursive", "r", false, "delete objects recursively")
 	storageDeleteCmd.Flags().BoolP("verbose", "v", false, "output deleted objects")
 	storageCmd.AddCommand(storageDeleteCmd)
-}
-
-func (c *storageClient) deleteObjects(bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
-	deleteList := make([]s3types.ObjectIdentifier, 0)
-	err := c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		deleteList = append(deleteList, s3types.ObjectIdentifier{Key: o.Key})
-		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing objects to delete: %w", err)
-	}
-
-	// The S3 DeleteObjects API call is limited to 1000 keys per call, as a
-	// precaution we're batching deletes.
-	maxKeys := 1000
-	deleted := make([]s3types.DeletedObject, 0)
-
-	for i := 0; i < len(deleteList); i += maxKeys {
-		j := i + maxKeys
-		if j > len(deleteList) {
-			j = len(deleteList)
-		}
-
-		res, err := c.DeleteObjects(gContext, &s3.DeleteObjectsInput{
-			Bucket: &bucket,
-			Delete: &s3types.Delete{Objects: deleteList[i:j]},
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		deleted = append(deleted, res.Deleted...)
-	}
-
-	return deleted, nil
 }

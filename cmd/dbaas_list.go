@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +19,9 @@ type dbaasServiceListItemOutput struct {
 
 type dbaasServiceListOutput []dbaasServiceListItemOutput
 
-func (o *dbaasServiceListOutput) toJSON()  { outputJSON(o) }
-func (o *dbaasServiceListOutput) toText()  { outputText(o) }
-func (o *dbaasServiceListOutput) toTable() { outputTable(o) }
+func (o *dbaasServiceListOutput) toJSON()  { output.JSON(o) }
+func (o *dbaasServiceListOutput) toText()  { output.Text(o) }
+func (o *dbaasServiceListOutput) toTable() { output.Table(o) }
 
 type dbaasServiceListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -23,9 +24,9 @@ type instanceRevealOutput struct {
 }
 
 func (o *instanceRevealOutput) Type() string { return "Compute instance" }
-func (o *instanceRevealOutput) toJSON()      { outputJSON(o) }
-func (o *instanceRevealOutput) toText()      { outputText(o) }
-func (o *instanceRevealOutput) toTable()     { outputTable(o) }
+func (o *instanceRevealOutput) toJSON()      { output.JSON(o) }
+func (o *instanceRevealOutput) toText()      { output.Text(o) }
+func (o *instanceRevealOutput) toTable()     { output.Table(o) }
 
 func (c *instanceRevealCmd) cmdAliases() []string { return nil }
 

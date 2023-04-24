@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -33,9 +34,9 @@ type sksNodepoolShowOutput struct {
 }
 
 func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
-func (o *sksNodepoolShowOutput) toJSON()      { outputJSON(o) }
-func (o *sksNodepoolShowOutput) toText()      { outputText(o) }
-func (o *sksNodepoolShowOutput) toTable()     { outputTable(o) }
+func (o *sksNodepoolShowOutput) toJSON()      { output.JSON(o) }
+func (o *sksNodepoolShowOutput) toText()      { output.Text(o) }
+func (o *sksNodepoolShowOutput) toTable()     { output.Table(o) }
 
 type sksNodepoolShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

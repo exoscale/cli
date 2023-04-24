@@ -5,9 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/spf13/cobra"
 )
 
@@ -67,40 +64,4 @@ func init() {
 	storagePresignCmd.Flags().DurationP("expires", "e", 900*time.Second,
 		`expiration duration for the generated pre-signed URL (e.g. "1h45m", "30s"); supported units: "s", "m", "h"`)
 	storageCmd.AddCommand(storagePresignCmd)
-}
-
-func (c *storageClient) genPresignedURL(method, bucket, key string, expires time.Duration) (string, error) {
-	var (
-		psURL *v4.PresignedHTTPRequest
-		err   error
-	)
-
-	psClient := s3.NewPresignClient(c.Client, func(o *s3.PresignOptions) {
-		if expires > 0 {
-			o.Expires = expires
-		}
-	})
-
-	switch method {
-	case "get":
-		psURL, err = psClient.PresignGetObject(gContext, &s3.GetObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String(key),
-		})
-
-	case "put":
-		psURL, err = psClient.PresignPutObject(gContext, &s3.PutObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String(key),
-		})
-
-	default:
-		err = fmt.Errorf("unsupported method %q", method)
-	}
-
-	if err != nil {
-		return "", err
-	}
-
-	return psURL.URL, nil
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -29,9 +30,9 @@ type LimitsItemOutput struct {
 
 type LimitsOutput []LimitsItemOutput
 
-func (o *LimitsOutput) toJSON()  { outputJSON(o) }
-func (o *LimitsOutput) toText()  { outputText(o) }
-func (o *LimitsOutput) toTable() { outputTable(o) }
+func (o *LimitsOutput) toJSON()  { output.JSON(o) }
+func (o *LimitsOutput) toText()  { output.Text(o) }
+func (o *LimitsOutput) toTable() { output.Table(o) }
 
 var limitsCmd = &cobra.Command{
 	Use:   "limits",

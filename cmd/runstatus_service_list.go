@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -16,16 +17,16 @@ type runstatusServiceListItemOutput struct {
 
 type runstatusServiceListOutput []runstatusServiceListItemOutput
 
-func (o *runstatusServiceListOutput) toJSON() { outputJSON(o) }
+func (o *runstatusServiceListOutput) toJSON() { output.JSON(o) }
 
-func (o *runstatusServiceListOutput) toText() { outputText(o) }
+func (o *runstatusServiceListOutput) toText() { output.Text(o) }
 
 func (o *runstatusServiceListOutput) toTable() {
 	for i := range *o {
 		(*o)[i].State = strings.ToUpper(strings.Replace((*o)[i].State, "_", " ", -1))
 	}
 
-	outputTable(o)
+	output.Table(o)
 }
 
 func init() {

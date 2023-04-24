@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -21,8 +22,8 @@ type iamAccessKeyShowOutput struct {
 	Resources  *[]string `json:"resources,omitempty"`
 }
 
-func (o *iamAccessKeyShowOutput) toJSON() { outputJSON(o) }
-func (o *iamAccessKeyShowOutput) toText() { outputText(o) }
+func (o *iamAccessKeyShowOutput) toJSON() { output.JSON(o) }
+func (o *iamAccessKeyShowOutput) toText() { output.Text(o) }
 func (o *iamAccessKeyShowOutput) toTable() {
 	if o.APISecret != nil {
 		defer fmt.Fprint(os.Stderr, `

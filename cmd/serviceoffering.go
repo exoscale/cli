@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -21,9 +22,9 @@ type serviceOfferingListItemOutput struct {
 
 type serviceOfferingListOutput []serviceOfferingListItemOutput
 
-func (o *serviceOfferingListOutput) toJSON()  { outputJSON(o) }
-func (o *serviceOfferingListOutput) toText()  { outputText(o) }
-func (o *serviceOfferingListOutput) toTable() { outputTable(o) }
+func (o *serviceOfferingListOutput) toJSON()  { output.JSON(o) }
+func (o *serviceOfferingListOutput) toText()  { output.Text(o) }
+func (o *serviceOfferingListOutput) toTable() { output.Table(o) }
 
 func init() {
 	vmCmd.AddCommand(&cobra.Command{

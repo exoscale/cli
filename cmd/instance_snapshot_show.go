@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -20,9 +21,9 @@ type instanceSnapshotShowOutput struct {
 }
 
 func (o *instanceSnapshotShowOutput) Type() string { return "Snapshot" }
-func (o *instanceSnapshotShowOutput) toJSON()      { outputJSON(o) }
-func (o *instanceSnapshotShowOutput) toText()      { outputText(o) }
-func (o *instanceSnapshotShowOutput) toTable()     { outputTable(o) }
+func (o *instanceSnapshotShowOutput) toJSON()      { output.JSON(o) }
+func (o *instanceSnapshotShowOutput) toText()      { output.Text(o) }
+func (o *instanceSnapshotShowOutput) toTable()     { output.Table(o) }
 
 type instanceSnapshotShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

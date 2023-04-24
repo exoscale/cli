@@ -3,10 +3,8 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -99,45 +97,6 @@ func init() {
 	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderExpires), "",
 		`value for "Expires" header`)
 	storageHeaderCmd.AddCommand(storageHeaderAddCmd)
-}
-
-func (c *storageClient) updateObjectHeaders(bucket, key string, headers map[string]*string) error {
-	object, err := c.copyObject(bucket, key)
-	if err != nil {
-		return err
-	}
-
-	lookupHeader := func(key string, fallback *string) *string {
-		if v, ok := headers[key]; ok {
-			return v
-		}
-		return fallback
-	}
-
-	object.CacheControl = lookupHeader(storageObjectHeaderCacheControl, object.CacheControl)
-	object.ContentDisposition = lookupHeader(storageObjectHeaderContentDisposition, object.ContentDisposition)
-	object.ContentEncoding = lookupHeader(storageObjectHeaderContentEncoding, object.ContentEncoding)
-	object.ContentLanguage = lookupHeader(storageObjectHeaderContentLanguage, object.ContentLanguage)
-	object.ContentType = lookupHeader(storageObjectHeaderContentType, object.ContentType)
-
-	// For some reason, the AWS SDK doesn't use the same type for the "Expires"
-	// header in GetObject (*string) and CopyObject (*time.Time)...
-	if v, ok := headers[storageObjectHeaderExpires]; ok {
-		t, err := time.Parse(time.RFC822, aws.ToString(v))
-		if err != nil {
-			return fmt.Errorf(`invalid "Expires" header value %q, expecting RFC822 format`, aws.ToString(v))
-		}
-		object.Expires = &t
-	}
-
-	_, err = c.CopyObject(gContext, object)
-	return err
-}
-
-func (c *storageClient) updateObjectsHeaders(bucket, prefix string, headers map[string]*string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.updateObjectHeaders(bucket, aws.ToString(o.Key), headers)
-	})
 }
 
 // storageHeadersFromCmdFlags returns a non-nil map if at least

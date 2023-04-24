@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 )
 
@@ -98,32 +96,4 @@ func init() {
 	storageMetadataAddCmd.Flags().BoolP("recursive", "r", false,
 		"add metadata recursively (with object prefix only)")
 	storageMetadataCmd.AddCommand(storageMetadataAddCmd)
-}
-
-func (c *storageClient) addObjectMetadata(bucket, key string, metadata map[string]string) error {
-	object, err := c.copyObject(bucket, key)
-	if err != nil {
-		return err
-	}
-
-	if len(object.Metadata) == 0 {
-		object.Metadata = make(map[string]string)
-	}
-
-	for k, v := range metadata {
-		if strings.ContainsAny(k, storageMetadataForbiddenCharset) {
-			return fmt.Errorf("%s: invalid value", k)
-		}
-
-		object.Metadata[k] = v
-	}
-
-	_, err = c.CopyObject(gContext, object)
-	return err
-}
-
-func (c *storageClient) addObjectsMetadata(bucket, prefix string, metadata map[string]string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.addObjectMetadata(bucket, aws.ToString(o.Key), metadata)
-	})
 }

@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -25,8 +26,8 @@ type nlbShowOutput struct {
 	Labels       map[string]string      `json:"labels"`
 }
 
-func (o *nlbShowOutput) toJSON() { outputJSON(o) }
-func (o *nlbShowOutput) toText() { outputText(o) }
+func (o *nlbShowOutput) toJSON() { output.JSON(o) }
+func (o *nlbShowOutput) toText() { output.Text(o) }
 func (o *nlbShowOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Network Load Balancer"})

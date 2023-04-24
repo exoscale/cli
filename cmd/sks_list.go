@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +18,9 @@ type sksClusterListItemOutput struct {
 
 type sksClusterListOutput []sksClusterListItemOutput
 
-func (o *sksClusterListOutput) toJSON()  { outputJSON(o) }
-func (o *sksClusterListOutput) toText()  { outputText(o) }
-func (o *sksClusterListOutput) toTable() { outputTable(o) }
+func (o *sksClusterListOutput) toJSON()  { output.JSON(o) }
+func (o *sksClusterListOutput) toText()  { output.Text(o) }
+func (o *sksClusterListOutput) toTable() { output.Table(o) }
 
 type sksListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +17,9 @@ type configListItemOutput struct {
 
 type configListOutput []configListItemOutput
 
-func (o *configListOutput) toJSON() { outputJSON(o) }
+func (o *configListOutput) toJSON() { output.JSON(o) }
 
-func (o *configListOutput) toText() { outputText(o) }
+func (o *configListOutput) toText() { output.Text(o) }
 
 func (o *configListOutput) toTable() {
 	t := table.NewTable(os.Stdout)

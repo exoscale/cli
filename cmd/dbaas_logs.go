@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -28,8 +29,8 @@ type dbServiceLogsOutput struct {
 	Logs           []dbServiceLogsItemOutput `json:"logs"`
 }
 
-func (o *dbServiceLogsOutput) toJSON() { outputJSON(o) }
-func (o *dbServiceLogsOutput) toText() { outputText(o) }
+func (o *dbServiceLogsOutput) toJSON() { output.JSON(o) }
+func (o *dbServiceLogsOutput) toText() { output.Text(o) }
 func (o *dbServiceLogsOutput) toTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()

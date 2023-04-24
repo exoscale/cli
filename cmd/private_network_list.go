@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +18,9 @@ type privateNetworkListItemOutput struct {
 
 type privateNetworkListOutput []privateNetworkListItemOutput
 
-func (o *privateNetworkListOutput) toJSON()  { outputJSON(o) }
-func (o *privateNetworkListOutput) toText()  { outputText(o) }
-func (o *privateNetworkListOutput) toTable() { outputTable(o) }
+func (o *privateNetworkListOutput) toJSON()  { output.JSON(o) }
+func (o *privateNetworkListOutput) toText()  { output.Text(o) }
+func (o *privateNetworkListOutput) toTable() { output.Table(o) }
 
 type privateNetworkListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

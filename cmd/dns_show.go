@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -23,9 +24,9 @@ type dnsShowItemOutput struct {
 
 type dnsShowOutput []dnsShowItemOutput
 
-func (o *dnsShowOutput) toJSON()  { outputJSON(o) }
-func (o *dnsShowOutput) toText()  { outputText(o) }
-func (o *dnsShowOutput) toTable() { outputTable(o) }
+func (o *dnsShowOutput) toJSON()  { output.JSON(o) }
+func (o *dnsShowOutput) toText()  { output.Text(o) }
+func (o *dnsShowOutput) toTable() { output.Table(o) }
 
 func init() {
 	dnsShowCmd := &cobra.Command{

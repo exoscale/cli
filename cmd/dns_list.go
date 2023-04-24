@@ -7,6 +7,7 @@ import (
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +19,9 @@ type dnsListItemOutput struct {
 
 type dnsListOutput []dnsListItemOutput
 
-func (o *dnsListOutput) toJSON() { outputJSON(o) }
+func (o *dnsListOutput) toJSON() { output.JSON(o) }
 
-func (o *dnsListOutput) toText() { outputText(o) }
+func (o *dnsListOutput) toText() { output.Text(o) }
 
 func (o *dnsListOutput) toTable() {
 	t := table.NewTable(os.Stdout)

@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -30,9 +31,9 @@ type zoneListItemOutput struct {
 
 type zoneListOutput []zoneListItemOutput
 
-func (o *zoneListOutput) toJSON()  { outputJSON(o) }
-func (o *zoneListOutput) toText()  { outputText(o) }
-func (o *zoneListOutput) toTable() { outputTable(o) }
+func (o *zoneListOutput) toJSON()  { output.JSON(o) }
+func (o *zoneListOutput) toText()  { output.Text(o) }
+func (o *zoneListOutput) toTable() { output.Table(o) }
 
 func (o zoneListOutput) Len() int           { return len(o) }
 func (o zoneListOutput) Swap(x, y int)      { o[x], o[y] = o[y], o[x] }

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 
 	"github.com/spf13/cobra"
@@ -20,9 +21,9 @@ type snapshotListItemOutput struct {
 
 type snapshotListOutput []snapshotListItemOutput
 
-func (o *snapshotListOutput) toJSON()  { outputJSON(o) }
-func (o *snapshotListOutput) toText()  { outputText(o) }
-func (o *snapshotListOutput) toTable() { outputTable(o) }
+func (o *snapshotListOutput) toJSON()  { output.JSON(o) }
+func (o *snapshotListOutput) toText()  { output.Text(o) }
+func (o *snapshotListOutput) toTable() { output.Table(o) }
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -17,9 +18,9 @@ type securityGroupListItemOutput struct {
 
 type securityGroupListOutput []securityGroupListItemOutput
 
-func (o *securityGroupListOutput) toJSON()  { outputJSON(o) }
-func (o *securityGroupListOutput) toText()  { outputText(o) }
-func (o *securityGroupListOutput) toTable() { outputTable(o) }
+func (o *securityGroupListOutput) toJSON()  { output.JSON(o) }
+func (o *securityGroupListOutput) toText()  { output.Text(o) }
+func (o *securityGroupListOutput) toTable() { output.Table(o) }
 
 type securityGroupListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
