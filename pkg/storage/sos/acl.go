@@ -9,7 +9,7 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-func (c *storageClient) setBucketACL(bucket string, acl *storageACL) error {
+func (c *Client) setBucketACL(bucket string, acl *storageACL) error {
 	s3ACL := s3.PutBucketAclInput{Bucket: aws.String(bucket)}
 
 	if acl.Canned != "" {
@@ -45,7 +45,7 @@ func (c *storageClient) setBucketACL(bucket string, acl *storageACL) error {
 	return nil
 }
 
-func (c *storageClient) setObjectACL(bucket, key string, acl *storageACL) error {
+func (c *Client) setObjectACL(bucket, key string, acl *storageACL) error {
 	s3ACL := s3.PutObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -87,7 +87,7 @@ func (c *storageClient) setObjectACL(bucket, key string, acl *storageACL) error 
 	return nil
 }
 
-func (c *storageClient) setObjectsACL(bucket, prefix string, acl *storageACL, recursive bool) error {
+func (c *Client) setObjectsACL(bucket, prefix string, acl *storageACL, recursive bool) error {
 	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.setObjectACL(bucket, aws.ToString(o.Key), acl)
 	})

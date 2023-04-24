@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
-func (c *storageClient) addObjectMetadata(bucket, key string, metadata map[string]string) error {
+func (c *Client) addObjectMetadata(bucket, key string, metadata map[string]string) error {
 	object, err := c.copyObject(bucket, key)
 	if err != nil {
 		return err
@@ -29,13 +29,13 @@ func (c *storageClient) addObjectMetadata(bucket, key string, metadata map[strin
 	return err
 }
 
-func (c *storageClient) addObjectsMetadata(bucket, prefix string, metadata map[string]string, recursive bool) error {
+func (c *Client) addObjectsMetadata(bucket, prefix string, metadata map[string]string, recursive bool) error {
 	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.addObjectMetadata(bucket, aws.ToString(o.Key), metadata)
 	})
 }
 
-func (c *storageClient) deleteObjectMetadata(bucket, key string, mdKeys []string) error {
+func (c *Client) deleteObjectMetadata(bucket, key string, mdKeys []string) error {
 	object, err := c.copyObject(bucket, key)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (c *storageClient) deleteObjectMetadata(bucket, key string, mdKeys []string
 	return err
 }
 
-func (c *storageClient) deleteObjectsMetadata(bucket, prefix string, mdKeys []string, recursive bool) error {
+func (c *Client) deleteObjectsMetadata(bucket, prefix string, mdKeys []string, recursive bool) error {
 	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.deleteObjectMetadata(bucket, aws.ToString(o.Key), mdKeys)
 	})

@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-type storageClient struct {
+type Client struct {
 	*s3.Client
 
 	zone string
@@ -20,7 +20,7 @@ type storageClient struct {
 // forEachObject is a convenience wrapper to execute a callback function on
 // each object listed in the specified bucket/prefix. Upon callback function
 // error, the whole processing ends.
-func (c *storageClient) forEachObject(bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
+func (c *Client) forEachObject(bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
 	// The "/" value can be used at command-level to mean that we want to
 	// list from the root of the bucket, but the actual bucket root is an
 	// empty prefix.
@@ -79,7 +79,7 @@ func (c *storageClient) forEachObject(bucket, prefix string, recursive bool, fn 
 // copyObject is a helper function to be used in commands involving object
 // copying such as metadata/headers manipulation, retrieving information about
 // the targeted object for a later copy.
-func (c *storageClient) copyObject(bucket, key string) (*s3.CopyObjectInput, error) {
+func (c *Client) copyObject(bucket, key string) (*s3.CopyObjectInput, error) {
 	srcObject, err := c.GetObject(gContext, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -120,14 +120,14 @@ func (c *storageClient) copyObject(bucket, key string) (*s3.CopyObjectInput, err
 	return &copyObject, nil
 }
 
-type storageClientOpt func(*storageClient) error
+type ClientOpt func(*Client) error
 
-func storageClientOptWithZone(zone string) storageClientOpt {
-	return func(c *storageClient) error { c.zone = zone; return nil }
+func ClientOptWithZone(zone string) ClientOpt {
+	return func(c *Client) error { c.zone = zone; return nil }
 }
 
-func storageClientOptZoneFromBucket(bucket string) storageClientOpt {
-	return func(c *storageClient) error {
+func ClientOptZoneFromBucket(bucket string) ClientOpt {
+	return func(c *Client) error {
 		cfg, err := awsconfig.LoadDefaultConfig(
 			gContext,
 			append(storageCommonConfigOptFns,
@@ -158,9 +158,9 @@ func storageClientOptZoneFromBucket(bucket string) storageClientOpt {
 	}
 }
 
-func newStorageClient(opts ...storageClientOpt) (*storageClient, error) {
+func newStorageClient(opts ...ClientOpt) (*Client, error) {
 	var (
-		client = storageClient{
+		client = Client{
 			zone: gCurrentAccount.DefaultZone,
 		}
 

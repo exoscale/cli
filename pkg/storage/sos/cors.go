@@ -9,12 +9,12 @@ import (
 	"github.com/aws/smithy-go"
 )
 
-func (c *storageClient) deleteBucketCORS(bucket string) error {
+func (c *Client) deleteBucketCORS(bucket string) error {
 	_, err := c.DeleteBucketCors(gContext, &s3.DeleteBucketCorsInput{Bucket: &bucket})
 	return err
 }
 
-func (c *storageClient) addBucketCORSRule(bucket string, cors *storageCORSRule) error {
+func (c *Client) addBucketCORSRule(bucket string, cors *storageCORSRule) error {
 	curCORS, err := c.GetBucketCors(gContext, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
 	if err != nil {
 		var apiErr smithy.APIError

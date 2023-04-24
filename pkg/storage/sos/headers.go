@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 )
 
-func (c *storageClient) updateObjectHeaders(bucket, key string, headers map[string]*string) error {
+func (c *Client) updateObjectHeaders(bucket, key string, headers map[string]*string) error {
 	object, err := c.copyObject(bucket, key)
 	if err != nil {
 		return err
@@ -40,13 +40,13 @@ func (c *storageClient) updateObjectHeaders(bucket, key string, headers map[stri
 	return err
 }
 
-func (c *storageClient) updateObjectsHeaders(bucket, prefix string, headers map[string]*string, recursive bool) error {
+func (c *Client) updateObjectsHeaders(bucket, prefix string, headers map[string]*string, recursive bool) error {
 	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.updateObjectHeaders(bucket, aws.ToString(o.Key), headers)
 	})
 }
 
-func (c *storageClient) deleteObjectHeaders(bucket, key string, headers []string) error {
+func (c *Client) deleteObjectHeaders(bucket, key string, headers []string) error {
 	object, err := c.copyObject(bucket, key)
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func (c *storageClient) deleteObjectHeaders(bucket, key string, headers []string
 	return err
 }
 
-func (c *storageClient) deleteObjectsHeaders(bucket, prefix string, headers []string, recursive bool) error {
+func (c *Client) deleteObjectsHeaders(bucket, prefix string, headers []string, recursive bool) error {
 	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.deleteObjectHeaders(bucket, aws.ToString(o.Key), headers)
 	})

@@ -20,7 +20,7 @@ import (
 	"github.com/vbauerster/mpb/v4/decor"
 )
 
-func (c *storageClient) deleteObjects(bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
+func (c *Client) deleteObjects(bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
 	deleteList := make([]s3types.ObjectIdentifier, 0)
 	err := c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		deleteList = append(deleteList, s3types.ObjectIdentifier{Key: o.Key})
@@ -55,7 +55,7 @@ func (c *storageClient) deleteObjects(bucket, prefix string, recursive bool) ([]
 	return deleted, nil
 }
 
-func (c *storageClient) genPresignedURL(method, bucket, key string, expires time.Duration) (string, error) {
+func (c *Client) genPresignedURL(method, bucket, key string, expires time.Duration) (string, error) {
 	var (
 		psURL *v4.PresignedHTTPRequest
 		err   error
@@ -91,7 +91,7 @@ func (c *storageClient) genPresignedURL(method, bucket, key string, expires time
 	return psURL.URL, nil
 }
 
-func (c *storageClient) downloadFiles(config *storageDownloadConfig) error {
+func (c *Client) downloadFiles(config *storageDownloadConfig) error {
 	if len(config.objects) > 1 && !strings.HasSuffix(config.destination, "/") {
 		return errors.New(`multiple files to download, destination must end with "/"`)
 	}
@@ -143,7 +143,7 @@ func (c *storageClient) downloadFiles(config *storageDownloadConfig) error {
 	return nil
 }
 
-func (c *storageClient) downloadFile(bucket string, object *s3types.Object, dst string) error {
+func (c *Client) downloadFile(bucket string, object *s3types.Object, dst string) error {
 	maxFilenameLen := 16
 
 	pb := mpb.NewWithContext(gContext,
@@ -208,7 +208,7 @@ func (c *storageClient) downloadFile(bucket string, object *s3types.Object, dst 
 	return err
 }
 
-func (c *storageClient) listObjects(bucket, prefix string, recursive, stream bool) (outputter, error) {
+func (c *Client) listObjects(bucket, prefix string, recursive, stream bool) (outputter, error) {
 	out := make(storageListObjectsOutput, 0)
 	dirs := make(map[string]struct{})            // for deduplication of common prefixes (folders)
 	dirsOut := make(storageListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
@@ -272,7 +272,7 @@ func (c *storageClient) listObjects(bucket, prefix string, recursive, stream boo
 	return &out, nil
 }
 
-func (c *storageClient) uploadFiles(sources []string, config *storageUploadConfig) error {
+func (c *Client) uploadFiles(sources []string, config *storageUploadConfig) error {
 	if len(sources) > 1 && !strings.HasSuffix(config.prefix, "/") {
 		return errors.New(`multiple files to upload, destination must end with "/"`)
 	}
@@ -393,7 +393,7 @@ func (c *storageClient) uploadFiles(sources []string, config *storageUploadConfi
 	return nil
 }
 
-func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
+func (c *Client) uploadFile(bucket, file, key, acl string) error {
 	maxFilenameLen := 16
 
 	pb := mpb.NewWithContext(gContext,
@@ -474,7 +474,7 @@ func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
 	return err
 }
 
-func (c *storageClient) estimatePartSize(f *os.File) (int64, error) {
+func (c *Client) estimatePartSize(f *os.File) (int64, error) {
 	size, err := computeSeekerLength(f)
 	if err != nil {
 		return 0, err
@@ -506,7 +506,7 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 	return endOffset - curOffset, nil
 }
 
-func (c *storageClient) showObject(bucket, key string) (outputter, error) {
+func (c *Client) showObject(bucket, key string) (outputter, error) {
 	object, err := c.GetObject(gContext, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
