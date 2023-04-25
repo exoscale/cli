@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
@@ -55,11 +56,11 @@ Supported output template annotations: %s`,
 func listConfigs() output.Outputter {
 	out := configListOutput{}
 
-	if gAllAccount == nil {
+	if account.GAllAccount == nil {
 		return &out
 	}
 
-	for _, a := range gAllAccount.Accounts {
+	for _, a := range account.GAllAccount.Accounts {
 		out = append(out, configListItemOutput{
 			Name:    a.Name,
 			Default: a.IsDefault(),

@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -28,7 +28,7 @@ var gConfigFilePath string
 
 // current Account information
 var gAccountName string
-var gCurrentAccount = &sos.Account{
+var gCurrentAccount = &account.Account{
 	DefaultZone:     defaultZone,
 	DefaultTemplate: defaultTemplate,
 	Endpoint:        defaultEndpoint,
@@ -188,7 +188,7 @@ func initConfig() {
 			gCurrentAccount.ClientTimeout = defaultClientTimeout
 		}
 
-		gAllAccount = &sos.AccountConfig{
+		account.GAllAccount = &account.AccountConfig{
 			DefaultAccount: gCurrentAccount.Name,
 			Accounts:       []account{*gCurrentAccount},
 		}
@@ -198,7 +198,7 @@ func initConfig() {
 		return
 	}
 
-	config := &sos.AccountConfig{}
+	config := &account.AccountConfig{}
 
 	usr, err := user.Current()
 	if err != nil {
@@ -276,8 +276,8 @@ func initConfig() {
 		gAccountName = config.DefaultAccount
 	}
 
-	gAllAccount = config
-	gAllAccount.DefaultAccount = gAccountName
+	account.GAllAccount = config
+	account.GAllAccount.DefaultAccount = gAccountName
 
 	for i, acc := range config.Accounts {
 		if acc.Name == gAccountName {

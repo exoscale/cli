@@ -8,6 +8,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/manifoldco/promptui"
@@ -91,12 +92,12 @@ Exoscale API credentials from your organization's IAM:
 	return addConfigAccount(true)
 }
 
-func saveConfig(filePath string, newAccounts *sos.AccountConfig) error {
+func saveConfig(filePath string, newAccounts *account.AccountConfig) error {
 	accountsSize := 0
-	currentAccounts := []sos.Account{}
-	if gAllAccount != nil {
-		accountsSize = len(gAllAccount.Accounts)
-		currentAccounts = gAllAccount.Accounts
+	currentAccounts := []account.Account{}
+	if account.GAllAccount != nil {
+		accountsSize = len(account.GAllAccount.Accounts)
+		currentAccounts = account.GAllAccount.Accounts
 	}
 
 	newAccountsSize := 0
@@ -107,7 +108,7 @@ func saveConfig(filePath string, newAccounts *sos.AccountConfig) error {
 
 	accounts := make([]map[string]interface{}, accountsSize+newAccountsSize)
 
-	conf := &sos.AccountConfig{}
+	conf := &account.AccountConfig{}
 
 	for i, acc := range currentAccounts {
 		accounts[i] = map[string]interface{}{}
@@ -169,7 +170,7 @@ func saveConfig(filePath string, newAccounts *sos.AccountConfig) error {
 	}
 
 	conf.DefaultAccount = gConfig.Get("defaultAccount").(string)
-	gAllAccount = conf
+	account.GAllAccount = conf
 
 	return nil
 }
@@ -243,13 +244,13 @@ func askQuestion(text string) bool {
 }
 
 func listAccounts(defaultAccountMark string) []string {
-	if gAllAccount == nil {
+	if account.GAllAccount == nil {
 		return nil
 	}
-	res := make([]string, len(gAllAccount.Accounts))
-	for i, acc := range gAllAccount.Accounts {
+	res := make([]string, len(account.GAllAccount.Accounts))
+	for i, acc := range account.GAllAccount.Accounts {
 		res[i] = acc.Name
-		if acc.Name == gAllAccount.DefaultAccount {
+		if acc.Name == account.GAllAccount.DefaultAccount {
 			res[i] = fmt.Sprintf("%s%s", res[i], defaultAccountMark)
 		}
 	}
@@ -257,13 +258,13 @@ func listAccounts(defaultAccountMark string) []string {
 }
 
 func getAccountByName(name string) *account {
-	if gAllAccount == nil {
+	if account.GAllAccount == nil {
 		return nil
 	}
 
-	for i, acc := range gAllAccount.Accounts {
+	for i, acc := range account.GAllAccount.Accounts {
 		if acc.Name == name {
-			return &gAllAccount.Accounts[i]
+			return &account.GAllAccount.Accounts[i]
 		}
 	}
 

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ func init() {
 				return err
 			}
 
-			config := &sos.AccountConfig{Accounts: []sos.Account{*newAccount}}
+			config := &account.AccountConfig{Accounts: []account.Account{*newAccount}}
 			if askQuestion("Set [" + newAccount.Name + "] as default account?") {
 				config.DefaultAccount = newAccount.Name
 				gConfig.Set("defaultAccount", newAccount.Name)
@@ -34,7 +34,7 @@ func init() {
 
 func addConfigAccount(firstRun bool) error {
 	var (
-		config sos.AccountConfig
+		config account.AccountConfig
 		err    error
 	)
 
@@ -53,7 +53,7 @@ func addConfigAccount(firstRun bool) error {
 		return err
 	}
 	config.DefaultAccount = newAccount.Name
-	config.Accounts = []sos.Account{*newAccount}
+	config.Accounts = []account.Account{*newAccount}
 	gConfig.Set("defaultAccount", newAccount.Name)
 
 	if len(config.Accounts) == 0 {
@@ -63,11 +63,11 @@ func addConfigAccount(firstRun bool) error {
 	return saveConfig(filePath, &config)
 }
 
-func promptAccountInformation() (*sos.Account, error) {
+func promptAccountInformation() (*account.Account, error) {
 	var client *egoscale.Client
 
 	reader := bufio.NewReader(os.Stdin)
-	account := &sos.Account{
+	account := &account.Account{
 		Endpoint: defaultEndpoint,
 		Key:      "",
 		Secret:   "",

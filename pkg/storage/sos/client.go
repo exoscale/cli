@@ -13,6 +13,7 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/account"
 )
 
 var (
@@ -169,28 +170,7 @@ func ClientOptZoneFromBucket(ctx context.Context, zone, endpoint, bucket string)
 	}
 }
 
-type Account struct {
-	Name                 string
-	Account              string
-	Endpoint             string
-	ComputeEndpoint      string // legacy config.
-	DNSEndpoint          string
-	SosEndpoint          string
-	RunstatusEndpoint    string
-	Environment          string
-	Key                  string
-	Secret               string
-	SecretCommand        []string
-	DefaultZone          string
-	DefaultSSHKey        string
-	DefaultTemplate      string
-	DefaultRunstatusPage string
-	DefaultOutputFormat  string
-	ClientTimeout        int
-	CustomHeaders        map[string]string
-}
-
-func NewStorageClient(ctx context.Context, account *Account, opts ...ClientOpt) (*Client, error) {
+func NewStorageClient(ctx context.Context, account *account.Account, opts ...ClientOpt) (*Client, error) {
 	var (
 		client = Client{
 			zone: account.DefaultZone,

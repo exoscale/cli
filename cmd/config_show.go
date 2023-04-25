@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
@@ -36,7 +37,7 @@ Supported output template annotations: %s`,
 			strings.Join(output.OutputterTemplateAnnotations(&configShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if gAllAccount == nil {
+			if account.GAllAccount == nil {
 				return fmt.Errorf("no accounts configured")
 			}
 			name := gCurrentAccount.AccountName()
