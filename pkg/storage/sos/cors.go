@@ -37,7 +37,7 @@ func (c *Client) AddBucketCORSRule(ctx context.Context, bucket string, cors *COR
 		}
 	}
 
-	_, err = c.PutBucketCors(ctx, &s3.PutBucketCorsInput{
+	_, err = c.s3Client.PutBucketCors(ctx, &s3.PutBucketCorsInput{
 		Bucket: &bucket,
 		CORSConfiguration: &s3types.CORSConfiguration{
 			CORSRules: append(curCORS.CORSRules, cors.toS3()),

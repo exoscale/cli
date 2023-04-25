@@ -33,14 +33,14 @@ func (c *Client) AddObjectMetadata(ctx context.Context, bucket, key string, meta
 	return err
 }
 
-func (c *Client) AddObjectsMetadata(bucket, prefix string, metadata map[string]string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.addObjectMetadata(bucket, aws.ToString(o.Key), metadata)
+func (c *Client) AddObjectsMetadata(ctx context.Context, bucket, prefix string, metadata map[string]string, recursive bool) error {
+	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+		return c.AddObjectMetadata(ctx, bucket, aws.ToString(o.Key), metadata)
 	})
 }
 
-func (c *Client) DeleteObjectMetadata(bucket, key string, mdKeys []string) error {
-	object, err := c.copyObject(bucket, key)
+func (c *Client) DeleteObjectMetadata(ctx context.Context, bucket, key string, mdKeys []string) error {
+	object, err := c.CopyObject(ctx, bucket, key)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (c *Client) DeleteObjectMetadata(bucket, key string, mdKeys []string) error
 }
 
 func (c *Client) DeleteObjectsMetadata(bucket, prefix string, mdKeys []string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.deleteObjectMetadata(bucket, aws.ToString(o.Key), mdKeys)
+	return c.ForEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
+		return c.DeleteObjectMetadata(bucket, aws.ToString(o.Key), mdKeys)
 	})
 }

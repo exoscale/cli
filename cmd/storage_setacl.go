@@ -53,7 +53,7 @@ Supported output template annotations:
 	* When showing an object: %s`,
 		strings.Join(s3BucketCannedACLToStrings(), ", "),
 		strings.Join(s3ObjectCannedACLToStrings(), ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&storageShowBucketOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&sos.ShowBucketOutput{}), ", "),
 		strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {

@@ -24,7 +24,7 @@ import (
 
 func (c *Client) DeleteObjects(bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
 	deleteList := make([]s3types.ObjectIdentifier, 0)
-	err := c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
+	err := c.ForEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
 		deleteList = append(deleteList, s3types.ObjectIdentifier{Key: o.Key})
 		return nil
 	})

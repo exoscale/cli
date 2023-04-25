@@ -15,62 +15,6 @@ import (
 	"github.com/exoscale/cli/table"
 )
 
-type storageShowBucketOutput struct {
-	Name string         `json:"name"`
-	Zone string         `json:"zone"`
-	ACL  sos.ACL        `json:"acl"`
-	CORS []sos.CORSRule `json:"cors"`
-}
-
-func (o *storageShowBucketOutput) toJSON() { output.JSON(o) }
-func (o *storageShowBucketOutput) toText() { output.Text(o) }
-func (o *storageShowBucketOutput) toTable() {
-	t := table.NewTable(os.Stdout)
-	defer t.Render()
-	t.SetHeader([]string{"Storage"})
-
-	t.Append([]string{"Name", o.Name})
-	t.Append([]string{"Zone", o.Zone})
-
-	t.Append([]string{"ACL", func() string {
-		buf := bytes.NewBuffer(nil)
-		at := table.NewEmbeddedTable(buf)
-		at.SetHeader([]string{" "})
-		at.Append([]string{"Read", o.ACL.Read})
-		at.Append([]string{"Write", o.ACL.Write})
-		at.Append([]string{"Read ACP", o.ACL.ReadACP})
-		at.Append([]string{"Write ACP", o.ACL.WriteACP})
-		at.Append([]string{"Full Control", o.ACL.FullControl})
-		at.Render()
-
-		return buf.String()
-	}()})
-
-	t.Append([]string{"CORS", func() string {
-		buf := bytes.NewBuffer(nil)
-		ct := table.NewEmbeddedTable(buf)
-
-		for _, rule := range o.CORS {
-			ct.Append([]string{""})
-			ct.Append([]string{"{"})
-			if rule.AllowedOrigins != nil {
-				ct.Append([]string{"", "Allowed Origins", fmt.Sprint(rule.AllowedOrigins)})
-			}
-			if rule.AllowedMethods != nil {
-				ct.Append([]string{"", "Allowed Methods", fmt.Sprint(rule.AllowedMethods)})
-			}
-			if rule.AllowedHeaders != nil {
-				ct.Append([]string{"", "Allowed Headers", fmt.Sprint(rule.AllowedHeaders)})
-			}
-			ct.Append([]string{"}"})
-		}
-
-		ct.Render()
-
-		return buf.String()
-	}()})
-}
-
 type storageShowObjectOutput struct {
 	Path         string            `json:"name"`
 	Bucket       string            `json:"bucket"`
@@ -153,7 +97,7 @@ Supported output template annotations:
 
 	* When showing a bucket: %s
 	* When showing an object: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&storageShowBucketOutput{}), ", "),
+			strings.Join(output.OutputterTemplateAnnotations(&sos.ShowBucketOutput{}), ", "),
 			strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {

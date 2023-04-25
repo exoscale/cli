@@ -47,7 +47,7 @@ func (c *Client) UpdateObjectHeaders(ctx context.Context, bucket, key string, he
 		object.Expires = &t
 	}
 
-	_, err = c.CopyObject(ctx, object)
+	_, err = c.s3Client.CopyObject(ctx, object)
 	return err
 }
 
@@ -85,12 +85,12 @@ func (c *Client) DeleteObjectHeaders(ctx context.Context, bucket, key string, he
 		}
 	}
 
-	_, err = c.CopyObject(ctx, object)
+	_, err = c.s3Client.CopyObject(ctx, object)
 	return err
 }
 
-func (c *Client) DeleteObjectsHeaders(bucket, prefix string, headers []string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.deleteObjectHeaders(bucket, aws.ToString(o.Key), headers)
+func (c *Client) DeleteObjectsHeaders(ctx context.Context, bucket, prefix string, headers []string, recursive bool) error {
+	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+		return c.DeleteObjectHeaders(ctx, bucket, aws.ToString(o.Key), headers)
 	})
 }
