@@ -551,7 +551,7 @@ func (c *Client) ShowObject(bucket, key string) (output.Outputter, error) {
 		Size:         object.ContentLength,
 		ACL:          ACLFromS3(acl.Grants),
 		Metadata:     object.Metadata,
-		Headers:      storageObjectHeadersFromS3(object),
+		Headers:      ObjectHeadersFromS3(object),
 		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.zone, bucket, key),
 	}
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 )
 
@@ -39,9 +40,18 @@ func (c *Client) AddBucketCORSRule(ctx context.Context, bucket string, cors *COR
 	_, err = c.PutBucketCors(ctx, &s3.PutBucketCorsInput{
 		Bucket: &bucket,
 		CORSConfiguration: &s3types.CORSConfiguration{
-			CORSRules: append(curCORS.CORSRules, cors.toS3()),
+			CORSRules: append(curCORS.CORSRules, toS3()),
 		},
 	})
 
 	return err
+}
+
+// toS3 converts a sos.CORSRule object to the S3 CORS rule format.
+func (r *CORSRule) toS3() s3types.CORSRule {
+	return s3types.CORSRule{
+		AllowedOrigins: r.AllowedOrigins,
+		AllowedMethods: r.AllowedMethods,
+		AllowedHeaders: r.AllowedHeaders,
+	}
 }

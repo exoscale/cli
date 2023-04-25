@@ -1,14 +1,25 @@
 package sos
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-func (c *Client) UpdateObjectHeaders(bucket, key string, headers map[string]*string) error {
-	object, err := c.copyObject(bucket, key)
+const (
+	ObjectHeaderCacheControl       = "Cache-Control"
+	ObjectHeaderContentDisposition = "Content-Disposition"
+	ObjectHeaderContentEncoding    = "Content-Encoding"
+	ObjectHeaderContentLanguage    = "Content-Language"
+	ObjectHeaderContentType        = "Content-Type"
+	ObjectHeaderExpires            = "Expires"
+)
+
+func (c *Client) UpdateObjectHeaders(ctx context.Context, bucket, key string, headers map[string]*string) error {
+	object, err := c.CopyObject(ctx, bucket, key)
 	if err != nil {
 		return err
 	}
@@ -20,15 +31,15 @@ func (c *Client) UpdateObjectHeaders(bucket, key string, headers map[string]*str
 		return fallback
 	}
 
-	object.CacheControl = lookupHeader(storageObjectHeaderCacheControl, object.CacheControl)
-	object.ContentDisposition = lookupHeader(storageObjectHeaderContentDisposition, object.ContentDisposition)
-	object.ContentEncoding = lookupHeader(storageObjectHeaderContentEncoding, object.ContentEncoding)
-	object.ContentLanguage = lookupHeader(storageObjectHeaderContentLanguage, object.ContentLanguage)
-	object.ContentType = lookupHeader(storageObjectHeaderContentType, object.ContentType)
+	object.CacheControl = lookupHeader(ObjectHeaderCacheControl, object.CacheControl)
+	object.ContentDisposition = lookupHeader(ObjectHeaderContentDisposition, object.ContentDisposition)
+	object.ContentEncoding = lookupHeader(ObjectHeaderContentEncoding, object.ContentEncoding)
+	object.ContentLanguage = lookupHeader(ObjectHeaderContentLanguage, object.ContentLanguage)
+	object.ContentType = lookupHeader(ObjectHeaderContentType, object.ContentType)
 
 	// For some reason, the AWS SDK doesn't use the same type for the "Expires"
 	// header in GetObject (*string) and CopyObject (*time.Time)...
-	if v, ok := headers[storageObjectHeaderExpires]; ok {
+	if v, ok := headers[ObjectHeaderExpires]; ok {
 		t, err := time.Parse(time.RFC822, aws.ToString(v))
 		if err != nil {
 			return fmt.Errorf(`invalid "Expires" header value %q, expecting RFC822 format`, aws.ToString(v))
@@ -54,22 +65,22 @@ func (c *Client) DeleteObjectHeaders(bucket, key string, headers []string) error
 
 	for _, header := range headers {
 		switch header {
-		case storageObjectHeaderCacheControl:
+		case ObjectHeaderCacheControl:
 			object.CacheControl = nil
 
-		case storageObjectHeaderContentDisposition:
+		case ObjectHeaderContentDisposition:
 			object.ContentDisposition = nil
 
-		case storageObjectHeaderContentEncoding:
+		case ObjectHeaderContentEncoding:
 			object.ContentEncoding = nil
 
-		case storageObjectHeaderContentLanguage:
+		case ObjectHeaderContentLanguage:
 			object.ContentLanguage = nil
 
-		case storageObjectHeaderContentType:
+		case ObjectHeaderContentType:
 			object.ContentType = aws.String("application/binary")
 
-		case storageObjectHeaderExpires:
+		case ObjectHeaderExpires:
 			object.Expires = nil
 		}
 	}

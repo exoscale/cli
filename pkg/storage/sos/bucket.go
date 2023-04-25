@@ -17,6 +17,22 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
+// CORSRulesFromS3 converts a list of S3 CORS rules to a list of
+// CORSRule.
+func CORSRulesFromS3(v *s3.GetBucketCorsOutput) []CORSRule {
+	rules := make([]CORSRule, 0)
+
+	for _, rule := range v.CORSRules {
+		rules = append(rules, CORSRule{
+			AllowedOrigins: rule.AllowedOrigins,
+			AllowedMethods: rule.AllowedMethods,
+			AllowedHeaders: rule.AllowedHeaders,
+		})
+	}
+
+	return rules
+}
+
 func (c *Client) CreateNewBucket(ctx context.Context, name, acl string) error {
 	s3Bucket := s3.CreateBucketInput{Bucket: aws.String(name)}
 

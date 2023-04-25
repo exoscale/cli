@@ -6,15 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	storageObjectHeaderCacheControl       = "Cache-Control"
-	storageObjectHeaderContentDisposition = "Content-Disposition"
-	storageObjectHeaderContentEncoding    = "Content-Encoding"
-	storageObjectHeaderContentLanguage    = "Content-Language"
-	storageObjectHeaderContentType        = "Content-Type"
-	storageObjectHeaderExpires            = "Expires"
-)
-
 var storageHeaderCmd = &cobra.Command{
 	Use:   "headers",
 	Short: "Manage objects HTTP headers",
