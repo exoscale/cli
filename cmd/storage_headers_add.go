@@ -86,17 +86,17 @@ Supported output template annotations: %s`,
 func init() {
 	storageHeaderAddCmd.Flags().BoolP("recursive", "r", false,
 		"add headers recursively (with object prefix only)")
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderCacheControl), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderCacheControl), "",
 		`value for "Cache-Control" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderContentDisposition), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderContentDisposition), "",
 		`value for "Content-Disposition" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderContentEncoding), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderContentEncoding), "",
 		`value for "Content-Encoding" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderContentLanguage), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderContentLanguage), "",
 		`value for "Content-Language" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderContentType), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderContentType), "",
 		`value for "Content-Type" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderExpires), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderExpires), "",
 		`value for "Expires" header`)
 	storageHeaderCmd.AddCommand(storageHeaderAddCmd)
 }
@@ -108,58 +108,58 @@ func storageHeadersFromCmdFlags(flags *pflag.FlagSet) map[string]*string {
 
 	flags.VisitAll(func(flag *pflag.Flag) {
 		switch flag.Name {
-		case strings.ToLower(storageObjectHeaderCacheControl):
+		case strings.ToLower(sos.ObjectHeaderCacheControl):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderCacheControl] = aws.String(v)
+				headers[sos.ObjectHeaderCacheControl] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderContentDisposition):
+		case strings.ToLower(sos.ObjectHeaderContentDisposition):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderContentDisposition] = aws.String(v)
+				headers[sos.ObjectHeaderContentDisposition] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderContentEncoding):
+		case strings.ToLower(sos.ObjectHeaderContentEncoding):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderContentEncoding] = aws.String(v)
+				headers[sos.ObjectHeaderContentEncoding] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderContentLanguage):
+		case strings.ToLower(sos.ObjectHeaderContentLanguage):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderContentLanguage] = aws.String(v)
+				headers[sos.ObjectHeaderContentLanguage] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderContentType):
+		case strings.ToLower(sos.ObjectHeaderContentType):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderContentType] = aws.String(v)
+				headers[sos.ObjectHeaderContentType] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderExpires):
+		case strings.ToLower(sos.ObjectHeaderExpires):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderExpires] = aws.String(v)
+				headers[sos.ObjectHeaderExpires] = aws.String(v)
 			}
 
 		default:

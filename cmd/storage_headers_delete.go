@@ -40,12 +40,12 @@ Supported output template annotations: %s`,
 
 		var hasHeaderFlagsSet bool
 		for _, flag := range []string{
-			storageObjectHeaderCacheControl,
-			storageObjectHeaderContentDisposition,
-			storageObjectHeaderContentEncoding,
-			storageObjectHeaderContentLanguage,
-			storageObjectHeaderContentType,
-			storageObjectHeaderExpires,
+			sos.ObjectHeaderCacheControl,
+			sos.ObjectHeaderContentDisposition,
+			sos.ObjectHeaderContentEncoding,
+			sos.ObjectHeaderContentLanguage,
+			sos.ObjectHeaderContentType,
+			sos.ObjectHeaderExpires,
 		} {
 			if cmd.Flags().Changed(strings.ToLower(flag)) {
 				hasHeaderFlagsSet = true
@@ -82,12 +82,12 @@ Supported output template annotations: %s`,
 		}
 
 		for _, header := range []string{
-			storageObjectHeaderCacheControl,
-			storageObjectHeaderContentDisposition,
-			storageObjectHeaderContentEncoding,
-			storageObjectHeaderContentLanguage,
-			storageObjectHeaderContentType,
-			storageObjectHeaderExpires,
+			sos.ObjectHeaderCacheControl,
+			sos.ObjectHeaderContentDisposition,
+			sos.ObjectHeaderContentEncoding,
+			sos.ObjectHeaderContentLanguage,
+			sos.ObjectHeaderContentType,
+			sos.ObjectHeaderExpires,
 		} {
 			if ok, _ := cmd.Flags().GetBool(strings.ToLower(header)); ok {
 				headers = append(headers, header)
@@ -113,17 +113,17 @@ Supported output template annotations: %s`,
 func init() {
 	storageHeaderDeleteCmd.Flags().BoolP("recursive", "r", false,
 		"delete headers recursively (with object prefix only)")
-	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(storageObjectHeaderCacheControl), false,
+	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(sos.ObjectHeaderCacheControl), false,
 		`delete the "Cache-Control" header`)
-	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(storageObjectHeaderContentDisposition), false,
+	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(sos.ObjectHeaderContentDisposition), false,
 		`delete the "Content-Disposition" header`)
-	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(storageObjectHeaderContentEncoding), false,
+	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(sos.ObjectHeaderContentEncoding), false,
 		`delete the "Content-Encoding" header`)
-	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(storageObjectHeaderContentLanguage), false,
+	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(sos.ObjectHeaderContentLanguage), false,
 		`delete the "Content-Language" header`)
-	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(storageObjectHeaderContentType), false,
+	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(sos.ObjectHeaderContentType), false,
 		`delete the "Content-Type" header`)
-	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(storageObjectHeaderExpires), false,
+	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(sos.ObjectHeaderExpires), false,
 		`delete the "Expires" header`)
 	storageHeaderCmd.AddCommand(storageHeaderDeleteCmd)
 }

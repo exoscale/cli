@@ -15,28 +15,28 @@ func init() {
 	storageCmd.AddCommand(storageHeaderCmd)
 }
 
-// storageObjectHeadersFromS3 returns mutable object headers in a human-friendly
+// sos.ObjectHeadersFromS3 returns mutable object headers in a human-friendly
 // key/value form.
-func storageObjectHeadersFromS3(o *s3.GetObjectOutput) map[string]string {
+func sos.ObjectHeadersFromS3(o *s3.GetObjectOutput) map[string]string {
 	headers := make(map[string]string)
 
 	if o.CacheControl != nil {
-		headers[storageObjectHeaderCacheControl] = aws.ToString(o.CacheControl)
+		headers[sos.ObjectHeaderCacheControl] = aws.ToString(o.CacheControl)
 	}
 	if o.ContentDisposition != nil {
-		headers[storageObjectHeaderContentDisposition] = aws.ToString(o.ContentDisposition)
+		headers[sos.ObjectHeaderContentDisposition] = aws.ToString(o.ContentDisposition)
 	}
 	if o.ContentEncoding != nil {
-		headers[storageObjectHeaderContentEncoding] = aws.ToString(o.ContentEncoding)
+		headers[sos.ObjectHeaderContentEncoding] = aws.ToString(o.ContentEncoding)
 	}
 	if o.ContentLanguage != nil {
-		headers[storageObjectHeaderContentLanguage] = aws.ToString(o.ContentLanguage)
+		headers[sos.ObjectHeaderContentLanguage] = aws.ToString(o.ContentLanguage)
 	}
 	if o.ContentType != nil {
-		headers[storageObjectHeaderContentType] = aws.ToString(o.ContentType)
+		headers[sos.ObjectHeaderContentType] = aws.ToString(o.ContentType)
 	}
 	if o.Expires != nil {
-		headers[storageObjectHeaderExpires] = o.Expires.String()
+		headers[sos.ObjectHeaderExpires] = o.Expires.String()
 	}
 
 	return headers
