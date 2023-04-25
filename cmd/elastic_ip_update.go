@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -55,7 +56,7 @@ func (c *elasticIPUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updatedInstance, updatedRDNS bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	elasticIP, err := globalstate.GlobalEgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {

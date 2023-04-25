@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -90,7 +91,7 @@ func (c *instanceTemplateShowCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
 	template, err := globalstate.GlobalEgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)

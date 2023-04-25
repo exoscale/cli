@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -96,9 +97,9 @@ func updateDomainRecord(
 		record.Priority = priority
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", *record.ID), func() {
-		err = globalstate.GlobalEgoscaleClient.UpdateDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, record)
+		err = globalstate.GlobalEgoscaleClient.UpdateDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, record)
 	})
 	if err != nil {
 		return err

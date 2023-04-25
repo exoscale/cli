@@ -44,11 +44,11 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 		newAccountLabel    = "<Configure a new account>"
 	)
 
-	if gConfigFilePath == "" && gCurrentAccount.Key != "" {
+	if gConfigFilePath == "" && account.CurrentAccount.Key != "" {
 		log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
 	}
 
-	if gConfigFilePath != "" && gCurrentAccount.Key != "" {
+	if gConfigFilePath != "" && account.CurrentAccount.Key != "" {
 		accounts := listAccounts(defaultAccountMark)
 		accounts = append(accounts, newAccountLabel)
 		prompt := promptui.Select{

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -15,7 +16,7 @@ import (
 func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	db := oapi.CreateDbaasServiceOpensearchJSONRequestBody{
 		ForkFromService:          (*oapi.DbaasServiceName)(utils.NonEmptyStringPtr(c.OpensearchForkFromService)),

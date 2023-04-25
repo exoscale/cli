@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -67,7 +68,7 @@ func (c *instancePoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instancePool, err := globalstate.GlobalEgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {

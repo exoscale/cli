@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/spf13/cobra"
 )
 
@@ -11,10 +12,10 @@ var envCmd = &cobra.Command{
 	Hidden: true,
 	Run: func(cmd *cobra.Command, _ []string) {
 		vars := map[string]string{
-			"EXOSCALE_API_KEY":         gCurrentAccount.Key,
-			"EXOSCALE_API_SECRET":      gCurrentAccount.Secret,
-			"EXOSCALE_API_ENDPOINT":    gCurrentAccount.Endpoint,
-			"EXOSCALE_API_ENVIRONMENT": gCurrentAccount.Environment,
+			"EXOSCALE_API_KEY":         account.CurrentAccount.Key,
+			"EXOSCALE_API_SECRET":      account.CurrentAccount.Secret,
+			"EXOSCALE_API_ENDPOINT":    account.CurrentAccount.Endpoint,
+			"EXOSCALE_API_ENVIRONMENT": account.CurrentAccount.Environment,
 		}
 
 		unset, _ := cmd.Flags().GetBool("unset")

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -61,10 +62,10 @@ func (c *dbaasTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	dbTypes, err := globalstate.GlobalEgoscaleClient.ListDatabaseServiceTypes(ctx, gCurrentAccount.DefaultZone)
+	dbTypes, err := globalstate.GlobalEgoscaleClient.ListDatabaseServiceTypes(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

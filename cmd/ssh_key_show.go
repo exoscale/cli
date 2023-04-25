@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -48,10 +49,10 @@ func (c *computeSSHKeyShowCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 func (c *computeSSHKeyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	sshKey, err := globalstate.GlobalEgoscaleClient.Client.GetSSHKey(ctx, gCurrentAccount.DefaultZone, c.Key)
+	sshKey, err := globalstate.GlobalEgoscaleClient.Client.GetSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Key)
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -81,10 +82,10 @@ func (c *instanceTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *instanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	instanceTypes, err := globalstate.GlobalEgoscaleClient.ListInstanceTypes(ctx, gCurrentAccount.DefaultZone)
+	instanceTypes, err := globalstate.GlobalEgoscaleClient.ListInstanceTypes(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

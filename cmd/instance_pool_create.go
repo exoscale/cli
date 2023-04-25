@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -156,7 +157,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Size:   &c.Size,
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
 		antiAffinityGroupIDs := make([]string, l)
@@ -220,8 +221,8 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instancePool.SecurityGroupIDs = &securityGroupIDs
 	}
 
-	if instancePool.SSHKey == nil && gCurrentAccount.DefaultSSHKey != "" {
-		instancePool.SSHKey = &gCurrentAccount.DefaultSSHKey
+	if instancePool.SSHKey == nil && account.CurrentAccount.DefaultSSHKey != "" {
+		instancePool.SSHKey = &account.CurrentAccount.DefaultSSHKey
 	}
 
 	template, err := globalstate.GlobalEgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)

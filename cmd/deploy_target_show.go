@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -50,7 +51,7 @@ func (c *deployTargetShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	dt, err := globalstate.GlobalEgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 	if err != nil {

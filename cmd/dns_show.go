@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -68,8 +69,8 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 		return nil, err
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
-	records, err := globalstate.GlobalEgoscaleClient.ListDNSDomainRecords(ctx, gCurrentAccount.DefaultZone, *domain.ID)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+	records, err := globalstate.GlobalEgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, *domain.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +91,7 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 			}
 		}
 
-		record, err := globalstate.GlobalEgoscaleClient.GetDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, *r.ID)
+		record, err := globalstate.GlobalEgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, *r.ID)
 		if err != nil {
 			return nil, err
 		}

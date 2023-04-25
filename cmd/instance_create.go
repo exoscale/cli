@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -92,7 +93,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instance.PublicIPAssignment = &t
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
 		antiAffinityGroupIDs := make([]string, l)
@@ -143,8 +144,8 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instance.SecurityGroupIDs = &securityGroupIDs
 	}
 
-	if instance.SSHKey == nil && gCurrentAccount.DefaultSSHKey != "" {
-		instance.SSHKey = &gCurrentAccount.DefaultSSHKey
+	if instance.SSHKey == nil && account.CurrentAccount.DefaultSSHKey != "" {
+		instance.SSHKey = &account.CurrentAccount.DefaultSSHKey
 	}
 
 	// Generating a single-use SSH key pair for this instance.

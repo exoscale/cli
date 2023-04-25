@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
@@ -80,7 +81,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 		if sshKey == "" {
-			sshKey = gCurrentAccount.DefaultSSHKey
+			sshKey = account.CurrentAccount.DefaultSSHKey
 		}
 
 		sg, err := cmd.Flags().GetStringSlice("security-group")

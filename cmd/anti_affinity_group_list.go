@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -45,10 +46,10 @@ func (c *antiAffinityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) 
 func (c *antiAffinityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	antiAffinityGroups, err := globalstate.GlobalEgoscaleClient.ListAntiAffinityGroups(ctx, gCurrentAccount.DefaultZone)
+	antiAffinityGroups, err := globalstate.GlobalEgoscaleClient.ListAntiAffinityGroups(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

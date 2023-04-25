@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -69,7 +70,7 @@ func (c *sksNodepoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	var nodepool *egoscale.SKSNodepool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -189,7 +190,7 @@ func (c *dbaasServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
@@ -59,7 +60,7 @@ Supported output template annotations: %s`,
 
 		out := LimitsOutput{}
 
-		quotas, err := globalstate.GlobalEgoscaleClient.ListQuotas(gContext, gCurrentAccount.DefaultZone)
+		quotas, err := globalstate.GlobalEgoscaleClient.ListQuotas(gContext, account.CurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}

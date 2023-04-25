@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -52,12 +53,12 @@ func (c *instanceTemplateListCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 
 func (c *instanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.Zone == "" {
-		c.Zone = gCurrentAccount.DefaultZone
+		c.Zone = account.CurrentAccount.DefaultZone
 	}
 
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone),
 	)
 
 	templates, err := globalstate.GlobalEgoscaleClient.ListTemplates(

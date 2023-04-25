@@ -5,6 +5,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -46,7 +47,7 @@ func (c *privateNetworkCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 }
 
 func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	privateNetwork := &egoscale.PrivateNetwork{
 		Description: utils.NonEmptyStringPtr(c.Description),

@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	GAllAccount *AccountConfig
+	GAllAccount    *AccountConfig
+	CurrentAccount *Account
 )
 
 type Account struct {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -17,10 +18,10 @@ var runstatusMaintenanceRemoveCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		pageName := gCurrentAccount.DefaultRunstatusPage
+		pageName := account.CurrentAccount.DefaultRunstatusPage
 		maintenanceName := args[0]
 
-		if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
+		if account.CurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
 			fmt.Fprintf(os.Stderr, `Missing page argument.
 
   Please specify a page in parameter or

@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -14,7 +15,7 @@ var eipCreateCmd = &cobra.Command{
 	Short:   "Create an Elastic IP",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		zone := gCurrentAccount.DefaultZone
+		zone := account.CurrentAccount.DefaultZone
 		if len(args) >= 1 {
 			zone = args[0]
 		}

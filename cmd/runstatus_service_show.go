@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -34,10 +35,10 @@ Supported output template annotations: %s`,
 				return cmd.Usage()
 			}
 
-			page := gCurrentAccount.DefaultRunstatusPage
+			page := account.CurrentAccount.DefaultRunstatusPage
 			service := args[0]
 
-			if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
+			if account.CurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
 				return fmt.Errorf("No default runstat.us page is set.\n"+
 					"Please specify a page in parameter or add it to your configuration file %s",
 					gConfigFilePath)

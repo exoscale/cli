@@ -8,6 +8,7 @@ import (
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -87,7 +88,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 		if keypair == "" {
-			keypair = gCurrentAccount.DefaultSSHKey
+			keypair = account.CurrentAccount.DefaultSSHKey
 		}
 
 		sg, err := cmd.Flags().GetStringSlice("security-group")

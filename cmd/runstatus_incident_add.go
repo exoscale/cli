@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/egoscale"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -24,7 +25,7 @@ var runstatusIncidentAddCmd = &cobra.Command{
 	Use:   "add PAGE",
 	Short: "Add an incident to a runstat.us page",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 0 {
+		if account.CurrentAccount.DefaultRunstatusPage == "" && len(args) == 0 {
 			fmt.Fprintf(os.Stderr, `Error: No default runstat.us page is set:
   Please specify a page in parameter or add it to %q
 
@@ -33,7 +34,7 @@ var runstatusIncidentAddCmd = &cobra.Command{
 		}
 
 		if len(args) == 0 {
-			args = append(args, gCurrentAccount.DefaultRunstatusPage)
+			args = append(args, account.CurrentAccount.DefaultRunstatusPage)
 		}
 
 		runstatusPage, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: args[0]})

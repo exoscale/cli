@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	exo "github.com/exoscale/egoscale/v2"
@@ -18,13 +19,13 @@ var dnsCmd = &cobra.Command{
 
 // domainFromIdent returns a DNS domain from identifier (domain name or ID).
 func domainFromIdent(ident string) (*exo.DNSDomain, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	_, err := egoscale.ParseUUID(ident)
 	if err == nil {
-		return globalstate.GlobalEgoscaleClient.GetDNSDomain(ctx, gCurrentAccount.DefaultZone, ident)
+		return globalstate.GlobalEgoscaleClient.GetDNSDomain(ctx, account.CurrentAccount.DefaultZone, ident)
 	}
 
-	domains, err := globalstate.GlobalEgoscaleClient.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
+	domains, err := globalstate.GlobalEgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}
@@ -40,13 +41,13 @@ func domainFromIdent(ident string) (*exo.DNSDomain, error) {
 
 // domainRecordFromIdent returns a DNS record from identifier (record name or ID) and optional type
 func domainRecordFromIdent(domainID, ident string, rType *string) (*exo.DNSDomainRecord, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	_, err := egoscale.ParseUUID(ident)
 	if err == nil {
-		return globalstate.GlobalEgoscaleClient.GetDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, domainID, ident)
+		return globalstate.GlobalEgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, domainID, ident)
 	}
 
-	records, err := globalstate.GlobalEgoscaleClient.ListDNSDomainRecords(ctx, gCurrentAccount.DefaultZone, domainID)
+	records, err := globalstate.GlobalEgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, domainID)
 	if err != nil {
 		return nil, err
 	}

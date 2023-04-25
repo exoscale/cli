@@ -40,7 +40,7 @@ Supported output template annotations: %s`,
 			if account.GAllAccount == nil {
 				return fmt.Errorf("no accounts configured")
 			}
-			name := gCurrentAccount.AccountName(gContext)
+			name := account.CurrentAccount.AccountName(gContext)
 
 			if len(args) > 0 {
 				name = args[0]

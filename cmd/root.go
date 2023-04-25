@@ -28,13 +28,6 @@ var gConfigFilePath string
 
 // current Account information
 var gAccountName string
-var gCurrentAccount = &account.Account{
-	DefaultZone:     defaultZone,
-	DefaultTemplate: defaultTemplate,
-	Endpoint:        defaultEndpoint,
-	Environment:     defaultEnvironment,
-	SosEndpoint:     defaultSosEndpoint,
-}
 
 var csRunstatus *egoscale.Client
 
@@ -98,6 +91,14 @@ func Execute(version, commit string) {
 }
 
 func init() {
+	account.CurrentAccount = &Account{
+		DefaultZone:     defaultZone,
+		DefaultTemplate: defaultTemplate,
+		Endpoint:        defaultEndpoint,
+		Environment:     defaultEnvironment,
+		SosEndpoint:     defaultSosEndpoint,
+	}
+
 	gConfig = viper.New()
 
 	RootCmd.PersistentFlags().StringVarP(&gConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
@@ -167,30 +168,30 @@ func initConfig() {
 	apiEnvironmentFromEnv := readFromEnv("EXOSCALE_API_ENVIRONMENT")
 
 	if apiKeyFromEnv != "" && apiSecretFromEnv != "" {
-		gCurrentAccount.Name = "<environment variables>"
+		account.CurrentAccount.Name = "<environment variables>"
 		gConfigFilePath = "<environment variables>"
-		gCurrentAccount.Account = "unknown"
-		gCurrentAccount.Key = apiKeyFromEnv
-		gCurrentAccount.Secret = apiSecretFromEnv
+		account.CurrentAccount.Account = "unknown"
+		account.CurrentAccount.Key = apiKeyFromEnv
+		account.CurrentAccount.Secret = apiSecretFromEnv
 
 		if apiEnvironmentFromEnv != "" {
-			gCurrentAccount.Environment = apiEnvironmentFromEnv
+			account.CurrentAccount.Environment = apiEnvironmentFromEnv
 		}
 		if endpointFromEnv != "" {
-			gCurrentAccount.Endpoint = endpointFromEnv
+			account.CurrentAccount.Endpoint = endpointFromEnv
 		}
 		if sosEndpointFromEnv != "" {
-			gCurrentAccount.SosEndpoint = sosEndpointFromEnv
+			account.CurrentAccount.SosEndpoint = sosEndpointFromEnv
 		}
-		gCurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(gCurrentAccount.Endpoint)
+		account.CurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(account.CurrentAccount.Endpoint)
 
-		if gCurrentAccount.ClientTimeout == 0 {
-			gCurrentAccount.ClientTimeout = defaultClientTimeout
+		if account.CurrentAccount.ClientTimeout == 0 {
+			account.CurrentAccount.ClientTimeout = defaultClientTimeout
 		}
 
 		account.GAllAccount = &account.AccountConfig{
-			DefaultAccount: gCurrentAccount.Name,
-			Accounts:       []account.Account{*gCurrentAccount},
+			DefaultAccount: account.CurrentAccount.Name,
+			Accounts:       []account.Account{*account.CurrentAccount},
 		}
 
 		buildClient()
@@ -281,71 +282,71 @@ func initConfig() {
 
 	for i, acc := range config.Accounts {
 		if acc.Name == gAccountName {
-			gCurrentAccount = &config.Accounts[i]
+			account.CurrentAccount = &config.Accounts[i]
 			break
 		}
 	}
 
-	if gCurrentAccount.Name == "" {
+	if account.CurrentAccount.Name == "" {
 		log.Fatalf("error: could't find any configured account named %q", gAccountName)
 	}
 
-	if gCurrentAccount.Endpoint == "" {
-		if gCurrentAccount.ComputeEndpoint != "" {
-			gCurrentAccount.Endpoint = gCurrentAccount.ComputeEndpoint
+	if account.CurrentAccount.Endpoint == "" {
+		if account.CurrentAccount.ComputeEndpoint != "" {
+			account.CurrentAccount.Endpoint = account.CurrentAccount.ComputeEndpoint
 		} else {
-			gCurrentAccount.Endpoint = defaultEndpoint
+			account.CurrentAccount.Endpoint = defaultEndpoint
 		}
 	}
 
-	if gCurrentAccount.Environment == "" {
-		gCurrentAccount.Environment = defaultEnvironment
+	if account.CurrentAccount.Environment == "" {
+		account.CurrentAccount.Environment = defaultEnvironment
 	}
 
-	if gCurrentAccount.DefaultZone == "" {
-		gCurrentAccount.DefaultZone = defaultZone
+	if account.CurrentAccount.DefaultZone == "" {
+		account.CurrentAccount.DefaultZone = defaultZone
 	}
 
 	// if an output format isn't specified via cli argument, use
 	// the current account default format
 	if globalstate.OutputFormat == "" {
-		if gCurrentAccount.DefaultOutputFormat != "" {
-			globalstate.OutputFormat = gCurrentAccount.DefaultOutputFormat
+		if account.CurrentAccount.DefaultOutputFormat != "" {
+			globalstate.OutputFormat = account.CurrentAccount.DefaultOutputFormat
 		} else {
 			globalstate.OutputFormat = defaultOutputFormat
 		}
 	}
 
-	if gCurrentAccount.DNSEndpoint == "" {
-		gCurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(gCurrentAccount.Endpoint)
+	if account.CurrentAccount.DNSEndpoint == "" {
+		account.CurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(account.CurrentAccount.Endpoint)
 	}
 
-	if gCurrentAccount.DefaultTemplate == "" {
-		gCurrentAccount.DefaultTemplate = defaultTemplate
+	if account.CurrentAccount.DefaultTemplate == "" {
+		account.CurrentAccount.DefaultTemplate = defaultTemplate
 	}
 
-	if gCurrentAccount.SosEndpoint == "" {
-		gCurrentAccount.SosEndpoint = defaultSosEndpoint
+	if account.CurrentAccount.SosEndpoint == "" {
+		account.CurrentAccount.SosEndpoint = defaultSosEndpoint
 	}
 
-	if gCurrentAccount.RunstatusEndpoint == "" {
-		gCurrentAccount.RunstatusEndpoint = defaultRunstatusEndpoint
+	if account.CurrentAccount.RunstatusEndpoint == "" {
+		account.CurrentAccount.RunstatusEndpoint = defaultRunstatusEndpoint
 	}
 
-	if gCurrentAccount.ClientTimeout == 0 {
-		gCurrentAccount.ClientTimeout = defaultClientTimeout
+	if account.CurrentAccount.ClientTimeout == 0 {
+		account.CurrentAccount.ClientTimeout = defaultClientTimeout
 	}
 	clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
 	if clientTimeoutFromEnv != "" {
 		if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {
-			gCurrentAccount.ClientTimeout = t
+			account.CurrentAccount.ClientTimeout = t
 		}
 	}
 
-	gCurrentAccount.Endpoint = strings.TrimRight(gCurrentAccount.Endpoint, "/")
-	gCurrentAccount.DNSEndpoint = strings.TrimRight(gCurrentAccount.DNSEndpoint, "/")
-	gCurrentAccount.SosEndpoint = strings.TrimRight(gCurrentAccount.SosEndpoint, "/")
-	gCurrentAccount.RunstatusEndpoint = strings.TrimRight(gCurrentAccount.RunstatusEndpoint, "/")
+	account.CurrentAccount.Endpoint = strings.TrimRight(account.CurrentAccount.Endpoint, "/")
+	account.CurrentAccount.DNSEndpoint = strings.TrimRight(account.CurrentAccount.DNSEndpoint, "/")
+	account.CurrentAccount.SosEndpoint = strings.TrimRight(account.CurrentAccount.SosEndpoint, "/")
+	account.CurrentAccount.RunstatusEndpoint = strings.TrimRight(account.CurrentAccount.RunstatusEndpoint, "/")
 }
 
 func isNonCredentialCmd(cmds ...string) bool {

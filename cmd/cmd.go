@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/hashicorp/go-multierror"
@@ -70,7 +71,7 @@ func cmdCheckRequiredFlags(cmd *cobra.Command, flags []string) error {
 // set once this function returns.
 func cmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 	if cmd.Flag("zone").Value.String() == "" {
-		cmd.Flag("zone").Value.Set(gCurrentAccount.DefaultZone) // nolint:errcheck
+		cmd.Flag("zone").Value.Set(account.CurrentAccount.DefaultZone) // nolint:errcheck
 	}
 }
 
@@ -79,7 +80,7 @@ func cmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 // set once this function returns.
 func cmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
 	if cmd.Flag("template").Value.String() == "" {
-		cmd.Flag("template").Value.Set(gCurrentAccount.DefaultTemplate) // nolint:errcheck
+		cmd.Flag("template").Value.Set(account.CurrentAccount.DefaultTemplate) // nolint:errcheck
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +45,7 @@ func newSOSClient() (*sosClient, error) {
 		err error
 	)
 
-	z := gCurrentAccount.DefaultZone
+	z := account.CurrentAccount.DefaultZone
 
 	if err = c.setZone(z); err != nil {
 		return nil, err
@@ -63,9 +64,9 @@ func (s *sosClient) setZone(zone string) error {
 	// underlying Minio S3 client to specify the zone-based endpoint.
 
 	endpoint := strings.TrimPrefix(
-		strings.Replace(gCurrentAccount.SosEndpoint, "{zone}", zone, 1),
+		strings.Replace(account.CurrentAccount.SosEndpoint, "{zone}", zone, 1),
 		"https://")
-	minioClient, err := minio.NewV4(endpoint, gCurrentAccount.Key, gCurrentAccount.APISecret(), true)
+	minioClient, err := minio.NewV4(endpoint, account.CurrentAccount.Key, account.CurrentAccount.APISecret(), true)
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -51,7 +52,7 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
 	publicKey, err := os.ReadFile(c.PublicKeyFile)
@@ -60,7 +61,7 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Registering SSH key %q...", c.Name), func() {
-		sshKey, err = globalstate.GlobalEgoscaleClient.RegisterSSHKey(ctx, gCurrentAccount.DefaultZone, c.Name, string(publicKey))
+		sshKey, err = globalstate.GlobalEgoscaleClient.RegisterSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Name, string(publicKey))
 	})
 	if err != nil {
 		return err
