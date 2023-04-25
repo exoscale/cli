@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -54,7 +55,7 @@ func showAffinityGroup(ag *egoscale.AffinityGroup) (output.Outputter, error) {
 	}
 
 	if len(ag.VirtualMachineIDs) > 0 {
-		resp, err := cs.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
+		resp, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
 		if err != nil {
 			return nil, err
 		}

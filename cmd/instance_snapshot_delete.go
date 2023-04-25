@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -35,7 +36,7 @@ func (c *instanceSnapshotDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string)
 func (c *instanceSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.ID)
+	snapshot, err := globalstate.GlobalEgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -50,7 +51,7 @@ func (c *instanceSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting snapshot %s...", c.ID), func() {
-		err = cs.DeleteSnapshot(ctx, c.Zone, snapshot)
+		err = globalstate.GlobalEgoscaleClient.DeleteSnapshot(ctx, c.Zone, snapshot)
 	})
 	if err != nil {
 		return err

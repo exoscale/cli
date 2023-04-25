@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -68,7 +69,7 @@ func (c *dbaasServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-		list, err := cs.ListDatabaseServices(ctx, zone)
+		list, err := globalstate.GlobalEgoscaleClient.ListDatabaseServices(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Database Services in zone %s: %w", zone, err)
 		}

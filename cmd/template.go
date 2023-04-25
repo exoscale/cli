@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -48,7 +49,7 @@ func getTemplateByNameOrID(zoneID *egoscale.UUID, v string, templateFilter strin
 		req.ID = id
 	}
 
-	resp, err := cs.ListWithContext(gContext, req)
+	resp, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +94,7 @@ func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...stri
 	}
 
 	var err error
-	cs.PaginateWithContext(gContext, req, func(i interface{}, e error) bool {
+	globalstate.GlobalEgoscaleClient.PaginateWithContext(gContext, req, func(i interface{}, e error) bool {
 		if e != nil {
 			err = e
 			return false

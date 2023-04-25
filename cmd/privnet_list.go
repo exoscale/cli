@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -49,7 +50,7 @@ Supported output template annotations: %s`,
 func listPrivnets(zone string) (output.Outputter, error) {
 	out := privnetListOutput{}
 
-	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+	zones, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func listPrivnets(zone string) (output.Outputter, error) {
 			CanUseForDeploy: true,
 		}
 
-		privnets, err := cs.ListWithContext(gContext, &req)
+		privnets, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &req)
 		if err != nil {
 			return nil, err
 		}

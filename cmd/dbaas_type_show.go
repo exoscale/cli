@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
@@ -156,7 +157,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
 	)
 
-	dt, err := cs.GetDatabaseServiceType(ctx, gCurrentAccount.DefaultZone, c.Name)
+	dt, err := globalstate.GlobalEgoscaleClient.GetDatabaseServiceType(ctx, gCurrentAccount.DefaultZone, c.Name)
 	if err != nil {
 		return err
 	}
@@ -189,7 +190,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsKafkaWithResponse(ctx)
+			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -216,7 +217,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsOpensearchWithResponse(ctx)
+			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -237,7 +238,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsMysqlWithResponse(ctx)
+			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -258,7 +259,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsPgWithResponse(ctx)
+			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -283,7 +284,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsRedisWithResponse(ctx)
+			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsRedisWithResponse(ctx)
 			if err != nil {
 				return err
 			}

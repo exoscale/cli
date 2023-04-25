@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -59,7 +60,7 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -67,7 +68,7 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	b64Cert, err := cs.GetSKSClusterAuthorityCert(ctx, c.Zone, cluster, c.Authority)
+	b64Cert, err := globalstate.GlobalEgoscaleClient.GetSKSClusterAuthorityCert(ctx, c.Zone, cluster, c.Authority)
 	if err != nil {
 		return fmt.Errorf("error retrieving certificate: %w", err)
 	}

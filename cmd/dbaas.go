@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	"github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
@@ -156,7 +157,7 @@ func dbaasShowSettings(settings map[string]interface{}) {
 }
 
 func dbaasGetType(ctx context.Context, name, zone string) (string, error) {
-	dbs, err := cs.ListDatabaseServices(ctx, zone)
+	dbs, err := globalstate.GlobalEgoscaleClient.ListDatabaseServices(ctx, zone)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve database type: %w", err)
 	}

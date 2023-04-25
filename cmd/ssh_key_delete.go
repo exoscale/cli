@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -44,7 +45,7 @@ func (c *computeSSHKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Deleting SSH key %s...", c.Name), func() {
-		err = cs.DeleteSSHKey(ctx, gCurrentAccount.DefaultZone, &egoscale.SSHKey{Name: &c.Name})
+		err = globalstate.GlobalEgoscaleClient.DeleteSSHKey(ctx, gCurrentAccount.DefaultZone, &egoscale.SSHKey{Name: &c.Name})
 	})
 	if err != nil {
 		return err

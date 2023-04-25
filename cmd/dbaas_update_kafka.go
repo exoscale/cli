@@ -18,7 +18,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 
 	databaseService := oapi.UpdateDbaasServiceKafkaJSONRequestBody{}
 
-	settingsSchema, err := cs.GetDbaasSettingsKafkaWithResponse(ctx)
+	settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
@@ -134,7 +134,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 	if updated {
 		var res *oapi.UpdateDbaasServiceKafkaResponse
 		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = cs.UpdateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+			res, err = globalstate.GlobalEgoscaleClient.UpdateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 		})
 		if err != nil {
 			if errors.Is(err, exoapi.ErrNotFound) {

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
@@ -86,7 +87,7 @@ func (c *iamAccessKeyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	iamAccessKey, err := cs.GetIAMAccessKey(ctx, zone, c.APIKey)
+	iamAccessKey, err := globalstate.GlobalEgoscaleClient.GetIAMAccessKey(ctx, zone, c.APIKey)
 	if err != nil {
 		return err
 	}

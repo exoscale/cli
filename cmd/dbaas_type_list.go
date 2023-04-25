@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
@@ -63,7 +64,7 @@ func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
 	)
 
-	dbTypes, err := cs.ListDatabaseServiceTypes(ctx, gCurrentAccount.DefaultZone)
+	dbTypes, err := globalstate.GlobalEgoscaleClient.ListDatabaseServiceTypes(ctx, gCurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

@@ -46,7 +46,7 @@ func uploadSSHKey(name, publicKeyPath string) (output.Outputter, error) {
 		return nil, err
 	}
 
-	resp, err := cs.RequestWithContext(gContext, &egoscale.RegisterSSHKeyPair{
+	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.RegisterSSHKeyPair{
 		Name:      name,
 		PublicKey: string(pbk),
 	})

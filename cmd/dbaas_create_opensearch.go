@@ -51,7 +51,7 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 	}
 
 	if c.OpensearchSettings != "" {
-		settingsSchema, err := cs.GetDbaasSettingsOpensearchWithResponse(ctx)
+		settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 		}
@@ -112,7 +112,7 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 
 	var res *oapi.CreateDbaasServiceOpensearchResponse
 	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = cs.CreateDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name), db)
+		res, err = globalstate.GlobalEgoscaleClient.CreateDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name), db)
 	})
 	if err != nil {
 		return err

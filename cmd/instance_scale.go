@@ -45,7 +45,7 @@ func (c *instanceScaleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *instanceScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -59,13 +59,13 @@ func (c *instanceScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	instanceType, err := cs.FindInstanceType(ctx, c.Zone, c.Type)
+	instanceType, err := globalstate.GlobalEgoscaleClient.FindInstanceType(ctx, c.Zone, c.Type)
 	if err != nil {
 		return fmt.Errorf("error retrieving instance type: %w", err)
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Scaling instance %q...", c.Instance), func() {
-		err = cs.ScaleInstance(ctx, c.Zone, instance, instanceType)
+		err = globalstate.GlobalEgoscaleClient.ScaleInstance(ctx, c.Zone, instance, instanceType)
 	})
 	if err != nil {
 		return err

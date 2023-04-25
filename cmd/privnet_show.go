@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -68,7 +69,7 @@ func showPrivnet(privnet *egoscale.Network) (output.Outputter, error) {
 }
 
 func privnetDetails(network *egoscale.Network) ([]egoscale.VirtualMachine, error) {
-	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{
+	vms, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.VirtualMachine{
 		ZoneID: network.ZoneID,
 	})
 	if err != nil {

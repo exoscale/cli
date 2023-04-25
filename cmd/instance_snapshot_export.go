@@ -52,7 +52,7 @@ func (c *instanceSnapshotExportCmd) cmdPreRun(cmd *cobra.Command, args []string)
 func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.ID)
+	snapshot, err := globalstate.GlobalEgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -62,7 +62,7 @@ func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var snapshotExport *egoscale.SnapshotExport
 	decorateAsyncOperation(fmt.Sprintf("Exporting snapshot %s...", c.ID), func() {
-		snapshotExport, err = cs.ExportSnapshot(ctx, c.Zone, snapshot)
+		snapshotExport, err = globalstate.GlobalEgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
 	})
 	if err != nil {
 		return err

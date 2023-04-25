@@ -53,7 +53,7 @@ func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instancePool, err := globalstate.GlobalEgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -63,7 +63,7 @@ func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	instances := make([]string, len(c.Instances))
 	for i, n := range c.Instances {
-		instance, err := cs.FindInstance(ctx, c.Zone, n)
+		instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, n)
 		if err != nil {
 			return fmt.Errorf("invalid instance %q: %w", n, err)
 		}
@@ -72,7 +72,9 @@ func (c *instancePoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(
 		fmt.Sprintf("Evicting instances from Instance Pool %q...", c.InstancePool),
-		func() { err = cs.EvictInstancePoolMembers(ctx, c.Zone, instancePool, instances) },
+		func() {
+			err = globalstate.GlobalEgoscaleClient.EvictInstancePoolMembers(ctx, c.Zone, instancePool, instances)
+		},
 	)
 	if err != nil {
 		return err

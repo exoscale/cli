@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -23,7 +24,7 @@ var sshkeyDeleteCmd = &cobra.Command{
 
 		sshKeys := []egoscale.SSHKeyPair{}
 		if all {
-			sshKeys, err = getSSHKeys(cs)
+			sshKeys, err = getSSHKeys(globalstate.GlobalEgoscaleClient)
 			if err != nil {
 				return err
 			}
@@ -64,7 +65,7 @@ var sshkeyDeleteCmd = &cobra.Command{
 
 func deleteSSHKey(name string) error {
 	sshKey := &egoscale.DeleteSSHKeyPair{Name: name}
-	return cs.BooleanRequestWithContext(gContext, sshKey)
+	return globalstate.GlobalEgoscaleClient.BooleanRequestWithContext(gContext, sshKey)
 }
 
 func init() {

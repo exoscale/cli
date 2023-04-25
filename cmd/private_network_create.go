@@ -76,7 +76,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Private Network %q...", c.Name), func() {
-		privateNetwork, err = cs.CreatePrivateNetwork(ctx, c.Zone, privateNetwork)
+		privateNetwork, err = globalstate.GlobalEgoscaleClient.CreatePrivateNetwork(ctx, c.Zone, privateNetwork)
 	})
 	if err != nil {
 		return err

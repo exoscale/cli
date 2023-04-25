@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -56,7 +57,7 @@ func (c *instanceSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.ID)
+	snapshot, err := globalstate.GlobalEgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -64,7 +65,7 @@ func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving Compute instance snapshot: %w", err)
 	}
 
-	instance, err := cs.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
+	instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Compute instance %s: %w", *snapshot.InstanceID, err)
 	}

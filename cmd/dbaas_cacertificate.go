@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -32,7 +33,7 @@ func (c *dbaasCACertificateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 func (c *dbaasCACertificateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	caCertificate, err := cs.GetDatabaseCACertificate(ctx, c.Zone)
+	caCertificate, err := globalstate.GlobalEgoscaleClient.GetDatabaseCACertificate(ctx, c.Zone)
 	if err != nil {
 		return err
 	}

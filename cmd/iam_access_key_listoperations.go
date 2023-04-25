@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -86,9 +87,9 @@ func (c *iamAccessKeyListOperationsCmd) cmdRun(_ *cobra.Command, _ []string) err
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
 	if c.Mine {
-		iamAccessKeyOperations, err = cs.ListMyIAMAccessKeyOperations(ctx, zone)
+		iamAccessKeyOperations, err = globalstate.GlobalEgoscaleClient.ListMyIAMAccessKeyOperations(ctx, zone)
 	} else {
-		iamAccessKeyOperations, err = cs.ListIAMAccessKeyOperations(ctx, zone)
+		iamAccessKeyOperations, err = globalstate.GlobalEgoscaleClient.ListIAMAccessKeyOperations(ctx, zone)
 	}
 	if err != nil {
 		return err

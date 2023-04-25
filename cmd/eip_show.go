@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
@@ -114,7 +115,7 @@ func showEIP(v string) (output.Outputter, error) {
 		}
 	}
 
-	res, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: eip.ZoneID})
+	res, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: eip.ZoneID})
 	if err != nil {
 		return nil, err
 	}

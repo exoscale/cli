@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
@@ -88,7 +89,7 @@ func (c *dbaasServiceLogsCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	res, err := cs.GetDbaasServiceLogsWithResponse(
+	res, err := globalstate.GlobalEgoscaleClient.GetDbaasServiceLogsWithResponse(
 		ctx,
 		c.Name,
 		oapi.GetDbaasServiceLogsJSONRequestBody{

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -37,7 +38,7 @@ Supported output template annotations: %s`,
 }
 
 func listSSHKey(filters []string) (output.Outputter, error) {
-	sshKeys, err := getSSHKeys(cs)
+	sshKeys, err := getSSHKeys(globalstate.GlobalEgoscaleClient)
 	if err != nil {
 		return nil, err
 	}

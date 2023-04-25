@@ -56,7 +56,7 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", c.Name), func() {
-		nlb, err = cs.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
+		nlb, err = globalstate.GlobalEgoscaleClient.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
 	})
 	if err != nil {
 		return err

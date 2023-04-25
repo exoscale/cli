@@ -51,7 +51,7 @@ func (c *securityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Security Group %q...", c.Name), func() {
-		securityGroup, err = cs.CreateSecurityGroup(ctx, zone, securityGroup)
+		securityGroup, err = globalstate.GlobalEgoscaleClient.CreateSecurityGroup(ctx, zone, securityGroup)
 	})
 	if err != nil {
 		return err

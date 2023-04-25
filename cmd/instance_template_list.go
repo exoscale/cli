@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -59,7 +60,7 @@ func (c *instanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone),
 	)
 
-	templates, err := cs.ListTemplates(
+	templates, err := globalstate.GlobalEgoscaleClient.ListTemplates(
 		ctx,
 		c.Zone,
 		egoscale.ListTemplatesWithVisibility(c.Visibility),

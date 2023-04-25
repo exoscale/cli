@@ -9,6 +9,7 @@ import (
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -49,7 +50,7 @@ Note: the buckets size reported is computed daily, it may not be the actual size
 }
 
 func displayBuckets(sosClient *sosClient, isRecursive, isShort bool) error {
-	resp, err := cs.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
+	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
 	if err != nil {
 		return err
 	}

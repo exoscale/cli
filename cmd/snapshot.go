@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +23,7 @@ func getSnapshotByNameOrID(v string) (*egoscale.Snapshot, error) {
 		snapshot.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, snapshot)
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, snapshot)
 	switch err {
 	case nil:
 		return resp.(*egoscale.Snapshot), nil

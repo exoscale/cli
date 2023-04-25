@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
@@ -160,7 +161,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	securityGroup, err := cs.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+	securityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
@@ -197,7 +198,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		if rule.SecurityGroupID != nil {
-			ruleSecurityGroup, err := cs.GetSecurityGroup(ctx, zone, *rule.SecurityGroupID)
+			ruleSecurityGroup, err := globalstate.GlobalEgoscaleClient.GetSecurityGroup(ctx, zone, *rule.SecurityGroupID)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -216,7 +217,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	instances, err := utils.GetInstancesInSecurityGroup(ctx, cs, *securityGroup.ID, zone)
+	instances, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.GlobalEgoscaleClient, *securityGroup.ID, zone)
 	if err != nil {
 		return fmt.Errorf("error retrieving instances in Security Group: %w", err)
 	}

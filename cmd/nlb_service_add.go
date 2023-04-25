@@ -94,19 +94,19 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.GlobalEgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return fmt.Errorf("error retrieving Network Load Balancer: %w", err)
 	}
 
-	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instancePool, err := globalstate.GlobalEgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
 		return fmt.Errorf("error retrieving Instance Pool: %w", err)
 	}
 	service.InstancePoolID = instancePool.ID
 
 	decorateAsyncOperation(fmt.Sprintf("Adding service %q...", c.Name), func() {
-		service, err = cs.CreateNetworkLoadBalancerService(ctx, c.Zone, nlb, service)
+		service, err = globalstate.GlobalEgoscaleClient.CreateNetworkLoadBalancerService(ctx, c.Zone, nlb, service)
 	})
 	if err != nil {
 		return err

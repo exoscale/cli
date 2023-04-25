@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -70,7 +71,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -127,7 +128,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if nodepool.AntiAffinityGroupIDs != nil {
 		for _, id := range *nodepool.AntiAffinityGroupIDs {
-			antiAffinityGroup, err := cs.GetAntiAffinityGroup(ctx, c.Zone, id)
+			antiAffinityGroup, err := globalstate.GlobalEgoscaleClient.GetAntiAffinityGroup(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
@@ -137,7 +138,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if nodepool.PrivateNetworkIDs != nil {
 		for _, id := range *nodepool.PrivateNetworkIDs {
-			privateNetwork, err := cs.GetPrivateNetwork(ctx, c.Zone, id)
+			privateNetwork, err := globalstate.GlobalEgoscaleClient.GetPrivateNetwork(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -147,7 +148,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if nodepool.SecurityGroupIDs != nil {
 		for _, id := range *nodepool.SecurityGroupIDs {
-			securityGroup, err := cs.GetSecurityGroup(ctx, c.Zone, id)
+			securityGroup, err := globalstate.GlobalEgoscaleClient.GetSecurityGroup(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -155,13 +156,13 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	serviceOffering, err := cs.GetInstanceType(ctx, c.Zone, *nodepool.InstanceTypeID)
+	serviceOffering, err := globalstate.GlobalEgoscaleClient.GetInstanceType(ctx, c.Zone, *nodepool.InstanceTypeID)
 	if err != nil {
 		return fmt.Errorf("error retrieving service offering: %w", err)
 	}
 	out.InstanceType = *serviceOffering.Size
 
-	template, err := cs.GetTemplate(ctx, c.Zone, *nodepool.TemplateID)
+	template, err := globalstate.GlobalEgoscaleClient.GetTemplate(ctx, c.Zone, *nodepool.TemplateID)
 	if err != nil {
 		return fmt.Errorf("error retrieving template: %w", err)
 	}

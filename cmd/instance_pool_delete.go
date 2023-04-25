@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +34,7 @@ func (c *instancePoolDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instancePool, err := globalstate.GlobalEgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -42,7 +43,7 @@ func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	// Ensure the Instance Pool is not attached to an NLB service.
-	nlbs, err := cs.ListNetworkLoadBalancers(ctx, c.Zone)
+	nlbs, err := globalstate.GlobalEgoscaleClient.ListNetworkLoadBalancers(ctx, c.Zone)
 	if err != nil {
 		return fmt.Errorf("unable to list Network Load Balancers: %v", err)
 	}
@@ -67,7 +68,7 @@ func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", c.InstancePool), func() {
-		err = cs.DeleteInstancePool(ctx, c.Zone, instancePool)
+		err = globalstate.GlobalEgoscaleClient.DeleteInstancePool(ctx, c.Zone, instancePool)
 	})
 	if err != nil {
 		return err

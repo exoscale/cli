@@ -23,7 +23,7 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 		Version:               utils.NonEmptyStringPtr(c.PGVersion),
 	}
 
-	settingsSchema, err := cs.GetDbaasSettingsPgWithResponse(ctx)
+	settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
@@ -140,7 +140,7 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 
 	var res *oapi.CreateDbaasServicePgResponse
 	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = cs.CreateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		res, err = globalstate.GlobalEgoscaleClient.CreateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 	})
 	if err != nil {
 		return err

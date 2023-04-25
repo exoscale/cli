@@ -67,7 +67,7 @@ func (c *iamAccessKeyCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		opts = append(opts, egoscale.CreateIAMAccessKeyWithTags(c.Tags))
 	}
 
-	iamAccessKey, err := cs.CreateIAMAccessKey(ctx, zone, c.Name, opts...)
+	iamAccessKey, err := globalstate.GlobalEgoscaleClient.CreateIAMAccessKey(ctx, zone, c.Name, opts...)
 	if err != nil {
 		return fmt.Errorf("unable to create a new IAM access key: %w", err)
 	}

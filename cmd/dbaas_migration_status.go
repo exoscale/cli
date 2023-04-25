@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -43,7 +44,7 @@ func (o *databaseMigrationStatus) toTable() { output.Table(o) }
 func (c *dbaasMigrationStatusCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	res, err := cs.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
+	res, err := globalstate.GlobalEgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)

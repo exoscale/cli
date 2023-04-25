@@ -38,7 +38,7 @@ func (c *sksUpgradeCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -48,7 +48,7 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !c.Force {
 		if utils.VersionIsNewer(c.Version, *cluster.Version) {
-			deprecatedResources, err := cs.ListSKSClusterDeprecatedResources(
+			deprecatedResources, err := globalstate.GlobalEgoscaleClient.ListSKSClusterDeprecatedResources(
 				ctx,
 				c.Zone,
 				cluster,
@@ -83,7 +83,7 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q...", c.Cluster), func() {
-		err = cs.UpgradeSKSCluster(ctx, c.Zone, cluster, c.Version)
+		err = globalstate.GlobalEgoscaleClient.UpgradeSKSCluster(ctx, c.Zone, cluster, c.Version)
 	})
 	if err != nil {
 		return err

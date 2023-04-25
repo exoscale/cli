@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -55,7 +56,7 @@ Supported output template annotations: %s`,
 }
 
 func listZones() (output.Outputter, error) {
-	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+	zones, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +87,7 @@ func getZoneByNameOrID(name string) (*egoscale.Zone, error) {
 		zone.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, zone)
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, zone)
 	if err != nil {
 		if err == egoscale.ErrNotFound {
 			return nil, fmt.Errorf("invalid zone %q", name)

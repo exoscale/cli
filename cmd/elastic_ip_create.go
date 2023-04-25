@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -90,7 +91,7 @@ func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation("Creating Elastic IP...", func() {
-		elasticIP, err = cs.CreateElasticIP(ctx, c.Zone, elasticIP)
+		elasticIP, err = globalstate.GlobalEgoscaleClient.CreateElasticIP(ctx, c.Zone, elasticIP)
 	})
 	if err != nil {
 		return err

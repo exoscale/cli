@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -71,7 +72,7 @@ func showVM(name string) (output.Outputter, error) {
 		return nil, err
 	}
 
-	resp, err := cs.GetWithContext(gContext, &egoscale.Template{
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Template{
 		IsFeatured: true,
 		ID:         vm.TemplateID,
 		ZoneID:     vm.ZoneID,
@@ -81,7 +82,7 @@ func showVM(name string) (output.Outputter, error) {
 	}
 	template := resp.(*egoscale.Template)
 
-	resp, err = cs.GetWithContext(gContext, &egoscale.Volume{
+	resp, err = globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})
@@ -90,7 +91,7 @@ func showVM(name string) (output.Outputter, error) {
 	}
 	volume := resp.(*egoscale.Volume)
 
-	reverseDNS, err := cs.RequestWithContext(gContext, &egoscale.QueryReverseDNSForVirtualMachine{ID: vm.ID})
+	reverseDNS, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.QueryReverseDNSForVirtualMachine{ID: vm.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +155,7 @@ func showVMUserData(name string) error {
 		return err
 	}
 
-	resp, err := cs.SyncRequestWithContext(gContext, &egoscale.GetVirtualMachineUserData{
+	resp, err := globalstate.GlobalEgoscaleClient.SyncRequestWithContext(gContext, &egoscale.GetVirtualMachineUserData{
 		VirtualMachineID: vm.ID,
 	})
 	if err != nil {

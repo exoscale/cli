@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +35,7 @@ func (c *sksDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -59,7 +60,7 @@ func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				}
 
 				decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", *nodepool.Name), func() {
-					err = cs.DeleteSKSNodepool(ctx, c.Zone, cluster, nodepool)
+					err = globalstate.GlobalEgoscaleClient.DeleteSKSNodepool(ctx, c.Zone, cluster, nodepool)
 				})
 				if err != nil {
 					return err
@@ -81,7 +82,7 @@ func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting SKS cluster %q...", *cluster.Name), func() {
-		err = cs.DeleteSKSCluster(ctx, c.Zone, cluster)
+		err = globalstate.GlobalEgoscaleClient.DeleteSKSCluster(ctx, c.Zone, cluster)
 	})
 	if err != nil {
 		return err

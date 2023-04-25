@@ -36,7 +36,7 @@ func (c *instanceStartCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -56,7 +56,7 @@ func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Starting instance %q...", c.Instance), func() {
-		err = cs.StartInstance(ctx, c.Zone, instance, opts...)
+		err = globalstate.GlobalEgoscaleClient.StartInstance(ctx, c.Zone, instance, opts...)
 	})
 	if err != nil {
 		return err

@@ -631,22 +631,22 @@ func ObjectHeadersFromS3(o *s3.GetObjectOutput) map[string]string {
 	headers := make(map[string]string)
 
 	if o.CacheControl != nil {
-		headers[sos.ObjectHeaderCacheControl] = aws.ToString(o.CacheControl)
+		headers[ObjectHeaderCacheControl] = aws.ToString(o.CacheControl)
 	}
 	if o.ContentDisposition != nil {
-		headers[sos.ObjectHeaderContentDisposition] = aws.ToString(o.ContentDisposition)
+		headers[ObjectHeaderContentDisposition] = aws.ToString(o.ContentDisposition)
 	}
 	if o.ContentEncoding != nil {
-		headers[sos.ObjectHeaderContentEncoding] = aws.ToString(o.ContentEncoding)
+		headers[ObjectHeaderContentEncoding] = aws.ToString(o.ContentEncoding)
 	}
 	if o.ContentLanguage != nil {
-		headers[sos.ObjectHeaderContentLanguage] = aws.ToString(o.ContentLanguage)
+		headers[ObjectHeaderContentLanguage] = aws.ToString(o.ContentLanguage)
 	}
 	if o.ContentType != nil {
-		headers[sos.ObjectHeaderContentType] = aws.ToString(o.ContentType)
+		headers[ObjectHeaderContentType] = aws.ToString(o.ContentType)
 	}
 	if o.Expires != nil {
-		headers[sos.ObjectHeaderExpires] = o.Expires.String()
+		headers[ObjectHeaderExpires] = o.Expires.String()
 	}
 
 	return headers
@@ -657,7 +657,7 @@ type ShowObjectOutput struct {
 	Bucket       string            `json:"bucket"`
 	LastModified string            `json:"last_modified"`
 	Size         int64             `json:"size"`
-	ACL          sos.ACL           `json:"acl"`
+	ACL          ACL               `json:"acl"`
 	Metadata     map[string]string `json:"metadata"`
 	Headers      map[string]string `json:"headers"`
 	URL          string            `json:"url"`

@@ -36,8 +36,6 @@ var gCurrentAccount = &sos.Account{
 	SosEndpoint:     defaultSosEndpoint,
 }
 
-// egoscale client
-var cs *egoscale.Client
 var csRunstatus *egoscale.Client
 
 // Aliases

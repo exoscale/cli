@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 
@@ -44,7 +45,7 @@ func listSnapshots(instances []string) (output.Outputter, error) {
 	out := snapshotListOutput{}
 
 	if len(instances) == 0 {
-		snapshots, err := cs.ListWithContext(gContext, egoscale.Snapshot{})
+		snapshots, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, egoscale.Snapshot{})
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +72,7 @@ func listSnapshots(instances []string) (output.Outputter, error) {
 			return nil, err
 		}
 
-		volume, err := cs.GetWithContext(gContext, &egoscale.Volume{
+		volume, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 			VirtualMachineID: instance.ID,
 			Type:             "ROOT",
 		})
@@ -79,7 +80,7 @@ func listSnapshots(instances []string) (output.Outputter, error) {
 			return nil, err
 		}
 
-		snapshots, err := cs.ListWithContext(gContext, egoscale.Snapshot{VolumeID: volume.(*egoscale.Volume).ID})
+		snapshots, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, egoscale.Snapshot{VolumeID: volume.(*egoscale.Volume).ID})
 		if err != nil {
 			return nil, err
 		}

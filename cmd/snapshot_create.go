@@ -35,7 +35,7 @@ func createSnapshot(vmID string) (output.Outputter, error) {
 		return nil, err
 	}
 
-	resp, err := cs.GetWithContext(gContext, &egoscale.Volume{
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})

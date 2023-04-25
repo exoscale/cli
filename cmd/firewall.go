@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -82,7 +83,7 @@ func getSecurityGroupByNameOrID(v string) (*egoscale.SecurityGroup, error) {
 		sg.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, sg)
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, sg)
 	switch err {
 	case nil:
 		return resp.(*egoscale.SecurityGroup), nil

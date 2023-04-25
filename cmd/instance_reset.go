@@ -50,7 +50,7 @@ func (c *instanceResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var template *egoscale.Template
 	if c.Template != "" {
-		template, err = cs.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+		template, err = globalstate.GlobalEgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
 		if err != nil {
 			return fmt.Errorf(
 				"no template %q found with visibility %s in zone %s",
@@ -82,7 +82,7 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Resetting instance %q...", c.Instance), func() {
-		err = cs.ResetInstance(ctx, c.Zone, instance, opts...)
+		err = globalstate.GlobalEgoscaleClient.ResetInstance(ctx, c.Zone, instance, opts...)
 	})
 	if err != nil {
 		return err

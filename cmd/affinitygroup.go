@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -35,7 +36,7 @@ func getAntiAffinityGroupByNameOrID(v string) (*egoscale.AffinityGroup, error) {
 		aff.Name = v
 	}
 
-	resp, err := cs.GetWithContext(gContext, aff)
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, aff)
 	switch err {
 	case nil:
 		return resp.(*egoscale.AffinityGroup), nil

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -73,7 +74,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-		list, err := cs.ListSnapshots(ctx, zone)
+		list, err := globalstate.GlobalEgoscaleClient.ListSnapshots(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Compute instance snapshots in zone %s: %w", zone, err)
 		}
@@ -84,7 +85,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if cached {
 				instance = instanceI.(*egoscale.Instance)
 			} else {
-				instance, err = cs.GetInstance(ctx, zone, *s.InstanceID)
+				instance, err = globalstate.GlobalEgoscaleClient.GetInstance(ctx, zone, *s.InstanceID)
 				if err != nil {
 					return fmt.Errorf("unable to retrieve Compute instance %q: %w", *s.InstanceID, err)
 				}

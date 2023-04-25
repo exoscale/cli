@@ -42,14 +42,14 @@ func (c *instanceSnapshotCreateCmd) cmdPreRun(cmd *cobra.Command, args []string)
 func (c *instanceSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		return err
 	}
 
 	var snapshot *egoscale.Snapshot
 	decorateAsyncOperation(fmt.Sprintf("Creating snapshot of instance %q...", c.Instance), func() {
-		snapshot, err = cs.CreateInstanceSnapshot(ctx, c.Zone, instance)
+		snapshot, err = globalstate.GlobalEgoscaleClient.CreateInstanceSnapshot(ctx, c.Zone, instance)
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
 				err = fmt.Errorf("Request timeout reached. Snapshot creation is not canceled and might still be running, check the status with: exo c i snapshot list")

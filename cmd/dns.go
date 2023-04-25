@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	exo "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -20,10 +21,10 @@ func domainFromIdent(ident string) (*exo.DNSDomain, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	_, err := egoscale.ParseUUID(ident)
 	if err == nil {
-		return cs.GetDNSDomain(ctx, gCurrentAccount.DefaultZone, ident)
+		return globalstate.GlobalEgoscaleClient.GetDNSDomain(ctx, gCurrentAccount.DefaultZone, ident)
 	}
 
-	domains, err := cs.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
+	domains, err := globalstate.GlobalEgoscaleClient.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}
@@ -42,10 +43,10 @@ func domainRecordFromIdent(domainID, ident string, rType *string) (*exo.DNSDomai
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	_, err := egoscale.ParseUUID(ident)
 	if err == nil {
-		return cs.GetDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, domainID, ident)
+		return globalstate.GlobalEgoscaleClient.GetDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, domainID, ident)
 	}
 
-	records, err := cs.ListDNSDomainRecords(ctx, gCurrentAccount.DefaultZone, domainID)
+	records, err := globalstate.GlobalEgoscaleClient.ListDNSDomainRecords(ctx, gCurrentAccount.DefaultZone, domainID)
 	if err != nil {
 		return nil, err
 	}

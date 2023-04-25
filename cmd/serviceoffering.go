@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -41,7 +42,7 @@ Supported output template annotations: %s`,
 }
 
 func listServiceOfferings() (output.Outputter, error) {
-	serviceOffering, err := cs.ListWithContext(gContext, &egoscale.ServiceOffering{})
+	serviceOffering, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.ServiceOffering{})
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +80,7 @@ func getServiceOfferingByNameOrID(v string) (*egoscale.ServiceOffering, error) {
 		so.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, so)
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, so)
 	switch err {
 	case nil:
 		return resp.(*egoscale.ServiceOffering), nil

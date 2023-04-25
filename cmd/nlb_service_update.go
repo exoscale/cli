@@ -61,7 +61,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.GlobalEgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(fmt.Sprintf("Updating service %q...", c.Service), func() {
 		if updated {
-			if err = cs.UpdateNetworkLoadBalancerService(ctx, c.Zone, nlb, service); err != nil {
+			if err = globalstate.GlobalEgoscaleClient.UpdateNetworkLoadBalancerService(ctx, c.Zone, nlb, service); err != nil {
 				return
 			}
 		}

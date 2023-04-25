@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -66,7 +67,7 @@ func prepareDeleteEip(ip string) (*egoscale.DisassociateIPAddress, error) {
 		dissocReq.ID = id
 	} else {
 		req := &egoscale.IPAddress{IPAddress: ipAddr, IsElastic: true}
-		resp, err := cs.GetWithContext(gContext, req)
+		resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, req)
 		if err != nil {
 			return nil, err
 		}

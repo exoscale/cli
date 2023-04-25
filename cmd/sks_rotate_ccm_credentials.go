@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +39,7 @@ func (c *sksRotateCCMCredentialsCmd) cmdPreRun(cmd *cobra.Command, args []string
 func (c *sksRotateCCMCredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -49,7 +50,7 @@ func (c *sksRotateCCMCredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error 
 	decorateAsyncOperation(
 		fmt.Sprintf("Rotating SKS cluster %q Exoscale CCM credentials...", c.Cluster),
 		func() {
-			err = cs.RotateSKSClusterCCMCredentials(ctx, c.Zone, cluster)
+			err = globalstate.GlobalEgoscaleClient.RotateSKSClusterCCMCredentials(ctx, c.Zone, cluster)
 		},
 	)
 	if err != nil {

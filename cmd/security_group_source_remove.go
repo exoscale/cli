@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -40,13 +41,13 @@ func (c *securityGroupRemoveSourceCmd) cmdRun(_ *cobra.Command, _ []string) erro
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	securityGroup, err := cs.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+	securityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Removing Security Group source %s...", c.Cidr), func() {
-		err = cs.RemoveExternalSourceFromSecurityGroup(ctx, zone, securityGroup, c.Cidr)
+		err = globalstate.GlobalEgoscaleClient.RemoveExternalSourceFromSecurityGroup(ctx, zone, securityGroup, c.Cidr)
 	})
 	if err != nil {
 		return err

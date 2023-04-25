@@ -20,7 +20,7 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 
 	databaseService := oapi.UpdateDbaasServiceMysqlJSONRequestBody{}
 
-	settingsSchema, err := cs.GetDbaasSettingsMysqlWithResponse(ctx)
+	settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
@@ -123,7 +123,7 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 	if updated {
 		var res *oapi.UpdateDbaasServiceMysqlResponse
 		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = cs.UpdateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+			res, err = globalstate.GlobalEgoscaleClient.UpdateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 		})
 		if err != nil {
 			if errors.Is(err, exoapi.ErrNotFound) {

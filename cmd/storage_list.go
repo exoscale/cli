@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
@@ -82,7 +83,7 @@ func init() {
 func listStorageBuckets() (output.Outputter, error) {
 	out := make(storageListBucketsOutput, 0)
 
-	res, err := cs.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
+	res, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -62,7 +63,7 @@ func (c *sksDeprecatedResourcesCmd) cmdPreRun(cmd *cobra.Command, args []string)
 func (c *sksDeprecatedResourcesCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -70,7 +71,7 @@ func (c *sksDeprecatedResourcesCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	deprecatedResources, err := cs.ListSKSClusterDeprecatedResources(
+	deprecatedResources, err := globalstate.GlobalEgoscaleClient.ListSKSClusterDeprecatedResources(
 		ctx,
 		c.Zone,
 		cluster,

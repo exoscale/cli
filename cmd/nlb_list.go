@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -69,7 +70,7 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-		list, err := cs.ListNetworkLoadBalancers(ctx, zone)
+		list, err := globalstate.GlobalEgoscaleClient.ListNetworkLoadBalancers(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Network Load Balancers in zone %s: %w", zone, err)
 		}

@@ -97,7 +97,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if l := len(c.AntiAffinityGroups); l > 0 {
 		antiAffinityGroupIDs := make([]string, l)
 		for i := range c.AntiAffinityGroups {
-			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
+			antiAffinityGroup, err := globalstate.GlobalEgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
@@ -107,14 +107,14 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.DeployTarget != "" {
-		deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+		deployTarget, err := globalstate.GlobalEgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
 		instance.DeployTargetID = deployTarget.ID
 	}
 
-	instanceType, err := cs.FindInstanceType(ctx, c.Zone, c.InstanceType)
+	instanceType, err := globalstate.GlobalEgoscaleClient.FindInstanceType(ctx, c.Zone, c.InstanceType)
 	if err != nil {
 		return fmt.Errorf("error retrieving instance type: %w", err)
 	}
@@ -123,7 +123,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	privateNetworks := make([]*egoscale.PrivateNetwork, len(c.PrivateNetworks))
 	if l := len(c.PrivateNetworks); l > 0 {
 		for i := range c.PrivateNetworks {
-			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
+			privateNetwork, err := globalstate.GlobalEgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -134,7 +134,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if l := len(c.SecurityGroups); l > 0 {
 		securityGroupIDs := make([]string, l)
 		for i := range c.SecurityGroups {
-			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
+			securityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -162,7 +162,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("error generating SSH public key: %w", err)
 		}
 
-		sshKey, err = cs.RegisterSSHKey(
+		sshKey, err = globalstate.GlobalEgoscaleClient.RegisterSSHKey(
 			ctx,
 			c.Zone,
 			fmt.Sprintf("%s-%d", c.Name, time.Now().Unix()),
@@ -175,7 +175,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instance.SSHKey = sshKey.Name
 	}
 
-	template, err := cs.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+	template, err := globalstate.GlobalEgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
 	if err != nil {
 		return fmt.Errorf(
 			"no template %q found with visibility %s in zone %s",
@@ -195,13 +195,13 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Creating instance %q...", c.Name), func() {
-		instance, err = cs.CreateInstance(ctx, c.Zone, instance)
+		instance, err = globalstate.GlobalEgoscaleClient.CreateInstance(ctx, c.Zone, instance)
 		if err != nil {
 			return
 		}
 
 		for _, p := range privateNetworks {
-			if err = cs.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, p); err != nil {
+			if err = globalstate.GlobalEgoscaleClient.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, p); err != nil {
 				return
 			}
 		}
@@ -228,7 +228,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			return fmt.Errorf("error writing SSH private key file: %w", err)
 		}
 
-		if err = cs.DeleteSSHKey(ctx, c.Zone, sshKey); err != nil {
+		if err = globalstate.GlobalEgoscaleClient.DeleteSSHKey(ctx, c.Zone, sshKey); err != nil {
 			return fmt.Errorf("error deleting SSH key: %w", err)
 		}
 	}

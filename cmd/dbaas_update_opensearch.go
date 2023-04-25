@@ -46,7 +46,7 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 	}
 
 	if c.OpensearchSettings != "" {
-		settingsSchema, err := cs.GetDbaasSettingsOpensearchWithResponse(ctx)
+		settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 		}
@@ -133,7 +133,7 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 	if updated {
 		var res *oapi.UpdateDbaasServiceOpensearchResponse
 		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = cs.UpdateDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name), db)
+			res, err = globalstate.GlobalEgoscaleClient.UpdateDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name), db)
 		})
 		if err != nil {
 			if errors.Is(err, exoapi.ErrNotFound) {

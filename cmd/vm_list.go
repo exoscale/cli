@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -53,7 +54,7 @@ Supported output template annotations: %s`,
 
 func listVMs() (output.Outputter, error) {
 	vm := &egoscale.VirtualMachine{}
-	vms, err := cs.ListWithContext(gContext, vm)
+	vms, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, vm)
 	if err != nil {
 		return nil, err
 	}

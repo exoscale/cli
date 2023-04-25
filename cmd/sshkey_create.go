@@ -54,7 +54,7 @@ Supported output template annotations: %s`,
 }
 
 func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateSSHKeyPair{
+	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.CreateSSHKeyPair{
 		Name: name,
 	})
 	if err != nil {

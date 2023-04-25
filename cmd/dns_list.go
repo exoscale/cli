@@ -7,6 +7,7 @@ import (
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
@@ -55,7 +56,7 @@ Supported output template annotations: %s`,
 
 func listDomains(filters []string) (output.Outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
-	domains, err := cs.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
+	domains, err := globalstate.GlobalEgoscaleClient.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}

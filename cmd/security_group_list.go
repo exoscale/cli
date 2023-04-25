@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -57,7 +58,7 @@ func (c *securityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			Visibility: (*oapi.ListSecurityGroupsParamsVisibility)(&c.Visibility),
 		}
 	}
-	securityGroups, err := cs.FindSecurityGroups(ctx, gCurrentAccount.DefaultZone, params)
+	securityGroups, err := globalstate.GlobalEgoscaleClient.FindSecurityGroups(ctx, gCurrentAccount.DefaultZone, params)
 	if err != nil {
 		return err
 	}

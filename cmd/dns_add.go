@@ -26,7 +26,7 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Adding DNS record %q to %q...", rType, *domain.UnicodeName), func() {
-		_, err = cs.CreateDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, &exo.DNSDomainRecord{
+		_, err = globalstate.GlobalEgoscaleClient.CreateDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, &exo.DNSDomainRecord{
 			Name:     &name,
 			Type:     &rType,
 			Content:  &content,

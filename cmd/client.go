@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	exov2 "github.com/exoscale/egoscale/v2"
 )
@@ -52,13 +53,13 @@ func buildClient() {
 		return
 	}
 
-	if cs != nil {
+	if globalstate.GlobalEgoscaleClient != nil {
 		return
 	}
 
 	httpClient := &http.Client{Transport: newCLIRoundTripper(http.DefaultTransport, gCurrentAccount.CustomHeaders)}
 
-	cs = egoscale.NewClient(
+	globalstate.GlobalEgoscaleClient = egoscale.NewClient(
 		gCurrentAccount.Endpoint,
 		gCurrentAccount.Key,
 		gCurrentAccount.APISecret(),
@@ -89,7 +90,7 @@ func buildClient() {
 	if err != nil {
 		panic(fmt.Sprintf("unable to initialize Exoscale API V2 client: %v", err))
 	}
-	cs.Client = clientExoV2
+	globalstate.GlobalEgoscaleClient.Client = clientExoV2
 
 	csRunstatus = egoscale.NewClient(gCurrentAccount.RunstatusEndpoint,
 		gCurrentAccount.Key,

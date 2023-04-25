@@ -47,7 +47,7 @@ func (c *instancePrivnetUpdateIPCmd) cmdPreRun(cmd *cobra.Command, args []string
 func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -55,13 +55,13 @@ func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	privateNetwork, err := globalstate.GlobalEgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
 		return fmt.Errorf("error retrieving Private Network: %w", err)
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Private Network IP address...", c.Instance), func() {
-		if err = cs.UpdatePrivateNetworkInstanceIPAddress(
+		if err = globalstate.GlobalEgoscaleClient.UpdatePrivateNetworkInstanceIPAddress(
 			ctx,
 			c.Zone,
 			instance,

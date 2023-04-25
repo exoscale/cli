@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -51,7 +52,7 @@ func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, zone, c.AntiAffinityGroup)
+	antiAffinityGroup, err := globalstate.GlobalEgoscaleClient.FindAntiAffinityGroup(ctx, zone, c.AntiAffinityGroup)
 	if err != nil {
 		return err
 	}
@@ -65,7 +66,7 @@ func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if antiAffinityGroup.InstanceIDs != nil {
 		out.Instances = make([]string, len(*antiAffinityGroup.InstanceIDs))
 		for i, id := range *antiAffinityGroup.InstanceIDs {
-			instance, err := cs.GetInstance(ctx, zone, id)
+			instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, zone, id)
 			if err != nil {
 				return fmt.Errorf("unable to retrieve Compute instance %s: %w", id, err)
 			}

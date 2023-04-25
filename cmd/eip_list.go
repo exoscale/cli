@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -49,7 +50,7 @@ Supported output template annotations: %s`,
 func listEIP(zone string) (output.Outputter, error) {
 	out := eipListOutput{}
 
-	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+	zones, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func listEIP(zone string) (output.Outputter, error) {
 			IsElastic: true,
 		}
 
-		ips, err := cs.ListWithContext(gContext, &req)
+		ips, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &req)
 		if err != nil {
 			return nil, err
 		}

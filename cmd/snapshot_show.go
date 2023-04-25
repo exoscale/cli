@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -50,7 +51,7 @@ Supported output template annotations: %s`,
 }
 
 func showSnapshot(snapshot *egoscale.Snapshot) (output.Outputter, error) {
-	resp, err := cs.GetWithContext(gContext, &egoscale.Volume{ID: snapshot.VolumeID})
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Volume{ID: snapshot.VolumeID})
 	if err != nil {
 		return nil, err
 	}

@@ -20,7 +20,7 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 
 	databaseService := oapi.UpdateDbaasServiceRedisJSONRequestBody{}
 
-	settingsSchema, err := cs.GetDbaasSettingsRedisWithResponse(ctx)
+	settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsRedisWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
@@ -101,7 +101,7 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 	if updated {
 		var res *oapi.UpdateDbaasServiceRedisResponse
 		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = cs.UpdateDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+			res, err = globalstate.GlobalEgoscaleClient.UpdateDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 		})
 		if err != nil {
 			if errors.Is(err, exoapi.ErrNotFound) {

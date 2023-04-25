@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -39,7 +40,7 @@ Supported output template annotations: %s`,
 }
 
 func listSecurityGroups(filters []string) (output.Outputter, error) {
-	sgs, err := cs.ListWithContext(gContext, &egoscale.SecurityGroup{})
+	sgs, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.SecurityGroup{})
 	if err != nil {
 		return nil, err
 	}

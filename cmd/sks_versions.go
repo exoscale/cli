@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -48,7 +49,7 @@ func (c *sksVersionsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(sksClusterVersionsOutput, 0)
 
-	versions, err := cs.ListSKSClusterVersions(ctx)
+	versions, err := globalstate.GlobalEgoscaleClient.ListSKSClusterVersions(ctx)
 	if err != nil {
 		return err
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -30,7 +31,7 @@ Supported output template annotations: %s`,
 		strings.Join(output.OutputterTemplateAnnotations(&apiKeyListItemOutput{}), ", ")),
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := cs.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
+		resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
 		if err != nil {
 			return err
 		}

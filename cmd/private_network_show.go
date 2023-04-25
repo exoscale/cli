@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
@@ -104,7 +105,7 @@ func (c *privateNetworkShowCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	privateNetwork, err := globalstate.GlobalEgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -137,7 +138,7 @@ func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		out.Leases = make([]privateNetworkLeaseOutput, 0)
 
 		for _, lease := range privateNetwork.Leases {
-			instance, err := cs.GetInstance(ctx, c.Zone, *lease.InstanceID)
+			instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, c.Zone, *lease.InstanceID)
 			if err != nil {
 				return fmt.Errorf("unable to retrieve Compute instance %s: %w", *lease.InstanceID, err)
 			}

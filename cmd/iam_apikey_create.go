@@ -49,7 +49,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAPIKey{
+		resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.CreateAPIKey{
 			Name:       args[0],
 			Operations: strings.Join(ops, ","),
 			Resources:  strings.Join(res, ","),

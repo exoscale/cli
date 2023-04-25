@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -169,7 +170,7 @@ Let's start over.
 	if err != nil {
 		if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
 			for {
-				defaultZone, err := chooseZone(cs, allZones)
+				defaultZone, err := chooseZone(globalstate.GlobalEgoscaleClient, allZones)
 				if err != nil {
 					return nil, err
 				}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -35,7 +36,7 @@ Supported output template annotations: %s`,
 }
 
 func listAPIKeyOperations(filters []string) (output.Outputter, error) {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.ListAPIKeyOperations{})
+	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.ListAPIKeyOperations{})
 	if err != nil {
 		return nil, err
 	}

@@ -50,7 +50,7 @@ func (c *instanceSnapshotRevertCmd) cmdPreRun(cmd *cobra.Command, args []string)
 func (c *instanceSnapshotRevertCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -58,7 +58,7 @@ func (c *instanceSnapshotRevertCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.SnapshotID)
+	snapshot, err := globalstate.GlobalEgoscaleClient.GetSnapshot(ctx, c.Zone, c.SnapshotID)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (c *instanceSnapshotRevertCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		c.Instance,
 		c.SnapshotID,
 	), func() {
-		err = cs.RevertInstanceToSnapshot(ctx, c.Zone, instance, snapshot)
+		err = globalstate.GlobalEgoscaleClient.RevertInstanceToSnapshot(ctx, c.Zone, instance, snapshot)
 	})
 	if err != nil {
 		return err

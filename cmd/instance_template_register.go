@@ -74,7 +74,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		err      error
 	)
 
-	cs.Client.SetTimeout(time.Duration(c.Timeout) * time.Second)
+	globalstate.GlobalEgoscaleClient.Client.SetTimeout(time.Duration(c.Timeout) * time.Second)
 
 	ctx := exoapi.WithEndpoint(
 		gContext,
@@ -98,12 +98,12 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	}
 
 	if c.FromSnapshot != "" {
-		snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.FromSnapshot)
+		snapshot, err := globalstate.GlobalEgoscaleClient.GetSnapshot(ctx, c.Zone, c.FromSnapshot)
 		if err != nil {
 			return fmt.Errorf("error retrieving snapshot: %w", err)
 		}
 
-		snapshotExport, err := cs.ExportSnapshot(ctx, c.Zone, snapshot)
+		snapshotExport, err := globalstate.GlobalEgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
 		if err != nil {
 			return fmt.Errorf("error retrieving snapshot export information: %w", err)
 		}
@@ -112,12 +112,12 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		template.Checksum = snapshotExport.MD5sum
 
 		// Pre-setting the new template properties from the source template.
-		instance, err := cs.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
+		instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
 		if err != nil {
 			return fmt.Errorf("error retrieving Compute instance from snapshot: %w", err)
 		}
 
-		srcTemplate, err := cs.GetTemplate(ctx, c.Zone, *instance.TemplateID)
+		srcTemplate, err := globalstate.GlobalEgoscaleClient.GetTemplate(ctx, c.Zone, *instance.TemplateID)
 		if err != nil {
 			return fmt.Errorf("error retrieving Compute instance template from snapshot: %w", err)
 		}
@@ -150,7 +150,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Registering template %q...", c.Name), func() {
-		template, err = cs.RegisterTemplate(ctx, c.Zone, template)
+		template, err = globalstate.GlobalEgoscaleClient.RegisterTemplate(ctx, c.Zone, template)
 	})
 	if err != nil {
 		return err

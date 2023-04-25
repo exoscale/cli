@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -45,16 +46,16 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 	}
 
 	var stopMigrationFuncs = map[string]func(context.Context, string, string) error{
-		"mysql": cs.StopMysqlDatabaseMigration,
-		"pg":    cs.StopPgDatabaseMigration,
-		"redis": cs.StopRedisDatabaseMigration,
+		"mysql": globalstate.GlobalEgoscaleClient.StopMysqlDatabaseMigration,
+		"pg":    globalstate.GlobalEgoscaleClient.StopPgDatabaseMigration,
+		"redis": globalstate.GlobalEgoscaleClient.StopRedisDatabaseMigration,
 	}
 
 	if _, ok := stopMigrationFuncs[dbType]; !ok {
 		err = fmt.Errorf("migrations not supported for database type %q", dbType)
 	}
 
-	_, err = cs.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
+	_, err = globalstate.GlobalEgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("migration for database %q not running in zone %q", c.Name, c.Zone)

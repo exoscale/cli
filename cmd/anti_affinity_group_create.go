@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -50,7 +51,7 @@ func (c *antiAffinityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error 
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Anti-Affinity Group %q...", c.Name), func() {
-		antiAffinityGroup, err = cs.CreateAntiAffinityGroup(ctx, zone, antiAffinityGroup)
+		antiAffinityGroup, err = globalstate.GlobalEgoscaleClient.CreateAntiAffinityGroup(ctx, zone, antiAffinityGroup)
 	})
 	if err != nil {
 		return err

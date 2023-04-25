@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -68,7 +69,7 @@ func (c *instancePoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instancePool, err := globalstate.GlobalEgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -116,7 +117,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.AntiAffinityGroupIDs != nil {
 		for _, id := range *instancePool.AntiAffinityGroupIDs {
-			antiAffinityGroup, err := cs.GetAntiAffinityGroup(ctx, c.Zone, id)
+			antiAffinityGroup, err := globalstate.GlobalEgoscaleClient.GetAntiAffinityGroup(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
@@ -126,7 +127,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.ElasticIPIDs != nil {
 		for _, id := range *instancePool.ElasticIPIDs {
-			elasticIP, err := cs.GetElasticIP(ctx, c.Zone, id)
+			elasticIP, err := globalstate.GlobalEgoscaleClient.GetElasticIP(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
@@ -136,7 +137,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.InstanceIDs != nil {
 		for _, id := range *instancePool.InstanceIDs {
-			instance, err := cs.GetInstance(ctx, c.Zone, id)
+			instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Compute instance: %w", err)
 			}
@@ -144,7 +145,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	instanceType, err := cs.GetInstanceType(ctx, c.Zone, *instancePool.InstanceTypeID)
+	instanceType, err := globalstate.GlobalEgoscaleClient.GetInstanceType(ctx, c.Zone, *instancePool.InstanceTypeID)
 	if err != nil {
 		return err
 	}
@@ -152,7 +153,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.PrivateNetworkIDs != nil {
 		for _, id := range *instancePool.PrivateNetworkIDs {
-			privateNetwork, err := cs.GetPrivateNetwork(ctx, c.Zone, id)
+			privateNetwork, err := globalstate.GlobalEgoscaleClient.GetPrivateNetwork(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -162,7 +163,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.SecurityGroupIDs != nil {
 		for _, id := range *instancePool.SecurityGroupIDs {
-			securityGroup, err := cs.GetSecurityGroup(ctx, c.Zone, id)
+			securityGroup, err := globalstate.GlobalEgoscaleClient.GetSecurityGroup(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -170,7 +171,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	template, err := cs.GetTemplate(ctx, c.Zone, *instancePool.TemplateID)
+	template, err := globalstate.GlobalEgoscaleClient.GetTemplate(ctx, c.Zone, *instancePool.TemplateID)
 	if err != nil {
 		return fmt.Errorf("error retrieving template: %w", err)
 	}

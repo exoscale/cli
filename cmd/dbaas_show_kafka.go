@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
@@ -143,7 +144,7 @@ func formatDatabaseServiceKafkaTable(t *table.Table, o *dbServiceKafkaShowOutput
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (output.Outputter, error) {
-	serviceRes, err := cs.GetDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	serviceRes, err := globalstate.GlobalEgoscaleClient.GetDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -155,7 +156,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 	}
 	databaseService := serviceRes.JSON200
 
-	aclRes, err := cs.GetDbaasKafkaAclConfigWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	aclRes, err := globalstate.GlobalEgoscaleClient.GetDbaasKafkaAclConfigWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		return nil, err
 	}

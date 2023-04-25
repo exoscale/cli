@@ -81,7 +81,7 @@ func associatePrivNet(privnet *egoscale.Network, vmName string, ip net.IP) (*ego
 	}
 
 	req := &egoscale.AddNicToVirtualMachine{NetworkID: privnet.ID, VirtualMachineID: vm.ID, IPAddress: ip}
-	resp, err := cs.RequestWithContext(gContext, req)
+	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, req)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
@@ -92,7 +93,7 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
 	)
 
-	template, err := cs.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)
+	template, err := globalstate.GlobalEgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)
 	if err != nil {
 		return fmt.Errorf(
 			"no template %q found with visibility %s in zone %s",

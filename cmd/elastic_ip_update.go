@@ -57,7 +57,7 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	elasticIP, err := globalstate.GlobalEgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -150,16 +150,16 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if updatedInstance || updatedRDNS {
 		decorateAsyncOperation(fmt.Sprintf("Updating Elastic IP %s...", c.ElasticIP), func() {
 			if updatedInstance {
-				if err = cs.UpdateElasticIP(ctx, c.Zone, elasticIP); err != nil {
+				if err = globalstate.GlobalEgoscaleClient.UpdateElasticIP(ctx, c.Zone, elasticIP); err != nil {
 					return
 				}
 			}
 
 			if updatedRDNS {
 				if c.ReverseDNS == "" {
-					err = cs.DeleteElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
+					err = globalstate.GlobalEgoscaleClient.DeleteElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
 				} else {
-					err = cs.UpdateElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID, c.ReverseDNS)
+					err = globalstate.GlobalEgoscaleClient.UpdateElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID, c.ReverseDNS)
 				}
 			}
 		})

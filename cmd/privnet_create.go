@@ -106,7 +106,7 @@ func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 		Netmask:     netmask,
 	}
 
-	resp, err := cs.RequestWithContext(gContext, req)
+	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}

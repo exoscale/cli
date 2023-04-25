@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -35,7 +36,7 @@ func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-	securityGroup, err := cs.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+	securityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
@@ -49,13 +50,13 @@ func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	decorateAsyncOperation(fmt.Sprintf("Deleting Security Group %s...", c.SecurityGroup), func() {
 		if c.DeleteRules {
 			for _, rule := range securityGroup.Rules {
-				if err = cs.DeleteSecurityGroupRule(ctx, zone, securityGroup, rule); err != nil {
+				if err = globalstate.GlobalEgoscaleClient.DeleteSecurityGroupRule(ctx, zone, securityGroup, rule); err != nil {
 					return
 				}
 			}
 		}
 
-		err = cs.DeleteSecurityGroup(ctx, zone, securityGroup)
+		err = globalstate.GlobalEgoscaleClient.DeleteSecurityGroup(ctx, zone, securityGroup)
 	})
 	if err != nil {
 		return err

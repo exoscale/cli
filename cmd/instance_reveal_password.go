@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -42,7 +43,7 @@ func (c *instanceRevealCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *instanceRevealCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -50,7 +51,7 @@ func (c *instanceRevealCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	pwd, err := cs.RevealInstancePassword(ctx, c.Zone, instance)
+	pwd, err := globalstate.GlobalEgoscaleClient.RevealInstancePassword(ctx, c.Zone, instance)
 	if err != nil {
 		return err
 	}

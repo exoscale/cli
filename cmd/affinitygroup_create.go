@@ -33,7 +33,7 @@ Supported output template annotations: %s`,
 }
 
 func createAffinityGroup(name, desc string) (output.Outputter, error) {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
+	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
 		Name:        name,
 		Description: desc,
 		Type:        "host anti-affinity",

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -38,7 +39,7 @@ Supported output template annotations: %s`,
 }
 
 func listAffinityGroups() (output.Outputter, error) {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.ListAffinityGroups{})
+	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.ListAffinityGroups{})
 	if err != nil {
 		return nil, err
 	}

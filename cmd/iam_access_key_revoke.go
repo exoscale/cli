@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -43,7 +44,7 @@ func (c *iamAccessKeyRevokeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Revoking IAM access key %s...", c.APIKey), func() {
-		err = cs.RevokeIAMAccessKey(ctx, zone, &egoscale.IAMAccessKey{Key: &c.APIKey})
+		err = globalstate.GlobalEgoscaleClient.RevokeIAMAccessKey(ctx, zone, &egoscale.IAMAccessKey{Key: &c.APIKey})
 	})
 	if err != nil {
 		return err

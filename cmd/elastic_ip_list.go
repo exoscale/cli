@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -67,7 +68,7 @@ func (c *elasticIPListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
 
-		list, err := cs.ListElasticIPs(ctx, zone)
+		list, err := globalstate.GlobalEgoscaleClient.ListElasticIPs(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Elastic IP addresses in zone %s: %w", zone, err)
 		}

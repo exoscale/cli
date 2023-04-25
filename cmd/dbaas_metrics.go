@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -40,7 +41,7 @@ func (c *dbaasServiceMetricsCmd) cmdPreRun(cmd *cobra.Command, args []string) er
 func (c *dbaasServiceMetricsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
 
-	res, err := cs.GetDbaasServiceMetricsWithResponse(
+	res, err := globalstate.GlobalEgoscaleClient.GetDbaasServiceMetricsWithResponse(
 		ctx,
 		c.Name,
 		oapi.GetDbaasServiceMetricsJSONRequestBody{Period: (*oapi.GetDbaasServiceMetricsJSONBodyPeriod)(&c.Period)},

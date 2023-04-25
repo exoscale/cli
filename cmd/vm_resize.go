@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -66,7 +67,7 @@ func resizeVirtualMachine(vmName string, diskValue int64) (*task, error) {
 		return nil, fmt.Errorf("this operation is not permitted while your Compute instance is running; stop it before issuing that command again")
 	}
 
-	resp, err := cs.GetWithContext(gContext, egoscale.Volume{
+	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})
