@@ -2,72 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
-	"text/tabwriter"
 	"time"
 
-	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
-
-type storageListObjectsItemOutput struct {
-	Path         string `json:"name"`
-	Size         int64  `json:"size"`
-	LastModified string `json:"last_modified,omitempty"`
-	Dir          bool   `json:"dir"`
-}
-
-type storageListObjectsOutput []storageListObjectsItemOutput
-
-func (o *storageListObjectsOutput) toJSON() { output.JSON(o) }
-func (o *storageListObjectsOutput) toText() { output.Text(o) }
-func (o *storageListObjectsOutput) toTable() {
-	table := tabwriter.NewWriter(os.Stdout,
-		0,
-		0,
-		1,
-		' ',
-		tabwriter.TabIndent)
-	defer table.Flush()
-
-	for _, f := range *o {
-		if f.Dir {
-			_, _ = fmt.Fprintf(table, " \tDIR \t%s\n", f.Path)
-		} else {
-			_, _ = fmt.Fprintf(table, "%s\t%6s \t%s\n", f.LastModified, humanize.IBytes(uint64(f.Size)), f.Path)
-		}
-	}
-}
-
-type storageListBucketsItemOutput struct {
-	Name    string `json:"name"`
-	Zone    string `json:"zone"`
-	Size    int64  `json:"size"`
-	Created string `json:"created"`
-}
-
-type storageListBucketsOutput []storageListBucketsItemOutput
-
-func (o *storageListBucketsOutput) toJSON() { output.JSON(o) }
-func (o *storageListBucketsOutput) toText() { output.Text(o) }
-func (o *storageListBucketsOutput) toTable() {
-	table := tabwriter.NewWriter(os.Stdout,
-		0,
-		0,
-		1,
-		' ',
-		tabwriter.TabIndent)
-	defer table.Flush()
-
-	for _, b := range *o {
-		_, _ = fmt.Fprintf(table, "%s\t%s\t%6s \t%s/\n",
-			b.Created, b.Zone, humanize.IBytes(uint64(b.Size)), b.Name)
-	}
-}
 
 var storageListCmd = &cobra.Command{
 	Use:   "list [sos://BUCKET[/[PREFIX/]]",
@@ -82,13 +24,13 @@ Supported output template annotations:
 
   * When listing buckets: %s
   * When listing objects: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&storageListBucketsItemOutput{}), ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&storageListObjectsItemOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&sos.ListBucketsItemOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&sos.ListObjectsItemOutput{}), ", ")),
 	Aliases: gListAlias,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if len(args) == 1 {
-			args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+			args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 		}
 	},
 
@@ -151,11 +93,11 @@ func listStorageBuckets() (output.Outputter, error) {
 			return nil, err
 		}
 
-		out = append(out, storageListBucketsItemOutput{
+		out = append(out, sos.ListBucketsItemOutput{
 			Name:    b.Name,
 			Zone:    b.Region,
 			Size:    b.Usage,
-			Created: created.Format(storageTimestampFormat),
+			Created: created.Format(sos.TimestampFormat),
 		})
 	}
 

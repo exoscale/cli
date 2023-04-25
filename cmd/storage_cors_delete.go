@@ -19,7 +19,7 @@ var storageCORSDeleteCmd = &cobra.Command{
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		return nil
 	},

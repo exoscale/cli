@@ -18,7 +18,7 @@ var storageRbCmd = &cobra.Command{
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -35,7 +35,7 @@ var storageRbCmd = &cobra.Command{
 		}
 
 		if !force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %s%s?", storageBucketPrefix, bucket)) {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %s%s?", sos.BucketPrefix, bucket)) {
 				return nil
 			}
 		}
@@ -52,7 +52,7 @@ var storageRbCmd = &cobra.Command{
 		}
 
 		if !globalstate.Quiet {
-			fmt.Printf("Bucket %s%s deleted successfully\n", storageBucketPrefix, bucket)
+			fmt.Printf("Bucket %s%s deleted successfully\n", sos.BucketPrefix, bucket)
 		}
 
 		return nil

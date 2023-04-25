@@ -1,6 +1,7 @@
 package sos
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -9,7 +10,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -17,8 +20,10 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/dustin/go-humanize"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -45,7 +50,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 			j = len(deleteList)
 		}
 
-		res, err := c.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+		res, err := c.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: &bucket,
 			Delete: &s3types.Delete{Objects: deleteList[i:j]},
 		})
@@ -106,7 +111,7 @@ type DownloadConfig struct {
 	dryRun      bool
 }
 
-func (c *Client) DownloadFiles(config *DownloadConfig) error {
+func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) error {
 	if len(config.objects) > 1 && !strings.HasSuffix(config.destination, "/") {
 		return errors.New(`multiple files to download, destination must end with "/"`)
 	}
@@ -150,7 +155,7 @@ func (c *Client) DownloadFiles(config *DownloadConfig) error {
 			}
 		}
 
-		if err := c.DownloadFile(config.bucket, object, dst); err != nil {
+		if err := c.DownloadFile(ctx, config.bucket, object, dst); err != nil {
 			return err
 		}
 	}
@@ -198,9 +203,9 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3type
 	}
 
 	_, err = s3manager.
-		NewDownloader(c.Client).
+		NewDownloader(c.s3Client).
 		Download(
-			gContext,
+			ctx,
 			// mpb doesn't natively support the io.WriteAt interface expected
 			// by the s3manager.Download()'s w parameter, so we wrap in a shim
 			// to be able to track the download progress. Trick inspired from
@@ -223,10 +228,65 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3type
 	return err
 }
 
-func (c *Client) ListObjects(bucket, prefix string, recursive, stream bool) (output.Outputter, error) {
-	out := make(storageListObjectsOutput, 0)
-	dirs := make(map[string]struct{})            // for deduplication of common prefixes (folders)
-	dirsOut := make(storageListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
+type ListObjectsOutput []ListObjectsItemOutput
+
+func (o *ListObjectsOutput) toJSON() { output.JSON(o) }
+func (o *ListObjectsOutput) toText() { output.Text(o) }
+func (o *ListObjectsOutput) toTable() {
+	table := tabwriter.NewWriter(os.Stdout,
+		0,
+		0,
+		1,
+		' ',
+		tabwriter.TabIndent)
+	defer table.Flush()
+
+	for _, f := range *o {
+		if f.Dir {
+			_, _ = fmt.Fprintf(table, " \tDIR \t%s\n", f.Path)
+		} else {
+			_, _ = fmt.Fprintf(table, "%s\t%6s \t%s\n", f.LastModified, humanize.IBytes(uint64(f.Size)), f.Path)
+		}
+	}
+}
+
+type ListObjectsItemOutput struct {
+	Path         string `json:"name"`
+	Size         int64  `json:"size"`
+	LastModified string `json:"last_modified,omitempty"`
+	Dir          bool   `json:"dir"`
+}
+
+type ListBucketsOutput []ListBucketsItemOutput
+
+func (o *ListBucketsOutput) toJSON() { output.JSON(o) }
+func (o *ListBucketsOutput) toText() { output.Text(o) }
+func (o *ListBucketsOutput) toTable() {
+	table := tabwriter.NewWriter(os.Stdout,
+		0,
+		0,
+		1,
+		' ',
+		tabwriter.TabIndent)
+	defer table.Flush()
+
+	for _, b := range *o {
+		_, _ = fmt.Fprintf(table, "%s\t%s\t%6s \t%s/\n",
+			b.Created, b.Zone, humanize.IBytes(uint64(b.Size)), b.Name)
+	}
+}
+
+type ListBucketsItemOutput struct {
+	Name    string `json:"name"`
+	Zone    string `json:"zone"`
+	Size    int64  `json:"size"`
+	Created string `json:"created"`
+}
+
+func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (output.Outputter, error) {
+	out := make(ListObjectsOutput, 0)
+	dirs := make(map[string]struct{})     // for deduplication of common prefixes (folders)
+	dirsOut := make(ListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
 
 	var ct string
 	for {
@@ -239,7 +299,7 @@ func (c *Client) ListObjects(bucket, prefix string, recursive, stream bool) (out
 			req.Delimiter = aws.String("/")
 		}
 
-		res, err := c.ListObjectsV2(gContext, &req)
+		res, err := c.s3Client.ListObjectsV2(ctx, &req)
 		if err != nil {
 			return nil, err
 		}
@@ -252,7 +312,7 @@ func (c *Client) ListObjects(bucket, prefix string, recursive, stream bool) (out
 					if stream {
 						fmt.Println(dir)
 					} else {
-						dirsOut = append(dirsOut, storageListObjectsItemOutput{
+						dirsOut = append(dirsOut, ListObjectsItemOutput{
 							Path: dir,
 							Dir:  true,
 						})
@@ -266,10 +326,10 @@ func (c *Client) ListObjects(bucket, prefix string, recursive, stream bool) (out
 			if stream {
 				fmt.Println(aws.ToString(o.Key))
 			} else {
-				out = append(out, storageListObjectsItemOutput{
+				out = append(out, ListObjectsItemOutput{
 					Path:         aws.ToString(o.Key),
 					Size:         o.Size,
-					LastModified: o.LastModified.Format(storageTimestampFormat),
+					LastModified: o.LastModified.Format(TimestampFormat),
 				})
 			}
 		}
@@ -295,7 +355,7 @@ type StorageUploadConfig struct {
 	dryRun    bool
 }
 
-func (c *Client) UploadFiles(sources []string, config *StorageUploadConfig) error {
+func (c *Client) UploadFiles(ctx context.Context, sources []string, config *StorageUploadConfig) error {
 	if len(sources) > 1 && !strings.HasSuffix(config.prefix, "/") {
 		return errors.New(`multiple files to upload, destination must end with "/"`)
 	}
@@ -377,7 +437,7 @@ func (c *Client) UploadFiles(sources []string, config *StorageUploadConfig) erro
 					return nil
 				}
 
-				return c.uploadFile(config.bucket, filePath, key, config.acl)
+				return c.UploadFile(ctx, config.bucket, filePath, key, config.acl)
 			})
 			if err != nil {
 				return err
@@ -407,7 +467,7 @@ func (c *Client) UploadFiles(sources []string, config *StorageUploadConfig) erro
 				continue
 			}
 
-			if err := c.uploadFile(config.bucket, src, key, config.acl); err != nil {
+			if err := c.UploadFile(ctx, config.bucket, src, key, config.acl); err != nil {
 				return err
 			}
 		}
@@ -416,10 +476,10 @@ func (c *Client) UploadFiles(sources []string, config *StorageUploadConfig) erro
 	return nil
 }
 
-func (c *Client) UploadFile(bucket, file, key, acl string) error {
+func (c *Client) UploadFile(ctx context.Context, bucket, file, key, acl string) error {
 	maxFilenameLen := 16
 
-	pb := mpb.NewWithContext(gContext,
+	pb := mpb.NewWithContext(ctx,
 		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool {
 			return globalstate.Quiet
 		}),
@@ -464,7 +524,7 @@ func (c *Client) UploadFile(bucket, file, key, acl string) error {
 	// The AWS SDK cannot perform PartSize estimation (we lose the io.Seeker implementation it relies on)
 	// We therefore replicate that logic here, and explicitly set a part size to avoid
 	// bumping into the s3manager.MaxUploadParts limit
-	partSize, err := c.estimatePartSize(f)
+	partSize, err := c.EstimatePartSize(f)
 	if err != nil {
 		return err
 	}
@@ -484,8 +544,8 @@ func (c *Client) UploadFile(bucket, file, key, acl string) error {
 	}
 
 	_, err = s3manager.
-		NewUploader(c.Client, partSizeOpt).
-		Upload(gContext, &putObjectInput)
+		NewUploader(c.s3Client, partSizeOpt).
+		Upload(ctx, &putObjectInput)
 
 	pb.Wait()
 
@@ -529,8 +589,8 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 	return endOffset - curOffset, nil
 }
 
-func (c *Client) ShowObject(bucket, key string) (output.Outputter, error) {
-	object, err := c.GetObject(gContext, &s3.GetObjectInput{
+func (c *Client) ShowObject(ctx context.Context, bucket, key string) (output.Outputter, error) {
+	object, err := c.s3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -538,7 +598,7 @@ func (c *Client) ShowObject(bucket, key string) (output.Outputter, error) {
 		return nil, fmt.Errorf("unable to retrieve object information: %w", err)
 	}
 
-	acl, err := c.GetObjectAcl(gContext, &s3.GetObjectAclInput{
+	acl, err := c.s3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -546,10 +606,10 @@ func (c *Client) ShowObject(bucket, key string) (output.Outputter, error) {
 		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
 	}
 
-	out := storageShowObjectOutput{
+	out := ShowObjectOutput{
 		Path:         key,
 		Bucket:       bucket,
-		LastModified: object.LastModified.Format(storageTimestampFormat),
+		LastModified: object.LastModified.Format(TimestampFormat),
 		Size:         object.ContentLength,
 		ACL:          ACLFromS3(acl.Grants),
 		Metadata:     object.Metadata,
@@ -558,4 +618,108 @@ func (c *Client) ShowObject(bucket, key string) (output.Outputter, error) {
 	}
 
 	return &out, nil
+}
+
+const (
+	BucketPrefix    = "sos://"
+	TimestampFormat = "2006-01-02 15:04:05 MST"
+)
+
+// ObjectHeadersFromS3 returns mutable object headers in a human-friendly
+// key/value form.
+func ObjectHeadersFromS3(o *s3.GetObjectOutput) map[string]string {
+	headers := make(map[string]string)
+
+	if o.CacheControl != nil {
+		headers[sos.ObjectHeaderCacheControl] = aws.ToString(o.CacheControl)
+	}
+	if o.ContentDisposition != nil {
+		headers[sos.ObjectHeaderContentDisposition] = aws.ToString(o.ContentDisposition)
+	}
+	if o.ContentEncoding != nil {
+		headers[sos.ObjectHeaderContentEncoding] = aws.ToString(o.ContentEncoding)
+	}
+	if o.ContentLanguage != nil {
+		headers[sos.ObjectHeaderContentLanguage] = aws.ToString(o.ContentLanguage)
+	}
+	if o.ContentType != nil {
+		headers[sos.ObjectHeaderContentType] = aws.ToString(o.ContentType)
+	}
+	if o.Expires != nil {
+		headers[sos.ObjectHeaderExpires] = o.Expires.String()
+	}
+
+	return headers
+}
+
+type ShowObjectOutput struct {
+	Path         string            `json:"name"`
+	Bucket       string            `json:"bucket"`
+	LastModified string            `json:"last_modified"`
+	Size         int64             `json:"size"`
+	ACL          sos.ACL           `json:"acl"`
+	Metadata     map[string]string `json:"metadata"`
+	Headers      map[string]string `json:"headers"`
+	URL          string            `json:"url"`
+}
+
+func (o *ShowObjectOutput) toJSON() { output.JSON(o) }
+func (o *ShowObjectOutput) toText() { output.Text(o) }
+func (o *ShowObjectOutput) toTable() {
+	t := table.NewTable(os.Stdout)
+	defer t.Render()
+	t.SetHeader([]string{"Storage"})
+
+	t.Append([]string{"Path", o.Path})
+	t.Append([]string{"Bucket", o.Bucket})
+	t.Append([]string{"Last Modified", fmt.Sprint(o.LastModified)})
+	t.Append([]string{"Size", humanize.IBytes(uint64(o.Size))})
+	t.Append([]string{"URL", o.URL})
+
+	t.Append([]string{"ACL", func() string {
+		buf := bytes.NewBuffer(nil)
+		at := table.NewEmbeddedTable(buf)
+		at.SetHeader([]string{" "})
+		at.Append([]string{"Read", o.ACL.Read})
+		at.Append([]string{"Write", o.ACL.Write})
+		at.Append([]string{"Read ACP", o.ACL.ReadACP})
+		at.Append([]string{"Write ACP", o.ACL.WriteACP})
+		at.Append([]string{"Full Control", o.ACL.FullControl})
+		at.Render()
+
+		return buf.String()
+	}()})
+
+	t.Append([]string{"Metadata", func() string {
+		sortedKeys := func() []string {
+			keys := make([]string, 0)
+			for k := range o.Metadata {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			return keys
+		}()
+
+		buf := bytes.NewBuffer(nil)
+		at := table.NewEmbeddedTable(buf)
+		at.SetHeader([]string{" "})
+		for _, k := range sortedKeys {
+			at.Append([]string{k, o.Metadata[k]})
+		}
+		at.Render()
+
+		return buf.String()
+	}()})
+
+	t.Append([]string{"Headers", func() string {
+		buf := bytes.NewBuffer(nil)
+		ht := table.NewEmbeddedTable(buf)
+		ht.SetHeader([]string{" "})
+		for k, v := range o.Headers {
+			ht.Append([]string{k, v})
+		}
+		ht.Render()
+
+		return buf.String()
+	}()})
 }

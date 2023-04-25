@@ -27,7 +27,7 @@ argument with "/":
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			args[0] = args[0] + "/"
@@ -70,7 +70,7 @@ argument with "/":
 
 		if !force {
 			if !askQuestion(fmt.Sprintf("Are you sure you want to delete %s%s/%s?",
-				storageBucketPrefix, bucket, prefix)) {
+				sos.BucketPrefix, bucket, prefix)) {
 				return nil
 			}
 		}

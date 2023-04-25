@@ -24,7 +24,7 @@ Supported output template annotations: %s`,
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		cmdSetZoneFlagFromDefault(cmd)
 

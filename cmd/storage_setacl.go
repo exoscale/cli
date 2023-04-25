@@ -55,14 +55,14 @@ Supported output template annotations:
 		strings.Join(sos.BucketCannedACLToStrings(), ", "),
 		strings.Join(sos.ObjectCannedACLToStrings(), ", "),
 		strings.Join(output.OutputterTemplateAnnotations(&sos.ShowBucketOutput{}), ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 || len(args) > 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if (len(args) == 2 && storageACLFromCmdFlags(cmd.Flags()) != nil) ||
 			(len(args) == 1 && storageACLFromCmdFlags(cmd.Flags()) == nil) {

@@ -35,7 +35,7 @@ Examples:
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[len(args)-1] = strings.TrimPrefix(args[len(args)-1], storageBucketPrefix)
+		args[len(args)-1] = strings.TrimPrefix(args[len(args)-1], sos.BucketPrefix)
 
 		return nil
 	},

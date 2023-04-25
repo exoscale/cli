@@ -44,7 +44,7 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 			cmdExitOnUsageError(cmd, "invalid operation")
 		}
 
-		args[objOwnershipBucketArgIndex] = strings.TrimPrefix(args[objOwnershipBucketArgIndex], storageBucketPrefix)
+		args[objOwnershipBucketArgIndex] = strings.TrimPrefix(args[objOwnershipBucketArgIndex], sos.BucketPrefix)
 
 		cmdSetZoneFlagFromDefault(cmd)
 

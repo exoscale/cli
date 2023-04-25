@@ -76,7 +76,7 @@ Example:
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		return cmdCheckRequiredFlags(cmd, []string{
 			storageCORSAddCmdFlagAllowedOrigin,

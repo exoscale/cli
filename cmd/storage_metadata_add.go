@@ -28,14 +28,14 @@ Notes:
 
 Supported output template annotations: %s`,
 		strings.Join(strings.Split(sos.MetadataForbiddenCharset, ""), " "),
-		strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))

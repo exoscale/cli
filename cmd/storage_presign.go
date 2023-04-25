@@ -18,7 +18,7 @@ var storagePresignCmd = &cobra.Command{
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		return nil
 	},
@@ -51,7 +51,7 @@ var storagePresignCmd = &cobra.Command{
 
 		url, err := storage.GenPresignedURL(method, bucket, key, expires)
 		if err != nil {
-			return fmt.Errorf("unable to pre-sign %s%s/%s: %w", storageBucketPrefix, bucket, key, err)
+			return fmt.Errorf("unable to pre-sign %s%s/%s: %w", sos.BucketPrefix, bucket, key, err)
 		}
 
 		fmt.Println(url)

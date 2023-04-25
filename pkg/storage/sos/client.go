@@ -230,7 +230,7 @@ func NewStorageClient(ctx context.Context, account *Account, opts ...ClientOpt) 
 		return nil, err
 	}
 
-	client.Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
+	client.s3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.UsePathStyle = true
 	})
 
