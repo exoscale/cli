@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,8 +34,6 @@ var gCurrentAccount = &sos.Account{
 	Environment:     defaultEnvironment,
 	SosEndpoint:     defaultSosEndpoint,
 }
-
-var gAllAccount *config
 
 // egoscale client
 var cs *egoscale.Client
@@ -196,7 +195,7 @@ func initConfig() {
 			gCurrentAccount.ClientTimeout = defaultClientTimeout
 		}
 
-		gAllAccount = &config{
+		gAllAccount = &sos.AccountConfig{
 			DefaultAccount: gCurrentAccount.Name,
 			Accounts:       []account{*gCurrentAccount},
 		}
@@ -206,7 +205,7 @@ func initConfig() {
 		return
 	}
 
-	config := &config{}
+	config := &sos.AccountConfig{}
 
 	usr, err := user.Current()
 	if err != nil {

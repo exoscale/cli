@@ -1,14 +1,18 @@
 package sos
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
-func (c *Client) AddObjectMetadata(bucket, key string, metadata map[string]string) error {
-	object, err := c.copyObject(bucket, key)
+const MetadataForbiddenCharset = `()<>@,;!:\\'&"/[]?_={} `
+
+func (c *Client) AddObjectMetadata(ctx context.Context, bucket, key string, metadata map[string]string) error {
+	object, err := c.CopyObject(ctx, bucket, key)
 	if err != nil {
 		return err
 	}
@@ -18,14 +22,14 @@ func (c *Client) AddObjectMetadata(bucket, key string, metadata map[string]strin
 	}
 
 	for k, v := range metadata {
-		if strings.ContainsAny(k, storageMetadataForbiddenCharset) {
+		if strings.ContainsAny(k, MetadataForbiddenCharset) {
 			return fmt.Errorf("%s: invalid value", k)
 		}
 
 		object.Metadata[k] = v
 	}
 
-	_, err = c.CopyObject(gContext, object)
+	_, err = c.s3Client.CopyObject(ctx, object)
 	return err
 }
 

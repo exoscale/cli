@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 
@@ -13,44 +12,6 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
-
-type config struct {
-	DefaultAccount      string
-	DefaultOutputFormat string
-	Accounts            []account
-}
-
-func (a account) APISecret() string {
-	if len(a.SecretCommand) != 0 {
-		cmd := exec.Command(a.SecretCommand[0], a.SecretCommand[1:]...)
-		cmd.Stdin = os.Stdin
-		cmd.Stderr = os.Stderr
-		out, err := cmd.Output()
-		if err != nil {
-			log.Fatal(err)
-		}
-		return strings.TrimRight(string(out), "\n")
-	}
-
-	return a.Secret
-}
-
-func (a account) AccountName() string {
-	if a.Name == "" {
-		resp, err := cs.GetWithContext(gContext, egoscale.Account{})
-		if err != nil {
-			log.Fatal(err)
-		}
-		acc := resp.(*egoscale.Account)
-		return acc.Name
-	}
-
-	return a.Name
-}
-
-func (a account) IsDefault() bool {
-	return a.Name == gAllAccount.DefaultAccount
-}
 
 const (
 	legacyAPIVersion          = "compute"
@@ -129,7 +90,7 @@ Exoscale API credentials from your organization's IAM:
 	return addConfigAccount(true)
 }
 
-func saveConfig(filePath string, newAccounts *config) error {
+func saveConfig(filePath string, newAccounts *sos.AccountConfig) error {
 	accountsSize := 0
 	currentAccounts := []account{}
 	if gAllAccount != nil {
@@ -145,7 +106,7 @@ func saveConfig(filePath string, newAccounts *config) error {
 
 	accounts := make([]map[string]interface{}, accountsSize+newAccountsSize)
 
-	conf := &config{}
+	conf := &sos.AccountConfig{}
 
 	for i, acc := range currentAccounts {
 		accounts[i] = map[string]interface{}{}

@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const storageMetadataForbiddenCharset = `()<>@,;!:\\'&"/[]?_={} `
-
 var storageMetadataAddCmd = &cobra.Command{
 	Use:   "add sos://BUCKET/(OBJECT|PREFIX/) KEY=VALUE...",
 	Short: "Add key/value metadata to an object",
@@ -28,7 +26,7 @@ Notes:
   * The following characters are not allowed in keys: %s
 
 Supported output template annotations: %s`,
-		strings.Join(strings.Split(storageMetadataForbiddenCharset, ""), " "),
+		strings.Join(strings.Split(sos.MetadataForbiddenCharset, ""), " "),
 		strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {

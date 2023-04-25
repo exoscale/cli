@@ -19,7 +19,7 @@ func init() {
 				return err
 			}
 
-			config := &config{Accounts: []account{*newAccount}}
+			config := &sos.AccountConfig{Accounts: []account{*newAccount}}
 			if askQuestion("Set [" + newAccount.Name + "] as default account?") {
 				config.DefaultAccount = newAccount.Name
 				gConfig.Set("defaultAccount", newAccount.Name)
@@ -32,7 +32,7 @@ func init() {
 
 func addConfigAccount(firstRun bool) error {
 	var (
-		config config
+		config sos.AccountConfig
 		err    error
 	)
 
