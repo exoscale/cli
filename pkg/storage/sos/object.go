@@ -50,7 +50,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 			j = len(deleteList)
 		}
 
-		res, err := c.S3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+		res, err := c.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: &bucket,
 			Delete: &s3types.Delete{Objects: deleteList[i:j]},
 		})
@@ -70,7 +70,7 @@ func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string
 		err   error
 	)
 
-	psClient := s3.NewPresignClient(c.S3Client, func(o *s3.PresignOptions) {
+	psClient := s3.NewPresignClient(c.s3Client, func(o *s3.PresignOptions) {
 		if expires > 0 {
 			o.Expires = expires
 		}
@@ -227,7 +227,7 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3type
 	}
 
 	_, err = s3manager.
-		NewDownloader(c.S3Client).
+		NewDownloader(c.s3Client).
 		Download(
 			ctx,
 			// mpb doesn't natively support the io.WriteAt interface expected
@@ -323,7 +323,7 @@ func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursi
 			req.Delimiter = aws.String("/")
 		}
 
-		res, err := c.S3Client.ListObjectsV2(ctx, &req)
+		res, err := c.s3Client.ListObjectsV2(ctx, &req)
 		if err != nil {
 			return nil, err
 		}
@@ -568,7 +568,7 @@ func (c *Client) UploadFile(ctx context.Context, bucket, file, key, acl string) 
 	}
 
 	_, err = s3manager.
-		NewUploader(c.S3Client, partSizeOpt).
+		NewUploader(c.s3Client, partSizeOpt).
 		Upload(ctx, &putObjectInput)
 
 	pb.Wait()
@@ -614,7 +614,7 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 }
 
 func (c *Client) ShowObject(ctx context.Context, bucket, key string) (output.Outputter, error) {
-	object, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
+	object, err := c.s3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -622,7 +622,7 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (output.Out
 		return nil, fmt.Errorf("unable to retrieve object information: %w", err)
 	}
 
-	acl, err := c.S3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
+	acl, err := c.s3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})

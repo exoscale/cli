@@ -12,7 +12,7 @@ import (
 )
 
 func (c *Client) DeleteBucketCORS(ctx context.Context, bucket string) error {
-	_, err := c.S3Client.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{Bucket: &bucket})
+	_, err := c.s3Client.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{Bucket: &bucket})
 	return err
 }
 
@@ -23,7 +23,7 @@ type CORSRule struct {
 }
 
 func (c *Client) AddBucketCORSRule(ctx context.Context, bucket string, cors *CORSRule) error {
-	curCORS, err := c.S3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
+	curCORS, err := c.s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
 	if err != nil {
 		var apiErr smithy.APIError
 		if errors.As(err, &apiErr) {
@@ -37,7 +37,7 @@ func (c *Client) AddBucketCORSRule(ctx context.Context, bucket string, cors *COR
 		}
 	}
 
-	_, err = c.S3Client.PutBucketCors(ctx, &s3.PutBucketCorsInput{
+	_, err = c.s3Client.PutBucketCors(ctx, &s3.PutBucketCorsInput{
 		Bucket: &bucket,
 		CORSConfiguration: &s3types.CORSConfiguration{
 			CORSRules: append(curCORS.CORSRules, cors.toS3()),

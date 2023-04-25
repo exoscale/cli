@@ -47,7 +47,7 @@ func (c *Client) UpdateObjectHeaders(ctx context.Context, bucket, key string, he
 		object.Expires = &t
 	}
 
-	_, err = c.S3Client.CopyObject(ctx, object)
+	_, err = c.s3Client.CopyObject(ctx, object)
 	return err
 }
 
@@ -85,7 +85,7 @@ func (c *Client) DeleteObjectHeaders(ctx context.Context, bucket, key string, he
 		}
 	}
 
-	_, err = c.S3Client.CopyObject(ctx, object)
+	_, err = c.s3Client.CopyObject(ctx, object)
 	return err
 }
 

@@ -55,8 +55,6 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 		ownershipCommand := args[objOwnershipOpArgIndex]
 		bucket := args[objOwnershipBucketArgIndex]
 
-		fmt.Println(ownershipCommand)
-
 		zone, err := cmd.Flags().GetString(zoneFlagLong)
 		if err != nil {
 			return err
