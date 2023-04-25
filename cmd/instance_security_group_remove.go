@@ -32,7 +32,7 @@ func (c *instanceSGRemoveCmd) cmdLong() string {
 	return fmt.Sprintf(`This command removes a Compute instance from Security Groups.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "),
 	)
 }
 

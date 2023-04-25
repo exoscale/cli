@@ -27,7 +27,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a runstat.us page details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&runstatusServiceShowOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&runstatusServiceShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {

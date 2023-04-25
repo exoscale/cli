@@ -35,7 +35,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a DNS Domain records.
 
 Supported output template annotations: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&dnsShowOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&dnsShowOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("show expects one DNS domain by name or id")

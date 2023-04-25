@@ -153,8 +153,8 @@ Supported output template annotations:
 
 	* When showing a bucket: %s
 	* When showing an object: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&storageShowBucketOutput{}), ", "),
-			strings.Join(output.output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&storageShowBucketOutput{}), ", "),
+			strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
 
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {

@@ -28,7 +28,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows an Anti-Affinity Group details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {

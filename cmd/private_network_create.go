@@ -36,7 +36,7 @@ func (c *privateNetworkCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "))
 }
 
 func (c *privateNetworkCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

@@ -39,7 +39,7 @@ func (c *dbaasServiceListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Database Services.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&dbaasServiceListItemOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&dbaasServiceListItemOutput{}), ", "))
 }
 
 func (c *dbaasServiceListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

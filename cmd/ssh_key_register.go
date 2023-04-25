@@ -31,7 +31,7 @@ func (c *computeSSHKeyRegisterCmd) cmdLong() string {
 	return fmt.Sprintf(`This command registers a new SSH key.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
 }
 
 func (c *computeSSHKeyRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

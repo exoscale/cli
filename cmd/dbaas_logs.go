@@ -76,8 +76,8 @@ Example usage with custom output containing only the actual log messages:
     exo dbaas logs MY-SERVICE --output-template \
         '{{range $l := .Logs}}{{println $l.Message}}{{end}}'
 `,
-		strings.Join(output.output.OutputterTemplateAnnotations(&dbServiceLogsOutput{}), ", "),
-		strings.Join(output.output.OutputterTemplateAnnotations(&dbServiceLogsItemOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&dbServiceLogsOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&dbServiceLogsItemOutput{}), ", "))
 }
 
 func (c *dbaasServiceLogsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

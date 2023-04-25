@@ -33,7 +33,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists available Compute service offerings.
 
 Supported output template annotations: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&serviceOfferingListOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&serviceOfferingListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listServiceOfferings())
 		},

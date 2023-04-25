@@ -28,7 +28,7 @@ func init() {
 Optional patterns can be provided to filter results by name or fingerprint.
 
 Supported output template annotations: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&sshkeyListOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&sshkeyListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listSSHKey(args))

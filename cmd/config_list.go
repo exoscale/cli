@@ -44,7 +44,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists configured Exoscale accounts. The default account is marked with (*).
 
 Supported output template annotations: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&configListOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&configListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listConfigs(), nil)

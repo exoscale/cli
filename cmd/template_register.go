@@ -16,7 +16,7 @@ var templateRegisterCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command registers a new Compute instance template.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&templateShowOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&templateShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

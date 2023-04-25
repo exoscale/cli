@@ -25,7 +25,7 @@ Example:
 Note: adding an already existing header will overwrite its value.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

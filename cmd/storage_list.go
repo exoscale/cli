@@ -82,8 +82,8 @@ Supported output template annotations:
 
   * When listing buckets: %s
   * When listing objects: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&storageListBucketsItemOutput{}), ", "),
-		strings.Join(output.output.OutputterTemplateAnnotations(&storageListObjectsItemOutput{}), ", ")),
+		strings.Join(output.OutputterTemplateAnnotations(&storageListBucketsItemOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&storageListObjectsItemOutput{}), ", ")),
 	Aliases: gListAlias,
 
 	PreRun: func(cmd *cobra.Command, args []string) {

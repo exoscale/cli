@@ -38,7 +38,7 @@ specific Nodes should be evicted from the pool rather than leaving the
 decision to the SKS manager.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
 func (c *sksNodepoolScaleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

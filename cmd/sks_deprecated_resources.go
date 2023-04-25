@@ -43,7 +43,7 @@ func (c *sksDeprecatedResourcesCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists SKS cluster Nodepools.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&sksListDeprecatedResourcesItemOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&sksListDeprecatedResourcesItemOutput{}), ", "))
 }
 
 func emptyIfNil(inp *string) string {

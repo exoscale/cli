@@ -57,7 +57,7 @@ func (c *sksNodepoolShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an SKS cluster Nodepool details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
 func (c *sksNodepoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

@@ -32,7 +32,7 @@ func (c *sksUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an SKS cluster.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&sksShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&sksShowOutput{}), ", "),
 	)
 }
 

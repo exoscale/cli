@@ -38,7 +38,7 @@ func (c *securityGroupListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Security Groups.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&securityGroupListItemOutput{}), ", "))
+		strings.Join(output.OutputterTemplateAnnotations(&securityGroupListItemOutput{}), ", "))
 }
 
 func (c *securityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

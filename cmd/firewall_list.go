@@ -30,7 +30,7 @@ func init() {
 Optional patterns can be provided to filter results by ID, name or description.
 
 Supported output template annotations: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&firewallListOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&firewallListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listSecurityGroups(args))

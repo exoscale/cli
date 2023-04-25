@@ -31,7 +31,7 @@ func (c *instanceEIPDetachCmd) cmdLong() string {
 	return fmt.Sprintf(`This command detaches an Elastic IP address from a Compute instance.
 
 Supported output template annotations: %s`,
-		strings.Join(output.output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "),
 	)
 }
 

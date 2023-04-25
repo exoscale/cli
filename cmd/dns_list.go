@@ -45,7 +45,7 @@ func init() {
 Optional patterns can be provided to filter results by ID, or name.
 
 Supported output template annotations: %s`,
-			strings.Join(output.output.OutputterTemplateAnnotations(&dnsListOutput{}), ", ")),
+			strings.Join(output.OutputterTemplateAnnotations(&dnsListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listDomains(args))
