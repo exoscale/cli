@@ -1,6 +1,8 @@
 package globalstate
 
-import "github.com/exoscale/egoscale"
+import (
+	"github.com/exoscale/egoscale"
+)
 
 var (
 	OutputFormat         string
