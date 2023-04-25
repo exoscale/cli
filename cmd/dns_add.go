@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	exo "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -37,7 +38,7 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		fmt.Printf("Record %q was created successfully to %q\n", rType, *domain.UnicodeName)
 	}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
@@ -49,7 +50,7 @@ var storageCORSDeleteCmd = &cobra.Command{
 			return fmt.Errorf("unable to delete bucket CORS configuration: %w", err)
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("CORS configuration deleted successfully")
 		}
 

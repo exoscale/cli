@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -60,7 +61,7 @@ func (c *instanceSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&instanceSnapshotShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			ID:                 *snapshot.ID,

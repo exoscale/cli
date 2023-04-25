@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
@@ -155,7 +156,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc(&instanceTemplateShowOutput{
 			ID:              *template.ID,
 			Family:          utils.DefaultString(template.Family, ""),

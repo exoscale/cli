@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -39,7 +40,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			if !gQuiet {
+			if !globalstate.Quiet {
 				return printOutput(&sshkeyCreateOutput{
 					Name:        sshKey.Name,
 					Fingerprint: sshKey.Fingerprint,

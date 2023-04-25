@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -55,7 +56,7 @@ func uploadSSHKey(name, publicKeyPath string) (output.Outputter, error) {
 
 	keyPair := resp.(*egoscale.SSHKeyPair)
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return &sshkeyUploadOutput{
 			Name:        keyPair.Name,
 			Fingerprint: keyPair.Fingerprint,

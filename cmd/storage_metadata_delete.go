@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
@@ -62,11 +63,11 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to delete metadata from object: %w", err)
 		}
 
-		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
+		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
 			return printOutput(storage.ShowObject(bucket, prefix))
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("Metadata deleted successfully")
 		}
 

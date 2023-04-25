@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -120,7 +121,7 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 		return fmt.Errorf("API request error: unexpected status %s", res.Status())
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,

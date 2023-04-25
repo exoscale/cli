@@ -1,6 +1,7 @@
 package sos
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/exec"
@@ -24,9 +25,9 @@ func (a Account) APISecret() string {
 	return a.Secret
 }
 
-func (a Account) AccountName() string {
+func (a Account) AccountName(ctx context.Context) string {
 	if a.Name == "" {
-		resp, err := cs.GetWithContext(gContext, egoscale.Account{})
+		resp, err := cs.GetWithContext(ctx, egoscale.Account{})
 		if err != nil {
 			log.Fatal(err)
 		}

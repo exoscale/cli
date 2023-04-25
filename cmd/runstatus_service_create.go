@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 
 	"github.com/spf13/cobra"
@@ -47,7 +48,7 @@ var runstatusServiceCreateCmd = &cobra.Command{
 			return err
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Printf("Service %q successfully created\n", s.Name)
 		}
 

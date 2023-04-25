@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	v2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -88,7 +89,7 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&sksShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            *cluster.ID,

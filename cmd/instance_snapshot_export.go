@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -67,7 +68,7 @@ func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc(
 			&instanceSnapshotExportOutput{
 				URL:      *snapshotExport.PresignedURL,

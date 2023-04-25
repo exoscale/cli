@@ -1,6 +1,7 @@
 package sos
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -18,10 +19,10 @@ import (
 )
 
 type ShowBucketOutput struct {
-	Name string         `json:"name"`
-	Zone string         `json:"zone"`
-	ACL  sos.ACL        `json:"acl"`
-	CORS []sos.CORSRule `json:"cors"`
+	Name string     `json:"name"`
+	Zone string     `json:"zone"`
+	ACL  ACL        `json:"acl"`
+	CORS []CORSRule `json:"cors"`
 }
 
 func (o *ShowBucketOutput) toJSON() { output.JSON(o) }

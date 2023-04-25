@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
@@ -50,7 +51,7 @@ var storageRbCmd = &cobra.Command{
 			return fmt.Errorf("unable to delete bucket: %w", err)
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Printf("Bucket %s%s deleted successfully\n", storageBucketPrefix, bucket)
 		}
 

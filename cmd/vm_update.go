@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -73,7 +74,7 @@ var vmUpdateCmd = &cobra.Command{
 			}
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			return printOutput(showVM(vm.ID.String()))
 		}
 

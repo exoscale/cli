@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -168,7 +169,7 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&elasticIPShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			ElasticIP:          *elasticIP.ID,

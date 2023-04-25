@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
@@ -51,8 +52,8 @@ Supported output template annotations:
 
 	* When showing a bucket: %s
 	* When showing an object: %s`,
-		strings.Join(s3BucketCannedACLToStrings(), ", "),
-		strings.Join(s3ObjectCannedACLToStrings(), ", "),
+		strings.Join(sos.BucketCannedACLToStrings(), ", "),
+		strings.Join(sos.ObjectCannedACLToStrings(), ", "),
 		strings.Join(output.OutputterTemplateAnnotations(&sos.ShowBucketOutput{}), ", "),
 		strings.Join(output.OutputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
 
@@ -112,7 +113,7 @@ Supported output template annotations:
 				return fmt.Errorf("unable to set ACL: %w", err)
 			}
 
-			if !gQuiet {
+			if !globalstate.Quiet {
 				return printOutput(storage.ShowBucket(bucket))
 			}
 			return nil
@@ -122,11 +123,11 @@ Supported output template annotations:
 			return fmt.Errorf("unable to set ACL: %w", err)
 		}
 
-		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
+		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
 			return printOutput(storage.ShowObject(bucket, prefix))
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("ACL set successfully")
 		}
 		return nil

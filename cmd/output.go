@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
@@ -28,7 +29,7 @@ func printOutput(o output.Outputter, err error) error {
 		return nil
 	}
 
-	switch gOutputFormat {
+	switch globalstate.OutputFormat {
 	case "json":
 		o.toJSON()
 
@@ -49,7 +50,7 @@ func decorateAsyncOperation(message string, fn func()) {
 	p := mpb.New(
 		mpb.WithOutput(os.Stderr),
 		mpb.WithWidth(1),
-		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return globalstate.Quiet }),
 	)
 
 	spinner := p.AddSpinner(

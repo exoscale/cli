@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )

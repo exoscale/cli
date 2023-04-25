@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
@@ -54,7 +55,7 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to create bucket: %w", err)
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			return printOutput(storage.ShowBucket(bucket))
 		}
 

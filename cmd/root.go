@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
@@ -68,12 +69,6 @@ var versionCmd = &cobra.Command{
 	},
 }
 
-var (
-	gOutputFormat string
-
-	gQuiet bool
-)
-
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute(version, commit string) {
@@ -109,9 +104,9 @@ func init() {
 
 	RootCmd.PersistentFlags().StringVarP(&gConfigFilePath, "config", "C", "", "Specify an alternate config file [env EXOSCALE_CONFIG]")
 	RootCmd.PersistentFlags().StringVarP(&gAccountName, "use-account", "A", "", "Account to use in config file [env EXOSCALE_ACCOUNT]")
-	RootCmd.PersistentFlags().StringVarP(&gOutputFormat, "output-format", "O", "", "Output format (table|json|text), see \"exo output --help\" for more information")
+	RootCmd.PersistentFlags().StringVarP(&globalstate.OutputFormat, "output-format", "O", "", "Output format (table|json|text), see \"exo output --help\" for more information")
 	RootCmd.PersistentFlags().StringVar(&output.GOutputTemplate, "output-template", "", "Template to use if output format is \"text\"")
-	RootCmd.PersistentFlags().BoolVarP(&gQuiet, "quiet", "Q", false, "Quiet mode (disable non-essential command output)")
+	RootCmd.PersistentFlags().BoolVarP(&globalstate.Quiet, "quiet", "Q", false, "Quiet mode (disable non-essential command output)")
 	RootCmd.AddCommand(versionCmd)
 
 	// Don't attempt to load client configuration in testing mode.
@@ -315,11 +310,11 @@ func initConfig() {
 
 	// if an output format isn't specified via cli argument, use
 	// the current account default format
-	if gOutputFormat == "" {
+	if globalstate.OutputFormat == "" {
 		if gCurrentAccount.DefaultOutputFormat != "" {
-			gOutputFormat = gCurrentAccount.DefaultOutputFormat
+			globalstate.OutputFormat = gCurrentAccount.DefaultOutputFormat
 		} else {
-			gOutputFormat = defaultOutputFormat
+			globalstate.OutputFormat = defaultOutputFormat
 		}
 	}
 

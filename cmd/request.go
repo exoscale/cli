@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/go-multierror"
 	"github.com/vbauerster/mpb/v4"
@@ -42,7 +43,7 @@ func asyncTasks(tasks []task) []taskResponse {
 	progress := mpb.NewWithContext(gContext,
 		mpb.WithOutput(os.Stderr),
 		mpb.WithWaitGroup(&taskWG),
-		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return globalstate.Quiet }),
 	)
 
 	taskWG.Add(len(tasks))
@@ -177,12 +178,12 @@ func execSyncTask(task task, id int, c chan taskStatus, resp *taskResponse, sem 
 func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 	response := cs.Response(cmd)
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		fmt.Fprint(os.Stderr, msg)
 	}
 	var errorReq error
 	cs.AsyncRequestWithContext(gContext, cmd, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Fprint(os.Stderr, ".")
 		}
 
@@ -200,14 +201,14 @@ func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 			return false
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Fprintln(os.Stderr, " success")
 		}
 
 		return false
 	})
 
-	if errorReq != nil && !gQuiet {
+	if errorReq != nil && !globalstate.Quiet {
 		fmt.Fprintln(os.Stderr, " failure")
 	}
 

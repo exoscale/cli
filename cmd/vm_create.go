@@ -8,6 +8,7 @@ import (
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 )
@@ -151,7 +152,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			return printOutput(showVM(vm.ID.String()))
 		}
 
@@ -170,7 +171,7 @@ func createVM(deployVM *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine
 	if deployVM.KeyPair == "" {
 		singleUseSSHKey = true
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Fprintln(os.Stderr, "Creating single-use SSH key")
 		}
 

@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -60,7 +61,7 @@ Supported output template annotations: %s`,
 		apiKey := resp.(*egoscale.APIKey)
 		sort.Strings(apiKey.Operations)
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			o := apiKeyCreateItemOutput{
 				Name:       apiKey.Name,
 				Key:        apiKey.Key,

@@ -5,6 +5,8 @@ import (
 	"net"
 	"strconv"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -109,7 +111,7 @@ func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 		return nil, err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return showPrivnet(resp.(*egoscale.Network))
 	}
 

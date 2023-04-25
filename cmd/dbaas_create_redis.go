@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -99,7 +100,7 @@ func (c *dbaasServiceCreateCmd) createRedis(_ *cobra.Command, _ []string) error 
 		return fmt.Errorf("API request error: unexpected status %s", res.Status())
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,

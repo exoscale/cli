@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -63,17 +64,17 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Print("Verifying downloaded file checksum... ")
 		}
 		if err = checkExportedSnapshot(filePath, snapshot.MD5sum); err != nil {
-			if !gQuiet {
+			if !globalstate.Quiet {
 				fmt.Println("failed")
 			}
 			return err
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("success")
 		}
 
@@ -143,7 +144,7 @@ func downloadExportedSnapshot(filePath, url string) (string, error) {
 	progress := mpb.NewWithContext(gContext,
 		mpb.WithWidth(64),
 		mpb.WithRefreshRate(180*time.Millisecond),
-		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return globalstate.Quiet }),
 	)
 
 	bar := progress.AddBar(

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -41,7 +42,7 @@ func createAffinityGroup(name, desc string) (output.Outputter, error) {
 		return nil, err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return showAffinityGroup(resp.(*egoscale.AffinityGroup))
 	}
 

@@ -52,12 +52,12 @@ func (c *Client) DeleteObjectMetadata(ctx context.Context, bucket, key string, m
 		delete(object.Metadata, k)
 	}
 
-	_, err = c.CopyObject(gContext, object)
+	_, err = c.s3Client.CopyObject(ctx, object)
 	return err
 }
 
-func (c *Client) DeleteObjectsMetadata(bucket, prefix string, mdKeys []string, recursive bool) error {
-	return c.ForEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.DeleteObjectMetadata(bucket, aws.ToString(o.Key), mdKeys)
+func (c *Client) DeleteObjectsMetadata(ctx context.Context, bucket, prefix string, mdKeys []string, recursive bool) error {
+	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+		return c.DeleteObjectMetadata(ctx, bucket, aws.ToString(o.Key), mdKeys)
 	})
 }

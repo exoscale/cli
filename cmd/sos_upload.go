@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 
@@ -144,7 +145,7 @@ var sosUploadCmd = &cobra.Command{
 			mpb.WithWidth(64),
 			// override default 120ms refresh rate
 			mpb.WithRefreshRate(180*time.Millisecond),
-			mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
+			mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return globalstate.Quiet }),
 		)
 		taskWG.Add(lenFileToUpload)
 

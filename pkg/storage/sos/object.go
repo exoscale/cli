@@ -14,17 +14,19 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
+	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 )
 
-func (c *Client) DeleteObjects(bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
+func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
 	deleteList := make([]s3types.ObjectIdentifier, 0)
-	err := c.ForEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
+	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
 		deleteList = append(deleteList, s3types.ObjectIdentifier{Key: o.Key})
 		return nil
 	})
@@ -43,7 +45,7 @@ func (c *Client) DeleteObjects(bucket, prefix string, recursive bool) ([]s3types
 			j = len(deleteList)
 		}
 
-		res, err := c.DeleteObjects(gContext, &s3.DeleteObjectsInput{
+		res, err := c.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: &bucket,
 			Delete: &s3types.Delete{Objects: deleteList[i:j]},
 		})
@@ -57,13 +59,13 @@ func (c *Client) DeleteObjects(bucket, prefix string, recursive bool) ([]s3types
 	return deleted, nil
 }
 
-func (c *Client) GenPresignedURL(method, bucket, key string, expires time.Duration) (string, error) {
+func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string, expires time.Duration) (string, error) {
 	var (
 		psURL *v4.PresignedHTTPRequest
 		err   error
 	)
 
-	psClient := s3.NewPresignClient(c.Client, func(o *s3.PresignOptions) {
+	psClient := s3.NewPresignClient(c.s3Client, func(o *s3.PresignOptions) {
 		if expires > 0 {
 			o.Expires = expires
 		}
@@ -71,13 +73,13 @@ func (c *Client) GenPresignedURL(method, bucket, key string, expires time.Durati
 
 	switch method {
 	case "get":
-		psURL, err = psClient.PresignGetObject(gContext, &s3.GetObjectInput{
+		psURL, err = psClient.PresignGetObject(ctx, &s3.GetObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
 		})
 
 	case "put":
-		psURL, err = psClient.PresignPutObject(gContext, &s3.PutObjectInput{
+		psURL, err = psClient.PresignPutObject(ctx, &s3.PutObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
 		})
@@ -148,7 +150,7 @@ func (c *Client) DownloadFiles(config *DownloadConfig) error {
 			}
 		}
 
-		if err := c.downloadFile(config.bucket, object, dst); err != nil {
+		if err := c.DownloadFile(config.bucket, object, dst); err != nil {
 			return err
 		}
 	}
@@ -156,12 +158,12 @@ func (c *Client) DownloadFiles(config *DownloadConfig) error {
 	return nil
 }
 
-func (c *Client) DownloadFile(bucket string, object *s3types.Object, dst string) error {
+func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3types.Object, dst string) error {
 	maxFilenameLen := 16
 
-	pb := mpb.NewWithContext(gContext,
+	pb := mpb.NewWithContext(ctx,
 		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool {
-			return gQuiet
+			return globalstate.Quiet
 		}),
 	)
 
@@ -419,7 +421,7 @@ func (c *Client) UploadFile(bucket, file, key, acl string) error {
 
 	pb := mpb.NewWithContext(gContext,
 		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool {
-			return gQuiet
+			return globalstate.Quiet
 		}),
 	)
 

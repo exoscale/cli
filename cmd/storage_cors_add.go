@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -98,7 +99,7 @@ Example:
 			return fmt.Errorf("unable to add rule to the bucket CORS configuration: %w", err)
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			return printOutput(storage.ShowBucket(bucket))
 		}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -90,7 +91,7 @@ func (c *iamAccessKeyCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Type: *iamAccessKey.Type,
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc(&out, nil)
 	}
 

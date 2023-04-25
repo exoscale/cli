@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/hashicorp/go-multierror"
 	"github.com/iancoleman/strcase"

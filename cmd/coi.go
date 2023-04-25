@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -172,7 +173,7 @@ Supported output template annotations: %s`,
 		}
 		vm := resp[0].resp.(*egoscale.VirtualMachine)
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			return printOutput(showVM(vm.Name))
 		}
 

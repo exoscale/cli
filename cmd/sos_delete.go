@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/spf13/cobra"
 )
 
@@ -63,7 +64,7 @@ var sosDeleteCmd = &cobra.Command{
 			return err
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Printf("Bucket %q deleted successfully\n", bucket)
 		}
 

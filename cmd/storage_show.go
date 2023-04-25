@@ -20,7 +20,7 @@ type storageShowObjectOutput struct {
 	Bucket       string            `json:"bucket"`
 	LastModified string            `json:"last_modified"`
 	Size         int64             `json:"size"`
-	ACL          storageACL        `json:"acl"`
+	ACL          sos.ACL           `json:"acl"`
 	Metadata     map[string]string `json:"metadata"`
 	Headers      map[string]string `json:"headers"`
 	URL          string            `json:"url"`
