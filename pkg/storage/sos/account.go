@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 )
 
@@ -27,7 +28,7 @@ func (a Account) APISecret() string {
 
 func (a Account) AccountName(ctx context.Context) string {
 	if a.Name == "" {
-		resp, err := cs.GetWithContext(ctx, egoscale.Account{})
+		resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(ctx, egoscale.Account{})
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -163,6 +163,30 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 	return nil
 }
 
+// proxyWriterAt is a variant of the internal mpb.proxyWriterTo struct,
+// required for using mpb with s3manager batch download manager (accepting
+// a io.WriterAt interface) since mpb.Bar's ProxyReader() method only
+// supports io.Reader and io.WriterTo interfaces.
+type proxyWriterAt struct {
+	wt  io.WriterAt
+	bar *mpb.Bar
+	iT  time.Time
+}
+
+func (prox *proxyWriterAt) WriteAt(p []byte, off int64) (n int, err error) {
+	n, err = prox.wt.WriteAt(p, off)
+	if n > 0 {
+		prox.bar.IncrInt64(int64(n), time.Since(prox.iT))
+		prox.iT = time.Now()
+	}
+
+	if err == io.EOF {
+		go prox.bar.SetTotal(0, true)
+	}
+
+	return n, err
+}
+
 func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3types.Object, dst string) error {
 	maxFilenameLen := 16
 

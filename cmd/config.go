@@ -93,7 +93,7 @@ Exoscale API credentials from your organization's IAM:
 
 func saveConfig(filePath string, newAccounts *sos.AccountConfig) error {
 	accountsSize := 0
-	currentAccounts := []account{}
+	currentAccounts := []sos.Account{}
 	if gAllAccount != nil {
 		accountsSize = len(gAllAccount.Accounts)
 		currentAccounts = gAllAccount.Accounts

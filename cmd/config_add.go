@@ -21,7 +21,7 @@ func init() {
 				return err
 			}
 
-			config := &sos.AccountConfig{Accounts: []account{*newAccount}}
+			config := &sos.AccountConfig{Accounts: []sos.Account{*newAccount}}
 			if askQuestion("Set [" + newAccount.Name + "] as default account?") {
 				config.DefaultAccount = newAccount.Name
 				gConfig.Set("defaultAccount", newAccount.Name)
@@ -53,7 +53,7 @@ func addConfigAccount(firstRun bool) error {
 		return err
 	}
 	config.DefaultAccount = newAccount.Name
-	config.Accounts = []account{*newAccount}
+	config.Accounts = []sos.Account{*newAccount}
 	gConfig.Set("defaultAccount", newAccount.Name)
 
 	if len(config.Accounts) == 0 {
@@ -63,11 +63,11 @@ func addConfigAccount(firstRun bool) error {
 	return saveConfig(filePath, &config)
 }
 
-func promptAccountInformation() (*account, error) {
+func promptAccountInformation() (*sos.Account, error) {
 	var client *egoscale.Client
 
 	reader := bufio.NewReader(os.Stdin)
-	account := &account{
+	account := &sos.Account{
 		Endpoint: defaultEndpoint,
 		Key:      "",
 		Secret:   "",
