@@ -67,7 +67,7 @@ func (a Account) AccountName(ctx context.Context) string {
 type AccountConfig struct {
 	DefaultAccount      string
 	DefaultOutputFormat string
-	Accounts            []AccountConfig
+	Accounts            []Account
 }
 
 func (a Account) IsDefault() bool {

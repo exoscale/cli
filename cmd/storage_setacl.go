@@ -147,7 +147,7 @@ func init() {
 
 // storageACLFromCmdFlags returns a non-nil pointer to a storageACL struct if at least
 // one of the ACL-related command flags is set.
-func storageACLFromCmdFlags(flags *pflag.FlagSet) *storageACL {
+func storageACLFromCmdFlags(flags *pflag.FlagSet) *sos.ACL {
 	var acl *storageACL
 
 	flags.VisitAll(func(flag *pflag.Flag) {

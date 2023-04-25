@@ -94,10 +94,10 @@ func (c *Client) CreateNewBucket(ctx context.Context, name, acl string) error {
 	s3Bucket := s3.CreateBucketInput{Bucket: aws.String(name)}
 
 	if acl != "" {
-		if !utils.IsInList(S3BucketCannedACLToStrings(), acl) {
+		if !utils.IsInList(BucketCannedACLToStrings(), acl) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
 				acl,
-				strings.Join(S3BucketCannedACLToStrings(), ", "))
+				strings.Join(BucketCannedACLToStrings(), ", "))
 		}
 
 		s3Bucket.ACL = s3types.BucketCannedACL(acl)

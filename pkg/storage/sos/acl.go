@@ -35,10 +35,10 @@ func (c *Client) SetBucketACL(ctx context.Context, bucket string, acl *ACL) erro
 	s3ACL := s3.PutBucketAclInput{Bucket: aws.String(bucket)}
 
 	if acl.Canned != "" {
-		if !utils.IsInList(S3BucketCannedACLToStrings(), acl.Canned) {
+		if !utils.IsInList(BucketCannedACLToStrings(), acl.Canned) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
 				acl.Canned,
-				strings.Join(S3BucketCannedACLToStrings(), ", "))
+				strings.Join(BucketCannedACLToStrings(), ", "))
 		}
 
 		s3ACL.ACL = s3types.BucketCannedACL(acl.Canned)
@@ -74,10 +74,10 @@ func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL)
 	}
 
 	if acl.Canned != "" {
-		if !utils.IsInList(S3ObjectCannedACLToStrings(), acl.Canned) {
+		if !utils.IsInList(ObjectCannedACLToStrings(), acl.Canned) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
 				acl.Canned,
-				strings.Join(S3ObjectCannedACLToStrings(), ", "))
+				strings.Join(ObjectCannedACLToStrings(), ", "))
 		}
 
 		s3ACL.ACL = s3types.ObjectCannedACL(acl.Canned)
@@ -115,7 +115,7 @@ func (c *Client) SetObjectsACL(ctx context.Context, bucket, prefix string, acl *
 	})
 }
 
-func S3BucketCannedACLToStrings() []string {
+func BucketCannedACLToStrings() []string {
 	s3BucketCannedACLs := s3types.BucketCannedACLPrivate.Values()
 
 	list := make([]string, len(s3BucketCannedACLs))
@@ -126,7 +126,7 @@ func S3BucketCannedACLToStrings() []string {
 	return list
 }
 
-func S3ObjectCannedACLToStrings() []string {
+func ObjectCannedACLToStrings() []string {
 	s3ObjectCannedACLs := s3types.ObjectCannedACLPrivate.Values()
 
 	list := make([]string, len(s3ObjectCannedACLs))

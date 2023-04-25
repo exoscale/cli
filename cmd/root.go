@@ -190,7 +190,7 @@ func initConfig() {
 
 		account.GAllAccount = &account.AccountConfig{
 			DefaultAccount: gCurrentAccount.Name,
-			Accounts:       []account{*gCurrentAccount},
+			Accounts:       []account.Account{*gCurrentAccount},
 		}
 
 		buildClient()

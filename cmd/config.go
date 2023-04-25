@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/pkg/account"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -71,7 +70,7 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 			return addConfigAccount(false)
 		}
 
-		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != sos.GAllAccount.DefaultAccount {
+		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != account.GAllAccount.DefaultAccount {
 			fmt.Printf("Setting default account to [%s]\n", selectedAccount)
 			gConfig.Set("defaultAccount", selectedAccount)
 			return saveConfig(gConfig.ConfigFileUsed(), nil)
@@ -257,7 +256,7 @@ func listAccounts(defaultAccountMark string) []string {
 	return res
 }
 
-func getAccountByName(name string) *account {
+func getAccountByName(name string) *account.Account {
 	if account.GAllAccount == nil {
 		return nil
 	}

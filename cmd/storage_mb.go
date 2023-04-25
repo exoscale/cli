@@ -65,7 +65,7 @@ Supported output template annotations: %s`,
 
 func init() {
 	storageMbCmd.Flags().String("acl", "",
-		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(s3BucketCannedACLToStrings(), "|")))
+		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(sos.BucketCannedACLToStrings(), "|")))
 	storageMbCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	storageCmd.AddCommand(storageMbCmd)
 }
