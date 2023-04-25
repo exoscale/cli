@@ -63,7 +63,8 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 		}
 
 		storage, err := sos.NewStorageClient(
-			storageClientOptWithZone(zone),
+			gContext,
+			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)

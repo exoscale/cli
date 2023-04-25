@@ -88,19 +88,20 @@ Example:
 		bucket := args[0]
 
 		storage, err := sos.NewStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		cors := sos.CORSRuleFromCmdFlags(cmd.Flags())
-		if err := storage.AddBucketCORSRule(bucket, cors); err != nil {
+		cors := CORSRuleFromCmdFlags(cmd.Flags())
+		if err := storage.AddBucketCORSRule(gContext, bucket, cors); err != nil {
 			return fmt.Errorf("unable to add rule to the bucket CORS configuration: %w", err)
 		}
 
 		if !globalstate.Quiet {
-			return printOutput(storage.ShowBucket(bucket))
+			return printOutput(storage.ShowBucket(gContext, bucket))
 		}
 
 		return nil

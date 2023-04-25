@@ -62,13 +62,14 @@ Supported output template annotations:
 		}
 
 		storage, err := sos.NewStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return printOutput(storage.ListObjects(bucket, prefix, recursive, stream))
+		return printOutput(storage.ListObjects(gContext, bucket, prefix, recursive, stream))
 	},
 }
 
@@ -81,7 +82,7 @@ func init() {
 }
 
 func listStorageBuckets() (output.Outputter, error) {
-	out := make(storageListBucketsOutput, 0)
+	out := make(sos.ListBucketsOutput, 0)
 
 	res, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
 	if err != nil {

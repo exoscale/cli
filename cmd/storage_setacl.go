@@ -76,7 +76,7 @@ Supported output template annotations:
 		var (
 			bucket string
 			prefix string
-			acl    *storageACL
+			acl    *sos.ACL
 		)
 
 		recursive, err := cmd.Flags().GetBool("recursive")
@@ -98,33 +98,34 @@ Supported output template annotations:
 		}
 
 		storage, err := sos.NewStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		if acl = storageACLFromCmdFlags(cmd.Flags()); acl == nil {
-			acl = &storageACL{Canned: args[1]}
+			acl = &sos.ACL{Canned: args[1]}
 		}
 
 		if prefix == "" {
-			if err := storage.SetBucketACL(bucket, acl); err != nil {
+			if err := storage.SetBucketACL(gContext, bucket, acl); err != nil {
 				return fmt.Errorf("unable to set ACL: %w", err)
 			}
 
 			if !globalstate.Quiet {
-				return printOutput(storage.ShowBucket(bucket))
+				return printOutput(storage.ShowBucket(gContext, bucket))
 			}
 			return nil
 		}
 
-		if err := storage.SetObjectsACL(bucket, prefix, acl, recursive); err != nil {
+		if err := storage.SetObjectsACL(gContext, bucket, prefix, acl, recursive); err != nil {
 			return fmt.Errorf("unable to set ACL: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(bucket, prefix))
+			return printOutput(storage.ShowObject(gContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {
@@ -137,61 +138,61 @@ Supported output template annotations:
 func init() {
 	storageSetACLCmd.Flags().BoolP("recursive", "r", false,
 		"set ACL recursively (with object prefix only)")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagRead, "", "ACL Read grantee")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagWrite, "", "ACP Write grantee")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagReadACP, "", "ACP Read ACP grantee")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagWriteACP, "", "ACP Write ACP grantee")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagFullControl, "", "ACP Full Control grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagRead, "", "ACL Read grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagWrite, "", "ACP Write grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagReadACP, "", "ACP Read ACP grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagWriteACP, "", "ACP Write ACP grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagFullControl, "", "ACP Full Control grantee")
 	storageCmd.AddCommand(storageSetACLCmd)
 }
 
-// storageACLFromCmdFlags returns a non-nil pointer to a storageACL struct if at least
+// storageACLFromCmdFlags returns a non-nil pointer to a sos.ACL struct if at least
 // one of the ACL-related command flags is set.
 func storageACLFromCmdFlags(flags *pflag.FlagSet) *sos.ACL {
-	var acl *storageACL
+	var acl *sos.ACL
 
 	flags.VisitAll(func(flag *pflag.Flag) {
 		switch flag.Name {
-		case storageSetACLCmdFlagRead:
+		case sos.SetACLCmdFlagRead:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.Read = v
 			}
 
-		case storageSetACLCmdFlagWrite:
+		case sos.SetACLCmdFlagWrite:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.Write = v
 			}
 
-		case storageSetACLCmdFlagReadACP:
+		case sos.SetACLCmdFlagReadACP:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.ReadACP = v
 			}
 
-		case storageSetACLCmdFlagWriteACP:
+		case sos.SetACLCmdFlagWriteACP:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.WriteACP = v
 			}
 
-		case storageSetACLCmdFlagFullControl:
+		case sos.SetACLCmdFlagFullControl:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.FullControl = v

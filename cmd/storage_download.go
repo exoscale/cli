@@ -87,29 +87,30 @@ Examples:
 		}
 
 		storage, err := sos.NewStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %v", err)
 		}
 
 		objects := make([]*s3types.Object, 0)
-		if err := storage.ForEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
+		if err := storage.ForEachObject(gContext, bucket, prefix, recursive, func(o *s3types.Object) error {
 			objects = append(objects, o)
 			return nil
 		}); err != nil {
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 
-		return storage.DownloadFiles(&storageDownloadConfig{
-			bucket:      bucket,
-			prefix:      prefix,
-			source:      src,
-			objects:     objects,
-			destination: dst,
-			recursive:   recursive,
-			overwrite:   force,
-			dryRun:      dryRun,
+		return storage.DownloadFiles(gContext, &sos.DownloadConfig{
+			Bucket:      bucket,
+			Prefix:      prefix,
+			Source:      src,
+			Objects:     objects,
+			Destination: dst,
+			Recursive:   recursive,
+			Overwrite:   force,
+			DryRun:      dryRun,
 		})
 	},
 }

@@ -12,14 +12,14 @@ import (
 )
 
 const (
-	storageACLGranteeAllUsers           = "http://acs.amazonaws.com/groups/global/AllUsers"
-	storageACLGranteeAuthenticatedUsers = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"
+	ACLGranteeAllUsers           = "http://acs.amazonaws.com/groups/global/AllUsers"
+	ACLGranteeAuthenticatedUsers = "http://acs.amazonaws.com/groups/global/AuthenticatedUsers"
 
-	storageSetACLCmdFlagRead        = "read"
-	storageSetACLCmdFlagWrite       = "write"
-	storageSetACLCmdFlagReadACP     = "read-acp"
-	storageSetACLCmdFlagWriteACP    = "write-acp"
-	storageSetACLCmdFlagFullControl = "full-control"
+	SetACLCmdFlagRead        = "read"
+	SetACLCmdFlagWrite       = "write"
+	SetACLCmdFlagReadACP     = "read-acp"
+	SetACLCmdFlagWriteACP    = "write-acp"
+	SetACLCmdFlagFullControl = "full-control"
 )
 
 type ACL struct {
@@ -48,7 +48,7 @@ func (c *Client) SetBucketACL(ctx context.Context, bucket string, acl *ACL) erro
 		// As a safety precaution, if the caller didn't explicitly set a Grantee
 		// with the FULL_CONTROL permission we set it to the current bucket owner.
 		if acl.FullControl == "" {
-			curACL, err := c.s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
+			curACL, err := c.S3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
 			if err != nil {
 				return fmt.Errorf("unable to retrieve current ACL: %w", err)
 			}
@@ -60,7 +60,7 @@ func (c *Client) SetBucketACL(ctx context.Context, bucket string, acl *ACL) erro
 		}
 	}
 
-	if _, err := c.s3Client.PutBucketAcl(ctx, &s3ACL); err != nil {
+	if _, err := c.S3Client.PutBucketAcl(ctx, &s3ACL); err != nil {
 		return err
 	}
 
@@ -87,7 +87,7 @@ func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL)
 		// As a safety precaution, if the caller didn't explicitly set a Grantee
 		// with the FULL_CONTROL permission we set it to the current object owner.
 		if acl.FullControl == "" {
-			curACL, err := c.s3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
+			curACL, err := c.S3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 				Bucket: s3ACL.Bucket,
 				Key:    s3ACL.Key,
 			})
@@ -102,7 +102,7 @@ func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL)
 		}
 	}
 
-	if _, err := c.s3Client.PutObjectAcl(ctx, &s3ACL); err != nil {
+	if _, err := c.S3Client.PutObjectAcl(ctx, &s3ACL); err != nil {
 		return err
 	}
 
@@ -215,10 +215,10 @@ func storageACLGranteeFromS3(v *s3types.Grantee) string {
 	}
 
 	switch aws.ToString(v.URI) {
-	case storageACLGranteeAllUsers:
+	case ACLGranteeAllUsers:
 		return "ALL_USERS"
 
-	case storageACLGranteeAuthenticatedUsers:
+	case ACLGranteeAuthenticatedUsers:
 		return "AUTHENTICATED_USERS"
 	}
 
@@ -232,13 +232,13 @@ func storageACLGranteeToS3(v string) *s3types.Grantee {
 	case "ALL_USERS":
 		return &s3types.Grantee{
 			Type: s3types.TypeGroup,
-			URI:  aws.String(storageACLGranteeAllUsers),
+			URI:  aws.String(ACLGranteeAllUsers),
 		}
 
 	case "AUTHENTICATED_USERS":
 		return &s3types.Grantee{
 			Type: s3types.TypeGroup,
-			URI:  aws.String(storageACLGranteeAuthenticatedUsers),
+			URI:  aws.String(ACLGranteeAuthenticatedUsers),
 		}
 
 	default:
@@ -257,11 +257,11 @@ func storageACLToCopyObject(acl *s3.GetObjectAclOutput, o *s3.CopyObjectInput) {
 		}
 
 		switch aws.ToString(g.URI) {
-		case storageACLGranteeAllUsers:
-			return aws.String("uri=" + storageACLGranteeAllUsers)
+		case ACLGranteeAllUsers:
+			return aws.String("uri=" + ACLGranteeAllUsers)
 
-		case storageACLGranteeAuthenticatedUsers:
-			return aws.String("uri=" + storageACLGranteeAuthenticatedUsers)
+		case ACLGranteeAuthenticatedUsers:
+			return aws.String("uri=" + ACLGranteeAuthenticatedUsers)
 		}
 
 		return nil

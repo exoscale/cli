@@ -8,6 +8,7 @@ import (
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/smithy-go/middleware"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +27,7 @@ func init() {
 		// We have to wait until the actual command execution to assign a value to this variable
 		// because some of the global variables used are not initialized before Cobra executes
 		// the command.
-		storageCommonConfigOptFns = []func(*awsconfig.LoadOptions) error{
+		sos.CommonConfigOptFns = []func(*awsconfig.LoadOptions) error{
 			// Custom HTTP client User-Agent
 			awsconfig.WithAPIOptions([]func(*middleware.Stack) error{
 				awsmiddleware.AddUserAgentKeyValue("Exoscale-CLI",

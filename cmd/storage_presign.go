@@ -43,13 +43,14 @@ var storagePresignCmd = &cobra.Command{
 		bucket, key = parts[0], parts[1]
 
 		storage, err := sos.NewStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		url, err := storage.GenPresignedURL(method, bucket, key, expires)
+		url, err := storage.GenPresignedURL(gContext, method, bucket, key, expires)
 		if err != nil {
 			return fmt.Errorf("unable to pre-sign %s%s/%s: %w", sos.BucketPrefix, bucket, key, err)
 		}

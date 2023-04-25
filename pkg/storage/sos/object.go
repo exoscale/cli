@@ -50,7 +50,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 			j = len(deleteList)
 		}
 
-		res, err := c.s3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+		res, err := c.S3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: &bucket,
 			Delete: &s3types.Delete{Objects: deleteList[i:j]},
 		})
@@ -70,7 +70,7 @@ func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string
 		err   error
 	)
 
-	psClient := s3.NewPresignClient(c.s3Client, func(o *s3.PresignOptions) {
+	psClient := s3.NewPresignClient(c.S3Client, func(o *s3.PresignOptions) {
 		if expires > 0 {
 			o.Expires = expires
 		}
@@ -101,51 +101,51 @@ func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string
 }
 
 type DownloadConfig struct {
-	bucket      string
-	prefix      string
-	source      string
-	destination string
-	objects     []*s3types.Object
-	recursive   bool
-	overwrite   bool
-	dryRun      bool
+	Bucket      string
+	Prefix      string
+	Source      string
+	Destination string
+	Objects     []*s3types.Object
+	Recursive   bool
+	Overwrite   bool
+	DryRun      bool
 }
 
 func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) error {
-	if len(config.objects) > 1 && !strings.HasSuffix(config.destination, "/") {
+	if len(config.Objects) > 1 && !strings.HasSuffix(config.Destination, "/") {
 		return errors.New(`multiple files to download, destination must end with "/"`)
 	}
 
 	// Handle relative filesystem destination (e.g. ".", "../.." etc.)
-	if dstInfo, err := os.Stat(config.destination); err == nil {
-		if dstInfo.IsDir() && !strings.HasSuffix(config.destination, "/") {
-			config.destination += "/"
+	if dstInfo, err := os.Stat(config.Destination); err == nil {
+		if dstInfo.IsDir() && !strings.HasSuffix(config.Destination, "/") {
+			config.Destination += "/"
 		}
 	}
 
-	if config.dryRun {
+	if config.DryRun {
 		fmt.Println("[DRY-RUN]")
 	}
 
-	for _, object := range config.objects {
+	for _, object := range config.Objects {
 		dst := func() string {
-			if strings.HasSuffix(config.source, "/") {
-				return path.Join(config.destination, strings.TrimPrefix(aws.ToString(object.Key), config.prefix))
+			if strings.HasSuffix(config.Source, "/") {
+				return path.Join(config.Destination, strings.TrimPrefix(aws.ToString(object.Key), config.Prefix))
 			}
 
-			if strings.HasSuffix(config.destination, "/") {
-				return path.Join(config.destination, path.Base(aws.ToString(object.Key)))
+			if strings.HasSuffix(config.Destination, "/") {
+				return path.Join(config.Destination, path.Base(aws.ToString(object.Key)))
 			}
 
-			return path.Join(config.destination)
+			return path.Join(config.Destination)
 		}()
 
-		if config.dryRun {
-			fmt.Printf("%s/%s -> %s\n", config.bucket, aws.ToString(object.Key), dst)
+		if config.DryRun {
+			fmt.Printf("%s/%s -> %s\n", config.Bucket, aws.ToString(object.Key), dst)
 			continue
 		}
 
-		if _, err := os.Stat(dst); err == nil && !config.overwrite {
+		if _, err := os.Stat(dst); err == nil && !config.Overwrite {
 			return fmt.Errorf("file %q already exists, use flag `-f` to overwrite", dst)
 		}
 
@@ -155,7 +155,7 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 			}
 		}
 
-		if err := c.DownloadFile(ctx, config.bucket, object, dst); err != nil {
+		if err := c.DownloadFile(ctx, config.Bucket, object, dst); err != nil {
 			return err
 		}
 	}
@@ -227,7 +227,7 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3type
 	}
 
 	_, err = s3manager.
-		NewDownloader(c.s3Client).
+		NewDownloader(c.S3Client).
 		Download(
 			ctx,
 			// mpb doesn't natively support the io.WriteAt interface expected
@@ -323,7 +323,7 @@ func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursi
 			req.Delimiter = aws.String("/")
 		}
 
-		res, err := c.s3Client.ListObjectsV2(ctx, &req)
+		res, err := c.S3Client.ListObjectsV2(ctx, &req)
 		if err != nil {
 			return nil, err
 		}
@@ -372,19 +372,19 @@ func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursi
 }
 
 type StorageUploadConfig struct {
-	bucket    string
-	prefix    string
-	acl       string
-	recursive bool
-	dryRun    bool
+	Bucket    string
+	Prefix    string
+	Acl       string
+	Recursive bool
+	DryRun    bool
 }
 
 func (c *Client) UploadFiles(ctx context.Context, sources []string, config *StorageUploadConfig) error {
-	if len(sources) > 1 && !strings.HasSuffix(config.prefix, "/") {
+	if len(sources) > 1 && !strings.HasSuffix(config.Prefix, "/") {
 		return errors.New(`multiple files to upload, destination must end with "/"`)
 	}
 
-	if config.dryRun {
+	if config.DryRun {
 		fmt.Println("[DRY-RUN]")
 	}
 
@@ -397,14 +397,14 @@ func (c *Client) UploadFiles(ctx context.Context, sources []string, config *Stor
 		}
 
 		if srcInfo.IsDir() {
-			if !config.recursive {
+			if !config.Recursive {
 				return fmt.Errorf("%q is a directory, use flag `-r` to upload recursively", src)
 			}
 
 			err = filepath.Walk(src, func(filePath string, info os.FileInfo, err error) error {
 				var (
 					key    string
-					prefix = config.prefix
+					prefix = config.Prefix
 				)
 
 				if err != nil {
@@ -456,12 +456,12 @@ func (c *Client) UploadFiles(ctx context.Context, sources []string, config *Stor
 					}
 				}
 
-				if config.dryRun {
-					fmt.Printf("%s -> %s/%s\n", src, config.bucket, key)
+				if config.DryRun {
+					fmt.Printf("%s -> %s/%s\n", src, config.Bucket, key)
 					return nil
 				}
 
-				return c.UploadFile(ctx, config.bucket, filePath, key, config.acl)
+				return c.UploadFile(ctx, config.Bucket, filePath, key, config.Acl)
 			})
 			if err != nil {
 				return err
@@ -469,7 +469,7 @@ func (c *Client) UploadFiles(ctx context.Context, sources []string, config *Stor
 		} else {
 			key := path.Base(src)
 
-			if prefix := config.prefix; prefix != "" {
+			if prefix := config.Prefix; prefix != "" {
 				// The "/" value can be used at command-level to mean that we want to
 				// list from the root of the bucket, but the actual bucket root is an
 				// empty prefix.
@@ -486,12 +486,12 @@ func (c *Client) UploadFiles(ctx context.Context, sources []string, config *Stor
 				}
 			}
 
-			if config.dryRun {
-				fmt.Printf("%s -> %s/%s\n", src, config.bucket, key)
+			if config.DryRun {
+				fmt.Printf("%s -> %s/%s\n", src, config.Bucket, key)
 				continue
 			}
 
-			if err := c.UploadFile(ctx, config.bucket, src, key, config.acl); err != nil {
+			if err := c.UploadFile(ctx, config.Bucket, src, key, config.Acl); err != nil {
 				return err
 			}
 		}
@@ -568,7 +568,7 @@ func (c *Client) UploadFile(ctx context.Context, bucket, file, key, acl string) 
 	}
 
 	_, err = s3manager.
-		NewUploader(c.s3Client, partSizeOpt).
+		NewUploader(c.S3Client, partSizeOpt).
 		Upload(ctx, &putObjectInput)
 
 	pb.Wait()
@@ -614,7 +614,7 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 }
 
 func (c *Client) ShowObject(ctx context.Context, bucket, key string) (output.Outputter, error) {
-	object, err := c.s3Client.GetObject(ctx, &s3.GetObjectInput{
+	object, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -622,7 +622,7 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (output.Out
 		return nil, fmt.Errorf("unable to retrieve object information: %w", err)
 	}
 
-	acl, err := c.s3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
+	acl, err := c.S3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})

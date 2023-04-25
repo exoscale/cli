@@ -45,18 +45,19 @@ Supported output template annotations: %s`,
 		}
 
 		storage, err := sos.NewStorageClient(
-			storageClientOptWithZone(zone),
+			gContext,
+			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.CreateBucket(bucket, acl); err != nil {
+		if err := storage.CreateNewBucket(gContext, bucket, acl); err != nil {
 			return fmt.Errorf("unable to create bucket: %w", err)
 		}
 
 		if !globalstate.Quiet {
-			return printOutput(storage.ShowBucket(bucket))
+			return printOutput(storage.ShowBucket(gContext, bucket))
 		}
 
 		return nil

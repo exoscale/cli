@@ -91,7 +91,7 @@ func Execute(version, commit string) {
 }
 
 func init() {
-	account.CurrentAccount = &Account{
+	account.CurrentAccount = &account.Account{
 		DefaultZone:     defaultZone,
 		DefaultTemplate: defaultTemplate,
 		Endpoint:        defaultEndpoint,

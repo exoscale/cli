@@ -53,9 +53,9 @@ Examples:
 		if err != nil {
 			return err
 		}
-		if acl != "" && !utils.IsInList(s3ObjectCannedACLToStrings(), acl) {
+		if acl != "" && !utils.IsInList(sos.ObjectCannedACLToStrings(), acl) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
-				acl, strings.Join(s3ObjectCannedACLToStrings(), ", "))
+				acl, strings.Join(sos.ObjectCannedACLToStrings(), ", "))
 		}
 
 		dryRun, err := cmd.Flags().GetBool("dry-run")
@@ -85,25 +85,26 @@ Examples:
 		}
 
 		storage, err := sos.NewStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return storage.UploadFiles(sources, &sos.StorageUploadConfig{
-			bucket:    bucket,
-			prefix:    prefix,
-			acl:       acl,
-			recursive: recursive,
-			dryRun:    dryRun,
+		return storage.UploadFiles(gContext, sources, &sos.StorageUploadConfig{
+			Bucket:    bucket,
+			Prefix:    prefix,
+			Acl:       acl,
+			Recursive: recursive,
+			DryRun:    dryRun,
 		})
 	},
 }
 
 func init() {
 	storageUploadCmd.Flags().String("acl", "",
-		fmt.Sprintf("canned ACL to set on object (%s)", strings.Join(s3ObjectCannedACLToStrings(), "|")))
+		fmt.Sprintf("canned ACL to set on object (%s)", strings.Join(sos.ObjectCannedACLToStrings(), "|")))
 	storageUploadCmd.Flags().BoolP("dry-run", "n", false,
 		"simulate files upload, don't actually do it")
 	storageUploadCmd.Flags().BoolP("recursive", "r", false,

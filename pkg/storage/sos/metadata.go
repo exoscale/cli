@@ -29,7 +29,7 @@ func (c *Client) AddObjectMetadata(ctx context.Context, bucket, key string, meta
 		object.Metadata[k] = v
 	}
 
-	_, err = c.s3Client.CopyObject(ctx, object)
+	_, err = c.S3Client.CopyObject(ctx, object)
 	return err
 }
 
@@ -52,7 +52,7 @@ func (c *Client) DeleteObjectMetadata(ctx context.Context, bucket, key string, m
 		delete(object.Metadata, k)
 	}
 
-	_, err = c.s3Client.CopyObject(ctx, object)
+	_, err = c.S3Client.CopyObject(ctx, object)
 	return err
 }
 
