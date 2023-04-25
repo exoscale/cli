@@ -35,9 +35,9 @@ type instancePoolShowOutput struct {
 }
 
 func (o *instancePoolShowOutput) Type() string { return "Instance Pool" }
-func (o *instancePoolShowOutput) toJSON()      { output.JSON(o) }
-func (o *instancePoolShowOutput) toText()      { output.Text(o) }
-func (o *instancePoolShowOutput) toTable()     { output.Table(o) }
+func (o *instancePoolShowOutput) ToJSON()      { output.JSON(o) }
+func (o *instancePoolShowOutput) ToText()      { output.Text(o) }
+func (o *instancePoolShowOutput) ToTable()     { output.Table(o) }
 
 type instancePoolShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

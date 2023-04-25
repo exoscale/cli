@@ -33,9 +33,9 @@ type privateNetworkShowOutput struct {
 	Leases      []privateNetworkLeaseOutput `json:"leases,omitempty"`
 }
 
-func (o *privateNetworkShowOutput) toJSON() { output.JSON(o) }
-func (o *privateNetworkShowOutput) toText() { output.Text(o) }
-func (o *privateNetworkShowOutput) toTable() {
+func (o *privateNetworkShowOutput) ToJSON() { output.JSON(o) }
+func (o *privateNetworkShowOutput) ToText() { output.Text(o) }
+func (o *privateNetworkShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Private Network"})
 	defer t.Render()

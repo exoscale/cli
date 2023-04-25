@@ -16,9 +16,9 @@ type apiKeyShowItemOutput struct {
 	Type       string   `json:"type"`
 }
 
-func (o *apiKeyShowItemOutput) toJSON()  { output.JSON(o) }
-func (o *apiKeyShowItemOutput) toText()  { output.Text(o) }
-func (o *apiKeyShowItemOutput) toTable() { output.Table(o) }
+func (o *apiKeyShowItemOutput) ToJSON()  { output.JSON(o) }
+func (o *apiKeyShowItemOutput) ToText()  { output.Text(o) }
+func (o *apiKeyShowItemOutput) ToTable() { output.Table(o) }
 
 var apiKeyShowCmd = &cobra.Command{
 	Use:   "show KEY|NAME",

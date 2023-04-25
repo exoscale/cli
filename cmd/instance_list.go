@@ -29,9 +29,9 @@ type instanceListItemOutput struct {
 
 type instanceListOutput []instanceListItemOutput
 
-func (o *instanceListOutput) toJSON()  { output.JSON(o) }
-func (o *instanceListOutput) toText()  { output.Text(o) }
-func (o *instanceListOutput) toTable() { output.Table(o) }
+func (o *instanceListOutput) ToJSON()  { output.JSON(o) }
+func (o *instanceListOutput) ToText()  { output.Text(o) }
+func (o *instanceListOutput) ToTable() { output.Table(o) }
 
 type instanceListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

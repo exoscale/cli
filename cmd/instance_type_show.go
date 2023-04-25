@@ -23,9 +23,9 @@ type instanceTypeShowOutput struct {
 	Authorized bool   `json:"authorized"`
 }
 
-func (o *instanceTypeShowOutput) toJSON() { output.JSON(o) }
-func (o *instanceTypeShowOutput) toText() { output.Text(o) }
-func (o *instanceTypeShowOutput) toTable() {
+func (o *instanceTypeShowOutput) ToJSON() { output.JSON(o) }
+func (o *instanceTypeShowOutput) ToText() { output.Text(o) }
+func (o *instanceTypeShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Instance Type"})
 	defer t.Render()

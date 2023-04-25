@@ -25,9 +25,9 @@ type dnsShowItemOutput struct {
 
 type dnsShowOutput []dnsShowItemOutput
 
-func (o *dnsShowOutput) toJSON()  { output.JSON(o) }
-func (o *dnsShowOutput) toText()  { output.Text(o) }
-func (o *dnsShowOutput) toTable() { output.Table(o) }
+func (o *dnsShowOutput) ToJSON()  { output.JSON(o) }
+func (o *dnsShowOutput) ToText()  { output.Text(o) }
+func (o *dnsShowOutput) ToTable() { output.Table(o) }
 
 func init() {
 	dnsShowCmd := &cobra.Command{

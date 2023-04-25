@@ -36,9 +36,9 @@ func JSON(o interface{}) {
 //   - outputLabel:"..." overrides the string displayed as label, which by
 //     default is the field's CamelCase named split with spaces
 type Outputter interface {
-	toTable()
-	toJSON()
-	toText()
+	ToTable()
+	ToJSON()
+	ToText()
 }
 
 // Text prints a template-based plain text rendering of o to the

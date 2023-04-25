@@ -19,9 +19,9 @@ type firewallListItemOutput struct {
 
 type firewallListOutput []firewallListItemOutput
 
-func (o *firewallListOutput) toJSON()  { output.JSON(o) }
-func (o *firewallListOutput) toText()  { output.Text(o) }
-func (o *firewallListOutput) toTable() { output.Table(o) }
+func (o *firewallListOutput) ToJSON()  { output.JSON(o) }
+func (o *firewallListOutput) ToText()  { output.Text(o) }
+func (o *firewallListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	firewallCmd.AddCommand(&cobra.Command{

@@ -19,9 +19,9 @@ type securityGroupListItemOutput struct {
 
 type securityGroupListOutput []securityGroupListItemOutput
 
-func (o *securityGroupListOutput) toJSON()  { output.JSON(o) }
-func (o *securityGroupListOutput) toText()  { output.Text(o) }
-func (o *securityGroupListOutput) toTable() { output.Table(o) }
+func (o *securityGroupListOutput) ToJSON()  { output.JSON(o) }
+func (o *securityGroupListOutput) ToText()  { output.Text(o) }
+func (o *securityGroupListOutput) ToTable() { output.Table(o) }
 
 type securityGroupListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

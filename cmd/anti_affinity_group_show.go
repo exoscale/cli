@@ -18,9 +18,9 @@ type antiAffinityGroupShowOutput struct {
 	Instances   []string `json:"instances"`
 }
 
-func (o *antiAffinityGroupShowOutput) toJSON()  { output.JSON(o) }
-func (o *antiAffinityGroupShowOutput) toText()  { output.Text(o) }
-func (o *antiAffinityGroupShowOutput) toTable() { output.Table(o) }
+func (o *antiAffinityGroupShowOutput) ToJSON()  { output.JSON(o) }
+func (o *antiAffinityGroupShowOutput) ToText()  { output.Text(o) }
+func (o *antiAffinityGroupShowOutput) ToTable() { output.Table(o) }
 
 type antiAffinityGroupShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

@@ -30,11 +30,11 @@ type runstatusIncidentShowOutput struct {
 	Events           []runstatusIncidentEventShowOutput `json:"events,omitempty"`
 }
 
-func (o *runstatusIncidentShowOutput) toJSON() { output.JSON(o) }
+func (o *runstatusIncidentShowOutput) ToJSON() { output.JSON(o) }
 
-func (o *runstatusIncidentShowOutput) toText() { output.Text(o) }
+func (o *runstatusIncidentShowOutput) ToText() { output.Text(o) }
 
-func (o *runstatusIncidentShowOutput) toTable() {
+func (o *runstatusIncidentShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Incident"})
 

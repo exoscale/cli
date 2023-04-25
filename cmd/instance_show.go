@@ -35,9 +35,9 @@ type instanceShowOutput struct {
 }
 
 func (o *instanceShowOutput) Type() string { return "Compute instance" }
-func (o *instanceShowOutput) toJSON()      { output.JSON(o) }
-func (o *instanceShowOutput) toText()      { output.Text(o) }
-func (o *instanceShowOutput) toTable()     { output.Table(o) }
+func (o *instanceShowOutput) ToJSON()      { output.JSON(o) }
+func (o *instanceShowOutput) ToText()      { output.Text(o) }
+func (o *instanceShowOutput) ToTable()     { output.Table(o) }
 
 type instanceShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

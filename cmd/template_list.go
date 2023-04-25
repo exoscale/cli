@@ -19,9 +19,9 @@ type templateListItemOutput struct {
 
 type templateListOutput []templateListItemOutput
 
-func (o *templateListOutput) toJSON()  { output.JSON(o) }
-func (o *templateListOutput) toText()  { output.Text(o) }
-func (o *templateListOutput) toTable() { output.Table(o) }
+func (o *templateListOutput) ToJSON()  { output.JSON(o) }
+func (o *templateListOutput) ToText()  { output.Text(o) }
+func (o *templateListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	templateListCmd.Flags().BoolP("community", "", false, "List community templates")

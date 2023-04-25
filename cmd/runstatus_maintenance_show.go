@@ -20,9 +20,9 @@ type runstatusMaintenanceShowOutput struct {
 }
 
 func (o *runstatusMaintenanceShowOutput) Type() string { return "Maintenance" }
-func (o *runstatusMaintenanceShowOutput) toJSON()      { output.JSON(o) }
-func (o *runstatusMaintenanceShowOutput) toText()      { output.Text(o) }
-func (o *runstatusMaintenanceShowOutput) toTable()     { output.Table(o) }
+func (o *runstatusMaintenanceShowOutput) ToJSON()      { output.JSON(o) }
+func (o *runstatusMaintenanceShowOutput) ToText()      { output.Text(o) }
+func (o *runstatusMaintenanceShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(

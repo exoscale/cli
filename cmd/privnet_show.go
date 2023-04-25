@@ -20,9 +20,9 @@ type privnetShowOutput struct {
 }
 
 func (o *privnetShowOutput) Type() string { return "Private Network" }
-func (o *privnetShowOutput) toJSON()      { output.JSON(o) }
-func (o *privnetShowOutput) toText()      { output.Text(o) }
-func (o *privnetShowOutput) toTable()     { output.Table(o) }
+func (o *privnetShowOutput) ToJSON()      { output.JSON(o) }
+func (o *privnetShowOutput) ToText()      { output.Text(o) }
+func (o *privnetShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	privnetCmd.AddCommand(&cobra.Command{

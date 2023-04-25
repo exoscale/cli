@@ -18,11 +18,11 @@ type configListItemOutput struct {
 
 type configListOutput []configListItemOutput
 
-func (o *configListOutput) toJSON() { output.JSON(o) }
+func (o *configListOutput) ToJSON() { output.JSON(o) }
 
-func (o *configListOutput) toText() { output.Text(o) }
+func (o *configListOutput) ToText() { output.Text(o) }
 
-func (o *configListOutput) toTable() {
+func (o *configListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Accounts"})
 

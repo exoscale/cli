@@ -44,9 +44,9 @@ type securityGroupInstanceOutput struct {
 	Zone     string `json:"zone"`
 }
 
-func (o *securityGroupShowOutput) toJSON() { output.JSON(o) }
-func (o *securityGroupShowOutput) toText() { output.Text(o) }
-func (o *securityGroupShowOutput) toTable() {
+func (o *securityGroupShowOutput) ToJSON() { output.JSON(o) }
+func (o *securityGroupShowOutput) ToText() { output.Text(o) }
+func (o *securityGroupShowOutput) ToTable() {
 	formatExternalSources := func(sources []string) string {
 		if len(sources) > 0 {
 			return strings.Join(sources, ", ")

@@ -21,9 +21,9 @@ type instanceTemplateListItemOutput struct {
 
 type instanceTemplateListOutput []instanceTemplateListItemOutput
 
-func (o *instanceTemplateListOutput) toJSON()  { output.JSON(o) }
-func (o *instanceTemplateListOutput) toText()  { output.Text(o) }
-func (o *instanceTemplateListOutput) toTable() { output.Table(o) }
+func (o *instanceTemplateListOutput) ToJSON()  { output.JSON(o) }
+func (o *instanceTemplateListOutput) ToText()  { output.Text(o) }
+func (o *instanceTemplateListOutput) ToTable() { output.Table(o) }
 
 type instanceTemplateListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

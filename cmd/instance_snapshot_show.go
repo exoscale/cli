@@ -22,9 +22,9 @@ type instanceSnapshotShowOutput struct {
 }
 
 func (o *instanceSnapshotShowOutput) Type() string { return "Snapshot" }
-func (o *instanceSnapshotShowOutput) toJSON()      { output.JSON(o) }
-func (o *instanceSnapshotShowOutput) toText()      { output.Text(o) }
-func (o *instanceSnapshotShowOutput) toTable()     { output.Table(o) }
+func (o *instanceSnapshotShowOutput) ToJSON()      { output.JSON(o) }
+func (o *instanceSnapshotShowOutput) ToText()      { output.Text(o) }
+func (o *instanceSnapshotShowOutput) ToTable()     { output.Table(o) }
 
 type instanceSnapshotShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

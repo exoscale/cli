@@ -19,9 +19,9 @@ type affinityGroupListItemOutput struct {
 
 type affinityGroupListOutput []affinityGroupListItemOutput
 
-func (o *affinityGroupListOutput) toJSON()  { output.JSON(o) }
-func (o *affinityGroupListOutput) toText()  { output.Text(o) }
-func (o *affinityGroupListOutput) toTable() { output.Table(o) }
+func (o *affinityGroupListOutput) ToJSON()  { output.JSON(o) }
+func (o *affinityGroupListOutput) ToText()  { output.Text(o) }
+func (o *affinityGroupListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	affinitygroupCmd.AddCommand(&cobra.Command{

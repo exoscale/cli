@@ -20,9 +20,9 @@ type deployTargetListItemOutput struct {
 
 type deployTargetListOutput []deployTargetListItemOutput
 
-func (o *deployTargetListOutput) toJSON()  { output.JSON(o) }
-func (o *deployTargetListOutput) toText()  { output.Text(o) }
-func (o *deployTargetListOutput) toTable() { output.Table(o) }
+func (o *deployTargetListOutput) ToJSON()  { output.JSON(o) }
+func (o *deployTargetListOutput) ToText()  { output.Text(o) }
+func (o *deployTargetListOutput) ToTable() { output.Table(o) }
 
 type deployTargetListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

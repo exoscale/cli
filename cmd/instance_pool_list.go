@@ -21,9 +21,9 @@ type instancePoolListItemOutput struct {
 
 type instancePoolListOutput []instancePoolListItemOutput
 
-func (o *instancePoolListOutput) toJSON()  { output.JSON(o) }
-func (o *instancePoolListOutput) toText()  { output.Text(o) }
-func (o *instancePoolListOutput) toTable() { output.Table(o) }
+func (o *instancePoolListOutput) ToJSON()  { output.JSON(o) }
+func (o *instancePoolListOutput) ToText()  { output.Text(o) }
+func (o *instancePoolListOutput) ToTable() { output.Table(o) }
 
 type instancePoolListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

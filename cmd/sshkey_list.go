@@ -17,9 +17,9 @@ type sshkeyListItemOutput struct {
 
 type sshkeyListOutput []sshkeyListItemOutput
 
-func (o *sshkeyListOutput) toJSON()  { output.JSON(o) }
-func (o *sshkeyListOutput) toText()  { output.Text(o) }
-func (o *sshkeyListOutput) toTable() { output.Table(o) }
+func (o *sshkeyListOutput) ToJSON()  { output.JSON(o) }
+func (o *sshkeyListOutput) ToText()  { output.Text(o) }
+func (o *sshkeyListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	sshkeyCmd.AddCommand(&cobra.Command{

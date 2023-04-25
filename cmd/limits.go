@@ -31,9 +31,9 @@ type LimitsItemOutput struct {
 
 type LimitsOutput []LimitsItemOutput
 
-func (o *LimitsOutput) toJSON()  { output.JSON(o) }
-func (o *LimitsOutput) toText()  { output.Text(o) }
-func (o *LimitsOutput) toTable() { output.Table(o) }
+func (o *LimitsOutput) ToJSON()  { output.JSON(o) }
+func (o *LimitsOutput) ToText()  { output.Text(o) }
+func (o *LimitsOutput) ToTable() { output.Table(o) }
 
 var limitsCmd = &cobra.Command{
 	Use:   "limits",

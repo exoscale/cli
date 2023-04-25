@@ -23,9 +23,9 @@ type instanceSnapshotListItemOutput struct {
 
 type instanceSnapshotListOutput []instanceSnapshotListItemOutput
 
-func (o *instanceSnapshotListOutput) toJSON()  { output.JSON(o) }
-func (o *instanceSnapshotListOutput) toText()  { output.Text(o) }
-func (o *instanceSnapshotListOutput) toTable() { output.Table(o) }
+func (o *instanceSnapshotListOutput) ToJSON()  { output.JSON(o) }
+func (o *instanceSnapshotListOutput) ToText()  { output.Text(o) }
+func (o *instanceSnapshotListOutput) ToTable() { output.Table(o) }
 
 type instanceSnapshotListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

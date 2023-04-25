@@ -26,9 +26,9 @@ type snapshotExportOutput struct {
 	Checksum string `json:"checksum"`
 }
 
-func (o *snapshotExportOutput) toJSON()  { output.JSON(o) }
-func (o *snapshotExportOutput) toText()  { output.Text(o) }
-func (o *snapshotExportOutput) toTable() { output.Table(o) }
+func (o *snapshotExportOutput) ToJSON()  { output.JSON(o) }
+func (o *snapshotExportOutput) ToText()  { output.Text(o) }
+func (o *snapshotExportOutput) ToTable() { output.Table(o) }
 
 var snapshotExportCmd = &cobra.Command{
 	Use:   "export ID",

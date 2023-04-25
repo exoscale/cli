@@ -36,9 +36,9 @@ type elasticIPShowOutput struct {
 	HealthcheckTLSSkipVerify *bool          `json:"healthcheck_tls_skip_verify,omitempty"`
 }
 
-func (o *elasticIPShowOutput) toJSON() { output.JSON(o) }
-func (o *elasticIPShowOutput) toText() { output.Text(o) }
-func (o *elasticIPShowOutput) toTable() {
+func (o *elasticIPShowOutput) ToJSON() { output.JSON(o) }
+func (o *elasticIPShowOutput) ToText() { output.Text(o) }
+func (o *elasticIPShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Elastic IP"})
 	defer t.Render()

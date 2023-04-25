@@ -18,9 +18,9 @@ type apiKeyOperationsItemOutput struct {
 	SOS     []string `json:"sos,omitempty"`
 }
 
-func (o *apiKeyOperationsItemOutput) toJSON()  { output.JSON(o) }
-func (o *apiKeyOperationsItemOutput) toText()  { output.Text(o) }
-func (o *apiKeyOperationsItemOutput) toTable() { output.Table(o) }
+func (o *apiKeyOperationsItemOutput) ToJSON()  { output.JSON(o) }
+func (o *apiKeyOperationsItemOutput) ToText()  { output.Text(o) }
+func (o *apiKeyOperationsItemOutput) ToTable() { output.Table(o) }
 
 var apiKeyOperationsCmd = &cobra.Command{
 	Use:   "operations [FILTER]...",

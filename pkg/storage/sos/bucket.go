@@ -25,9 +25,9 @@ type ShowBucketOutput struct {
 	CORS []CORSRule `json:"cors"`
 }
 
-func (o *ShowBucketOutput) toJSON() { output.JSON(o) }
-func (o *ShowBucketOutput) toText() { output.Text(o) }
-func (o *ShowBucketOutput) toTable() {
+func (o *ShowBucketOutput) ToJSON() { output.JSON(o) }
+func (o *ShowBucketOutput) ToText() { output.Text(o) }
+func (o *ShowBucketOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 	t.SetHeader([]string{"Storage"})
@@ -142,9 +142,9 @@ type storageBucketObjectOwnershipOutput struct {
 	ObjectOwnership string `json:"objectOwnership"`
 }
 
-func (o *storageBucketObjectOwnershipOutput) toJSON() { output.JSON(o) }
-func (o *storageBucketObjectOwnershipOutput) toText() { output.Text(o) }
-func (o *storageBucketObjectOwnershipOutput) toTable() {
+func (o *storageBucketObjectOwnershipOutput) ToJSON() { output.JSON(o) }
+func (o *storageBucketObjectOwnershipOutput) ToText() { output.Text(o) }
+func (o *storageBucketObjectOwnershipOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 	t.SetHeader([]string{"Bucket Object Ownership"})

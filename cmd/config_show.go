@@ -23,9 +23,9 @@ type configShowOutput struct {
 }
 
 func (o *configShowOutput) Type() string { return "Account" }
-func (o *configShowOutput) toJSON()      { output.JSON(o) }
-func (o *configShowOutput) toText()      { output.Text(o) }
-func (o *configShowOutput) toTable()     { output.Table(o) }
+func (o *configShowOutput) ToJSON()      { output.JSON(o) }
+func (o *configShowOutput) ToText()      { output.Text(o) }
+func (o *configShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	configCmd.AddCommand(&cobra.Command{

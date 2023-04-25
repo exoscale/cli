@@ -24,19 +24,19 @@ func printOutput(o output.Outputter, err error) error {
 	}
 
 	if output.GOutputTemplate != "" {
-		o.toText()
+		o.ToText()
 		return nil
 	}
 
 	switch globalstate.OutputFormat {
 	case "json":
-		o.toJSON()
+		o.ToJSON()
 
 	case "text":
-		o.toText()
+		o.ToText()
 
 	default:
-		o.toTable()
+		o.ToTable()
 	}
 
 	return nil

@@ -45,9 +45,9 @@ type nlbServiceShowOutput struct {
 	State             string                          `json:"state"`
 }
 
-func (o *nlbServiceShowOutput) toJSON() { output.JSON(o) }
-func (o *nlbServiceShowOutput) toText() { output.Text(o) }
-func (o *nlbServiceShowOutput) toTable() {
+func (o *nlbServiceShowOutput) ToJSON() { output.JSON(o) }
+func (o *nlbServiceShowOutput) ToText() { output.Text(o) }
+func (o *nlbServiceShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"NLB Service"})
 	defer t.Render()

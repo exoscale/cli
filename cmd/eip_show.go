@@ -33,11 +33,11 @@ type eipShowOutput struct {
 	Instances   []string                  `json:"instances"`
 }
 
-func (o *eipShowOutput) toJSON() { output.JSON(o) }
+func (o *eipShowOutput) ToJSON() { output.JSON(o) }
 
-func (o *eipShowOutput) toText() { output.Text(o) }
+func (o *eipShowOutput) ToText() { output.Text(o) }
 
-func (o *eipShowOutput) toTable() {
+func (o *eipShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Elastic IP"})
 

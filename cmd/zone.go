@@ -32,9 +32,9 @@ type zoneListItemOutput struct {
 
 type zoneListOutput []zoneListItemOutput
 
-func (o *zoneListOutput) toJSON()  { output.JSON(o) }
-func (o *zoneListOutput) toText()  { output.Text(o) }
-func (o *zoneListOutput) toTable() { output.Table(o) }
+func (o *zoneListOutput) ToJSON()  { output.JSON(o) }
+func (o *zoneListOutput) ToText()  { output.Text(o) }
+func (o *zoneListOutput) ToTable() { output.Table(o) }
 
 func (o zoneListOutput) Len() int           { return len(o) }
 func (o zoneListOutput) Swap(x, y int)      { o[x], o[y] = o[y], o[x] }

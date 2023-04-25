@@ -20,9 +20,9 @@ type eipListItemOutput struct {
 
 type eipListOutput []eipListItemOutput
 
-func (o *eipListOutput) toJSON()  { output.JSON(o) }
-func (o *eipListOutput) toText()  { output.Text(o) }
-func (o *eipListOutput) toTable() { output.Table(o) }
+func (o *eipListOutput) ToJSON()  { output.JSON(o) }
+func (o *eipListOutput) ToText()  { output.Text(o) }
+func (o *eipListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	eipListCmd := &cobra.Command{

@@ -23,9 +23,9 @@ type templateShowOutput struct {
 }
 
 func (o *templateShowOutput) Type() string { return "Template" }
-func (o *templateShowOutput) toJSON()      { output.JSON(o) }
-func (o *templateShowOutput) toText()      { output.Text(o) }
-func (o *templateShowOutput) toTable()     { output.Table(o) }
+func (o *templateShowOutput) ToJSON()      { output.JSON(o) }
+func (o *templateShowOutput) ToText()      { output.Text(o) }
+func (o *templateShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	templateShowCmd := &cobra.Command{

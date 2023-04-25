@@ -20,9 +20,9 @@ type dbaasServiceListItemOutput struct {
 
 type dbaasServiceListOutput []dbaasServiceListItemOutput
 
-func (o *dbaasServiceListOutput) toJSON()  { output.JSON(o) }
-func (o *dbaasServiceListOutput) toText()  { output.Text(o) }
-func (o *dbaasServiceListOutput) toTable() { output.Table(o) }
+func (o *dbaasServiceListOutput) ToJSON()  { output.JSON(o) }
+func (o *dbaasServiceListOutput) ToText()  { output.Text(o) }
+func (o *dbaasServiceListOutput) ToTable() { output.Table(o) }
 
 type dbaasServiceListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

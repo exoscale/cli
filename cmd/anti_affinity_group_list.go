@@ -17,9 +17,9 @@ type antiAffinityGroupListItemOutput struct {
 
 type antiAffinityGroupListOutput []antiAffinityGroupListItemOutput
 
-func (o *antiAffinityGroupListOutput) toJSON()  { output.JSON(o) }
-func (o *antiAffinityGroupListOutput) toText()  { output.Text(o) }
-func (o *antiAffinityGroupListOutput) toTable() { output.Table(o) }
+func (o *antiAffinityGroupListOutput) ToJSON()  { output.JSON(o) }
+func (o *antiAffinityGroupListOutput) ToText()  { output.Text(o) }
+func (o *antiAffinityGroupListOutput) ToTable() { output.Table(o) }
 
 type antiAffinityGroupListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

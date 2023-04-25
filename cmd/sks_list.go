@@ -19,9 +19,9 @@ type sksClusterListItemOutput struct {
 
 type sksClusterListOutput []sksClusterListItemOutput
 
-func (o *sksClusterListOutput) toJSON()  { output.JSON(o) }
-func (o *sksClusterListOutput) toText()  { output.Text(o) }
-func (o *sksClusterListOutput) toTable() { output.Table(o) }
+func (o *sksClusterListOutput) ToJSON()  { output.JSON(o) }
+func (o *sksClusterListOutput) ToText()  { output.Text(o) }
+func (o *sksClusterListOutput) ToTable() { output.Table(o) }
 
 type sksListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

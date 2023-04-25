@@ -20,11 +20,11 @@ type dnsListItemOutput struct {
 
 type dnsListOutput []dnsListItemOutput
 
-func (o *dnsListOutput) toJSON() { output.JSON(o) }
+func (o *dnsListOutput) ToJSON() { output.JSON(o) }
 
-func (o *dnsListOutput) toText() { output.Text(o) }
+func (o *dnsListOutput) ToText() { output.Text(o) }
 
-func (o *dnsListOutput) toTable() {
+func (o *dnsListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"ID", "Name"})
 

@@ -22,9 +22,9 @@ type sksNodepoolListItemOutput struct {
 
 type sksNodepoolListOutput []sksNodepoolListItemOutput
 
-func (o *sksNodepoolListOutput) toJSON()  { output.JSON(o) }
-func (o *sksNodepoolListOutput) toText()  { output.Text(o) }
-func (o *sksNodepoolListOutput) toTable() { output.Table(o) }
+func (o *sksNodepoolListOutput) ToJSON()  { output.JSON(o) }
+func (o *sksNodepoolListOutput) ToText()  { output.Text(o) }
+func (o *sksNodepoolListOutput) ToTable() { output.Table(o) }
 
 type sksNodepoolListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

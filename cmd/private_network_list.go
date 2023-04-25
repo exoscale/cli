@@ -19,9 +19,9 @@ type privateNetworkListItemOutput struct {
 
 type privateNetworkListOutput []privateNetworkListItemOutput
 
-func (o *privateNetworkListOutput) toJSON()  { output.JSON(o) }
-func (o *privateNetworkListOutput) toText()  { output.Text(o) }
-func (o *privateNetworkListOutput) toTable() { output.Table(o) }
+func (o *privateNetworkListOutput) ToJSON()  { output.JSON(o) }
+func (o *privateNetworkListOutput) ToText()  { output.Text(o) }
+func (o *privateNetworkListOutput) ToTable() { output.Table(o) }
 
 type privateNetworkListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

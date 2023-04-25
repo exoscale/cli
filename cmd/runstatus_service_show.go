@@ -16,9 +16,9 @@ type runstatusServiceShowOutput struct {
 }
 
 func (o *runstatusServiceShowOutput) Type() string { return "Service" }
-func (o *runstatusServiceShowOutput) toJSON()      { output.JSON(o) }
-func (o *runstatusServiceShowOutput) toText()      { output.Text(o) }
-func (o *runstatusServiceShowOutput) toTable()     { output.Table(o) }
+func (o *runstatusServiceShowOutput) ToJSON()      { output.JSON(o) }
+func (o *runstatusServiceShowOutput) ToText()      { output.Text(o) }
+func (o *runstatusServiceShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	runstatusServiceCmd.AddCommand(&cobra.Command{

@@ -31,9 +31,9 @@ type vmShowOutput struct {
 }
 
 func (o *vmShowOutput) Type() string { return "Instance" }
-func (o *vmShowOutput) toJSON()      { output.JSON(o) }
-func (o *vmShowOutput) toText()      { output.Text(o) }
-func (o *vmShowOutput) toTable()     { output.Table(o) }
+func (o *vmShowOutput) ToJSON()      { output.JSON(o) }
+func (o *vmShowOutput) ToText()      { output.Text(o) }
+func (o *vmShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	vmShowCmd := &cobra.Command{

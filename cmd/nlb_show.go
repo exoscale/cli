@@ -27,9 +27,9 @@ type nlbShowOutput struct {
 	Labels       map[string]string      `json:"labels"`
 }
 
-func (o *nlbShowOutput) toJSON() { output.JSON(o) }
-func (o *nlbShowOutput) toText() { output.Text(o) }
-func (o *nlbShowOutput) toTable() {
+func (o *nlbShowOutput) ToJSON() { output.JSON(o) }
+func (o *nlbShowOutput) ToText() { output.Text(o) }
+func (o *nlbShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Network Load Balancer"})
 	defer t.Render()

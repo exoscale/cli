@@ -21,9 +21,9 @@ type vmListItemOutput struct {
 
 type vmListOutput []vmListItemOutput
 
-func (o *vmListOutput) toJSON()  { output.JSON(o) }
-func (o *vmListOutput) toText()  { output.Text(o) }
-func (o *vmListOutput) toTable() { output.Table(o) }
+func (o *vmListOutput) ToJSON()  { output.JSON(o) }
+func (o *vmListOutput) ToText()  { output.Text(o) }
+func (o *vmListOutput) ToTable() { output.Table(o) }
 func (o *vmListOutput) names() []string {
 	names := make([]string, len(*o))
 	for i, item := range *o {

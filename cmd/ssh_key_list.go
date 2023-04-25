@@ -17,9 +17,9 @@ type computeSSHKeyListItemOutput struct {
 
 type computeSSHKeyListOutput []computeSSHKeyListItemOutput
 
-func (o *computeSSHKeyListOutput) toJSON()  { output.JSON(o) }
-func (o *computeSSHKeyListOutput) toText()  { output.Text(o) }
-func (o *computeSSHKeyListOutput) toTable() { output.Table(o) }
+func (o *computeSSHKeyListOutput) ToJSON()  { output.JSON(o) }
+func (o *computeSSHKeyListOutput) ToText()  { output.Text(o) }
+func (o *computeSSHKeyListOutput) ToTable() { output.Table(o) }
 
 type computeSSHKeyListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

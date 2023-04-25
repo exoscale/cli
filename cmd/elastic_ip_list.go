@@ -19,9 +19,9 @@ type elasticIPListItemOutput struct {
 
 type elasticIPListOutput []elasticIPListItemOutput
 
-func (o *elasticIPListOutput) toJSON()  { output.JSON(o) }
-func (o *elasticIPListOutput) toText()  { output.Text(o) }
-func (o *elasticIPListOutput) toTable() { output.Table(o) }
+func (o *elasticIPListOutput) ToJSON()  { output.JSON(o) }
+func (o *elasticIPListOutput) ToText()  { output.Text(o) }
+func (o *elasticIPListOutput) ToTable() { output.Table(o) }
 
 type elasticIPListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

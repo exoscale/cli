@@ -23,9 +23,9 @@ type snapshotShowOutput struct {
 }
 
 func (o *snapshotShowOutput) Type() string { return "Snapshot" }
-func (o *snapshotShowOutput) toJSON()      { output.JSON(o) }
-func (o *snapshotShowOutput) toText()      { output.Text(o) }
-func (o *snapshotShowOutput) toTable()     { output.Table(o) }
+func (o *snapshotShowOutput) ToJSON()      { output.JSON(o) }
+func (o *snapshotShowOutput) ToText()      { output.Text(o) }
+func (o *snapshotShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{

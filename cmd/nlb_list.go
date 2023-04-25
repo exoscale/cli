@@ -21,9 +21,9 @@ type nlbListItemOutput struct {
 
 type nlbListOutput []nlbListItemOutput
 
-func (o *nlbListOutput) toJSON()  { output.JSON(o) }
-func (o *nlbListOutput) toText()  { output.Text(o) }
-func (o *nlbListOutput) toTable() { output.Table(o) }
+func (o *nlbListOutput) ToJSON()  { output.JSON(o) }
+func (o *nlbListOutput) ToText()  { output.Text(o) }
+func (o *nlbListOutput) ToTable() { output.Table(o) }
 
 type nlbListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

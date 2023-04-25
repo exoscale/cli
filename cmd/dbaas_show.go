@@ -21,9 +21,9 @@ type dbServiceNotificationListItemOutput struct {
 
 type dbServiceNotificationListOutput []dbServiceNotificationListItemOutput
 
-func (o *dbServiceNotificationListOutput) toJSON() { output.JSON(o) }
-func (o *dbServiceNotificationListOutput) toText() { output.Text(o) }
-func (o *dbServiceNotificationListOutput) toTable() {
+func (o *dbServiceNotificationListOutput) ToJSON() { output.JSON(o) }
+func (o *dbServiceNotificationListOutput) ToText() { output.Text(o) }
+func (o *dbServiceNotificationListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
@@ -44,9 +44,9 @@ type dbServiceBackupListItemOutput struct {
 
 type dbServiceBackupListOutput []dbServiceBackupListItemOutput
 
-func (o *dbServiceBackupListOutput) toJSON()  { output.JSON(o) }
-func (o *dbServiceBackupListOutput) toText()  { output.Text(o) }
-func (o *dbServiceBackupListOutput) toTable() { output.Table(o) }
+func (o *dbServiceBackupListOutput) ToJSON()  { output.JSON(o) }
+func (o *dbServiceBackupListOutput) ToText()  { output.Text(o) }
+func (o *dbServiceBackupListOutput) ToTable() { output.Table(o) }
 
 type dbServiceMaintenanceShowOutput struct {
 	DOW  string `json:"dow"`
@@ -75,9 +75,9 @@ type dbServiceShowOutput struct {
 	Opensearch *dbServiceOpensearchShowOutput `json:"opensearch,omitempty"`
 }
 
-func (o *dbServiceShowOutput) toJSON() { output.JSON(o) }
-func (o *dbServiceShowOutput) toText() { output.Text(o) }
-func (o *dbServiceShowOutput) toTable() {
+func (o *dbServiceShowOutput) ToJSON() { output.JSON(o) }
+func (o *dbServiceShowOutput) ToText() { output.Text(o) }
+func (o *dbServiceShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Database Service"})
 	defer t.Render()

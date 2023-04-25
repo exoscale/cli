@@ -254,9 +254,9 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3type
 
 type ListObjectsOutput []ListObjectsItemOutput
 
-func (o *ListObjectsOutput) toJSON() { output.JSON(o) }
-func (o *ListObjectsOutput) toText() { output.Text(o) }
-func (o *ListObjectsOutput) toTable() {
+func (o *ListObjectsOutput) ToJSON() { output.JSON(o) }
+func (o *ListObjectsOutput) ToText() { output.Text(o) }
+func (o *ListObjectsOutput) ToTable() {
 	table := tabwriter.NewWriter(os.Stdout,
 		0,
 		0,
@@ -283,9 +283,9 @@ type ListObjectsItemOutput struct {
 
 type ListBucketsOutput []ListBucketsItemOutput
 
-func (o *ListBucketsOutput) toJSON() { output.JSON(o) }
-func (o *ListBucketsOutput) toText() { output.Text(o) }
-func (o *ListBucketsOutput) toTable() {
+func (o *ListBucketsOutput) ToJSON() { output.JSON(o) }
+func (o *ListBucketsOutput) ToText() { output.Text(o) }
+func (o *ListBucketsOutput) ToTable() {
 	table := tabwriter.NewWriter(os.Stdout,
 		0,
 		0,
@@ -687,9 +687,9 @@ type ShowObjectOutput struct {
 	URL          string            `json:"url"`
 }
 
-func (o *ShowObjectOutput) toJSON() { output.JSON(o) }
-func (o *ShowObjectOutput) toText() { output.Text(o) }
-func (o *ShowObjectOutput) toTable() {
+func (o *ShowObjectOutput) ToJSON() { output.JSON(o) }
+func (o *ShowObjectOutput) ToText() { output.Text(o) }
+func (o *ShowObjectOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 	t.SetHeader([]string{"Storage"})

@@ -21,9 +21,9 @@ type iamAccessKeyListOperationsItemOutput struct {
 
 type iamAccessKeyListOperationsOutput []iamAccessKeyListOperationsItemOutput
 
-func (o *iamAccessKeyListOperationsOutput) toJSON() { output.JSON(o) }
-func (o *iamAccessKeyListOperationsOutput) toText() { output.Text(o) }
-func (o *iamAccessKeyListOperationsOutput) toTable() {
+func (o *iamAccessKeyListOperationsOutput) ToJSON() { output.JSON(o) }
+func (o *iamAccessKeyListOperationsOutput) ToText() { output.Text(o) }
+func (o *iamAccessKeyListOperationsOutput) ToTable() {
 	operationByTag := make(map[string][]string)
 
 	for _, op := range *o {

@@ -33,11 +33,11 @@ type sosShowOutput struct {
 	Headers  []sosHeadersShowOutput  `json:"headers"`
 }
 
-func (o *sosShowOutput) toJSON() { output.JSON(o) }
+func (o *sosShowOutput) ToJSON() { output.JSON(o) }
 
-func (o *sosShowOutput) toText() { output.Text(o) }
+func (o *sosShowOutput) ToText() { output.Text(o) }
 
-func (o *sosShowOutput) toTable() {
+func (o *sosShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 
 	if o.ACL != nil {

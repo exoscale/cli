@@ -33,9 +33,9 @@ type instanceTemplateShowOutput struct {
 	Checksum        string `json:"checksum"`
 }
 
-func (o *instanceTemplateShowOutput) toJSON() { output.JSON(o) }
-func (o *instanceTemplateShowOutput) toText() { output.Text(o) }
-func (o *instanceTemplateShowOutput) toTable() {
+func (o *instanceTemplateShowOutput) ToJSON() { output.JSON(o) }
+func (o *instanceTemplateShowOutput) ToText() { output.Text(o) }
+func (o *instanceTemplateShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Template"})
 	defer t.Render()

@@ -19,9 +19,9 @@ type deployTargetShowOutput struct {
 	Zone        string `json:"zone"`
 }
 
-func (o *deployTargetShowOutput) toJSON()  { output.JSON(o) }
-func (o *deployTargetShowOutput) toText()  { output.Text(o) }
-func (o *deployTargetShowOutput) toTable() { output.Table(o) }
+func (o *deployTargetShowOutput) ToJSON()  { output.JSON(o) }
+func (o *deployTargetShowOutput) ToText()  { output.Text(o) }
+func (o *deployTargetShowOutput) ToTable() { output.Table(o) }
 
 type deployTargetShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

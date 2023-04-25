@@ -17,11 +17,11 @@ type runstatusServiceListItemOutput struct {
 
 type runstatusServiceListOutput []runstatusServiceListItemOutput
 
-func (o *runstatusServiceListOutput) toJSON() { output.JSON(o) }
+func (o *runstatusServiceListOutput) ToJSON() { output.JSON(o) }
 
-func (o *runstatusServiceListOutput) toText() { output.Text(o) }
+func (o *runstatusServiceListOutput) ToText() { output.Text(o) }
 
-func (o *runstatusServiceListOutput) toTable() {
+func (o *runstatusServiceListOutput) ToTable() {
 	for i := range *o {
 		(*o)[i].State = strings.ToUpper(strings.Replace((*o)[i].State, "_", " ", -1))
 	}

@@ -26,9 +26,9 @@ type dbaasTypePlanListItemOutput struct {
 
 type dbaasTypePlanListOutput []dbaasTypePlanListItemOutput
 
-func (o *dbaasTypePlanListOutput) toJSON() { output.JSON(o) }
-func (o *dbaasTypePlanListOutput) toText() { output.Text(o) }
-func (o *dbaasTypePlanListOutput) toTable() {
+func (o *dbaasTypePlanListOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasTypePlanListOutput) ToText() { output.Text(o) }
+func (o *dbaasTypePlanListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Name", "# Nodes", "# CPUs", "Node Memory", "Disk Space", "Authorized"})
 	defer t.Render()
@@ -55,9 +55,9 @@ type dbaasTypePlanBackupOutput struct {
 	InfrequentOldestAgeMinutes *int64  `json:"infrequent_oldest_age_minutes"`
 }
 
-func (o *dbaasTypePlanBackupOutput) toJSON() { output.JSON(o) }
-func (o *dbaasTypePlanBackupOutput) toText() { output.Text(o) }
-func (o *dbaasTypePlanBackupOutput) toTable() {
+func (o *dbaasTypePlanBackupOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasTypePlanBackupOutput) ToText() { output.Text(o) }
+func (o *dbaasTypePlanBackupOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
@@ -77,9 +77,9 @@ type dbaasTypeShowOutput struct {
 	DefaultVersion    string   `json:"default_version"`
 }
 
-func (o *dbaasTypeShowOutput) toJSON() { output.JSON(o) }
-func (o *dbaasTypeShowOutput) toText() { output.Text(o) }
-func (o *dbaasTypeShowOutput) toTable() {
+func (o *dbaasTypeShowOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasTypeShowOutput) ToText() { output.Text(o) }
+func (o *dbaasTypeShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 

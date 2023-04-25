@@ -21,9 +21,9 @@ type sksListDeprecatedResourcesItemOutput struct {
 
 type sksListDeprecatedResourcesOutput []sksListDeprecatedResourcesItemOutput
 
-func (o *sksListDeprecatedResourcesOutput) toJSON()  { output.JSON(o) }
-func (o *sksListDeprecatedResourcesOutput) toText()  { output.Text(o) }
-func (o *sksListDeprecatedResourcesOutput) toTable() { output.Table(o) }
+func (o *sksListDeprecatedResourcesOutput) ToJSON()  { output.JSON(o) }
+func (o *sksListDeprecatedResourcesOutput) ToText()  { output.Text(o) }
+func (o *sksListDeprecatedResourcesOutput) ToTable() { output.Table(o) }
 
 type sksDeprecatedResourcesCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

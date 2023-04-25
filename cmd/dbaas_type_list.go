@@ -21,9 +21,9 @@ type dbaasTypeListItemOutput struct {
 
 type dbaasTypeListOutput []dbaasTypeListItemOutput
 
-func (o *dbaasTypeListOutput) toJSON() { output.JSON(o) }
-func (o *dbaasTypeListOutput) toText() { output.Text(o) }
-func (o *dbaasTypeListOutput) toTable() {
+func (o *dbaasTypeListOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasTypeListOutput) ToText() { output.Text(o) }
+func (o *dbaasTypeListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Name", "Available Versions", "Default Version"})
 	defer t.Render()

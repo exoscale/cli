@@ -21,9 +21,9 @@ type apiKeyCreateItemOutput struct {
 	Type       string   `json:"type"`
 }
 
-func (o *apiKeyCreateItemOutput) toJSON()  { output.JSON(o) }
-func (o *apiKeyCreateItemOutput) toText()  { output.Text(o) }
-func (o *apiKeyCreateItemOutput) toTable() { output.Table(o) }
+func (o *apiKeyCreateItemOutput) ToJSON()  { output.JSON(o) }
+func (o *apiKeyCreateItemOutput) ToText()  { output.Text(o) }
+func (o *apiKeyCreateItemOutput) ToTable() { output.Table(o) }
 
 // apiKeyCreateCmd represents an API key creation command
 var apiKeyCreateCmd = &cobra.Command{

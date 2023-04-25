@@ -43,11 +43,11 @@ type runstatusPageShowOutput struct {
 	Maintenances []runstatusPageMaintenanceShowOutput `json:"maintenances,omitempty"`
 }
 
-func (o *runstatusPageShowOutput) toJSON() { output.JSON(o) }
+func (o *runstatusPageShowOutput) ToJSON() { output.JSON(o) }
 
-func (o *runstatusPageShowOutput) toText() { output.Text(o) }
+func (o *runstatusPageShowOutput) ToText() { output.Text(o) }
 
-func (o *runstatusPageShowOutput) toTable() {
+func (o *runstatusPageShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Runstatus"})
 

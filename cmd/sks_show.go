@@ -30,9 +30,9 @@ type sksShowOutput struct {
 	Nodepools    []sksNodepoolShowOutput `json:"nodepools"`
 }
 
-func (o *sksShowOutput) toJSON() { output.JSON(o) }
-func (o *sksShowOutput) toText() { output.Text(o) }
-func (o *sksShowOutput) toTable() {
+func (o *sksShowOutput) ToJSON() { output.JSON(o) }
+func (o *sksShowOutput) ToText() { output.Text(o) }
+func (o *sksShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"SKS Cluster"})
 	defer t.Render()

@@ -16,9 +16,9 @@ type sksClusterVersionsItemOutput struct {
 
 type sksClusterVersionsOutput []sksClusterVersionsItemOutput
 
-func (o *sksClusterVersionsOutput) toJSON()  { output.JSON(o) }
-func (o *sksClusterVersionsOutput) toText()  { output.Text(o) }
-func (o *sksClusterVersionsOutput) toTable() { output.Table(o) }
+func (o *sksClusterVersionsOutput) ToJSON()  { output.JSON(o) }
+func (o *sksClusterVersionsOutput) ToText()  { output.Text(o) }
+func (o *sksClusterVersionsOutput) ToTable() { output.Table(o) }
 
 type sksVersionsCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

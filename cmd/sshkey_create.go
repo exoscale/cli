@@ -17,9 +17,9 @@ type sshkeyCreateOutput struct {
 }
 
 func (o *sshkeyCreateOutput) Type() string { return "SSH Key" }
-func (o *sshkeyCreateOutput) toJSON()      { output.JSON(o) }
-func (o *sshkeyCreateOutput) toText()      { output.Text(o) }
-func (o *sshkeyCreateOutput) toTable()     { output.Table(o) }
+func (o *sshkeyCreateOutput) ToJSON()      { output.JSON(o) }
+func (o *sshkeyCreateOutput) ToText()      { output.Text(o) }
+func (o *sshkeyCreateOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	sshkeyCmd.AddCommand(&cobra.Command{

@@ -25,9 +25,9 @@ type instanceRevealOutput struct {
 }
 
 func (o *instanceRevealOutput) Type() string { return "Compute instance" }
-func (o *instanceRevealOutput) toJSON()      { output.JSON(o) }
-func (o *instanceRevealOutput) toText()      { output.Text(o) }
-func (o *instanceRevealOutput) toTable()     { output.Table(o) }
+func (o *instanceRevealOutput) ToJSON()      { output.JSON(o) }
+func (o *instanceRevealOutput) ToText()      { output.Text(o) }
+func (o *instanceRevealOutput) ToTable()     { output.Table(o) }
 
 func (c *instanceRevealCmd) cmdAliases() []string { return nil }
 

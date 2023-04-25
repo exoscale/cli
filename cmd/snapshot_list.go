@@ -22,9 +22,9 @@ type snapshotListItemOutput struct {
 
 type snapshotListOutput []snapshotListItemOutput
 
-func (o *snapshotListOutput) toJSON()  { output.JSON(o) }
-func (o *snapshotListOutput) toText()  { output.Text(o) }
-func (o *snapshotListOutput) toTable() { output.Table(o) }
+func (o *snapshotListOutput) ToJSON()  { output.JSON(o) }
+func (o *snapshotListOutput) ToText()  { output.Text(o) }
+func (o *snapshotListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{

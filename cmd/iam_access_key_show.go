@@ -23,9 +23,9 @@ type iamAccessKeyShowOutput struct {
 	Resources  *[]string `json:"resources,omitempty"`
 }
 
-func (o *iamAccessKeyShowOutput) toJSON() { output.JSON(o) }
-func (o *iamAccessKeyShowOutput) toText() { output.Text(o) }
-func (o *iamAccessKeyShowOutput) toTable() {
+func (o *iamAccessKeyShowOutput) ToJSON() { output.JSON(o) }
+func (o *iamAccessKeyShowOutput) ToText() { output.Text(o) }
+func (o *iamAccessKeyShowOutput) ToTable() {
 	if o.APISecret != nil {
 		defer fmt.Fprint(os.Stderr, `
 /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\

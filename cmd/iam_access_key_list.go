@@ -18,9 +18,9 @@ type iamAccessKeyListItemOutput struct {
 
 type iamAccessKeyListOutput []iamAccessKeyListItemOutput
 
-func (o *iamAccessKeyListOutput) toJSON()  { output.JSON(o) }
-func (o *iamAccessKeyListOutput) toText()  { output.Text(o) }
-func (o *iamAccessKeyListOutput) toTable() { output.Table(o) }
+func (o *iamAccessKeyListOutput) ToJSON()  { output.JSON(o) }
+func (o *iamAccessKeyListOutput) ToText()  { output.Text(o) }
+func (o *iamAccessKeyListOutput) ToTable() { output.Table(o) }
 
 type iamAccessKeyListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

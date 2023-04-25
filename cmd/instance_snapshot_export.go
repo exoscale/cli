@@ -17,9 +17,9 @@ type instanceSnapshotExportOutput struct {
 	Checksum string `json:"checksum"`
 }
 
-func (o *instanceSnapshotExportOutput) toJSON()  { output.JSON(o) }
-func (o *instanceSnapshotExportOutput) toText()  { output.Text(o) }
-func (o *instanceSnapshotExportOutput) toTable() { output.Table(o) }
+func (o *instanceSnapshotExportOutput) ToJSON()  { output.JSON(o) }
+func (o *instanceSnapshotExportOutput) ToText()  { output.Text(o) }
+func (o *instanceSnapshotExportOutput) ToTable() { output.Table(o) }
 
 type instanceSnapshotExportCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

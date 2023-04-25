@@ -18,9 +18,9 @@ type affinityGroupShowOutput struct {
 }
 
 func (o *affinityGroupShowOutput) Type() string { return "Anti-Affinity Group" }
-func (o *affinityGroupShowOutput) toJSON()      { output.JSON(o) }
-func (o *affinityGroupShowOutput) toText()      { output.Text(o) }
-func (o *affinityGroupShowOutput) toTable()     { output.Table(o) }
+func (o *affinityGroupShowOutput) ToJSON()      { output.JSON(o) }
+func (o *affinityGroupShowOutput) ToText()      { output.Text(o) }
+func (o *affinityGroupShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	affinitygroupCmd.AddCommand(&cobra.Command{

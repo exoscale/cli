@@ -23,9 +23,9 @@ type serviceOfferingListItemOutput struct {
 
 type serviceOfferingListOutput []serviceOfferingListItemOutput
 
-func (o *serviceOfferingListOutput) toJSON()  { output.JSON(o) }
-func (o *serviceOfferingListOutput) toText()  { output.Text(o) }
-func (o *serviceOfferingListOutput) toTable() { output.Table(o) }
+func (o *serviceOfferingListOutput) ToJSON()  { output.JSON(o) }
+func (o *serviceOfferingListOutput) ToText()  { output.Text(o) }
+func (o *serviceOfferingListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	vmCmd.AddCommand(&cobra.Command{

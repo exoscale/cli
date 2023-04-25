@@ -21,11 +21,11 @@ type runstatusIncidentListItemOutput struct {
 
 type runstatusIncidentListOutput []runstatusIncidentListItemOutput
 
-func (o *runstatusIncidentListOutput) toJSON() { output.JSON(o) }
+func (o *runstatusIncidentListOutput) ToJSON() { output.JSON(o) }
 
-func (o *runstatusIncidentListOutput) toText() { output.Text(o) }
+func (o *runstatusIncidentListOutput) ToText() { output.Text(o) }
 
-func (o *runstatusIncidentListOutput) toTable() {
+func (o *runstatusIncidentListOutput) ToTable() {
 	for i := range *o {
 		(*o)[i].State = strings.ToUpper(strings.Replace((*o)[i].State, "_", " ", -1))
 	}

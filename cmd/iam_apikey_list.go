@@ -18,9 +18,9 @@ type apiKeyItem struct {
 
 type apiKeyListItemOutput []apiKeyItem
 
-func (o *apiKeyListItemOutput) toJSON()  { output.JSON(o) }
-func (o *apiKeyListItemOutput) toText()  { output.Text(o) }
-func (o *apiKeyListItemOutput) toTable() { output.Table(o) }
+func (o *apiKeyListItemOutput) ToJSON()  { output.JSON(o) }
+func (o *apiKeyListItemOutput) ToText()  { output.Text(o) }
+func (o *apiKeyListItemOutput) ToTable() { output.Table(o) }
 
 var apiKeyListCmd = &cobra.Command{
 	Use:   "list",

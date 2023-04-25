@@ -20,9 +20,9 @@ type privnetListItemOutput struct {
 
 type privnetListOutput []privnetListItemOutput
 
-func (o *privnetListOutput) toJSON()  { output.JSON(o) }
-func (o *privnetListOutput) toText()  { output.Text(o) }
-func (o *privnetListOutput) toTable() { output.Table(o) }
+func (o *privnetListOutput) ToJSON()  { output.JSON(o) }
+func (o *privnetListOutput) ToText()  { output.Text(o) }
+func (o *privnetListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	privnetListCmd := &cobra.Command{

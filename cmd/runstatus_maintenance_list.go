@@ -20,9 +20,9 @@ type runstatusMaintenanceListItemOutput struct {
 
 type runstatusMaintenanceListOutput []runstatusMaintenanceListItemOutput
 
-func (o *runstatusMaintenanceListOutput) toJSON()  { output.JSON(o) }
-func (o *runstatusMaintenanceListOutput) toText()  { output.Text(o) }
-func (o *runstatusMaintenanceListOutput) toTable() { output.Table(o) }
+func (o *runstatusMaintenanceListOutput) ToJSON()  { output.JSON(o) }
+func (o *runstatusMaintenanceListOutput) ToText()  { output.Text(o) }
+func (o *runstatusMaintenanceListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(&cobra.Command{

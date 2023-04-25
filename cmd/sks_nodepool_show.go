@@ -35,9 +35,9 @@ type sksNodepoolShowOutput struct {
 }
 
 func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
-func (o *sksNodepoolShowOutput) toJSON()      { output.JSON(o) }
-func (o *sksNodepoolShowOutput) toText()      { output.Text(o) }
-func (o *sksNodepoolShowOutput) toTable()     { output.Table(o) }
+func (o *sksNodepoolShowOutput) ToJSON()      { output.JSON(o) }
+func (o *sksNodepoolShowOutput) ToText()      { output.Text(o) }
+func (o *sksNodepoolShowOutput) ToTable()     { output.Table(o) }
 
 type sksNodepoolShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

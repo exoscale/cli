@@ -16,9 +16,9 @@ type computeSSHKeyShowOutput struct {
 }
 
 func (o *computeSSHKeyShowOutput) Type() string { return "SSH key" }
-func (o *computeSSHKeyShowOutput) toJSON()      { output.JSON(o) }
-func (o *computeSSHKeyShowOutput) toText()      { output.Text(o) }
-func (o *computeSSHKeyShowOutput) toTable()     { output.Table(o) }
+func (o *computeSSHKeyShowOutput) ToJSON()      { output.JSON(o) }
+func (o *computeSSHKeyShowOutput) ToText()      { output.Text(o) }
+func (o *computeSSHKeyShowOutput) ToTable()     { output.Table(o) }
 
 type computeSSHKeyShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`

@@ -27,9 +27,9 @@ type instanceTypeListOutput struct {
 	verbose bool
 }
 
-func (o *instanceTypeListOutput) toJSON() { output.JSON(o.data) }
-func (o *instanceTypeListOutput) toText() { output.Text(o.data) }
-func (o *instanceTypeListOutput) toTable() {
+func (o *instanceTypeListOutput) ToJSON() { output.JSON(o.data) }
+func (o *instanceTypeListOutput) ToText() { output.Text(o.data) }
+func (o *instanceTypeListOutput) ToTable() {
 	header := []string{"ID", "Family", "Size"}
 	if o.verbose {
 		header = append(header, "# CPUs", "Memory", "Authorized")

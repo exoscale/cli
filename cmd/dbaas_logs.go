@@ -30,9 +30,9 @@ type dbServiceLogsOutput struct {
 	Logs           []dbServiceLogsItemOutput `json:"logs"`
 }
 
-func (o *dbServiceLogsOutput) toJSON() { output.JSON(o) }
-func (o *dbServiceLogsOutput) toText() { output.Text(o) }
-func (o *dbServiceLogsOutput) toTable() {
+func (o *dbServiceLogsOutput) ToJSON() { output.JSON(o) }
+func (o *dbServiceLogsOutput) ToText() { output.Text(o) }
+func (o *dbServiceLogsOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
