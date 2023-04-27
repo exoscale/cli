@@ -32,7 +32,7 @@ func (c *instanceSGAddCmd) cmdLong() string {
 	return fmt.Sprintf(`This command adds a Compute instance to Security Groups.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
 	)
 }
 
@@ -48,7 +48,7 @@ func (c *instanceSGAddCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -58,7 +58,7 @@ func (c *instanceSGAddCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	securityGroups := make([]*egoscale.SecurityGroup, len(c.SecurityGroups))
 	for i := range c.SecurityGroups {
-		securityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
+		securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 		if err != nil {
 			return fmt.Errorf("error retrieving Security Group: %w", err)
 		}
@@ -67,7 +67,7 @@ func (c *instanceSGAddCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Security Groups...", c.Instance), func() {
 		for _, securityGroup := range securityGroups {
-			if err = globalstate.GlobalEgoscaleClient.AttachInstanceToSecurityGroup(ctx, c.Zone, instance, securityGroup); err != nil {
+			if err = globalstate.EgoscaleClient.AttachInstanceToSecurityGroup(ctx, c.Zone, instance, securityGroup); err != nil {
 				return
 			}
 		}

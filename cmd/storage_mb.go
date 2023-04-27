@@ -17,7 +17,7 @@ var storageMbCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command creates a new bucket.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sos.ShowBucketOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {

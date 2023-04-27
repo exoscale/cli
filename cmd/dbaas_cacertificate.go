@@ -34,7 +34,7 @@ func (c *dbaasCACertificateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 func (c *dbaasCACertificateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	caCertificate, err := globalstate.GlobalEgoscaleClient.GetDatabaseCACertificate(ctx, c.Zone)
+	caCertificate, err := globalstate.EgoscaleClient.GetDatabaseCACertificate(ctx, c.Zone)
 	if err != nil {
 		return err
 	}

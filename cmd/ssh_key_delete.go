@@ -46,7 +46,7 @@ func (c *computeSSHKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Deleting SSH key %s...", c.Name), func() {
-		err = globalstate.GlobalEgoscaleClient.DeleteSSHKey(ctx, account.CurrentAccount.DefaultZone, &egoscale.SSHKey{Name: &c.Name})
+		err = globalstate.EgoscaleClient.DeleteSSHKey(ctx, account.CurrentAccount.DefaultZone, &egoscale.SSHKey{Name: &c.Name})
 	})
 	if err != nil {
 		return err

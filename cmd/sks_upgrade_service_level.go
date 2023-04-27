@@ -51,7 +51,7 @@ func (c *sksUpgradeServiceLevelCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -60,7 +60,7 @@ func (c *sksUpgradeServiceLevelCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q service level...", c.Cluster), func() {
-		err = globalstate.GlobalEgoscaleClient.UpgradeSKSClusterServiceLevel(ctx, c.Zone, cluster)
+		err = globalstate.EgoscaleClient.UpgradeSKSClusterServiceLevel(ctx, c.Zone, cluster)
 	})
 	if err != nil {
 		return err

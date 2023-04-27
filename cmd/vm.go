@@ -45,7 +45,7 @@ func getVirtualMachineByNameOrID(name string) (*egoscale.VirtualMachine, error) 
 		vmQuery.ID = id
 	}
 
-	vms, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, vmQuery)
+	vms, err := globalstate.EgoscaleClient.ListWithContext(gContext, vmQuery)
 	if err != nil {
 		return nil, err
 	}

@@ -42,7 +42,7 @@ func (c *deployTargetShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Deploy Target details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&deployTargetShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&deployTargetShowOutput{}), ", "))
 }
 
 func (c *deployTargetShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -53,7 +53,7 @@ func (c *deployTargetShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	dt, err := globalstate.GlobalEgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+	dt, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 	if err != nil {
 		return fmt.Errorf("error retrieving Deploy Target: %w", err)
 	}

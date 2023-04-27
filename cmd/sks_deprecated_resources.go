@@ -45,7 +45,7 @@ func (c *sksDeprecatedResourcesCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists SKS cluster Nodepools.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksListDeprecatedResourcesItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksListDeprecatedResourcesItemOutput{}), ", "))
 }
 
 func emptyIfNil(inp *string) string {
@@ -64,7 +64,7 @@ func (c *sksDeprecatedResourcesCmd) cmdPreRun(cmd *cobra.Command, args []string)
 func (c *sksDeprecatedResourcesCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -72,7 +72,7 @@ func (c *sksDeprecatedResourcesCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	deprecatedResources, err := globalstate.GlobalEgoscaleClient.ListSKSClusterDeprecatedResources(
+	deprecatedResources, err := globalstate.EgoscaleClient.ListSKSClusterDeprecatedResources(
 		ctx,
 		c.Zone,
 		cluster,

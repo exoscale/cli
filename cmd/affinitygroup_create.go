@@ -16,7 +16,7 @@ var affinitygroupCreateCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command creates an Anti-Affinity Group.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -33,7 +33,7 @@ Supported output template annotations: %s`,
 }
 
 func createAffinityGroup(name, desc string) (output.Outputter, error) {
-	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
 		Name:        name,
 		Description: desc,
 		Type:        "host anti-affinity",

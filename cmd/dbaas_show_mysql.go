@@ -82,7 +82,7 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (output.Outputter, error) {
-	res, err := globalstate.GlobalEgoscaleClient.GetDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)

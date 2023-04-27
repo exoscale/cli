@@ -76,7 +76,7 @@ func showVMWithNics(vm *egoscale.VirtualMachine) error {
 	for _, nic := range vm.Nic {
 		if nic.IsDefault {
 		} else {
-			resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Network{ID: nic.NetworkID})
+			resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Network{ID: nic.NetworkID})
 			if err != nil {
 				return fmt.Errorf("unable to retrieve Compute instance NIC: %v", err)
 			}

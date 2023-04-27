@@ -37,7 +37,7 @@ var templateListCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command lists available Compute Instance templates. By default, returns "featured" templates.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&templateListOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&templateListOutput{}), ", ")),
 	Aliases: gListAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		cmdSetZoneFlagFromDefault(cmd)

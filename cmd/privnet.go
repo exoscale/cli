@@ -45,7 +45,7 @@ func getNetwork(net string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
 		req.ID = id
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, req)
+	resp, err := globalstate.EgoscaleClient.ListWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}

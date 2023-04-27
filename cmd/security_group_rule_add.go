@@ -58,7 +58,7 @@ Supported network protocols: %s
 
 Supported output template annotations: %s`,
 		strings.Join(securityGroupRuleProtocols, ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
 func (c *securityGroupAddRuleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -70,7 +70,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-	securityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.TargetSecurityGroup != "" {
-		targetSecurityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, zone, c.TargetSecurityGroup)
+		targetSecurityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.TargetSecurityGroup)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve Security Group %q: %w", c.TargetSecurityGroup, err)
 		}
@@ -160,7 +160,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Adding rule to Security Group %q...", *securityGroup.Name), func() {
-		_, err = globalstate.GlobalEgoscaleClient.CreateSecurityGroupRule(ctx, zone, securityGroup, securityGroupRule)
+		_, err = globalstate.EgoscaleClient.CreateSecurityGroupRule(ctx, zone, securityGroup, securityGroupRule)
 	})
 	if err != nil {
 		return err

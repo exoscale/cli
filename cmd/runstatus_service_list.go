@@ -36,7 +36,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing runstat.us services.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&runstatusServiceListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&runstatusServiceListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(runstatusListServices(args))

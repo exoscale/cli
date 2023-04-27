@@ -23,7 +23,7 @@ func getSnapshotByNameOrID(v string) (*egoscale.Snapshot, error) {
 		snapshot.ID = id
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, snapshot)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, snapshot)
 	switch err {
 	case nil:
 		return resp.(*egoscale.Snapshot), nil

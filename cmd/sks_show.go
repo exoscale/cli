@@ -99,7 +99,7 @@ func (c *sksShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an SKS cluster details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksShowOutput{}), ", "))
 }
 
 func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -110,7 +110,7 @@ func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)

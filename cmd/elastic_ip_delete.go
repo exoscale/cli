@@ -37,7 +37,7 @@ func (c *elasticIPDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 func (c *elasticIPDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	elasticIP, err := globalstate.GlobalEgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -52,7 +52,7 @@ func (c *elasticIPDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting Elastic IP %s...", c.ElasticIP), func() {
-		err = globalstate.GlobalEgoscaleClient.DeleteElasticIP(ctx, c.Zone, elasticIP)
+		err = globalstate.EgoscaleClient.DeleteElasticIP(ctx, c.Zone, elasticIP)
 	})
 	if err != nil {
 		return err

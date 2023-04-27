@@ -21,7 +21,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 
 	databaseService := oapi.UpdateDbaasServicePgJSONRequestBody{}
 
-	settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
+	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
@@ -143,7 +143,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 	if updated {
 		var res *oapi.UpdateDbaasServicePgResponse
 		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = globalstate.GlobalEgoscaleClient.UpdateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+			res, err = globalstate.EgoscaleClient.UpdateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 		})
 		if err != nil {
 			if errors.Is(err, exoapi.ErrNotFound) {

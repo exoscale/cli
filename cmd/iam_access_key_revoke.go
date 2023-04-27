@@ -45,7 +45,7 @@ func (c *iamAccessKeyRevokeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Revoking IAM access key %s...", c.APIKey), func() {
-		err = globalstate.GlobalEgoscaleClient.RevokeIAMAccessKey(ctx, zone, &egoscale.IAMAccessKey{Key: &c.APIKey})
+		err = globalstate.EgoscaleClient.RevokeIAMAccessKey(ctx, zone, &egoscale.IAMAccessKey{Key: &c.APIKey})
 	})
 	if err != nil {
 		return err

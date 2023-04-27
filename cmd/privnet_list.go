@@ -31,7 +31,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Private Networks.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&privnetListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&privnetListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zone, err := cmd.Flags().GetString("zone")
@@ -50,7 +50,7 @@ Supported output template annotations: %s`,
 func listPrivnets(zone string) (output.Outputter, error) {
 	out := privnetListOutput{}
 
-	zones, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
+	zones, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func listPrivnets(zone string) (output.Outputter, error) {
 			CanUseForDeploy: true,
 		}
 
-		privnets, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &req)
+		privnets, err := globalstate.EgoscaleClient.ListWithContext(gContext, &req)
 		if err != nil {
 			return nil, err
 		}

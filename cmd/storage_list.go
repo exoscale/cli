@@ -25,8 +25,8 @@ Supported output template annotations:
 
   * When listing buckets: %s
   * When listing objects: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sos.ListBucketsItemOutput{}), ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&sos.ListObjectsItemOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ListBucketsItemOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&sos.ListObjectsItemOutput{}), ", ")),
 	Aliases: gListAlias,
 
 	PreRun: func(cmd *cobra.Command, args []string) {
@@ -84,7 +84,7 @@ func init() {
 func listStorageBuckets() (output.Outputter, error) {
 	out := make(sos.ListBucketsOutput, 0)
 
-	res, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
+	res, err := globalstate.EgoscaleClient.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
 	if err != nil {
 		return nil, err
 	}

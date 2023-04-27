@@ -119,7 +119,7 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 		ZoneID:     vm.ZoneID,
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, query)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, query)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve Compute instance template: %v", err)
 	}

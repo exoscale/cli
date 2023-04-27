@@ -80,7 +80,7 @@ func (c *instanceTemplateShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance template details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
 }
 
 func (c *instanceTemplateShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -94,7 +94,7 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	template, err := globalstate.GlobalEgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)
+	template, err := globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)
 	if err != nil {
 		return fmt.Errorf(
 			"no template %q found with visibility %s in zone %s",

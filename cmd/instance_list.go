@@ -50,7 +50,7 @@ func (c *instanceListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instances.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceListItemOutput{}), ", "))
 }
 
 func (c *instanceListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -81,7 +81,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListInstances(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListInstances(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Compute instances in zone %s: %w", zone, err)
 		}
@@ -92,7 +92,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if cached {
 				instanceType = instanceTypeI.(*egoscale.InstanceType)
 			} else {
-				instanceType, err = globalstate.GlobalEgoscaleClient.GetInstanceType(ctx, zone, *i.InstanceTypeID)
+				instanceType, err = globalstate.EgoscaleClient.GetInstanceType(ctx, zone, *i.InstanceTypeID)
 				if err != nil {
 					return fmt.Errorf(
 						"unable to retrieve Compute instance type %q: %w",

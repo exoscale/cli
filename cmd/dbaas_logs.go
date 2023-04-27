@@ -78,8 +78,8 @@ Example usage with custom output containing only the actual log messages:
     exo dbaas logs MY-SERVICE --output-template \
         '{{range $l := .Logs}}{{println $l.Message}}{{end}}'
 `,
-		strings.Join(output.OutputterTemplateAnnotations(&dbServiceLogsOutput{}), ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&dbServiceLogsItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbServiceLogsOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceLogsItemOutput{}), ", "))
 }
 
 func (c *dbaasServiceLogsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -90,7 +90,7 @@ func (c *dbaasServiceLogsCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	res, err := globalstate.GlobalEgoscaleClient.GetDbaasServiceLogsWithResponse(
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceLogsWithResponse(
 		ctx,
 		c.Name,
 		oapi.GetDbaasServiceLogsJSONRequestBody{

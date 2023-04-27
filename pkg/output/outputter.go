@@ -49,7 +49,7 @@ func Text(o interface{}) {
 	tpl := GOutputTemplate
 
 	if tpl == "" {
-		tplFields := OutputterTemplateAnnotations(o)
+		tplFields := TemplateAnnotations(o)
 		for i := range tplFields {
 			tplFields[i] = "{{" + tplFields[i] + "}}"
 		}
@@ -266,9 +266,9 @@ func Table(o interface{}) {
 	tab.Render()
 }
 
-// OutputterTemplateAnnotations returns a list of annotations available for use
+// TemplateAnnotations returns a list of annotations available for use
 // with an output template.
-func OutputterTemplateAnnotations(o interface{}) []string {
+func TemplateAnnotations(o interface{}) []string {
 	annotations := make([]string, 0)
 
 	v := reflect.ValueOf(o)

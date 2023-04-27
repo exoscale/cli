@@ -39,7 +39,7 @@ Note: Kubernetes Nodes should be drained from their workload prior to being
 evicted from their Nodepool, e.g. using "kubectl drain".
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
 func (c *sksNodepoolEvictCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -64,7 +64,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -85,7 +85,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	nodes := make([]string, len(c.Nodes))
 	for i, n := range c.Nodes {
-		instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, n)
+		instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, n)
 		if err != nil {
 			return fmt.Errorf("invalid Node %q: %w", n, err)
 		}
@@ -93,7 +93,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Evicting Nodes from Nodepool %q...", c.Nodepool), func() {
-		err = globalstate.GlobalEgoscaleClient.EvictSKSNodepoolMembers(ctx, c.Zone, cluster, nodepool, nodes)
+		err = globalstate.EgoscaleClient.EvictSKSNodepoolMembers(ctx, c.Zone, cluster, nodepool, nodes)
 	})
 	if err != nil {
 		return err

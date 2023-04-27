@@ -26,7 +26,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		Version:               utils.NonEmptyStringPtr(c.KafkaVersion),
 	}
 
-	settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
+	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
@@ -104,7 +104,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 
 	var res *oapi.CreateDbaasServiceKafkaResponse
 	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.GlobalEgoscaleClient.CreateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		res, err = globalstate.EgoscaleClient.CreateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 	})
 	if err != nil {
 		return err

@@ -27,7 +27,7 @@ version, please use "exo iam access-key" replacement commands.
 }
 
 func getAPIKeyByKey(key string) (*egoscale.APIKey, error) {
-	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, egoscale.GetAPIKey{
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, egoscale.GetAPIKey{
 		Key: key,
 	})
 	if err != nil {
@@ -44,7 +44,7 @@ func getAPIKeyByName(name string) (*egoscale.APIKey, error) {
 		return apiKey, err
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, egoscale.ListAPIKeys{})
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, egoscale.ListAPIKeys{})
 	if err != nil {
 		return nil, err
 	}

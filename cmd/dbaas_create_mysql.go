@@ -24,7 +24,7 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 		Version:               utils.NonEmptyStringPtr(c.MysqlVersion),
 	}
 
-	settingsSchema, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
+	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
@@ -120,7 +120,7 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 
 	var res *oapi.CreateDbaasServiceMysqlResponse
 	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.GlobalEgoscaleClient.CreateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		res, err = globalstate.EgoscaleClient.CreateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 	})
 	if err != nil {
 		return err

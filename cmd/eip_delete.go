@@ -67,7 +67,7 @@ func prepareDeleteEip(ip string) (*egoscale.DisassociateIPAddress, error) {
 		dissocReq.ID = id
 	} else {
 		req := &egoscale.IPAddress{IPAddress: ipAddr, IsElastic: true}
-		resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, req)
+		resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, req)
 		if err != nil {
 			return nil, err
 		}

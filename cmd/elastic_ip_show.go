@@ -96,7 +96,7 @@ func (c *elasticIPShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance Elastic IP details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&elasticIPShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&elasticIPShowOutput{}), ", "))
 }
 
 func (c *elasticIPShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -107,7 +107,7 @@ func (c *elasticIPShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	elasticIP, err := globalstate.GlobalEgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -126,7 +126,7 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Type:          "manual",
 	}
 
-	rdns, err := globalstate.GlobalEgoscaleClient.GetElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
+	rdns, err := globalstate.EgoscaleClient.GetElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			out.ReverseDNS = ""
@@ -137,7 +137,7 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	out.ReverseDNS = rdns
 
-	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, globalstate.GlobalEgoscaleClient, elasticIP.IPAddress.String(), c.Zone)
+	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, globalstate.EgoscaleClient, elasticIP.IPAddress.String(), c.Zone)
 	if err != nil {
 		return err
 	}

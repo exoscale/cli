@@ -31,7 +31,7 @@ func createDomain(domainName string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
-		domain, err = globalstate.GlobalEgoscaleClient.CreateDNSDomain(
+		domain, err = globalstate.EgoscaleClient.CreateDNSDomain(
 			ctx,
 			account.CurrentAccount.DefaultZone,
 			&exo.DNSDomain{UnicodeName: &domainName},

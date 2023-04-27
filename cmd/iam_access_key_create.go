@@ -34,7 +34,7 @@ func (c *iamAccessKeyCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates an IAM access key.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&iamAccessKeyShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&iamAccessKeyShowOutput{}), ", "))
 }
 
 func (c *iamAccessKeyCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -68,7 +68,7 @@ func (c *iamAccessKeyCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		opts = append(opts, egoscale.CreateIAMAccessKeyWithTags(c.Tags))
 	}
 
-	iamAccessKey, err := globalstate.GlobalEgoscaleClient.CreateIAMAccessKey(ctx, zone, c.Name, opts...)
+	iamAccessKey, err := globalstate.EgoscaleClient.CreateIAMAccessKey(ctx, zone, c.Name, opts...)
 	if err != nil {
 		return fmt.Errorf("unable to create a new IAM access key: %w", err)
 	}

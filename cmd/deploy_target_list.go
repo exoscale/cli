@@ -41,7 +41,7 @@ func (c *deployTargetListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing Deploy Targets.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&deployTargetListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&deployTargetListOutput{}), ", "))
 }
 
 func (c *deployTargetListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -70,7 +70,7 @@ func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListDeployTargets(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListDeployTargets(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Deploy Targets in zone %s: %w", zone, err)
 		}

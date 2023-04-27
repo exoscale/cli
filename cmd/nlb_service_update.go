@@ -46,7 +46,7 @@ func (c *nlbServiceUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates a Network Load Balancer service.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&nlbServiceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&nlbServiceShowOutput{}), ", "))
 }
 
 func (c *nlbServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -62,7 +62,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	nlb, err := globalstate.GlobalEgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	decorateAsyncOperation(fmt.Sprintf("Updating service %q...", c.Service), func() {
 		if updated {
-			if err = globalstate.GlobalEgoscaleClient.UpdateNetworkLoadBalancerService(ctx, c.Zone, nlb, service); err != nil {
+			if err = globalstate.EgoscaleClient.UpdateNetworkLoadBalancerService(ctx, c.Zone, nlb, service); err != nil {
 				return
 			}
 		}

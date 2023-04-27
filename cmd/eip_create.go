@@ -82,7 +82,7 @@ func associateIPAddress(associateIPAddress egoscale.AssociateIPAddress, zone str
 	}
 	associateIPAddress.ZoneID = z.ID
 
-	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, associateIPAddress)
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, associateIPAddress)
 	if err != nil {
 		return err
 	}

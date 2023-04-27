@@ -43,7 +43,7 @@ func (c *elasticIPCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Elastic IP.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&elasticIPShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&elasticIPShowOutput{}), ", "))
 }
 
 func (c *elasticIPCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -92,7 +92,7 @@ func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation("Creating Elastic IP...", func() {
-		elasticIP, err = globalstate.GlobalEgoscaleClient.CreateElasticIP(ctx, c.Zone, elasticIP)
+		elasticIP, err = globalstate.EgoscaleClient.CreateElasticIP(ctx, c.Zone, elasticIP)
 	})
 	if err != nil {
 		return err

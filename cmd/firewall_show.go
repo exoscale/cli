@@ -32,7 +32,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Security Group details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&firewallShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&firewallShowOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {

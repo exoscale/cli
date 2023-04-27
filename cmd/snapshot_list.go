@@ -33,7 +33,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Compute instance disk snapshots.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&snapshotListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&snapshotListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listSnapshots(args))
@@ -45,7 +45,7 @@ func listSnapshots(instances []string) (output.Outputter, error) {
 	out := snapshotListOutput{}
 
 	if len(instances) == 0 {
-		snapshots, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, egoscale.Snapshot{})
+		snapshots, err := globalstate.EgoscaleClient.ListWithContext(gContext, egoscale.Snapshot{})
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +72,7 @@ func listSnapshots(instances []string) (output.Outputter, error) {
 			return nil, err
 		}
 
-		volume, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
+		volume, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 			VirtualMachineID: instance.ID,
 			Type:             "ROOT",
 		})
@@ -80,7 +80,7 @@ func listSnapshots(instances []string) (output.Outputter, error) {
 			return nil, err
 		}
 
-		snapshots, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, egoscale.Snapshot{VolumeID: volume.(*egoscale.Volume).ID})
+		snapshots, err := globalstate.EgoscaleClient.ListWithContext(gContext, egoscale.Snapshot{VolumeID: volume.(*egoscale.Volume).ID})
 		if err != nil {
 			return nil, err
 		}

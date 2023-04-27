@@ -119,7 +119,7 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		c.Groups = []string{"system:masters"}
 	}
 
-	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -127,7 +127,7 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	b64Kubeconfig, err := globalstate.GlobalEgoscaleClient.GetSKSClusterKubeconfig(
+	b64Kubeconfig, err := globalstate.EgoscaleClient.GetSKSClusterKubeconfig(
 		ctx,
 		c.Zone,
 		cluster,

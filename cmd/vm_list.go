@@ -40,7 +40,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Compute instances.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&vmListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&vmListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
@@ -54,7 +54,7 @@ Supported output template annotations: %s`,
 
 func listVMs() (output.Outputter, error) {
 	vm := &egoscale.VirtualMachine{}
-	vms, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, vm)
+	vms, err := globalstate.EgoscaleClient.ListWithContext(gContext, vm)
 	if err != nil {
 		return nil, err
 	}

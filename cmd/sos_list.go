@@ -50,7 +50,7 @@ Note: the buckets size reported is computed daily, it may not be the actual size
 }
 
 func displayBuckets(sosClient *sosClient, isRecursive, isShort bool) error {
-	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
 	if err != nil {
 		return err
 	}

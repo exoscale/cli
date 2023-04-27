@@ -42,7 +42,7 @@ func (c *dbaasServiceMetricsCmd) cmdPreRun(cmd *cobra.Command, args []string) er
 func (c *dbaasServiceMetricsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	res, err := globalstate.GlobalEgoscaleClient.GetDbaasServiceMetricsWithResponse(
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceMetricsWithResponse(
 		ctx,
 		c.Name,
 		oapi.GetDbaasServiceMetricsJSONRequestBody{Period: (*oapi.GetDbaasServiceMetricsJSONBodyPeriod)(&c.Period)},

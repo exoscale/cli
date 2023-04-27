@@ -123,7 +123,7 @@ Supported values for --maintenance-dow: %s
 
 Supported output template annotations: %s`,
 		strings.Join(dbServiceMaintenanceDOWs, ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&dbServiceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbServiceShowOutput{}), ", "))
 }
 
 func (c *dbaasServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

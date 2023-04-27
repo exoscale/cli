@@ -47,7 +47,7 @@ func (c *instanceSnapshotShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance snapshot details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceSnapshotShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceSnapshotShowOutput{}), ", "))
 }
 
 func (c *instanceSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -58,7 +58,7 @@ func (c *instanceSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	snapshot, err := globalstate.GlobalEgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
+	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -66,7 +66,7 @@ func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving Compute instance snapshot: %w", err)
 	}
 
-	instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
+	instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Compute instance %s: %w", *snapshot.InstanceID, err)
 	}

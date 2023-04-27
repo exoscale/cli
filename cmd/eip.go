@@ -29,7 +29,7 @@ func getElasticIPByAddressOrID(v string) (*egoscale.IPAddress, error) {
 	ip := net.ParseIP(v)
 	id, _ := egoscale.ParseUUID(v)
 
-	eips, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
+	eips, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
 	if err != nil {
 		return nil, err
 	}

@@ -37,7 +37,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a DNS Domain records.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&dnsShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&dnsShowOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("show expects one DNS domain by name or id")
@@ -70,7 +70,7 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	records, err := globalstate.GlobalEgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, *domain.ID)
+	records, err := globalstate.EgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, *domain.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 			}
 		}
 
-		record, err := globalstate.GlobalEgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, *r.ID)
+		record, err := globalstate.EgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, *r.ID)
 		if err != nil {
 			return nil, err
 		}

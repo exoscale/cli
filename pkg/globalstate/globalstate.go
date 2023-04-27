@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	OutputFormat         string
-	GlobalEgoscaleClient *egoscale.Client
-	Quiet                bool
+	OutputFormat   string
+	EgoscaleClient *egoscale.Client
+	Quiet          bool
 )

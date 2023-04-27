@@ -34,7 +34,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a snapshot details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&snapshotShowOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
@@ -51,7 +51,7 @@ Supported output template annotations: %s`,
 }
 
 func showSnapshot(snapshot *egoscale.Snapshot) (output.Outputter, error) {
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Volume{ID: snapshot.VolumeID})
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Volume{ID: snapshot.VolumeID})
 	if err != nil {
 		return nil, err
 	}

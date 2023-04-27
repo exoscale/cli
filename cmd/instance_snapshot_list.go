@@ -44,7 +44,7 @@ func (c *instanceSnapshotListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing Compute instance snapshots.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceSnapshotListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceSnapshotListOutput{}), ", "))
 }
 
 func (c *instanceSnapshotListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -75,7 +75,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListSnapshots(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListSnapshots(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Compute instance snapshots in zone %s: %w", zone, err)
 		}
@@ -86,7 +86,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if cached {
 				instance = instanceI.(*egoscale.Instance)
 			} else {
-				instance, err = globalstate.GlobalEgoscaleClient.GetInstance(ctx, zone, *s.InstanceID)
+				instance, err = globalstate.EgoscaleClient.GetInstance(ctx, zone, *s.InstanceID)
 				if err != nil {
 					return fmt.Errorf("unable to retrieve Compute instance %q: %w", *s.InstanceID, err)
 				}

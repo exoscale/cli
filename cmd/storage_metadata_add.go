@@ -28,7 +28,7 @@ Notes:
 
 Supported output template annotations: %s`,
 		strings.Join(strings.Split(sos.MetadataForbiddenCharset, ""), " "),
-		strings.Join(output.OutputterTemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {

@@ -34,7 +34,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Compute instance template details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&templateShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&templateShowOutput{}), ", ")),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				cmdExitOnUsageError(cmd, "invalid arguments")

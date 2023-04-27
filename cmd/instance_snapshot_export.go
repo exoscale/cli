@@ -42,7 +42,7 @@ func (c *instanceSnapshotExportCmd) cmdLong() string {
 	return fmt.Sprintf(`This command exports a Compute instance snapshot.
 	
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceSnapshotExportOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceSnapshotExportOutput{}), ", "))
 }
 
 func (c *instanceSnapshotExportCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -53,7 +53,7 @@ func (c *instanceSnapshotExportCmd) cmdPreRun(cmd *cobra.Command, args []string)
 func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	snapshot, err := globalstate.GlobalEgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
+	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -63,7 +63,7 @@ func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var snapshotExport *egoscale.SnapshotExport
 	decorateAsyncOperation(fmt.Sprintf("Exporting snapshot %s...", c.ID), func() {
-		snapshotExport, err = globalstate.GlobalEgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
+		snapshotExport, err = globalstate.EgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
 	})
 	if err != nil {
 		return err

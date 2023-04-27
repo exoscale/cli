@@ -149,8 +149,8 @@ func (c *securityGroupShowCmd) cmdLong() string {
 Supported output template annotations for Security Group: %s
 
 Supported output template annotations for Security Group rules: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&securityGroupRuleOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&securityGroupRuleOutput{}), ", "))
 }
 
 func (c *securityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -162,7 +162,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-	securityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		if rule.SecurityGroupID != nil {
-			ruleSecurityGroup, err := globalstate.GlobalEgoscaleClient.GetSecurityGroup(ctx, zone, *rule.SecurityGroupID)
+			ruleSecurityGroup, err := globalstate.EgoscaleClient.GetSecurityGroup(ctx, zone, *rule.SecurityGroupID)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -218,7 +218,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	instances, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.GlobalEgoscaleClient, *securityGroup.ID, zone)
+	instances, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.EgoscaleClient, *securityGroup.ID, zone)
 	if err != nil {
 		return fmt.Errorf("error retrieving instances in Security Group: %w", err)
 	}

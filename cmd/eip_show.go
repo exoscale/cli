@@ -76,7 +76,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows an Elastic IP details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&eipShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&eipShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
@@ -115,7 +115,7 @@ func showEIP(v string) (output.Outputter, error) {
 		}
 	}
 
-	res, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: eip.ZoneID})
+	res, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: eip.ZoneID})
 	if err != nil {
 		return nil, err
 	}

@@ -36,7 +36,7 @@ func (c *antiAffinityGroupListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Anti-Affinity Groups.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&antiAffinityGroupListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&antiAffinityGroupListItemOutput{}), ", "))
 }
 
 func (c *antiAffinityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -49,7 +49,7 @@ func (c *antiAffinityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	antiAffinityGroups, err := globalstate.GlobalEgoscaleClient.ListAntiAffinityGroups(ctx, account.CurrentAccount.DefaultZone)
+	antiAffinityGroups, err := globalstate.EgoscaleClient.ListAntiAffinityGroups(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

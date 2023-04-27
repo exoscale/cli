@@ -59,7 +59,7 @@ func (c *sksNodepoolShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an SKS cluster Nodepool details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
 func (c *sksNodepoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -72,7 +72,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -129,7 +129,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if nodepool.AntiAffinityGroupIDs != nil {
 		for _, id := range *nodepool.AntiAffinityGroupIDs {
-			antiAffinityGroup, err := globalstate.GlobalEgoscaleClient.GetAntiAffinityGroup(ctx, c.Zone, id)
+			antiAffinityGroup, err := globalstate.EgoscaleClient.GetAntiAffinityGroup(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
@@ -139,7 +139,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if nodepool.PrivateNetworkIDs != nil {
 		for _, id := range *nodepool.PrivateNetworkIDs {
-			privateNetwork, err := globalstate.GlobalEgoscaleClient.GetPrivateNetwork(ctx, c.Zone, id)
+			privateNetwork, err := globalstate.EgoscaleClient.GetPrivateNetwork(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -149,7 +149,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if nodepool.SecurityGroupIDs != nil {
 		for _, id := range *nodepool.SecurityGroupIDs {
-			securityGroup, err := globalstate.GlobalEgoscaleClient.GetSecurityGroup(ctx, c.Zone, id)
+			securityGroup, err := globalstate.EgoscaleClient.GetSecurityGroup(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -157,13 +157,13 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	serviceOffering, err := globalstate.GlobalEgoscaleClient.GetInstanceType(ctx, c.Zone, *nodepool.InstanceTypeID)
+	serviceOffering, err := globalstate.EgoscaleClient.GetInstanceType(ctx, c.Zone, *nodepool.InstanceTypeID)
 	if err != nil {
 		return fmt.Errorf("error retrieving service offering: %w", err)
 	}
 	out.InstanceType = *serviceOffering.Size
 
-	template, err := globalstate.GlobalEgoscaleClient.GetTemplate(ctx, c.Zone, *nodepool.TemplateID)
+	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *nodepool.TemplateID)
 	if err != nil {
 		return fmt.Errorf("error retrieving template: %w", err)
 	}

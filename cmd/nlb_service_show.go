@@ -110,7 +110,7 @@ func (c *nlbServiceShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Network Load Balancer service details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&nlbServiceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&nlbServiceShowOutput{}), ", "))
 }
 
 func (c *nlbServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -123,7 +123,7 @@ func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	nlb, err := globalstate.GlobalEgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}

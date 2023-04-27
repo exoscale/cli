@@ -47,7 +47,7 @@ func init() {
 Optional patterns can be provided to filter results by ID, or name.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&dnsListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&dnsListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listDomains(args))
@@ -57,7 +57,7 @@ Supported output template annotations: %s`,
 
 func listDomains(filters []string) (output.Outputter, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	domains, err := globalstate.GlobalEgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
+	domains, err := globalstate.EgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}

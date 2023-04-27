@@ -44,7 +44,7 @@ func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Deleting Database Service %q...", c.Name), func() {
-		err = globalstate.GlobalEgoscaleClient.DeleteDatabaseService(ctx, c.Zone, &egoscale.DatabaseService{Name: &c.Name})
+		err = globalstate.EgoscaleClient.DeleteDatabaseService(ctx, c.Zone, &egoscale.DatabaseService{Name: &c.Name})
 	})
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {

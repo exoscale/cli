@@ -36,7 +36,7 @@ func (c *privateNetworkUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates a Compute instance Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&privateNetworkShowOutput{}), ", "),
 	)
 }
 
@@ -50,7 +50,7 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	privateNetwork, err := globalstate.GlobalEgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -88,7 +88,7 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if updated {
 		decorateAsyncOperation(fmt.Sprintf("Updating Private Network %q...", c.PrivateNetwork), func() {
-			if err = globalstate.GlobalEgoscaleClient.UpdatePrivateNetwork(ctx, c.Zone, privateNetwork); err != nil {
+			if err = globalstate.EgoscaleClient.UpdatePrivateNetwork(ctx, c.Zone, privateNetwork); err != nil {
 				return
 			}
 		})

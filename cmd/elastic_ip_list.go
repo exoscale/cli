@@ -40,7 +40,7 @@ func (c *elasticIPListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute Elastic IPs.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&elasticIPListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&elasticIPListItemOutput{}), ", "))
 }
 
 func (c *elasticIPListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -69,7 +69,7 @@ func (c *elasticIPListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListElasticIPs(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListElasticIPs(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Elastic IP addresses in zone %s: %w", zone, err)
 		}

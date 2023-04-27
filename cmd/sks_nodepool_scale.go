@@ -40,7 +40,7 @@ specific Nodes should be evicted from the pool rather than leaving the
 decision to the SKS manager.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
 func (c *sksNodepoolScaleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -61,7 +61,7 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -81,7 +81,7 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", c.Nodepool), func() {
-		err = globalstate.GlobalEgoscaleClient.ScaleSKSNodepool(ctx, c.Zone, cluster, nodepool, c.Size)
+		err = globalstate.EgoscaleClient.ScaleSKSNodepool(ctx, c.Zone, cluster, nodepool, c.Size)
 	})
 	if err != nil {
 		return err

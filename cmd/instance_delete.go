@@ -37,7 +37,7 @@ func (c *instanceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -52,7 +52,7 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting instance %q...", c.Instance), func() {
-		err = globalstate.GlobalEgoscaleClient.DeleteInstance(ctx, c.Zone, instance)
+		err = globalstate.EgoscaleClient.DeleteInstance(ctx, c.Zone, instance)
 	})
 	if err != nil {
 		return err

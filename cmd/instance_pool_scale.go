@@ -58,7 +58,7 @@ func (c *instancePoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instancePool, err := globalstate.GlobalEgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -67,7 +67,7 @@ func (c *instancePoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
-		err = globalstate.GlobalEgoscaleClient.ScaleInstancePool(ctx, c.Zone, instancePool, c.Size)
+		err = globalstate.EgoscaleClient.ScaleInstancePool(ctx, c.Zone, instancePool, c.Size)
 	})
 	if err != nil {
 		return err

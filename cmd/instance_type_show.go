@@ -62,7 +62,7 @@ func (c *instanceTypeShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance type details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceTypeShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceTypeShowOutput{}), ", "))
 }
 
 func (c *instanceTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -75,7 +75,7 @@ func (c *instanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	t, err := globalstate.GlobalEgoscaleClient.FindInstanceType(ctx, account.CurrentAccount.DefaultZone, c.Type)
+	t, err := globalstate.EgoscaleClient.FindInstanceType(ctx, account.CurrentAccount.DefaultZone, c.Type)
 	if err != nil {
 		return err
 	}

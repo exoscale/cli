@@ -28,10 +28,10 @@ var apiKeyListCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command lists existing API keys.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&apiKeyListItemOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&apiKeyListItemOutput{}), ", ")),
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
+		resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
 		if err != nil {
 			return err
 		}

@@ -43,7 +43,7 @@ func deleteDomain(ident string, force bool) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Deleting DNS domain %q...", *domain.UnicodeName), func() {
-		err = globalstate.GlobalEgoscaleClient.DeleteDNSDomain(
+		err = globalstate.EgoscaleClient.DeleteDNSDomain(
 			ctx,
 			account.CurrentAccount.DefaultZone,
 			domain,

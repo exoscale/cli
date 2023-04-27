@@ -44,7 +44,7 @@ func (c *instanceTemplateListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Compute instance templates.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceTemplateListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceTemplateListItemOutput{}), ", "))
 }
 
 func (c *instanceTemplateListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -61,7 +61,7 @@ func (c *instanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone),
 	)
 
-	templates, err := globalstate.GlobalEgoscaleClient.ListTemplates(
+	templates, err := globalstate.EgoscaleClient.ListTemplates(
 		ctx,
 		c.Zone,
 		egoscale.ListTemplatesWithVisibility(c.Visibility),

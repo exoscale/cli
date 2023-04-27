@@ -157,7 +157,7 @@ func dbaasShowSettings(settings map[string]interface{}) {
 }
 
 func dbaasGetType(ctx context.Context, name, zone string) (string, error) {
-	dbs, err := globalstate.GlobalEgoscaleClient.ListDatabaseServices(ctx, zone)
+	dbs, err := globalstate.EgoscaleClient.ListDatabaseServices(ctx, zone)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve database type: %w", err)
 	}

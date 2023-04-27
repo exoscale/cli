@@ -17,7 +17,7 @@ func init() {
 		Long: fmt.Sprintf(`This command creates a snapshot of a Compute instance volume.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&snapshotShowOutput{}), ", ")),
 		Aliases: gCreateAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -35,7 +35,7 @@ func createSnapshot(vmID string) (output.Outputter, error) {
 		return nil, err
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})

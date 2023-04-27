@@ -78,7 +78,7 @@ func formatDatabaseServiceRedisTable(t *table.Table, o *dbServiceRedisShowOutput
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (output.Outputter, error) {
-	res, err := globalstate.GlobalEgoscaleClient.GetDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)

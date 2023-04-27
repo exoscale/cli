@@ -43,13 +43,13 @@ func (c *nlbDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	nlb, err := globalstate.GlobalEgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting Network Load Balancer %q...", c.NetworkLoadBalancer), func() {
-		err = globalstate.GlobalEgoscaleClient.DeleteNetworkLoadBalancer(ctx, c.Zone, nlb)
+		err = globalstate.EgoscaleClient.DeleteNetworkLoadBalancer(ctx, c.Zone, nlb)
 	})
 	if err != nil {
 		return err

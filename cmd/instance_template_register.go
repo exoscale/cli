@@ -46,7 +46,7 @@ func (c *instanceTemplateRegisterCmd) cmdLong() string {
 	return fmt.Sprintf(`This command registers a new Compute instance template.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
 }
 
 func (c *instanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -75,7 +75,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		err      error
 	)
 
-	globalstate.GlobalEgoscaleClient.Client.SetTimeout(time.Duration(c.Timeout) * time.Second)
+	globalstate.EgoscaleClient.Client.SetTimeout(time.Duration(c.Timeout) * time.Second)
 
 	ctx := exoapi.WithEndpoint(
 		gContext,
@@ -99,12 +99,12 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	}
 
 	if c.FromSnapshot != "" {
-		snapshot, err := globalstate.GlobalEgoscaleClient.GetSnapshot(ctx, c.Zone, c.FromSnapshot)
+		snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.FromSnapshot)
 		if err != nil {
 			return fmt.Errorf("error retrieving snapshot: %w", err)
 		}
 
-		snapshotExport, err := globalstate.GlobalEgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
+		snapshotExport, err := globalstate.EgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
 		if err != nil {
 			return fmt.Errorf("error retrieving snapshot export information: %w", err)
 		}
@@ -113,12 +113,12 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		template.Checksum = snapshotExport.MD5sum
 
 		// Pre-setting the new template properties from the source template.
-		instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
+		instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
 		if err != nil {
 			return fmt.Errorf("error retrieving Compute instance from snapshot: %w", err)
 		}
 
-		srcTemplate, err := globalstate.GlobalEgoscaleClient.GetTemplate(ctx, c.Zone, *instance.TemplateID)
+		srcTemplate, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *instance.TemplateID)
 		if err != nil {
 			return fmt.Errorf("error retrieving Compute instance template from snapshot: %w", err)
 		}
@@ -151,7 +151,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Registering template %q...", c.Name), func() {
-		template, err = globalstate.GlobalEgoscaleClient.RegisterTemplate(ctx, c.Zone, template)
+		template, err = globalstate.EgoscaleClient.RegisterTemplate(ctx, c.Zone, template)
 	})
 	if err != nil {
 		return err

@@ -37,7 +37,7 @@ func (c *privateNetworkDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 func (c *privateNetworkDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	privateNetwork, err := globalstate.GlobalEgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -52,7 +52,7 @@ func (c *privateNetworkDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting Private Network %s...", c.PrivateNetwork), func() {
-		err = globalstate.GlobalEgoscaleClient.DeletePrivateNetwork(ctx, c.Zone, privateNetwork)
+		err = globalstate.EgoscaleClient.DeletePrivateNetwork(ctx, c.Zone, privateNetwork)
 	})
 	if err != nil {
 		return err

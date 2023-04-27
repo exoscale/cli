@@ -39,7 +39,7 @@ func (c *computeSSHKeyShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an SSH key details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
 }
 
 func (c *computeSSHKeyShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -52,7 +52,7 @@ func (c *computeSSHKeyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	sshKey, err := globalstate.GlobalEgoscaleClient.Client.GetSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Key)
+	sshKey, err := globalstate.EgoscaleClient.Client.GetSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Key)
 	if err != nil {
 		return err
 	}

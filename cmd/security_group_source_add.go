@@ -30,7 +30,7 @@ func (c *securityGroupAddSourceCmd) cmdLong() string {
 	return fmt.Sprintf(`This command adds an external source to a Compute instance Security Group.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
 func (c *securityGroupAddSourceCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -42,13 +42,13 @@ func (c *securityGroupAddSourceCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-	securityGroup, err := globalstate.GlobalEgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Adding Security Group source %s...", c.Cidr), func() {
-		err = globalstate.GlobalEgoscaleClient.AddExternalSourceToSecurityGroup(ctx, zone, securityGroup, c.Cidr)
+		err = globalstate.EgoscaleClient.AddExternalSourceToSecurityGroup(ctx, zone, securityGroup, c.Cidr)
 	})
 	if err != nil {
 		return err

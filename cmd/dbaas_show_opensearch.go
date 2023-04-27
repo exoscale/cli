@@ -129,7 +129,7 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context) (output.Outputter, error) {
-	res, err := globalstate.GlobalEgoscaleClient.GetDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)

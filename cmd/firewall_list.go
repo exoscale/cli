@@ -31,7 +31,7 @@ func init() {
 Optional patterns can be provided to filter results by ID, name or description.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&firewallListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&firewallListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listSecurityGroups(args))
@@ -40,7 +40,7 @@ Supported output template annotations: %s`,
 }
 
 func listSecurityGroups(filters []string) (output.Outputter, error) {
-	sgs, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.SecurityGroup{})
+	sgs, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.SecurityGroup{})
 	if err != nil {
 		return nil, err
 	}

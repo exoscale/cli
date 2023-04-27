@@ -36,7 +36,7 @@ func getAntiAffinityGroupByNameOrID(v string) (*egoscale.AffinityGroup, error) {
 		aff.Name = v
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, aff)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, aff)
 	switch err {
 	case nil:
 		return resp.(*egoscale.AffinityGroup), nil

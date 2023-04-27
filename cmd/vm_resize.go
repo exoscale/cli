@@ -67,7 +67,7 @@ func resizeVirtualMachine(vmName string, diskValue int64) (*task, error) {
 		return nil, fmt.Errorf("this operation is not permitted while your Compute instance is running; stop it before issuing that command again")
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, egoscale.Volume{
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})

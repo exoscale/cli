@@ -39,7 +39,7 @@ THIS OPERATION EFFECTIVELY WIPES ALL DATA STORED ON THE INSTANCE'S DISK
 /!\ **************************************************************** /!\
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
 func (c *instanceResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -51,7 +51,7 @@ func (c *instanceResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var template *egoscale.Template
 	if c.Template != "" {
-		template, err = globalstate.GlobalEgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+		template, err = globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
 		if err != nil {
 			return fmt.Errorf(
 				"no template %q found with visibility %s in zone %s",
@@ -83,7 +83,7 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Resetting instance %q...", c.Instance), func() {
-		err = globalstate.GlobalEgoscaleClient.ResetInstance(ctx, c.Zone, instance, opts...)
+		err = globalstate.EgoscaleClient.ResetInstance(ctx, c.Zone, instance, opts...)
 	})
 	if err != nil {
 		return err

@@ -81,7 +81,7 @@ func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, template
 			return nil, err
 		}
 	} else {
-		resp, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, egoscale.Template{
+		resp, err := globalstate.EgoscaleClient.ListWithContext(gContext, egoscale.Template{
 			IsFeatured: true,
 			ID:         vm.TemplateID,
 			ZoneID:     vm.ZoneID,
@@ -95,7 +95,7 @@ func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, template
 		}
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, egoscale.Volume{
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})

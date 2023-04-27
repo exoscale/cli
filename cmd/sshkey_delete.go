@@ -24,7 +24,7 @@ var sshkeyDeleteCmd = &cobra.Command{
 
 		sshKeys := []egoscale.SSHKeyPair{}
 		if all {
-			sshKeys, err = getSSHKeys(globalstate.GlobalEgoscaleClient)
+			sshKeys, err = getSSHKeys(globalstate.EgoscaleClient)
 			if err != nil {
 				return err
 			}
@@ -65,7 +65,7 @@ var sshkeyDeleteCmd = &cobra.Command{
 
 func deleteSSHKey(name string) error {
 	sshKey := &egoscale.DeleteSSHKeyPair{Name: name}
-	return globalstate.GlobalEgoscaleClient.BooleanRequestWithContext(gContext, sshKey)
+	return globalstate.EgoscaleClient.BooleanRequestWithContext(gContext, sshKey)
 }
 
 func init() {

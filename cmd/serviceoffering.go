@@ -34,7 +34,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists available Compute service offerings.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&serviceOfferingListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&serviceOfferingListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listServiceOfferings())
 		},
@@ -42,7 +42,7 @@ Supported output template annotations: %s`,
 }
 
 func listServiceOfferings() (output.Outputter, error) {
-	serviceOffering, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.ServiceOffering{})
+	serviceOffering, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.ServiceOffering{})
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func getServiceOfferingByNameOrID(v string) (*egoscale.ServiceOffering, error) {
 		so.ID = id
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, so)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, so)
 	switch err {
 	case nil:
 		return resp.(*egoscale.ServiceOffering), nil

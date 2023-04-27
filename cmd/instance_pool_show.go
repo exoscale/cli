@@ -59,7 +59,7 @@ func (c *instancePoolShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an Instance Pool details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instancePoolShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instancePoolShowOutput{}), ", "))
 }
 
 func (c *instancePoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -70,7 +70,7 @@ func (c *instancePoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instancePool, err := globalstate.GlobalEgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -118,7 +118,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.AntiAffinityGroupIDs != nil {
 		for _, id := range *instancePool.AntiAffinityGroupIDs {
-			antiAffinityGroup, err := globalstate.GlobalEgoscaleClient.GetAntiAffinityGroup(ctx, c.Zone, id)
+			antiAffinityGroup, err := globalstate.EgoscaleClient.GetAntiAffinityGroup(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
@@ -128,7 +128,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.ElasticIPIDs != nil {
 		for _, id := range *instancePool.ElasticIPIDs {
-			elasticIP, err := globalstate.GlobalEgoscaleClient.GetElasticIP(ctx, c.Zone, id)
+			elasticIP, err := globalstate.EgoscaleClient.GetElasticIP(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
@@ -138,7 +138,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.InstanceIDs != nil {
 		for _, id := range *instancePool.InstanceIDs {
-			instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, c.Zone, id)
+			instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Compute instance: %w", err)
 			}
@@ -146,7 +146,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	instanceType, err := globalstate.GlobalEgoscaleClient.GetInstanceType(ctx, c.Zone, *instancePool.InstanceTypeID)
+	instanceType, err := globalstate.EgoscaleClient.GetInstanceType(ctx, c.Zone, *instancePool.InstanceTypeID)
 	if err != nil {
 		return err
 	}
@@ -154,7 +154,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.PrivateNetworkIDs != nil {
 		for _, id := range *instancePool.PrivateNetworkIDs {
-			privateNetwork, err := globalstate.GlobalEgoscaleClient.GetPrivateNetwork(ctx, c.Zone, id)
+			privateNetwork, err := globalstate.EgoscaleClient.GetPrivateNetwork(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -164,7 +164,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if instancePool.SecurityGroupIDs != nil {
 		for _, id := range *instancePool.SecurityGroupIDs {
-			securityGroup, err := globalstate.GlobalEgoscaleClient.GetSecurityGroup(ctx, c.Zone, id)
+			securityGroup, err := globalstate.EgoscaleClient.GetSecurityGroup(ctx, c.Zone, id)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -172,7 +172,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	template, err := globalstate.GlobalEgoscaleClient.GetTemplate(ctx, c.Zone, *instancePool.TemplateID)
+	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *instancePool.TemplateID)
 	if err != nil {
 		return fmt.Errorf("error retrieving template: %w", err)
 	}

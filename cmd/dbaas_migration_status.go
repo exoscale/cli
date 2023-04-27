@@ -45,7 +45,7 @@ func (o *databaseMigrationStatus) ToTable() { output.Table(o) }
 func (c *dbaasMigrationStatusCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	res, err := globalstate.GlobalEgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
+	res, err := globalstate.EgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)

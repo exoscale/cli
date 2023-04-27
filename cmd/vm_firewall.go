@@ -127,7 +127,7 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 		ids[i] = *sgs[i].ID
 	}
 
-	_, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.UpdateVirtualMachineSecurityGroups{
+	_, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.UpdateVirtualMachineSecurityGroups{
 		ID:               vm.ID,
 		SecurityGroupIDs: ids,
 	})

@@ -37,7 +37,7 @@ func (c *sksVersionsCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists supported SKS cluster versions.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksClusterVersionsItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksClusterVersionsItemOutput{}), ", "))
 }
 
 func (c *sksVersionsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -50,7 +50,7 @@ func (c *sksVersionsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	out := make(sksClusterVersionsOutput, 0)
 
-	versions, err := globalstate.GlobalEgoscaleClient.ListSKSClusterVersions(ctx)
+	versions, err := globalstate.EgoscaleClient.ListSKSClusterVersions(ctx)
 	if err != nil {
 		return err
 	}

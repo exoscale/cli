@@ -34,7 +34,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows an Exoscale account details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&configShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&configShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if account.GAllAccount == nil {

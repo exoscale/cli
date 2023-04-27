@@ -33,7 +33,7 @@ func (c *instanceEIPAttachCmd) cmdLong() string {
 	return fmt.Sprintf(`This command attaches an Elastic IP address to a Compute instance.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
 	)
 }
 
@@ -45,7 +45,7 @@ func (c *instanceEIPAttachCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 func (c *instanceEIPAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -53,7 +53,7 @@ func (c *instanceEIPAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	elasticIP, err := globalstate.GlobalEgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
 		return fmt.Errorf("error retrieving Elastic IP: %w", err)
 	}
@@ -63,7 +63,7 @@ func (c *instanceEIPAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		c.ElasticIP,
 		c.Instance,
 	), func() {
-		if err = globalstate.GlobalEgoscaleClient.AttachInstanceToElasticIP(
+		if err = globalstate.EgoscaleClient.AttachInstanceToElasticIP(
 			ctx,
 			c.Zone,
 			instance,

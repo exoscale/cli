@@ -33,7 +33,7 @@ func (c *antiAffinityGroupCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Anti-Affinity Group.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
 }
 
 func (c *antiAffinityGroupCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -52,7 +52,7 @@ func (c *antiAffinityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error 
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Anti-Affinity Group %q...", c.Name), func() {
-		antiAffinityGroup, err = globalstate.GlobalEgoscaleClient.CreateAntiAffinityGroup(ctx, zone, antiAffinityGroup)
+		antiAffinityGroup, err = globalstate.EgoscaleClient.CreateAntiAffinityGroup(ctx, zone, antiAffinityGroup)
 	})
 	if err != nil {
 		return err

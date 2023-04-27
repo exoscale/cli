@@ -31,7 +31,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Elastic IP addresses.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&eipListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&eipListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zone, err := cmd.Flags().GetString("zone")
@@ -50,7 +50,7 @@ Supported output template annotations: %s`,
 func listEIP(zone string) (output.Outputter, error) {
 	out := eipListOutput{}
 
-	zones, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
+	zones, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func listEIP(zone string) (output.Outputter, error) {
 			IsElastic: true,
 		}
 
-		ips, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &req)
+		ips, err := globalstate.EgoscaleClient.ListWithContext(gContext, &req)
 		if err != nil {
 			return nil, err
 		}

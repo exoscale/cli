@@ -33,7 +33,7 @@ func (c *securityGroupCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Security Group.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
 func (c *securityGroupCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -52,7 +52,7 @@ func (c *securityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Security Group %q...", c.Name), func() {
-		securityGroup, err = globalstate.GlobalEgoscaleClient.CreateSecurityGroup(ctx, zone, securityGroup)
+		securityGroup, err = globalstate.EgoscaleClient.CreateSecurityGroup(ctx, zone, securityGroup)
 	})
 	if err != nil {
 		return err

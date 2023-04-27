@@ -54,7 +54,7 @@ func (a Account) APISecret() string {
 
 func (a Account) AccountName(ctx context.Context) string {
 	if a.Name == "" {
-		resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(ctx, egoscale.Account{})
+		resp, err := globalstate.EgoscaleClient.GetWithContext(ctx, egoscale.Account{})
 		if err != nil {
 			log.Fatal(err)
 		}

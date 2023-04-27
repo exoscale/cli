@@ -22,10 +22,10 @@ func domainFromIdent(ident string) (*exo.DNSDomain, error) {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	_, err := egoscale.ParseUUID(ident)
 	if err == nil {
-		return globalstate.GlobalEgoscaleClient.GetDNSDomain(ctx, account.CurrentAccount.DefaultZone, ident)
+		return globalstate.EgoscaleClient.GetDNSDomain(ctx, account.CurrentAccount.DefaultZone, ident)
 	}
 
-	domains, err := globalstate.GlobalEgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
+	domains, err := globalstate.EgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}
@@ -44,10 +44,10 @@ func domainRecordFromIdent(domainID, ident string, rType *string) (*exo.DNSDomai
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	_, err := egoscale.ParseUUID(ident)
 	if err == nil {
-		return globalstate.GlobalEgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, domainID, ident)
+		return globalstate.EgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, domainID, ident)
 	}
 
-	records, err := globalstate.GlobalEgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, domainID)
+	records, err := globalstate.EgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, domainID)
 	if err != nil {
 		return nil, err
 	}

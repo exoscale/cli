@@ -83,7 +83,7 @@ func getSecurityGroupByNameOrID(v string) (*egoscale.SecurityGroup, error) {
 		sg.ID = id
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, sg)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, sg)
 	switch err {
 	case nil:
 		return resp.(*egoscale.SecurityGroup), nil

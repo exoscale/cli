@@ -37,7 +37,7 @@ func (c *iamAccessKeyListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing IAM access keys.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&iamAccessKeyListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&iamAccessKeyListOutput{}), ", "))
 }
 
 func (c *iamAccessKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -49,7 +49,7 @@ func (c *iamAccessKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-	iamAccessKeys, err := globalstate.GlobalEgoscaleClient.ListIAMAccessKeys(ctx, zone)
+	iamAccessKeys, err := globalstate.EgoscaleClient.ListIAMAccessKeys(ctx, zone)
 	if err != nil {
 		return err
 	}

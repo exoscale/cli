@@ -38,7 +38,7 @@ func (c *privateNetworkCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&privateNetworkShowOutput{}), ", "))
 }
 
 func (c *privateNetworkCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -77,7 +77,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Private Network %q...", c.Name), func() {
-		privateNetwork, err = globalstate.GlobalEgoscaleClient.CreatePrivateNetwork(ctx, c.Zone, privateNetwork)
+		privateNetwork, err = globalstate.EgoscaleClient.CreatePrivateNetwork(ctx, c.Zone, privateNetwork)
 	})
 	if err != nil {
 		return err

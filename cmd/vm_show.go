@@ -42,7 +42,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Compute instance details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&vmShowOutput{}), ", ")),
 		Aliases:           gShowAlias,
 		ValidArgsFunction: completeVMNames,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -72,7 +72,7 @@ func showVM(name string) (output.Outputter, error) {
 		return nil, err
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Template{
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Template{
 		IsFeatured: true,
 		ID:         vm.TemplateID,
 		ZoneID:     vm.ZoneID,
@@ -82,7 +82,7 @@ func showVM(name string) (output.Outputter, error) {
 	}
 	template := resp.(*egoscale.Template)
 
-	resp, err = globalstate.GlobalEgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
+	resp, err = globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})
@@ -91,7 +91,7 @@ func showVM(name string) (output.Outputter, error) {
 	}
 	volume := resp.(*egoscale.Volume)
 
-	reverseDNS, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.QueryReverseDNSForVirtualMachine{ID: vm.ID})
+	reverseDNS, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.QueryReverseDNSForVirtualMachine{ID: vm.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func showVMUserData(name string) error {
 		return err
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.SyncRequestWithContext(gContext, &egoscale.GetVirtualMachineUserData{
+	resp, err := globalstate.EgoscaleClient.SyncRequestWithContext(gContext, &egoscale.GetVirtualMachineUserData{
 		VirtualMachineID: vm.ID,
 	})
 	if err != nil {

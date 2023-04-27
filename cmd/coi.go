@@ -48,7 +48,7 @@ The Docker Compose configuration reference can be found at this address:
 https://docs.docker.com/compose/compose-file/
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&vmShowOutput{}), ", ")),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")

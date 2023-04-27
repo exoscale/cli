@@ -42,7 +42,7 @@ func (c *instancePoolListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Instance Pools.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instancePoolListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instancePoolListItemOutput{}), ", "))
 }
 
 func (c *instancePoolListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -71,7 +71,7 @@ func (c *instancePoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListInstancePools(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListInstancePools(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Instance Pools in zone %s: %w", zone, err)
 		}

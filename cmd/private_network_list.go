@@ -40,7 +40,7 @@ func (c *privateNetworkListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Private Networks.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&privateNetworkListItemOutput{}), ", "))
 }
 
 func (c *privateNetworkListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -69,7 +69,7 @@ func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListPrivateNetworks(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListPrivateNetworks(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Private Networks in zone %s: %w", zone, err)
 		}

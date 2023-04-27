@@ -33,7 +33,7 @@ func (c *nlbCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Network Load Balancer.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&nlbShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&nlbShowOutput{}), ", "))
 }
 
 func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -57,7 +57,7 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", c.Name), func() {
-		nlb, err = globalstate.GlobalEgoscaleClient.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
+		nlb, err = globalstate.EgoscaleClient.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
 	})
 	if err != nil {
 		return err

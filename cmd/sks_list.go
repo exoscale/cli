@@ -40,7 +40,7 @@ func (c *sksListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists SKS clusters.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksClusterListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksClusterListItemOutput{}), ", "))
 }
 
 func (c *sksListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -69,7 +69,7 @@ func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListSKSClusters(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListSKSClusters(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list SKS clusters in zone %s: %w", zone, err)
 		}

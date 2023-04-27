@@ -42,7 +42,7 @@ func (c *nlbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	nlb, err := globalstate.GlobalEgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func (c *nlbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if *service.ID == c.Service || *service.Name == c.Service {
 			s := service
 			decorateAsyncOperation(fmt.Sprintf("Deleting service %q...", c.Service), func() {
-				err = globalstate.GlobalEgoscaleClient.DeleteNetworkLoadBalancerService(ctx, c.Zone, nlb, s)
+				err = globalstate.EgoscaleClient.DeleteNetworkLoadBalancerService(ctx, c.Zone, nlb, s)
 			})
 			if err != nil {
 				return err

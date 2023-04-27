@@ -42,7 +42,7 @@ func (c *nlbListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Network Load Balancers.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&nlbListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&nlbListItemOutput{}), ", "))
 }
 
 func (c *nlbListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -71,7 +71,7 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListNetworkLoadBalancers(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListNetworkLoadBalancers(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Network Load Balancers in zone %s: %w", zone, err)
 		}

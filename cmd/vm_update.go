@@ -55,7 +55,7 @@ var vmUpdateCmd = &cobra.Command{
 		}
 
 		if edited {
-			if _, err = globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &vmEdit); err != nil {
+			if _, err = globalstate.EgoscaleClient.RequestWithContext(gContext, &vmEdit); err != nil {
 				return fmt.Errorf("unable to update Compute instance: %s", err)
 			}
 		}
@@ -66,7 +66,7 @@ var vmUpdateCmd = &cobra.Command{
 				return err
 			}
 
-			if _, err = globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.UpdateReverseDNSForVirtualMachine{
+			if _, err = globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.UpdateReverseDNSForVirtualMachine{
 				ID:         vm.ID,
 				DomainName: reverseDNS,
 			}); err != nil {

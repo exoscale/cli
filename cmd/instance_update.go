@@ -35,7 +35,7 @@ func (c *instanceUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an Instance .
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
 	)
 }
 
@@ -49,7 +49,7 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := globalstate.GlobalEgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -83,16 +83,16 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if updatedInstance || updatedRDNS {
 		decorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
 			if updatedInstance {
-				if err = globalstate.GlobalEgoscaleClient.UpdateInstance(ctx, c.Zone, instance); err != nil {
+				if err = globalstate.EgoscaleClient.UpdateInstance(ctx, c.Zone, instance); err != nil {
 					return
 				}
 			}
 
 			if updatedRDNS {
 				if c.ReverseDNS == "" {
-					err = globalstate.GlobalEgoscaleClient.DeleteInstanceReverseDNS(ctx, c.Zone, *instance.ID)
+					err = globalstate.EgoscaleClient.DeleteInstanceReverseDNS(ctx, c.Zone, *instance.ID)
 				} else {
-					err = globalstate.GlobalEgoscaleClient.UpdateInstanceReverseDNS(ctx, c.Zone, *instance.ID, c.ReverseDNS)
+					err = globalstate.EgoscaleClient.UpdateInstanceReverseDNS(ctx, c.Zone, *instance.ID, c.ReverseDNS)
 				}
 			}
 		})

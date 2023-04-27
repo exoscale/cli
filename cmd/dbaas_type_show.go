@@ -144,8 +144,8 @@ Supported output template annotations:
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
 		strings.Join(redisSettings, ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
 
 func (c *dbaasTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -158,7 +158,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	dt, err := globalstate.GlobalEgoscaleClient.GetDatabaseServiceType(ctx, account.CurrentAccount.DefaultZone, c.Name)
+	dt, err := globalstate.EgoscaleClient.GetDatabaseServiceType(ctx, account.CurrentAccount.DefaultZone, c.Name)
 	if err != nil {
 		return err
 	}
@@ -191,7 +191,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -218,7 +218,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -239,7 +239,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -260,7 +260,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -285,7 +285,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := globalstate.GlobalEgoscaleClient.GetDbaasSettingsRedisWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsRedisWithResponse(ctx)
 			if err != nil {
 				return err
 			}

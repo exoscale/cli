@@ -28,7 +28,7 @@ func init() {
 		Long: fmt.Sprintf(`This command creates an SSH key.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&sshkeyCreateOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&sshkeyCreateOutput{}), ", ")),
 		Aliases: gCreateAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -54,7 +54,7 @@ Supported output template annotations: %s`,
 }
 
 func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
-	resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.CreateSSHKeyPair{
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.CreateSSHKeyPair{
 		Name: name,
 	})
 	if err != nil {

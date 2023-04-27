@@ -34,7 +34,7 @@ func (c *sksUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an SKS cluster.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&sksShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&sksShowOutput{}), ", "),
 	)
 }
 
@@ -48,7 +48,7 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := globalstate.GlobalEgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -78,7 +78,7 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if updated {
 		decorateAsyncOperation(fmt.Sprintf("Updating SKS cluster %q...", c.Cluster), func() {
-			err = globalstate.GlobalEgoscaleClient.UpdateSKSCluster(ctx, c.Zone, cluster)
+			err = globalstate.EgoscaleClient.UpdateSKSCluster(ctx, c.Zone, cluster)
 		})
 		if err != nil {
 			return err

@@ -41,7 +41,7 @@ func (c *dbaasServiceListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Database Services.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&dbaasServiceListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbaasServiceListItemOutput{}), ", "))
 }
 
 func (c *dbaasServiceListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -70,7 +70,7 @@ func (c *dbaasServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	err := forEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := globalstate.GlobalEgoscaleClient.ListDatabaseServices(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListDatabaseServices(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Database Services in zone %s: %w", zone, err)
 		}

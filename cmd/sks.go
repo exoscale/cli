@@ -15,7 +15,7 @@ var sksCmd = &cobra.Command{
 	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		// Some SKS operations can take a long time, raising
 		// the Exoscale API client timeout as a precaution.
-		globalstate.GlobalEgoscaleClient.Client.SetTimeout(10 * time.Minute)
+		globalstate.EgoscaleClient.Client.SetTimeout(10 * time.Minute)
 	},
 }
 
@@ -25,7 +25,7 @@ var deprecatedSKSCmd = &cobra.Command{
 	PersistentPreRun: func(_ *cobra.Command, _ []string) {
 		// Some SKS operations can take a long time, raising
 		// the Exoscale API client timeout as a precaution.
-		globalstate.GlobalEgoscaleClient.Client.SetTimeout(10 * time.Minute)
+		globalstate.EgoscaleClient.Client.SetTimeout(10 * time.Minute)
 
 		fmt.Fprintln(os.Stderr,
 			`**********************************************************************

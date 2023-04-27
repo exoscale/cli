@@ -42,7 +42,7 @@ var limitsCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command lists the safety limits currently enforced on your account.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&LimitsOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&LimitsOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resourceLimitLabels := map[string]string{
 			limitComputeInstances:  "Compute instances",
@@ -60,7 +60,7 @@ Supported output template annotations: %s`,
 
 		out := LimitsOutput{}
 
-		quotas, err := globalstate.GlobalEgoscaleClient.ListQuotas(gContext, account.CurrentAccount.DefaultZone)
+		quotas, err := globalstate.EgoscaleClient.ListQuotas(gContext, account.CurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}

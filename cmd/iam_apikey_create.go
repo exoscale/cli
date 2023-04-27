@@ -32,7 +32,7 @@ var apiKeyCreateCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command create an API key.
 
 Supported output template annotations: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&apiKeyCreateItemOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&apiKeyCreateItemOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -49,7 +49,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		resp, err := globalstate.GlobalEgoscaleClient.RequestWithContext(gContext, &egoscale.CreateAPIKey{
+		resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.CreateAPIKey{
 			Name:       args[0],
 			Operations: strings.Join(ops, ","),
 			Resources:  strings.Join(res, ","),

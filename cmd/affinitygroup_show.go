@@ -29,7 +29,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows an Anti-Affinity Group details.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -55,7 +55,7 @@ func showAffinityGroup(ag *egoscale.AffinityGroup) (output.Outputter, error) {
 	}
 
 	if len(ag.VirtualMachineIDs) > 0 {
-		resp, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
+		resp, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
 		if err != nil {
 			return nil, err
 		}

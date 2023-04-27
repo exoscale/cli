@@ -94,8 +94,8 @@ func (c *privateNetworkShowCmd) cmdLong() string {
 Supported output template annotations for Private Network: %s
 
 Supported output template annotations for Private Network leases: %s`,
-		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "),
-		strings.Join(output.OutputterTemplateAnnotations(&privateNetworkLeaseOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&privateNetworkShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&privateNetworkLeaseOutput{}), ", "))
 }
 
 func (c *privateNetworkShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -106,7 +106,7 @@ func (c *privateNetworkShowCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	privateNetwork, err := globalstate.GlobalEgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -139,7 +139,7 @@ func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		out.Leases = make([]privateNetworkLeaseOutput, 0)
 
 		for _, lease := range privateNetwork.Leases {
-			instance, err := globalstate.GlobalEgoscaleClient.GetInstance(ctx, c.Zone, *lease.InstanceID)
+			instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, *lease.InstanceID)
 			if err != nil {
 				return fmt.Errorf("unable to retrieve Compute instance %s: %w", *lease.InstanceID, err)
 			}

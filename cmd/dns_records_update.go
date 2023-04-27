@@ -99,7 +99,7 @@ func updateDomainRecord(
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", *record.ID), func() {
-		err = globalstate.GlobalEgoscaleClient.UpdateDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, record)
+		err = globalstate.EgoscaleClient.UpdateDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, record)
 	})
 	if err != nil {
 		return err

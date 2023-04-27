@@ -49,7 +49,7 @@ func getTemplateByNameOrID(zoneID *egoscale.UUID, v string, templateFilter strin
 		req.ID = id
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, req)
+	resp, err := globalstate.EgoscaleClient.ListWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func findTemplates(zoneID *egoscale.UUID, templateFilter string, filters ...stri
 	}
 
 	var err error
-	globalstate.GlobalEgoscaleClient.PaginateWithContext(gContext, req, func(i interface{}, e error) bool {
+	globalstate.EgoscaleClient.PaginateWithContext(gContext, req, func(i interface{}, e error) bool {
 		if e != nil {
 			err = e
 			return false

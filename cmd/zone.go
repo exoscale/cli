@@ -48,7 +48,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists available Exoscale zones.
 
 Supported output template annotations: %s`,
-			strings.Join(output.OutputterTemplateAnnotations(&zoneListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&zoneListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listZones())
 		},
@@ -56,7 +56,7 @@ Supported output template annotations: %s`,
 }
 
 func listZones() (output.Outputter, error) {
-	zones, err := globalstate.GlobalEgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
+	zones, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func getZoneByNameOrID(name string) (*egoscale.Zone, error) {
 		zone.ID = id
 	}
 
-	resp, err := globalstate.GlobalEgoscaleClient.GetWithContext(gContext, zone)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, zone)
 	if err != nil {
 		if err == egoscale.ErrNotFound {
 			return nil, fmt.Errorf("invalid zone %q", name)
