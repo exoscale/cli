@@ -6,6 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -30,7 +33,7 @@ func (c *computeSSHKeyRegisterCmd) cmdLong() string {
 	return fmt.Sprintf(`This command registers a new SSH key.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
 }
 
 func (c *computeSSHKeyRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -45,11 +48,11 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 
 	// Template registration can take a _long time_, raising
 	// the Exoscale API client timeout as a precaution.
-	cs.Client.SetTimeout(30 * time.Minute)
+	globalstate.EgoscaleClient.Client.SetTimeout(30 * time.Minute)
 
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
 	publicKey, err := os.ReadFile(c.PublicKeyFile)
@@ -58,13 +61,13 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Registering SSH key %q...", c.Name), func() {
-		sshKey, err = cs.RegisterSSHKey(ctx, gCurrentAccount.DefaultZone, c.Name, string(publicKey))
+		sshKey, err = globalstate.EgoscaleClient.RegisterSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Name, string(publicKey))
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc(&computeSSHKeyShowOutput{
 			Fingerprint: *sshKey.Fingerprint,
 			Name:        *sshKey.Name,

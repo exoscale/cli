@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/kballard/go-shellquote"
 	"github.com/spf13/cobra"
@@ -92,9 +94,9 @@ func (c *instanceSCPCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceSCPCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -103,7 +105,7 @@ func (c *instanceSCPCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.Login == "" {
-		instanceTemplate, err := cs.GetTemplate(ctx, c.Zone, *instance.TemplateID)
+		instanceTemplate, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *instance.TemplateID)
 		if err != nil {
 			return fmt.Errorf("error retrieving instance template: %w", err)
 		}

@@ -6,6 +6,9 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -31,9 +34,9 @@ type instanceTemplateShowOutput struct {
 	Checksum        string `json:"checksum"`
 }
 
-func (o *instanceTemplateShowOutput) toJSON() { outputJSON(o) }
-func (o *instanceTemplateShowOutput) toText() { outputText(o) }
-func (o *instanceTemplateShowOutput) toTable() {
+func (o *instanceTemplateShowOutput) ToJSON() { output.JSON(o) }
+func (o *instanceTemplateShowOutput) ToText() { output.Text(o) }
+func (o *instanceTemplateShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Template"})
 	defer t.Render()
@@ -77,7 +80,7 @@ func (c *instanceTemplateShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance template details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
 }
 
 func (c *instanceTemplateShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -88,10 +91,10 @@ func (c *instanceTemplateShowCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	template, err := cs.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)
+	template, err := globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.Visibility)
 	if err != nil {
 		return fmt.Errorf(
 			"no template %q found with visibility %s in zone %s",

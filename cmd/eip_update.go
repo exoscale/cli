@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -92,7 +93,7 @@ func updateIPAddress(associateIPAddress egoscale.UpdateIPAddress) error {
 
 	ip := resp.(*egoscale.IPAddress)
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		table := table.NewTable(os.Stdout)
 		table.SetHeader([]string{"Zone", "IP", "Description", "ID"})
 		table.Append([]string{

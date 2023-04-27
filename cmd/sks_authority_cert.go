@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -58,8 +60,8 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		cmdExitOnUsageError(cmd, fmt.Sprintf("unsupported authority value %q", c.Authority))
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -67,7 +69,7 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	b64Cert, err := cs.GetSKSClusterAuthorityCert(ctx, c.Zone, cluster, c.Authority)
+	b64Cert, err := globalstate.EgoscaleClient.GetSKSClusterAuthorityCert(ctx, c.Zone, cluster, c.Authority)
 	if err != nil {
 		return fmt.Errorf("error retrieving certificate: %w", err)
 	}

@@ -7,6 +7,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -25,9 +28,9 @@ type nlbShowOutput struct {
 	Labels       map[string]string      `json:"labels"`
 }
 
-func (o *nlbShowOutput) toJSON() { outputJSON(o) }
-func (o *nlbShowOutput) toText() { outputText(o) }
-func (o *nlbShowOutput) toTable() {
+func (o *nlbShowOutput) ToJSON() { output.JSON(o) }
+func (o *nlbShowOutput) ToText() { output.Text(o) }
+func (o *nlbShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Network Load Balancer"})
 	defer t.Render()
@@ -97,7 +100,7 @@ func (c *nlbShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Network Load Balancer details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&nlbShowOutput{}), ", "))
 }
 
 func (c *nlbShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -106,9 +109,9 @@ func (c *nlbShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}

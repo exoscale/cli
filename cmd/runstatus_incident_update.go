@@ -6,6 +6,7 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/egoscale"
 	"github.com/manifoldco/promptui"
 
@@ -23,10 +24,10 @@ passing a resolved status and flagging the services state as operational`,
 			return cmd.Usage()
 		}
 
-		pageName := gCurrentAccount.DefaultRunstatusPage
+		pageName := account.CurrentAccount.DefaultRunstatusPage
 		incidentName := args[0]
 
-		if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
+		if account.CurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
 			fmt.Fprintf(os.Stderr, `Error: No default runstat.us page is set:
   Please specify a page in parameter or add it to %q
 

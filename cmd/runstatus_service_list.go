@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -16,16 +17,16 @@ type runstatusServiceListItemOutput struct {
 
 type runstatusServiceListOutput []runstatusServiceListItemOutput
 
-func (o *runstatusServiceListOutput) toJSON() { outputJSON(o) }
+func (o *runstatusServiceListOutput) ToJSON() { output.JSON(o) }
 
-func (o *runstatusServiceListOutput) toText() { outputText(o) }
+func (o *runstatusServiceListOutput) ToText() { output.Text(o) }
 
-func (o *runstatusServiceListOutput) toTable() {
+func (o *runstatusServiceListOutput) ToTable() {
 	for i := range *o {
 		(*o)[i].State = strings.ToUpper(strings.Replace((*o)[i].State, "_", " ", -1))
 	}
 
-	outputTable(o)
+	output.Table(o)
 }
 
 func init() {
@@ -35,15 +36,15 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing runstat.us services.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&runstatusServiceListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&runstatusServiceListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(runstatusListServices(args))
+			return printOutput(runstatusListServices(args))
 		},
 	})
 }
 
-func runstatusListServices(pageNames []string) (outputter, error) {
+func runstatusListServices(pageNames []string) (output.Outputter, error) {
 	pages, err := getRunstatusPages(pageNames)
 	if err != nil {
 		return nil, err

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -30,7 +33,7 @@ func (c *antiAffinityGroupCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Anti-Affinity Group.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
 }
 
 func (c *antiAffinityGroupCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -38,9 +41,9 @@ func (c *antiAffinityGroupCreateCmd) cmdPreRun(cmd *cobra.Command, args []string
 }
 
 func (c *antiAffinityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := gCurrentAccount.DefaultZone
+	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	antiAffinityGroup := &egoscale.AntiAffinityGroup{
 		Description: utils.NonEmptyStringPtr(c.Description),
@@ -49,7 +52,7 @@ func (c *antiAffinityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error 
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Anti-Affinity Group %q...", c.Name), func() {
-		antiAffinityGroup, err = cs.CreateAntiAffinityGroup(ctx, zone, antiAffinityGroup)
+		antiAffinityGroup, err = globalstate.EgoscaleClient.CreateAntiAffinityGroup(ctx, zone, antiAffinityGroup)
 	})
 	if err != nil {
 		return err

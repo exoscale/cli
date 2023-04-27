@@ -6,6 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -44,7 +47,7 @@ func (c *nlbServiceAddCmd) cmdLong() string {
 	return fmt.Sprintf(`This command adds a service to a Network Load Balancer.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbServiceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&nlbServiceShowOutput{}), ", "))
 }
 
 func (c *nlbServiceAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -90,27 +93,27 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		service.Healthcheck.Port = service.TargetPort
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return fmt.Errorf("error retrieving Network Load Balancer: %w", err)
 	}
 
-	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
 		return fmt.Errorf("error retrieving Instance Pool: %w", err)
 	}
 	service.InstancePoolID = instancePool.ID
 
 	decorateAsyncOperation(fmt.Sprintf("Adding service %q...", c.Name), func() {
-		service, err = cs.CreateNetworkLoadBalancerService(ctx, c.Zone, nlb, service)
+		service, err = globalstate.EgoscaleClient.CreateNetworkLoadBalancerService(ctx, c.Zone, nlb, service)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&nlbServiceShowCmd{
 			cliCommandSettings:  c.cliCommandSettings,
 			NetworkLoadBalancer: *nlb.ID,

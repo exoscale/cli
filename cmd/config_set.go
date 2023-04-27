@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +14,7 @@ var configSetCmd = &cobra.Command{
 		if len(args) < 1 {
 			return cmd.Usage()
 		}
-		if gAllAccount == nil {
+		if account.GAllAccount == nil {
 			return fmt.Errorf("no accounts configured")
 		}
 

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +18,9 @@ type computeSSHKeyListItemOutput struct {
 
 type computeSSHKeyListOutput []computeSSHKeyListItemOutput
 
-func (o *computeSSHKeyListOutput) toJSON()  { outputJSON(o) }
-func (o *computeSSHKeyListOutput) toText()  { outputText(o) }
-func (o *computeSSHKeyListOutput) toTable() { outputTable(o) }
+func (o *computeSSHKeyListOutput) ToJSON()  { output.JSON(o) }
+func (o *computeSSHKeyListOutput) ToText()  { output.Text(o) }
+func (o *computeSSHKeyListOutput) ToTable() { output.Table(o) }
 
 type computeSSHKeyListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -33,7 +36,7 @@ func (c *computeSSHKeyListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists SSH keys.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&computeSSHKeyListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&computeSSHKeyListItemOutput{}), ", "))
 }
 
 func (c *computeSSHKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -43,10 +46,10 @@ func (c *computeSSHKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 func (c *computeSSHKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	sshKeys, err := cs.ListSSHKeys(ctx, gCurrentAccount.DefaultZone)
+	sshKeys, err := globalstate.EgoscaleClient.ListSSHKeys(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

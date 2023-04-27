@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -14,7 +16,7 @@ var affinitygroupCreateCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command creates an Anti-Affinity Group.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -26,12 +28,12 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		return output(createAffinityGroup(args[0], desc))
+		return printOutput(createAffinityGroup(args[0], desc))
 	},
 }
 
-func createAffinityGroup(name, desc string) (outputter, error) {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
+func createAffinityGroup(name, desc string) (output.Outputter, error) {
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.CreateAffinityGroup{
 		Name:        name,
 		Description: desc,
 		Type:        "host anti-affinity",
@@ -40,7 +42,7 @@ func createAffinityGroup(name, desc string) (outputter, error) {
 		return nil, err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return showAffinityGroup(resp.(*egoscale.AffinityGroup))
 	}
 

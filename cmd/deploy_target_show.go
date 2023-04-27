@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -17,9 +20,9 @@ type deployTargetShowOutput struct {
 	Zone        string `json:"zone"`
 }
 
-func (o *deployTargetShowOutput) toJSON()  { outputJSON(o) }
-func (o *deployTargetShowOutput) toText()  { outputText(o) }
-func (o *deployTargetShowOutput) toTable() { outputTable(o) }
+func (o *deployTargetShowOutput) ToJSON()  { output.JSON(o) }
+func (o *deployTargetShowOutput) ToText()  { output.Text(o) }
+func (o *deployTargetShowOutput) ToTable() { output.Table(o) }
 
 type deployTargetShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -39,7 +42,7 @@ func (c *deployTargetShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Deploy Target details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&deployTargetShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&deployTargetShowOutput{}), ", "))
 }
 
 func (c *deployTargetShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -48,9 +51,9 @@ func (c *deployTargetShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	dt, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+	dt, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 	if err != nil {
 		return fmt.Errorf("error retrieving Deploy Target: %w", err)
 	}

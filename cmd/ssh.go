@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/kballard/go-shellquote"
 	"github.com/spf13/cobra"
@@ -118,7 +119,7 @@ func getSSHInfo(name string, isIpv6 bool) (*sshInfo, error) {
 		ZoneID:     vm.ZoneID,
 	}
 
-	resp, err := cs.GetWithContext(gContext, query)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, query)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve Compute instance template: %v", err)
 	}

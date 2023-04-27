@@ -6,6 +6,9 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -25,9 +28,9 @@ type instanceTypeListOutput struct {
 	verbose bool
 }
 
-func (o *instanceTypeListOutput) toJSON() { outputJSON(o.data) }
-func (o *instanceTypeListOutput) toText() { outputText(o.data) }
-func (o *instanceTypeListOutput) toTable() {
+func (o *instanceTypeListOutput) ToJSON() { output.JSON(o.data) }
+func (o *instanceTypeListOutput) ToText() { output.Text(o.data) }
+func (o *instanceTypeListOutput) ToTable() {
 	header := []string{"ID", "Family", "Size"}
 	if o.verbose {
 		header = append(header, "# CPUs", "Memory", "Authorized")
@@ -69,7 +72,7 @@ func (c *instanceTypeListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Compute instance types.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceTypeListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceTypeListItemOutput{}), ", "))
 }
 
 func (c *instanceTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -79,10 +82,10 @@ func (c *instanceTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *instanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	instanceTypes, err := cs.ListInstanceTypes(ctx, gCurrentAccount.DefaultZone)
+	instanceTypes, err := globalstate.EgoscaleClient.ListInstanceTypes(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

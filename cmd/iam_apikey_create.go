@@ -6,6 +6,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +21,9 @@ type apiKeyCreateItemOutput struct {
 	Type       string   `json:"type"`
 }
 
-func (o *apiKeyCreateItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyCreateItemOutput) toText()  { outputText(o) }
-func (o *apiKeyCreateItemOutput) toTable() { outputTable(o) }
+func (o *apiKeyCreateItemOutput) ToJSON()  { output.JSON(o) }
+func (o *apiKeyCreateItemOutput) ToText()  { output.Text(o) }
+func (o *apiKeyCreateItemOutput) ToTable() { output.Table(o) }
 
 // apiKeyCreateCmd represents an API key creation command
 var apiKeyCreateCmd = &cobra.Command{
@@ -30,7 +32,7 @@ var apiKeyCreateCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command create an API key.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&apiKeyCreateItemOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&apiKeyCreateItemOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -47,7 +49,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		resp, err := cs.RequestWithContext(gContext, &egoscale.CreateAPIKey{
+		resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.CreateAPIKey{
 			Name:       args[0],
 			Operations: strings.Join(ops, ","),
 			Resources:  strings.Join(res, ","),
@@ -59,7 +61,7 @@ Supported output template annotations: %s`,
 		apiKey := resp.(*egoscale.APIKey)
 		sort.Strings(apiKey.Operations)
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			o := apiKeyCreateItemOutput{
 				Name:       apiKey.Name,
 				Key:        apiKey.Key,
@@ -69,7 +71,7 @@ Supported output template annotations: %s`,
 				Type:       string(apiKey.Type),
 			}
 
-			if err := output(&o, err); err != nil {
+			if err := printOutput(&o, err); err != nil {
 				return err
 			}
 		}

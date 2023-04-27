@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -20,9 +22,9 @@ type dbServiceNotificationListItemOutput struct {
 
 type dbServiceNotificationListOutput []dbServiceNotificationListItemOutput
 
-func (o *dbServiceNotificationListOutput) toJSON() { outputJSON(o) }
-func (o *dbServiceNotificationListOutput) toText() { outputText(o) }
-func (o *dbServiceNotificationListOutput) toTable() {
+func (o *dbServiceNotificationListOutput) ToJSON() { output.JSON(o) }
+func (o *dbServiceNotificationListOutput) ToText() { output.Text(o) }
+func (o *dbServiceNotificationListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
@@ -43,9 +45,9 @@ type dbServiceBackupListItemOutput struct {
 
 type dbServiceBackupListOutput []dbServiceBackupListItemOutput
 
-func (o *dbServiceBackupListOutput) toJSON()  { outputJSON(o) }
-func (o *dbServiceBackupListOutput) toText()  { outputText(o) }
-func (o *dbServiceBackupListOutput) toTable() { outputTable(o) }
+func (o *dbServiceBackupListOutput) ToJSON()  { output.JSON(o) }
+func (o *dbServiceBackupListOutput) ToText()  { output.Text(o) }
+func (o *dbServiceBackupListOutput) ToTable() { output.Table(o) }
 
 type dbServiceMaintenanceShowOutput struct {
 	DOW  string `json:"dow"`
@@ -74,9 +76,9 @@ type dbServiceShowOutput struct {
 	Opensearch *dbServiceOpensearchShowOutput `json:"opensearch,omitempty"`
 }
 
-func (o *dbServiceShowOutput) toJSON() { outputJSON(o) }
-func (o *dbServiceShowOutput) toText() { outputText(o) }
-func (o *dbServiceShowOutput) toTable() {
+func (o *dbServiceShowOutput) ToJSON() { output.JSON(o) }
+func (o *dbServiceShowOutput) ToText() { output.Text(o) }
+func (o *dbServiceShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Database Service"})
 	defer t.Render()
@@ -160,26 +162,26 @@ Supported output template annotations:
 * When showing a Database Service backups: %s
 
 * When showing a Database Service notifications: %s`,
-		strings.Join(outputterTemplateAnnotations(&dbServiceShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaACLShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaAuthenticationShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaComponentShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaConnectionInfoShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceKafkaUserShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceOpensearchShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceMysqlShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceMysqlComponentShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceMysqlUserShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServicePGShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServicePGComponentShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServicePGConnectionPool{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServicePGUserShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceRedisShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceRedisComponentShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceRedisUserShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceBackupListItemOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceNotificationListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbServiceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceKafkaShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceKafkaACLShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceKafkaAuthenticationShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceKafkaComponentShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceKafkaConnectionInfoShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceKafkaUserShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceOpensearchShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceMysqlShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceMysqlComponentShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceMysqlUserShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServicePGShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServicePGComponentShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServicePGConnectionPool{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServicePGUserShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceRedisShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceRedisComponentShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceRedisUserShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceBackupListItemOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceNotificationListItemOutput{}), ", "))
 }
 
 func (c *dbaasServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -188,7 +190,7 @@ func (c *dbaasServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
 	if err != nil {

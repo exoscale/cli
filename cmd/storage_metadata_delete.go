@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
@@ -20,14 +21,14 @@ Example:
     exo storage metadata delete sos://my-bucket/object-a k1
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
@@ -51,22 +52,23 @@ Supported output template annotations: %s`,
 		bucket, prefix = parts[0], parts[1]
 		mdKeys := args[1:]
 
-		storage, err := newStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+		storage, err := sos.NewStorageClient(
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.deleteObjectsMetadata(bucket, prefix, mdKeys, recursive); err != nil {
+		if err := storage.DeleteObjectsMetadata(gContext, bucket, prefix, mdKeys, recursive); err != nil {
 			return fmt.Errorf("unable to delete metadata from object: %w", err)
 		}
 
-		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.showObject(bucket, prefix))
+		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
+			return printOutput(storage.ShowObject(gContext, bucket, prefix))
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("Metadata deleted successfully")
 		}
 
@@ -78,27 +80,4 @@ func init() {
 	storageMetadataDeleteCmd.Flags().BoolP("recursive", "r", false,
 		"delete metadata recursively (with object prefix only)")
 	storageMetadataCmd.AddCommand(storageMetadataDeleteCmd)
-}
-
-func (c *storageClient) deleteObjectMetadata(bucket, key string, mdKeys []string) error {
-	object, err := c.copyObject(bucket, key)
-	if err != nil {
-		return err
-	}
-
-	for _, k := range mdKeys {
-		if _, ok := object.Metadata[k]; !ok {
-			return fmt.Errorf("key %q not found in current metadata", k)
-		}
-		delete(object.Metadata, k)
-	}
-
-	_, err = c.CopyObject(gContext, object)
-	return err
-}
-
-func (c *storageClient) deleteObjectsMetadata(bucket, prefix string, mdKeys []string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.deleteObjectMetadata(bucket, aws.ToString(o.Key), mdKeys)
-	})
 }

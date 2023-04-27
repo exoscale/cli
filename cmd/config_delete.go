@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/spf13/cobra"
 )
 
@@ -14,14 +15,14 @@ var configDeleteCmd = &cobra.Command{
 		if len(args) < 1 {
 			return cmd.Usage()
 		}
-		if gAllAccount == nil {
+		if account.GAllAccount == nil {
 			return fmt.Errorf("no accounts defined")
 		}
 		if a := getAccountByName(args[0]); a == nil {
 			return fmt.Errorf("account %q doesn't exist", args[0])
 		}
 
-		if args[0] == gAllAccount.DefaultAccount {
+		if args[0] == account.GAllAccount.DefaultAccount {
 			return fmt.Errorf("cannot delete the default account")
 		}
 
@@ -37,14 +38,14 @@ var configDeleteCmd = &cobra.Command{
 		}
 
 		pos := 0
-		for i, acc := range gAllAccount.Accounts {
+		for i, acc := range account.GAllAccount.Accounts {
 			if acc.Name == args[0] {
 				pos = i
 				break
 			}
 		}
 
-		gAllAccount.Accounts = append(gAllAccount.Accounts[:pos], gAllAccount.Accounts[pos+1:]...)
+		account.GAllAccount.Accounts = append(account.GAllAccount.Accounts[:pos], account.GAllAccount.Accounts[pos+1:]...)
 
 		if err := saveConfig(gConfig.ConfigFileUsed(), nil); err != nil {
 			return err

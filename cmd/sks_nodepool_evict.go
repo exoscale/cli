@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -36,7 +39,7 @@ Note: Kubernetes Nodes should be drained from their workload prior to being
 evicted from their Nodepool, e.g. using "kubectl drain".
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
 func (c *sksNodepoolEvictCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -59,9 +62,9 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -82,7 +85,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	nodes := make([]string, len(c.Nodes))
 	for i, n := range c.Nodes {
-		instance, err := cs.FindInstance(ctx, c.Zone, n)
+		instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, n)
 		if err != nil {
 			return fmt.Errorf("invalid Node %q: %w", n, err)
 		}
@@ -90,13 +93,13 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Evicting Nodes from Nodepool %q...", c.Nodepool), func() {
-		err = cs.EvictSKSNodepoolMembers(ctx, c.Zone, cluster, nodepool, nodes)
+		err = globalstate.EgoscaleClient.EvictSKSNodepoolMembers(ctx, c.Zone, cluster, nodepool, nodes)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&sksNodepoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            *cluster.ID,

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +18,9 @@ type apiKeyItem struct {
 
 type apiKeyListItemOutput []apiKeyItem
 
-func (o *apiKeyListItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyListItemOutput) toText()  { outputText(o) }
-func (o *apiKeyListItemOutput) toTable() { outputTable(o) }
+func (o *apiKeyListItemOutput) ToJSON()  { output.JSON(o) }
+func (o *apiKeyListItemOutput) ToText()  { output.Text(o) }
+func (o *apiKeyListItemOutput) ToTable() { output.Table(o) }
 
 var apiKeyListCmd = &cobra.Command{
 	Use:   "list",
@@ -26,10 +28,10 @@ var apiKeyListCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command lists existing API keys.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&apiKeyListItemOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&apiKeyListItemOutput{}), ", ")),
 	Aliases: gListAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := cs.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
+		resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.ListAPIKeys{})
 		if err != nil {
 			return err
 		}
@@ -45,7 +47,7 @@ Supported output template annotations: %s`,
 			})
 		}
 
-		return output(&o, err)
+		return printOutput(&o, err)
 	},
 }
 

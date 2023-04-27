@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/exoscale/cli/utils"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
@@ -18,14 +17,14 @@ var storageMbCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command creates a new bucket.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&storageShowBucketOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		cmdSetZoneFlagFromDefault(cmd)
 
@@ -45,19 +44,20 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		storage, err := newStorageClient(
-			storageClientOptWithZone(zone),
+		storage, err := sos.NewStorageClient(
+			gContext,
+			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.createBucket(bucket, acl); err != nil {
+		if err := storage.CreateNewBucket(gContext, bucket, acl); err != nil {
 			return fmt.Errorf("unable to create bucket: %w", err)
 		}
 
-		if !gQuiet {
-			return output(storage.showBucket(bucket))
+		if !globalstate.Quiet {
+			return printOutput(storage.ShowBucket(gContext, bucket))
 		}
 
 		return nil
@@ -66,24 +66,7 @@ Supported output template annotations: %s`,
 
 func init() {
 	storageMbCmd.Flags().String("acl", "",
-		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(s3BucketCannedACLToStrings(), "|")))
-	storageMbCmd.Flags().StringP("zone", "z", "", "bucket zone")
+		fmt.Sprintf("canned ACL to set on bucket (%s)", strings.Join(sos.BucketCannedACLToStrings(), "|")))
+	storageMbCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	storageCmd.AddCommand(storageMbCmd)
-}
-
-func (c *storageClient) createBucket(name, acl string) error {
-	s3Bucket := s3.CreateBucketInput{Bucket: aws.String(name)}
-
-	if acl != "" {
-		if !utils.IsInList(s3BucketCannedACLToStrings(), acl) {
-			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
-				acl,
-				strings.Join(s3BucketCannedACLToStrings(), ", "))
-		}
-
-		s3Bucket.ACL = s3types.BucketCannedACL(acl)
-	}
-
-	_, err := c.CreateBucket(gContext, &s3Bucket)
-	return err
 }

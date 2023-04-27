@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +17,9 @@ type sshkeyListItemOutput struct {
 
 type sshkeyListOutput []sshkeyListItemOutput
 
-func (o *sshkeyListOutput) toJSON()  { outputJSON(o) }
-func (o *sshkeyListOutput) toText()  { outputText(o) }
-func (o *sshkeyListOutput) toTable() { outputTable(o) }
+func (o *sshkeyListOutput) ToJSON()  { output.JSON(o) }
+func (o *sshkeyListOutput) ToText()  { output.Text(o) }
+func (o *sshkeyListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	sshkeyCmd.AddCommand(&cobra.Command{
@@ -27,16 +29,16 @@ func init() {
 Optional patterns can be provided to filter results by name or fingerprint.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&sshkeyListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&sshkeyListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listSSHKey(args))
+			return printOutput(listSSHKey(args))
 		},
 	})
 }
 
-func listSSHKey(filters []string) (outputter, error) {
-	sshKeys, err := getSSHKeys(cs)
+func listSSHKey(filters []string) (output.Outputter, error) {
+	sshKeys, err := getSSHKeys(globalstate.EgoscaleClient)
 	if err != nil {
 		return nil, err
 	}

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -30,7 +33,7 @@ func (c *securityGroupDeleteRuleCmd) cmdLong() string {
 	return fmt.Sprintf(`This command deletes a rule from a Compute instance Security Group.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&securityGroupShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
 func (c *securityGroupDeleteRuleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -38,11 +41,11 @@ func (c *securityGroupDeleteRuleCmd) cmdPreRun(cmd *cobra.Command, args []string
 }
 
 func (c *securityGroupDeleteRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := gCurrentAccount.DefaultZone
+	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-	securityGroup, err := cs.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
@@ -58,7 +61,7 @@ func (c *securityGroupDeleteRuleCmd) cmdRun(_ *cobra.Command, _ []string) error 
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting Security Group rule %s...", c.Rule), func() {
-		err = cs.DeleteSecurityGroupRule(ctx, zone, securityGroup, &egoscale.SecurityGroupRule{ID: &c.Rule})
+		err = globalstate.EgoscaleClient.DeleteSecurityGroupRule(ctx, zone, securityGroup, &egoscale.SecurityGroupRule{ID: &c.Rule})
 	})
 	if err != nil {
 		return err

@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -76,7 +79,7 @@ If you do not want to use a Cloud Controller Manager, add the
 cluster has been created.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksShowOutput{}), ", "))
 }
 
 func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -100,7 +103,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Version:      &c.KubernetesVersion,
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	if c.NoCNI {
 		cluster.CNI = nil
@@ -129,7 +132,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}()
 
 	if *cluster.Version == "latest" {
-		versions, err := cs.ListSKSClusterVersions(ctx)
+		versions, err := globalstate.EgoscaleClient.ListSKSClusterVersions(ctx)
 		if err != nil || len(versions) == 0 {
 			if len(versions) == 0 {
 				err = errors.New("no version returned by the API")
@@ -159,7 +162,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", *cluster.Name), func() {
-		cluster, err = cs.CreateSKSCluster(ctx, c.Zone, cluster, opts...)
+		cluster, err = globalstate.EgoscaleClient.CreateSKSCluster(ctx, c.Zone, cluster, opts...)
 	})
 	if err != nil {
 		return err
@@ -188,7 +191,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if l := len(c.NodepoolAntiAffinityGroups); l > 0 {
 			nodepoolAntiAffinityGroupIDs := make([]string, l)
 			for i, v := range c.NodepoolAntiAffinityGroups {
-				antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, v)
+				antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, v)
 				if err != nil {
 					return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 				}
@@ -198,14 +201,14 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		if c.NodepoolDeployTarget != "" {
-			deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.NodepoolDeployTarget)
+			deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.NodepoolDeployTarget)
 			if err != nil {
 				return fmt.Errorf("error retrieving Deploy Target: %w", err)
 			}
 			nodepool.DeployTargetID = deployTarget.ID
 		}
 
-		nodepoolInstanceType, err := cs.FindInstanceType(ctx, c.Zone, c.NodepoolInstanceType)
+		nodepoolInstanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.NodepoolInstanceType)
 		if err != nil {
 			return fmt.Errorf("error retrieving instance type: %w", err)
 		}
@@ -214,7 +217,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if l := len(c.NodepoolPrivateNetworks); l > 0 {
 			nodepoolPrivateNetworkIDs := make([]string, l)
 			for i, v := range c.NodepoolPrivateNetworks {
-				privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, v)
+				privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, v)
 				if err != nil {
 					return fmt.Errorf("error retrieving Private Network: %w", err)
 				}
@@ -226,7 +229,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if l := len(c.NodepoolSecurityGroups); l > 0 {
 			nodepoolSecurityGroupIDs := make([]string, l)
 			for i, v := range c.NodepoolSecurityGroups {
-				securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, v)
+				securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, v)
 				if err != nil {
 					return fmt.Errorf("error retrieving Security Group: %w", err)
 				}
@@ -248,14 +251,14 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", *nodepool.Name), func() {
-			_, err = cs.CreateSKSNodepool(ctx, c.Zone, cluster, nodepool)
+			_, err = globalstate.EgoscaleClient.CreateSKSNodepool(ctx, c.Zone, cluster, nodepool)
 		})
 		if err != nil {
 			return err
 		}
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&sksShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            *cluster.ID,

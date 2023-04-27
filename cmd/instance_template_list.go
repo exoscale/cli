@@ -5,6 +5,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -19,9 +22,9 @@ type instanceTemplateListItemOutput struct {
 
 type instanceTemplateListOutput []instanceTemplateListItemOutput
 
-func (o *instanceTemplateListOutput) toJSON()  { outputJSON(o) }
-func (o *instanceTemplateListOutput) toText()  { outputText(o) }
-func (o *instanceTemplateListOutput) toTable() { outputTable(o) }
+func (o *instanceTemplateListOutput) ToJSON()  { output.JSON(o) }
+func (o *instanceTemplateListOutput) ToText()  { output.Text(o) }
+func (o *instanceTemplateListOutput) ToTable() { output.Table(o) }
 
 type instanceTemplateListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -41,7 +44,7 @@ func (c *instanceTemplateListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Compute instance templates.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceTemplateListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceTemplateListItemOutput{}), ", "))
 }
 
 func (c *instanceTemplateListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -50,15 +53,15 @@ func (c *instanceTemplateListCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 
 func (c *instanceTemplateListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.Zone == "" {
-		c.Zone = gCurrentAccount.DefaultZone
+		c.Zone = account.CurrentAccount.DefaultZone
 	}
 
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone),
 	)
 
-	templates, err := cs.ListTemplates(
+	templates, err := globalstate.EgoscaleClient.ListTemplates(
 		ctx,
 		c.Zone,
 		egoscale.ListTemplatesWithVisibility(c.Visibility),

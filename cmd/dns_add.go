@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exo "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -23,9 +25,9 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 		return err
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 	decorateAsyncOperation(fmt.Sprintf("Adding DNS record %q to %q...", rType, *domain.UnicodeName), func() {
-		_, err = cs.CreateDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, &exo.DNSDomainRecord{
+		_, err = globalstate.EgoscaleClient.CreateDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, &exo.DNSDomainRecord{
 			Name:     &name,
 			Type:     &rType,
 			Content:  &content,
@@ -37,7 +39,7 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		fmt.Printf("Record %q was created successfully to %q\n", rType, *domain.UnicodeName)
 	}
 

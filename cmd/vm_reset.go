@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -80,7 +81,7 @@ func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, template
 			return nil, err
 		}
 	} else {
-		resp, err := cs.ListWithContext(gContext, egoscale.Template{
+		resp, err := globalstate.EgoscaleClient.ListWithContext(gContext, egoscale.Template{
 			IsFeatured: true,
 			ID:         vm.TemplateID,
 			ZoneID:     vm.ZoneID,
@@ -94,7 +95,7 @@ func makeResetVirtualMachineCMD(vmName string, diskValue int64PtrValue, template
 		}
 	}
 
-	resp, err := cs.GetWithContext(gContext, egoscale.Volume{
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})

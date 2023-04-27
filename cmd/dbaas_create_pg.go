@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -14,7 +16,7 @@ import (
 func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	databaseService := oapi.CreateDbaasServicePgJSONRequestBody{
 		Plan:                  c.Plan,
@@ -22,7 +24,7 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 		Version:               utils.NonEmptyStringPtr(c.PGVersion),
 	}
 
-	settingsSchema, err := cs.GetDbaasSettingsPgWithResponse(ctx)
+	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
@@ -139,7 +141,7 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 
 	var res *oapi.CreateDbaasServicePgResponse
 	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = cs.CreateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		res, err = globalstate.EgoscaleClient.CreateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 	})
 	if err != nil {
 		return err
@@ -148,7 +150,7 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("API request error: unexpected status %s", res.Status())
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,

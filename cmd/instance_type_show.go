@@ -6,6 +6,9 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -21,9 +24,9 @@ type instanceTypeShowOutput struct {
 	Authorized bool   `json:"authorized"`
 }
 
-func (o *instanceTypeShowOutput) toJSON() { outputJSON(o) }
-func (o *instanceTypeShowOutput) toText() { outputText(o) }
-func (o *instanceTypeShowOutput) toTable() {
+func (o *instanceTypeShowOutput) ToJSON() { output.JSON(o) }
+func (o *instanceTypeShowOutput) ToText() { output.Text(o) }
+func (o *instanceTypeShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Instance Type"})
 	defer t.Render()
@@ -59,7 +62,7 @@ func (c *instanceTypeShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance type details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceTypeShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceTypeShowOutput{}), ", "))
 }
 
 func (c *instanceTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -69,10 +72,10 @@ func (c *instanceTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *instanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	t, err := cs.FindInstanceType(ctx, gCurrentAccount.DefaultZone, c.Type)
+	t, err := globalstate.EgoscaleClient.FindInstanceType(ctx, account.CurrentAccount.DefaultZone, c.Type)
 	if err != nil {
 		return err
 	}

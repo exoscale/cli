@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
@@ -24,9 +26,9 @@ type snapshotExportOutput struct {
 	Checksum string `json:"checksum"`
 }
 
-func (o *snapshotExportOutput) toJSON()  { outputJSON(o) }
-func (o *snapshotExportOutput) toText()  { outputText(o) }
-func (o *snapshotExportOutput) toTable() { outputTable(o) }
+func (o *snapshotExportOutput) ToJSON()  { output.JSON(o) }
+func (o *snapshotExportOutput) ToText()  { output.Text(o) }
+func (o *snapshotExportOutput) ToTable() { output.Table(o) }
 
 var snapshotExportCmd = &cobra.Command{
 	Use:   "export ID",
@@ -34,7 +36,7 @@ var snapshotExportCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command exports a volume snapshot.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&snapshotExportOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&snapshotExportOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return cmd.Usage()
@@ -51,7 +53,7 @@ Supported output template annotations: %s`,
 		}
 
 		if !cmd.Flags().Changed("download") {
-			return output(&snapshotExportOutput{
+			return printOutput(&snapshotExportOutput{
 				URL:      snapshot.PresignedURL,
 				Checksum: snapshot.MD5sum,
 			}, nil)
@@ -62,17 +64,17 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Print("Verifying downloaded file checksum... ")
 		}
 		if err = checkExportedSnapshot(filePath, snapshot.MD5sum); err != nil {
-			if !gQuiet {
+			if !globalstate.Quiet {
 				fmt.Println("failed")
 			}
 			return err
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("success")
 		}
 
@@ -142,7 +144,7 @@ func downloadExportedSnapshot(filePath, url string) (string, error) {
 	progress := mpb.NewWithContext(gContext,
 		mpb.WithWidth(64),
 		mpb.WithRefreshRate(180*time.Millisecond),
-		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return globalstate.Quiet }),
 	)
 
 	bar := progress.AddBar(

@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +20,9 @@ type privateNetworkListItemOutput struct {
 
 type privateNetworkListOutput []privateNetworkListItemOutput
 
-func (o *privateNetworkListOutput) toJSON()  { outputJSON(o) }
-func (o *privateNetworkListOutput) toText()  { outputText(o) }
-func (o *privateNetworkListOutput) toTable() { outputTable(o) }
+func (o *privateNetworkListOutput) ToJSON()  { output.JSON(o) }
+func (o *privateNetworkListOutput) ToText()  { output.Text(o) }
+func (o *privateNetworkListOutput) ToTable() { output.Table(o) }
 
 type privateNetworkListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -37,7 +40,7 @@ func (c *privateNetworkListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Private Networks.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&privateNetworkListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&privateNetworkListItemOutput{}), ", "))
 }
 
 func (c *privateNetworkListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -64,9 +67,9 @@ func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := cs.ListPrivateNetworks(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListPrivateNetworks(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Private Networks in zone %s: %w", zone, err)
 		}

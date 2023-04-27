@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -31,7 +34,7 @@ func (c *iamAccessKeyCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates an IAM access key.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&iamAccessKeyShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&iamAccessKeyShowOutput{}), ", "))
 }
 
 func (c *iamAccessKeyCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -39,9 +42,9 @@ func (c *iamAccessKeyCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *iamAccessKeyCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := gCurrentAccount.DefaultZone
+	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	opts := make([]egoscale.CreateIAMAccessKeyOpt, 0)
 
@@ -65,7 +68,7 @@ func (c *iamAccessKeyCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		opts = append(opts, egoscale.CreateIAMAccessKeyWithTags(c.Tags))
 	}
 
-	iamAccessKey, err := cs.CreateIAMAccessKey(ctx, zone, c.Name, opts...)
+	iamAccessKey, err := globalstate.EgoscaleClient.CreateIAMAccessKey(ctx, zone, c.Name, opts...)
 	if err != nil {
 		return fmt.Errorf("unable to create a new IAM access key: %w", err)
 	}
@@ -89,7 +92,7 @@ func (c *iamAccessKeyCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Type: *iamAccessKey.Type,
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc(&out, nil)
 	}
 

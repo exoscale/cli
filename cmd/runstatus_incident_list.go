@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -20,16 +21,16 @@ type runstatusIncidentListItemOutput struct {
 
 type runstatusIncidentListOutput []runstatusIncidentListItemOutput
 
-func (o *runstatusIncidentListOutput) toJSON() { outputJSON(o) }
+func (o *runstatusIncidentListOutput) ToJSON() { output.JSON(o) }
 
-func (o *runstatusIncidentListOutput) toText() { outputText(o) }
+func (o *runstatusIncidentListOutput) ToText() { output.Text(o) }
 
-func (o *runstatusIncidentListOutput) toTable() {
+func (o *runstatusIncidentListOutput) ToTable() {
 	for i := range *o {
 		(*o)[i].State = strings.ToUpper(strings.Replace((*o)[i].State, "_", " ", -1))
 	}
 
-	outputTable(o)
+	output.Table(o)
 }
 
 func init() {
@@ -39,15 +40,15 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing runstat.us incidents.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&runstatusIncidentListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&runstatusIncidentListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(runstatusListIncidents(args))
+			return printOutput(runstatusListIncidents(args))
 		},
 	})
 }
 
-func runstatusListIncidents(pageNames []string) (outputter, error) {
+func runstatusListIncidents(pageNames []string) (output.Outputter, error) {
 	pages, err := getRunstatusPages(pageNames)
 	if err != nil {
 		return nil, err

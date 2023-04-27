@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +21,9 @@ type vmListItemOutput struct {
 
 type vmListOutput []vmListItemOutput
 
-func (o *vmListOutput) toJSON()  { outputJSON(o) }
-func (o *vmListOutput) toText()  { outputText(o) }
-func (o *vmListOutput) toTable() { outputTable(o) }
+func (o *vmListOutput) ToJSON()  { output.JSON(o) }
+func (o *vmListOutput) ToText()  { output.Text(o) }
+func (o *vmListOutput) ToTable() { output.Table(o) }
 func (o *vmListOutput) names() []string {
 	names := make([]string, len(*o))
 	for i, item := range *o {
@@ -38,21 +40,21 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Compute instances.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&vmListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&vmListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				return cmd.Usage()
 			}
 
-			return output(listVMs())
+			return printOutput(listVMs())
 		},
 	})
 }
 
-func listVMs() (outputter, error) {
+func listVMs() (output.Outputter, error) {
 	vm := &egoscale.VirtualMachine{}
-	vms, err := cs.ListWithContext(gContext, vm)
+	vms, err := globalstate.EgoscaleClient.ListWithContext(gContext, vm)
 	if err != nil {
 		return nil, err
 	}

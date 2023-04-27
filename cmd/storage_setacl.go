@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/exoscale/cli/utils"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -53,17 +52,17 @@ Supported output template annotations:
 
 	* When showing a bucket: %s
 	* When showing an object: %s`,
-		strings.Join(s3BucketCannedACLToStrings(), ", "),
-		strings.Join(s3ObjectCannedACLToStrings(), ", "),
-		strings.Join(outputterTemplateAnnotations(&storageShowBucketOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+		strings.Join(sos.BucketCannedACLToStrings(), ", "),
+		strings.Join(sos.ObjectCannedACLToStrings(), ", "),
+		strings.Join(output.TemplateAnnotations(&sos.ShowBucketOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 || len(args) > 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if (len(args) == 2 && storageACLFromCmdFlags(cmd.Flags()) != nil) ||
 			(len(args) == 1 && storageACLFromCmdFlags(cmd.Flags()) == nil) {
@@ -77,7 +76,7 @@ Supported output template annotations:
 		var (
 			bucket string
 			prefix string
-			acl    *storageACL
+			acl    *sos.ACL
 		)
 
 		recursive, err := cmd.Flags().GetBool("recursive")
@@ -98,37 +97,38 @@ Supported output template annotations:
 			}
 		}
 
-		storage, err := newStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+		storage, err := sos.NewStorageClient(
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		if acl = storageACLFromCmdFlags(cmd.Flags()); acl == nil {
-			acl = &storageACL{Canned: args[1]}
+			acl = &sos.ACL{Canned: args[1]}
 		}
 
 		if prefix == "" {
-			if err := storage.setBucketACL(bucket, acl); err != nil {
+			if err := storage.SetBucketACL(gContext, bucket, acl); err != nil {
 				return fmt.Errorf("unable to set ACL: %w", err)
 			}
 
-			if !gQuiet {
-				return output(storage.showBucket(bucket))
+			if !globalstate.Quiet {
+				return printOutput(storage.ShowBucket(gContext, bucket))
 			}
 			return nil
 		}
 
-		if err := storage.setObjectsACL(bucket, prefix, acl, recursive); err != nil {
+		if err := storage.SetObjectsACL(gContext, bucket, prefix, acl, recursive); err != nil {
 			return fmt.Errorf("unable to set ACL: %w", err)
 		}
 
-		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.showObject(bucket, prefix))
+		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
+			return printOutput(storage.ShowObject(gContext, bucket, prefix))
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("ACL set successfully")
 		}
 		return nil
@@ -138,145 +138,61 @@ Supported output template annotations:
 func init() {
 	storageSetACLCmd.Flags().BoolP("recursive", "r", false,
 		"set ACL recursively (with object prefix only)")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagRead, "", "ACL Read grantee")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagWrite, "", "ACP Write grantee")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagReadACP, "", "ACP Read ACP grantee")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagWriteACP, "", "ACP Write ACP grantee")
-	storageSetACLCmd.Flags().String(storageSetACLCmdFlagFullControl, "", "ACP Full Control grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagRead, "", "ACL Read grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagWrite, "", "ACP Write grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagReadACP, "", "ACP Read ACP grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagWriteACP, "", "ACP Write ACP grantee")
+	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagFullControl, "", "ACP Full Control grantee")
 	storageCmd.AddCommand(storageSetACLCmd)
 }
 
-func (c *storageClient) setBucketACL(bucket string, acl *storageACL) error {
-	s3ACL := s3.PutBucketAclInput{Bucket: aws.String(bucket)}
-
-	if acl.Canned != "" {
-		if !utils.IsInList(s3BucketCannedACLToStrings(), acl.Canned) {
-			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
-				acl.Canned,
-				strings.Join(s3BucketCannedACLToStrings(), ", "))
-		}
-
-		s3ACL.ACL = s3types.BucketCannedACL(acl.Canned)
-	} else {
-		s3ACL.AccessControlPolicy = &s3types.AccessControlPolicy{Grants: acl.toS3Grants()}
-
-		// As a safety precaution, if the caller didn't explicitly set a Grantee
-		// with the FULL_CONTROL permission we set it to the current bucket owner.
-		if acl.FullControl == "" {
-			curACL, err := c.GetBucketAcl(gContext, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
-			if err != nil {
-				return fmt.Errorf("unable to retrieve current ACL: %w", err)
-			}
-
-			s3ACL.AccessControlPolicy.Grants = append(s3ACL.AccessControlPolicy.Grants, s3types.Grant{
-				Grantee:    &s3types.Grantee{Type: s3types.TypeCanonicalUser, ID: curACL.Owner.ID},
-				Permission: s3types.PermissionFullControl,
-			})
-		}
-	}
-
-	if _, err := c.PutBucketAcl(gContext, &s3ACL); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *storageClient) setObjectACL(bucket, key string, acl *storageACL) error {
-	s3ACL := s3.PutObjectAclInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-	}
-
-	if acl.Canned != "" {
-		if !utils.IsInList(s3ObjectCannedACLToStrings(), acl.Canned) {
-			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
-				acl.Canned,
-				strings.Join(s3ObjectCannedACLToStrings(), ", "))
-		}
-
-		s3ACL.ACL = s3types.ObjectCannedACL(acl.Canned)
-	} else {
-		s3ACL.AccessControlPolicy = &s3types.AccessControlPolicy{Grants: acl.toS3Grants()}
-
-		// As a safety precaution, if the caller didn't explicitly set a Grantee
-		// with the FULL_CONTROL permission we set it to the current object owner.
-		if acl.FullControl == "" {
-			curACL, err := c.GetObjectAcl(gContext, &s3.GetObjectAclInput{
-				Bucket: s3ACL.Bucket,
-				Key:    s3ACL.Key,
-			})
-			if err != nil {
-				return fmt.Errorf("unable to retrieve current ACL: %w", err)
-			}
-
-			s3ACL.AccessControlPolicy.Grants = append(s3ACL.AccessControlPolicy.Grants, s3types.Grant{
-				Grantee:    &s3types.Grantee{Type: s3types.TypeCanonicalUser, ID: curACL.Owner.ID},
-				Permission: s3types.PermissionFullControl,
-			})
-		}
-	}
-
-	if _, err := c.PutObjectAcl(gContext, &s3ACL); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *storageClient) setObjectsACL(bucket, prefix string, acl *storageACL, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.setObjectACL(bucket, aws.ToString(o.Key), acl)
-	})
-}
-
-// storageACLFromCmdFlags returns a non-nil pointer to a storageACL struct if at least
+// storageACLFromCmdFlags returns a non-nil pointer to a sos.ACL struct if at least
 // one of the ACL-related command flags is set.
-func storageACLFromCmdFlags(flags *pflag.FlagSet) *storageACL {
-	var acl *storageACL
+func storageACLFromCmdFlags(flags *pflag.FlagSet) *sos.ACL {
+	var acl *sos.ACL
 
 	flags.VisitAll(func(flag *pflag.Flag) {
 		switch flag.Name {
-		case storageSetACLCmdFlagRead:
+		case sos.SetACLCmdFlagRead:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.Read = v
 			}
 
-		case storageSetACLCmdFlagWrite:
+		case sos.SetACLCmdFlagWrite:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.Write = v
 			}
 
-		case storageSetACLCmdFlagReadACP:
+		case sos.SetACLCmdFlagReadACP:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.ReadACP = v
 			}
 
-		case storageSetACLCmdFlagWriteACP:
+		case sos.SetACLCmdFlagWriteACP:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.WriteACP = v
 			}
 
-		case storageSetACLCmdFlagFullControl:
+		case sos.SetACLCmdFlagFullControl:
 			if v := flag.Value.String(); v != "" {
 				if acl == nil {
-					acl = &storageACL{}
+					acl = &sos.ACL{}
 				}
 
 				acl.FullControl = v

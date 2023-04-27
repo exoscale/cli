@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -31,9 +33,9 @@ func (c *iamAccessKeyRevokeCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *iamAccessKeyRevokeCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := gCurrentAccount.DefaultZone
+	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf("Are you sure you want to revoke IAM access key IP %s?", c.APIKey)) {
@@ -43,7 +45,7 @@ func (c *iamAccessKeyRevokeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Revoking IAM access key %s...", c.APIKey), func() {
-		err = cs.RevokeIAMAccessKey(ctx, zone, &egoscale.IAMAccessKey{Key: &c.APIKey})
+		err = globalstate.EgoscaleClient.RevokeIAMAccessKey(ctx, zone, &egoscale.IAMAccessKey{Key: &c.APIKey})
 	})
 	if err != nil {
 		return err

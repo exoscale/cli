@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +19,9 @@ type firewallListItemOutput struct {
 
 type firewallListOutput []firewallListItemOutput
 
-func (o *firewallListOutput) toJSON()  { outputJSON(o) }
-func (o *firewallListOutput) toText()  { outputText(o) }
-func (o *firewallListOutput) toTable() { outputTable(o) }
+func (o *firewallListOutput) ToJSON()  { output.JSON(o) }
+func (o *firewallListOutput) ToText()  { output.Text(o) }
+func (o *firewallListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	firewallCmd.AddCommand(&cobra.Command{
@@ -29,16 +31,16 @@ func init() {
 Optional patterns can be provided to filter results by ID, name or description.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&firewallListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&firewallListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listSecurityGroups(args))
+			return printOutput(listSecurityGroups(args))
 		},
 	})
 }
 
-func listSecurityGroups(filters []string) (outputter, error) {
-	sgs, err := cs.ListWithContext(gContext, &egoscale.SecurityGroup{})
+func listSecurityGroups(filters []string) (output.Outputter, error) {
+	sgs, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.SecurityGroup{})
 	if err != nil {
 		return nil, err
 	}

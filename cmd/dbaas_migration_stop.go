@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +36,7 @@ func (c *dbaasMigrationStopCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
 	if err != nil {
@@ -45,16 +47,16 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 	}
 
 	var stopMigrationFuncs = map[string]func(context.Context, string, string) error{
-		"mysql": cs.StopMysqlDatabaseMigration,
-		"pg":    cs.StopPgDatabaseMigration,
-		"redis": cs.StopRedisDatabaseMigration,
+		"mysql": globalstate.EgoscaleClient.StopMysqlDatabaseMigration,
+		"pg":    globalstate.EgoscaleClient.StopPgDatabaseMigration,
+		"redis": globalstate.EgoscaleClient.StopRedisDatabaseMigration,
 	}
 
 	if _, ok := stopMigrationFuncs[dbType]; !ok {
 		err = fmt.Errorf("migrations not supported for database type %q", dbType)
 	}
 
-	_, err = cs.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
+	_, err = globalstate.EgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("migration for database %q not running in zone %q", c.Name, c.Zone)

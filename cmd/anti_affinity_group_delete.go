@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -30,11 +32,11 @@ func (c *antiAffinityGroupDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string
 }
 
 func (c *antiAffinityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := gCurrentAccount.DefaultZone
+	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-	antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, zone, c.AntiAffinityGroup)
+	antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, zone, c.AntiAffinityGroup)
 	if err != nil {
 		return err
 	}
@@ -49,7 +51,7 @@ func (c *antiAffinityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error 
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting Anti-Affinity Group %s...", c.AntiAffinityGroup), func() {
-		err = cs.DeleteAntiAffinityGroup(ctx, zone, antiAffinityGroup)
+		err = globalstate.EgoscaleClient.DeleteAntiAffinityGroup(ctx, zone, antiAffinityGroup)
 	})
 	if err != nil {
 		return err

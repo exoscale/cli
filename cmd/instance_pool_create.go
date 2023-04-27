@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -50,7 +53,7 @@ func (c *instancePoolCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates an Instance Pool.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instancePoolShowOutput{}), ", "))
 }
 
 func (c *instancePoolCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -154,12 +157,12 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Size:   &c.Size,
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
 		antiAffinityGroupIDs := make([]string, l)
 		for i := range c.AntiAffinityGroups {
-			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
+			antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
@@ -169,7 +172,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if c.DeployTarget != "" {
-		deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+		deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
@@ -179,7 +182,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if l := len(c.ElasticIPs); l > 0 {
 		elasticIPIDs := make([]string, l)
 		for i := range c.ElasticIPs {
-			elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIPs[i])
+			elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIPs[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
@@ -188,7 +191,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instancePool.ElasticIPIDs = &elasticIPIDs
 	}
 
-	instanceType, err := cs.FindInstanceType(ctx, c.Zone, c.InstanceType)
+	instanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.InstanceType)
 	if err != nil {
 		return fmt.Errorf("error retrieving instance type: %w", err)
 	}
@@ -197,7 +200,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if l := len(c.PrivateNetworks); l > 0 {
 		privateNetworkIDs := make([]string, l)
 		for i := range c.PrivateNetworks {
-			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
+			privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -209,7 +212,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if l := len(c.SecurityGroups); l > 0 {
 		securityGroupIDs := make([]string, l)
 		for i := range c.SecurityGroups {
-			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
+			securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -218,11 +221,11 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instancePool.SecurityGroupIDs = &securityGroupIDs
 	}
 
-	if instancePool.SSHKey == nil && gCurrentAccount.DefaultSSHKey != "" {
-		instancePool.SSHKey = &gCurrentAccount.DefaultSSHKey
+	if instancePool.SSHKey == nil && account.CurrentAccount.DefaultSSHKey != "" {
+		instancePool.SSHKey = &account.CurrentAccount.DefaultSSHKey
 	}
 
-	template, err := cs.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+	template, err := globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
 	if err != nil {
 		return fmt.Errorf(
 			"no template %q found with visibility %s in zone %s",
@@ -242,13 +245,13 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Creating Instance Pool %q...", c.Name), func() {
-		instancePool, err = cs.CreateInstancePool(ctx, c.Zone, instancePool)
+		instancePool, err = globalstate.EgoscaleClient.CreateInstancePool(ctx, c.Zone, instancePool)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Zone:               c.Zone,

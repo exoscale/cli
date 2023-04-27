@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/go-multierror"
 	"github.com/vbauerster/mpb/v4"
@@ -42,7 +43,7 @@ func asyncTasks(tasks []task) []taskResponse {
 	progress := mpb.NewWithContext(gContext,
 		mpb.WithOutput(os.Stderr),
 		mpb.WithWaitGroup(&taskWG),
-		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return gQuiet }),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return globalstate.Quiet }),
 	)
 
 	taskWG.Add(len(tasks))
@@ -105,9 +106,9 @@ func execTask(task egoscale.AsyncCommand, message string, id int, c chan taskSta
 
 	sem <- 1
 
-	response := cs.Response(task)
+	response := globalstate.EgoscaleClient.Response(task)
 	var errorReq error
-	cs.AsyncRequestWithContext(gContext, task, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+	globalstate.EgoscaleClient.AsyncRequestWithContext(gContext, task, func(jobResult *egoscale.AsyncJobResult, err error) bool {
 		if err != nil {
 			errorReq = err
 			return false
@@ -150,9 +151,9 @@ func execSyncTask(task task, id int, c chan taskStatus, resp *taskResponse, sem 
 	defer wg.Done()
 	sem <- 1
 
-	_, ok := cs.Response(task.Command).(*egoscale.BooleanResponse)
+	_, ok := globalstate.EgoscaleClient.Response(task.Command).(*egoscale.BooleanResponse)
 	if ok {
-		if err := cs.BooleanRequestWithContext(gContext, task.Command); err != nil {
+		if err := globalstate.EgoscaleClient.BooleanRequestWithContext(gContext, task.Command); err != nil {
 			c <- taskStatus{id, egoscale.Failure}
 			(*resp).error = fmt.Errorf("failure %s: %s", task.string, err)
 			return
@@ -162,7 +163,7 @@ func execSyncTask(task task, id int, c chan taskStatus, resp *taskResponse, sem 
 		return
 	}
 
-	result, err := cs.RequestWithContext(gContext, task.Command)
+	result, err := globalstate.EgoscaleClient.RequestWithContext(gContext, task.Command)
 	if err != nil {
 		c <- taskStatus{id, egoscale.Failure}
 		(*resp).error = fmt.Errorf("failure %s: %s", task.string, err)
@@ -175,14 +176,14 @@ func execSyncTask(task task, id int, c chan taskStatus, resp *taskResponse, sem 
 
 // asyncRequest if no response expected send nil
 func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
-	response := cs.Response(cmd)
+	response := globalstate.EgoscaleClient.Response(cmd)
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		fmt.Fprint(os.Stderr, msg)
 	}
 	var errorReq error
-	cs.AsyncRequestWithContext(gContext, cmd, func(jobResult *egoscale.AsyncJobResult, err error) bool {
-		if !gQuiet {
+	globalstate.EgoscaleClient.AsyncRequestWithContext(gContext, cmd, func(jobResult *egoscale.AsyncJobResult, err error) bool {
+		if !globalstate.Quiet {
 			fmt.Fprint(os.Stderr, ".")
 		}
 
@@ -200,14 +201,14 @@ func asyncRequest(cmd egoscale.AsyncCommand, msg string) (interface{}, error) {
 			return false
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Fprintln(os.Stderr, " success")
 		}
 
 		return false
 	})
 
-	if errorReq != nil && !gQuiet {
+	if errorReq != nil && !globalstate.Quiet {
 		fmt.Fprintln(os.Stderr, " failure")
 	}
 

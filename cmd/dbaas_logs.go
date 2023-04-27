@@ -8,6 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -28,9 +31,9 @@ type dbServiceLogsOutput struct {
 	Logs           []dbServiceLogsItemOutput `json:"logs"`
 }
 
-func (o *dbServiceLogsOutput) toJSON() { outputJSON(o) }
-func (o *dbServiceLogsOutput) toText() { outputText(o) }
-func (o *dbServiceLogsOutput) toTable() {
+func (o *dbServiceLogsOutput) ToJSON() { output.JSON(o) }
+func (o *dbServiceLogsOutput) ToText() { output.Text(o) }
+func (o *dbServiceLogsOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
@@ -75,8 +78,8 @@ Example usage with custom output containing only the actual log messages:
     exo dbaas logs MY-SERVICE --output-template \
         '{{range $l := .Logs}}{{println $l.Message}}{{end}}'
 `,
-		strings.Join(outputterTemplateAnnotations(&dbServiceLogsOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceLogsItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbServiceLogsOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceLogsItemOutput{}), ", "))
 }
 
 func (c *dbaasServiceLogsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -85,9 +88,9 @@ func (c *dbaasServiceLogsCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	res, err := cs.GetDbaasServiceLogsWithResponse(
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceLogsWithResponse(
 		ctx,
 		c.Name,
 		oapi.GetDbaasServiceLogsJSONRequestBody{

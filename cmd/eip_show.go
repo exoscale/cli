@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -31,11 +33,11 @@ type eipShowOutput struct {
 	Instances   []string                  `json:"instances"`
 }
 
-func (o *eipShowOutput) toJSON() { outputJSON(o) }
+func (o *eipShowOutput) ToJSON() { output.JSON(o) }
 
-func (o *eipShowOutput) toText() { outputText(o) }
+func (o *eipShowOutput) ToText() { output.Text(o) }
 
-func (o *eipShowOutput) toTable() {
+func (o *eipShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Elastic IP"})
 
@@ -74,19 +76,19 @@ func init() {
 		Long: fmt.Sprintf(`This command shows an Elastic IP details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&eipShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&eipShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return cmd.Usage()
 			}
 
-			return output(showEIP(args[0]))
+			return printOutput(showEIP(args[0]))
 		},
 	})
 }
 
-func showEIP(v string) (outputter, error) {
+func showEIP(v string) (output.Outputter, error) {
 	eip, err := getElasticIPByAddressOrID(v)
 	if err != nil {
 		return nil, err
@@ -113,7 +115,7 @@ func showEIP(v string) (outputter, error) {
 		}
 	}
 
-	res, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: eip.ZoneID})
+	res, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.VirtualMachine{ZoneID: eip.ZoneID})
 	if err != nil {
 		return nil, err
 	}

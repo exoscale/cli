@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -23,9 +26,9 @@ type dnsShowItemOutput struct {
 
 type dnsShowOutput []dnsShowItemOutput
 
-func (o *dnsShowOutput) toJSON()  { outputJSON(o) }
-func (o *dnsShowOutput) toText()  { outputText(o) }
-func (o *dnsShowOutput) toTable() { outputTable(o) }
+func (o *dnsShowOutput) ToJSON()  { output.JSON(o) }
+func (o *dnsShowOutput) ToText()  { output.Text(o) }
+func (o *dnsShowOutput) ToTable() { output.Table(o) }
 
 func init() {
 	dnsShowCmd := &cobra.Command{
@@ -34,7 +37,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a DNS Domain records.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&dnsShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&dnsShowOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return errors.New("show expects one DNS domain by name or id")
@@ -45,7 +48,7 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showDNS(args[0], name, args[1:]))
+			return printOutput(showDNS(args[0], name, args[1:]))
 		},
 	}
 
@@ -53,7 +56,7 @@ Supported output template annotations: %s`,
 	dnsShowCmd.Flags().StringP("name", "n", "", "List records by name")
 }
 
-func showDNS(ident, name string, types []string) (outputter, error) {
+func showDNS(ident, name string, types []string) (output.Outputter, error) {
 	out := dnsShowOutput{}
 
 	tMap := map[string]struct{}{}
@@ -66,8 +69,8 @@ func showDNS(ident, name string, types []string) (outputter, error) {
 		return nil, err
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
-	records, err := cs.ListDNSDomainRecords(ctx, gCurrentAccount.DefaultZone, *domain.ID)
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+	records, err := globalstate.EgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, *domain.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +91,7 @@ func showDNS(ident, name string, types []string) (outputter, error) {
 			}
 		}
 
-		record, err := cs.GetDNSDomainRecord(ctx, gCurrentAccount.DefaultZone, *domain.ID, *r.ID)
+		record, err := globalstate.EgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, *r.ID)
 		if err != nil {
 			return nil, err
 		}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 
 	"github.com/spf13/cobra"
@@ -31,7 +32,7 @@ var runstatusDeleteCmd = &cobra.Command{
 				return err
 			}
 
-			if !gQuiet {
+			if !globalstate.Quiet {
 				fmt.Printf("Page %q successfully deleted\n", arg)
 			}
 		}

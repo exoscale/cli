@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -29,11 +31,11 @@ type runstatusIncidentShowOutput struct {
 	Events           []runstatusIncidentEventShowOutput `json:"events,omitempty"`
 }
 
-func (o *runstatusIncidentShowOutput) toJSON() { outputJSON(o) }
+func (o *runstatusIncidentShowOutput) ToJSON() { output.JSON(o) }
 
-func (o *runstatusIncidentShowOutput) toText() { outputText(o) }
+func (o *runstatusIncidentShowOutput) ToText() { output.Text(o) }
 
-func (o *runstatusIncidentShowOutput) toTable() {
+func (o *runstatusIncidentShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Incident"})
 
@@ -70,17 +72,17 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a runstat.us incident details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&runstatusIncidentShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&runstatusIncidentShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return cmd.Usage()
 			}
 
-			page := gCurrentAccount.DefaultRunstatusPage
+			page := account.CurrentAccount.DefaultRunstatusPage
 			incident := args[0]
 
-			if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
+			if account.CurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
 				return fmt.Errorf("No default runstat.us page is set.\n"+
 					"Please specify a page in parameter or add it to your configuration file %s",
 					gConfigFilePath)
@@ -91,12 +93,12 @@ Supported output template annotations: %s`,
 				incident = args[1]
 			}
 
-			return output(showRunstatusIncident(page, incident))
+			return printOutput(showRunstatusIncident(page, incident))
 		},
 	})
 }
 
-func showRunstatusIncident(p, i string) (outputter, error) {
+func showRunstatusIncident(p, i string) (output.Outputter, error) {
 	page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: p})
 	if err != nil {
 		return nil, err

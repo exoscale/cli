@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +18,9 @@ type affinityGroupShowOutput struct {
 }
 
 func (o *affinityGroupShowOutput) Type() string { return "Anti-Affinity Group" }
-func (o *affinityGroupShowOutput) toJSON()      { outputJSON(o) }
-func (o *affinityGroupShowOutput) toText()      { outputText(o) }
-func (o *affinityGroupShowOutput) toTable()     { outputTable(o) }
+func (o *affinityGroupShowOutput) ToJSON()      { output.JSON(o) }
+func (o *affinityGroupShowOutput) ToText()      { output.Text(o) }
+func (o *affinityGroupShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	affinitygroupCmd.AddCommand(&cobra.Command{
@@ -27,7 +29,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows an Anti-Affinity Group details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&affinityGroupShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -39,12 +41,12 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showAffinityGroup(ag))
+			return printOutput(showAffinityGroup(ag))
 		},
 	})
 }
 
-func showAffinityGroup(ag *egoscale.AffinityGroup) (outputter, error) {
+func showAffinityGroup(ag *egoscale.AffinityGroup) (output.Outputter, error) {
 	out := affinityGroupShowOutput{
 		ID:          ag.ID.String(),
 		Name:        ag.Name,
@@ -53,7 +55,7 @@ func showAffinityGroup(ag *egoscale.AffinityGroup) (outputter, error) {
 	}
 
 	if len(ag.VirtualMachineIDs) > 0 {
-		resp, err := cs.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
+		resp, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.ListVirtualMachines{IDs: ag.VirtualMachineIDs})
 		if err != nil {
 			return nil, err
 		}

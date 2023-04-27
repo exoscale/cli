@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -20,9 +21,9 @@ type firewallShowItemOutput struct {
 
 type firewallShowOutput []firewallShowItemOutput
 
-func (o *firewallShowOutput) toJSON()  { outputJSON(o) }
-func (o *firewallShowOutput) toText()  { outputText(o) }
-func (o *firewallShowOutput) toTable() { outputTable(o) }
+func (o *firewallShowOutput) ToJSON()  { output.JSON(o) }
+func (o *firewallShowOutput) ToText()  { output.Text(o) }
+func (o *firewallShowOutput) ToTable() { output.Table(o) }
 
 func init() {
 	firewallCmd.AddCommand(&cobra.Command{
@@ -31,19 +32,19 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Security Group details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&firewallShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&firewallShowOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("show expects one Security Group by name or id")
 			}
 
-			return output(showFirewall(args[0]))
+			return printOutput(showFirewall(args[0]))
 		},
 	})
 }
 
-func showFirewall(name string) (outputter, error) {
+func showFirewall(name string) (output.Outputter, error) {
 	sg, err := getSecurityGroupByNameOrID(name)
 	if err != nil {
 		return nil, err

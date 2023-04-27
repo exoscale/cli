@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +20,9 @@ type privnetShowOutput struct {
 }
 
 func (o *privnetShowOutput) Type() string { return "Private Network" }
-func (o *privnetShowOutput) toJSON()      { outputJSON(o) }
-func (o *privnetShowOutput) toText()      { outputText(o) }
-func (o *privnetShowOutput) toTable()     { outputTable(o) }
+func (o *privnetShowOutput) ToJSON()      { output.JSON(o) }
+func (o *privnetShowOutput) ToText()      { output.Text(o) }
+func (o *privnetShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	privnetCmd.AddCommand(&cobra.Command{
@@ -29,7 +31,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Private Network details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&privnetShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&privnetShowOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
@@ -40,12 +42,12 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showPrivnet(privnet))
+			return printOutput(showPrivnet(privnet))
 		},
 	})
 }
 
-func showPrivnet(privnet *egoscale.Network) (outputter, error) {
+func showPrivnet(privnet *egoscale.Network) (output.Outputter, error) {
 	out := privnetShowOutput{
 		ID:          privnet.ID.String(),
 		Name:        privnet.Name,
@@ -67,7 +69,7 @@ func showPrivnet(privnet *egoscale.Network) (outputter, error) {
 }
 
 func privnetDetails(network *egoscale.Network) ([]egoscale.VirtualMachine, error) {
-	vms, err := cs.ListWithContext(gContext, &egoscale.VirtualMachine{
+	vms, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.VirtualMachine{
 		ZoneID: network.ZoneID,
 	})
 	if err != nil {

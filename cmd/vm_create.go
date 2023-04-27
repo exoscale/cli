@@ -8,6 +8,9 @@ import (
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 )
 
@@ -17,7 +20,7 @@ var vmCreateCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command deploys a new Compute instance.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&vmShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -85,7 +88,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 		if keypair == "" {
-			keypair = gCurrentAccount.DefaultSSHKey
+			keypair = account.CurrentAccount.DefaultSSHKey
 		}
 
 		sg, err := cmd.Flags().GetStringSlice("security-group")
@@ -150,8 +153,8 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		if !gQuiet {
-			return output(showVM(vm.ID.String()))
+		if !globalstate.Quiet {
+			return printOutput(showVM(vm.ID.String()))
 		}
 
 		return nil
@@ -169,7 +172,7 @@ func createVM(deployVM *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine
 	if deployVM.KeyPair == "" {
 		singleUseSSHKey = true
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Fprintln(os.Stderr, "Creating single-use SSH key")
 		}
 
@@ -202,7 +205,7 @@ func createVM(deployVM *egoscale.DeployVirtualMachine) (*egoscale.VirtualMachine
 }
 
 func init() {
-	vmCreateCmd.Flags().StringP("zone", "z", "", zoneHelp)
+	vmCreateCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
 	vmCreateCmd.Flags().StringP("template", "t", defaultTemplate, "template NAME|ID")
 	vmCreateCmd.Flags().StringP("template-filter", "", defaultTemplateFilter, templateFilterHelp)
 	vmCreateCmd.Flags().StringP("service-offering", "o", defaultServiceOffering, serviceOfferingHelp)

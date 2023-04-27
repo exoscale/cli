@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/hashicorp/go-multierror"
 	"github.com/iancoleman/strcase"
@@ -69,7 +71,7 @@ func cmdCheckRequiredFlags(cmd *cobra.Command, flags []string) error {
 // set once this function returns.
 func cmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 	if cmd.Flag("zone").Value.String() == "" {
-		cmd.Flag("zone").Value.Set(gCurrentAccount.DefaultZone) // nolint:errcheck
+		cmd.Flag("zone").Value.Set(account.CurrentAccount.DefaultZone) // nolint:errcheck
 	}
 }
 
@@ -78,7 +80,7 @@ func cmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 // set once this function returns.
 func cmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
 	if cmd.Flag("template").Value.String() == "" {
-		cmd.Flag("template").Value.Set(gCurrentAccount.DefaultTemplate) // nolint:errcheck
+		cmd.Flag("template").Value.Set(account.CurrentAccount.DefaultTemplate) // nolint:errcheck
 	}
 }
 
@@ -136,14 +138,14 @@ func getCommaflag(p string) []string {
 
 // cliCommandSettings represents a CLI command settings.
 type cliCommandSettings struct {
-	outputFunc func(o outputter, err error) error
+	outputFunc func(o output.Outputter, err error) error
 }
 
 // defaultCLICmdSettings returns a cliCommandSettings struct initialized
 // with default values.
 func defaultCLICmdSettings() cliCommandSettings {
 	return cliCommandSettings{
-		outputFunc: output,
+		outputFunc: printOutput,
 	}
 }
 
@@ -207,14 +209,14 @@ func mustCLICommandFlagName(c cliCommand, field interface{}) string {
 
 // cliCommandFlagSet generates a pflag.FlagSet struct from the specified
 // cliCommand struct tags. Supported tags are:
-//   * cli-flag:"<flag name>": override the flag name derived by default from
+//   - cli-flag:"<flag name>": override the flag name derived by default from
 //     the struct field name (e.g.: cliCommand.SomeArg -> "--some-arg").
-//   * cli-short:"<character>": an optional short version of the flag, e.g.
+//   - cli-short:"<character>": an optional short version of the flag, e.g.
 //     Zone string `cli-short:"z"` generates the CLI flag "--zone, -z".
-//   * cli-usage:"<usage help>": an optional string to use as flag usage
+//   - cli-usage:"<usage help>": an optional string to use as flag usage
 //     help message. For positional arguments, this field is used as argument
 //     label for the "use" command help.
-//   * cli-hidden:"": mark the corresponding flag "hidden".
+//   - cli-hidden:"": mark the corresponding flag "hidden".
 func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 	fs := pflag.NewFlagSet("", pflag.ExitOnError)
 	cv := reflect.ValueOf(c)
@@ -306,10 +308,10 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 
 // cliCommandUse generates a string to be used as value for the cobra.Command
 // "Use" field from the specified cliCommand struct tags. Supported tags are:
-//   * cli-cmd:"<command name>": the name of the command (required).
-//   * cli-usage:"<usage help>": an optional string to use as argument label
+//   - cli-cmd:"<command name>": the name of the command (required).
+//   - cli-usage:"<usage help>": an optional string to use as argument label
 //     for the "use" command help.
-//   * cli-arg:"<p>": declare a command line positional argument. Depending
+//   - cli-arg:"<p>": declare a command line positional argument. Depending
 //     on the type of the structure field (string or []string), the value of
 //     <p> can either be "#" to declare a single argument which position
 //     matches the one of the corresponding *ARGUMENT field* in the struct

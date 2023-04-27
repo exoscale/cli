@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +17,7 @@ var templateRegisterCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command registers a new Compute instance template.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&templateShowOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&templateShowOutput{}), ", ")),
 	Aliases: gCreateAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -111,11 +113,11 @@ Supported output template annotations: %s`,
 			req.URL = snapshot.PresignedURL
 		}
 
-		return output(templateRegister(req, zone))
+		return printOutput(templateRegister(req, zone))
 	},
 }
 
-func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) (outputter, error) {
+func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone string) (output.Outputter, error) {
 	z, err := getZoneByNameOrID(zone)
 	if err != nil {
 		return nil, err
@@ -133,7 +135,7 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 	}
 	template := (*templates)[0]
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return showTemplate(&template)
 	}
 
@@ -143,7 +145,7 @@ func templateRegister(registerTemplate egoscale.RegisterCustomTemplate, zone str
 func init() {
 	templateRegisterCmd.Flags().StringP("checksum", "c", "", "MD5 checksum value of the template")
 	templateRegisterCmd.Flags().StringP("description", "d", "", "template description")
-	templateRegisterCmd.Flags().StringP("zone", "z", "", "ID or name of the zone the template is to be hosted on")
+	templateRegisterCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "ID or name of the zone the template is to be hosted on")
 	templateRegisterCmd.Flags().StringP("username", "u", "", "default username of the template")
 	templateRegisterCmd.Flags().String("url", "", "URL of where the template is hosted")
 	templateRegisterCmd.Flags().String("boot-mode", "legacy", "template boot mode (legacy|uefi)")

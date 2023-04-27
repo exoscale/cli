@@ -5,6 +5,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -30,9 +32,9 @@ type zoneListItemOutput struct {
 
 type zoneListOutput []zoneListItemOutput
 
-func (o *zoneListOutput) toJSON()  { outputJSON(o) }
-func (o *zoneListOutput) toText()  { outputText(o) }
-func (o *zoneListOutput) toTable() { outputTable(o) }
+func (o *zoneListOutput) ToJSON()  { output.JSON(o) }
+func (o *zoneListOutput) ToText()  { output.Text(o) }
+func (o *zoneListOutput) ToTable() { output.Table(o) }
 
 func (o zoneListOutput) Len() int           { return len(o) }
 func (o zoneListOutput) Swap(x, y int)      { o[x], o[y] = o[y], o[x] }
@@ -46,15 +48,15 @@ func init() {
 		Long: fmt.Sprintf(`This command lists available Exoscale zones.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&zoneListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&zoneListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listZones())
+			return printOutput(listZones())
 		},
 	})
 }
 
-func listZones() (outputter, error) {
-	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+func listZones() (output.Outputter, error) {
+	zones, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +87,7 @@ func getZoneByNameOrID(name string) (*egoscale.Zone, error) {
 		zone.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, zone)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, zone)
 	if err != nil {
 		if err == egoscale.ErrNotFound {
 			return nil, fmt.Errorf("invalid zone %q", name)

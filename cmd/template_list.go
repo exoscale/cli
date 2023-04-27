@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -18,15 +19,15 @@ type templateListItemOutput struct {
 
 type templateListOutput []templateListItemOutput
 
-func (o *templateListOutput) toJSON()  { outputJSON(o) }
-func (o *templateListOutput) toText()  { outputText(o) }
-func (o *templateListOutput) toTable() { outputTable(o) }
+func (o *templateListOutput) ToJSON()  { output.JSON(o) }
+func (o *templateListOutput) ToText()  { output.Text(o) }
+func (o *templateListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	templateListCmd.Flags().BoolP("community", "", false, "List community templates")
 	templateListCmd.Flags().BoolP("featured", "", false, "List featured templates")
 	templateListCmd.Flags().BoolP("mine", "", false, "List your templates")
-	templateListCmd.Flags().StringP("zone", "z", "", "Name of the zone (default: current account's default zone)")
+	templateListCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Name of the zone (default: current account's default zone)")
 	templateCmd.AddCommand(templateListCmd)
 }
 
@@ -36,7 +37,7 @@ var templateListCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command lists available Compute Instance templates. By default, returns "featured" templates.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&templateListOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&templateListOutput{}), ", ")),
 	Aliases: gListAlias,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		cmdSetZoneFlagFromDefault(cmd)
@@ -69,11 +70,11 @@ Supported output template annotations: %s`,
 			templateFilter = "featured"
 		}
 
-		return output(listTemplates(templateFilter, zone, args))
+		return printOutput(listTemplates(templateFilter, zone, args))
 	},
 }
 
-func listTemplates(templateFilter, zone string, filters []string) (outputter, error) {
+func listTemplates(templateFilter, zone string, filters []string) (output.Outputter, error) {
 	z, err := getZoneByNameOrID(zone)
 	if err != nil {
 		return nil, err

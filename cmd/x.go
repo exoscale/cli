@@ -8,6 +8,7 @@ import (
 	"github.com/exoscale/egoscale"
 
 	"github.com/exoscale/cli/cmd/internal/x"
+	"github.com/exoscale/cli/pkg/account"
 )
 
 var xCmd *cobra.Command
@@ -34,12 +35,12 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 		// CLI profile's default zone (or explicit `--zone` flag if specified) and environment
 		// (or explicit `--environment` flag if speficied):
 		if server, _ := cmd.Flags().GetString("server"); server == "" {
-			zone := gCurrentAccount.DefaultZone
+			zone := account.CurrentAccount.DefaultZone
 			if z, _ := cmd.Flags().GetString("zone"); z != "" {
 				zone = z
 			}
 
-			env := gCurrentAccount.Environment
+			env := account.CurrentAccount.Environment
 			if e, _ := cmd.Flags().GetString("environment"); e != "" {
 				env = e
 			}
@@ -56,7 +57,7 @@ input parameters can be supplied either via stdin or using Shorthands[2].
 			egoscale.UserAgent,
 		))
 
-		return x.SetClientCredentials(gCurrentAccount.Key, gCurrentAccount.Secret)
+		return x.SetClientCredentials(account.CurrentAccount.Key, account.CurrentAccount.Secret)
 	}
 
 	RootCmd.AddCommand(xCmd)

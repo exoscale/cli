@@ -8,6 +8,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -45,7 +48,7 @@ The Docker Compose configuration reference can be found at this address:
 https://docs.docker.com/compose/compose-file/
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&vmShowOutput{}), ", ")),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
@@ -78,7 +81,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 		if sshKey == "" {
-			sshKey = gCurrentAccount.DefaultSSHKey
+			sshKey = account.CurrentAccount.DefaultSSHKey
 		}
 
 		sg, err := cmd.Flags().GetStringSlice("security-group")
@@ -171,8 +174,8 @@ Supported output template annotations: %s`,
 		}
 		vm := resp[0].resp.(*egoscale.VirtualMachine)
 
-		if !gQuiet {
-			return output(showVM(vm.Name))
+		if !globalstate.Quiet {
+			return printOutput(showVM(vm.Name))
 		}
 
 		return nil
@@ -244,6 +247,6 @@ func init() {
 	coiCmd.Flags().StringSlice("private-network", nil, "Private Network name/ID")
 	coiCmd.Flags().StringSlice("security-group", nil, "Security Group name/ID")
 	coiCmd.Flags().StringP("service-offering", "o", "medium", serviceOfferingHelp)
-	coiCmd.Flags().StringP("zone", "z", "", zoneHelp)
+	coiCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneHelp)
 	labCmd.AddCommand(coiCmd)
 }

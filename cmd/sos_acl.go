@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
@@ -148,7 +149,7 @@ specify "/" as prefix.`,
 				return err
 			}
 
-			if !gQuiet && !recursive {
+			if !globalstate.Quiet && !recursive {
 				acl, err := getDefaultCannedACL(cmd)
 				if err != nil {
 					return err

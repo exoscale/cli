@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -30,7 +33,7 @@ func (c *nlbCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Network Load Balancer.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&nlbShowOutput{}), ", "))
 }
 
 func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -50,17 +53,17 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Name: &c.Name,
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", c.Name), func() {
-		nlb, err = cs.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
+		nlb, err = globalstate.EgoscaleClient.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&nlbShowCmd{
 			cliCommandSettings:  c.cliCommandSettings,
 			NetworkLoadBalancer: *nlb.ID,

@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +40,7 @@ LOST.
 /!\ **************************************************************** /!\
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
 func (c *instanceSnapshotRevertCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -46,9 +49,9 @@ func (c *instanceSnapshotRevertCmd) cmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *instanceSnapshotRevertCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -56,7 +59,7 @@ func (c *instanceSnapshotRevertCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.SnapshotID)
+	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.SnapshotID)
 	if err != nil {
 		return err
 	}
@@ -76,13 +79,13 @@ func (c *instanceSnapshotRevertCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		c.Instance,
 		c.SnapshotID,
 	), func() {
-		err = cs.RevertInstanceToSnapshot(ctx, c.Zone, instance, snapshot)
+		err = globalstate.EgoscaleClient.RevertInstanceToSnapshot(ctx, c.Zone, instance, snapshot)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           *instance.ID,

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +20,9 @@ type eipListItemOutput struct {
 
 type eipListOutput []eipListItemOutput
 
-func (o *eipListOutput) toJSON()  { outputJSON(o) }
-func (o *eipListOutput) toText()  { outputText(o) }
-func (o *eipListOutput) toTable() { outputTable(o) }
+func (o *eipListOutput) ToJSON()  { output.JSON(o) }
+func (o *eipListOutput) ToText()  { output.Text(o) }
+func (o *eipListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	eipListCmd := &cobra.Command{
@@ -29,7 +31,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Elastic IP addresses.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&eipListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&eipListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zone, err := cmd.Flags().GetString("zone")
@@ -37,18 +39,18 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(listEIP(zone))
+			return printOutput(listEIP(zone))
 		},
 	}
 
-	eipListCmd.Flags().StringP("zone", "z", "", "Show IPs from given zone")
+	eipListCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Show IPs from given zone")
 	eipCmd.AddCommand(eipListCmd)
 }
 
-func listEIP(zone string) (outputter, error) {
+func listEIP(zone string) (output.Outputter, error) {
 	out := eipListOutput{}
 
-	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+	zones, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +65,7 @@ func listEIP(zone string) (outputter, error) {
 			IsElastic: true,
 		}
 
-		ips, err := cs.ListWithContext(gContext, &req)
+		ips, err := globalstate.EgoscaleClient.ListWithContext(gContext, &req)
 		if err != nil {
 			return nil, err
 		}

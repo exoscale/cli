@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -29,9 +31,9 @@ type vmShowOutput struct {
 }
 
 func (o *vmShowOutput) Type() string { return "Instance" }
-func (o *vmShowOutput) toJSON()      { outputJSON(o) }
-func (o *vmShowOutput) toText()      { outputText(o) }
-func (o *vmShowOutput) toTable()     { outputTable(o) }
+func (o *vmShowOutput) ToJSON()      { output.JSON(o) }
+func (o *vmShowOutput) ToText()      { output.Text(o) }
+func (o *vmShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	vmShowCmd := &cobra.Command{
@@ -40,7 +42,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Compute instance details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&vmShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&vmShowOutput{}), ", ")),
 		Aliases:           gShowAlias,
 		ValidArgsFunction: completeVMNames,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -56,7 +58,7 @@ Supported output template annotations: %s`,
 				return showVMUserData(args[0])
 			}
 
-			return output(showVM(args[0]))
+			return printOutput(showVM(args[0]))
 		},
 	}
 
@@ -64,13 +66,13 @@ Supported output template annotations: %s`,
 	vmCmd.AddCommand(vmShowCmd)
 }
 
-func showVM(name string) (outputter, error) {
+func showVM(name string) (output.Outputter, error) {
 	vm, err := getVirtualMachineByNameOrID(name)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := cs.GetWithContext(gContext, &egoscale.Template{
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Template{
 		IsFeatured: true,
 		ID:         vm.TemplateID,
 		ZoneID:     vm.ZoneID,
@@ -80,7 +82,7 @@ func showVM(name string) (outputter, error) {
 	}
 	template := resp.(*egoscale.Template)
 
-	resp, err = cs.GetWithContext(gContext, &egoscale.Volume{
+	resp, err = globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})
@@ -89,7 +91,7 @@ func showVM(name string) (outputter, error) {
 	}
 	volume := resp.(*egoscale.Volume)
 
-	reverseDNS, err := cs.RequestWithContext(gContext, &egoscale.QueryReverseDNSForVirtualMachine{ID: vm.ID})
+	reverseDNS, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.QueryReverseDNSForVirtualMachine{ID: vm.ID})
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +155,7 @@ func showVMUserData(name string) error {
 		return err
 	}
 
-	resp, err := cs.SyncRequestWithContext(gContext, &egoscale.GetVirtualMachineUserData{
+	resp, err := globalstate.EgoscaleClient.SyncRequestWithContext(gContext, &egoscale.GetVirtualMachineUserData{
 		VirtualMachineID: vm.ID,
 	})
 	if err != nil {

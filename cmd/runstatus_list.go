@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +16,9 @@ type runstatusPageListItemOutput struct {
 
 type runstatusPageListOutput []runstatusPageListItemOutput
 
-func (o *runstatusPageListOutput) toJSON()  { outputJSON(o) }
-func (o *runstatusPageListOutput) toText()  { outputText(o) }
-func (o *runstatusPageListOutput) toTable() { outputTable(o) }
+func (o *runstatusPageListOutput) ToJSON()  { output.JSON(o) }
+func (o *runstatusPageListOutput) ToText()  { output.Text(o) }
+func (o *runstatusPageListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	runstatusCmd.AddCommand(&cobra.Command{
@@ -27,15 +28,15 @@ func init() {
 Optional patterns can be provided to filter results by name.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&runstatusPageListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&runstatusPageListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listRunstatusPages(args))
+			return printOutput(listRunstatusPages(args))
 		},
 	})
 }
 
-func listRunstatusPages(filters []string) (outputter, error) {
+func listRunstatusPages(filters []string) (output.Outputter, error) {
 	pages, err := csRunstatus.ListRunstatusPages(gContext)
 	if err != nil {
 		return nil, err

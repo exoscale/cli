@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -15,9 +18,9 @@ type instanceSnapshotExportOutput struct {
 	Checksum string `json:"checksum"`
 }
 
-func (o *instanceSnapshotExportOutput) toJSON()  { outputJSON(o) }
-func (o *instanceSnapshotExportOutput) toText()  { outputText(o) }
-func (o *instanceSnapshotExportOutput) toTable() { outputTable(o) }
+func (o *instanceSnapshotExportOutput) ToJSON()  { output.JSON(o) }
+func (o *instanceSnapshotExportOutput) ToText()  { output.Text(o) }
+func (o *instanceSnapshotExportOutput) ToTable() { output.Table(o) }
 
 type instanceSnapshotExportCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -39,7 +42,7 @@ func (c *instanceSnapshotExportCmd) cmdLong() string {
 	return fmt.Sprintf(`This command exports a Compute instance snapshot.
 	
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceSnapshotExportOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceSnapshotExportOutput{}), ", "))
 }
 
 func (c *instanceSnapshotExportCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -48,9 +51,9 @@ func (c *instanceSnapshotExportCmd) cmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.ID)
+	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -60,13 +63,13 @@ func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var snapshotExport *egoscale.SnapshotExport
 	decorateAsyncOperation(fmt.Sprintf("Exporting snapshot %s...", c.ID), func() {
-		snapshotExport, err = cs.ExportSnapshot(ctx, c.Zone, snapshot)
+		snapshotExport, err = globalstate.EgoscaleClient.ExportSnapshot(ctx, c.Zone, snapshot)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc(
 			&instanceSnapshotExportOutput{
 				URL:      *snapshotExport.PresignedURL,

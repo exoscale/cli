@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +29,7 @@ func getElasticIPByAddressOrID(v string) (*egoscale.IPAddress, error) {
 	ip := net.ParseIP(v)
 	id, _ := egoscale.ParseUUID(v)
 
-	eips, err := cs.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
+	eips, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.IPAddress{IsElastic: true})
 	if err != nil {
 		return nil, err
 	}

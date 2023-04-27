@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -105,7 +107,7 @@ Supported values for --maintenance-dow: %s
 
 Supported output template annotations: %s`,
 		strings.Join(dbServiceMaintenanceDOWs, ", "),
-		strings.Join(outputterTemplateAnnotations(&dbServiceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbServiceShowOutput{}), ", "),
 	)
 }
 
@@ -143,7 +145,7 @@ func (c *dbaasServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 			mustCLICommandFlagName(c, &c.MaintenanceTime))
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
 	if err != nil {

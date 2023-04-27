@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -38,9 +40,9 @@ func (c *nlbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	nlb, err := cs.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}
@@ -49,7 +51,7 @@ func (c *nlbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if *service.ID == c.Service || *service.Name == c.Service {
 			s := service
 			decorateAsyncOperation(fmt.Sprintf("Deleting service %q...", c.Service), func() {
-				err = cs.DeleteNetworkLoadBalancerService(ctx, c.Zone, nlb, s)
+				err = globalstate.EgoscaleClient.DeleteNetworkLoadBalancerService(ctx, c.Zone, nlb, s)
 			})
 			if err != nil {
 				return err

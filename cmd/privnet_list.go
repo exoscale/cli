@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +20,9 @@ type privnetListItemOutput struct {
 
 type privnetListOutput []privnetListItemOutput
 
-func (o *privnetListOutput) toJSON()  { outputJSON(o) }
-func (o *privnetListOutput) toText()  { outputText(o) }
-func (o *privnetListOutput) toTable() { outputTable(o) }
+func (o *privnetListOutput) ToJSON()  { output.JSON(o) }
+func (o *privnetListOutput) ToText()  { output.Text(o) }
+func (o *privnetListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	privnetListCmd := &cobra.Command{
@@ -29,7 +31,7 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Private Networks.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&privnetListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&privnetListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zone, err := cmd.Flags().GetString("zone")
@@ -37,18 +39,18 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(listPrivnets(zone))
+			return printOutput(listPrivnets(zone))
 		},
 	}
 
-	privnetListCmd.Flags().StringP("zone", "z", "", "Show Private Networks only in specified zone")
+	privnetListCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Show Private Networks only in specified zone")
 	privnetCmd.AddCommand(privnetListCmd)
 }
 
-func listPrivnets(zone string) (outputter, error) {
+func listPrivnets(zone string) (output.Outputter, error) {
 	out := privnetListOutput{}
 
-	zones, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+	zones, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +66,7 @@ func listPrivnets(zone string) (outputter, error) {
 			CanUseForDeploy: true,
 		}
 
-		privnets, err := cs.ListWithContext(gContext, &req)
+		privnets, err := globalstate.EgoscaleClient.ListWithContext(gContext, &req)
 		if err != nil {
 			return nil, err
 		}

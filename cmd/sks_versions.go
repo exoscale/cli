@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -14,9 +17,9 @@ type sksClusterVersionsItemOutput struct {
 
 type sksClusterVersionsOutput []sksClusterVersionsItemOutput
 
-func (o *sksClusterVersionsOutput) toJSON()  { outputJSON(o) }
-func (o *sksClusterVersionsOutput) toText()  { outputText(o) }
-func (o *sksClusterVersionsOutput) toTable() { outputTable(o) }
+func (o *sksClusterVersionsOutput) ToJSON()  { output.JSON(o) }
+func (o *sksClusterVersionsOutput) ToText()  { output.Text(o) }
+func (o *sksClusterVersionsOutput) ToTable() { output.Table(o) }
 
 type sksVersionsCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -34,7 +37,7 @@ func (c *sksVersionsCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists supported SKS cluster versions.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksClusterVersionsItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksClusterVersionsItemOutput{}), ", "))
 }
 
 func (c *sksVersionsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -43,11 +46,11 @@ func (c *sksVersionsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksVersionsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	out := make(sksClusterVersionsOutput, 0)
 
-	versions, err := cs.ListSKSClusterVersions(ctx)
+	versions, err := globalstate.EgoscaleClient.ListSKSClusterVersions(ctx)
 	if err != nil {
 		return err
 	}

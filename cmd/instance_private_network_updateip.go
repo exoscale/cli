@@ -6,6 +6,9 @@ import (
 	"net"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +36,7 @@ func (c *instancePrivnetUpdateIPCmd) cmdLong() string {
 managed Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
 	)
 }
 
@@ -43,9 +46,9 @@ func (c *instancePrivnetUpdateIPCmd) cmdPreRun(cmd *cobra.Command, args []string
 }
 
 func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -53,13 +56,13 @@ func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
 	if err != nil {
 		return fmt.Errorf("error retrieving Private Network: %w", err)
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Private Network IP address...", c.Instance), func() {
-		if err = cs.UpdatePrivateNetworkInstanceIPAddress(
+		if err = globalstate.EgoscaleClient.UpdatePrivateNetworkInstanceIPAddress(
 			ctx,
 			c.Zone,
 			instance,
@@ -73,7 +76,7 @@ func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           *instance.ID,

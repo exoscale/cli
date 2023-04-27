@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -21,9 +23,9 @@ type configShowOutput struct {
 }
 
 func (o *configShowOutput) Type() string { return "Account" }
-func (o *configShowOutput) toJSON()      { outputJSON(o) }
-func (o *configShowOutput) toText()      { outputText(o) }
-func (o *configShowOutput) toTable()     { outputTable(o) }
+func (o *configShowOutput) ToJSON()      { output.JSON(o) }
+func (o *configShowOutput) ToText()      { output.Text(o) }
+func (o *configShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	configCmd.AddCommand(&cobra.Command{
@@ -32,24 +34,24 @@ func init() {
 		Long: fmt.Sprintf(`This command shows an Exoscale account details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&configShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&configShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if gAllAccount == nil {
+			if account.GAllAccount == nil {
 				return fmt.Errorf("no accounts configured")
 			}
-			name := gCurrentAccount.AccountName()
+			name := account.CurrentAccount.AccountName(gContext)
 
 			if len(args) > 0 {
 				name = args[0]
 			}
 
-			return output(showConfig(name))
+			return printOutput(showConfig(name))
 		},
 	})
 }
 
-func showConfig(name string) (outputter, error) {
+func showConfig(name string) (output.Outputter, error) {
 	account := getAccountByName(name)
 	if account == nil {
 		return nil, fmt.Errorf("account %q was not found", name)

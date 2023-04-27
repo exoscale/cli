@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +18,9 @@ type antiAffinityGroupListItemOutput struct {
 
 type antiAffinityGroupListOutput []antiAffinityGroupListItemOutput
 
-func (o *antiAffinityGroupListOutput) toJSON()  { outputJSON(o) }
-func (o *antiAffinityGroupListOutput) toText()  { outputText(o) }
-func (o *antiAffinityGroupListOutput) toTable() { outputTable(o) }
+func (o *antiAffinityGroupListOutput) ToJSON()  { output.JSON(o) }
+func (o *antiAffinityGroupListOutput) ToText()  { output.Text(o) }
+func (o *antiAffinityGroupListOutput) ToTable() { output.Table(o) }
 
 type antiAffinityGroupListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -33,7 +36,7 @@ func (c *antiAffinityGroupListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Anti-Affinity Groups.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&antiAffinityGroupListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&antiAffinityGroupListItemOutput{}), ", "))
 }
 
 func (c *antiAffinityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -43,10 +46,10 @@ func (c *antiAffinityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) 
 func (c *antiAffinityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	antiAffinityGroups, err := cs.ListAntiAffinityGroups(ctx, gCurrentAccount.DefaultZone)
+	antiAffinityGroups, err := globalstate.EgoscaleClient.ListAntiAffinityGroups(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

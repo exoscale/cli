@@ -5,73 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/egoscale"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
-
-type config struct {
-	DefaultAccount      string
-	DefaultOutputFormat string
-	Accounts            []account
-}
-
-type account struct {
-	Name                 string
-	Account              string
-	Endpoint             string
-	ComputeEndpoint      string // legacy config.
-	DNSEndpoint          string
-	SosEndpoint          string
-	RunstatusEndpoint    string
-	Environment          string
-	Key                  string
-	Secret               string
-	SecretCommand        []string
-	DefaultZone          string
-	DefaultSSHKey        string
-	DefaultTemplate      string
-	DefaultRunstatusPage string
-	DefaultOutputFormat  string
-	ClientTimeout        int
-	CustomHeaders        map[string]string
-}
-
-func (a account) APISecret() string {
-	if len(a.SecretCommand) != 0 {
-		cmd := exec.Command(a.SecretCommand[0], a.SecretCommand[1:]...)
-		cmd.Stdin = os.Stdin
-		cmd.Stderr = os.Stderr
-		out, err := cmd.Output()
-		if err != nil {
-			log.Fatal(err)
-		}
-		return strings.TrimRight(string(out), "\n")
-	}
-
-	return a.Secret
-}
-
-func (a account) AccountName() string {
-	if a.Name == "" {
-		resp, err := cs.GetWithContext(gContext, egoscale.Account{})
-		if err != nil {
-			log.Fatal(err)
-		}
-		acc := resp.(*egoscale.Account)
-		return acc.Name
-	}
-
-	return a.Name
-}
-
-func (a account) IsDefault() bool {
-	return a.Name == gAllAccount.DefaultAccount
-}
 
 const (
 	legacyAPIVersion          = "compute"
@@ -103,11 +44,11 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 		newAccountLabel    = "<Configure a new account>"
 	)
 
-	if gConfigFilePath == "" && gCurrentAccount.Key != "" {
+	if gConfigFilePath == "" && account.CurrentAccount.Key != "" {
 		log.Fatalf("remove ENV credentials variables to use %s", cmd.CalledAs())
 	}
 
-	if gConfigFilePath != "" && gCurrentAccount.Key != "" {
+	if gConfigFilePath != "" && account.CurrentAccount.Key != "" {
 		accounts := listAccounts(defaultAccountMark)
 		accounts = append(accounts, newAccountLabel)
 		prompt := promptui.Select{
@@ -129,7 +70,7 @@ func configCmdRun(cmd *cobra.Command, _ []string) error {
 			return addConfigAccount(false)
 		}
 
-		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != gAllAccount.DefaultAccount {
+		if strings.TrimSuffix(selectedAccount, defaultAccountMark) != account.GAllAccount.DefaultAccount {
 			fmt.Printf("Setting default account to [%s]\n", selectedAccount)
 			gConfig.Set("defaultAccount", selectedAccount)
 			return saveConfig(gConfig.ConfigFileUsed(), nil)
@@ -150,12 +91,12 @@ Exoscale API credentials from your organization's IAM:
 	return addConfigAccount(true)
 }
 
-func saveConfig(filePath string, newAccounts *config) error {
+func saveConfig(filePath string, newAccounts *account.AccountConfig) error {
 	accountsSize := 0
-	currentAccounts := []account{}
-	if gAllAccount != nil {
-		accountsSize = len(gAllAccount.Accounts)
-		currentAccounts = gAllAccount.Accounts
+	currentAccounts := []account.Account{}
+	if account.GAllAccount != nil {
+		accountsSize = len(account.GAllAccount.Accounts)
+		currentAccounts = account.GAllAccount.Accounts
 	}
 
 	newAccountsSize := 0
@@ -166,7 +107,7 @@ func saveConfig(filePath string, newAccounts *config) error {
 
 	accounts := make([]map[string]interface{}, accountsSize+newAccountsSize)
 
-	conf := &config{}
+	conf := &account.AccountConfig{}
 
 	for i, acc := range currentAccounts {
 		accounts[i] = map[string]interface{}{}
@@ -228,7 +169,7 @@ func saveConfig(filePath string, newAccounts *config) error {
 	}
 
 	conf.DefaultAccount = gConfig.Get("defaultAccount").(string)
-	gAllAccount = conf
+	account.GAllAccount = conf
 
 	return nil
 }
@@ -302,27 +243,27 @@ func askQuestion(text string) bool {
 }
 
 func listAccounts(defaultAccountMark string) []string {
-	if gAllAccount == nil {
+	if account.GAllAccount == nil {
 		return nil
 	}
-	res := make([]string, len(gAllAccount.Accounts))
-	for i, acc := range gAllAccount.Accounts {
+	res := make([]string, len(account.GAllAccount.Accounts))
+	for i, acc := range account.GAllAccount.Accounts {
 		res[i] = acc.Name
-		if acc.Name == gAllAccount.DefaultAccount {
+		if acc.Name == account.GAllAccount.DefaultAccount {
 			res[i] = fmt.Sprintf("%s%s", res[i], defaultAccountMark)
 		}
 	}
 	return res
 }
 
-func getAccountByName(name string) *account {
-	if gAllAccount == nil {
+func getAccountByName(name string) *account.Account {
+	if account.GAllAccount == nil {
 		return nil
 	}
 
-	for i, acc := range gAllAccount.Accounts {
+	for i, acc := range account.GAllAccount.Accounts {
 		if acc.Name == name {
-			return &gAllAccount.Accounts[i]
+			return &account.GAllAccount.Accounts[i]
 		}
 	}
 

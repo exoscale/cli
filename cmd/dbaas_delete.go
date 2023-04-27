@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -32,7 +34,7 @@ func (c *dbaasServiceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Database Service %q?", c.Name)) {
@@ -42,7 +44,7 @@ func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Deleting Database Service %q...", c.Name), func() {
-		err = cs.DeleteDatabaseService(ctx, c.Zone, &egoscale.DatabaseService{Name: &c.Name})
+		err = globalstate.EgoscaleClient.DeleteDatabaseService(ctx, c.Zone, &egoscale.DatabaseService{Name: &c.Name})
 	})
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {

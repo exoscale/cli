@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -33,9 +35,9 @@ func (c *instanceStartCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -55,13 +57,13 @@ func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Starting instance %q...", c.Instance), func() {
-		err = cs.StartInstance(ctx, c.Zone, instance, opts...)
+		err = globalstate.EgoscaleClient.StartInstance(ctx, c.Zone, instance, opts...)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           *instance.ID,

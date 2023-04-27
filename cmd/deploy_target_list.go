@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +21,9 @@ type deployTargetListItemOutput struct {
 
 type deployTargetListOutput []deployTargetListItemOutput
 
-func (o *deployTargetListOutput) toJSON()  { outputJSON(o) }
-func (o *deployTargetListOutput) toText()  { outputText(o) }
-func (o *deployTargetListOutput) toTable() { outputTable(o) }
+func (o *deployTargetListOutput) ToJSON()  { output.JSON(o) }
+func (o *deployTargetListOutput) ToText()  { output.Text(o) }
+func (o *deployTargetListOutput) ToTable() { output.Table(o) }
 
 type deployTargetListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -38,7 +41,7 @@ func (c *deployTargetListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing Deploy Targets.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&deployTargetListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&deployTargetListOutput{}), ", "))
 }
 
 func (c *deployTargetListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -65,9 +68,9 @@ func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := cs.ListDeployTargets(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListDeployTargets(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Deploy Targets in zone %s: %w", zone, err)
 		}

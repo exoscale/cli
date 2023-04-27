@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -15,25 +17,25 @@ func init() {
 		Long: fmt.Sprintf(`This command creates a snapshot of a Compute instance volume.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&snapshotShowOutput{}), ", ")),
 		Aliases: gCreateAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
 			}
 
-			return output(createSnapshot(args[0]))
+			return printOutput(createSnapshot(args[0]))
 		},
 	})
 }
 
-func createSnapshot(vmID string) (outputter, error) {
+func createSnapshot(vmID string) (output.Outputter, error) {
 	vm, err := getVirtualMachineByNameOrID(vmID)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := cs.GetWithContext(gContext, &egoscale.Volume{
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 		VirtualMachineID: vm.ID,
 		Type:             "ROOT",
 	})
@@ -47,7 +49,7 @@ func createSnapshot(vmID string) (outputter, error) {
 		return nil, err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return showSnapshot(res.(*egoscale.Snapshot))
 	}
 

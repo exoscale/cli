@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	exov2 "github.com/exoscale/egoscale/v2"
 )
@@ -52,16 +54,16 @@ func buildClient() {
 		return
 	}
 
-	if cs != nil {
+	if globalstate.EgoscaleClient != nil {
 		return
 	}
 
-	httpClient := &http.Client{Transport: newCLIRoundTripper(http.DefaultTransport, gCurrentAccount.CustomHeaders)}
+	httpClient := &http.Client{Transport: newCLIRoundTripper(http.DefaultTransport, account.CurrentAccount.CustomHeaders)}
 
-	cs = egoscale.NewClient(
-		gCurrentAccount.Endpoint,
-		gCurrentAccount.Key,
-		gCurrentAccount.APISecret(),
+	globalstate.EgoscaleClient = egoscale.NewClient(
+		account.CurrentAccount.Endpoint,
+		account.CurrentAccount.Key,
+		account.CurrentAccount.APISecret(),
 		egoscale.WithHTTPClient(httpClient),
 		egoscale.WithoutV2Client())
 
@@ -70,13 +72,13 @@ func buildClient() {
 	// (http.Transport) clashes.
 	// This can be removed once the only API used is V2.
 	clientExoV2, err := exov2.NewClient(
-		gCurrentAccount.Key,
-		gCurrentAccount.APISecret(),
-		exov2.ClientOptWithAPIEndpoint(gCurrentAccount.Endpoint),
-		exov2.ClientOptWithTimeout(time.Minute*time.Duration(gCurrentAccount.ClientTimeout)),
+		account.CurrentAccount.Key,
+		account.CurrentAccount.APISecret(),
+		exov2.ClientOptWithAPIEndpoint(account.CurrentAccount.Endpoint),
+		exov2.ClientOptWithTimeout(time.Minute*time.Duration(account.CurrentAccount.ClientTimeout)),
 		exov2.ClientOptWithHTTPClient(func() *http.Client {
 			return &http.Client{
-				Transport: newCLIRoundTripper(http.DefaultTransport, gCurrentAccount.CustomHeaders),
+				Transport: newCLIRoundTripper(http.DefaultTransport, account.CurrentAccount.CustomHeaders),
 			}
 		}()),
 		exov2.ClientOptCond(func() bool {
@@ -89,9 +91,9 @@ func buildClient() {
 	if err != nil {
 		panic(fmt.Sprintf("unable to initialize Exoscale API V2 client: %v", err))
 	}
-	cs.Client = clientExoV2
+	globalstate.EgoscaleClient.Client = clientExoV2
 
-	csRunstatus = egoscale.NewClient(gCurrentAccount.RunstatusEndpoint,
-		gCurrentAccount.Key,
-		gCurrentAccount.APISecret())
+	csRunstatus = egoscale.NewClient(account.CurrentAccount.RunstatusEndpoint,
+		account.CurrentAccount.Key,
+		account.CurrentAccount.APISecret())
 }

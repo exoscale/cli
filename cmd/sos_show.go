@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -32,11 +33,11 @@ type sosShowOutput struct {
 	Headers  []sosHeadersShowOutput  `json:"headers"`
 }
 
-func (o *sosShowOutput) toJSON() { outputJSON(o) }
+func (o *sosShowOutput) ToJSON() { output.JSON(o) }
 
-func (o *sosShowOutput) toText() { outputText(o) }
+func (o *sosShowOutput) ToText() { output.Text(o) }
 
-func (o *sosShowOutput) toTable() {
+func (o *sosShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 
 	if o.ACL != nil {
@@ -101,11 +102,11 @@ var sosShowCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		return output(showSOS(args[0], args[1], cmd))
+		return printOutput(showSOS(args[0], args[1], cmd))
 	},
 }
 
-func showSOS(bucket, object string, cmd *cobra.Command) (outputter, error) {
+func showSOS(bucket, object string, cmd *cobra.Command) (output.Outputter, error) {
 	sosClient, err := newSOSClient()
 	if err != nil {
 		return nil, err

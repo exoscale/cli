@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -110,14 +112,14 @@ func (c *sksKubeconfigCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	// We cannot use the flag's default here as it would be additive
 	if len(c.Groups) == 0 {
 		c.Groups = []string{"system:masters"}
 	}
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -125,7 +127,7 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	b64Kubeconfig, err := cs.GetSKSClusterKubeconfig(
+	b64Kubeconfig, err := globalstate.EgoscaleClient.GetSKSClusterKubeconfig(
 		ctx,
 		c.Zone,
 		cluster,

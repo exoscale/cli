@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -19,9 +20,9 @@ type runstatusMaintenanceListItemOutput struct {
 
 type runstatusMaintenanceListOutput []runstatusMaintenanceListItemOutput
 
-func (o *runstatusMaintenanceListOutput) toJSON()  { outputJSON(o) }
-func (o *runstatusMaintenanceListOutput) toText()  { outputText(o) }
-func (o *runstatusMaintenanceListOutput) toTable() { outputTable(o) }
+func (o *runstatusMaintenanceListOutput) ToJSON()  { output.JSON(o) }
+func (o *runstatusMaintenanceListOutput) ToText()  { output.Text(o) }
+func (o *runstatusMaintenanceListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(&cobra.Command{
@@ -30,15 +31,15 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing runstat.us maintenances.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&runstatusMaintenanceListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&runstatusMaintenanceListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(runstatusListMaintenances(args))
+			return printOutput(runstatusListMaintenances(args))
 		},
 	})
 }
 
-func runstatusListMaintenances(pageNames []string) (outputter, error) {
+func runstatusListMaintenances(pageNames []string) (output.Outputter, error) {
 	pages, err := getRunstatusPages(pageNames)
 	if err != nil {
 		return nil, err

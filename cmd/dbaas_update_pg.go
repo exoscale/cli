@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -15,11 +17,11 @@ import (
 func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	databaseService := oapi.UpdateDbaasServicePgJSONRequestBody{}
 
-	settingsSchema, err := cs.GetDbaasSettingsPgWithResponse(ctx)
+	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
@@ -141,7 +143,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 	if updated {
 		var res *oapi.UpdateDbaasServicePgResponse
 		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = cs.UpdateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+			res, err = globalstate.EgoscaleClient.UpdateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 		})
 		if err != nil {
 			if errors.Is(err, exoapi.ErrNotFound) {
@@ -154,7 +156,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,

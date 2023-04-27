@@ -7,6 +7,9 @@ import (
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -18,11 +21,11 @@ type dnsListItemOutput struct {
 
 type dnsListOutput []dnsListItemOutput
 
-func (o *dnsListOutput) toJSON() { outputJSON(o) }
+func (o *dnsListOutput) ToJSON() { output.JSON(o) }
 
-func (o *dnsListOutput) toText() { outputText(o) }
+func (o *dnsListOutput) ToText() { output.Text(o) }
 
-func (o *dnsListOutput) toTable() {
+func (o *dnsListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"ID", "Name"})
 
@@ -44,17 +47,17 @@ func init() {
 Optional patterns can be provided to filter results by ID, or name.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&dnsListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&dnsListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listDomains(args))
+			return printOutput(listDomains(args))
 		},
 	})
 }
 
-func listDomains(filters []string) (outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone))
-	domains, err := cs.ListDNSDomains(ctx, gCurrentAccount.DefaultZone)
+func listDomains(filters []string) (output.Outputter, error) {
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+	domains, err := globalstate.EgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return nil, err
 	}

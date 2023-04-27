@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -19,9 +22,9 @@ type dbaasTypeListItemOutput struct {
 
 type dbaasTypeListOutput []dbaasTypeListItemOutput
 
-func (o *dbaasTypeListOutput) toJSON() { outputJSON(o) }
-func (o *dbaasTypeListOutput) toText() { outputText(o) }
-func (o *dbaasTypeListOutput) toTable() {
+func (o *dbaasTypeListOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasTypeListOutput) ToText() { output.Text(o) }
+func (o *dbaasTypeListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Name", "Available Versions", "Default Version"})
 	defer t.Render()
@@ -49,7 +52,7 @@ func (c *dbaasTypeListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists available Database Service types.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&dbaasTypeListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbaasTypeListItemOutput{}), ", "))
 }
 
 func (c *dbaasTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -59,10 +62,10 @@ func (c *dbaasTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	dbTypes, err := cs.ListDatabaseServiceTypes(ctx, gCurrentAccount.DefaultZone)
+	dbTypes, err := globalstate.EgoscaleClient.ListDatabaseServiceTypes(ctx, account.CurrentAccount.DefaultZone)
 	if err != nil {
 		return err
 	}

@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +22,9 @@ type sksListDeprecatedResourcesItemOutput struct {
 
 type sksListDeprecatedResourcesOutput []sksListDeprecatedResourcesItemOutput
 
-func (o *sksListDeprecatedResourcesOutput) toJSON()  { outputJSON(o) }
-func (o *sksListDeprecatedResourcesOutput) toText()  { outputText(o) }
-func (o *sksListDeprecatedResourcesOutput) toTable() { outputTable(o) }
+func (o *sksListDeprecatedResourcesOutput) ToJSON()  { output.JSON(o) }
+func (o *sksListDeprecatedResourcesOutput) ToText()  { output.Text(o) }
+func (o *sksListDeprecatedResourcesOutput) ToTable() { output.Table(o) }
 
 type sksDeprecatedResourcesCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -42,7 +45,7 @@ func (c *sksDeprecatedResourcesCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists SKS cluster Nodepools.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksListDeprecatedResourcesItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksListDeprecatedResourcesItemOutput{}), ", "))
 }
 
 func emptyIfNil(inp *string) string {
@@ -59,9 +62,9 @@ func (c *sksDeprecatedResourcesCmd) cmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *sksDeprecatedResourcesCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -69,7 +72,7 @@ func (c *sksDeprecatedResourcesCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	deprecatedResources, err := cs.ListSKSClusterDeprecatedResources(
+	deprecatedResources, err := globalstate.EgoscaleClient.ListSKSClusterDeprecatedResources(
 		ctx,
 		c.Zone,
 		cluster,

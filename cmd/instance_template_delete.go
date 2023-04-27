@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -32,9 +34,9 @@ func (c *instanceTemplateDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string)
 }
 
 func (c *instanceTemplateDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	template, err := cs.GetTemplate(ctx, c.Zone, c.TemplateID)
+	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, c.TemplateID)
 	if err != nil {
 		return err
 	}
@@ -50,7 +52,7 @@ func (c *instanceTemplateDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting template %s...", c.TemplateID), func() {
-		err = cs.DeleteTemplate(ctx, c.Zone, template)
+		err = globalstate.EgoscaleClient.DeleteTemplate(ctx, c.Zone, template)
 	})
 	if err != nil {
 		return err

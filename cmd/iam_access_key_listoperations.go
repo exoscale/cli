@@ -6,6 +6,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -19,9 +22,9 @@ type iamAccessKeyListOperationsItemOutput struct {
 
 type iamAccessKeyListOperationsOutput []iamAccessKeyListOperationsItemOutput
 
-func (o *iamAccessKeyListOperationsOutput) toJSON() { outputJSON(o) }
-func (o *iamAccessKeyListOperationsOutput) toText() { outputText(o) }
-func (o *iamAccessKeyListOperationsOutput) toTable() {
+func (o *iamAccessKeyListOperationsOutput) ToJSON() { output.JSON(o) }
+func (o *iamAccessKeyListOperationsOutput) ToText() { output.Text(o) }
+func (o *iamAccessKeyListOperationsOutput) ToTable() {
 	operationByTag := make(map[string][]string)
 
 	for _, op := range *o {
@@ -67,7 +70,7 @@ func (c *iamAccessKeyListOperationsCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists operations available to IAM access keys.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&iamAccessKeyListOperationsOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&iamAccessKeyListOperationsOutput{}), ", "))
 }
 
 func (c *iamAccessKeyListOperationsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -80,14 +83,14 @@ func (c *iamAccessKeyListOperationsCmd) cmdRun(_ *cobra.Command, _ []string) err
 		err                    error
 	)
 
-	zone := gCurrentAccount.DefaultZone
+	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	if c.Mine {
-		iamAccessKeyOperations, err = cs.ListMyIAMAccessKeyOperations(ctx, zone)
+		iamAccessKeyOperations, err = globalstate.EgoscaleClient.ListMyIAMAccessKeyOperations(ctx, zone)
 	} else {
-		iamAccessKeyOperations, err = cs.ListIAMAccessKeyOperations(ctx, zone)
+		iamAccessKeyOperations, err = globalstate.EgoscaleClient.ListIAMAccessKeyOperations(ctx, zone)
 	}
 	if err != nil {
 		return err

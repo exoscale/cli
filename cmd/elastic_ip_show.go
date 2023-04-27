@@ -7,6 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -34,9 +37,9 @@ type elasticIPShowOutput struct {
 	HealthcheckTLSSkipVerify *bool          `json:"healthcheck_tls_skip_verify,omitempty"`
 }
 
-func (o *elasticIPShowOutput) toJSON() { outputJSON(o) }
-func (o *elasticIPShowOutput) toText() { outputText(o) }
-func (o *elasticIPShowOutput) toTable() {
+func (o *elasticIPShowOutput) ToJSON() { output.JSON(o) }
+func (o *elasticIPShowOutput) ToText() { output.Text(o) }
+func (o *elasticIPShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Elastic IP"})
 	defer t.Render()
@@ -93,7 +96,7 @@ func (c *elasticIPShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance Elastic IP details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&elasticIPShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&elasticIPShowOutput{}), ", "))
 }
 
 func (c *elasticIPShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -102,9 +105,9 @@ func (c *elasticIPShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -123,7 +126,7 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Type:          "manual",
 	}
 
-	rdns, err := cs.GetElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
+	rdns, err := globalstate.EgoscaleClient.GetElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			out.ReverseDNS = ""
@@ -134,7 +137,7 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	out.ReverseDNS = rdns
 
-	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, cs, elasticIP.IPAddress.String(), c.Zone)
+	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, globalstate.EgoscaleClient, elasticIP.IPAddress.String(), c.Zone)
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -21,9 +24,9 @@ type instanceSnapshotListItemOutput struct {
 
 type instanceSnapshotListOutput []instanceSnapshotListItemOutput
 
-func (o *instanceSnapshotListOutput) toJSON()  { outputJSON(o) }
-func (o *instanceSnapshotListOutput) toText()  { outputText(o) }
-func (o *instanceSnapshotListOutput) toTable() { outputTable(o) }
+func (o *instanceSnapshotListOutput) ToJSON()  { output.JSON(o) }
+func (o *instanceSnapshotListOutput) ToText()  { output.Text(o) }
+func (o *instanceSnapshotListOutput) ToTable() { output.Table(o) }
 
 type instanceSnapshotListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -41,7 +44,7 @@ func (c *instanceSnapshotListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists existing Compute instance snapshots.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceSnapshotListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceSnapshotListOutput{}), ", "))
 }
 
 func (c *instanceSnapshotListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -70,9 +73,9 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := cs.ListSnapshots(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListSnapshots(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Compute instance snapshots in zone %s: %w", zone, err)
 		}
@@ -83,7 +86,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if cached {
 				instance = instanceI.(*egoscale.Instance)
 			} else {
-				instance, err = cs.GetInstance(ctx, zone, *s.InstanceID)
+				instance, err = globalstate.EgoscaleClient.GetInstance(ctx, zone, *s.InstanceID)
 				if err != nil {
 					return fmt.Errorf("unable to retrieve Compute instance %q: %w", *s.InstanceID, err)
 				}

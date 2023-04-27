@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +17,9 @@ type sshkeyCreateOutput struct {
 }
 
 func (o *sshkeyCreateOutput) Type() string { return "SSH Key" }
-func (o *sshkeyCreateOutput) toJSON()      { outputJSON(o) }
-func (o *sshkeyCreateOutput) toText()      { outputText(o) }
-func (o *sshkeyCreateOutput) toTable()     { outputTable(o) }
+func (o *sshkeyCreateOutput) ToJSON()      { output.JSON(o) }
+func (o *sshkeyCreateOutput) ToText()      { output.Text(o) }
+func (o *sshkeyCreateOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	sshkeyCmd.AddCommand(&cobra.Command{
@@ -26,7 +28,7 @@ func init() {
 		Long: fmt.Sprintf(`This command creates an SSH key.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&sshkeyCreateOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&sshkeyCreateOutput{}), ", ")),
 		Aliases: gCreateAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
@@ -38,8 +40,8 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			if !gQuiet {
-				return output(&sshkeyCreateOutput{
+			if !globalstate.Quiet {
+				return printOutput(&sshkeyCreateOutput{
 					Name:        sshKey.Name,
 					Fingerprint: sshKey.Fingerprint,
 					PrivateKey:  sshKey.PrivateKey,
@@ -52,7 +54,7 @@ Supported output template annotations: %s`,
 }
 
 func createSSHKey(name string) (*egoscale.SSHKeyPair, error) {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.CreateSSHKeyPair{
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.CreateSSHKeyPair{
 		Name: name,
 	})
 	if err != nil {

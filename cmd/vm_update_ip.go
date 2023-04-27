@@ -5,6 +5,7 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -75,7 +76,7 @@ func showVMWithNics(vm *egoscale.VirtualMachine) error {
 	for _, nic := range vm.Nic {
 		if nic.IsDefault {
 		} else {
-			resp, err := cs.GetWithContext(gContext, &egoscale.Network{ID: nic.NetworkID})
+			resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Network{ID: nic.NetworkID})
 			if err != nil {
 				return fmt.Errorf("unable to retrieve Compute instance NIC: %v", err)
 			}

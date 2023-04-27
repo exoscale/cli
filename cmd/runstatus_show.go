@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -42,11 +43,11 @@ type runstatusPageShowOutput struct {
 	Maintenances []runstatusPageMaintenanceShowOutput `json:"maintenances,omitempty"`
 }
 
-func (o *runstatusPageShowOutput) toJSON() { outputJSON(o) }
+func (o *runstatusPageShowOutput) ToJSON() { output.JSON(o) }
 
-func (o *runstatusPageShowOutput) toText() { outputText(o) }
+func (o *runstatusPageShowOutput) ToText() { output.Text(o) }
 
-func (o *runstatusPageShowOutput) toTable() {
+func (o *runstatusPageShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Runstatus"})
 
@@ -113,19 +114,19 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a runstat.us page details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&runstatusPageShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&runstatusPageShowOutput{}), ", ")),
 		Aliases: gShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("show expects a page name")
 			}
 
-			return output(showRunstatusPage(args[0]))
+			return printOutput(showRunstatusPage(args[0]))
 		},
 	})
 }
 
-func showRunstatusPage(name string) (outputter, error) {
+func showRunstatusPage(name string) (output.Outputter, error) {
 	page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: name})
 	if err != nil {
 		return nil, err

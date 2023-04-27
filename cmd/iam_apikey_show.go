@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -15,9 +16,9 @@ type apiKeyShowItemOutput struct {
 	Type       string   `json:"type"`
 }
 
-func (o *apiKeyShowItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyShowItemOutput) toText()  { outputText(o) }
-func (o *apiKeyShowItemOutput) toTable() { outputTable(o) }
+func (o *apiKeyShowItemOutput) ToJSON()  { output.JSON(o) }
+func (o *apiKeyShowItemOutput) ToText()  { output.Text(o) }
+func (o *apiKeyShowItemOutput) ToTable() { output.Table(o) }
 
 var apiKeyShowCmd = &cobra.Command{
 	Use:   "show KEY|NAME",
@@ -25,7 +26,7 @@ var apiKeyShowCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command shows an API key details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&apiKeyShowItemOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&apiKeyShowItemOutput{}), ", ")),
 	Aliases: gShowAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -45,7 +46,7 @@ Supported output template annotations: %s`,
 			Type:       string(apiKey.Type),
 		}
 
-		return output(&o, err)
+		return printOutput(&o, err)
 	},
 }
 

@@ -1,33 +1,13 @@
 package cmd
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"path"
-	"path/filepath"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
 	"github.com/spf13/cobra"
-	"github.com/vbauerster/mpb/v4"
-	"github.com/vbauerster/mpb/v4/decor"
 )
-
-type storageUploadConfig struct {
-	bucket    string
-	prefix    string
-	acl       string
-	recursive bool
-	dryRun    bool
-}
 
 var storageUploadCmd = &cobra.Command{
 	Use:     "upload FILE... sos://BUCKET/[PREFIX/]",
@@ -55,7 +35,7 @@ Examples:
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[len(args)-1] = strings.TrimPrefix(args[len(args)-1], storageBucketPrefix)
+		args[len(args)-1] = strings.TrimPrefix(args[len(args)-1], sos.BucketPrefix)
 
 		return nil
 	},
@@ -73,9 +53,9 @@ Examples:
 		if err != nil {
 			return err
 		}
-		if acl != "" && !utils.IsInList(s3ObjectCannedACLToStrings(), acl) {
+		if acl != "" && !utils.IsInList(sos.ObjectCannedACLToStrings(), acl) {
 			return fmt.Errorf("invalid canned ACL %q, supported values are: %s",
-				acl, strings.Join(s3ObjectCannedACLToStrings(), ", "))
+				acl, strings.Join(sos.ObjectCannedACLToStrings(), ", "))
 		}
 
 		dryRun, err := cmd.Flags().GetBool("dry-run")
@@ -104,263 +84,30 @@ Examples:
 			prefix = "/"
 		}
 
-		storage, err := newStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+		storage, err := sos.NewStorageClient(
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return storage.uploadFiles(sources, &storageUploadConfig{
-			bucket:    bucket,
-			prefix:    prefix,
-			acl:       acl,
-			recursive: recursive,
-			dryRun:    dryRun,
+		return storage.UploadFiles(gContext, sources, &sos.StorageUploadConfig{
+			Bucket:    bucket,
+			Prefix:    prefix,
+			Acl:       acl,
+			Recursive: recursive,
+			DryRun:    dryRun,
 		})
 	},
 }
 
 func init() {
 	storageUploadCmd.Flags().String("acl", "",
-		fmt.Sprintf("canned ACL to set on object (%s)", strings.Join(s3ObjectCannedACLToStrings(), "|")))
+		fmt.Sprintf("canned ACL to set on object (%s)", strings.Join(sos.ObjectCannedACLToStrings(), "|")))
 	storageUploadCmd.Flags().BoolP("dry-run", "n", false,
 		"simulate files upload, don't actually do it")
 	storageUploadCmd.Flags().BoolP("recursive", "r", false,
 		"upload directories recursively")
 	storageCmd.AddCommand(storageUploadCmd)
-}
-
-func (c *storageClient) uploadFiles(sources []string, config *storageUploadConfig) error {
-	if len(sources) > 1 && !strings.HasSuffix(config.prefix, "/") {
-		return errors.New(`multiple files to upload, destination must end with "/"`)
-	}
-
-	if config.dryRun {
-		fmt.Println("[DRY-RUN]")
-	}
-
-	for _, src := range sources {
-		src := src
-
-		srcInfo, err := os.Stat(src)
-		if err != nil {
-			return err
-		}
-
-		if srcInfo.IsDir() {
-			if !config.recursive {
-				return fmt.Errorf("%q is a directory, use flag `-r` to upload recursively", src)
-			}
-
-			err = filepath.Walk(src, func(filePath string, info os.FileInfo, err error) error {
-				var (
-					key    string
-					prefix = config.prefix
-				)
-
-				if err != nil {
-					return err
-				}
-
-				if info.IsDir() {
-					return nil
-				}
-
-				/*
-					Handle directory-type source similar to rsync. Considering the following source file tree:
-
-					    my-dir/
-					    ├── a
-					    ├── b
-					    └── x/
-					       ├── y
-
-					 Specifying "my-dir/" (with a trailing slash) will upload files such as:
-
-					     bucket/a
-					     bucket/b
-					     bucket/x/y
-
-					 Whereas specifying "my-dir" (without trailing slash) will upload files such as:
-
-					     bucket/my-dir/a
-					     bucket/my-dir/b
-					     bucket/my-dir/x/y
-				*/
-
-				if strings.HasSuffix(src, "/") {
-					key = strings.TrimPrefix(filePath, path.Clean(src)+"/")
-				} else {
-					key = path.Clean(filePath)
-				}
-
-				if prefix != "" {
-					// The "/" value can be used at command-level to mean that we want to
-					// list from the root of the bucket, but the actual bucket root is an
-					// empty prefix.
-					if prefix == "/" {
-						prefix = ""
-					}
-
-					if prefix != "" {
-						key = path.Join(prefix, key)
-					}
-				}
-
-				if config.dryRun {
-					fmt.Printf("%s -> %s/%s\n", src, config.bucket, key)
-					return nil
-				}
-
-				return c.uploadFile(config.bucket, filePath, key, config.acl)
-			})
-			if err != nil {
-				return err
-			}
-		} else {
-			key := path.Base(src)
-
-			if prefix := config.prefix; prefix != "" {
-				// The "/" value can be used at command-level to mean that we want to
-				// list from the root of the bucket, but the actual bucket root is an
-				// empty prefix.
-				if prefix == "/" {
-					prefix = ""
-				}
-
-				if prefix != "" {
-					if strings.HasSuffix(prefix, "/") {
-						key = path.Join(prefix, key)
-					} else {
-						key = prefix
-					}
-				}
-			}
-
-			if config.dryRun {
-				fmt.Printf("%s -> %s/%s\n", src, config.bucket, key)
-				continue
-			}
-
-			if err := c.uploadFile(config.bucket, src, key, config.acl); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func (c *storageClient) uploadFile(bucket, file, key, acl string) error {
-	maxFilenameLen := 16
-
-	pb := mpb.NewWithContext(gContext,
-		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool {
-			return gQuiet
-		}),
-	)
-
-	file = path.Clean(file)
-
-	fileInfo, err := os.Stat(file)
-	if err != nil {
-		return err
-	}
-
-	bar := pb.AddBar(fileInfo.Size(),
-		mpb.PrependDecorators(
-			decor.Name(utils.EllipString(file, maxFilenameLen), decor.WC{W: maxFilenameLen, C: decor.DidentRight}),
-		),
-		mpb.AppendDecorators(
-			decor.CountersKibiByte("% .2f / % .2f", decor.WCSyncWidthR),
-			decor.Name(" | "),
-			decor.Elapsed(decor.ET_STYLE_GO),
-		),
-	)
-
-	f, err := os.Open(file)
-	if err != nil {
-		return err
-	}
-
-	var contentType string
-	if fileInfo.Size() >= 512 {
-		buf := make([]byte, 512) // http.DetectContentType() only looks at the first 512 bytes of the file.
-		if _, err = f.Read(buf); err != nil {
-			return err
-		}
-		contentType = http.DetectContentType(buf)
-		if _, err = f.Seek(0, 0); err != nil {
-			return err
-		}
-	}
-
-	// Because we wrap the input with a ProxyReader to render a progress bar
-	// The AWS SDK cannot perform PartSize estimation (we lose the io.Seeker implementation it relies on)
-	// We therefore replicate that logic here, and explicitly set a part size to avoid
-	// bumping into the s3manager.MaxUploadParts limit
-	partSize, err := c.estimatePartSize(f)
-	if err != nil {
-		return err
-	}
-	partSizeOpt := func(u *s3manager.Uploader) {
-		u.PartSize = partSize
-	}
-
-	putObjectInput := s3.PutObjectInput{
-		Bucket:      aws.String(bucket),
-		Key:         aws.String(key),
-		Body:        bar.ProxyReader(f),
-		ContentType: aws.String(contentType),
-	}
-
-	if acl != "" {
-		putObjectInput.ACL = s3types.ObjectCannedACL(acl)
-	}
-
-	_, err = s3manager.
-		NewUploader(c.Client, partSizeOpt).
-		Upload(gContext, &putObjectInput)
-
-	pb.Wait()
-
-	if errors.Is(err, context.Canceled) {
-		fmt.Fprintf(os.Stderr, "\rUpload interrupted by user\n")
-		return nil
-	}
-
-	return err
-}
-
-func (c *storageClient) estimatePartSize(f *os.File) (int64, error) {
-	size, err := computeSeekerLength(f)
-	if err != nil {
-		return 0, err
-	}
-
-	if size/int64(s3manager.DefaultUploadPartSize) >= int64(s3manager.MaxUploadParts) {
-		return (size / int64(s3manager.MaxUploadParts)) + 1, nil
-	}
-
-	return s3manager.DefaultUploadPartSize, nil
-}
-
-func computeSeekerLength(s io.Seeker) (int64, error) {
-	curOffset, err := s.Seek(0, io.SeekCurrent)
-	if err != nil {
-		return 0, err
-	}
-
-	endOffset, err := s.Seek(0, io.SeekEnd)
-	if err != nil {
-		return 0, err
-	}
-
-	_, err = s.Seek(curOffset, io.SeekStart)
-	if err != nil {
-		return 0, err
-	}
-
-	return endOffset - curOffset, nil
 }

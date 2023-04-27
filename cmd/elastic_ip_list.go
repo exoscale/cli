@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +20,9 @@ type elasticIPListItemOutput struct {
 
 type elasticIPListOutput []elasticIPListItemOutput
 
-func (o *elasticIPListOutput) toJSON()  { outputJSON(o) }
-func (o *elasticIPListOutput) toText()  { outputText(o) }
-func (o *elasticIPListOutput) toTable() { outputTable(o) }
+func (o *elasticIPListOutput) ToJSON()  { output.JSON(o) }
+func (o *elasticIPListOutput) ToText()  { output.Text(o) }
+func (o *elasticIPListOutput) ToTable() { output.Table(o) }
 
 type elasticIPListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -37,7 +40,7 @@ func (c *elasticIPListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute Elastic IPs.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&elasticIPListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&elasticIPListItemOutput{}), ", "))
 }
 
 func (c *elasticIPListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -64,9 +67,9 @@ func (c *elasticIPListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := cs.ListElasticIPs(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListElasticIPs(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Elastic IP addresses in zone %s: %w", zone, err)
 		}

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -22,9 +23,9 @@ type templateShowOutput struct {
 }
 
 func (o *templateShowOutput) Type() string { return "Template" }
-func (o *templateShowOutput) toJSON()      { outputJSON(o) }
-func (o *templateShowOutput) toText()      { outputText(o) }
-func (o *templateShowOutput) toTable()     { outputTable(o) }
+func (o *templateShowOutput) ToJSON()      { output.JSON(o) }
+func (o *templateShowOutput) ToText()      { output.Text(o) }
+func (o *templateShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	templateShowCmd := &cobra.Command{
@@ -33,7 +34,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a Compute instance template details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&templateShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&templateShowOutput{}), ", ")),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				cmdExitOnUsageError(cmd, "invalid arguments")
@@ -70,16 +71,16 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showTemplate(template))
+			return printOutput(showTemplate(template))
 		},
 	}
 
 	templateShowCmd.Flags().StringP("template-filter", "", defaultTemplateFilter, templateFilterHelp)
-	templateShowCmd.Flags().StringP("zone", "z", "", zoneHelp)
+	templateShowCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneHelp)
 	templateCmd.AddCommand(templateShowCmd)
 }
 
-func showTemplate(template *egoscale.Template) (outputter, error) {
+func showTemplate(template *egoscale.Template) (output.Outputter, error) {
 	out := templateShowOutput{
 		ID:           template.ID.String(),
 		Name:         template.Name,

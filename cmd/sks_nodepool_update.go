@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -41,7 +44,7 @@ func (c *sksNodepoolUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an SKS Nodepool.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksNodepoolShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&sksNodepoolShowOutput{}), ", "),
 	)
 }
 
@@ -56,9 +59,9 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		updated  bool
 	)
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -79,7 +82,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
 		nodepoolAntiAffinityGroupIDs := make([]string, len(c.AntiAffinityGroups))
 		for i, v := range c.AntiAffinityGroups {
-			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, v)
+			antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
@@ -90,7 +93,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DeployTarget)) {
-		deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+		deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
@@ -114,7 +117,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) {
-		nodepoolInstanceType, err := cs.FindInstanceType(ctx, c.Zone, c.InstanceType)
+		nodepoolInstanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.InstanceType)
 		if err != nil {
 			return fmt.Errorf("error retrieving instance type: %w", err)
 		}
@@ -142,7 +145,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PrivateNetworks)) {
 		nodepoolPrivateNetworkIDs := make([]string, len(c.PrivateNetworks))
 		for i, v := range c.PrivateNetworks {
-			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, v)
+			privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -155,7 +158,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SecurityGroups)) {
 		nodepoolSecurityGroupIDs := make([]string, len(c.SecurityGroups))
 		for i, v := range c.SecurityGroups {
-			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, v)
+			securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -180,7 +183,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if updated {
 		decorateAsyncOperation(fmt.Sprintf("Updating Nodepool %q...", c.Nodepool), func() {
-			if err = cs.UpdateSKSNodepool(ctx, c.Zone, cluster, nodepool); err != nil {
+			if err = globalstate.EgoscaleClient.UpdateSKSNodepool(ctx, c.Zone, cluster, nodepool); err != nil {
 				return
 			}
 		})
@@ -189,7 +192,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&sksNodepoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            *cluster.ID,

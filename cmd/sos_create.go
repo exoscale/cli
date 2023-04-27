@@ -40,5 +40,5 @@ func createBucket(sosClient *sosClient, name, zone string) error {
 
 func init() {
 	sosCmd.AddCommand(sosCreateCmd)
-	sosCreateCmd.Flags().StringP("zone", "z", "", "Simple object storage zone")
+	sosCreateCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Simple object storage zone")
 }

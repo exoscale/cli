@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
 )
@@ -16,11 +18,11 @@ type configListItemOutput struct {
 
 type configListOutput []configListItemOutput
 
-func (o *configListOutput) toJSON() { outputJSON(o) }
+func (o *configListOutput) ToJSON() { output.JSON(o) }
 
-func (o *configListOutput) toText() { outputText(o) }
+func (o *configListOutput) ToText() { output.Text(o) }
 
-func (o *configListOutput) toTable() {
+func (o *configListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Accounts"})
 
@@ -43,22 +45,22 @@ func init() {
 		Long: fmt.Sprintf(`This command lists configured Exoscale accounts. The default account is marked with (*).
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&configListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&configListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listConfigs(), nil)
+			return printOutput(listConfigs(), nil)
 		},
 	})
 }
 
-func listConfigs() outputter {
+func listConfigs() output.Outputter {
 	out := configListOutput{}
 
-	if gAllAccount == nil {
+	if account.GAllAccount == nil {
 		return &out
 	}
 
-	for _, a := range gAllAccount.Accounts {
+	for _, a := range account.GAllAccount.Accounts {
 		out = append(out, configListItemOutput{
 			Name:    a.Name,
 			Default: a.IsDefault(),

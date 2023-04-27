@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -75,8 +77,8 @@ func formatDatabaseServiceRedisTable(t *table.Table, o *dbServiceRedisShowOutput
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (outputter, error) {
-	res, err := cs.GetDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (output.Outputter, error) {
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)

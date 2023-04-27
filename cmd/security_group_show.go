@@ -6,6 +6,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -42,9 +45,9 @@ type securityGroupInstanceOutput struct {
 	Zone     string `json:"zone"`
 }
 
-func (o *securityGroupShowOutput) toJSON() { outputJSON(o) }
-func (o *securityGroupShowOutput) toText() { outputText(o) }
-func (o *securityGroupShowOutput) toTable() {
+func (o *securityGroupShowOutput) ToJSON() { output.JSON(o) }
+func (o *securityGroupShowOutput) ToText() { output.Text(o) }
+func (o *securityGroupShowOutput) ToTable() {
 	formatExternalSources := func(sources []string) string {
 		if len(sources) > 0 {
 			return strings.Join(sources, ", ")
@@ -146,8 +149,8 @@ func (c *securityGroupShowCmd) cmdLong() string {
 Supported output template annotations for Security Group: %s
 
 Supported output template annotations for Security Group rules: %s`,
-		strings.Join(outputterTemplateAnnotations(&securityGroupShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&securityGroupRuleOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&securityGroupRuleOutput{}), ", "))
 }
 
 func (c *securityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -155,11 +158,11 @@ func (c *securityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 }
 
 func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := gCurrentAccount.DefaultZone
+	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-	securityGroup, err := cs.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
@@ -196,7 +199,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		if rule.SecurityGroupID != nil {
-			ruleSecurityGroup, err := cs.GetSecurityGroup(ctx, zone, *rule.SecurityGroupID)
+			ruleSecurityGroup, err := globalstate.EgoscaleClient.GetSecurityGroup(ctx, zone, *rule.SecurityGroupID)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -215,7 +218,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	instances, err := utils.GetInstancesInSecurityGroup(ctx, cs, *securityGroup.ID, zone)
+	instances, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.EgoscaleClient, *securityGroup.ID, zone)
 	if err != nil {
 		return fmt.Errorf("error retrieving instances in Security Group: %w", err)
 	}

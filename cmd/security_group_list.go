@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -17,9 +20,9 @@ type securityGroupListItemOutput struct {
 
 type securityGroupListOutput []securityGroupListItemOutput
 
-func (o *securityGroupListOutput) toJSON()  { outputJSON(o) }
-func (o *securityGroupListOutput) toText()  { outputText(o) }
-func (o *securityGroupListOutput) toTable() { outputTable(o) }
+func (o *securityGroupListOutput) ToJSON()  { output.JSON(o) }
+func (o *securityGroupListOutput) ToText()  { output.Text(o) }
+func (o *securityGroupListOutput) ToTable() { output.Table(o) }
 
 type securityGroupListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -37,7 +40,7 @@ func (c *securityGroupListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Security Groups.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&securityGroupListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&securityGroupListItemOutput{}), ", "))
 }
 
 func (c *securityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -47,7 +50,7 @@ func (c *securityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 func (c *securityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
 	params := &oapi.ListSecurityGroupsParams{}
@@ -56,7 +59,7 @@ func (c *securityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			Visibility: (*oapi.ListSecurityGroupsParamsVisibility)(&c.Visibility),
 		}
 	}
-	securityGroups, err := cs.FindSecurityGroups(ctx, gCurrentAccount.DefaultZone, params)
+	securityGroups, err := globalstate.EgoscaleClient.FindSecurityGroups(ctx, account.CurrentAccount.DefaultZone, params)
 	if err != nil {
 		return err
 	}

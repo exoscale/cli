@@ -5,6 +5,8 @@ import (
 	"net"
 	"strconv"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -72,7 +74,7 @@ var privnetCreateCmd = &cobra.Command{
 			return cmd.Usage()
 		}
 
-		return output(createPrivnet(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value()))
+		return printOutput(createPrivnet(name, desc, zone, startIP.Value(), endIP.Value(), netmask.Value()))
 	},
 }
 
@@ -85,7 +87,7 @@ func isEmptyArgs(args ...string) bool {
 	return false
 }
 
-func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) (outputter, error) {
+func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) (output.Outputter, error) {
 	zone, err := getZoneByNameOrID(zoneName)
 	if err != nil {
 		return nil, err
@@ -104,12 +106,12 @@ func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 		Netmask:     netmask,
 	}
 
-	resp, err := cs.RequestWithContext(gContext, req)
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return showPrivnet(resp.(*egoscale.Network))
 	}
 
@@ -119,7 +121,7 @@ func createPrivnet(name, desc, zoneName string, startIP, endIP, netmask net.IP) 
 func init() {
 	privnetCreateCmd.Flags().StringP("description", "d", "", "Private network description")
 	privnetCreateCmd.Flags().StringP("cidrmask", "c", "", "the cidrmask of the network. Required for managed networks.")
-	privnetCreateCmd.Flags().StringP("zone", "z", "", "Assign Private Network to a zone")
+	privnetCreateCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", "Assign Private Network to a zone")
 
 	startIP := new(ipValue)
 	endIP := new(ipValue)

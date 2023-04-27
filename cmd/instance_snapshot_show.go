@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -20,9 +23,9 @@ type instanceSnapshotShowOutput struct {
 }
 
 func (o *instanceSnapshotShowOutput) Type() string { return "Snapshot" }
-func (o *instanceSnapshotShowOutput) toJSON()      { outputJSON(o) }
-func (o *instanceSnapshotShowOutput) toText()      { outputText(o) }
-func (o *instanceSnapshotShowOutput) toTable()     { outputTable(o) }
+func (o *instanceSnapshotShowOutput) ToJSON()      { output.JSON(o) }
+func (o *instanceSnapshotShowOutput) ToText()      { output.Text(o) }
+func (o *instanceSnapshotShowOutput) ToTable()     { output.Table(o) }
 
 type instanceSnapshotShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -44,7 +47,7 @@ func (c *instanceSnapshotShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance snapshot details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceSnapshotShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceSnapshotShowOutput{}), ", "))
 }
 
 func (c *instanceSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -53,9 +56,9 @@ func (c *instanceSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 }
 
 func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	snapshot, err := cs.GetSnapshot(ctx, c.Zone, c.ID)
+	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -63,7 +66,7 @@ func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving Compute instance snapshot: %w", err)
 	}
 
-	instance, err := cs.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
+	instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, *snapshot.InstanceID)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Compute instance %s: %w", *snapshot.InstanceID, err)
 	}

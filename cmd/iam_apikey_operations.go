@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -16,9 +18,9 @@ type apiKeyOperationsItemOutput struct {
 	SOS     []string `json:"sos,omitempty"`
 }
 
-func (o *apiKeyOperationsItemOutput) toJSON()  { outputJSON(o) }
-func (o *apiKeyOperationsItemOutput) toText()  { outputText(o) }
-func (o *apiKeyOperationsItemOutput) toTable() { outputTable(o) }
+func (o *apiKeyOperationsItemOutput) ToJSON()  { output.JSON(o) }
+func (o *apiKeyOperationsItemOutput) ToText()  { output.Text(o) }
+func (o *apiKeyOperationsItemOutput) ToTable() { output.Table(o) }
 
 var apiKeyOperationsCmd = &cobra.Command{
 	Use:   "operations [FILTER]...",
@@ -27,14 +29,14 @@ var apiKeyOperationsCmd = &cobra.Command{
 Optional patterns can be provided to filter results by compute, DNS, IAM or SOS operations.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&apiKeyOperationsItemOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&apiKeyOperationsItemOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return output(listAPIKeyOperations(args))
+		return printOutput(listAPIKeyOperations(args))
 	},
 }
 
-func listAPIKeyOperations(filters []string) (outputter, error) {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.ListAPIKeyOperations{})
+func listAPIKeyOperations(filters []string) (output.Outputter, error) {
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.ListAPIKeyOperations{})
 	if err != nil {
 		return nil, err
 	}

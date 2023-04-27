@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -109,8 +111,8 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (outputter, error) {
-	res, err := cs.GetDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output.Outputter, error) {
+	res, err := globalstate.EgoscaleClient.GetDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)

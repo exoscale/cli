@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +21,9 @@ type runstatusMaintenanceShowOutput struct {
 }
 
 func (o *runstatusMaintenanceShowOutput) Type() string { return "Maintenance" }
-func (o *runstatusMaintenanceShowOutput) toJSON()      { outputJSON(o) }
-func (o *runstatusMaintenanceShowOutput) toText()      { outputText(o) }
-func (o *runstatusMaintenanceShowOutput) toTable()     { outputTable(o) }
+func (o *runstatusMaintenanceShowOutput) ToJSON()      { output.JSON(o) }
+func (o *runstatusMaintenanceShowOutput) ToText()      { output.Text(o) }
+func (o *runstatusMaintenanceShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	runstatusMaintenanceCmd.AddCommand(
@@ -34,10 +36,10 @@ func init() {
 					return cmd.Usage()
 				}
 
-				page := gCurrentAccount.DefaultRunstatusPage
+				page := account.CurrentAccount.DefaultRunstatusPage
 				maintenance := args[0]
 
-				if gCurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
+				if account.CurrentAccount.DefaultRunstatusPage == "" && len(args) == 1 {
 					return fmt.Errorf("No default runstat.us page is set.\n"+
 						"Please specify a page in parameter or add it to your configuration file %s",
 						gConfigFilePath)
@@ -48,12 +50,12 @@ func init() {
 					maintenance = args[1]
 				}
 
-				return output(showRunstatusMaintenance(page, maintenance))
+				return printOutput(showRunstatusMaintenance(page, maintenance))
 			},
 		})
 }
 
-func showRunstatusMaintenance(p, m string) (outputter, error) {
+func showRunstatusMaintenance(p, m string) (output.Outputter, error) {
 	page, err := csRunstatus.GetRunstatusPage(gContext, egoscale.RunstatusPage{Subdomain: p})
 	if err != nil {
 		return nil, err

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -21,9 +23,9 @@ type serviceOfferingListItemOutput struct {
 
 type serviceOfferingListOutput []serviceOfferingListItemOutput
 
-func (o *serviceOfferingListOutput) toJSON()  { outputJSON(o) }
-func (o *serviceOfferingListOutput) toText()  { outputText(o) }
-func (o *serviceOfferingListOutput) toTable() { outputTable(o) }
+func (o *serviceOfferingListOutput) ToJSON()  { output.JSON(o) }
+func (o *serviceOfferingListOutput) ToText()  { output.Text(o) }
+func (o *serviceOfferingListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	vmCmd.AddCommand(&cobra.Command{
@@ -32,15 +34,15 @@ func init() {
 		Long: fmt.Sprintf(`This command lists available Compute service offerings.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&serviceOfferingListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&serviceOfferingListOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listServiceOfferings())
+			return printOutput(listServiceOfferings())
 		},
 	})
 }
 
-func listServiceOfferings() (outputter, error) {
-	serviceOffering, err := cs.ListWithContext(gContext, &egoscale.ServiceOffering{})
+func listServiceOfferings() (output.Outputter, error) {
+	serviceOffering, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.ServiceOffering{})
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +80,7 @@ func getServiceOfferingByNameOrID(v string) (*egoscale.ServiceOffering, error) {
 		so.ID = id
 	}
 
-	resp, err := cs.GetWithContext(gContext, so)
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, so)
 	switch err {
 	case nil:
 		return resp.(*egoscale.ServiceOffering), nil

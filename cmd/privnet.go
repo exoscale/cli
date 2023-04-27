@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +45,7 @@ func getNetwork(net string, zoneID *egoscale.UUID) (*egoscale.Network, error) {
 		req.ID = id
 	}
 
-	resp, err := cs.ListWithContext(gContext, req)
+	resp, err := globalstate.EgoscaleClient.ListWithContext(gContext, req)
 	if err != nil {
 		return nil, err
 	}

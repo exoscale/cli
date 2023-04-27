@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -19,9 +22,9 @@ type nlbListItemOutput struct {
 
 type nlbListOutput []nlbListItemOutput
 
-func (o *nlbListOutput) toJSON()  { outputJSON(o) }
-func (o *nlbListOutput) toText()  { outputText(o) }
-func (o *nlbListOutput) toTable() { outputTable(o) }
+func (o *nlbListOutput) ToJSON()  { output.JSON(o) }
+func (o *nlbListOutput) ToText()  { output.Text(o) }
+func (o *nlbListOutput) ToTable() { output.Table(o) }
 
 type nlbListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -39,7 +42,7 @@ func (c *nlbListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Network Load Balancers.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&nlbListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&nlbListItemOutput{}), ", "))
 }
 
 func (c *nlbListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -66,9 +69,9 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := cs.ListNetworkLoadBalancers(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListNetworkLoadBalancers(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Network Load Balancers in zone %s: %w", zone, err)
 		}

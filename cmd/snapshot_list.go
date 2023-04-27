@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 
 	"github.com/spf13/cobra"
@@ -20,9 +22,9 @@ type snapshotListItemOutput struct {
 
 type snapshotListOutput []snapshotListItemOutput
 
-func (o *snapshotListOutput) toJSON()  { outputJSON(o) }
-func (o *snapshotListOutput) toText()  { outputText(o) }
-func (o *snapshotListOutput) toTable() { outputTable(o) }
+func (o *snapshotListOutput) ToJSON()  { output.JSON(o) }
+func (o *snapshotListOutput) ToText()  { output.Text(o) }
+func (o *snapshotListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{
@@ -31,19 +33,19 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Compute instance disk snapshots.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&snapshotListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&snapshotListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listSnapshots(args))
+			return printOutput(listSnapshots(args))
 		},
 	})
 }
 
-func listSnapshots(instances []string) (outputter, error) {
+func listSnapshots(instances []string) (output.Outputter, error) {
 	out := snapshotListOutput{}
 
 	if len(instances) == 0 {
-		snapshots, err := cs.ListWithContext(gContext, egoscale.Snapshot{})
+		snapshots, err := globalstate.EgoscaleClient.ListWithContext(gContext, egoscale.Snapshot{})
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +72,7 @@ func listSnapshots(instances []string) (outputter, error) {
 			return nil, err
 		}
 
-		volume, err := cs.GetWithContext(gContext, &egoscale.Volume{
+		volume, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Volume{
 			VirtualMachineID: instance.ID,
 			Type:             "ROOT",
 		})
@@ -78,7 +80,7 @@ func listSnapshots(instances []string) (outputter, error) {
 			return nil, err
 		}
 
-		snapshots, err := cs.ListWithContext(gContext, egoscale.Snapshot{VolumeID: volume.(*egoscale.Volume).ID})
+		snapshots, err := globalstate.EgoscaleClient.ListWithContext(gContext, egoscale.Snapshot{VolumeID: volume.(*egoscale.Volume).ID})
 		if err != nil {
 			return nil, err
 		}

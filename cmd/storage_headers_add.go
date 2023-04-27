@@ -3,10 +3,11 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -25,14 +26,14 @@ Example:
 Note: adding an already existing header will overwrite its value.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
@@ -59,23 +60,24 @@ Supported output template annotations: %s`,
 		parts := strings.SplitN(args[0], "/", 2)
 		bucket, prefix = parts[0], parts[1]
 
-		storage, err := newStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+		storage, err := sos.NewStorageClient(
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		headers := storageHeadersFromCmdFlags(cmd.Flags())
-		if err := storage.updateObjectsHeaders(bucket, prefix, headers, recursive); err != nil {
+		if err := storage.UpdateObjectsHeaders(gContext, bucket, prefix, headers, recursive); err != nil {
 			return fmt.Errorf("unable to add headers to object: %w", err)
 		}
 
-		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.showObject(bucket, prefix))
+		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
+			return printOutput(storage.ShowObject(gContext, bucket, prefix))
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("Headers added successfully")
 		}
 
@@ -86,58 +88,19 @@ Supported output template annotations: %s`,
 func init() {
 	storageHeaderAddCmd.Flags().BoolP("recursive", "r", false,
 		"add headers recursively (with object prefix only)")
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderCacheControl), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderCacheControl), "",
 		`value for "Cache-Control" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderContentDisposition), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderContentDisposition), "",
 		`value for "Content-Disposition" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderContentEncoding), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderContentEncoding), "",
 		`value for "Content-Encoding" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderContentLanguage), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderContentLanguage), "",
 		`value for "Content-Language" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderContentType), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderContentType), "",
 		`value for "Content-Type" header`)
-	storageHeaderAddCmd.Flags().String(strings.ToLower(storageObjectHeaderExpires), "",
+	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderExpires), "",
 		`value for "Expires" header`)
 	storageHeaderCmd.AddCommand(storageHeaderAddCmd)
-}
-
-func (c *storageClient) updateObjectHeaders(bucket, key string, headers map[string]*string) error {
-	object, err := c.copyObject(bucket, key)
-	if err != nil {
-		return err
-	}
-
-	lookupHeader := func(key string, fallback *string) *string {
-		if v, ok := headers[key]; ok {
-			return v
-		}
-		return fallback
-	}
-
-	object.CacheControl = lookupHeader(storageObjectHeaderCacheControl, object.CacheControl)
-	object.ContentDisposition = lookupHeader(storageObjectHeaderContentDisposition, object.ContentDisposition)
-	object.ContentEncoding = lookupHeader(storageObjectHeaderContentEncoding, object.ContentEncoding)
-	object.ContentLanguage = lookupHeader(storageObjectHeaderContentLanguage, object.ContentLanguage)
-	object.ContentType = lookupHeader(storageObjectHeaderContentType, object.ContentType)
-
-	// For some reason, the AWS SDK doesn't use the same type for the "Expires"
-	// header in GetObject (*string) and CopyObject (*time.Time)...
-	if v, ok := headers[storageObjectHeaderExpires]; ok {
-		t, err := time.Parse(time.RFC822, aws.ToString(v))
-		if err != nil {
-			return fmt.Errorf(`invalid "Expires" header value %q, expecting RFC822 format`, aws.ToString(v))
-		}
-		object.Expires = &t
-	}
-
-	_, err = c.CopyObject(gContext, object)
-	return err
-}
-
-func (c *storageClient) updateObjectsHeaders(bucket, prefix string, headers map[string]*string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.updateObjectHeaders(bucket, aws.ToString(o.Key), headers)
-	})
 }
 
 // storageHeadersFromCmdFlags returns a non-nil map if at least
@@ -147,58 +110,58 @@ func storageHeadersFromCmdFlags(flags *pflag.FlagSet) map[string]*string {
 
 	flags.VisitAll(func(flag *pflag.Flag) {
 		switch flag.Name {
-		case strings.ToLower(storageObjectHeaderCacheControl):
+		case strings.ToLower(sos.ObjectHeaderCacheControl):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderCacheControl] = aws.String(v)
+				headers[sos.ObjectHeaderCacheControl] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderContentDisposition):
+		case strings.ToLower(sos.ObjectHeaderContentDisposition):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderContentDisposition] = aws.String(v)
+				headers[sos.ObjectHeaderContentDisposition] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderContentEncoding):
+		case strings.ToLower(sos.ObjectHeaderContentEncoding):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderContentEncoding] = aws.String(v)
+				headers[sos.ObjectHeaderContentEncoding] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderContentLanguage):
+		case strings.ToLower(sos.ObjectHeaderContentLanguage):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderContentLanguage] = aws.String(v)
+				headers[sos.ObjectHeaderContentLanguage] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderContentType):
+		case strings.ToLower(sos.ObjectHeaderContentType):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderContentType] = aws.String(v)
+				headers[sos.ObjectHeaderContentType] = aws.String(v)
 			}
 
-		case strings.ToLower(storageObjectHeaderExpires):
+		case strings.ToLower(sos.ObjectHeaderExpires):
 			if v := flag.Value.String(); v != "" {
 				if headers == nil {
 					headers = make(map[string]*string)
 				}
 
-				headers[storageObjectHeaderExpires] = aws.String(v)
+				headers[sos.ObjectHeaderExpires] = aws.String(v)
 			}
 
 		default:

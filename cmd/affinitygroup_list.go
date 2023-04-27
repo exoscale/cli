@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -17,9 +19,9 @@ type affinityGroupListItemOutput struct {
 
 type affinityGroupListOutput []affinityGroupListItemOutput
 
-func (o *affinityGroupListOutput) toJSON()  { outputJSON(o) }
-func (o *affinityGroupListOutput) toText()  { outputText(o) }
-func (o *affinityGroupListOutput) toTable() { outputTable(o) }
+func (o *affinityGroupListOutput) ToJSON()  { output.JSON(o) }
+func (o *affinityGroupListOutput) ToText()  { output.Text(o) }
+func (o *affinityGroupListOutput) ToTable() { output.Table(o) }
 
 func init() {
 	affinitygroupCmd.AddCommand(&cobra.Command{
@@ -28,16 +30,16 @@ func init() {
 		Long: fmt.Sprintf(`This command lists existing Anti-Affinity Groups.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&affinityGroupListOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&affinityGroupListOutput{}), ", ")),
 		Aliases: gListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return output(listAffinityGroups())
+			return printOutput(listAffinityGroups())
 		},
 	})
 }
 
-func listAffinityGroups() (outputter, error) {
-	resp, err := cs.RequestWithContext(gContext, &egoscale.ListAffinityGroups{})
+func listAffinityGroups() (output.Outputter, error) {
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.ListAffinityGroups{})
 	if err != nil {
 		return nil, err
 	}

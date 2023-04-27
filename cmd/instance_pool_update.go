@@ -6,6 +6,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -51,7 +54,7 @@ func (c *instancePoolUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates an Instance Pool.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&instancePoolShowOutput{}), ", "),
 	)
 }
 
@@ -141,9 +144,9 @@ a future release, please use "--template-visibility" instead.
 func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instancePool, err := cs.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -154,7 +157,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
 		antiAffinityGroupIDs := make([]string, len(c.AntiAffinityGroups))
 		for i, v := range c.AntiAffinityGroups {
-			antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, c.Zone, v)
+			antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
@@ -165,7 +168,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DeployTarget)) {
-		deployTarget, err := cs.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+		deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
@@ -186,7 +189,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ElasticIPs)) {
 		elasticIPIDs := make([]string, len(c.ElasticIPs))
 		for i, v := range c.ElasticIPs {
-			elasticIP, err := cs.FindElasticIP(ctx, c.Zone, v)
+			elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
@@ -219,7 +222,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PrivateNetworks)) {
 		privateNetworkIDs := make([]string, len(c.PrivateNetworks))
 		for i, v := range c.PrivateNetworks {
-			privateNetwork, err := cs.FindPrivateNetwork(ctx, c.Zone, v)
+			privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -232,7 +235,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SecurityGroups)) {
 		securityGroupIDs := make([]string, len(c.SecurityGroups))
 		for i, v := range c.SecurityGroups {
-			securityGroup, err := cs.FindSecurityGroup(ctx, c.Zone, v)
+			securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, v)
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
@@ -243,7 +246,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) {
-		instanceType, err := cs.FindInstanceType(ctx, c.Zone, c.InstanceType)
+		instanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.InstanceType)
 		if err != nil {
 			return fmt.Errorf("error retrieving instance type: %w", err)
 		}
@@ -257,7 +260,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Template)) {
-		template, err := cs.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+		template, err := globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
 		if err != nil {
 			return fmt.Errorf(
 				"no template %q found with visibility %s in zone %s",
@@ -281,7 +284,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if updated {
 		decorateAsyncOperation(fmt.Sprintf("Updating Instance Pool %q...", c.InstancePool), func() {
-			if err = cs.UpdateInstancePool(ctx, c.Zone, instancePool); err != nil {
+			if err = globalstate.EgoscaleClient.UpdateInstancePool(ctx, c.Zone, instancePool); err != nil {
 				return
 			}
 		})
@@ -299,11 +302,11 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		)
 
 		decorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
-			err = cs.ScaleInstancePool(ctx, c.Zone, instancePool, c.Size)
+			err = globalstate.EgoscaleClient.ScaleInstancePool(ctx, c.Zone, instancePool, c.Size)
 		})
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Zone:               c.Zone,

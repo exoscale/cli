@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -54,7 +55,7 @@ var vmUpdateCmd = &cobra.Command{
 		}
 
 		if edited {
-			if _, err = cs.RequestWithContext(gContext, &vmEdit); err != nil {
+			if _, err = globalstate.EgoscaleClient.RequestWithContext(gContext, &vmEdit); err != nil {
 				return fmt.Errorf("unable to update Compute instance: %s", err)
 			}
 		}
@@ -65,7 +66,7 @@ var vmUpdateCmd = &cobra.Command{
 				return err
 			}
 
-			if _, err = cs.RequestWithContext(gContext, &egoscale.UpdateReverseDNSForVirtualMachine{
+			if _, err = globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.UpdateReverseDNSForVirtualMachine{
 				ID:         vm.ID,
 				DomainName: reverseDNS,
 			}); err != nil {
@@ -73,8 +74,8 @@ var vmUpdateCmd = &cobra.Command{
 			}
 		}
 
-		if !gQuiet {
-			return output(showVM(vm.ID.String()))
+		if !globalstate.Quiet {
+			return printOutput(showVM(vm.ID.String()))
 		}
 
 		return nil

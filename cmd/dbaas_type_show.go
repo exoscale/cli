@@ -6,6 +6,9 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exo "github.com/exoscale/egoscale/v2"
@@ -24,9 +27,9 @@ type dbaasTypePlanListItemOutput struct {
 
 type dbaasTypePlanListOutput []dbaasTypePlanListItemOutput
 
-func (o *dbaasTypePlanListOutput) toJSON() { outputJSON(o) }
-func (o *dbaasTypePlanListOutput) toText() { outputText(o) }
-func (o *dbaasTypePlanListOutput) toTable() {
+func (o *dbaasTypePlanListOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasTypePlanListOutput) ToText() { output.Text(o) }
+func (o *dbaasTypePlanListOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"Name", "# Nodes", "# CPUs", "Node Memory", "Disk Space", "Authorized"})
 	defer t.Render()
@@ -53,9 +56,9 @@ type dbaasTypePlanBackupOutput struct {
 	InfrequentOldestAgeMinutes *int64  `json:"infrequent_oldest_age_minutes"`
 }
 
-func (o *dbaasTypePlanBackupOutput) toJSON() { outputJSON(o) }
-func (o *dbaasTypePlanBackupOutput) toText() { outputText(o) }
-func (o *dbaasTypePlanBackupOutput) toTable() {
+func (o *dbaasTypePlanBackupOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasTypePlanBackupOutput) ToText() { output.Text(o) }
+func (o *dbaasTypePlanBackupOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
@@ -75,9 +78,9 @@ type dbaasTypeShowOutput struct {
 	DefaultVersion    string   `json:"default_version"`
 }
 
-func (o *dbaasTypeShowOutput) toJSON() { outputJSON(o) }
-func (o *dbaasTypeShowOutput) toText() { outputText(o) }
-func (o *dbaasTypeShowOutput) toTable() {
+func (o *dbaasTypeShowOutput) ToJSON() { output.JSON(o) }
+func (o *dbaasTypeShowOutput) ToText() { output.Text(o) }
+func (o *dbaasTypeShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	defer t.Render()
 
@@ -141,8 +144,8 @@ Supported output template annotations:
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
 		strings.Join(redisSettings, ", "),
-		strings.Join(outputterTemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
-		strings.Join(outputterTemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
 
 func (c *dbaasTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -152,10 +155,10 @@ func (c *dbaasTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
 		gContext,
-		exoapi.NewReqEndpoint(gCurrentAccount.Environment, gCurrentAccount.DefaultZone),
+		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	dt, err := cs.GetDatabaseServiceType(ctx, gCurrentAccount.DefaultZone, c.Name)
+	dt, err := globalstate.EgoscaleClient.GetDatabaseServiceType(ctx, account.CurrentAccount.DefaultZone, c.Name)
 	if err != nil {
 		return err
 	}
@@ -188,7 +191,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsKafkaWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -215,7 +218,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsOpensearchWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -236,7 +239,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsMysqlWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -257,7 +260,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsPgWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
 			if err != nil {
 				return err
 			}
@@ -282,7 +285,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsRedisWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsRedisWithResponse(ctx)
 			if err != nil {
 				return err
 			}

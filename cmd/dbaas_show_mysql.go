@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -79,8 +81,8 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (outputter, error) {
-	res, err := cs.GetDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (output.Outputter, error) {
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)

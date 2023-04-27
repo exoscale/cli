@@ -12,6 +12,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -44,7 +45,7 @@ func getVirtualMachineByNameOrID(name string) (*egoscale.VirtualMachine, error) 
 		vmQuery.ID = id
 	}
 
-	vms, err := cs.ListWithContext(gContext, vmQuery)
+	vms, err := globalstate.EgoscaleClient.ListWithContext(gContext, vmQuery)
 	if err != nil {
 		return nil, err
 	}

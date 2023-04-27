@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -35,7 +36,7 @@ var firewallCreateCmd = &cobra.Command{
 			return errors[0]
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			table := table.NewTable(os.Stdout)
 			table.SetHeader([]string{"ID", "Name", "Description"})
 			for _, resp := range taskResponses {

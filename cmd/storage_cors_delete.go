@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +19,7 @@ var storageCORSDeleteCmd = &cobra.Command{
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		return nil
 	},
@@ -38,18 +39,19 @@ var storageCORSDeleteCmd = &cobra.Command{
 			}
 		}
 
-		storage, err := newStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+		storage, err := sos.NewStorageClient(
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.deleteBucketCORS(bucket); err != nil {
+		if err := storage.DeleteBucketCORS(gContext, bucket); err != nil {
 			return fmt.Errorf("unable to delete bucket CORS configuration: %w", err)
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("CORS configuration deleted successfully")
 		}
 
@@ -60,9 +62,4 @@ var storageCORSDeleteCmd = &cobra.Command{
 func init() {
 	storageCORSDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	storageCORSCmd.AddCommand(storageCORSDeleteCmd)
-}
-
-func (c *storageClient) deleteBucketCORS(bucket string) error {
-	_, err := c.DeleteBucketCors(gContext, &s3.DeleteBucketCorsInput{Bucket: &bucket})
-	return err
 }

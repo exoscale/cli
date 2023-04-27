@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -29,7 +32,7 @@ func (c *instanceResizeDiskCmd) cmdLong() string {
 	return fmt.Sprintf(`This commands grows a Compute instance's disk to a larger size.'
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
 func (c *instanceResizeDiskCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -38,9 +41,9 @@ func (c *instanceResizeDiskCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *instanceResizeDiskCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	instance, err := cs.FindInstance(ctx, c.Zone, c.Instance)
+	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -55,13 +58,13 @@ func (c *instanceResizeDiskCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Resizing disk of instance %q...", c.Instance), func() {
-		err = cs.ResizeInstanceDisk(ctx, c.Zone, instance, c.Size)
+		err = globalstate.EgoscaleClient.ResizeInstanceDisk(ctx, c.Zone, instance, c.Size)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           *instance.ID,

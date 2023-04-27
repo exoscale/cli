@@ -8,6 +8,7 @@ import (
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 )
 
@@ -126,7 +127,7 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 		ids[i] = *sgs[i].ID
 	}
 
-	_, err := cs.RequestWithContext(gContext, &egoscale.UpdateVirtualMachineSecurityGroups{
+	_, err := globalstate.EgoscaleClient.RequestWithContext(gContext, &egoscale.UpdateVirtualMachineSecurityGroups{
 		ID:               vm.ID,
 		SecurityGroupIDs: ids,
 	})
@@ -139,7 +140,7 @@ func setVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine, sgs []egoscale
 
 // printVirtualMachineSecurityGroups prints a Compute instance Security Groups to standard output.
 func printVirtualMachineSecurityGroups(vm *egoscale.VirtualMachine) error {
-	if !gQuiet {
+	if !globalstate.Quiet {
 		// Refresh the vm object to ensure its properties are up-to-date
 		vm, err := getVirtualMachineByNameOrID(vm.ID.String())
 		if err != nil {

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -16,9 +19,9 @@ type antiAffinityGroupShowOutput struct {
 	Instances   []string `json:"instances"`
 }
 
-func (o *antiAffinityGroupShowOutput) toJSON()  { outputJSON(o) }
-func (o *antiAffinityGroupShowOutput) toText()  { outputText(o) }
-func (o *antiAffinityGroupShowOutput) toTable() { outputTable(o) }
+func (o *antiAffinityGroupShowOutput) ToJSON()  { output.JSON(o) }
+func (o *antiAffinityGroupShowOutput) ToText()  { output.Text(o) }
+func (o *antiAffinityGroupShowOutput) ToTable() { output.Table(o) }
 
 type antiAffinityGroupShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -38,7 +41,7 @@ func (c *antiAffinityGroupShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance Anti-Affinity Group details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
 }
 
 func (c *antiAffinityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -46,11 +49,11 @@ func (c *antiAffinityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := gCurrentAccount.DefaultZone
+	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-	antiAffinityGroup, err := cs.FindAntiAffinityGroup(ctx, zone, c.AntiAffinityGroup)
+	antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, zone, c.AntiAffinityGroup)
 	if err != nil {
 		return err
 	}
@@ -64,7 +67,7 @@ func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if antiAffinityGroup.InstanceIDs != nil {
 		out.Instances = make([]string, len(*antiAffinityGroup.InstanceIDs))
 		for i, id := range *antiAffinityGroup.InstanceIDs {
-			instance, err := cs.GetInstance(ctx, zone, id)
+			instance, err := globalstate.EgoscaleClient.GetInstance(ctx, zone, id)
 			if err != nil {
 				return fmt.Errorf("unable to retrieve Compute instance %s: %w", id, err)
 			}

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -13,11 +15,11 @@ import (
 func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	databaseService := oapi.UpdateDbaasServiceKafkaJSONRequestBody{}
 
-	settingsSchema, err := cs.GetDbaasSettingsKafkaWithResponse(ctx)
+	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
@@ -133,7 +135,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 	if updated {
 		var res *oapi.UpdateDbaasServiceKafkaResponse
 		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = cs.UpdateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+			res, err = globalstate.EgoscaleClient.UpdateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 		})
 		if err != nil {
 			if errors.Is(err, exoapi.ErrNotFound) {
@@ -146,7 +148,7 @@ func (c *dbaasServiceUpdateCmd) updateKafka(cmd *cobra.Command, _ []string) erro
 		}
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,

@@ -6,6 +6,7 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -65,7 +66,7 @@ var privnetAssociateCmd = &cobra.Command{
 		}
 		w.Flush() // nolint: errcheck
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			table.Render()
 		}
 
@@ -80,7 +81,7 @@ func associatePrivNet(privnet *egoscale.Network, vmName string, ip net.IP) (*ego
 	}
 
 	req := &egoscale.AddNicToVirtualMachine{NetworkID: privnet.ID, VirtualMachineID: vm.ID, IPAddress: ip}
-	resp, err := cs.RequestWithContext(gContext, req)
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, req)
 	if err != nil {
 		return nil, nil, err
 	}

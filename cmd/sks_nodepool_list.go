@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -20,9 +23,9 @@ type sksNodepoolListItemOutput struct {
 
 type sksNodepoolListOutput []sksNodepoolListItemOutput
 
-func (o *sksNodepoolListOutput) toJSON()  { outputJSON(o) }
-func (o *sksNodepoolListOutput) toText()  { outputText(o) }
-func (o *sksNodepoolListOutput) toTable() { outputTable(o) }
+func (o *sksNodepoolListOutput) ToJSON()  { output.JSON(o) }
+func (o *sksNodepoolListOutput) ToText()  { output.Text(o) }
+func (o *sksNodepoolListOutput) ToTable() { output.Table(o) }
 
 type sksNodepoolListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -40,7 +43,7 @@ func (c *sksNodepoolListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists SKS cluster Nodepools.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksNodepoolListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksNodepoolListItemOutput{}), ", "))
 }
 
 func (c *sksNodepoolListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -67,9 +70,9 @@ func (c *sksNodepoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := cs.ListSKSClusters(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListSKSClusters(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list SKS clusters in zone %s: %w", zone, err)
 		}

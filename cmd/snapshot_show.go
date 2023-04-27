@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -21,9 +23,9 @@ type snapshotShowOutput struct {
 }
 
 func (o *snapshotShowOutput) Type() string { return "Snapshot" }
-func (o *snapshotShowOutput) toJSON()      { outputJSON(o) }
-func (o *snapshotShowOutput) toText()      { outputText(o) }
-func (o *snapshotShowOutput) toTable()     { outputTable(o) }
+func (o *snapshotShowOutput) ToJSON()      { output.JSON(o) }
+func (o *snapshotShowOutput) ToText()      { output.Text(o) }
+func (o *snapshotShowOutput) ToTable()     { output.Table(o) }
 
 func init() {
 	snapshotCmd.AddCommand(&cobra.Command{
@@ -32,7 +34,7 @@ func init() {
 		Long: fmt.Sprintf(`This command shows a snapshot details.
 
 Supported output template annotations: %s`,
-			strings.Join(outputterTemplateAnnotations(&snapshotShowOutput{}), ", ")),
+			strings.Join(output.TemplateAnnotations(&snapshotShowOutput{}), ", ")),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
@@ -43,13 +45,13 @@ Supported output template annotations: %s`,
 				return err
 			}
 
-			return output(showSnapshot(snapshot))
+			return printOutput(showSnapshot(snapshot))
 		},
 	})
 }
 
-func showSnapshot(snapshot *egoscale.Snapshot) (outputter, error) {
-	resp, err := cs.GetWithContext(gContext, &egoscale.Volume{ID: snapshot.VolumeID})
+func showSnapshot(snapshot *egoscale.Snapshot) (output.Outputter, error) {
+	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, &egoscale.Volume{ID: snapshot.VolumeID})
 	if err != nil {
 		return nil, err
 	}

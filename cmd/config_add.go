@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -19,7 +21,7 @@ func init() {
 				return err
 			}
 
-			config := &config{Accounts: []account{*newAccount}}
+			config := &account.AccountConfig{Accounts: []account.Account{*newAccount}}
 			if askQuestion("Set [" + newAccount.Name + "] as default account?") {
 				config.DefaultAccount = newAccount.Name
 				gConfig.Set("defaultAccount", newAccount.Name)
@@ -32,7 +34,7 @@ func init() {
 
 func addConfigAccount(firstRun bool) error {
 	var (
-		config config
+		config account.AccountConfig
 		err    error
 	)
 
@@ -51,7 +53,7 @@ func addConfigAccount(firstRun bool) error {
 		return err
 	}
 	config.DefaultAccount = newAccount.Name
-	config.Accounts = []account{*newAccount}
+	config.Accounts = []account.Account{*newAccount}
 	gConfig.Set("defaultAccount", newAccount.Name)
 
 	if len(config.Accounts) == 0 {
@@ -61,11 +63,11 @@ func addConfigAccount(firstRun bool) error {
 	return saveConfig(filePath, &config)
 }
 
-func promptAccountInformation() (*account, error) {
+func promptAccountInformation() (*account.Account, error) {
 	var client *egoscale.Client
 
 	reader := bufio.NewReader(os.Stdin)
-	account := &account{
+	account := &account.Account{
 		Endpoint: defaultEndpoint,
 		Key:      "",
 		Secret:   "",
@@ -168,7 +170,7 @@ Let's start over.
 	if err != nil {
 		if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
 			for {
-				defaultZone, err := chooseZone(cs, allZones)
+				defaultZone, err := chooseZone(globalstate.EgoscaleClient, allZones)
 				if err != nil {
 					return nil, err
 				}

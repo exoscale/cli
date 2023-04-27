@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -18,9 +21,9 @@ type dbaasServiceListItemOutput struct {
 
 type dbaasServiceListOutput []dbaasServiceListItemOutput
 
-func (o *dbaasServiceListOutput) toJSON()  { outputJSON(o) }
-func (o *dbaasServiceListOutput) toText()  { outputText(o) }
-func (o *dbaasServiceListOutput) toTable() { outputTable(o) }
+func (o *dbaasServiceListOutput) ToJSON()  { output.JSON(o) }
+func (o *dbaasServiceListOutput) ToText()  { output.Text(o) }
+func (o *dbaasServiceListOutput) ToTable() { output.Table(o) }
 
 type dbaasServiceListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -38,7 +41,7 @@ func (c *dbaasServiceListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Database Services.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&dbaasServiceListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&dbaasServiceListItemOutput{}), ", "))
 }
 
 func (c *dbaasServiceListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -65,9 +68,9 @@ func (c *dbaasServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := cs.ListDatabaseServices(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListDatabaseServices(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Database Services in zone %s: %w", zone, err)
 		}

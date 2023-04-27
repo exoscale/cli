@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
@@ -19,9 +22,9 @@ type instancePoolListItemOutput struct {
 
 type instancePoolListOutput []instancePoolListItemOutput
 
-func (o *instancePoolListOutput) toJSON()  { outputJSON(o) }
-func (o *instancePoolListOutput) toText()  { outputText(o) }
-func (o *instancePoolListOutput) toTable() { outputTable(o) }
+func (o *instancePoolListOutput) ToJSON()  { output.JSON(o) }
+func (o *instancePoolListOutput) ToText()  { output.Text(o) }
+func (o *instancePoolListOutput) ToTable() { output.Table(o) }
 
 type instancePoolListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -39,7 +42,7 @@ func (c *instancePoolListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Instance Pools.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&instancePoolListItemOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instancePoolListItemOutput{}), ", "))
 }
 
 func (c *instancePoolListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -66,9 +69,9 @@ func (c *instancePoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := forEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
-		list, err := cs.ListInstancePools(ctx, zone)
+		list, err := globalstate.EgoscaleClient.ListInstancePools(ctx, zone)
 		if err != nil {
 			return fmt.Errorf("unable to list Instance Pools in zone %s: %w", zone, err)
 		}

@@ -1,14 +1,11 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/aws/smithy-go"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -19,17 +16,17 @@ const (
 	storageCORSAddCmdFlagAllowedHeader = "allowed-header"
 )
 
-// storageCORSRuleFromCmdFlags returns a non-nil pointer to a storageCORSRule struct if at least
+// CORSRuleFromCmdFlags returns a non-nil pointer to a sos.CORSRule struct if at least
 // one of the CORS-related command flags is set.
-func storageCORSRuleFromCmdFlags(flags *pflag.FlagSet) *storageCORSRule {
-	var cors *storageCORSRule
+func CORSRuleFromCmdFlags(flags *pflag.FlagSet) *sos.CORSRule {
+	var cors *sos.CORSRule
 
 	flags.VisitAll(func(flag *pflag.Flag) {
 		switch flag.Name {
 		case storageCORSAddCmdFlagAllowedOrigin:
 			if v, _ := flags.GetStringSlice(storageCORSAddCmdFlagAllowedOrigin); len(v) > 0 {
 				if cors == nil {
-					cors = &storageCORSRule{}
+					cors = &sos.CORSRule{}
 				}
 
 				cors.AllowedOrigins = v
@@ -38,7 +35,7 @@ func storageCORSRuleFromCmdFlags(flags *pflag.FlagSet) *storageCORSRule {
 		case storageCORSAddCmdFlagAllowedMethod:
 			if v, _ := flags.GetStringSlice(storageCORSAddCmdFlagAllowedMethod); len(v) > 0 {
 				if cors == nil {
-					cors = &storageCORSRule{}
+					cors = &sos.CORSRule{}
 				}
 
 				cors.AllowedMethods = v
@@ -47,7 +44,7 @@ func storageCORSRuleFromCmdFlags(flags *pflag.FlagSet) *storageCORSRule {
 		case storageCORSAddCmdFlagAllowedHeader:
 			if v, _ := flags.GetStringSlice(storageCORSAddCmdFlagAllowedHeader); len(v) > 0 {
 				if cors == nil {
-					cors = &storageCORSRule{}
+					cors = &sos.CORSRule{}
 				}
 
 				cors.AllowedHeaders = v
@@ -79,7 +76,7 @@ Example:
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		return cmdCheckRequiredFlags(cmd, []string{
 			storageCORSAddCmdFlagAllowedOrigin,
@@ -90,20 +87,21 @@ Example:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		bucket := args[0]
 
-		storage, err := newStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+		storage, err := sos.NewStorageClient(
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		cors := storageCORSRuleFromCmdFlags(cmd.Flags())
-		if err := storage.addBucketCORSRule(bucket, cors); err != nil {
+		cors := CORSRuleFromCmdFlags(cmd.Flags())
+		if err := storage.AddBucketCORSRule(gContext, bucket, cors); err != nil {
 			return fmt.Errorf("unable to add rule to the bucket CORS configuration: %w", err)
 		}
 
-		if !gQuiet {
-			return output(storage.showBucket(bucket))
+		if !globalstate.Quiet {
+			return printOutput(storage.ShowBucket(gContext, bucket))
 		}
 
 		return nil
@@ -118,29 +116,4 @@ func init() {
 	storageCORSAddCmd.Flags().StringSlice(storageCORSAddCmdFlagAllowedHeader, nil,
 		"allowed header (can be repeated multiple times)")
 	storageCORSCmd.AddCommand(storageCORSAddCmd)
-}
-
-func (c *storageClient) addBucketCORSRule(bucket string, cors *storageCORSRule) error {
-	curCORS, err := c.GetBucketCors(gContext, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
-	if err != nil {
-		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) {
-			if apiErr.ErrorCode() == "NoSuchCORSConfiguration" {
-				curCORS = &s3.GetBucketCorsOutput{}
-			}
-		}
-
-		if cors == nil {
-			return fmt.Errorf("unable to retrieve bucket CORS configuration: %w", err)
-		}
-	}
-
-	_, err = c.PutBucketCors(gContext, &s3.PutBucketCorsInput{
-		Bucket: &bucket,
-		CORSConfiguration: &s3types.CORSConfiguration{
-			CORSRules: append(curCORS.CORSRules, cors.toS3()),
-		},
-	})
-
-	return err
 }

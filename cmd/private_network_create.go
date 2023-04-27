@@ -5,6 +5,9 @@ import (
 	"net"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -35,7 +38,7 @@ func (c *privateNetworkCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&privateNetworkShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&privateNetworkShowOutput{}), ", "))
 }
 
 func (c *privateNetworkCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -44,7 +47,7 @@ func (c *privateNetworkCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 }
 
 func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	privateNetwork := &egoscale.PrivateNetwork{
 		Description: utils.NonEmptyStringPtr(c.Description),
@@ -74,13 +77,13 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Private Network %q...", c.Name), func() {
-		privateNetwork, err = cs.CreatePrivateNetwork(ctx, c.Zone, privateNetwork)
+		privateNetwork, err = globalstate.EgoscaleClient.CreatePrivateNetwork(ctx, c.Zone, privateNetwork)
 	})
 	if err != nil {
 		return err
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&privateNetworkShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			PrivateNetwork:     *privateNetwork.ID,

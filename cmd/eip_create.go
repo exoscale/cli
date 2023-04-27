@@ -3,6 +3,8 @@ package cmd
 import (
 	"os"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
@@ -13,7 +15,7 @@ var eipCreateCmd = &cobra.Command{
 	Short:   "Create an Elastic IP",
 	Aliases: gCreateAlias,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		zone := gCurrentAccount.DefaultZone
+		zone := account.CurrentAccount.DefaultZone
 		if len(args) >= 1 {
 			zone = args[0]
 		}
@@ -80,14 +82,14 @@ func associateIPAddress(associateIPAddress egoscale.AssociateIPAddress, zone str
 	}
 	associateIPAddress.ZoneID = z.ID
 
-	resp, err := cs.RequestWithContext(gContext, associateIPAddress)
+	resp, err := globalstate.EgoscaleClient.RequestWithContext(gContext, associateIPAddress)
 	if err != nil {
 		return err
 	}
 
 	ipResp := resp.(*egoscale.IPAddress)
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		table := table.NewTable(os.Stdout)
 		table.SetHeader([]string{"ID", "IP", "Description", "Zone"})
 		table.Append([]string{

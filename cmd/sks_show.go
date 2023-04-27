@@ -6,6 +6,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -28,9 +31,9 @@ type sksShowOutput struct {
 	Nodepools    []sksNodepoolShowOutput `json:"nodepools"`
 }
 
-func (o *sksShowOutput) toJSON() { outputJSON(o) }
-func (o *sksShowOutput) toText() { outputText(o) }
-func (o *sksShowOutput) toTable() {
+func (o *sksShowOutput) ToJSON() { output.JSON(o) }
+func (o *sksShowOutput) ToText() { output.Text(o) }
+func (o *sksShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetHeader([]string{"SKS Cluster"})
 	defer t.Render()
@@ -96,7 +99,7 @@ func (c *sksShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows an SKS cluster details.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&sksShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&sksShowOutput{}), ", "))
 }
 
 func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -105,9 +108,9 @@ func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	cluster, err := cs.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)

@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 )
-
-const storageMetadataForbiddenCharset = `()<>@,;!:\\'&"/[]?_={} `
 
 var storageMetadataAddCmd = &cobra.Command{
 	Use:   "add sos://BUCKET/(OBJECT|PREFIX/) KEY=VALUE...",
@@ -28,15 +27,15 @@ Notes:
   * The following characters are not allowed in keys: %s
 
 Supported output template annotations: %s`,
-		strings.Join(strings.Split(storageMetadataForbiddenCharset, ""), " "),
-		strings.Join(outputterTemplateAnnotations(&storageShowObjectOutput{}), ", ")),
+		strings.Join(strings.Split(sos.MetadataForbiddenCharset, ""), " "),
+		strings.Join(output.TemplateAnnotations(&sos.ShowObjectOutput{}), ", ")),
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		args[0] = strings.TrimPrefix(args[0], storageBucketPrefix)
+		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
@@ -71,22 +70,23 @@ Supported output template annotations: %s`,
 			metadata[parts[0]] = parts[1]
 		}
 
-		storage, err := newStorageClient(
-			storageClientOptZoneFromBucket(bucket),
+		storage, err := sos.NewStorageClient(
+			gContext,
+			sos.ClientOptZoneFromBucket(gContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.addObjectsMetadata(bucket, prefix, metadata, recursive); err != nil {
+		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive); err != nil {
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
-		if !gQuiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return output(storage.showObject(bucket, prefix))
+		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
+			return printOutput(storage.ShowObject(gContext, bucket, prefix))
 		}
 
-		if !gQuiet {
+		if !globalstate.Quiet {
 			fmt.Println("Metadata added successfully")
 		}
 
@@ -98,32 +98,4 @@ func init() {
 	storageMetadataAddCmd.Flags().BoolP("recursive", "r", false,
 		"add metadata recursively (with object prefix only)")
 	storageMetadataCmd.AddCommand(storageMetadataAddCmd)
-}
-
-func (c *storageClient) addObjectMetadata(bucket, key string, metadata map[string]string) error {
-	object, err := c.copyObject(bucket, key)
-	if err != nil {
-		return err
-	}
-
-	if len(object.Metadata) == 0 {
-		object.Metadata = make(map[string]string)
-	}
-
-	for k, v := range metadata {
-		if strings.ContainsAny(k, storageMetadataForbiddenCharset) {
-			return fmt.Errorf("%s: invalid value", k)
-		}
-
-		object.Metadata[k] = v
-	}
-
-	_, err = c.CopyObject(gContext, object)
-	return err
-}
-
-func (c *storageClient) addObjectsMetadata(bucket, prefix string, metadata map[string]string, recursive bool) error {
-	return c.forEachObject(bucket, prefix, recursive, func(o *s3types.Object) error {
-		return c.addObjectMetadata(bucket, aws.ToString(o.Key), metadata)
-	})
 }

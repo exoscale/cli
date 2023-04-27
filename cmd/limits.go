@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -29,9 +32,9 @@ type LimitsItemOutput struct {
 
 type LimitsOutput []LimitsItemOutput
 
-func (o *LimitsOutput) toJSON()  { outputJSON(o) }
-func (o *LimitsOutput) toText()  { outputText(o) }
-func (o *LimitsOutput) toTable() { outputTable(o) }
+func (o *LimitsOutput) ToJSON()  { output.JSON(o) }
+func (o *LimitsOutput) ToText()  { output.Text(o) }
+func (o *LimitsOutput) ToTable() { output.Table(o) }
 
 var limitsCmd = &cobra.Command{
 	Use:   "limits",
@@ -39,7 +42,7 @@ var limitsCmd = &cobra.Command{
 	Long: fmt.Sprintf(`This command lists the safety limits currently enforced on your account.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&LimitsOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&LimitsOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resourceLimitLabels := map[string]string{
 			limitComputeInstances:  "Compute instances",
@@ -57,7 +60,7 @@ Supported output template annotations: %s`,
 
 		out := LimitsOutput{}
 
-		quotas, err := cs.ListQuotas(gContext, gCurrentAccount.DefaultZone)
+		quotas, err := globalstate.EgoscaleClient.ListQuotas(gContext, account.CurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}
@@ -74,7 +77,7 @@ Supported output template annotations: %s`,
 			})
 		}
 
-		return output(&out, nil)
+		return printOutput(&out, nil)
 	},
 }
 

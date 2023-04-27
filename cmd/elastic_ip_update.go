@@ -6,6 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
@@ -42,7 +45,7 @@ func (c *elasticIPUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command updates a Compute instance Elastic IP.
 
 Supported output template annotations: %s`,
-		strings.Join(outputterTemplateAnnotations(&elasticIPShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&elasticIPShowOutput{}), ", "))
 }
 
 func (c *elasticIPUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -53,9 +56,9 @@ func (c *elasticIPUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updatedInstance, updatedRDNS bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
-	elasticIP, err := cs.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -148,16 +151,16 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if updatedInstance || updatedRDNS {
 		decorateAsyncOperation(fmt.Sprintf("Updating Elastic IP %s...", c.ElasticIP), func() {
 			if updatedInstance {
-				if err = cs.UpdateElasticIP(ctx, c.Zone, elasticIP); err != nil {
+				if err = globalstate.EgoscaleClient.UpdateElasticIP(ctx, c.Zone, elasticIP); err != nil {
 					return
 				}
 			}
 
 			if updatedRDNS {
 				if c.ReverseDNS == "" {
-					err = cs.DeleteElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
+					err = globalstate.EgoscaleClient.DeleteElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
 				} else {
-					err = cs.UpdateElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID, c.ReverseDNS)
+					err = globalstate.EgoscaleClient.UpdateElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID, c.ReverseDNS)
 				}
 			}
 		})
@@ -167,7 +170,7 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return (&elasticIPShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			ElasticIP:          *elasticIP.ID,

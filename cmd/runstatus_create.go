@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 )
@@ -31,7 +32,7 @@ var runstatusCreateCmd = &cobra.Command{
 				return err
 			}
 
-			if !gQuiet {
+			if !globalstate.Quiet {
 				fmt.Printf("Runstat.us page %q created:\n - %s\n", result.Subdomain, result.PublicURL)
 			}
 		}
