@@ -71,6 +71,10 @@ When using [Fig](https://fig.io) you can run this command to output Fig completi
 exo integrations generate-fig-spec
 ```
 
+### GitHub Actions
+
+You can easily set up the `exo` CLI in your GitHub Actions workflow by using
+the [setup-exoscale](https://github.com/marketplace/actions/setup-exoscale) action.
 
 [releases]: https://github.com/exoscale/cli/releases
 [communitydoc]: https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/
