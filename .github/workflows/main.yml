@@ -26,7 +26,7 @@ jobs:
 
       # Pre-check
       - name: Go Format
-        run: gofmt -s -w . && git diff --exit-code
+        run: go fmt ./... && git diff --exit-code
       - name: Go Vet
         run: go vet ./...
       - name: Go Tidy
