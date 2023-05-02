@@ -41,16 +41,16 @@ manpage:
 
 .PHONY: manpages
 manpages: manpage
-	$(GO) run -mod vendor docs/main.go --man-page
+	$(GO) run docs/main.go --man-page
 
 .PHONY: completions
 completions:
 	mkdir -p contrib/completion/bash \
 		contrib/completion/powershell \
 		contrib/completion/zsh
-	$(GO) run -mod vendor completion/main.go bash ; mv bash_completion contrib/completion/bash/exo
-	$(GO) run -mod vendor completion/main.go powershell ; mv powershell_completion contrib/completion/powershell/exo
-	$(GO) run -mod vendor completion/main.go zsh ; mv zsh_completion contrib/completion/zsh/_exo
+	$(GO) run completion/main.go bash ; mv bash_completion contrib/completion/bash/exo
+	$(GO) run completion/main.go powershell ; mv powershell_completion contrib/completion/powershell/exo
+	$(GO) run completion/main.go zsh ; mv zsh_completion contrib/completion/zsh/_exo
 
 .PHONY: clean
 clean::
