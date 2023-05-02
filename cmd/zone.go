@@ -8,22 +8,32 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
+	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
 )
 
-const (
-	zoneHelp = "zone NAME|ID (ch-dk-2|ch-gva-2|at-vie-1|de-fra-1|bg-sof-1|de-muc-1)"
-)
+var (
+	// allZones represents the list of known Exoscale zones, in case we need it without performing API lookup.
+	allZones = []string{
+		string(oapi.ZoneNameAtVie1),
+		string(oapi.ZoneNameAtVie2),
+		string(oapi.ZoneNameBgSof1),
+		string(oapi.ZoneNameChDk2),
+		string(oapi.ZoneNameChGva2),
+		string(oapi.ZoneNameDeFra1),
+		string(oapi.ZoneNameDeMuc1),
+	}
 
-// allZones represents the list of known Exoscale zones, in case we need it without performing API lookup.
-var allZones = []string{
-	"at-vie-1",
-	"bg-sof-1",
-	"ch-dk-2",
-	"ch-gva-2",
-	"de-fra-1",
-	"de-muc-1",
-}
+	zoneHelp = "zone NAME|ID " + func() string {
+		zonesList := "("
+
+		for _, zone := range allZones {
+			zonesList += zone + "|"
+		}
+
+		return zonesList[:len(zonesList)-1] + ")"
+	}()
+)
 
 type zoneListItemOutput struct {
 	ID   string `json:"id"`
