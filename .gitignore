@@ -7,3 +7,4 @@ manpage
 contrib
 *.snap
 *.xdelta3
+go.work
