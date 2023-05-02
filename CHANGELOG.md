@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.68.0
+
+### Features
+
+ - storage: add support for setting the object ownership(#498)
+ - integrations: fig completion (#475)
+ - zones: add at-vie-2 to the list of zones (#501)
+
+### Bug Fixes
+
+ - compute instance snapshot: remove hardcoded timeout and bump default timeout to 20 minutes (#493)
+ - compute instance list: fix data races (#497)
+
 ## 1.67.0
 
 ### Features
