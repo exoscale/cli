@@ -91,6 +91,7 @@ func (o *dbaasTypeShowOutput) ToTable() {
 }
 
 var (
+	grafanaSettings    = []string{"grafana"}
 	opensearchSettings = []string{"opensearch"}
 	kafkaSettings      = []string{
 		"kafka",
@@ -133,12 +134,14 @@ Supported Database Service type settings:
 * %s
 * %s
 * %s
+* %s
 
 Supported output template annotations:
 
 * When showing a Database Service: %s
 
 * When listing Database Service plans: %s`,
+		strings.Join(grafanaSettings, ", "),
 		strings.Join(opensearchSettings, ", "),
 		strings.Join(kafkaSettings, ", "),
 		strings.Join(mysqlSettings, ", "),
@@ -182,6 +185,26 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		var settings map[string]interface{}
 
 		switch c.Name {
+		case "grafana":
+			if !utils.IsInList(grafanaSettings, c.ShowSettings) {
+				return fmt.Errorf(
+					"invalid settings value %q, expected one of: %s",
+					c.ShowSettings,
+					strings.Join(grafanaSettings, ", "),
+				)
+			}
+
+			res, err := cs.GetDbaasSettingsGrafanaWithResponse(ctx)
+			if err != nil {
+				return err
+			}
+
+			switch c.ShowSettings {
+			case "grafana":
+				settings = *res.JSON200.Settings.Grafana.Properties
+			}
+
+			dbaasShowSettings(settings)
 		case "kafka":
 			if !utils.IsInList(kafkaSettings, c.ShowSettings) {
 				return fmt.Errorf(
