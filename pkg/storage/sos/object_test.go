@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/stretchr/testify/assert"
 )
@@ -92,7 +93,7 @@ func TestShowObject(t *testing.T) {
 	}
 }
 
-func TestClient_DeleteObjects(t *testing.T) {
+func TestDeleteObjects(t *testing.T) {
 	bucket := "test-bucket"
 	commonPrefix := "myobjects/"
 	objectKeys := []string{commonPrefix + "object1", commonPrefix + "object2", commonPrefix + "object3"}
@@ -163,4 +164,74 @@ func TestClient_DeleteObjects(t *testing.T) {
 
 	_, err = client.DeleteObjects(context.Background(), bucket, commonPrefix, false)
 	assert.Error(t, err)
+}
+
+func TestListObjects(t *testing.T) {
+	mockS3API := &MockS3API{
+		mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
+			return &s3.ListObjectsV2Output{
+				Contents: []s3types.Object{
+					{
+						Key:          aws.String("file1.txt"),
+						Size:         100,
+						LastModified: aws.Time(time.Now()),
+					},
+					{
+						Key:          aws.String("file2.txt"),
+						Size:         200,
+						LastModified: aws.Time(time.Now()),
+					},
+				},
+				CommonPrefixes: []s3types.CommonPrefix{
+					{
+						Prefix: aws.String("folder1/"),
+					},
+					{
+						Prefix: aws.String("folder2/"),
+					},
+				},
+				IsTruncated: false,
+			}, nil
+		},
+	}
+
+	// Create a new sos.Client instance with the mocked S3API
+	client := sos.Client{
+		S3Client: mockS3API,
+		Zone:     "testzone",
+	}
+
+	// Call the ListObjects function
+	bucket := "testbucket"
+	prefix := ""
+	recursive := false
+	stream := false
+	ctx := context.Background()
+	output, err := client.ListObjects(ctx, bucket, prefix, recursive, stream)
+	assert.NoError(t, err)
+
+	// Define the expected output
+	expectedOutput := &sos.ListObjectsOutput{
+		{
+			Path: "folder1/",
+			Dir:  true,
+		},
+		{
+			Path: "folder2/",
+			Dir:  true,
+		},
+		{
+			Path:         "file1.txt",
+			Size:         100,
+			LastModified: time.Now().Format(sos.TimestampFormat),
+		},
+		{
+			Path:         "file2.txt",
+			Size:         200,
+			LastModified: time.Now().Format(sos.TimestampFormat),
+		},
+	}
+
+	// Compare the output with the expected output
+	assert.Equal(t, expectedOutput, output)
 }
