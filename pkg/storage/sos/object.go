@@ -375,7 +375,7 @@ func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursi
 type StorageUploadConfig struct {
 	Bucket    string
 	Prefix    string
-	Acl       string
+	ACL       string
 	Recursive bool
 	DryRun    bool
 }
@@ -462,7 +462,7 @@ func (c *Client) UploadFiles(ctx context.Context, sources []string, config *Stor
 					return nil
 				}
 
-				return c.UploadFile(ctx, config.Bucket, filePath, key, config.Acl)
+				return c.UploadFile(ctx, config.Bucket, filePath, key, config.ACL)
 			})
 			if err != nil {
 				return err
@@ -492,7 +492,7 @@ func (c *Client) UploadFiles(ctx context.Context, sources []string, config *Stor
 				continue
 			}
 
-			if err := c.UploadFile(ctx, config.Bucket, src, key, config.Acl); err != nil {
+			if err := c.UploadFile(ctx, config.Bucket, src, key, config.ACL); err != nil {
 				return err
 			}
 		}

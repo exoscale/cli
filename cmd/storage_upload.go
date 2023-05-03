@@ -95,7 +95,7 @@ Examples:
 		return storage.UploadFiles(gContext, sources, &sos.StorageUploadConfig{
 			Bucket:    bucket,
 			Prefix:    prefix,
-			Acl:       acl,
+			ACL:       acl,
 			Recursive: recursive,
 			DryRun:    dryRun,
 		})
