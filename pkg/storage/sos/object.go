@@ -614,7 +614,7 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 	return endOffset - curOffset, nil
 }
 
-func (c *Client) ShowObject(ctx context.Context, bucket, key string) (output.Outputter, error) {
+func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjectOutput, error) {
 	object, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
@@ -639,7 +639,7 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (output.Out
 		ACL:          ACLFromS3(acl.Grants),
 		Metadata:     object.Metadata,
 		Headers:      ObjectHeadersFromS3(object),
-		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.zone, bucket, key),
+		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.Zone, bucket, key),
 	}
 
 	return &out, nil

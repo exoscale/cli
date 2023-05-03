@@ -25,7 +25,7 @@ var (
 
 type Client struct {
 	S3Client S3API
-	zone     string
+	Zone     string
 }
 
 // forEachObject is a convenience wrapper to execute a callback function on
@@ -134,7 +134,7 @@ func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyOb
 type ClientOpt func(*Client) error
 
 func ClientOptWithZone(zone string) ClientOpt {
-	return func(c *Client) error { c.zone = zone; return nil }
+	return func(c *Client) error { c.Zone = zone; return nil }
 }
 
 func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
@@ -164,7 +164,7 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 			return err
 		}
 
-		c.zone = region
+		c.Zone = region
 		return nil
 	}
 }
@@ -172,7 +172,7 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 	var (
 		client = Client{
-			zone: account.CurrentAccount.DefaultZone,
+			Zone: account.CurrentAccount.DefaultZone,
 		}
 
 		caCerts io.Reader
@@ -187,14 +187,14 @@ func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 	cfg, err := awsconfig.LoadDefaultConfig(
 		ctx,
 		append(CommonConfigOptFns,
-			awsconfig.WithRegion(client.zone),
+			awsconfig.WithRegion(client.Zone),
 
 			awsconfig.WithEndpointResolver(aws.EndpointResolverFunc(
 				func(service, region string) (aws.Endpoint, error) {
-					sosURL := strings.Replace(account.CurrentAccount.SosEndpoint, "{zone}", client.zone, 1)
+					sosURL := strings.Replace(account.CurrentAccount.SosEndpoint, "{zone}", client.Zone, 1)
 					return aws.Endpoint{
 						URL:           sosURL,
-						SigningRegion: client.zone,
+						SigningRegion: client.Zone,
 					}, nil
 				})),
 

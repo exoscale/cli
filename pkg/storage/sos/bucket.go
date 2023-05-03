@@ -129,7 +129,7 @@ func (c *Client) ShowBucket(ctx context.Context, bucket string) (output.Outputte
 
 	out := ShowBucketOutput{
 		Name: bucket,
-		Zone: c.zone,
+		Zone: c.Zone,
 		ACL:  ACLFromS3(acl.Grants),
 		CORS: CORSRulesFromS3(cors),
 	}

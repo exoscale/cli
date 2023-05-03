@@ -3,6 +3,7 @@ package sos_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -66,6 +67,7 @@ func TestShowObject(t *testing.T) {
 
 			client := &sos.Client{
 				S3Client: mockS3API,
+				Zone:     "bern",
 			}
 
 			ctx := context.Background()
@@ -79,6 +81,10 @@ func TestShowObject(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, output)
+				assert.Equal(t, bucket, output.Bucket)
+				assert.Equal(t, key, output.Path)
+				assert.Equal(t, int64(100), output.Size)
+				assert.Equal(t, fmt.Sprintf("https://sos-%s.exo.io/%s/%s", client.Zone, bucket, key), output.URL)
 			}
 		})
 	}
