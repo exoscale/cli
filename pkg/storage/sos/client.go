@@ -24,9 +24,8 @@ var (
 )
 
 type Client struct {
-	s3Client *s3.Client
-
-	zone string
+	S3Client S3API
+	zone     string
 }
 
 // forEachObject is a convenience wrapper to execute a callback function on
@@ -44,7 +43,7 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 
 	var ct string
 	for {
-		res, err := c.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+		res, err := c.S3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
 			ContinuationToken: aws.String(ct),
@@ -92,7 +91,7 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 // copying such as metadata/headers manipulation, retrieving information about
 // the targeted object for a later copy.
 func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyObjectInput, error) {
-	srcObject, err := c.s3Client.GetObject(ctx, &s3.GetObjectInput{
+	srcObject, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -103,7 +102,7 @@ func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyOb
 	// Object ACL are reset during a CopyObject operation,
 	// we must set them explicitly on the copied object.
 
-	acl, err := c.s3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
+	acl, err := c.S3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -210,7 +209,7 @@ func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 		return nil, err
 	}
 
-	client.s3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
+	client.S3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.UsePathStyle = true
 	})
 

@@ -103,17 +103,17 @@ func (c *Client) CreateNewBucket(ctx context.Context, name, acl string) error {
 		s3Bucket.ACL = s3types.BucketCannedACL(acl)
 	}
 
-	_, err := c.s3Client.CreateBucket(ctx, &s3Bucket)
+	_, err := c.S3Client.CreateBucket(ctx, &s3Bucket)
 	return err
 }
 
 func (c *Client) ShowBucket(ctx context.Context, bucket string) (output.Outputter, error) {
-	acl, err := c.s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
+	acl, err := c.S3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
 	}
 
-	cors, err := c.s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
+	cors, err := c.S3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{Bucket: aws.String(bucket)})
 	if err != nil {
 		var apiErr smithy.APIError
 		if errors.As(err, &apiErr) {
@@ -158,7 +158,7 @@ func (c Client) GetBucketObjectOwnership(ctx context.Context, bucket string) (ou
 		Bucket: aws.String(bucket),
 	}
 
-	resp, err := c.s3Client.GetBucketOwnershipControls(ctx, &params)
+	resp, err := c.S3Client.GetBucketOwnershipControls(ctx, &params)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func (c Client) SetBucketObjectOwnership(ctx context.Context, bucket string, own
 			}},
 	}
 
-	_, err := c.s3Client.PutBucketOwnershipControls(ctx, &params)
+	_, err := c.S3Client.PutBucketOwnershipControls(ctx, &params)
 	if err != nil {
 		return err
 	}
@@ -206,14 +206,14 @@ func (c Client) DeleteBucket(ctx context.Context, bucket string, recursive bool)
 	}
 
 	// Delete dangling multipart uploads preventing bucket deletion.
-	res, err := c.s3Client.ListMultipartUploads(ctx, &s3.ListMultipartUploadsInput{
+	res, err := c.S3Client.ListMultipartUploads(ctx, &s3.ListMultipartUploadsInput{
 		Bucket: aws.String(bucket),
 	})
 	if err != nil {
 		return fmt.Errorf("error listing dangling multipart uploads: %w", err)
 	}
 	for _, mp := range res.Uploads {
-		if _, err = c.s3Client.AbortMultipartUpload(ctx, &s3.AbortMultipartUploadInput{
+		if _, err = c.S3Client.AbortMultipartUpload(ctx, &s3.AbortMultipartUploadInput{
 			Bucket:   aws.String(bucket),
 			Key:      mp.Key,
 			UploadId: mp.UploadId,
@@ -222,7 +222,7 @@ func (c Client) DeleteBucket(ctx context.Context, bucket string, recursive bool)
 		}
 	}
 
-	if _, err := c.s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{Bucket: aws.String(bucket)}); err != nil {
+	if _, err := c.S3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{Bucket: aws.String(bucket)}); err != nil {
 		var apiErr smithy.APIError
 		if errors.As(err, &apiErr) {
 			if apiErr.ErrorCode() == "BucketNotEmpty" {
