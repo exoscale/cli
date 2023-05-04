@@ -18,6 +18,7 @@ type dbaasServiceUpdateCmd struct {
 
 	Name string `cli-arg:"#"`
 
+	HelpGrafana           bool   `cli-usage:"show usage for flags specific to the grafana type"`
 	HelpKafka             bool   `cli-usage:"show usage for flags specific to the kafka type"`
 	HelpOpensearch        bool   `cli-usage:"show usage for flags specific to the opensearch type"`
 	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
@@ -28,6 +29,10 @@ type dbaasServiceUpdateCmd struct {
 	Plan                  string `cli-usage:"Database Service plan"`
 	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
 	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
+
+	// "grafana" type specific flags
+	GrafanaIPFilter []string `cli-flag:"grafana-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	GrafanaSettings string   `cli-flag:"grafana-settings" cli-usage:"MySQL configuration settings (JSON format)" cli-hidden:""`
 
 	// "kafka" type specific flags
 	KafkaConnectSettings        string   `cli-flag:"kafka-connect-settings" cli-usage:"Kafka Connect configuration settings (JSON format)" cli-hidden:""`
@@ -113,6 +118,9 @@ Supported output template annotations: %s`,
 
 func (c *dbaasServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
+	case cmd.Flags().Changed("help-grafana"):
+		cmdShowHelpFlags(cmd.Flags(), "grafana-")
+		os.Exit(0)
 	case cmd.Flags().Changed("help-kafka"):
 		cmdShowHelpFlags(cmd.Flags(), "kafka-")
 		os.Exit(0)
@@ -153,6 +161,8 @@ func (c *dbaasServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 	}
 
 	switch dbType {
+	case "grafana":
+		return c.updateGrafana(cmd, args)
 	case "kafka":
 		return c.updateKafka(cmd, args)
 	case "opensearch":
