@@ -194,7 +194,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				)
 			}
 
-			res, err := cs.GetDbaasSettingsGrafanaWithResponse(ctx)
+			res, err := globalstate.EgoscaleClient.GetDbaasSettingsGrafanaWithResponse(ctx)
 			if err != nil {
 				return err
 			}

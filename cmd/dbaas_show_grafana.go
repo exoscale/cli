@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -77,8 +79,8 @@ func formatDatabaseServiceGrafanaTable(t *table.Table, o *dbServiceGrafanaShowOu
 	}()})
 }
 
-func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (outputter, error) {
-	res, err := cs.GetDbaasServiceGrafanaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (output.Outputter, error) {
+	res, err := globalstate.EgoscaleClient.GetDbaasServiceGrafanaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)

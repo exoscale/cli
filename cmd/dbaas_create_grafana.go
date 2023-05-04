@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 	"github.com/spf13/cobra"
@@ -12,14 +14,14 @@ import (
 func (c *dbaasServiceCreateCmd) createGrafana(_ *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(gCurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	databaseService := oapi.CreateDbaasServiceGrafanaJSONRequestBody{
 		Plan:                  c.Plan,
 		TerminationProtection: &c.TerminationProtection,
 	}
 
-	settingsSchema, err := cs.GetDbaasSettingsGrafanaWithResponse(ctx)
+	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsGrafanaWithResponse(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
@@ -54,7 +56,7 @@ func (c *dbaasServiceCreateCmd) createGrafana(_ *cobra.Command, _ []string) erro
 
 	var res *oapi.CreateDbaasServiceGrafanaResponse
 	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = cs.CreateDbaasServiceGrafanaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
+		res, err = globalstate.EgoscaleClient.CreateDbaasServiceGrafanaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
 	})
 	if err != nil {
 		return err
@@ -63,7 +65,7 @@ func (c *dbaasServiceCreateCmd) createGrafana(_ *cobra.Command, _ []string) erro
 		return fmt.Errorf("API request error: unexpected status %s", res.Status())
 	}
 
-	if !gQuiet {
+	if !globalstate.Quiet {
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
