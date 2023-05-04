@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.0
-	github.com/exoscale/egoscale v0.100.0
+	github.com/exoscale/egoscale v0.100.1
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
