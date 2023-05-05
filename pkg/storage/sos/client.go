@@ -20,12 +20,26 @@ var (
 	// CommonConfigOptFns represents the list of AWS SDK configuration options common
 	// to all commands. In addition to those, some commands can/must set additional options
 	// specific to their execution context.
-	CommonConfigOptFns []func(*awsconfig.LoadOptions) error
+	CommonConfigOptFns           []func(*awsconfig.LoadOptions) error
+	ClientNewUploaderDefaultFunc = s3manager.NewUploader
 )
 
+type Uploader interface {
+	Upload(ctx context.Context, input *s3.PutObjectInput, opts ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error)
+}
+
 type Client struct {
-	S3Client S3API
-	Zone     string
+	S3Client        S3API
+	Zone            string
+	NewUploaderFunc func(client s3manager.UploadAPIClient, options ...func(*s3manager.Uploader)) Uploader
+}
+
+func (c *Client) NewUploader(client s3manager.UploadAPIClient, options ...func(*s3manager.Uploader)) Uploader {
+	if c.NewUploaderFunc == nil {
+		return ClientNewUploaderDefaultFunc(client, options...)
+	}
+
+	return c.NewUploaderFunc(client, options...)
 }
 
 // forEachObject is a convenience wrapper to execute a callback function on

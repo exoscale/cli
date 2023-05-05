@@ -568,8 +568,7 @@ func (c *Client) UploadFile(ctx context.Context, bucket, file, key, acl string) 
 		putObjectInput.ACL = s3types.ObjectCannedACL(acl)
 	}
 
-	_, err = s3manager.
-		NewUploader(c.S3Client, partSizeOpt).
+	_, err = c.NewUploader(c.S3Client, partSizeOpt).
 		Upload(ctx, &putObjectInput)
 
 	pb.Wait()

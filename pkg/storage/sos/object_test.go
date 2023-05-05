@@ -4,10 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -234,4 +238,91 @@ func TestListObjects(t *testing.T) {
 
 	// Compare the output with the expected output
 	assert.Equal(t, expectedOutput, output)
+}
+
+type MockUploader struct {
+	tc *testCase
+
+	t *testing.T
+}
+
+func (u MockUploader) Upload(ctx context.Context, input *s3.PutObjectInput, opts ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+	uploadedContent, err := ioutil.ReadAll(input.Body)
+	assert.NoError(u.t, err)
+
+	assert.Equal(u.t, u.tc.content, string(uploadedContent))
+
+	if u.tc.shouldErr {
+		return nil, fmt.Errorf("should error")
+	}
+	return nil, nil
+}
+
+func NewMockUploaderFunc(t *testing.T, tc *testCase) func(client s3manager.UploadAPIClient, options ...func(*s3manager.Uploader)) sos.Uploader {
+	return func(client s3manager.UploadAPIClient, options ...func(*s3manager.Uploader)) sos.Uploader {
+		return &MockUploader{
+			t:  t,
+			tc: tc,
+		}
+	}
+}
+
+type testCase struct {
+	name      string
+	bucket    string
+	file      string
+	content   string
+	key       string
+	acl       string
+	shouldErr bool
+}
+
+func TestUploadFile(t *testing.T) {
+	testCases := []testCase{
+		{
+			name:      "successful upload",
+			bucket:    "test-bucket",
+			file:      "test-file.txt",
+			content:   "test conent 1",
+			key:       "test-key",
+			acl:       "public-read",
+			shouldErr: false,
+		},
+		{
+			name:      "invalid ACL error",
+			bucket:    "test-bucket",
+			file:      "test-file.txt",
+			content:   "test conent 2",
+			key:       "test-key",
+			acl:       "invalid-acl",
+			shouldErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := sos.Client{
+				S3Client:        &MockS3API{},
+				NewUploaderFunc: NewMockUploaderFunc(t, &tc),
+			}
+
+			tempDir, err := ioutil.TempDir("", "exo-cli-test")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer os.RemoveAll(tempDir)
+
+			fileToUpload := tempDir + "/" + tc.file
+
+			err = ioutil.WriteFile(fileToUpload, []byte(tc.content), fs.ModePerm)
+			assert.NoError(t, err)
+
+			err = client.UploadFile(context.Background(), tc.bucket, fileToUpload, tc.key, tc.acl)
+			if tc.shouldErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
