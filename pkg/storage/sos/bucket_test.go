@@ -205,3 +205,36 @@ func TestShowBucket(t *testing.T) {
 		assert.Equal(t, expectedOutput, output)
 	})
 }
+
+func TestSetBucketObjectOwnership(t *testing.T) {
+	ctx := context.Background()
+	bucket := "test-bucket"
+
+	t.Run("successful_set_bucket_object_ownership", func(t *testing.T) {
+		client := &sos.Client{
+			S3Client: &MockS3API{
+				mockPutBucketOwnershipControls: func(ctx context.Context, params *s3.PutBucketOwnershipControlsInput, optFns ...func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error) {
+					return &s3.PutBucketOwnershipControlsOutput{}, nil
+				},
+			},
+		}
+
+		ownership := sos.BucketObjectOwnership("BucketOwnerPreferred")
+		err := client.SetBucketObjectOwnership(ctx, bucket, ownership)
+		assert.NoError(t, err)
+	})
+
+	t.Run("error_set_bucket_object_ownership", func(t *testing.T) {
+		client := &sos.Client{
+			S3Client: &MockS3API{
+				mockPutBucketOwnershipControls: func(ctx context.Context, params *s3.PutBucketOwnershipControlsInput, optFns ...func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error) {
+					return nil, errors.New("set bucket object ownership error")
+				},
+			},
+		}
+
+		ownership := sos.BucketObjectOwnership("BucketOwnerPreferred")
+		err := client.SetBucketObjectOwnership(ctx, bucket, ownership)
+		assert.Error(t, err)
+	})
+}
