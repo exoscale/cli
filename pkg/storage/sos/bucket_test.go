@@ -238,3 +238,93 @@ func TestSetBucketObjectOwnership(t *testing.T) {
 		assert.Error(t, err)
 	})
 }
+func TestDeleteBucket(t *testing.T) {
+	ctx := context.Background()
+	bucket := "test-bucket"
+
+	t.Run("successful_delete_bucket", func(t *testing.T) {
+		client := &sos.Client{
+			S3Client: &MockS3API{
+				mockListMultipartUploads: func(ctx context.Context, params *s3.ListMultipartUploadsInput, optFns ...func(*s3.Options)) (*s3.ListMultipartUploadsOutput, error) {
+					return &s3.ListMultipartUploadsOutput{}, nil
+				},
+				mockDeleteBucket: func(ctx context.Context, params *s3.DeleteBucketInput, optFns ...func(*s3.Options)) (*s3.DeleteBucketOutput, error) {
+					return &s3.DeleteBucketOutput{}, nil
+				},
+			},
+		}
+
+		err := client.DeleteBucket(ctx, bucket, false)
+		assert.NoError(t, err)
+	})
+
+	t.Run("error_list_multipart_uploads", func(t *testing.T) {
+		client := &sos.Client{
+			S3Client: &MockS3API{
+				mockListMultipartUploads: func(ctx context.Context, params *s3.ListMultipartUploadsInput, optFns ...func(*s3.Options)) (*s3.ListMultipartUploadsOutput, error) {
+					return nil, errors.New("list multipart uploads error")
+				},
+			},
+		}
+
+		err := client.DeleteBucket(ctx, bucket, false)
+		assert.Error(t, err)
+	})
+
+	t.Run("error_abort_multipart_upload", func(t *testing.T) {
+		client := &sos.Client{
+			S3Client: &MockS3API{
+				mockListMultipartUploads: func(ctx context.Context, params *s3.ListMultipartUploadsInput, optFns ...func(*s3.Options)) (*s3.ListMultipartUploadsOutput, error) {
+					return &s3.ListMultipartUploadsOutput{
+						Uploads: []types.MultipartUpload{
+							{
+								Key:      aws.String("test-key"),
+								UploadId: aws.String("test-upload-id"),
+							},
+						},
+					}, nil
+				},
+				mockAbortMultipartUpload: func(ctx context.Context, params *s3.AbortMultipartUploadInput, optFns ...func(*s3.Options)) (*s3.AbortMultipartUploadOutput, error) {
+					return nil, errors.New("abort multipart upload error")
+				},
+			},
+		}
+		err := client.DeleteBucket(ctx, bucket, false)
+		assert.Error(t, err)
+	})
+
+	t.Run("error_delete_bucket", func(t *testing.T) {
+		client := &sos.Client{
+			S3Client: &MockS3API{
+				mockListMultipartUploads: func(ctx context.Context, params *s3.ListMultipartUploadsInput, optFns ...func(*s3.Options)) (*s3.ListMultipartUploadsOutput, error) {
+					return &s3.ListMultipartUploadsOutput{}, nil
+				},
+				mockDeleteBucket: func(ctx context.Context, params *s3.DeleteBucketInput, optFns ...func(*s3.Options)) (*s3.DeleteBucketOutput, error) {
+					return nil, errors.New("delete bucket error")
+				},
+			},
+		}
+
+		err := client.DeleteBucket(ctx, bucket, false)
+		assert.Error(t, err)
+	})
+
+	t.Run("error_bucket_not_empty", func(t *testing.T) {
+		client := &sos.Client{
+			S3Client: &MockS3API{
+				mockListMultipartUploads: func(ctx context.Context, params *s3.ListMultipartUploadsInput, optFns ...func(*s3.Options)) (*s3.ListMultipartUploadsOutput, error) {
+					return &s3.ListMultipartUploadsOutput{}, nil
+				},
+				mockDeleteBucket: func(ctx context.Context, params *s3.DeleteBucketInput, optFns ...func(*s3.Options)) (*s3.DeleteBucketOutput, error) {
+					return nil, &smithy.GenericAPIError{
+						Code: "BucketNotEmpty",
+					}
+				},
+			},
+		}
+
+		err := client.DeleteBucket(ctx, bucket, false)
+		assert.Error(t, err)
+		assert.Equal(t, "bucket is not empty, either delete files before or use flag `-r`", err.Error())
+	})
+}
