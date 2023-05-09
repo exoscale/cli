@@ -25,6 +25,7 @@ if [ -f /etc/os-release ]; then
             OS="$ID"
             PACKAGETYPE="deb"
             FILEEXT="deb"
+            OSTYPE="linux"
             ;;
         fedora)
             OS="$ID"
