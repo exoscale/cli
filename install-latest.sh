@@ -93,6 +93,11 @@ fi
 OSVERSION="$OS"
 echo "Installing exo CLI for $OSVERSION, using method $PACKAGETYPE"
 case "$PACKAGETYPE" in
+	yum)
+		set -x
+		$SUDO yum install -y "https://github.com/exoscale/cli/releases/download/${LATEST_TAG}/exoscale-cli_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.rpm"
+		set +x
+	;;
 	dnf)
 		set -x
 		$SUDO dnf install -y "https://github.com/exoscale/cli/releases/download/${LATEST_TAG}/exoscale-cli_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.rpm"
