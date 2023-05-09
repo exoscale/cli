@@ -26,6 +26,15 @@ if [ -f /etc/os-release ]; then
 			PACKAGETYPE="dnf"
             OSTYPE="linux"
 			;;
+		centos)
+			OS="$ID"
+			VERSION="$VERSION_ID"
+			PACKAGETYPE="dnf"
+            OSTYPE="linux"
+			if [ "$VERSION" = "7" ]; then
+				PACKAGETYPE="yum"
+			fi
+			;;
     esac
 fi
 
