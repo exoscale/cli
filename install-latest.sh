@@ -13,6 +13,7 @@ LATEST_VERSION="${LATEST_TAG:1}"
 OS=""
 OSTYPE=""
 CPUARCHITECTURE=""
+FILEEXT=""
 VERSION=""
 PACKAGETYPE=""
 APT_KEY_TYPE="" # Only for apt-based distros
@@ -20,16 +21,23 @@ APT_KEY_TYPE="" # Only for apt-based distros
 if [ -f /etc/os-release ]; then
 	. /etc/os-release
     case "$ID" in
+		debian|ubuntu|pop|neon|zorin|linuxmint|elementary|parrot|mendel|galliumos|pureos|raspian|kali|Deepin)
+			OS="$ID"
+			PACKAGETYPE="deb"
+            FILEEXT="deb"
+			;;
 		fedora)
 			OS="$ID"
 			VERSION=""
 			PACKAGETYPE="dnf"
+            FILEEXT="rpm"
             OSTYPE="linux"
 			;;
 		centos)
 			OS="$ID"
 			VERSION="$VERSION_ID"
 			PACKAGETYPE="dnf"
+            FILEEXT="rpm"
             OSTYPE="linux"
 			if [ "$VERSION" = "7" ]; then
 				PACKAGETYPE="yum"
@@ -38,10 +46,15 @@ if [ -f /etc/os-release ]; then
     esac
 fi
 
+
 # detect the cpu architecture
+CPUARCHITECTURE="$(uname -m)"
 case "$(uname -m)" in
     x86_64)
         CPUARCHITECTURE="amd64"
+        ;;
+    armv7l)
+        CPUARCHITECTURE="armv7"
         ;;
 esac
 
@@ -90,17 +103,27 @@ if [ "$CAN_ROOT" != "1" ]; then
 	exit 1
 fi
 
+TEMPDIR=$(mktemp -d)
+PKGFILE="exoscale-cli_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.${FILEEXT}"
+PKGPATH=$TEMPDIR/$PKGFILE
+$CURL "https://github.com/exoscale/cli/releases/download/${LATEST_TAG}/$PKGFILE" > $PKGPATH
+
 OSVERSION="$OS"
 echo "Installing exo CLI for $OSVERSION, using method $PACKAGETYPE"
 case "$PACKAGETYPE" in
+    deb)
+        set -x
+        $SUDO dpkg -i $PKGPATH
+		set -x
+    ;;
 	yum)
 		set -x
-		$SUDO yum install -y "https://github.com/exoscale/cli/releases/download/${LATEST_TAG}/exoscale-cli_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.rpm"
+		$SUDO yum install -y $PKGPATH
 		set +x
 	;;
 	dnf)
 		set -x
-		$SUDO dnf install -y "https://github.com/exoscale/cli/releases/download/${LATEST_TAG}/exoscale-cli_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.rpm"
+		$SUDO dnf install -y $PKGPATH
 		set +x
 	;;
 esac
