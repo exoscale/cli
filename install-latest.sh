@@ -71,7 +71,7 @@ if [ -z "$CURL" ]; then
     exit 1
 fi
 
-TEST_URL="https://exoscale.com/"
+TEST_URL="https://www.exoscale.com/"
 RC=0
 TEST_OUT=$($CURL "$TEST_URL" 2>&1) || RC=$?
 if [ $RC != 0 ]; then
