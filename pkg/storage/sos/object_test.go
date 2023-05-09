@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -392,6 +393,210 @@ func TestCopyObject(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+type expectedUpload struct {
+	done    bool
+	content string
+}
+
+type MultiUploaderTestCase struct {
+	toUpload             []string
+	nExpectedUploadCalls int
+	shouldErr            bool
+	uploaderChecklist    map[string]expectedUpload
+	dryRun               bool
+	recursive            bool
+}
+
+type MockMultiUploader struct {
+	t            *testing.T
+	tc           *MultiUploaderTestCase
+	nUploadCalls int
+}
+
+func (u *MockMultiUploader) Upload(ctx context.Context, input *s3.PutObjectInput, opts ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
+	u.nUploadCalls++
+
+	uploadedContent, err := ioutil.ReadAll(input.Body)
+	assert.NoError(u.t, err)
+
+	item, ok := u.tc.uploaderChecklist[*input.Key]
+	assert.True(u.t, ok)
+	if string(uploadedContent) == item.content {
+		item.done = true
+		u.tc.uploaderChecklist[*input.Key] = item
+	}
+
+	if u.tc.shouldErr {
+		return nil, fmt.Errorf("should error")
+	}
+	return nil, nil
+}
+
+func TestUploadFiles(t *testing.T) {
+	ctx := context.Background()
+
+	tempDir, err := ioutil.TempDir("", "exo-cli-uploads-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		os.RemoveAll(tempDir)
+	})
+
+	tempFile1 := filepath.Join(tempDir, "file1.txt")
+	if err := ioutil.WriteFile(tempFile1, []byte("file1 content"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	tempFile2 := filepath.Join(tempDir, "file2.txt")
+	if err := ioutil.WriteFile(tempFile2, []byte("file2 content"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	tempSubdir := filepath.Join(tempDir, "subdir")
+	if err := os.Mkdir(tempSubdir, 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	tempFile3 := filepath.Join(tempSubdir, "file3.txt")
+	if err := ioutil.WriteFile(tempFile3, []byte("file3 content"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	mockS3API := &MockS3API{
+		mockPutObject: func(ctx context.Context, input *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
+			return &s3.PutObjectOutput{}, nil
+		},
+	}
+
+	testCases := []struct {
+		name string
+		tc   *MultiUploaderTestCase
+	}{
+		{
+			name: "single file upload",
+			tc: &MultiUploaderTestCase{
+				toUpload: []string{
+					tempFile1,
+				},
+				uploaderChecklist: map[string]expectedUpload{
+					"test-prefix/file1.txt": expectedUpload{
+						content: "file1 content",
+					},
+				},
+				nExpectedUploadCalls: 1,
+			},
+		},
+		{
+			name: "upload two files",
+			tc: &MultiUploaderTestCase{
+				toUpload: []string{
+					tempFile1,
+					tempFile2,
+				},
+				uploaderChecklist: map[string]expectedUpload{
+					"test-prefix/file1.txt": expectedUpload{
+						content: "file1 content",
+					},
+					"test-prefix/file2.txt": expectedUpload{
+						content: "file2 content",
+					},
+				},
+				nExpectedUploadCalls: 2,
+			},
+		},
+		{
+			name: "directory upload without recursive flag",
+			tc: &MultiUploaderTestCase{
+				toUpload: []string{
+					tempDir,
+				},
+				dryRun:    false,
+				recursive: false,
+				shouldErr: true,
+			},
+		},
+		{
+			name: "directory upload with recursive flag",
+			tc: &MultiUploaderTestCase{
+				toUpload: []string{
+					tempDir,
+				},
+				dryRun:    false,
+				recursive: true,
+				shouldErr: false,
+				uploaderChecklist: map[string]expectedUpload{
+					"test-prefix" + tempDir + "/file1.txt": expectedUpload{
+						content: "file1 content",
+					},
+					"test-prefix" + tempDir + "/file2.txt": expectedUpload{
+						content: "file2 content",
+					},
+					"test-prefix" + tempDir + "/subdir/file3.txt": expectedUpload{
+						content: "file3 content",
+					},
+				},
+				nExpectedUploadCalls: 3,
+			},
+		},
+		{
+			name: "dry run",
+			tc: &MultiUploaderTestCase{
+				toUpload: []string{
+					tempFile1,
+					tempFile2,
+				},
+				nExpectedUploadCalls: 0,
+				dryRun:               true,
+			},
+		},
+		{
+			name: "error handling for non-existent file",
+			tc: &MultiUploaderTestCase{
+				toUpload: []string{
+					"non-existent-file.txt",
+				},
+				shouldErr: true,
+			},
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.name, func(t *testing.T) {
+			uploader := MockMultiUploader{
+				t:  t,
+				tc: tt.tc,
+			}
+
+			client := &sos.Client{
+				S3Client: mockS3API,
+				NewUploaderFunc: func(client s3manager.UploadAPIClient, options ...func(*s3manager.Uploader)) sos.Uploader {
+					return &uploader
+				},
+			}
+
+			err := client.UploadFiles(ctx, tt.tc.toUpload, &sos.StorageUploadConfig{
+				Bucket:    "test-bucket",
+				Prefix:    "test-prefix/",
+				ACL:       "private",
+				DryRun:    tt.tc.dryRun,
+				Recursive: tt.tc.recursive,
+			})
+			if tt.tc.shouldErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+
+			assert.Equal(t, tt.tc.nExpectedUploadCalls, uploader.nUploadCalls)
+
+			for _, item := range tt.tc.uploaderChecklist {
+				assert.True(t, item.done)
 			}
 		})
 	}
