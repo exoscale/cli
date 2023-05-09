@@ -326,3 +326,73 @@ func TestUploadFile(t *testing.T) {
 		})
 	}
 }
+
+func TestCopyObject(t *testing.T) {
+	returnEmptyMockGetObjectACL := func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+		return &s3.GetObjectAclOutput{
+			Owner: &types.Owner{
+				ID: aws.String("christopher"),
+			},
+		}, nil
+	}
+
+	tests := []struct {
+		name             string
+		mockGetObject    func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
+		mockGetObjectACL func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error)
+		expectError      bool
+	}{
+		{
+			name: "successful copy object",
+			mockGetObject: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+				return &s3.GetObjectOutput{}, nil
+			},
+			mockGetObjectACL: returnEmptyMockGetObjectACL,
+			expectError:      false,
+		},
+		{
+			name: "get object error",
+			mockGetObject: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+				return nil, errors.New("get object error")
+			},
+			mockGetObjectACL: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+				return nil, nil
+			},
+			expectError: true,
+		},
+		{
+			name: "get object acl error",
+			mockGetObject: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+				return &s3.GetObjectOutput{}, nil
+			},
+			mockGetObjectACL: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+				return nil, errors.New("get object acl error")
+			},
+			expectError: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mockS3API := MockS3API{
+				mockGetObject:    test.mockGetObject,
+				mockGetObjectAcl: test.mockGetObjectACL,
+			}
+
+			client := sos.Client{
+				S3Client: &mockS3API,
+			}
+
+			ctx := context.Background()
+			bucket := "test-bucket"
+			key := "test-key"
+
+			_, err := client.CopyObject(ctx, bucket, key)
+			if test.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
