@@ -10,39 +10,48 @@ LATEST_URL=$(curl -L -s -o /dev/null -w %{url_effective} https://github.com/exos
 LATEST_TAG=$(basename "${LATEST_URL}")
 LATEST_VERSION=$(echo "$LATEST_TAG" | cut -c 2-)
 
-OS=""
 OSTYPE=""
 CPUARCHITECTURE=""
 FILEEXT=""
-VERSION=""
 PACKAGETYPE=""
-APT_KEY_TYPE="" # Only for apt-based distros
 
 if [ -f /etc/os-release ]; then
     . /etc/os-release
     case "$ID" in
         debian | ubuntu | pop | neon | zorin | linuxmint | elementary | parrot | mendel | galliumos | pureos | raspian | kali | Deepin)
-            OS="$ID"
-            PACKAGETYPE="deb"
+            PACKAGETYPE="dpkg"
             FILEEXT="deb"
             OSTYPE="linux"
             ;;
-        fedora)
-            OS="$ID"
-            VERSION=""
+        fedora | rocky | almalinux | nobara | openmandriva | sangoma | risios)
             PACKAGETYPE="dnf"
             FILEEXT="rpm"
             OSTYPE="linux"
             ;;
-        centos)
-            OS="$ID"
-            VERSION="$VERSION_ID"
+        rhel)
+            VERSION="$(echo "$VERSION_ID" | cut -f1 -d.)"
             PACKAGETYPE="dnf"
             FILEEXT="rpm"
-            OSTYPE="linux"
             if [ "$VERSION" = "7" ]; then
                 PACKAGETYPE="yum"
             fi
+            ;;
+        centos)
+            PACKAGETYPE="dnf"
+            FILEEXT="rpm"
+            OSTYPE="linux"
+            if [ "$VERSION_ID" = "7" ]; then
+                PACKAGETYPE="yum"
+            fi
+            ;;
+        amzn | xenenterprise)
+            PACKAGETYPE="yum"
+            FILEEXT="rpm"
+            OSTYPE="linux"
+            ;;
+        *)
+            echo "your OS is not supported by this script, please install manually https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/#installation"
+            exit 1
             ;;
     esac
 fi
@@ -103,27 +112,38 @@ if [ "$CAN_ROOT" != "1" ]; then
     exit 1
 fi
 
-TEMPDIR=$(mktemp -d)
-PKGFILE="exoscale-cli_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.${FILEEXT}"
-PKGPATH=$TEMPDIR/$PKGFILE
-$CURL "https://github.com/exoscale/cli/releases/download/${LATEST_TAG}/$PKGFILE" >$PKGPATH
+GITHUB_DOWNLOAD_URL="https://github.com/exoscale/cli/releases/download"
 
-OSVERSION="$OS"
-echo "Installing exo CLI for $OSVERSION, using method $PACKAGETYPE"
+TEMPDIR=$(mktemp -d)
+PKGPREFIX="exoscale-cli"
+PKGFILE="${PKGPREFIX}_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.${FILEEXT}"
+PKGPATH=$TEMPDIR/$PKGFILE
+$CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGFILE" >$PKGPATH
+
+# check the checksum
+CHECKSUMSFILE="${PKGPREFIX}_${LATEST_VERSION}_checksums.txt"
+CHECKSUMSPATH=$TEMPDIR/$CHECKSUMSFILE
+$CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$CHECKSUMSFILE" >$CHECKSUMSPATH
+
+COMPUTED_CHECKSUM=$(shasum -a 256 "$PKGPATH" | cut -d " " -f 1)
+EXPECTED_CHECKSUM=$(grep -m 1 $PKGFILE $CHECKSUMSPATH | cut -d " " -f 1)
+
+if [ "$COMPUTED_CHECKSUM" != "$EXPECTED_CHECKSUM" ]; then
+    echo "Error: Checksum of $PKGFILE does not match the expected checksum"
+    echo $COMPUTED_CHECKSUM
+    echo $EXPECTED_CHECKSUM
+    exit 1
+fi
+
+echo "Installing exo CLI, using $PACKAGETYPE"
 case "$PACKAGETYPE" in
-    deb)
-        set -x
+    dpkg)
         $SUDO dpkg -i $PKGPATH
-        set -x
         ;;
     yum)
-        set -x
         $SUDO yum install -y $PKGPATH
-        set +x
         ;;
     dnf)
-        set -x
         $SUDO dnf install -y $PKGPATH
-        set +x
         ;;
 esac
