@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.69.0
+
+### Features
+
+ - dbaas: add grafana (#503)
+
 ## 1.68.0
 
 ### Features
