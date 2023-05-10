@@ -264,6 +264,26 @@ const (
 	EnumMigrationStatusSyncing EnumMigrationStatus = "syncing"
 )
 
+// Defines values for EnumMysqlAuthenticationPlugin.
+const (
+	EnumMysqlAuthenticationPluginCachingSha2Password EnumMysqlAuthenticationPlugin = "caching_sha2_password"
+
+	EnumMysqlAuthenticationPluginMysqlNativePassword EnumMysqlAuthenticationPlugin = "mysql_native_password"
+)
+
+// Defines values for EnumOpensearchRulePermission.
+const (
+	EnumOpensearchRulePermissionAdmin EnumOpensearchRulePermission = "admin"
+
+	EnumOpensearchRulePermissionDeny EnumOpensearchRulePermission = "deny"
+
+	EnumOpensearchRulePermissionRead EnumOpensearchRulePermission = "read"
+
+	EnumOpensearchRulePermissionReadwrite EnumOpensearchRulePermission = "readwrite"
+
+	EnumOpensearchRulePermissionWrite EnumOpensearchRulePermission = "write"
+)
+
 // Defines values for EnumPgPoolMode.
 const (
 	EnumPgPoolModeSession EnumPgPoolMode = "session"
@@ -310,6 +330,11 @@ const (
 	IamPolicyDefaultServiceStrategyAllow IamPolicyDefaultServiceStrategy = "allow"
 
 	IamPolicyDefaultServiceStrategyDeny IamPolicyDefaultServiceStrategy = "deny"
+)
+
+// Defines values for IamRolePermissions.
+const (
+	IamRolePermissionsBypassGovernanceRetention IamRolePermissions = "bypass-governance-retention"
 )
 
 // Defines values for IamServicePolicyType.
@@ -948,6 +973,32 @@ type DbaasNodeStateProgressUpdate struct {
 // Key identifying this phase
 type DbaasNodeStateProgressUpdatePhase string
 
+// DbaasOpensearchAcl defines model for dbaas-opensearch-acl.
+type DbaasOpensearchAcl struct {
+	Rules    *[]DbaasOpensearchRule `json:"rules,omitempty"`
+	Username *DbaasUserUsername     `json:"username,omitempty"`
+}
+
+// DbaasOpensearchAclConfig defines model for dbaas-opensearch-acl-config.
+type DbaasOpensearchAclConfig struct {
+	// Enable OpenSearch ACLs. When disabled authenticated service users have unrestricted access.
+	AclEnabled *bool                `json:"acl-enabled,omitempty"`
+	Acls       *DbaasOpensearchAcls `json:"acls,omitempty"`
+
+	// Enable to enforce index rules in a limited fashion for requests that use the _mget, _msearch, and _bulk APIs
+	ExtendedAclEnabled *bool `json:"extended-acl-enabled,omitempty"`
+}
+
+// DbaasOpensearchAcls defines model for dbaas-opensearch-acls.
+type DbaasOpensearchAcls []DbaasOpensearchAcl
+
+// DbaasOpensearchRule defines model for dbaas-opensearch-rule.
+type DbaasOpensearchRule struct {
+	// OpenSearch index pattern
+	Index      *string                       `json:"index,omitempty"`
+	Permission *EnumOpensearchRulePermission `json:"permission,omitempty"`
+}
+
 // DbaasPgDatabaseName defines model for dbaas-pg-database-name.
 type DbaasPgDatabaseName string
 
@@ -1041,6 +1092,97 @@ type DbaasServiceCommon struct {
 
 	// Service last update timestamp (ISO 8601)
 	UpdatedAt *time.Time `json:"updated-at,omitempty"`
+}
+
+// DbaasServiceGrafana defines model for dbaas-service-grafana.
+type DbaasServiceGrafana struct {
+	// List of backups for the service
+	Backups *[]DbaasServiceBackup `json:"backups,omitempty"`
+
+	// Service component information objects
+	Components *[]struct {
+		// Service component name
+		Component string `json:"component"`
+
+		// DNS name for connecting to the service component
+		Host string `json:"host"`
+
+		// Port number for connecting to the service component
+		Port  int64              `json:"port"`
+		Route EnumComponentRoute `json:"route"`
+		Usage EnumComponentUsage `json:"usage"`
+	} `json:"components,omitempty"`
+
+	// Grafana connection information properties
+	ConnectionInfo *struct {
+		Password *string `json:"password,omitempty"`
+		Uri      *string `json:"uri,omitempty"`
+		Username *string `json:"username,omitempty"`
+	} `json:"connection-info,omitempty"`
+
+	// Service creation timestamp (ISO 8601)
+	CreatedAt *time.Time `json:"created-at,omitempty"`
+
+	// DbaaS service description
+	Description *string `json:"description,omitempty"`
+
+	// TODO UNIT disk space for data storage
+	DiskSize *int64 `json:"disk-size,omitempty"`
+
+	// Grafana specific settings
+	GrafanaSettings *map[string]interface{} `json:"grafana-settings,omitempty"`
+
+	// Service integrations
+	Integrations *[]DbaasIntegration `json:"integrations,omitempty"`
+
+	// Allowed CIDR address blocks for incoming connections
+	IpFilter *[]string `json:"ip-filter,omitempty"`
+
+	// Automatic maintenance settings
+	Maintenance *DbaasServiceMaintenance `json:"maintenance,omitempty"`
+	Name        DbaasServiceName         `json:"name"`
+
+	// Number of service nodes in the active plan
+	NodeCount *int64 `json:"node-count,omitempty"`
+
+	// Number of CPUs for each node
+	NodeCpuCount *int64 `json:"node-cpu-count,omitempty"`
+
+	// TODO UNIT of memory for each node
+	NodeMemory *int64 `json:"node-memory,omitempty"`
+
+	// State of individual service nodes
+	NodeStates *[]DbaasNodeState `json:"node-states,omitempty"`
+
+	// Service notifications
+	Notifications *[]DbaasServiceNotification `json:"notifications,omitempty"`
+
+	// Subscription plan
+	Plan  string            `json:"plan"`
+	State *EnumServiceState `json:"state,omitempty"`
+
+	// Service is protected against termination and powering off
+	TerminationProtection *bool                `json:"termination-protection,omitempty"`
+	Type                  DbaasServiceTypeName `json:"type"`
+
+	// Service last update timestamp (ISO 8601)
+	UpdatedAt *time.Time `json:"updated-at,omitempty"`
+
+	// URI for connecting to the service (may be absent)
+	Uri *string `json:"uri,omitempty"`
+
+	// service_uri parameterized into key-value pairs
+	UriParams *map[string]interface{} `json:"uri-params,omitempty"`
+
+	// List of service users
+	Users *[]struct {
+		Password *string `json:"password,omitempty"`
+		Type     *string `json:"type,omitempty"`
+		Username *string `json:"username,omitempty"`
+	} `json:"users,omitempty"`
+
+	// Grafana version
+	Version *string `json:"version,omitempty"`
 }
 
 // DbaasServiceKafka defines model for dbaas-service-kafka.
@@ -1726,6 +1868,19 @@ type DbaasServiceUpdate struct {
 	StartAt *time.Time `json:"start-at,omitempty"`
 }
 
+// DbaasTask defines model for dbaas-task.
+type DbaasTask struct {
+	CreateTime  *time.Time `json:"create-time,omitempty"`
+	Id          *string    `json:"id,omitempty"`
+	Result      *string    `json:"result,omitempty"`
+	ResultCodes *[]struct {
+		Code   *string `json:"code,omitempty"`
+		Dbname *string `json:"dbname,omitempty"`
+	} `json:"result-codes,omitempty"`
+	Success  *bool   `json:"success,omitempty"`
+	TaskType *string `json:"task-type,omitempty"`
+}
+
 // DbaasUserPassword defines model for dbaas-user-password.
 type DbaasUserPassword string
 
@@ -1874,6 +2029,12 @@ type EnumMigrationMethod string
 // EnumMigrationStatus defines model for enum-migration-status.
 type EnumMigrationStatus string
 
+// EnumMysqlAuthenticationPlugin defines model for enum-mysql-authentication-plugin.
+type EnumMysqlAuthenticationPlugin string
+
+// EnumOpensearchRulePermission defines model for enum-opensearch-rule-permission.
+type EnumOpensearchRulePermission string
+
 // EnumPgPoolMode defines model for enum-pg-pool-mode.
 type EnumPgPoolMode string
 
@@ -1987,9 +2148,15 @@ type IamRole struct {
 	// IAM Role name
 	Name *string `json:"name,omitempty"`
 
+	// IAM Role permissions
+	Permissions *[]IamRolePermissions `json:"permissions,omitempty"`
+
 	// Policy
 	Policy *IamPolicy `json:"policy,omitempty"`
 }
+
+// IamRolePermissions defines model for IamRole.Permissions.
+type IamRolePermissions string
 
 // IamServicePolicy defines model for iam-service-policy.
 type IamServicePolicy struct {
@@ -2184,6 +2351,13 @@ type InstanceTypeFamily string
 
 // Instance type size
 type InstanceTypeSize string
+
+// Kubelet image GC options
+type KubeletImageGc struct {
+	HighThreshold *int64  `json:"high-threshold,omitempty"`
+	LowThreshold  *int64  `json:"low-threshold,omitempty"`
+	MinAge        *string `json:"min-age,omitempty"`
+}
 
 // Labels defines model for labels.
 type Labels struct {
@@ -2809,6 +2983,72 @@ type CreateApiKeyJSONBody struct {
 	RoleId string `json:"role-id"`
 }
 
+// CreateDbaasServiceGrafanaJSONBody defines parameters for CreateDbaasServiceGrafana.
+type CreateDbaasServiceGrafanaJSONBody struct {
+	ForkFromService *DbaasServiceName `json:"fork-from-service,omitempty"`
+
+	// Grafana specific settings
+	GrafanaSettings *map[string]interface{} `json:"grafana-settings,omitempty"`
+
+	// Service integrations to enable for the service. Some integration types affect how a service is created and they must be provided as part of the creation call instead of being defined later.
+	Integrations *[]struct {
+		DestService *DbaasServiceName `json:"dest-service,omitempty"`
+
+		// Integration settings
+		Settings      *map[string]interface{} `json:"settings,omitempty"`
+		SourceService *DbaasServiceName       `json:"source-service,omitempty"`
+		Type          EnumIntegrationTypes    `json:"type"`
+	} `json:"integrations,omitempty"`
+
+	// Allowed CIDR address blocks for incoming connections
+	IpFilter *[]string `json:"ip-filter,omitempty"`
+
+	// Automatic maintenance settings
+	Maintenance *struct {
+		// Day of week for installing updates
+		Dow CreateDbaasServiceGrafanaJSONBodyMaintenanceDow `json:"dow"`
+
+		// Time for installing updates, UTC
+		Time string `json:"time"`
+	} `json:"maintenance,omitempty"`
+
+	// Subscription plan
+	Plan string `json:"plan"`
+
+	// Service is protected against termination and powering off
+	TerminationProtection *bool `json:"termination-protection,omitempty"`
+}
+
+// CreateDbaasServiceGrafanaJSONBodyMaintenanceDow defines parameters for CreateDbaasServiceGrafana.
+type CreateDbaasServiceGrafanaJSONBodyMaintenanceDow string
+
+// UpdateDbaasServiceGrafanaJSONBody defines parameters for UpdateDbaasServiceGrafana.
+type UpdateDbaasServiceGrafanaJSONBody struct {
+	// Grafana specific settings
+	GrafanaSettings *map[string]interface{} `json:"grafana-settings,omitempty"`
+
+	// Allowed CIDR address blocks for incoming connections
+	IpFilter *[]string `json:"ip-filter,omitempty"`
+
+	// Automatic maintenance settings
+	Maintenance *struct {
+		// Day of week for installing updates
+		Dow UpdateDbaasServiceGrafanaJSONBodyMaintenanceDow `json:"dow"`
+
+		// Time for installing updates, UTC
+		Time string `json:"time"`
+	} `json:"maintenance,omitempty"`
+
+	// Subscription plan
+	Plan *string `json:"plan,omitempty"`
+
+	// Service is protected against termination and powering off
+	TerminationProtection *bool `json:"termination-protection,omitempty"`
+}
+
+// UpdateDbaasServiceGrafanaJSONBodyMaintenanceDow defines parameters for UpdateDbaasServiceGrafana.
+type UpdateDbaasServiceGrafanaJSONBodyMaintenanceDow string
+
 // CreateDbaasIntegrationJSONBody defines parameters for CreateDbaasIntegration.
 type CreateDbaasIntegrationJSONBody struct {
 	DestService DbaasServiceName `json:"dest-service"`
@@ -3112,6 +3352,18 @@ type UpdateDbaasServiceMysqlJSONBody struct {
 // UpdateDbaasServiceMysqlJSONBodyMaintenanceDow defines parameters for UpdateDbaasServiceMysql.
 type UpdateDbaasServiceMysqlJSONBodyMaintenanceDow string
 
+// CreateDbaasMysqlUserJSONBody defines parameters for CreateDbaasMysqlUser.
+type CreateDbaasMysqlUserJSONBody struct {
+	Authentication *EnumMysqlAuthenticationPlugin `json:"authentication,omitempty"`
+	Username       DbaasUserUsername              `json:"username"`
+}
+
+// ResetDbaasMysqlUserPasswordJSONBody defines parameters for ResetDbaasMysqlUserPassword.
+type ResetDbaasMysqlUserPasswordJSONBody struct {
+	Authentication *EnumMysqlAuthenticationPlugin `json:"authentication,omitempty"`
+	Password       *DbaasUserPassword             `json:"password,omitempty"`
+}
+
 // CreateDbaasServiceOpensearchJSONBody defines parameters for CreateDbaasServiceOpensearch.
 type CreateDbaasServiceOpensearchJSONBody struct {
 	ForkFromService *DbaasServiceName `json:"fork-from-service,omitempty"`
@@ -3273,6 +3525,19 @@ type UpdateDbaasServiceOpensearchJSONBodyIndexPatternsSortingAlgorithm string
 
 // UpdateDbaasServiceOpensearchJSONBodyMaintenanceDow defines parameters for UpdateDbaasServiceOpensearch.
 type UpdateDbaasServiceOpensearchJSONBodyMaintenanceDow string
+
+// UpdateDbaasOpensearchAclConfigJSONBody defines parameters for UpdateDbaasOpensearchAclConfig.
+type UpdateDbaasOpensearchAclConfigJSONBody DbaasOpensearchAclConfig
+
+// CreateDbaasOpensearchUserJSONBody defines parameters for CreateDbaasOpensearchUser.
+type CreateDbaasOpensearchUserJSONBody struct {
+	Username DbaasUserUsername `json:"username"`
+}
+
+// ResetDbaasOpensearchUserPasswordJSONBody defines parameters for ResetDbaasOpensearchUserPassword.
+type ResetDbaasOpensearchUserPasswordJSONBody struct {
+	Password *DbaasUserPassword `json:"password,omitempty"`
+}
 
 // CreateDbaasServicePgJSONBody defines parameters for CreateDbaasServicePg.
 type CreateDbaasServicePgJSONBody struct {
@@ -3449,6 +3714,23 @@ type UpdateDbaasServicePgJSONBody struct {
 
 // UpdateDbaasServicePgJSONBodyMaintenanceDow defines parameters for UpdateDbaasServicePg.
 type UpdateDbaasServicePgJSONBodyMaintenanceDow string
+
+// CreateDbaasPgConnectionPoolJSONBody defines parameters for CreateDbaasPgConnectionPool.
+type CreateDbaasPgConnectionPoolJSONBody struct {
+	DatabaseName DbaasPgDatabaseName  `json:"database-name"`
+	Mode         *EnumPgPoolMode      `json:"mode,omitempty"`
+	Name         DbaasPgPoolName      `json:"name"`
+	Size         *DbaasPgPoolSize     `json:"size,omitempty"`
+	Username     *DbaasPgPoolUsername `json:"username,omitempty"`
+}
+
+// UpdateDbaasPgConnectionPoolJSONBody defines parameters for UpdateDbaasPgConnectionPool.
+type UpdateDbaasPgConnectionPoolJSONBody struct {
+	DatabaseName *DbaasPgDatabaseName `json:"database-name,omitempty"`
+	Mode         *EnumPgPoolMode      `json:"mode,omitempty"`
+	Size         *DbaasPgPoolSize     `json:"size,omitempty"`
+	Username     *DbaasPgPoolUsername `json:"username,omitempty"`
+}
 
 // CreateDbaasPostgresUserJSONBody defines parameters for CreateDbaasPostgresUser.
 type CreateDbaasPostgresUserJSONBody struct {
@@ -3718,16 +4000,28 @@ type CreateIamRoleJSONBody struct {
 	// IAM Role name
 	Name string `json:"name"`
 
+	// IAM Role permissions
+	Permissions *[]CreateIamRoleJSONBodyPermissions `json:"permissions,omitempty"`
+
 	// Policy
 	Policy *IamPolicy `json:"policy,omitempty"`
 }
+
+// CreateIamRoleJSONBodyPermissions defines parameters for CreateIamRole.
+type CreateIamRoleJSONBodyPermissions string
 
 // UpdateIamRoleJSONBody defines parameters for UpdateIamRole.
 type UpdateIamRoleJSONBody struct {
 	// IAM Role description
 	Description *string `json:"description,omitempty"`
 	Labels      *Labels `json:"labels,omitempty"`
+
+	// IAM Role permissions
+	Permissions *[]UpdateIamRoleJSONBodyPermissions `json:"permissions,omitempty"`
 }
+
+// UpdateIamRoleJSONBodyPermissions defines parameters for UpdateIamRole.
+type UpdateIamRoleJSONBodyPermissions string
 
 // UpdateIamRolePolicyJSONBody defines parameters for UpdateIamRolePolicy.
 type UpdateIamRolePolicyJSONBody IamPolicy
@@ -3848,7 +4142,7 @@ type UpdateInstancePoolJSONBody struct {
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 
 	// Instance Pool description
-	Description *string `json:"description"`
+	Description *string `json:"description,omitempty"`
 
 	// Instances disk size in GB
 	DiskSize *int64 `json:"disk-size,omitempty"`
@@ -3881,6 +4175,9 @@ type UpdateInstancePoolJSONBody struct {
 
 	// SSH key
 	SshKey *SshKey `json:"ssh-key,omitempty"`
+
+	// Instances SSH keys
+	SshKeys *[]SshKey `json:"ssh-keys"`
 
 	// Instance template
 	Template *Template `json:"template,omitempty"`
@@ -4284,7 +4581,10 @@ type CreateSksNodepoolJSONBody struct {
 
 	// Compute instance type
 	InstanceType InstanceType `json:"instance-type"`
-	Labels       *Labels      `json:"labels,omitempty"`
+
+	// Kubelet image GC options
+	KubeletImageGc *KubeletImageGc `json:"kubelet-image-gc,omitempty"`
+	Labels         *Labels         `json:"labels,omitempty"`
 
 	// Nodepool name
 	Name string `json:"name"`
@@ -4465,6 +4765,12 @@ type CreateAntiAffinityGroupJSONRequestBody CreateAntiAffinityGroupJSONBody
 // CreateApiKeyJSONRequestBody defines body for CreateApiKey for application/json ContentType.
 type CreateApiKeyJSONRequestBody CreateApiKeyJSONBody
 
+// CreateDbaasServiceGrafanaJSONRequestBody defines body for CreateDbaasServiceGrafana for application/json ContentType.
+type CreateDbaasServiceGrafanaJSONRequestBody CreateDbaasServiceGrafanaJSONBody
+
+// UpdateDbaasServiceGrafanaJSONRequestBody defines body for UpdateDbaasServiceGrafana for application/json ContentType.
+type UpdateDbaasServiceGrafanaJSONRequestBody UpdateDbaasServiceGrafanaJSONBody
+
 // CreateDbaasIntegrationJSONRequestBody defines body for CreateDbaasIntegration for application/json ContentType.
 type CreateDbaasIntegrationJSONRequestBody CreateDbaasIntegrationJSONBody
 
@@ -4495,17 +4801,38 @@ type CreateDbaasServiceMysqlJSONRequestBody CreateDbaasServiceMysqlJSONBody
 // UpdateDbaasServiceMysqlJSONRequestBody defines body for UpdateDbaasServiceMysql for application/json ContentType.
 type UpdateDbaasServiceMysqlJSONRequestBody UpdateDbaasServiceMysqlJSONBody
 
+// CreateDbaasMysqlUserJSONRequestBody defines body for CreateDbaasMysqlUser for application/json ContentType.
+type CreateDbaasMysqlUserJSONRequestBody CreateDbaasMysqlUserJSONBody
+
+// ResetDbaasMysqlUserPasswordJSONRequestBody defines body for ResetDbaasMysqlUserPassword for application/json ContentType.
+type ResetDbaasMysqlUserPasswordJSONRequestBody ResetDbaasMysqlUserPasswordJSONBody
+
 // CreateDbaasServiceOpensearchJSONRequestBody defines body for CreateDbaasServiceOpensearch for application/json ContentType.
 type CreateDbaasServiceOpensearchJSONRequestBody CreateDbaasServiceOpensearchJSONBody
 
 // UpdateDbaasServiceOpensearchJSONRequestBody defines body for UpdateDbaasServiceOpensearch for application/json ContentType.
 type UpdateDbaasServiceOpensearchJSONRequestBody UpdateDbaasServiceOpensearchJSONBody
 
+// UpdateDbaasOpensearchAclConfigJSONRequestBody defines body for UpdateDbaasOpensearchAclConfig for application/json ContentType.
+type UpdateDbaasOpensearchAclConfigJSONRequestBody UpdateDbaasOpensearchAclConfigJSONBody
+
+// CreateDbaasOpensearchUserJSONRequestBody defines body for CreateDbaasOpensearchUser for application/json ContentType.
+type CreateDbaasOpensearchUserJSONRequestBody CreateDbaasOpensearchUserJSONBody
+
+// ResetDbaasOpensearchUserPasswordJSONRequestBody defines body for ResetDbaasOpensearchUserPassword for application/json ContentType.
+type ResetDbaasOpensearchUserPasswordJSONRequestBody ResetDbaasOpensearchUserPasswordJSONBody
+
 // CreateDbaasServicePgJSONRequestBody defines body for CreateDbaasServicePg for application/json ContentType.
 type CreateDbaasServicePgJSONRequestBody CreateDbaasServicePgJSONBody
 
 // UpdateDbaasServicePgJSONRequestBody defines body for UpdateDbaasServicePg for application/json ContentType.
 type UpdateDbaasServicePgJSONRequestBody UpdateDbaasServicePgJSONBody
+
+// CreateDbaasPgConnectionPoolJSONRequestBody defines body for CreateDbaasPgConnectionPool for application/json ContentType.
+type CreateDbaasPgConnectionPoolJSONRequestBody CreateDbaasPgConnectionPoolJSONBody
+
+// UpdateDbaasPgConnectionPoolJSONRequestBody defines body for UpdateDbaasPgConnectionPool for application/json ContentType.
+type UpdateDbaasPgConnectionPoolJSONRequestBody UpdateDbaasPgConnectionPoolJSONBody
 
 // CreateDbaasPostgresUserJSONRequestBody defines body for CreateDbaasPostgresUser for application/json ContentType.
 type CreateDbaasPostgresUserJSONRequestBody CreateDbaasPostgresUserJSONBody
@@ -5076,6 +5403,25 @@ type ClientInterface interface {
 	// GetDbaasCaCertificate request
 	GetDbaasCaCertificate(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteDbaasServiceGrafana request
+	DeleteDbaasServiceGrafana(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDbaasServiceGrafana request
+	GetDbaasServiceGrafana(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDbaasServiceGrafana request with any body
+	CreateDbaasServiceGrafanaWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDbaasServiceGrafana(ctx context.Context, name DbaasServiceName, body CreateDbaasServiceGrafanaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateDbaasServiceGrafana request with any body
+	UpdateDbaasServiceGrafanaWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateDbaasServiceGrafana(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceGrafanaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// StartDbaasGrafanaMaintenance request
+	StartDbaasGrafanaMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateDbaasIntegration request with any body
 	CreateDbaasIntegrationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -5097,6 +5443,9 @@ type ClientInterface interface {
 	UpdateDbaasIntegrationWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateDbaasIntegration(ctx context.Context, id string, body UpdateDbaasIntegrationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDbaasServiceKafka request
+	DeleteDbaasServiceKafka(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDbaasServiceKafka request
 	GetDbaasServiceKafka(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5149,6 +5498,9 @@ type ClientInterface interface {
 	// GetDbaasMigrationStatus request
 	GetDbaasMigrationStatus(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteDbaasServiceMysql request
+	DeleteDbaasServiceMysql(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetDbaasServiceMysql request
 	GetDbaasServiceMysql(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -5168,6 +5520,22 @@ type ClientInterface interface {
 	// StopDbaasMysqlMigration request
 	StopDbaasMysqlMigration(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateDbaasMysqlUser request with any body
+	CreateDbaasMysqlUserWithBody(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDbaasMysqlUser(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasMysqlUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDbaasMysqlUser request
+	DeleteDbaasMysqlUser(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ResetDbaasMysqlUserPassword request with any body
+	ResetDbaasMysqlUserPasswordWithBody(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ResetDbaasMysqlUserPassword(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasMysqlUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDbaasServiceOpensearch request
+	DeleteDbaasServiceOpensearch(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetDbaasServiceOpensearch request
 	GetDbaasServiceOpensearch(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -5181,8 +5549,32 @@ type ClientInterface interface {
 
 	UpdateDbaasServiceOpensearch(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceOpensearchJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetDbaasOpensearchAclConfig request
+	GetDbaasOpensearchAclConfig(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateDbaasOpensearchAclConfig request with any body
+	UpdateDbaasOpensearchAclConfigWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateDbaasOpensearchAclConfig(ctx context.Context, name DbaasServiceName, body UpdateDbaasOpensearchAclConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// StartDbaasOpensearchMaintenance request
 	StartDbaasOpensearchMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateDbaasOpensearchUser request with any body
+	CreateDbaasOpensearchUserWithBody(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDbaasOpensearchUser(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasOpensearchUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDbaasOpensearchUser request
+	DeleteDbaasOpensearchUser(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ResetDbaasOpensearchUserPassword request with any body
+	ResetDbaasOpensearchUserPasswordWithBody(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	ResetDbaasOpensearchUserPassword(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasOpensearchUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDbaasServicePg request
+	DeleteDbaasServicePg(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDbaasServicePg request
 	GetDbaasServicePg(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5203,6 +5595,19 @@ type ClientInterface interface {
 	// StopDbaasPgMigration request
 	StopDbaasPgMigration(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateDbaasPgConnectionPool request with any body
+	CreateDbaasPgConnectionPoolWithBody(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateDbaasPgConnectionPool(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasPgConnectionPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDbaasPgConnectionPool request
+	DeleteDbaasPgConnectionPool(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateDbaasPgConnectionPool request with any body
+	UpdateDbaasPgConnectionPoolWithBody(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateDbaasPgConnectionPool(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, body UpdateDbaasPgConnectionPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CreateDbaasPostgresUser request with any body
 	CreateDbaasPostgresUserWithBody(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -5220,6 +5625,9 @@ type ClientInterface interface {
 	ResetDbaasPostgresUserPasswordWithBody(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	ResetDbaasPostgresUserPassword(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasPostgresUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteDbaasServiceRedis request
+	DeleteDbaasServiceRedis(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDbaasServiceRedis request
 	GetDbaasServiceRedis(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -5261,6 +5669,9 @@ type ClientInterface interface {
 
 	// DeleteDbaasService request
 	DeleteDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetDbaasSettingsGrafana request
+	GetDbaasSettingsGrafana(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetDbaasSettingsKafka request
 	GetDbaasSettingsKafka(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -6008,6 +6419,90 @@ func (c *Client) GetDbaasCaCertificate(ctx context.Context, reqEditors ...Reques
 	return c.Client.Do(req)
 }
 
+func (c *Client) DeleteDbaasServiceGrafana(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasServiceGrafanaRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDbaasServiceGrafana(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDbaasServiceGrafanaRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDbaasServiceGrafanaWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasServiceGrafanaRequestWithBody(c.Server, name, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDbaasServiceGrafana(ctx context.Context, name DbaasServiceName, body CreateDbaasServiceGrafanaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasServiceGrafanaRequest(c.Server, name, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDbaasServiceGrafanaWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDbaasServiceGrafanaRequestWithBody(c.Server, name, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDbaasServiceGrafana(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceGrafanaJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDbaasServiceGrafanaRequest(c.Server, name, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) StartDbaasGrafanaMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewStartDbaasGrafanaMaintenanceRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateDbaasIntegrationWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateDbaasIntegrationRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -6094,6 +6589,18 @@ func (c *Client) UpdateDbaasIntegrationWithBody(ctx context.Context, id string, 
 
 func (c *Client) UpdateDbaasIntegration(ctx context.Context, id string, body UpdateDbaasIntegrationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateDbaasIntegrationRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDbaasServiceKafka(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasServiceKafkaRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -6332,6 +6839,18 @@ func (c *Client) GetDbaasMigrationStatus(ctx context.Context, name DbaasServiceN
 	return c.Client.Do(req)
 }
 
+func (c *Client) DeleteDbaasServiceMysql(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasServiceMysqlRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetDbaasServiceMysql(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetDbaasServiceMysqlRequest(c.Server, name)
 	if err != nil {
@@ -6416,6 +6935,78 @@ func (c *Client) StopDbaasMysqlMigration(ctx context.Context, name DbaasServiceN
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateDbaasMysqlUserWithBody(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasMysqlUserRequestWithBody(c.Server, serviceName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDbaasMysqlUser(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasMysqlUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasMysqlUserRequest(c.Server, serviceName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDbaasMysqlUser(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasMysqlUserRequest(c.Server, serviceName, username)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetDbaasMysqlUserPasswordWithBody(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetDbaasMysqlUserPasswordRequestWithBody(c.Server, serviceName, username, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetDbaasMysqlUserPassword(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasMysqlUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetDbaasMysqlUserPasswordRequest(c.Server, serviceName, username, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDbaasServiceOpensearch(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasServiceOpensearchRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) GetDbaasServiceOpensearch(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetDbaasServiceOpensearchRequest(c.Server, name)
 	if err != nil {
@@ -6476,8 +7067,116 @@ func (c *Client) UpdateDbaasServiceOpensearch(ctx context.Context, name DbaasSer
 	return c.Client.Do(req)
 }
 
+func (c *Client) GetDbaasOpensearchAclConfig(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDbaasOpensearchAclConfigRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDbaasOpensearchAclConfigWithBody(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDbaasOpensearchAclConfigRequestWithBody(c.Server, name, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDbaasOpensearchAclConfig(ctx context.Context, name DbaasServiceName, body UpdateDbaasOpensearchAclConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDbaasOpensearchAclConfigRequest(c.Server, name, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) StartDbaasOpensearchMaintenance(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewStartDbaasOpensearchMaintenanceRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDbaasOpensearchUserWithBody(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasOpensearchUserRequestWithBody(c.Server, serviceName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDbaasOpensearchUser(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasOpensearchUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasOpensearchUserRequest(c.Server, serviceName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDbaasOpensearchUser(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasOpensearchUserRequest(c.Server, serviceName, username)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetDbaasOpensearchUserPasswordWithBody(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetDbaasOpensearchUserPasswordRequestWithBody(c.Server, serviceName, username, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ResetDbaasOpensearchUserPassword(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasOpensearchUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewResetDbaasOpensearchUserPasswordRequest(c.Server, serviceName, username, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDbaasServicePg(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasServicePgRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -6572,6 +7271,66 @@ func (c *Client) StopDbaasPgMigration(ctx context.Context, name DbaasServiceName
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateDbaasPgConnectionPoolWithBody(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasPgConnectionPoolRequestWithBody(c.Server, serviceName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateDbaasPgConnectionPool(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasPgConnectionPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateDbaasPgConnectionPoolRequest(c.Server, serviceName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDbaasPgConnectionPool(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasPgConnectionPoolRequest(c.Server, serviceName, connectionPoolName)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDbaasPgConnectionPoolWithBody(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDbaasPgConnectionPoolRequestWithBody(c.Server, serviceName, connectionPoolName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateDbaasPgConnectionPool(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, body UpdateDbaasPgConnectionPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateDbaasPgConnectionPoolRequest(c.Server, serviceName, connectionPoolName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) CreateDbaasPostgresUserWithBody(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateDbaasPostgresUserRequestWithBody(c.Server, serviceName, contentType, body)
 	if err != nil {
@@ -6646,6 +7405,18 @@ func (c *Client) ResetDbaasPostgresUserPasswordWithBody(ctx context.Context, ser
 
 func (c *Client) ResetDbaasPostgresUserPassword(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasPostgresUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewResetDbaasPostgresUserPasswordRequest(c.Server, serviceName, username, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteDbaasServiceRedis(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteDbaasServiceRedisRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -6826,6 +7597,18 @@ func (c *Client) GetDbaasServiceType(ctx context.Context, serviceTypeName string
 
 func (c *Client) DeleteDbaasService(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteDbaasServiceRequest(c.Server, name)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetDbaasSettingsGrafana(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetDbaasSettingsGrafanaRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -9650,6 +10433,202 @@ func NewGetDbaasCaCertificateRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewDeleteDbaasServiceGrafanaRequest generates requests for DeleteDbaasServiceGrafana
+func NewDeleteDbaasServiceGrafanaRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-grafana/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetDbaasServiceGrafanaRequest generates requests for GetDbaasServiceGrafana
+func NewGetDbaasServiceGrafanaRequest(server string, name DbaasServiceName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-grafana/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateDbaasServiceGrafanaRequest calls the generic CreateDbaasServiceGrafana builder with application/json body
+func NewCreateDbaasServiceGrafanaRequest(server string, name DbaasServiceName, body CreateDbaasServiceGrafanaJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDbaasServiceGrafanaRequestWithBody(server, name, "application/json", bodyReader)
+}
+
+// NewCreateDbaasServiceGrafanaRequestWithBody generates requests for CreateDbaasServiceGrafana with any type of body
+func NewCreateDbaasServiceGrafanaRequestWithBody(server string, name DbaasServiceName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-grafana/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewUpdateDbaasServiceGrafanaRequest calls the generic UpdateDbaasServiceGrafana builder with application/json body
+func NewUpdateDbaasServiceGrafanaRequest(server string, name DbaasServiceName, body UpdateDbaasServiceGrafanaJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateDbaasServiceGrafanaRequestWithBody(server, name, "application/json", bodyReader)
+}
+
+// NewUpdateDbaasServiceGrafanaRequestWithBody generates requests for UpdateDbaasServiceGrafana with any type of body
+func NewUpdateDbaasServiceGrafanaRequestWithBody(server string, name DbaasServiceName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-grafana/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewStartDbaasGrafanaMaintenanceRequest generates requests for StartDbaasGrafanaMaintenance
+func NewStartDbaasGrafanaMaintenanceRequest(server string, name DbaasServiceName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-grafana/%s/maintenance/start", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateDbaasIntegrationRequest calls the generic CreateDbaasIntegration builder with application/json body
 func NewCreateDbaasIntegrationRequest(server string, body CreateDbaasIntegrationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -9876,6 +10855,40 @@ func NewUpdateDbaasIntegrationRequestWithBody(server string, id string, contentT
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDbaasServiceKafkaRequest generates requests for DeleteDbaasServiceKafka
+func NewDeleteDbaasServiceKafkaRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-kafka/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -10428,6 +11441,40 @@ func NewGetDbaasMigrationStatusRequest(server string, name DbaasServiceName) (*h
 	return req, nil
 }
 
+// NewDeleteDbaasServiceMysqlRequest generates requests for DeleteDbaasServiceMysql
+func NewDeleteDbaasServiceMysqlRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-mysql/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetDbaasServiceMysqlRequest generates requests for GetDbaasServiceMysql
 func NewGetDbaasServiceMysqlRequest(server string, name DbaasServiceName) (*http.Request, error) {
 	var err error
@@ -10624,6 +11671,182 @@ func NewStopDbaasMysqlMigrationRequest(server string, name DbaasServiceName) (*h
 	return req, nil
 }
 
+// NewCreateDbaasMysqlUserRequest calls the generic CreateDbaasMysqlUser builder with application/json body
+func NewCreateDbaasMysqlUserRequest(server string, serviceName DbaasServiceName, body CreateDbaasMysqlUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDbaasMysqlUserRequestWithBody(server, serviceName, "application/json", bodyReader)
+}
+
+// NewCreateDbaasMysqlUserRequestWithBody generates requests for CreateDbaasMysqlUser with any type of body
+func NewCreateDbaasMysqlUserRequestWithBody(server string, serviceName DbaasServiceName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-mysql/%s/user", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDbaasMysqlUserRequest generates requests for DeleteDbaasMysqlUser
+func NewDeleteDbaasMysqlUserRequest(server string, serviceName DbaasServiceName, username DbaasUserUsername) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "username", runtime.ParamLocationPath, username)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-mysql/%s/user/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewResetDbaasMysqlUserPasswordRequest calls the generic ResetDbaasMysqlUserPassword builder with application/json body
+func NewResetDbaasMysqlUserPasswordRequest(server string, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasMysqlUserPasswordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewResetDbaasMysqlUserPasswordRequestWithBody(server, serviceName, username, "application/json", bodyReader)
+}
+
+// NewResetDbaasMysqlUserPasswordRequestWithBody generates requests for ResetDbaasMysqlUserPassword with any type of body
+func NewResetDbaasMysqlUserPasswordRequestWithBody(server string, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "username", runtime.ParamLocationPath, username)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-mysql/%s/user/%s/password/reset", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDbaasServiceOpensearchRequest generates requests for DeleteDbaasServiceOpensearch
+func NewDeleteDbaasServiceOpensearchRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-opensearch/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetDbaasServiceOpensearchRequest generates requests for GetDbaasServiceOpensearch
 func NewGetDbaasServiceOpensearchRequest(server string, name DbaasServiceName) (*http.Request, error) {
 	var err error
@@ -10752,6 +11975,87 @@ func NewUpdateDbaasServiceOpensearchRequestWithBody(server string, name DbaasSer
 	return req, nil
 }
 
+// NewGetDbaasOpensearchAclConfigRequest generates requests for GetDbaasOpensearchAclConfig
+func NewGetDbaasOpensearchAclConfigRequest(server string, name DbaasServiceName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-opensearch/%s/acl-config", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateDbaasOpensearchAclConfigRequest calls the generic UpdateDbaasOpensearchAclConfig builder with application/json body
+func NewUpdateDbaasOpensearchAclConfigRequest(server string, name DbaasServiceName, body UpdateDbaasOpensearchAclConfigJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateDbaasOpensearchAclConfigRequestWithBody(server, name, "application/json", bodyReader)
+}
+
+// NewUpdateDbaasOpensearchAclConfigRequestWithBody generates requests for UpdateDbaasOpensearchAclConfig with any type of body
+func NewUpdateDbaasOpensearchAclConfigRequestWithBody(server string, name DbaasServiceName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-opensearch/%s/acl-config", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewStartDbaasOpensearchMaintenanceRequest generates requests for StartDbaasOpensearchMaintenance
 func NewStartDbaasOpensearchMaintenanceRequest(server string, name DbaasServiceName) (*http.Request, error) {
 	var err error
@@ -10779,6 +12083,182 @@ func NewStartDbaasOpensearchMaintenanceRequest(server string, name DbaasServiceN
 	}
 
 	req, err := http.NewRequest("PUT", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateDbaasOpensearchUserRequest calls the generic CreateDbaasOpensearchUser builder with application/json body
+func NewCreateDbaasOpensearchUserRequest(server string, serviceName DbaasServiceName, body CreateDbaasOpensearchUserJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDbaasOpensearchUserRequestWithBody(server, serviceName, "application/json", bodyReader)
+}
+
+// NewCreateDbaasOpensearchUserRequestWithBody generates requests for CreateDbaasOpensearchUser with any type of body
+func NewCreateDbaasOpensearchUserRequestWithBody(server string, serviceName DbaasServiceName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-opensearch/%s/user", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDbaasOpensearchUserRequest generates requests for DeleteDbaasOpensearchUser
+func NewDeleteDbaasOpensearchUserRequest(server string, serviceName DbaasServiceName, username DbaasUserUsername) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "username", runtime.ParamLocationPath, username)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-opensearch/%s/user/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewResetDbaasOpensearchUserPasswordRequest calls the generic ResetDbaasOpensearchUserPassword builder with application/json body
+func NewResetDbaasOpensearchUserPasswordRequest(server string, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasOpensearchUserPasswordJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewResetDbaasOpensearchUserPasswordRequestWithBody(server, serviceName, username, "application/json", bodyReader)
+}
+
+// NewResetDbaasOpensearchUserPasswordRequestWithBody generates requests for ResetDbaasOpensearchUserPassword with any type of body
+func NewResetDbaasOpensearchUserPasswordRequestWithBody(server string, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "username", runtime.ParamLocationPath, username)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-opensearch/%s/user/%s/password/reset", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDbaasServicePgRequest generates requests for DeleteDbaasServicePg
+func NewDeleteDbaasServicePgRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-postgres/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -10982,6 +12462,148 @@ func NewStopDbaasPgMigrationRequest(server string, name DbaasServiceName) (*http
 	return req, nil
 }
 
+// NewCreateDbaasPgConnectionPoolRequest calls the generic CreateDbaasPgConnectionPool builder with application/json body
+func NewCreateDbaasPgConnectionPoolRequest(server string, serviceName DbaasServiceName, body CreateDbaasPgConnectionPoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateDbaasPgConnectionPoolRequestWithBody(server, serviceName, "application/json", bodyReader)
+}
+
+// NewCreateDbaasPgConnectionPoolRequestWithBody generates requests for CreateDbaasPgConnectionPool with any type of body
+func NewCreateDbaasPgConnectionPoolRequestWithBody(server string, serviceName DbaasServiceName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-postgres/%s/connection-pool", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDbaasPgConnectionPoolRequest generates requests for DeleteDbaasPgConnectionPool
+func NewDeleteDbaasPgConnectionPoolRequest(server string, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "connection-pool-name", runtime.ParamLocationPath, connectionPoolName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-postgres/%s/connection-pool/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateDbaasPgConnectionPoolRequest calls the generic UpdateDbaasPgConnectionPool builder with application/json body
+func NewUpdateDbaasPgConnectionPoolRequest(server string, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, body UpdateDbaasPgConnectionPoolJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateDbaasPgConnectionPoolRequestWithBody(server, serviceName, connectionPoolName, "application/json", bodyReader)
+}
+
+// NewUpdateDbaasPgConnectionPoolRequestWithBody generates requests for UpdateDbaasPgConnectionPool with any type of body
+func NewUpdateDbaasPgConnectionPoolRequestWithBody(server string, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "service-name", runtime.ParamLocationPath, serviceName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "connection-pool-name", runtime.ParamLocationPath, connectionPoolName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-postgres/%s/connection-pool/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewCreateDbaasPostgresUserRequest calls the generic CreateDbaasPostgresUser builder with application/json body
 func NewCreateDbaasPostgresUserRequest(server string, serviceName DbaasServiceName, body CreateDbaasPostgresUserJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -11174,6 +12796,40 @@ func NewResetDbaasPostgresUserPasswordRequestWithBody(server string, serviceName
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteDbaasServiceRedisRequest generates requests for DeleteDbaasServiceRedis
+func NewDeleteDbaasServiceRedisRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "name", runtime.ParamLocationPath, name)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-redis/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -11583,6 +13239,33 @@ func NewDeleteDbaasServiceRequest(server string, name string) (*http.Request, er
 	}
 
 	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetDbaasSettingsGrafanaRequest generates requests for GetDbaasSettingsGrafana
+func NewGetDbaasSettingsGrafanaRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/dbaas-settings-grafana")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -17260,6 +18943,25 @@ type ClientWithResponsesInterface interface {
 	// GetDbaasCaCertificate request
 	GetDbaasCaCertificateWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasCaCertificateResponse, error)
 
+	// DeleteDbaasServiceGrafana request
+	DeleteDbaasServiceGrafanaWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceGrafanaResponse, error)
+
+	// GetDbaasServiceGrafana request
+	GetDbaasServiceGrafanaWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceGrafanaResponse, error)
+
+	// CreateDbaasServiceGrafana request with any body
+	CreateDbaasServiceGrafanaWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasServiceGrafanaResponse, error)
+
+	CreateDbaasServiceGrafanaWithResponse(ctx context.Context, name DbaasServiceName, body CreateDbaasServiceGrafanaJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasServiceGrafanaResponse, error)
+
+	// UpdateDbaasServiceGrafana request with any body
+	UpdateDbaasServiceGrafanaWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceGrafanaResponse, error)
+
+	UpdateDbaasServiceGrafanaWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceGrafanaJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceGrafanaResponse, error)
+
+	// StartDbaasGrafanaMaintenance request
+	StartDbaasGrafanaMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasGrafanaMaintenanceResponse, error)
+
 	// CreateDbaasIntegration request with any body
 	CreateDbaasIntegrationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasIntegrationResponse, error)
 
@@ -17281,6 +18983,9 @@ type ClientWithResponsesInterface interface {
 	UpdateDbaasIntegrationWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasIntegrationResponse, error)
 
 	UpdateDbaasIntegrationWithResponse(ctx context.Context, id string, body UpdateDbaasIntegrationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasIntegrationResponse, error)
+
+	// DeleteDbaasServiceKafka request
+	DeleteDbaasServiceKafkaWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceKafkaResponse, error)
 
 	// GetDbaasServiceKafka request
 	GetDbaasServiceKafkaWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceKafkaResponse, error)
@@ -17333,6 +19038,9 @@ type ClientWithResponsesInterface interface {
 	// GetDbaasMigrationStatus request
 	GetDbaasMigrationStatusWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasMigrationStatusResponse, error)
 
+	// DeleteDbaasServiceMysql request
+	DeleteDbaasServiceMysqlWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceMysqlResponse, error)
+
 	// GetDbaasServiceMysql request
 	GetDbaasServiceMysqlWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceMysqlResponse, error)
 
@@ -17352,6 +19060,22 @@ type ClientWithResponsesInterface interface {
 	// StopDbaasMysqlMigration request
 	StopDbaasMysqlMigrationWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StopDbaasMysqlMigrationResponse, error)
 
+	// CreateDbaasMysqlUser request with any body
+	CreateDbaasMysqlUserWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasMysqlUserResponse, error)
+
+	CreateDbaasMysqlUserWithResponse(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasMysqlUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasMysqlUserResponse, error)
+
+	// DeleteDbaasMysqlUser request
+	DeleteDbaasMysqlUserWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, reqEditors ...RequestEditorFn) (*DeleteDbaasMysqlUserResponse, error)
+
+	// ResetDbaasMysqlUserPassword request with any body
+	ResetDbaasMysqlUserPasswordWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetDbaasMysqlUserPasswordResponse, error)
+
+	ResetDbaasMysqlUserPasswordWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasMysqlUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetDbaasMysqlUserPasswordResponse, error)
+
+	// DeleteDbaasServiceOpensearch request
+	DeleteDbaasServiceOpensearchWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceOpensearchResponse, error)
+
 	// GetDbaasServiceOpensearch request
 	GetDbaasServiceOpensearchWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceOpensearchResponse, error)
 
@@ -17365,8 +19089,32 @@ type ClientWithResponsesInterface interface {
 
 	UpdateDbaasServiceOpensearchWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceOpensearchJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceOpensearchResponse, error)
 
+	// GetDbaasOpensearchAclConfig request
+	GetDbaasOpensearchAclConfigWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasOpensearchAclConfigResponse, error)
+
+	// UpdateDbaasOpensearchAclConfig request with any body
+	UpdateDbaasOpensearchAclConfigWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasOpensearchAclConfigResponse, error)
+
+	UpdateDbaasOpensearchAclConfigWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasOpensearchAclConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasOpensearchAclConfigResponse, error)
+
 	// StartDbaasOpensearchMaintenance request
 	StartDbaasOpensearchMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasOpensearchMaintenanceResponse, error)
+
+	// CreateDbaasOpensearchUser request with any body
+	CreateDbaasOpensearchUserWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasOpensearchUserResponse, error)
+
+	CreateDbaasOpensearchUserWithResponse(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasOpensearchUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasOpensearchUserResponse, error)
+
+	// DeleteDbaasOpensearchUser request
+	DeleteDbaasOpensearchUserWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, reqEditors ...RequestEditorFn) (*DeleteDbaasOpensearchUserResponse, error)
+
+	// ResetDbaasOpensearchUserPassword request with any body
+	ResetDbaasOpensearchUserPasswordWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetDbaasOpensearchUserPasswordResponse, error)
+
+	ResetDbaasOpensearchUserPasswordWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasOpensearchUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetDbaasOpensearchUserPasswordResponse, error)
+
+	// DeleteDbaasServicePg request
+	DeleteDbaasServicePgWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServicePgResponse, error)
 
 	// GetDbaasServicePg request
 	GetDbaasServicePgWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServicePgResponse, error)
@@ -17387,6 +19135,19 @@ type ClientWithResponsesInterface interface {
 	// StopDbaasPgMigration request
 	StopDbaasPgMigrationWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StopDbaasPgMigrationResponse, error)
 
+	// CreateDbaasPgConnectionPool request with any body
+	CreateDbaasPgConnectionPoolWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasPgConnectionPoolResponse, error)
+
+	CreateDbaasPgConnectionPoolWithResponse(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasPgConnectionPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasPgConnectionPoolResponse, error)
+
+	// DeleteDbaasPgConnectionPool request
+	DeleteDbaasPgConnectionPoolWithResponse(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, reqEditors ...RequestEditorFn) (*DeleteDbaasPgConnectionPoolResponse, error)
+
+	// UpdateDbaasPgConnectionPool request with any body
+	UpdateDbaasPgConnectionPoolWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasPgConnectionPoolResponse, error)
+
+	UpdateDbaasPgConnectionPoolWithResponse(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, body UpdateDbaasPgConnectionPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasPgConnectionPoolResponse, error)
+
 	// CreateDbaasPostgresUser request with any body
 	CreateDbaasPostgresUserWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasPostgresUserResponse, error)
 
@@ -17404,6 +19165,9 @@ type ClientWithResponsesInterface interface {
 	ResetDbaasPostgresUserPasswordWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetDbaasPostgresUserPasswordResponse, error)
 
 	ResetDbaasPostgresUserPasswordWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasPostgresUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetDbaasPostgresUserPasswordResponse, error)
+
+	// DeleteDbaasServiceRedis request
+	DeleteDbaasServiceRedisWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceRedisResponse, error)
 
 	// GetDbaasServiceRedis request
 	GetDbaasServiceRedisWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceRedisResponse, error)
@@ -17445,6 +19209,9 @@ type ClientWithResponsesInterface interface {
 
 	// DeleteDbaasService request
 	DeleteDbaasServiceWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceResponse, error)
+
+	// GetDbaasSettingsGrafana request
+	GetDbaasSettingsGrafanaWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasSettingsGrafanaResponse, error)
 
 	// GetDbaasSettingsKafka request
 	GetDbaasSettingsKafkaWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasSettingsKafkaResponse, error)
@@ -18318,6 +20085,116 @@ func (r GetDbaasCaCertificateResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteDbaasServiceGrafanaResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasServiceGrafanaResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasServiceGrafanaResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetDbaasServiceGrafanaResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DbaasServiceGrafana
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDbaasServiceGrafanaResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDbaasServiceGrafanaResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDbaasServiceGrafanaResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDbaasServiceGrafanaResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDbaasServiceGrafanaResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateDbaasServiceGrafanaResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateDbaasServiceGrafanaResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateDbaasServiceGrafanaResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type StartDbaasGrafanaMaintenanceResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r StartDbaasGrafanaMaintenanceResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r StartDbaasGrafanaMaintenanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateDbaasIntegrationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -18454,6 +20331,28 @@ func (r UpdateDbaasIntegrationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateDbaasIntegrationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDbaasServiceKafkaResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasServiceKafkaResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasServiceKafkaResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -18746,6 +20645,28 @@ func (r GetDbaasMigrationStatusResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteDbaasServiceMysqlResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasServiceMysqlResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasServiceMysqlResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetDbaasServiceMysqlResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -18856,6 +20777,94 @@ func (r StopDbaasMysqlMigrationResponse) StatusCode() int {
 	return 0
 }
 
+type CreateDbaasMysqlUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDbaasMysqlUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDbaasMysqlUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDbaasMysqlUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasMysqlUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasMysqlUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ResetDbaasMysqlUserPasswordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ResetDbaasMysqlUserPasswordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResetDbaasMysqlUserPasswordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDbaasServiceOpensearchResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasServiceOpensearchResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasServiceOpensearchResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetDbaasServiceOpensearchResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -18922,6 +20931,50 @@ func (r UpdateDbaasServiceOpensearchResponse) StatusCode() int {
 	return 0
 }
 
+type GetDbaasOpensearchAclConfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *DbaasOpensearchAclConfig
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDbaasOpensearchAclConfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDbaasOpensearchAclConfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateDbaasOpensearchAclConfigResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateDbaasOpensearchAclConfigResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateDbaasOpensearchAclConfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type StartDbaasOpensearchMaintenanceResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -18938,6 +20991,94 @@ func (r StartDbaasOpensearchMaintenanceResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r StartDbaasOpensearchMaintenanceResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateDbaasOpensearchUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDbaasOpensearchUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDbaasOpensearchUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDbaasOpensearchUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasOpensearchUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasOpensearchUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ResetDbaasOpensearchUserPasswordResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r ResetDbaasOpensearchUserPasswordResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ResetDbaasOpensearchUserPasswordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDbaasServicePgResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasServicePgResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasServicePgResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -19054,6 +21195,72 @@ func (r StopDbaasPgMigrationResponse) StatusCode() int {
 	return 0
 }
 
+type CreateDbaasPgConnectionPoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateDbaasPgConnectionPoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateDbaasPgConnectionPoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDbaasPgConnectionPoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasPgConnectionPoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasPgConnectionPoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateDbaasPgConnectionPoolResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateDbaasPgConnectionPoolResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateDbaasPgConnectionPoolResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type CreateDbaasPostgresUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -19136,6 +21343,28 @@ func (r ResetDbaasPostgresUserPasswordResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r ResetDbaasPostgresUserPasswordResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteDbaasServiceRedisResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteDbaasServiceRedisResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteDbaasServiceRedisResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -19390,6 +21619,38 @@ func (r DeleteDbaasServiceResponse) StatusCode() int {
 	return 0
 }
 
+type GetDbaasSettingsGrafanaResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		Settings *struct {
+			// Grafana configuration values
+			Grafana *struct {
+				AdditionalProperties *bool                   `json:"additionalProperties,omitempty"`
+				Properties           *map[string]interface{} `json:"properties,omitempty"`
+				Title                *string                 `json:"title,omitempty"`
+				Type                 *string                 `json:"type,omitempty"`
+			} `json:"grafana,omitempty"`
+		} `json:"settings,omitempty"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetDbaasSettingsGrafanaResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetDbaasSettingsGrafanaResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetDbaasSettingsKafkaResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -19623,17 +21884,7 @@ func (r CreateDbaasTaskMigrationCheckResponse) StatusCode() int {
 type GetDbaasTaskResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		CreateTime  *time.Time `json:"create-time,omitempty"`
-		Id          *string    `json:"id,omitempty"`
-		Result      *string    `json:"result,omitempty"`
-		ResultCodes *[]struct {
-			Code   *string `json:"code,omitempty"`
-			Dbname *string `json:"dbname,omitempty"`
-		} `json:"result-codes,omitempty"`
-		Success  *bool   `json:"success,omitempty"`
-		TaskType *string `json:"task-type,omitempty"`
-	}
+	JSON200      *DbaasTask
 }
 
 // Status returns HTTPResponse.Status
@@ -22805,6 +25056,67 @@ func (c *ClientWithResponses) GetDbaasCaCertificateWithResponse(ctx context.Cont
 	return ParseGetDbaasCaCertificateResponse(rsp)
 }
 
+// DeleteDbaasServiceGrafanaWithResponse request returning *DeleteDbaasServiceGrafanaResponse
+func (c *ClientWithResponses) DeleteDbaasServiceGrafanaWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceGrafanaResponse, error) {
+	rsp, err := c.DeleteDbaasServiceGrafana(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasServiceGrafanaResponse(rsp)
+}
+
+// GetDbaasServiceGrafanaWithResponse request returning *GetDbaasServiceGrafanaResponse
+func (c *ClientWithResponses) GetDbaasServiceGrafanaWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceGrafanaResponse, error) {
+	rsp, err := c.GetDbaasServiceGrafana(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDbaasServiceGrafanaResponse(rsp)
+}
+
+// CreateDbaasServiceGrafanaWithBodyWithResponse request with arbitrary body returning *CreateDbaasServiceGrafanaResponse
+func (c *ClientWithResponses) CreateDbaasServiceGrafanaWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasServiceGrafanaResponse, error) {
+	rsp, err := c.CreateDbaasServiceGrafanaWithBody(ctx, name, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDbaasServiceGrafanaResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDbaasServiceGrafanaWithResponse(ctx context.Context, name DbaasServiceName, body CreateDbaasServiceGrafanaJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasServiceGrafanaResponse, error) {
+	rsp, err := c.CreateDbaasServiceGrafana(ctx, name, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDbaasServiceGrafanaResponse(rsp)
+}
+
+// UpdateDbaasServiceGrafanaWithBodyWithResponse request with arbitrary body returning *UpdateDbaasServiceGrafanaResponse
+func (c *ClientWithResponses) UpdateDbaasServiceGrafanaWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceGrafanaResponse, error) {
+	rsp, err := c.UpdateDbaasServiceGrafanaWithBody(ctx, name, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDbaasServiceGrafanaResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateDbaasServiceGrafanaWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasServiceGrafanaJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasServiceGrafanaResponse, error) {
+	rsp, err := c.UpdateDbaasServiceGrafana(ctx, name, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDbaasServiceGrafanaResponse(rsp)
+}
+
+// StartDbaasGrafanaMaintenanceWithResponse request returning *StartDbaasGrafanaMaintenanceResponse
+func (c *ClientWithResponses) StartDbaasGrafanaMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasGrafanaMaintenanceResponse, error) {
+	rsp, err := c.StartDbaasGrafanaMaintenance(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseStartDbaasGrafanaMaintenanceResponse(rsp)
+}
+
 // CreateDbaasIntegrationWithBodyWithResponse request with arbitrary body returning *CreateDbaasIntegrationResponse
 func (c *ClientWithResponses) CreateDbaasIntegrationWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasIntegrationResponse, error) {
 	rsp, err := c.CreateDbaasIntegrationWithBody(ctx, contentType, body, reqEditors...)
@@ -22873,6 +25185,15 @@ func (c *ClientWithResponses) UpdateDbaasIntegrationWithResponse(ctx context.Con
 		return nil, err
 	}
 	return ParseUpdateDbaasIntegrationResponse(rsp)
+}
+
+// DeleteDbaasServiceKafkaWithResponse request returning *DeleteDbaasServiceKafkaResponse
+func (c *ClientWithResponses) DeleteDbaasServiceKafkaWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceKafkaResponse, error) {
+	rsp, err := c.DeleteDbaasServiceKafka(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasServiceKafkaResponse(rsp)
 }
 
 // GetDbaasServiceKafkaWithResponse request returning *GetDbaasServiceKafkaResponse
@@ -23040,6 +25361,15 @@ func (c *ClientWithResponses) GetDbaasMigrationStatusWithResponse(ctx context.Co
 	return ParseGetDbaasMigrationStatusResponse(rsp)
 }
 
+// DeleteDbaasServiceMysqlWithResponse request returning *DeleteDbaasServiceMysqlResponse
+func (c *ClientWithResponses) DeleteDbaasServiceMysqlWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceMysqlResponse, error) {
+	rsp, err := c.DeleteDbaasServiceMysql(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasServiceMysqlResponse(rsp)
+}
+
 // GetDbaasServiceMysqlWithResponse request returning *GetDbaasServiceMysqlResponse
 func (c *ClientWithResponses) GetDbaasServiceMysqlWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceMysqlResponse, error) {
 	rsp, err := c.GetDbaasServiceMysql(ctx, name, reqEditors...)
@@ -23101,6 +25431,58 @@ func (c *ClientWithResponses) StopDbaasMysqlMigrationWithResponse(ctx context.Co
 	return ParseStopDbaasMysqlMigrationResponse(rsp)
 }
 
+// CreateDbaasMysqlUserWithBodyWithResponse request with arbitrary body returning *CreateDbaasMysqlUserResponse
+func (c *ClientWithResponses) CreateDbaasMysqlUserWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasMysqlUserResponse, error) {
+	rsp, err := c.CreateDbaasMysqlUserWithBody(ctx, serviceName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDbaasMysqlUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDbaasMysqlUserWithResponse(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasMysqlUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasMysqlUserResponse, error) {
+	rsp, err := c.CreateDbaasMysqlUser(ctx, serviceName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDbaasMysqlUserResponse(rsp)
+}
+
+// DeleteDbaasMysqlUserWithResponse request returning *DeleteDbaasMysqlUserResponse
+func (c *ClientWithResponses) DeleteDbaasMysqlUserWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, reqEditors ...RequestEditorFn) (*DeleteDbaasMysqlUserResponse, error) {
+	rsp, err := c.DeleteDbaasMysqlUser(ctx, serviceName, username, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasMysqlUserResponse(rsp)
+}
+
+// ResetDbaasMysqlUserPasswordWithBodyWithResponse request with arbitrary body returning *ResetDbaasMysqlUserPasswordResponse
+func (c *ClientWithResponses) ResetDbaasMysqlUserPasswordWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetDbaasMysqlUserPasswordResponse, error) {
+	rsp, err := c.ResetDbaasMysqlUserPasswordWithBody(ctx, serviceName, username, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetDbaasMysqlUserPasswordResponse(rsp)
+}
+
+func (c *ClientWithResponses) ResetDbaasMysqlUserPasswordWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasMysqlUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetDbaasMysqlUserPasswordResponse, error) {
+	rsp, err := c.ResetDbaasMysqlUserPassword(ctx, serviceName, username, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetDbaasMysqlUserPasswordResponse(rsp)
+}
+
+// DeleteDbaasServiceOpensearchWithResponse request returning *DeleteDbaasServiceOpensearchResponse
+func (c *ClientWithResponses) DeleteDbaasServiceOpensearchWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceOpensearchResponse, error) {
+	rsp, err := c.DeleteDbaasServiceOpensearch(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasServiceOpensearchResponse(rsp)
+}
+
 // GetDbaasServiceOpensearchWithResponse request returning *GetDbaasServiceOpensearchResponse
 func (c *ClientWithResponses) GetDbaasServiceOpensearchWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasServiceOpensearchResponse, error) {
 	rsp, err := c.GetDbaasServiceOpensearch(ctx, name, reqEditors...)
@@ -23144,6 +25526,32 @@ func (c *ClientWithResponses) UpdateDbaasServiceOpensearchWithResponse(ctx conte
 	return ParseUpdateDbaasServiceOpensearchResponse(rsp)
 }
 
+// GetDbaasOpensearchAclConfigWithResponse request returning *GetDbaasOpensearchAclConfigResponse
+func (c *ClientWithResponses) GetDbaasOpensearchAclConfigWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*GetDbaasOpensearchAclConfigResponse, error) {
+	rsp, err := c.GetDbaasOpensearchAclConfig(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDbaasOpensearchAclConfigResponse(rsp)
+}
+
+// UpdateDbaasOpensearchAclConfigWithBodyWithResponse request with arbitrary body returning *UpdateDbaasOpensearchAclConfigResponse
+func (c *ClientWithResponses) UpdateDbaasOpensearchAclConfigWithBodyWithResponse(ctx context.Context, name DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasOpensearchAclConfigResponse, error) {
+	rsp, err := c.UpdateDbaasOpensearchAclConfigWithBody(ctx, name, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDbaasOpensearchAclConfigResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateDbaasOpensearchAclConfigWithResponse(ctx context.Context, name DbaasServiceName, body UpdateDbaasOpensearchAclConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasOpensearchAclConfigResponse, error) {
+	rsp, err := c.UpdateDbaasOpensearchAclConfig(ctx, name, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDbaasOpensearchAclConfigResponse(rsp)
+}
+
 // StartDbaasOpensearchMaintenanceWithResponse request returning *StartDbaasOpensearchMaintenanceResponse
 func (c *ClientWithResponses) StartDbaasOpensearchMaintenanceWithResponse(ctx context.Context, name DbaasServiceName, reqEditors ...RequestEditorFn) (*StartDbaasOpensearchMaintenanceResponse, error) {
 	rsp, err := c.StartDbaasOpensearchMaintenance(ctx, name, reqEditors...)
@@ -23151,6 +25559,58 @@ func (c *ClientWithResponses) StartDbaasOpensearchMaintenanceWithResponse(ctx co
 		return nil, err
 	}
 	return ParseStartDbaasOpensearchMaintenanceResponse(rsp)
+}
+
+// CreateDbaasOpensearchUserWithBodyWithResponse request with arbitrary body returning *CreateDbaasOpensearchUserResponse
+func (c *ClientWithResponses) CreateDbaasOpensearchUserWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasOpensearchUserResponse, error) {
+	rsp, err := c.CreateDbaasOpensearchUserWithBody(ctx, serviceName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDbaasOpensearchUserResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDbaasOpensearchUserWithResponse(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasOpensearchUserJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasOpensearchUserResponse, error) {
+	rsp, err := c.CreateDbaasOpensearchUser(ctx, serviceName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDbaasOpensearchUserResponse(rsp)
+}
+
+// DeleteDbaasOpensearchUserWithResponse request returning *DeleteDbaasOpensearchUserResponse
+func (c *ClientWithResponses) DeleteDbaasOpensearchUserWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, reqEditors ...RequestEditorFn) (*DeleteDbaasOpensearchUserResponse, error) {
+	rsp, err := c.DeleteDbaasOpensearchUser(ctx, serviceName, username, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasOpensearchUserResponse(rsp)
+}
+
+// ResetDbaasOpensearchUserPasswordWithBodyWithResponse request with arbitrary body returning *ResetDbaasOpensearchUserPasswordResponse
+func (c *ClientWithResponses) ResetDbaasOpensearchUserPasswordWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*ResetDbaasOpensearchUserPasswordResponse, error) {
+	rsp, err := c.ResetDbaasOpensearchUserPasswordWithBody(ctx, serviceName, username, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetDbaasOpensearchUserPasswordResponse(rsp)
+}
+
+func (c *ClientWithResponses) ResetDbaasOpensearchUserPasswordWithResponse(ctx context.Context, serviceName DbaasServiceName, username DbaasUserUsername, body ResetDbaasOpensearchUserPasswordJSONRequestBody, reqEditors ...RequestEditorFn) (*ResetDbaasOpensearchUserPasswordResponse, error) {
+	rsp, err := c.ResetDbaasOpensearchUserPassword(ctx, serviceName, username, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResetDbaasOpensearchUserPasswordResponse(rsp)
+}
+
+// DeleteDbaasServicePgWithResponse request returning *DeleteDbaasServicePgResponse
+func (c *ClientWithResponses) DeleteDbaasServicePgWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServicePgResponse, error) {
+	rsp, err := c.DeleteDbaasServicePg(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasServicePgResponse(rsp)
 }
 
 // GetDbaasServicePgWithResponse request returning *GetDbaasServicePgResponse
@@ -23214,6 +25674,49 @@ func (c *ClientWithResponses) StopDbaasPgMigrationWithResponse(ctx context.Conte
 	return ParseStopDbaasPgMigrationResponse(rsp)
 }
 
+// CreateDbaasPgConnectionPoolWithBodyWithResponse request with arbitrary body returning *CreateDbaasPgConnectionPoolResponse
+func (c *ClientWithResponses) CreateDbaasPgConnectionPoolWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasPgConnectionPoolResponse, error) {
+	rsp, err := c.CreateDbaasPgConnectionPoolWithBody(ctx, serviceName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDbaasPgConnectionPoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateDbaasPgConnectionPoolWithResponse(ctx context.Context, serviceName DbaasServiceName, body CreateDbaasPgConnectionPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateDbaasPgConnectionPoolResponse, error) {
+	rsp, err := c.CreateDbaasPgConnectionPool(ctx, serviceName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateDbaasPgConnectionPoolResponse(rsp)
+}
+
+// DeleteDbaasPgConnectionPoolWithResponse request returning *DeleteDbaasPgConnectionPoolResponse
+func (c *ClientWithResponses) DeleteDbaasPgConnectionPoolWithResponse(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, reqEditors ...RequestEditorFn) (*DeleteDbaasPgConnectionPoolResponse, error) {
+	rsp, err := c.DeleteDbaasPgConnectionPool(ctx, serviceName, connectionPoolName, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasPgConnectionPoolResponse(rsp)
+}
+
+// UpdateDbaasPgConnectionPoolWithBodyWithResponse request with arbitrary body returning *UpdateDbaasPgConnectionPoolResponse
+func (c *ClientWithResponses) UpdateDbaasPgConnectionPoolWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateDbaasPgConnectionPoolResponse, error) {
+	rsp, err := c.UpdateDbaasPgConnectionPoolWithBody(ctx, serviceName, connectionPoolName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDbaasPgConnectionPoolResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateDbaasPgConnectionPoolWithResponse(ctx context.Context, serviceName DbaasServiceName, connectionPoolName DbaasPgPoolName, body UpdateDbaasPgConnectionPoolJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateDbaasPgConnectionPoolResponse, error) {
+	rsp, err := c.UpdateDbaasPgConnectionPool(ctx, serviceName, connectionPoolName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateDbaasPgConnectionPoolResponse(rsp)
+}
+
 // CreateDbaasPostgresUserWithBodyWithResponse request with arbitrary body returning *CreateDbaasPostgresUserResponse
 func (c *ClientWithResponses) CreateDbaasPostgresUserWithBodyWithResponse(ctx context.Context, serviceName DbaasServiceName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateDbaasPostgresUserResponse, error) {
 	rsp, err := c.CreateDbaasPostgresUserWithBody(ctx, serviceName, contentType, body, reqEditors...)
@@ -23272,6 +25775,15 @@ func (c *ClientWithResponses) ResetDbaasPostgresUserPasswordWithResponse(ctx con
 		return nil, err
 	}
 	return ParseResetDbaasPostgresUserPasswordResponse(rsp)
+}
+
+// DeleteDbaasServiceRedisWithResponse request returning *DeleteDbaasServiceRedisResponse
+func (c *ClientWithResponses) DeleteDbaasServiceRedisWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*DeleteDbaasServiceRedisResponse, error) {
+	rsp, err := c.DeleteDbaasServiceRedis(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteDbaasServiceRedisResponse(rsp)
 }
 
 // GetDbaasServiceRedisWithResponse request returning *GetDbaasServiceRedisResponse
@@ -23403,6 +25915,15 @@ func (c *ClientWithResponses) DeleteDbaasServiceWithResponse(ctx context.Context
 		return nil, err
 	}
 	return ParseDeleteDbaasServiceResponse(rsp)
+}
+
+// GetDbaasSettingsGrafanaWithResponse request returning *GetDbaasSettingsGrafanaResponse
+func (c *ClientWithResponses) GetDbaasSettingsGrafanaWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetDbaasSettingsGrafanaResponse, error) {
+	rsp, err := c.GetDbaasSettingsGrafana(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetDbaasSettingsGrafanaResponse(rsp)
 }
 
 // GetDbaasSettingsKafkaWithResponse request returning *GetDbaasSettingsKafkaResponse
@@ -25500,6 +28021,136 @@ func ParseGetDbaasCaCertificateResponse(rsp *http.Response) (*GetDbaasCaCertific
 	return response, nil
 }
 
+// ParseDeleteDbaasServiceGrafanaResponse parses an HTTP response from a DeleteDbaasServiceGrafanaWithResponse call
+func ParseDeleteDbaasServiceGrafanaResponse(rsp *http.Response) (*DeleteDbaasServiceGrafanaResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasServiceGrafanaResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetDbaasServiceGrafanaResponse parses an HTTP response from a GetDbaasServiceGrafanaWithResponse call
+func ParseGetDbaasServiceGrafanaResponse(rsp *http.Response) (*GetDbaasServiceGrafanaResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDbaasServiceGrafanaResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DbaasServiceGrafana
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateDbaasServiceGrafanaResponse parses an HTTP response from a CreateDbaasServiceGrafanaWithResponse call
+func ParseCreateDbaasServiceGrafanaResponse(rsp *http.Response) (*CreateDbaasServiceGrafanaResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDbaasServiceGrafanaResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateDbaasServiceGrafanaResponse parses an HTTP response from a UpdateDbaasServiceGrafanaWithResponse call
+func ParseUpdateDbaasServiceGrafanaResponse(rsp *http.Response) (*UpdateDbaasServiceGrafanaResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateDbaasServiceGrafanaResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseStartDbaasGrafanaMaintenanceResponse parses an HTTP response from a StartDbaasGrafanaMaintenanceWithResponse call
+func ParseStartDbaasGrafanaMaintenanceResponse(rsp *http.Response) (*StartDbaasGrafanaMaintenanceResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &StartDbaasGrafanaMaintenanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateDbaasIntegrationResponse parses an HTTP response from a CreateDbaasIntegrationWithResponse call
 func ParseCreateDbaasIntegrationResponse(rsp *http.Response) (*CreateDbaasIntegrationResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -25649,6 +28300,32 @@ func ParseUpdateDbaasIntegrationResponse(rsp *http.Response) (*UpdateDbaasIntegr
 	}
 
 	response := &UpdateDbaasIntegrationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDbaasServiceKafkaResponse parses an HTTP response from a DeleteDbaasServiceKafkaWithResponse call
+func ParseDeleteDbaasServiceKafkaResponse(rsp *http.Response) (*DeleteDbaasServiceKafkaResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasServiceKafkaResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -26004,6 +28681,32 @@ func ParseGetDbaasMigrationStatusResponse(rsp *http.Response) (*GetDbaasMigratio
 	return response, nil
 }
 
+// ParseDeleteDbaasServiceMysqlResponse parses an HTTP response from a DeleteDbaasServiceMysqlWithResponse call
+func ParseDeleteDbaasServiceMysqlResponse(rsp *http.Response) (*DeleteDbaasServiceMysqlResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasServiceMysqlResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetDbaasServiceMysqlResponse parses an HTTP response from a GetDbaasServiceMysqlWithResponse call
 func ParseGetDbaasServiceMysqlResponse(rsp *http.Response) (*GetDbaasServiceMysqlResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -26134,6 +28837,110 @@ func ParseStopDbaasMysqlMigrationResponse(rsp *http.Response) (*StopDbaasMysqlMi
 	return response, nil
 }
 
+// ParseCreateDbaasMysqlUserResponse parses an HTTP response from a CreateDbaasMysqlUserWithResponse call
+func ParseCreateDbaasMysqlUserResponse(rsp *http.Response) (*CreateDbaasMysqlUserResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDbaasMysqlUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDbaasMysqlUserResponse parses an HTTP response from a DeleteDbaasMysqlUserWithResponse call
+func ParseDeleteDbaasMysqlUserResponse(rsp *http.Response) (*DeleteDbaasMysqlUserResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasMysqlUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseResetDbaasMysqlUserPasswordResponse parses an HTTP response from a ResetDbaasMysqlUserPasswordWithResponse call
+func ParseResetDbaasMysqlUserPasswordResponse(rsp *http.Response) (*ResetDbaasMysqlUserPasswordResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResetDbaasMysqlUserPasswordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDbaasServiceOpensearchResponse parses an HTTP response from a DeleteDbaasServiceOpensearchWithResponse call
+func ParseDeleteDbaasServiceOpensearchResponse(rsp *http.Response) (*DeleteDbaasServiceOpensearchResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasServiceOpensearchResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetDbaasServiceOpensearchResponse parses an HTTP response from a GetDbaasServiceOpensearchWithResponse call
 func ParseGetDbaasServiceOpensearchResponse(rsp *http.Response) (*GetDbaasServiceOpensearchResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -26212,6 +29019,58 @@ func ParseUpdateDbaasServiceOpensearchResponse(rsp *http.Response) (*UpdateDbaas
 	return response, nil
 }
 
+// ParseGetDbaasOpensearchAclConfigResponse parses an HTTP response from a GetDbaasOpensearchAclConfigWithResponse call
+func ParseGetDbaasOpensearchAclConfigResponse(rsp *http.Response) (*GetDbaasOpensearchAclConfigResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDbaasOpensearchAclConfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest DbaasOpensearchAclConfig
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateDbaasOpensearchAclConfigResponse parses an HTTP response from a UpdateDbaasOpensearchAclConfigWithResponse call
+func ParseUpdateDbaasOpensearchAclConfigResponse(rsp *http.Response) (*UpdateDbaasOpensearchAclConfigResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateDbaasOpensearchAclConfigResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseStartDbaasOpensearchMaintenanceResponse parses an HTTP response from a StartDbaasOpensearchMaintenanceWithResponse call
 func ParseStartDbaasOpensearchMaintenanceResponse(rsp *http.Response) (*StartDbaasOpensearchMaintenanceResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -26221,6 +29080,110 @@ func ParseStartDbaasOpensearchMaintenanceResponse(rsp *http.Response) (*StartDba
 	}
 
 	response := &StartDbaasOpensearchMaintenanceResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateDbaasOpensearchUserResponse parses an HTTP response from a CreateDbaasOpensearchUserWithResponse call
+func ParseCreateDbaasOpensearchUserResponse(rsp *http.Response) (*CreateDbaasOpensearchUserResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDbaasOpensearchUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDbaasOpensearchUserResponse parses an HTTP response from a DeleteDbaasOpensearchUserWithResponse call
+func ParseDeleteDbaasOpensearchUserResponse(rsp *http.Response) (*DeleteDbaasOpensearchUserResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasOpensearchUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseResetDbaasOpensearchUserPasswordResponse parses an HTTP response from a ResetDbaasOpensearchUserPasswordWithResponse call
+func ParseResetDbaasOpensearchUserPasswordResponse(rsp *http.Response) (*ResetDbaasOpensearchUserPasswordResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ResetDbaasOpensearchUserPasswordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDbaasServicePgResponse parses an HTTP response from a DeleteDbaasServicePgWithResponse call
+func ParseDeleteDbaasServicePgResponse(rsp *http.Response) (*DeleteDbaasServicePgResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasServicePgResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -26368,6 +29331,84 @@ func ParseStopDbaasPgMigrationResponse(rsp *http.Response) (*StopDbaasPgMigratio
 	return response, nil
 }
 
+// ParseCreateDbaasPgConnectionPoolResponse parses an HTTP response from a CreateDbaasPgConnectionPoolWithResponse call
+func ParseCreateDbaasPgConnectionPoolResponse(rsp *http.Response) (*CreateDbaasPgConnectionPoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateDbaasPgConnectionPoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDbaasPgConnectionPoolResponse parses an HTTP response from a DeleteDbaasPgConnectionPoolWithResponse call
+func ParseDeleteDbaasPgConnectionPoolResponse(rsp *http.Response) (*DeleteDbaasPgConnectionPoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasPgConnectionPoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateDbaasPgConnectionPoolResponse parses an HTTP response from a UpdateDbaasPgConnectionPoolWithResponse call
+func ParseUpdateDbaasPgConnectionPoolResponse(rsp *http.Response) (*UpdateDbaasPgConnectionPoolResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateDbaasPgConnectionPoolResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseCreateDbaasPostgresUserResponse parses an HTTP response from a CreateDbaasPostgresUserWithResponse call
 func ParseCreateDbaasPostgresUserResponse(rsp *http.Response) (*CreateDbaasPostgresUserResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -26455,6 +29496,32 @@ func ParseResetDbaasPostgresUserPasswordResponse(rsp *http.Response) (*ResetDbaa
 	}
 
 	response := &ResetDbaasPostgresUserPasswordResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteDbaasServiceRedisResponse parses an HTTP response from a DeleteDbaasServiceRedisWithResponse call
+func ParseDeleteDbaasServiceRedisResponse(rsp *http.Response) (*DeleteDbaasServiceRedisResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteDbaasServiceRedisResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -26764,6 +29831,42 @@ func ParseDeleteDbaasServiceResponse(rsp *http.Response) (*DeleteDbaasServiceRes
 	return response, nil
 }
 
+// ParseGetDbaasSettingsGrafanaResponse parses an HTTP response from a GetDbaasSettingsGrafanaWithResponse call
+func ParseGetDbaasSettingsGrafanaResponse(rsp *http.Response) (*GetDbaasSettingsGrafanaResponse, error) {
+	bodyBytes, err := ioutil.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetDbaasSettingsGrafanaResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Settings *struct {
+				// Grafana configuration values
+				Grafana *struct {
+					AdditionalProperties *bool                   `json:"additionalProperties,omitempty"`
+					Properties           *map[string]interface{} `json:"properties,omitempty"`
+					Title                *string                 `json:"title,omitempty"`
+					Type                 *string                 `json:"type,omitempty"`
+				} `json:"grafana,omitempty"`
+			} `json:"settings,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseGetDbaasSettingsKafkaResponse parses an HTTP response from a GetDbaasSettingsKafkaWithResponse call
 func ParseGetDbaasSettingsKafkaResponse(rsp *http.Response) (*GetDbaasSettingsKafkaResponse, error) {
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
@@ -27033,17 +30136,7 @@ func ParseGetDbaasTaskResponse(rsp *http.Response) (*GetDbaasTaskResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			CreateTime  *time.Time `json:"create-time,omitempty"`
-			Id          *string    `json:"id,omitempty"`
-			Result      *string    `json:"result,omitempty"`
-			ResultCodes *[]struct {
-				Code   *string `json:"code,omitempty"`
-				Dbname *string `json:"dbname,omitempty"`
-			} `json:"result-codes,omitempty"`
-			Success  *bool   `json:"success,omitempty"`
-			TaskType *string `json:"task-type,omitempty"`
-		}
+		var dest DbaasTask
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

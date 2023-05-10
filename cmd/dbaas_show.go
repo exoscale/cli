@@ -69,6 +69,7 @@ type dbServiceShowOutput struct {
 	UpdateDate            time.Time                       `json:"update_date"`
 	Zone                  string                          `json:"zone"`
 
+	Grafana    *dbServiceGrafanaShowOutput    `json:"grafana,omitempty"`
 	Kafka      *dbServiceKafkaShowOutput      `json:"kafka,omitempty"`
 	Mysql      *dbServiceMysqlShowOutput      `json:"mysql,omitempty"`
 	PG         *dbServicePGShowOutput         `json:"pg,omitempty"`
@@ -198,6 +199,8 @@ func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	switch dbType {
+	case "grafana":
+		return c.outputFunc(c.showDatabaseServiceGrafana(ctx))
 	case "kafka":
 		return c.outputFunc(c.showDatabaseServiceKafka(ctx))
 	case "opensearch":
