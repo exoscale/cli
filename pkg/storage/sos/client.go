@@ -20,13 +20,26 @@ var (
 	// CommonConfigOptFns represents the list of AWS SDK configuration options common
 	// to all commands. In addition to those, some commands can/must set additional options
 	// specific to their execution context.
-	CommonConfigOptFns []func(*awsconfig.LoadOptions) error
+	CommonConfigOptFns           []func(*awsconfig.LoadOptions) error
+	ClientNewUploaderDefaultFunc = s3manager.NewUploader
 )
 
-type Client struct {
-	s3Client *s3.Client
+type Uploader interface {
+	Upload(ctx context.Context, input *s3.PutObjectInput, opts ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error)
+}
 
-	zone string
+type Client struct {
+	S3Client        S3API
+	Zone            string
+	NewUploaderFunc func(client s3manager.UploadAPIClient, options ...func(*s3manager.Uploader)) Uploader
+}
+
+func (c *Client) NewUploader(client s3manager.UploadAPIClient, options ...func(*s3manager.Uploader)) Uploader {
+	if c.NewUploaderFunc == nil {
+		return ClientNewUploaderDefaultFunc(client, options...)
+	}
+
+	return c.NewUploaderFunc(client, options...)
 }
 
 // forEachObject is a convenience wrapper to execute a callback function on
@@ -44,7 +57,7 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 
 	var ct string
 	for {
-		res, err := c.s3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+		res, err := c.S3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
 			ContinuationToken: aws.String(ct),
@@ -92,7 +105,7 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 // copying such as metadata/headers manipulation, retrieving information about
 // the targeted object for a later copy.
 func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyObjectInput, error) {
-	srcObject, err := c.s3Client.GetObject(ctx, &s3.GetObjectInput{
+	srcObject, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -103,7 +116,7 @@ func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyOb
 	// Object ACL are reset during a CopyObject operation,
 	// we must set them explicitly on the copied object.
 
-	acl, err := c.s3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
+	acl, err := c.S3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -135,7 +148,7 @@ func (c *Client) CopyObject(ctx context.Context, bucket, key string) (*s3.CopyOb
 type ClientOpt func(*Client) error
 
 func ClientOptWithZone(zone string) ClientOpt {
-	return func(c *Client) error { c.zone = zone; return nil }
+	return func(c *Client) error { c.Zone = zone; return nil }
 }
 
 func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
@@ -165,7 +178,7 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 			return err
 		}
 
-		c.zone = region
+		c.Zone = region
 		return nil
 	}
 }
@@ -173,7 +186,7 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 	var (
 		client = Client{
-			zone: account.CurrentAccount.DefaultZone,
+			Zone: account.CurrentAccount.DefaultZone,
 		}
 
 		caCerts io.Reader
@@ -188,14 +201,14 @@ func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 	cfg, err := awsconfig.LoadDefaultConfig(
 		ctx,
 		append(CommonConfigOptFns,
-			awsconfig.WithRegion(client.zone),
+			awsconfig.WithRegion(client.Zone),
 
 			awsconfig.WithEndpointResolver(aws.EndpointResolverFunc(
 				func(service, region string) (aws.Endpoint, error) {
-					sosURL := strings.Replace(account.CurrentAccount.SosEndpoint, "{zone}", client.zone, 1)
+					sosURL := strings.Replace(account.CurrentAccount.SosEndpoint, "{zone}", client.Zone, 1)
 					return aws.Endpoint{
 						URL:           sosURL,
-						SigningRegion: client.zone,
+						SigningRegion: client.Zone,
 					}, nil
 				})),
 
@@ -210,7 +223,7 @@ func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 		return nil, err
 	}
 
-	client.s3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
+	client.S3Client = s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.UsePathStyle = true
 	})
 

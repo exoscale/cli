@@ -48,7 +48,7 @@ func (c *Client) SetBucketACL(ctx context.Context, bucket string, acl *ACL) erro
 		// As a safety precaution, if the caller didn't explicitly set a Grantee
 		// with the FULL_CONTROL permission we set it to the current bucket owner.
 		if acl.FullControl == "" {
-			curACL, err := c.s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
+			curACL, err := c.S3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{Bucket: aws.String(bucket)})
 			if err != nil {
 				return fmt.Errorf("unable to retrieve current ACL: %w", err)
 			}
@@ -60,7 +60,7 @@ func (c *Client) SetBucketACL(ctx context.Context, bucket string, acl *ACL) erro
 		}
 	}
 
-	if _, err := c.s3Client.PutBucketAcl(ctx, &s3ACL); err != nil {
+	if _, err := c.S3Client.PutBucketAcl(ctx, &s3ACL); err != nil {
 		return err
 	}
 
@@ -87,7 +87,7 @@ func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL)
 		// As a safety precaution, if the caller didn't explicitly set a Grantee
 		// with the FULL_CONTROL permission we set it to the current object owner.
 		if acl.FullControl == "" {
-			curACL, err := c.s3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
+			curACL, err := c.S3Client.GetObjectAcl(ctx, &s3.GetObjectAclInput{
 				Bucket: s3ACL.Bucket,
 				Key:    s3ACL.Key,
 			})
@@ -102,7 +102,7 @@ func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL)
 		}
 	}
 
-	if _, err := c.s3Client.PutObjectAcl(ctx, &s3ACL); err != nil {
+	if _, err := c.S3Client.PutObjectAcl(ctx, &s3ACL); err != nil {
 		return err
 	}
 
