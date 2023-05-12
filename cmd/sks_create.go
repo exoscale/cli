@@ -87,7 +87,7 @@ func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
 	cluster := &egoscale.SKSCluster{
 		AutoUpgrade: &c.AutoUpgrade,
 		CNI:         &c.CNI,

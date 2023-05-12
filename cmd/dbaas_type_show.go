@@ -310,8 +310,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				return err
 			}
 
-			switch c.ShowSettings {
-			case "redis":
+			if c.ShowSettings == "redis" {
 				settings = *res.JSON200.Settings.Redis.Properties
 			}
 
