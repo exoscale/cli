@@ -91,7 +91,7 @@ Exoscale API credentials from your organization's IAM:
 	return addConfigAccount(true)
 }
 
-func saveConfig(filePath string, newAccounts *account.AccountConfig) error {
+func saveConfig(filePath string, newAccounts *account.Config) error {
 	accountsSize := 0
 	currentAccounts := []account.Account{}
 	if account.GAllAccount != nil {
@@ -107,7 +107,7 @@ func saveConfig(filePath string, newAccounts *account.AccountConfig) error {
 
 	accounts := make([]map[string]interface{}, accountsSize+newAccountsSize)
 
-	conf := &account.AccountConfig{}
+	conf := &account.Config{}
 
 	for i, acc := range currentAccounts {
 		accounts[i] = map[string]interface{}{}

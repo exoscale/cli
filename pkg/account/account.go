@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	GAllAccount    *AccountConfig
+	GAllAccount    *Config
 	CurrentAccount *Account
 )
 
@@ -52,7 +52,7 @@ func (a Account) APISecret() string {
 	return a.Secret
 }
 
-func (a Account) AccountName(ctx context.Context) string {
+func (a Account) GetName(ctx context.Context) string {
 	if a.Name == "" {
 		resp, err := globalstate.EgoscaleClient.GetWithContext(ctx, egoscale.Account{})
 		if err != nil {
@@ -65,7 +65,7 @@ func (a Account) AccountName(ctx context.Context) string {
 	return a.Name
 }
 
-type AccountConfig struct {
+type Config struct {
 	DefaultAccount      string
 	DefaultOutputFormat string
 	Accounts            []Account

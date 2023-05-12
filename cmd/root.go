@@ -189,7 +189,7 @@ func initConfig() {
 			account.CurrentAccount.ClientTimeout = defaultClientTimeout
 		}
 
-		account.GAllAccount = &account.AccountConfig{
+		account.GAllAccount = &account.Config{
 			DefaultAccount: account.CurrentAccount.Name,
 			Accounts:       []account.Account{*account.CurrentAccount},
 		}
@@ -199,7 +199,7 @@ func initConfig() {
 		return
 	}
 
-	config := &account.AccountConfig{}
+	config := &account.Config{}
 
 	usr, err := user.Current()
 	if err != nil {
