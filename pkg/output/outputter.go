@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+
 	"github.com/fatih/camelcase"
 )
 
