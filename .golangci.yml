@@ -1,8 +1,0 @@
-linters:
-  enable:
-    - exportloopref
-    - gofmt
-    - revive
-    - megacheck
-    - misspell
-    - prealloc
