@@ -68,7 +68,7 @@ func main() {
 		name := filepath.Base(filename)
 		base := strings.TrimSuffix(name, path.Ext(name))
 		url := fmt.Sprintf("/%s/", strings.ToLower(base))
-		slug := strings.Replace(base, "_", " ", -1)
+		slug := strings.ReplaceAll(base, "_", " ")
 		typeExo := `"command"`
 		if strings.Count(base, "_") > 1 {
 			typeExo = `"subcommand"`
@@ -93,7 +93,7 @@ func main() {
 //
 
 //
-//beginning cobra/doc custom src code
+// beginning cobra/doc custom src code
 //
 
 func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender func(string, *cobra.Command) string, linkHandler func(string) string, isHugo bool) error {
@@ -106,7 +106,7 @@ func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender func
 		}
 	}
 
-	basename := strings.Replace(cmd.CommandPath(), " ", "_", -1) + ".md"
+	basename := strings.ReplaceAll(cmd.CommandPath(), " ", "_") + ".md"
 	filename := filepath.Join(dir, basename)
 	f, err := os.Create(filename)
 	if err != nil {
@@ -180,7 +180,7 @@ func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(stri
 			parent := cmd.Parent()
 			pname := parent.CommandPath()
 			link := pname + ".md"
-			link = strings.Replace(link, " ", "_", -1)
+			link = strings.ReplaceAll(link, " ", "_")
 			buf.WriteString(fmt.Sprintf("* [%s](%s)\t - %s\n", pname, linkHandler(link), parent.Short))
 		}
 
@@ -193,7 +193,7 @@ func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(stri
 			}
 			cname := name + " " + child.Name()
 			link := cname + ".md"
-			link = strings.Replace(link, " ", "_", -1)
+			link = strings.ReplaceAll(link, " ", "_")
 			buf.WriteString(fmt.Sprintf("* [%s](%s)\t - %s\n\n", cname, linkHandler(link), child.Short))
 		}
 		buf.WriteString("\n")
@@ -250,7 +250,7 @@ func hasSeeAlso(cmd *cobra.Command) bool {
 }
 
 //
-//end cobra/doc custom src code
+// end cobra/doc custom src code
 //
 
 func insertAT(slice []string, elem string, index int) []string {

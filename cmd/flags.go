@@ -85,7 +85,8 @@ func (v *ipValue) String() string {
 	if v.IP == nil || *v.IP == nil {
 		return nilValue
 	}
-	return (*v.IP).String()
+
+	return v.IP.String()
 }
 
 // getIPValue finds the value of a command by name

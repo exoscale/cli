@@ -126,11 +126,13 @@ func execTask(task egoscale.AsyncCommand, message string, id int, c chan taskSta
 	})
 
 	if errorReq == nil {
-		(*resp).resp = response
+		resp.resp = response
+
 		c <- taskStatus{id, egoscale.Success}
 	} else {
 		c <- taskStatus{id, egoscale.Failure}
-		(*resp).error = fmt.Errorf("failure %s: %s", message, errorReq)
+
+		resp.error = fmt.Errorf("failure %s: %s", message, errorReq)
 	}
 
 	<-sem
@@ -155,7 +157,8 @@ func execSyncTask(task task, id int, c chan taskStatus, resp *taskResponse, sem 
 	if ok {
 		if err := globalstate.EgoscaleClient.BooleanRequestWithContext(gContext, task.Command); err != nil {
 			c <- taskStatus{id, egoscale.Failure}
-			(*resp).error = fmt.Errorf("failure %s: %s", task.string, err)
+			resp.error = fmt.Errorf("failure %s: %s", task.string, err)
+
 			return
 		}
 		c <- taskStatus{id, egoscale.Success}
@@ -166,10 +169,13 @@ func execSyncTask(task task, id int, c chan taskStatus, resp *taskResponse, sem 
 	result, err := globalstate.EgoscaleClient.RequestWithContext(gContext, task.Command)
 	if err != nil {
 		c <- taskStatus{id, egoscale.Failure}
-		(*resp).error = fmt.Errorf("failure %s: %s", task.string, err)
+		resp.error = fmt.Errorf("failure %s: %s", task.string, err)
+
 		return
 	}
-	(*resp).resp = result
+
+	resp.resp = result
+
 	c <- taskStatus{id, egoscale.Success}
 	<-sem
 }

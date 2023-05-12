@@ -53,7 +53,7 @@ func (c *sksNodepoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var (
 		nodepool *egoscale.SKSNodepool
 		updated  bool

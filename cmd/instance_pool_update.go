@@ -141,7 +141,7 @@ a future release, please use "--template-visibility" instead.
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var updated bool
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))

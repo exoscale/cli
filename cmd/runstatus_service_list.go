@@ -23,7 +23,7 @@ func (o *runstatusServiceListOutput) ToText() { output.Text(o) }
 
 func (o *runstatusServiceListOutput) ToTable() {
 	for i := range *o {
-		(*o)[i].State = strings.ToUpper(strings.Replace((*o)[i].State, "_", " ", -1))
+		(*o)[i].State = strings.ToUpper(strings.ReplaceAll((*o)[i].State, "_", " "))
 	}
 
 	output.Table(o)

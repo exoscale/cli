@@ -135,7 +135,7 @@ func removeRule(sg *egoscale.SecurityGroup, ruleID string, tasks *[]task) error 
 	in, eg := sg.RuleByID(*id)
 
 	var msg string
-	if in != nil {
+	if in != nil { //nolint:gocritic
 		msg = fmt.Sprintf("Remove %q", in.RuleID)
 		*tasks = append(*tasks, task{egoscale.RevokeSecurityGroupIngress{ID: in.RuleID}, msg})
 	} else if eg != nil {

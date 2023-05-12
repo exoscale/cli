@@ -39,7 +39,7 @@ Examples:
 
 		// Append implicit root prefix ("/") if only a bucket name is specified in the source
 		if !strings.Contains(args[0], "/") {
-			args[0] = args[0] + "/"
+			args[0] += "/"
 		}
 
 		return nil

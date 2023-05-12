@@ -30,7 +30,7 @@ argument with "/":
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
-			args[0] = args[0] + "/"
+			args[0] += "/"
 		}
 	},
 

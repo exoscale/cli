@@ -395,7 +395,7 @@ func cliCommandUse(c cliCommand) (string, error) {
 // in cliCommand.cmdPreRun() hooks to automagically retrieve values for the
 // struct flags/args fields from a cobra.Command and args provided, and set
 // corresponding fields on the struct implementing the cliCommand interface.
-func cliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) error {
+func cliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) error { //nolint:gocyclo
 	cv := reflect.ValueOf(c)
 
 	if cv.Kind() == reflect.Ptr {

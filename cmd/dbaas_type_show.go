@@ -155,7 +155,7 @@ func (c *dbaasTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
 	ctx := exoapi.WithEndpoint(
 		gContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
@@ -199,8 +199,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				return err
 			}
 
-			switch c.ShowSettings {
-			case "grafana":
+			if c.ShowSettings == "grafana" {
 				settings = *res.JSON200.Settings.Grafana.Properties
 			}
 
@@ -246,8 +245,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				return err
 			}
 
-			switch c.ShowSettings {
-			case "opensearch":
+			if c.ShowSettings == "opensearch" {
 				settings = *res.JSON200.Settings.Opensearch.Properties
 			}
 
@@ -267,8 +265,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				return err
 			}
 
-			switch c.ShowSettings {
-			case "mysql":
+			if c.ShowSettings == "mysql" {
 				settings = *res.JSON200.Settings.Mysql.Properties
 			}
 

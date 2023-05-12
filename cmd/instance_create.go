@@ -68,7 +68,7 @@ func (c *instanceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
 	var (
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey

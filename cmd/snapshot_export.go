@@ -108,7 +108,7 @@ func downloadExportedSnapshot(filePath, url string) (string, error) {
 	}
 
 	if filepath.Ext(filePath) != ".qcow2" {
-		filePath = filePath + ".qcow2"
+		filePath += ".qcow2"
 	}
 	if _, err = os.Stat(filePath); err == nil {
 		return "", fmt.Errorf("file %q already exists", filePath)

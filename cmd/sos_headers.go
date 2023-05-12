@@ -123,7 +123,7 @@ func init() {
 			supportedHeaders[i],
 			"",
 			"",
-			fmt.Sprintf("Add %s with KEY", strings.Replace(supportedHeaders[i], "-", " ", -1)))
+			fmt.Sprintf("Add %s with KEY", strings.ReplaceAll(supportedHeaders[i], "-", " ")))
 	}
 }
 
@@ -215,7 +215,7 @@ func init() {
 			supportedHeaders[i],
 			"",
 			false,
-			fmt.Sprintf("Remove %s with KEY", strings.Replace(supportedHeaders[i], "-", " ", -1)))
+			fmt.Sprintf("Remove %s with KEY", strings.ReplaceAll(supportedHeaders[i], "-", " ")))
 	}
 }
 

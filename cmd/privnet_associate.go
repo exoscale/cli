@@ -51,7 +51,9 @@ var privnetAssociateCmd = &cobra.Command{
 						vm.DisplayName,
 						nicIP(*nic),
 					})
-					i = i + 1
+
+					i++
+
 					continue
 				}
 			}

@@ -86,7 +86,8 @@ func Execute(version, commit string) {
 
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
-		os.Exit(1)
+
+		os.Exit(1) //nolint:gocritic
 	}
 }
 
@@ -119,7 +120,7 @@ func init() {
 var ignoreClientBuild = false
 
 // initConfig reads in config file and ENV variables if set.
-func initConfig() {
+func initConfig() { //nolint:gocyclo
 	envs := map[string]string{
 		"EXOSCALE_CONFIG":  "config",
 		"EXOSCALE_ACCOUNT": "use-account",

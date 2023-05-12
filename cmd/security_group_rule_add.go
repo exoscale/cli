@@ -93,7 +93,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("either a target network address or Security Group name/ID must be specified")
 	}
 
-	if c.TargetSecurityGroup != "" {
+	if c.TargetSecurityGroup != "" { //nolint:gocritic
 		targetSecurityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.TargetSecurityGroup)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve Security Group %q: %w", c.TargetSecurityGroup, err)

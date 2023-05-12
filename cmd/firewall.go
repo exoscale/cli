@@ -50,6 +50,7 @@ func formatRuleSource(rule egoscale.IngressRule) string {
 func formatRulePort(rule egoscale.IngressRule) string {
 	var ports string
 
+	//nolint:gocritic
 	if rule.Protocol == "icmp" || rule.Protocol == "icmpv6" {
 		c := icmpCode((uint16(rule.IcmpType) << 8) | uint16(rule.IcmpCode))
 		t := c.icmpType()
