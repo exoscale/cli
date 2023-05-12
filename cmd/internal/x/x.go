@@ -5,6 +5,7 @@ import (
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/openapi-cli-generator/cli"
+
 	logger "github.com/izumin5210/gentleman-logger"
 	"github.com/spf13/cobra"
 	"gopkg.in/h2non/gentleman.v2/context"
