@@ -22,7 +22,5 @@ jobs:
       - uses: ./go.mk/.github/actions/pre-check
 
       # Build & test
-      - name: Build
-        run: make build
-      - name: Unit tests
-        run: make test-verbose
+      - run: make build
+      - run: make test-verbose
