@@ -4,8 +4,9 @@ import (
 	"errors"
 	"regexp"
 
-	egoscale "github.com/exoscale/egoscale/v2"
 	"github.com/spf13/cobra"
+
+	egoscale "github.com/exoscale/egoscale/v2"
 )
 
 var sksNodepoolCmd = &cobra.Command{

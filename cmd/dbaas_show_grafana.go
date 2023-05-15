@@ -8,12 +8,13 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/mitchellh/go-wordwrap"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
-	"github.com/mitchellh/go-wordwrap"
 )
 
 type dbServiceGrafanaComponentShowOutput struct {

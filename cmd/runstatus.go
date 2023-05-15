@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/egoscale"
 )
 
 var runstatusCmd = &cobra.Command{

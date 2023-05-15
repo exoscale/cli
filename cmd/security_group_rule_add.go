@@ -7,13 +7,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
 )
 
 var securityGroupRuleProtocols = []string{

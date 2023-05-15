@@ -8,10 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 type runstatusPageIncidentShowOutput struct {

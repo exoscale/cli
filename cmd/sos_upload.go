@@ -10,9 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
+
+	"github.com/exoscale/cli/pkg/globalstate"
 
 	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"

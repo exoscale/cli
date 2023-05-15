@@ -6,11 +6,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/egoscale"
 	"github.com/hashicorp/go-multierror"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
+
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/egoscale"
 )
 
 const (

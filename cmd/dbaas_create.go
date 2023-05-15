@@ -5,8 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/output"
 )
 
 type dbaasServiceCreateCmd struct {

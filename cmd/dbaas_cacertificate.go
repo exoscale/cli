@@ -3,10 +3,11 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
 )
 
 type dbaasCACertificateCmd struct {

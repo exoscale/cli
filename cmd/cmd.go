@@ -8,13 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/exoscale/cli/pkg/account"
-	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/table"
 	"github.com/hashicorp/go-multierror"
 	"github.com/iancoleman/strcase"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/table"
 )
 
 // cliCommandImplemError represents an implementation error for a cliCommand.

@@ -3,11 +3,12 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
 )
 
 func init() {

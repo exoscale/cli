@@ -5,10 +5,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
 )
 
 type dbaasServiceUpdateCmd struct {

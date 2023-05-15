@@ -5,8 +5,9 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 var storageDeleteCmd = &cobra.Command{

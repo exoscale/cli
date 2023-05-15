@@ -5,10 +5,11 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 type sshkeyUploadOutput struct {

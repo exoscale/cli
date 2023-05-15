@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
-	"github.com/spf13/cobra"
 )
 
 var storageHeaderDeleteCmd = &cobra.Command{

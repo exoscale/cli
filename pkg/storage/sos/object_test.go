@@ -16,8 +16,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 func TestShowObject(t *testing.T) {

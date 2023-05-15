@@ -5,8 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/globalstate"
 )
 
 var sksCmd = &cobra.Command{

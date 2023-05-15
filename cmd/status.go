@@ -8,8 +8,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/exoscale/cli/table"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/table"
 )
 
 const (

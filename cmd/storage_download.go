@@ -5,8 +5,9 @@ import (
 	"strings"
 
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 var storageDownloadCmd = &cobra.Command{

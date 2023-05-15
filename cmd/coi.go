@@ -8,12 +8,13 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
 )
 
 const coiTemplateName = "Container-Optimized Instance"

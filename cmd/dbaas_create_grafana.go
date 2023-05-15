@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
-	"github.com/spf13/cobra"
 )
 
 func (c *dbaasServiceCreateCmd) createGrafana(_ *cobra.Command, _ []string) error {
