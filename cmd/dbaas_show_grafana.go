@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
@@ -38,6 +40,44 @@ type dbServiceGrafanaShowOutput struct {
 	URIParams  map[string]interface{}                `json:"uri_params"`
 	Users      []dbServiceGrafanaUserShowOutput      `json:"users"`
 	Version    string                                `json:"version"`
+}
+
+func formatDatabaseServiceGrafanaTable(t *table.Table, o *dbServiceGrafanaShowOutput) {
+	t.Append([]string{"Version", o.Version})
+	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
+	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
+
+	t.Append([]string{"Components", func() string {
+		buf := bytes.NewBuffer(nil)
+		ct := table.NewEmbeddedTable(buf)
+		ct.SetHeader([]string{" "})
+		for _, c := range o.Components {
+			ct.Append([]string{
+				c.Component,
+				fmt.Sprintf("%s:%d", c.Host, c.Port),
+				"route:" + c.Route,
+				"usage:" + c.Usage,
+			})
+		}
+		ct.Render()
+
+		return buf.String()
+	}()})
+
+	t.Append([]string{"Users", func() string {
+		if len(o.Users) > 0 {
+			return strings.Join(
+				func() []string {
+					users := make([]string, len(o.Users))
+					for i := range o.Users {
+						users[i] = fmt.Sprintf("%s (%s)", o.Users[i].Username, o.Users[i].Type)
+					}
+					return users
+				}(),
+				"\n")
+		}
+		return "n/a"
+	}()})
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (output.Outputter, error) {
