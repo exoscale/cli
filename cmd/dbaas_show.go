@@ -105,6 +105,8 @@ func (o *dbServiceShowOutput) ToTable() {
 	}()})
 
 	switch {
+	case o.Grafana != nil:
+		formatDatabaseServiceGrafanaTable(t, o.Grafana)
 	case o.Kafka != nil:
 		formatDatabaseServiceKafkaTable(t, o.Kafka)
 	case o.Opensearch != nil:
