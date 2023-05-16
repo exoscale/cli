@@ -9,10 +9,11 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/exoscale/cli/pkg/account"
-	"github.com/exoscale/egoscale"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/egoscale"
 )
 
 var runstatusMaintenanceAddCmd = &cobra.Command{

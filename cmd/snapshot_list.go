@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"

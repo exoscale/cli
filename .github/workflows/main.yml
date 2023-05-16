@@ -13,11 +13,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v3
-      with:
-        go-version: '^1.17'
-    - name: Run tests and attempt building
-      run: |
-        git submodule update --init --recursive go.mk
-        PATH=$(go env GOPATH)/bin:$PATH make test build
+      - uses: actions/checkout@v3
+      - run: git submodule update --init --recursive go.mk
+      - uses: ./go.mk/.github/actions/setup
+
+      - uses: ./go.mk/.github/actions/pre-check
+
+      - run: make build
+      - run: make test-verbose

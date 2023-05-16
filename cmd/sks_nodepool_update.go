@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
 )
 
 type sksNodepoolUpdateCmd struct {
@@ -53,7 +54,7 @@ func (c *sksNodepoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var (
 		nodepool *egoscale.SKSNodepool
 		updated  bool

@@ -9,10 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/egoscale"
 	"github.com/kballard/go-shellquote"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/egoscale"
 )
 
 var sshCmd = &cobra.Command{

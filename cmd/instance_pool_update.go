@@ -6,11 +6,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
 )
 
 type instancePoolUpdateCmd struct {
@@ -141,7 +142,7 @@ a future release, please use "--template-visibility" instead.
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var updated bool
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))

@@ -11,14 +11,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
-	"golang.org/x/crypto/ssh"
 )
 
 type instanceCreateCmd struct {
@@ -68,7 +69,7 @@ func (c *instanceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
 	var (
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey

@@ -3,8 +3,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/egoscale"
 )
 
 var apiKeyRevokeCmd = &cobra.Command{

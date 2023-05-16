@@ -10,11 +10,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/table"
 	"github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
 	"github.com/xeipuuv/gojsonschema"
+
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/table"
 )
 
 var dbServiceMaintenanceDOWs = []string{

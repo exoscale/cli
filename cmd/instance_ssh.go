@@ -8,11 +8,12 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/kballard/go-shellquote"
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/kballard/go-shellquote"
-	"github.com/spf13/cobra"
 )
 
 type instanceSSHCmd struct {

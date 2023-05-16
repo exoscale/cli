@@ -5,11 +5,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
+
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
 )
 
 // output prints an outputter interface to the terminal, formatted according

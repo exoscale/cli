@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/utils"
-	"github.com/spf13/cobra"
 )
 
 var storageUploadCmd = &cobra.Command{

@@ -6,10 +6,11 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 type vmShowOutput struct {

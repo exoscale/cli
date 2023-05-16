@@ -3,8 +3,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/account"
 )
 
 var envCmd = &cobra.Command{

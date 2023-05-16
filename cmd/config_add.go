@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -21,7 +22,7 @@ func init() {
 				return err
 			}
 
-			config := &account.AccountConfig{Accounts: []account.Account{*newAccount}}
+			config := &account.Config{Accounts: []account.Account{*newAccount}}
 			if askQuestion("Set [" + newAccount.Name + "] as default account?") {
 				config.DefaultAccount = newAccount.Name
 				gConfig.Set("defaultAccount", newAccount.Name)
@@ -34,7 +35,7 @@ func init() {
 
 func addConfigAccount(firstRun bool) error {
 	var (
-		config account.AccountConfig
+		config account.Config
 		err    error
 	)
 

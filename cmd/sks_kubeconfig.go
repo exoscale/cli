@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 type sksKubeconfigCmd struct {

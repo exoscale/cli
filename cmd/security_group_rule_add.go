@@ -7,13 +7,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
 )
 
 var securityGroupRuleProtocols = []string{
@@ -93,7 +94,7 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("either a target network address or Security Group name/ID must be specified")
 	}
 
-	if c.TargetSecurityGroup != "" {
+	if c.TargetSecurityGroup != "" { //nolint:gocritic
 		targetSecurityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.TargetSecurityGroup)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve Security Group %q: %w", c.TargetSecurityGroup, err)

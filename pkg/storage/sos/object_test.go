@@ -16,8 +16,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 func TestShowObject(t *testing.T) {
@@ -485,7 +486,7 @@ func TestUploadFiles(t *testing.T) {
 					tempFile1,
 				},
 				uploaderChecklist: map[string]expectedUpload{
-					"test-prefix/file1.txt": expectedUpload{
+					"test-prefix/file1.txt": {
 						content: "file1 content",
 					},
 				},
@@ -500,10 +501,10 @@ func TestUploadFiles(t *testing.T) {
 					tempFile2,
 				},
 				uploaderChecklist: map[string]expectedUpload{
-					"test-prefix/file1.txt": expectedUpload{
+					"test-prefix/file1.txt": {
 						content: "file1 content",
 					},
-					"test-prefix/file2.txt": expectedUpload{
+					"test-prefix/file2.txt": {
 						content: "file2 content",
 					},
 				},
@@ -531,13 +532,13 @@ func TestUploadFiles(t *testing.T) {
 				recursive: true,
 				shouldErr: false,
 				uploaderChecklist: map[string]expectedUpload{
-					"test-prefix" + tempDir + "/file1.txt": expectedUpload{
+					"test-prefix" + tempDir + "/file1.txt": {
 						content: "file1 content",
 					},
-					"test-prefix" + tempDir + "/file2.txt": expectedUpload{
+					"test-prefix" + tempDir + "/file2.txt": {
 						content: "file2 content",
 					},
-					"test-prefix" + tempDir + "/subdir/file3.txt": expectedUpload{
+					"test-prefix" + tempDir + "/subdir/file3.txt": {
 						content: "file3 content",
 					},
 				},

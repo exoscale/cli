@@ -5,8 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 var storagePresignCmd = &cobra.Command{

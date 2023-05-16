@@ -8,14 +8,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/table"
+	"github.com/exoscale/cli/utils"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
-	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/table"
-	"github.com/exoscale/cli/utils"
 )
 
 type ShowBucketOutput struct {

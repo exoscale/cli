@@ -7,12 +7,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/exoscale/openapi-cli-generator/cli"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"gopkg.in/h2non/gentleman.v2"
+
+	"github.com/exoscale/openapi-cli-generator/cli"
 )
 
 var xSubcommand bool

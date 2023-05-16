@@ -7,11 +7,12 @@ import (
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	"github.com/spf13/cobra"
 )
 
 type dnsListItemOutput struct {

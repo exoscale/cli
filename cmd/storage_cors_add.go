@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 const (

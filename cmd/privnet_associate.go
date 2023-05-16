@@ -6,10 +6,11 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 var privnetAssociateCmd = &cobra.Command{
@@ -51,7 +52,9 @@ var privnetAssociateCmd = &cobra.Command{
 						vm.DisplayName,
 						nicIP(*nic),
 					})
-					i = i + 1
+
+					i++
+
 					continue
 				}
 			}

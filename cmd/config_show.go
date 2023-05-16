@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/spf13/cobra"
 )
 
 type configShowOutput struct {
@@ -40,7 +41,7 @@ Supported output template annotations: %s`,
 			if account.GAllAccount == nil {
 				return fmt.Errorf("no accounts configured")
 			}
-			name := account.CurrentAccount.AccountName(gContext)
+			name := account.CurrentAccount.GetName(gContext)
 
 			if len(args) > 0 {
 				name = args[0]

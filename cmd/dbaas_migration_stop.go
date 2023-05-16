@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/spf13/cobra"
 )
 
 type dbaasMigrationStopCmd struct {
@@ -53,7 +54,7 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 	}
 
 	if _, ok := stopMigrationFuncs[dbType]; !ok {
-		err = fmt.Errorf("migrations not supported for database type %q", dbType)
+		return fmt.Errorf("migrations not supported for database type %q", dbType)
 	}
 
 	_, err = globalstate.EgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)

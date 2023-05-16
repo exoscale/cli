@@ -5,11 +5,12 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
 	"github.com/exoscale/egoscale/v2/oapi"
-	"github.com/spf13/cobra"
 )
 
 var (

@@ -8,9 +8,10 @@ import (
 	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/smithy-go/middleware"
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 var (

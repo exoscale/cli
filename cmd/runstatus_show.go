@@ -8,10 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 type runstatusPageIncidentShowOutput struct {
@@ -62,7 +63,7 @@ func (o *runstatusPageShowOutput) ToTable() {
 	}
 
 	t.Append([]string{"Timezone", o.Timezone})
-	t.Append([]string{"State", strings.ToUpper(strings.Replace(o.State, "_", " ", -1))})
+	t.Append([]string{"State", strings.ToUpper(strings.ReplaceAll(o.State, "_", " "))})
 
 	if o.SupportEmail != "" {
 		t.Append([]string{"Email", o.SupportEmail})
@@ -73,7 +74,7 @@ func (o *runstatusPageShowOutput) ToTable() {
 		st := table.NewEmbeddedTable(buf)
 		st.SetHeader([]string{" "})
 		for name, state := range o.Services {
-			st.Append([]string{name, strings.ToUpper(strings.Replace(state, "_", " ", -1))})
+			st.Append([]string{name, strings.ToUpper(strings.ReplaceAll(state, "_", " "))})
 		}
 		st.Render()
 		t.Append([]string{"Services", buf.String()})
@@ -85,7 +86,7 @@ func (o *runstatusPageShowOutput) ToTable() {
 		for _, i := range o.Incidents {
 			it.Append([]string{
 				i.Title,
-				strings.ToUpper(strings.Replace(i.State, "_", " ", -1)),
+				strings.ToUpper(strings.ReplaceAll(i.State, "_", " ")),
 				i.Status,
 				formatSchedule(i.StartDate, i.EndDate),
 			})

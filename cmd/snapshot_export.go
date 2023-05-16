@@ -13,12 +13,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/egoscale"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
+
+	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/egoscale"
 )
 
 type snapshotExportOutput struct {
@@ -108,7 +109,7 @@ func downloadExportedSnapshot(filePath, url string) (string, error) {
 	}
 
 	if filepath.Ext(filePath) != ".qcow2" {
-		filePath = filePath + ".qcow2"
+		filePath += ".qcow2"
 	}
 	if _, err = os.Stat(filePath); err == nil {
 		return "", fmt.Errorf("file %q already exists", filePath)

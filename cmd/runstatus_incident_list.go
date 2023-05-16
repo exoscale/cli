@@ -5,8 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/output"
 )
 
 type runstatusIncidentListItemOutput struct {
@@ -27,7 +28,7 @@ func (o *runstatusIncidentListOutput) ToText() { output.Text(o) }
 
 func (o *runstatusIncidentListOutput) ToTable() {
 	for i := range *o {
-		(*o)[i].State = strings.ToUpper(strings.Replace((*o)[i].State, "_", " ", -1))
+		(*o)[i].State = strings.ToUpper(strings.ReplaceAll((*o)[i].State, "_", " "))
 	}
 
 	output.Table(o)

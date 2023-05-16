@@ -3,11 +3,12 @@ package cmd
 import (
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 var eipCreateCmd = &cobra.Command{

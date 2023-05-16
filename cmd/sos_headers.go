@@ -5,9 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/exoscale/cli/table"
 	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/table"
 )
 
 // nolint
@@ -123,7 +124,7 @@ func init() {
 			supportedHeaders[i],
 			"",
 			"",
-			fmt.Sprintf("Add %s with KEY", strings.Replace(supportedHeaders[i], "-", " ", -1)))
+			fmt.Sprintf("Add %s with KEY", strings.ReplaceAll(supportedHeaders[i], "-", " ")))
 	}
 }
 
@@ -215,7 +216,7 @@ func init() {
 			supportedHeaders[i],
 			"",
 			false,
-			fmt.Sprintf("Remove %s with KEY", strings.Replace(supportedHeaders[i], "-", " ", -1)))
+			fmt.Sprintf("Remove %s with KEY", strings.ReplaceAll(supportedHeaders[i], "-", " ")))
 	}
 }
 

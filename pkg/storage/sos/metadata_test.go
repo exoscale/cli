@@ -8,8 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 func TestAddObjectMetadata(t *testing.T) {
@@ -22,7 +23,7 @@ func TestAddObjectMetadata(t *testing.T) {
 		return &s3.GetObjectOutput{}, nil
 	}
 
-	returnEmptyMockGetObjectAcl := func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+	returnEmptyMockGetObjectACL := func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
 		return &s3.GetObjectAclOutput{
 			Owner: &types.Owner{
 				ID: aws.String("sarah"),
@@ -35,7 +36,7 @@ func TestAddObjectMetadata(t *testing.T) {
 			return &s3.CopyObjectOutput{}, nil
 		},
 		mockGetObject:    returnEmptyMockGetObject,
-		mockGetObjectAcl: returnEmptyMockGetObjectAcl,
+		mockGetObjectAcl: returnEmptyMockGetObjectACL,
 	}
 
 	client := &sos.Client{S3Client: mockS3API}
@@ -56,7 +57,7 @@ func TestAddObjectMetadata(t *testing.T) {
 			return nil, errors.New("copy object error")
 		},
 		mockGetObject:    returnEmptyMockGetObject,
-		mockGetObjectAcl: returnEmptyMockGetObjectAcl,
+		mockGetObjectAcl: returnEmptyMockGetObjectACL,
 	}
 
 	clientWithError := &sos.Client{S3Client: mockS3APIWithError}

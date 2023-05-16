@@ -9,9 +9,10 @@ import (
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -96,7 +97,7 @@ func displayBucket(sosClient *sosClient, path string, isRecursive, isShort bool)
 
 	prefix := filepath.Join(splitPath[1:]...)
 	if isDir && len(prefix) > 1 {
-		prefix = prefix + "/"
+		prefix += "/"
 	}
 
 	zone, err := sosClient.GetBucketLocation(bucket)

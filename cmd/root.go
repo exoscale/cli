@@ -12,12 +12,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var gContext context.Context
@@ -86,7 +87,8 @@ func Execute(version, commit string) {
 
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
-		os.Exit(1)
+
+		os.Exit(1) //nolint:gocritic
 	}
 }
 
@@ -119,7 +121,7 @@ func init() {
 var ignoreClientBuild = false
 
 // initConfig reads in config file and ENV variables if set.
-func initConfig() {
+func initConfig() { //nolint:gocyclo
 	envs := map[string]string{
 		"EXOSCALE_CONFIG":  "config",
 		"EXOSCALE_ACCOUNT": "use-account",
@@ -189,7 +191,7 @@ func initConfig() {
 			account.CurrentAccount.ClientTimeout = defaultClientTimeout
 		}
 
-		account.GAllAccount = &account.AccountConfig{
+		account.GAllAccount = &account.Config{
 			DefaultAccount: account.CurrentAccount.Name,
 			Accounts:       []account.Account{*account.CurrentAccount},
 		}
@@ -199,7 +201,7 @@ func initConfig() {
 		return
 	}
 
-	config := &account.AccountConfig{}
+	config := &account.Config{}
 
 	usr, err := user.Current()
 	if err != nil {

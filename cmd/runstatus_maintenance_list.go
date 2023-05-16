@@ -5,8 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/exoscale/cli/pkg/output"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/output"
 )
 
 type runstatusMaintenanceListItemOutput struct {

@@ -3,9 +3,10 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/egoscale"
-	"github.com/spf13/cobra"
 )
 
 var vmResetCmd = &cobra.Command{

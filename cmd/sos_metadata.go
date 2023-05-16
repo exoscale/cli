@@ -4,9 +4,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/exoscale/cli/table"
 	minio "github.com/minio/minio-go/v6"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/table"
 )
 
 var sosMetadataCmd = &cobra.Command{

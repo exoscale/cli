@@ -8,10 +8,11 @@ import (
 	"path"
 	"strings"
 
-	"github.com/exoscale/cli/pkg/account"
-	"github.com/exoscale/egoscale"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+
+	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/egoscale"
 )
 
 const (
@@ -91,7 +92,7 @@ Exoscale API credentials from your organization's IAM:
 	return addConfigAccount(true)
 }
 
-func saveConfig(filePath string, newAccounts *account.AccountConfig) error {
+func saveConfig(filePath string, newAccounts *account.Config) error {
 	accountsSize := 0
 	currentAccounts := []account.Account{}
 	if account.GAllAccount != nil {
@@ -107,7 +108,7 @@ func saveConfig(filePath string, newAccounts *account.AccountConfig) error {
 
 	accounts := make([]map[string]interface{}, accountsSize+newAccountsSize)
 
-	conf := &account.AccountConfig{}
+	conf := &account.Config{}
 
 	for i, acc := range currentAccounts {
 		accounts[i] = map[string]interface{}{}
