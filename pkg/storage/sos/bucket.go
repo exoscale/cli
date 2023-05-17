@@ -20,10 +20,11 @@ import (
 )
 
 type ShowBucketOutput struct {
-	Name string     `json:"name"`
-	Zone string     `json:"zone"`
-	ACL  ACL        `json:"acl"`
-	CORS []CORSRule `json:"cors"`
+	Name            string                `json:"name"`
+	Zone            string                `json:"zone"`
+	ACL             ACL                   `json:"acl"`
+	CORS            []CORSRule            `json:"cors"`
+	ObjectOwnership BucketObjectOwnership `json:"objectOwnership"`
 }
 
 func (o *ShowBucketOutput) ToJSON() { output.JSON(o) }
@@ -73,6 +74,8 @@ func (o *ShowBucketOutput) ToTable() {
 
 		return buf.String()
 	}()})
+
+	t.Append([]string{"Object Ownership", string(o.ObjectOwnership)})
 }
 
 // CORSRulesFromS3 converts a list of S3 CORS rules to a list of
@@ -128,11 +131,17 @@ func (c *Client) ShowBucket(ctx context.Context, bucket string) (output.Outputte
 		}
 	}
 
+	ownership, err := c.GetBucketObjectOwnership(ctx, bucket)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve bucket object ownership setting: %w", err)
+	}
+
 	out := ShowBucketOutput{
-		Name: bucket,
-		Zone: c.Zone,
-		ACL:  ACLFromS3(acl.Grants),
-		CORS: CORSRulesFromS3(cors),
+		Name:            bucket,
+		Zone:            c.Zone,
+		ACL:             ACLFromS3(acl.Grants),
+		CORS:            CORSRulesFromS3(cors),
+		ObjectOwnership: ownership,
 	}
 
 	return &out, nil
@@ -154,19 +163,35 @@ func (o *storageBucketObjectOwnershipOutput) ToTable() {
 	t.Append([]string{"Object Ownership", o.ObjectOwnership})
 }
 
-func (c Client) GetBucketObjectOwnership(ctx context.Context, bucket string) (output.Outputter, error) {
+func (c Client) GetBucketObjectOwnership(ctx context.Context, bucket string) (BucketObjectOwnership, error) {
 	params := s3.GetBucketOwnershipControlsInput{
 		Bucket: aws.String(bucket),
 	}
 
 	resp, err := c.S3Client.GetBucketOwnershipControls(ctx, &params)
 	if err != nil {
+		var apiErr smithy.APIError
+		if errors.As(err, &apiErr) {
+			if apiErr.ErrorCode() == "OwnershipControlsNotFoundError" {
+				return ObjectOwnershipBucketOwnerEnforced, nil
+			}
+		}
+
+		return "", err
+	}
+
+	return BucketObjectOwnership(resp.OwnershipControls.Rules[0].ObjectOwnership), nil
+}
+
+func (c Client) GetBucketObjectOwnershipInfo(ctx context.Context, bucket string) (output.Outputter, error) {
+	ownership, err := c.GetBucketObjectOwnership(ctx, bucket)
+	if err != nil {
 		return nil, err
 	}
 
 	out := storageBucketObjectOwnershipOutput{
 		Bucket:          bucket,
-		ObjectOwnership: string(resp.OwnershipControls.Rules[0].ObjectOwnership),
+		ObjectOwnership: string(ownership),
 	}
 
 	return &out, nil
