@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	"github.com/stretchr/testify/assert"
 
@@ -86,6 +87,13 @@ func TestShowBucket(t *testing.T) {
 	ctx := context.Background()
 	bucket := "test-bucket"
 
+	expectedDefaultBucketOwnership := sos.ObjectOwnershipBucketOwnerEnforced
+	mockGetBucketOwnershipControlsEmpty := func(ctx context.Context, params *s3.GetBucketOwnershipControlsInput, optFns ...func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error) {
+		return nil, &smithy.GenericAPIError{
+			Code: "OwnershipControlsNotFoundError",
+		}
+	}
+
 	t.Run("successful_show_bucket", func(t *testing.T) {
 		client := &sos.Client{
 			S3Client: &MockS3API{
@@ -113,6 +121,7 @@ func TestShowBucket(t *testing.T) {
 						},
 					}, nil
 				},
+				mockGetBucketOwnershipControls: mockGetBucketOwnershipControlsEmpty,
 			},
 			Zone: "myzone",
 		}
@@ -137,6 +146,7 @@ func TestShowBucket(t *testing.T) {
 					AllowedHeaders: []string{"*"},
 				},
 			},
+			ObjectOwnership: expectedDefaultBucketOwnership,
 		}
 		assert.Equal(t, expectedOutput, output)
 	})
@@ -173,16 +183,60 @@ func TestShowBucket(t *testing.T) {
 		assert.Nil(t, output)
 	})
 
+	mockGetBucketCorsEmpty := func(ctx context.Context, params *s3.GetBucketCorsInput, optFns ...func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
+		return nil, &smithy.GenericAPIError{
+			Code: "NoSuchCORSConfiguration",
+		}
+	}
+
 	t.Run("error_no_such_cors_configuration", func(t *testing.T) {
 		client := &sos.Client{
 			S3Client: &MockS3API{
 				mockGetBucketAcl: func(ctx context.Context, params *s3.GetBucketAclInput, optFns ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) {
 					return &s3.GetBucketAclOutput{}, nil
 				},
-				mockGetBucketCors: func(ctx context.Context, params *s3.GetBucketCorsInput, optFns ...func(*s3.Options)) (*s3.GetBucketCorsOutput, error) {
-					return nil, &smithy.GenericAPIError{
-						Code: "NoSuchCORSConfiguration",
-					}
+				mockGetBucketCors:              mockGetBucketCorsEmpty,
+				mockGetBucketOwnershipControls: mockGetBucketOwnershipControlsEmpty,
+			},
+			Zone: "myzone",
+		}
+
+		output, err := client.ShowBucket(ctx, bucket)
+		assert.NoError(t, err)
+
+		expectedOutput := &sos.ShowBucketOutput{
+			Name: bucket,
+			Zone: "myzone",
+			ACL: sos.ACL{
+				Read:        "-",
+				Write:       "-",
+				ReadACP:     "-",
+				WriteACP:    "-",
+				FullControl: "-",
+			},
+			CORS:            []sos.CORSRule{},
+			ObjectOwnership: expectedDefaultBucketOwnership,
+		}
+		assert.Equal(t, expectedOutput, output)
+	})
+
+	t.Run("error_non-default_ownership_controls", func(t *testing.T) {
+		client := &sos.Client{
+			S3Client: &MockS3API{
+				mockGetBucketAcl: func(ctx context.Context, params *s3.GetBucketAclInput, optFns ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) {
+					return &s3.GetBucketAclOutput{}, nil
+				},
+				mockGetBucketCors: mockGetBucketCorsEmpty,
+				mockGetBucketOwnershipControls: func(ctx context.Context, params *s3.GetBucketOwnershipControlsInput, optFns ...func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error) {
+					return &s3.GetBucketOwnershipControlsOutput{
+						OwnershipControls: &s3types.OwnershipControls{
+							Rules: []s3types.OwnershipControlsRule{
+								{
+									ObjectOwnership: s3types.ObjectOwnershipObjectWriter,
+								},
+							},
+						},
+					}, nil
 				},
 			},
 			Zone: "myzone",
@@ -201,7 +255,8 @@ func TestShowBucket(t *testing.T) {
 				WriteACP:    "-",
 				FullControl: "-",
 			},
-			CORS: []sos.CORSRule{},
+			CORS:            []sos.CORSRule{},
+			ObjectOwnership: sos.ObjectOwnershipObjectWriter,
 		}
 		assert.Equal(t, expectedOutput, output)
 	})
