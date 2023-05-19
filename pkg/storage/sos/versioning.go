@@ -28,7 +28,7 @@ func (o *storageBucketObjectVersioningOutput) ToTable() {
 	t.Append([]string{"Object Versioning", o.ObjectVersioning})
 }
 
-func (c *Client) GetBucketVersioningSetting(ctx context.Context, bucket string) (output.Outputter, error) {
+func (c *Client) BucketVersioningStatus(ctx context.Context, bucket string) (output.Outputter, error) {
 	result, err := c.S3Client.GetBucketVersioning(ctx, &s3.GetBucketVersioningInput{
 		Bucket: aws.String(bucket),
 	})
@@ -42,7 +42,7 @@ func (c *Client) GetBucketVersioningSetting(ctx context.Context, bucket string) 
 	}, nil
 }
 
-func (c *Client) EnableBucketVersioningSetting(ctx context.Context, bucket string) error {
+func (c *Client) EnableBucketVersioning(ctx context.Context, bucket string) error {
 	_, err := c.S3Client.PutBucketVersioning(ctx, &s3.PutBucketVersioningInput{
 		Bucket: aws.String(bucket),
 		VersioningConfiguration: &types.VersioningConfiguration{
@@ -53,7 +53,7 @@ func (c *Client) EnableBucketVersioningSetting(ctx context.Context, bucket strin
 	return err
 }
 
-func (c *Client) SuspendBucketVersioningSetting(ctx context.Context, bucket string) error {
+func (c *Client) SuspendBucketVersioning(ctx context.Context, bucket string) error {
 	_, err := c.S3Client.PutBucketVersioning(ctx, &s3.PutBucketVersioningInput{
 		Bucket: aws.String(bucket),
 		VersioningConfiguration: &types.VersioningConfiguration{

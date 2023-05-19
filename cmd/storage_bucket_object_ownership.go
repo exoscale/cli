@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/collections"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -34,13 +35,8 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		permittedOps := make(map[string]struct{}, 4)
-		permittedOps[objOwnershipStatus] = struct{}{}
-		permittedOps[objOwnershipObjectWriter] = struct{}{}
-		permittedOps[objOwnershipBucketOwnerEnforced] = struct{}{}
-		permittedOps[objOwnershipBucketOwnerPreferred] = struct{}{}
-
-		if _, ok := permittedOps[args[objOwnershipOpArgIndex]]; !ok {
+		permittedOps := collections.NewSet(objOwnershipStatus, objOwnershipObjectWriter, objOwnershipBucketOwnerEnforced, objOwnershipBucketOwnerPreferred)
+		if !permittedOps.Contains(args[objOwnershipOpArgIndex]) {
 			cmdExitOnUsageError(cmd, "invalid operation")
 		}
 

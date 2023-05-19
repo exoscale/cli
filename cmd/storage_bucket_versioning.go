@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/collections"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -22,19 +23,6 @@ func init() {
 	storageBucketCmd.AddCommand(storageBucketObjectVersioningCmd)
 }
 
-type empty struct{}
-
-type Set[T comparable] map[T]empty
-
-func storeValuesInMap[T comparable](values ...T) Set[T] {
-	result := make(Set[T])
-	for _, value := range values {
-		result[value] = empty{}
-	}
-
-	return result
-}
-
 var storageBucketObjectVersioningCmd = &cobra.Command{
 	Use:     "versioning {" + objVersioningStatus + "," + objVersioningEnable + "," + objVersioningSuspend + "} sos://BUCKET",
 	Aliases: []string{"v"},
@@ -46,8 +34,8 @@ var storageBucketObjectVersioningCmd = &cobra.Command{
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
-		permittedOps := storeValuesInMap(objVersioningStatus, objVersioningEnable, objVersioningSuspend)
-		if _, ok := permittedOps[args[objVersioningOpArgIndex]]; !ok {
+		permittedOps := collections.NewSet(objVersioningStatus, objVersioningEnable, objVersioningSuspend)
+		if !permittedOps.Contains(args[objOwnershipOpArgIndex]) {
 			cmdExitOnUsageError(cmd, "invalid operation")
 		}
 
@@ -77,11 +65,11 @@ var storageBucketObjectVersioningCmd = &cobra.Command{
 
 		switch versioningCommand {
 		case objVersioningStatus:
-			return printOutput(storage.GetBucketVersioningSetting(cmd.Context(), bucket))
+			return printOutput(storage.BucketVersioningStatus(cmd.Context(), bucket))
 		case objVersioningEnable:
-			return storage.EnableBucketVersioningSetting(cmd.Context(), bucket)
+			return storage.EnableBucketVersioning(cmd.Context(), bucket)
 		case objVersioningSuspend:
-			return storage.SuspendBucketVersioningSetting(cmd.Context(), bucket)
+			return storage.SuspendBucketVersioning(cmd.Context(), bucket)
 		}
 
 		return fmt.Errorf("invalid operation")
