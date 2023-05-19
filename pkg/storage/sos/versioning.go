@@ -28,17 +28,30 @@ func (o *storageBucketObjectVersioningOutput) ToTable() {
 	t.Append([]string{"Object Versioning", o.ObjectVersioning})
 }
 
-func (c *Client) BucketVersioningStatus(ctx context.Context, bucket string) (output.Outputter, error) {
+func (c *Client) GetBucketVersioning(ctx context.Context, bucket string) (types.BucketVersioningStatus, error) {
 	result, err := c.S3Client.GetBucketVersioning(ctx, &s3.GetBucketVersioningInput{
 		Bucket: aws.String(bucket),
 	})
+	if err != nil {
+		return "", err
+	}
+
+	if string(result.Status) == "" {
+		return types.BucketVersioningStatus("Disabled"), nil
+	}
+
+	return result.Status, nil
+}
+
+func (c *Client) BucketVersioningStatus(ctx context.Context, bucket string) (output.Outputter, error) {
+	status, err := c.GetBucketVersioning(ctx, bucket)
 	if err != nil {
 		return nil, err
 	}
 
 	return &storageBucketObjectVersioningOutput{
 		Bucket:           bucket,
-		ObjectVersioning: string(result.Status),
+		ObjectVersioning: string(status),
 	}, nil
 }
 
