@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"strings"
-
 	"github.com/fatih/camelcase"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 //go:generate stringer -type=icmpType
@@ -52,6 +52,6 @@ func (i icmpType) StringFormatted() string {
 		}
 		res += " " + v
 	}
-	return strings.Title(res)
 
+	return cases.Title(language.Und).String(res)
 }

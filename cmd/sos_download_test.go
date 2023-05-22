@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -9,7 +8,7 @@ import (
 
 func TestDestinationExists(t *testing.T) {
 	t.Run("Should return true if the localFilePath exists", func(t *testing.T) {
-		tempfile, err := ioutil.TempFile("", "temp.txt")
+		tempfile, err := os.CreateTemp("", "temp.txt")
 		if err != nil {
 			t.Errorf("failed to create tempfile: %v", err)
 		}
@@ -25,13 +24,13 @@ func TestDestinationExists(t *testing.T) {
 	})
 
 	t.Run("Should return true if the localFilePath already contains the object", func(t *testing.T) {
-		tempdir, err := ioutil.TempDir("", "subdir")
+		tempdir, err := os.MkdirTemp("", "subdir")
 		if err != nil {
 			t.Errorf("failed to create tempdir: %v", err)
 		}
 		defer os.RemoveAll(tempdir)
 
-		tempfile, err := ioutil.TempFile(tempdir, "temp.txt")
+		tempfile, err := os.CreateTemp(tempdir, "temp.txt")
 		if err != nil {
 			t.Errorf("failed to create tempfile: %v", err)
 		}
@@ -48,7 +47,7 @@ func TestDestinationExists(t *testing.T) {
 	})
 
 	t.Run("Should return false if localFilePath does not exist", func(t *testing.T) {
-		tempfile, _ := ioutil.TempFile("", "temp.txt")
+		tempfile, _ := os.CreateTemp("", "temp.txt")
 		os.Remove(tempfile.Name())
 
 		exists, err := destinationExists(tempfile.Name(), "")
@@ -61,7 +60,7 @@ func TestDestinationExists(t *testing.T) {
 	})
 
 	t.Run("Should return false if localFilePath is a folder without the object", func(t *testing.T) {
-		tempdir, err := ioutil.TempDir("", "subdir")
+		tempdir, err := os.MkdirTemp("", "subdir")
 		if err != nil {
 			t.Errorf("failed to create tempdir: %v", err)
 		}

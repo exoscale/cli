@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -215,7 +214,7 @@ var sosUploadCmd = &cobra.Command{
 }
 
 func getFiles(folderName, remoteFilePath string, resFiles []fileToUpload) ([]fileToUpload, error) {
-	files, err := ioutil.ReadDir(folderName)
+	files, err := os.ReadDir(folderName)
 	if err != nil {
 		return nil, err
 	}
@@ -235,8 +234,13 @@ func getFiles(folderName, remoteFilePath string, resFiles []fileToUpload) ([]fil
 			return nil, err
 		}
 
+		finfo, err := f.Info()
+		if err != nil {
+			return nil, err
+		}
+
 		var contentType string
-		if f.Size() >= 512 {
+		if finfo.Size() >= 512 {
 			// Only the first 512 bytes are used to sniff the content type.
 			buffer := make([]byte, 512)
 			_, err = file.Read(buffer)

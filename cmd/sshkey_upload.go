@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -42,7 +42,7 @@ Supported output template annotations: %s`,
 }
 
 func uploadSSHKey(name, publicKeyPath string) (output.Outputter, error) {
-	pbk, err := ioutil.ReadFile(publicKeyPath)
+	pbk, err := os.ReadFile(publicKeyPath)
 	if err != nil {
 		return nil, err
 	}

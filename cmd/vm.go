@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -94,14 +94,14 @@ func saveKeyPair(keyPairs *egoscale.SSHKeyPair, vmID egoscale.UUID) {
 	}
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		if err := ioutil.WriteFile(filePath, []byte(keyPairs.PrivateKey), 0o600); err != nil {
+		if err := os.WriteFile(filePath, []byte(keyPairs.PrivateKey), 0o600); err != nil {
 			log.Fatalf("SSH private key could not be written: %s", err)
 		}
 	}
 }
 
 func getUserDataFromFile(path string, compress bool) (string, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return "", err
 	}
@@ -156,7 +156,7 @@ func decodeUserData(data string) (string, error) {
 	}
 	defer gz.Close()
 
-	userData, err := ioutil.ReadAll(gz)
+	userData, err := io.ReadAll(gz)
 	if err != nil {
 		return "", err
 	}
