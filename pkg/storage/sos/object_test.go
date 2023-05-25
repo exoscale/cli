@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -249,7 +249,7 @@ type MockUploader struct {
 }
 
 func (u MockUploader) Upload(ctx context.Context, input *s3.PutObjectInput, opts ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
-	uploadedContent, err := ioutil.ReadAll(input.Body)
+	uploadedContent, err := io.ReadAll(input.Body)
 	assert.NoError(u.t, err)
 
 	assert.Equal(u.t, u.tc.content, string(uploadedContent))
@@ -308,7 +308,7 @@ func TestUploadFile(t *testing.T) {
 				NewUploaderFunc: NewMockUploaderFunc(t, &tc),
 			}
 
-			tempDir, err := ioutil.TempDir("", "exo-cli-test")
+			tempDir, err := os.MkdirTemp("", "exo-cli-test")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -316,7 +316,7 @@ func TestUploadFile(t *testing.T) {
 
 			fileToUpload := tempDir + "/" + tc.file
 
-			err = ioutil.WriteFile(fileToUpload, []byte(tc.content), fs.ModePerm)
+			err = os.WriteFile(fileToUpload, []byte(tc.content), fs.ModePerm)
 			assert.NoError(t, err)
 
 			err = client.UploadFile(context.Background(), tc.bucket, fileToUpload, tc.key, tc.acl)
@@ -422,7 +422,7 @@ type MockMultiUploader struct {
 func (u *MockMultiUploader) Upload(ctx context.Context, input *s3.PutObjectInput, opts ...func(*s3manager.Uploader)) (*s3manager.UploadOutput, error) {
 	u.nUploadCalls++
 
-	uploadedContent, err := ioutil.ReadAll(input.Body)
+	uploadedContent, err := io.ReadAll(input.Body)
 	assert.NoError(u.t, err)
 
 	item, ok := u.tc.uploaderChecklist[*input.Key]
@@ -441,7 +441,7 @@ func (u *MockMultiUploader) Upload(ctx context.Context, input *s3.PutObjectInput
 func TestUploadFiles(t *testing.T) {
 	ctx := context.Background()
 
-	tempDir, err := ioutil.TempDir("", "exo-cli-uploads-test")
+	tempDir, err := os.MkdirTemp("", "exo-cli-uploads-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -450,12 +450,12 @@ func TestUploadFiles(t *testing.T) {
 	})
 
 	tempFile1 := filepath.Join(tempDir, "file1.txt")
-	if err := ioutil.WriteFile(tempFile1, []byte("file1 content"), 0600); err != nil {
+	if err := os.WriteFile(tempFile1, []byte("file1 content"), 0600); err != nil {
 		t.Fatal(err)
 	}
 
 	tempFile2 := filepath.Join(tempDir, "file2.txt")
-	if err := ioutil.WriteFile(tempFile2, []byte("file2 content"), 0600); err != nil {
+	if err := os.WriteFile(tempFile2, []byte("file2 content"), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -465,7 +465,7 @@ func TestUploadFiles(t *testing.T) {
 	}
 
 	tempFile3 := filepath.Join(tempSubdir, "file3.txt")
-	if err := ioutil.WriteFile(tempFile3, []byte("file3 content"), 0600); err != nil {
+	if err := os.WriteFile(tempFile3, []byte("file3 content"), 0600); err != nil {
 		t.Fatal(err)
 	}
 

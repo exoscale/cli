@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/fatih/camelcase"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type icmpCode uint16
@@ -57,7 +58,7 @@ func (i icmpCode) StringFormatted() string {
 		}
 		res += " " + v
 	}
-	return strings.Title(res)
+	return cases.Title(language.Und).String(res)
 }
 
 func (i icmpCode) icmpType() icmpType {
