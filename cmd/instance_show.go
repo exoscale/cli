@@ -23,6 +23,7 @@ type instanceShowOutput struct {
 	Template           string            `json:"template_id"`
 	Zone               string            `json:"zoneid"`
 	AntiAffinityGroups []string          `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
+	DeployTarget       string            `json:"deploy_target"`
 	SecurityGroups     []string          `json:"security_groups"`
 	PrivateInstance    string            `json:"private-instance" outputLabel:"Private Instance"`
 	PrivateNetworks    []string          `json:"private_networks"`
@@ -127,6 +128,15 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			}
 			out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
 		}
+	}
+
+	out.DeployTarget = "-"
+	if instance.DeployTargetID != nil {
+		DeployTarget, err := globalstate.EgoscaleClient.GetDeployTarget(ctx, c.Zone, *instance.DeployTargetID)
+		if err != nil {
+			return fmt.Errorf("error retrieving Deploy Target: %w", err)
+		}
+		out.DeployTarget = *DeployTarget.Name
 	}
 
 	if instance.ElasticIPIDs != nil {
