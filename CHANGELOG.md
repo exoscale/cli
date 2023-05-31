@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.70.0 (UNRELEASED)
+
+### Features
+
+- compute instance show: display deploy-target (#512)
+
+### Bug Fixes
+
+- compute instance ssh: don't try to connect to private instances (#514)
+
 ## 1.69.0
 
 ### Features
