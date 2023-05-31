@@ -71,6 +71,10 @@ When using [Fig](https://fig.io) you can run this command to output Fig completi
 exo integrations generate-fig-spec
 ```
 
+## External contributions:
+
+- [setup-exoscale](https://github.com/marketplace/actions/setup-exoscale) GitHub action
+
 
 [releases]: https://github.com/exoscale/cli/releases
 [communitydoc]: https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/
