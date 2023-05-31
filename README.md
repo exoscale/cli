@@ -71,7 +71,7 @@ When using [Fig](https://fig.io) you can run this command to output Fig completi
 exo integrations generate-fig-spec
 ```
 
-## External contributions:
+## External contributions
 
 - [setup-exoscale](https://github.com/marketplace/actions/setup-exoscale) GitHub action
 
