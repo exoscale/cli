@@ -78,16 +78,18 @@ func validateDatabaseServiceSettings(in string, schema interface{}) (map[string]
 	}
 
 	if !res.Valid() {
-		return nil, errors.New(strings.Join(
-			func() []string {
-				errs := make([]string, len(res.Errors()))
-				for i, err := range res.Errors() {
-					errs[i] = err.String()
-				}
-				return errs
-			}(),
-			"\n",
-		))
+		for _, err := range res.Errors() {
+			errs := []string{}
+			// Some regexs are known not to match in Go (they are written for Python).
+			// Thus we ignore pattern errors and rely on server side validation for them.
+			if err.Type() != "pattern" {
+				errs = append(errs, err.String())
+			}
+
+			if len(errs) > 0 {
+				return nil, errors.New(strings.Join(errs, "\n"))
+			}
+		}
 	}
 
 	return userSettings, nil
