@@ -91,6 +91,11 @@ func (c *instanceSSHCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	// No ssh possible for Private Instances
+	if *instance.PublicIPAssignment == "none" {
+		return fmt.Errorf("instance %q is a Private Instance (`exo compute instance ssh` is not supported)", c.Instance)
+	}
+
 	if c.Login == "" {
 		instanceTemplate, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *instance.TemplateID)
 		if err != nil {
