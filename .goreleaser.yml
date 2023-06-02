@@ -34,6 +34,7 @@ builds:
 # macOS Universal Binaries
 universal_binaries:
   - replace: true
+    name_template: 'exo'
 
 archives:
   - id: windows
@@ -78,7 +79,7 @@ brews:
     homepage: "https://exoscale.github.io/cli/"
     description: Manage easily your Exoscale infrastructure from the command-line.
     install: |
-      bin.install "exoscale-cli" => "exo"
+      bin.install "exo"
       man1.install Dir["manpage/exo*.1"]
       bash_completion.install "contrib/completion/bash/exo"
       zsh_completion.install "contrib/completion/zsh/_exo"
