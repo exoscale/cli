@@ -1,14 +1,24 @@
 # Changelog
 
-## 1.70.0 (UNRELEASED)
+## 1.70.0
 
 ### Features
 
 - compute instance show: display deploy-target (#512)
+- dbaas show grafana: show additional data (#507)
+- storage: commands to enable, suspend and get the status of the object versioning setting (#509)
+- Script to install the latest version on Debian and Red Hat-based distros
+
+### Improvements
+
+- standardize CI with other Go repos (#506)
+- New "Exoternal Contributions" section in README.md with first addition: GitHub Action!
+- Update MacOS compiled unified binary name to be inline with others (#517)
 
 ### Bug Fixes
 
 - compute instance ssh: don't try to connect to private instances (#514)
+- dbaas update: ignore regex checks in Database Settings data (#515)
 
 ## 1.69.0
 
