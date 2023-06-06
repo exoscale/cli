@@ -14,6 +14,6 @@ func AsVersionFilter(f ObjectFilterFunc) ObjectVersionFilterFunc {
 	}
 }
 
-func AccpetAll(ObjectInterface) bool {
+func AcceptAll(ObjectInterface) bool {
 	return true
 }

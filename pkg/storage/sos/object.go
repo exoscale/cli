@@ -379,7 +379,17 @@ func (c *Client) listObjectsFunc(bucket, prefix string, recursive, stream bool) 
 	}
 }
 
-func (c *Client) listVersionedObjectsFunc(bucket, prefix string, recursive, stream bool) listFunc {
+func applyFilters(obj entities.ObjectVersionInterface, filters ...entities.ObjectVersionFilterFunc) bool {
+	for _, filter := range filters {
+		if !filter(obj) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (c *Client) listVersionedObjectsFunc(bucket, prefix string, recursive, stream bool, filters ...entities.ObjectVersionFilterFunc) listFunc {
 	var keyMarker *string
 	var versionIdMarker *string
 
@@ -407,9 +417,13 @@ func (c *Client) listVersionedObjectsFunc(bucket, prefix string, recursive, stre
 
 		var objects []entities.ObjectInterface
 		for i := range res.Versions {
-			objects = append(objects, &entities.ObjectVersion{
+			o := entities.ObjectVersion{
 				ObjectVersion: &res.Versions[i],
-			})
+			}
+
+			if applyFilters(&o, filters...) {
+				objects = append(objects, &o)
+			}
 		}
 
 		return &listCallOut{
@@ -459,7 +473,7 @@ func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursi
 }
 
 func (c *Client) ListObjectVersions(ctx context.Context, bucket, prefix string, recursive, stream bool, versionFilters ...entities.ObjectVersionFilterFunc) (*ListObjectsOutput, error) {
-	listObjects := c.listVersionedObjectsFunc(bucket, prefix, recursive, stream)
+	listObjects := c.listVersionedObjectsFunc(bucket, prefix, recursive, stream, versionFilters...)
 
 	listing, err := c.listAllObjects(ctx, listObjects, stream)
 	if err != nil {

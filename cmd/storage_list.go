@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -62,6 +63,11 @@ Supported output template annotations:
 			prefix = parts[1]
 		}
 
+		filters, err := flags.TranslateFlagsToFilters(cmd)
+		if err != nil {
+			return err
+		}
+
 		storage, err := sos.NewStorageClient(
 			gContext,
 			sos.ClientOptZoneFromBucket(gContext, bucket),
@@ -70,7 +76,7 @@ Supported output template annotations:
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return printOutput(storage.ListObjects(gContext, bucket, prefix, recursive, stream))
+		return printOutput(storage.ListObjectVersions(gContext, bucket, prefix, recursive, stream, filters...))
 	},
 }
 
@@ -79,6 +85,7 @@ func init() {
 		"list bucket recursively")
 	storageListCmd.Flags().BoolP("stream", "s", false,
 		"stream listed files instead of waiting for complete listing (useful for large buckets)")
+	flags.AddVersionsFlags(storageListCmd)
 	storageCmd.AddCommand(storageListCmd)
 }
 
