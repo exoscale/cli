@@ -24,6 +24,7 @@ import (
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 
+	"github.com/exoscale/cli/pkg/entities"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -309,18 +310,19 @@ type ListBucketsItemOutput struct {
 	Created string `json:"created"`
 }
 
-func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (output.Outputter, error) {
-	out := make(ListObjectsOutput, 0)
-	dirs := make(map[string]struct{})     // for deduplication of common prefixes (folders)
-	dirsOut := make(ListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
+func (c *Client) listAllObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (*entities.ObjectListing, error) {
+	listing := entities.ObjectListing{}
+	dirs := make(map[string]struct{}) // for deduplication of common prefixes (commonPrefixes)
 
 	var ct string
+
 	for {
 		req := s3.ListObjectsV2Input{
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
 			ContinuationToken: aws.String(ct),
 		}
+
 		if !recursive {
 			req.Delimiter = aws.String("/")
 		}
@@ -338,31 +340,53 @@ func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursi
 					if stream {
 						fmt.Println(dir)
 					} else {
-						dirsOut = append(dirsOut, ListObjectsItemOutput{
-							Path: dir,
-							Dir:  true,
-						})
+						listing.CommonPrefixes = append(listing.CommonPrefixes, dir)
 					}
 					dirs[dir] = struct{}{}
 				}
 			}
 		}
 
-		for _, o := range res.Contents {
-			if stream {
+		if stream {
+			for _, o := range res.Contents {
 				fmt.Println(aws.ToString(o.Key))
-			} else {
-				out = append(out, ListObjectsItemOutput{
-					Path:         aws.ToString(o.Key),
-					Size:         o.Size,
-					LastModified: o.LastModified.Format(TimestampFormat),
-				})
 			}
+		} else {
+			listing.List = append(listing.List, res.Contents...)
 		}
 
 		if !res.IsTruncated {
 			break
 		}
+	}
+
+	return &listing, nil
+}
+
+func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (*ListObjectsOutput, error) {
+	out := make(ListObjectsOutput, 0)
+	dirsOut := make(ListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
+
+	listing, err := c.listAllObjects(ctx, bucket, prefix, recursive, stream)
+	if err != nil {
+		return nil, err
+	}
+
+	if !recursive {
+		for _, cp := range listing.CommonPrefixes {
+			dirsOut = append(dirsOut, ListObjectsItemOutput{
+				Path: cp,
+				Dir:  true,
+			})
+		}
+	}
+
+	for _, o := range listing.List {
+		out = append(out, ListObjectsItemOutput{
+			Path:         aws.ToString(o.Key),
+			Size:         o.Size,
+			LastModified: o.LastModified.Format(TimestampFormat),
+		})
 	}
 
 	// To be user friendly, we are going to push dir records to the top of the output list
