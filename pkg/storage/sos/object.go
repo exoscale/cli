@@ -315,12 +315,36 @@ type listFunc func(ctx context.Context) (*listCallOut, error)
 
 type listCallOut struct {
 	Objects        []entities.ObjectInterface
-	CommonPrefixes []types.CommonPrefix
+	CommonPrefixes []string
 	IsTruncated    bool
 }
 
-func (c *Client) listObjectsFunc(bucket, prefix string, recursive bool) listFunc {
+func GetCommonPrefixDeduplicator(stream bool) func([]types.CommonPrefix) []string {
+	dirs := make(map[string]struct{})
+
+	return func(prefixes []types.CommonPrefix) []string {
+		var deduplicatedPrefixes []string
+
+		for _, cp := range prefixes {
+			dir := aws.ToString(cp.Prefix)
+			if _, ok := dirs[dir]; !ok {
+				if stream {
+					fmt.Println(dir)
+				} else {
+					deduplicatedPrefixes = append(deduplicatedPrefixes, dir)
+				}
+				dirs[dir] = struct{}{}
+			}
+		}
+
+		return deduplicatedPrefixes
+	}
+}
+
+func (c *Client) listObjectsFunc(bucket, prefix string, recursive, stream bool) listFunc {
 	var continuationToken *string
+
+	deduplicate := GetCommonPrefixDeduplicator(stream)
 
 	return func(ctx context.Context) (*listCallOut, error) {
 		req := s3.ListObjectsV2Input{
@@ -349,15 +373,17 @@ func (c *Client) listObjectsFunc(bucket, prefix string, recursive bool) listFunc
 
 		return &listCallOut{
 			Objects:        objects,
-			CommonPrefixes: res.CommonPrefixes,
+			CommonPrefixes: deduplicate(res.CommonPrefixes),
 			IsTruncated:    res.IsTruncated,
 		}, nil
 	}
 }
 
-func (c *Client) listVersionedObjectsFunc(bucket, prefix string, recursive bool) listFunc {
+func (c *Client) listVersionedObjectsFunc(bucket, prefix string, recursive, stream bool) listFunc {
 	var keyMarker *string
 	var versionIdMarker *string
+
+	deduplicate := GetCommonPrefixDeduplicator(stream)
 
 	return func(ctx context.Context) (*listCallOut, error) {
 		req := s3.ListObjectVersionsInput{
@@ -388,36 +414,19 @@ func (c *Client) listVersionedObjectsFunc(bucket, prefix string, recursive bool)
 
 		return &listCallOut{
 			Objects:        objects,
-			CommonPrefixes: res.CommonPrefixes,
+			CommonPrefixes: deduplicate(res.CommonPrefixes),
 			IsTruncated:    res.IsTruncated,
 		}, nil
 	}
 }
 
-func (c *Client) listAllObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (*entities.ObjectListing, error) {
+func (c *Client) listAllObjects(ctx context.Context, listObjects listFunc, stream bool) (*entities.ObjectListing, error) {
 	listing := entities.ObjectListing{}
-	dirs := make(map[string]struct{}) // for deduplication of common prefixes (commonPrefixes)
-
-	listObjects := c.listObjectsFunc(bucket, prefix, recursive)
 
 	for {
 		res, err := listObjects(ctx)
 		if err != nil {
 			return nil, err
-		}
-
-		if !recursive {
-			for _, cp := range res.CommonPrefixes {
-				dir := aws.ToString(cp.Prefix)
-				if _, ok := dirs[dir]; !ok {
-					if stream {
-						fmt.Println(dir)
-					} else {
-						listing.CommonPrefixes = append(listing.CommonPrefixes, dir)
-					}
-					dirs[dir] = struct{}{}
-				}
-			}
 		}
 
 		if stream {
@@ -428,6 +437,8 @@ func (c *Client) listAllObjects(ctx context.Context, bucket, prefix string, recu
 			listing.List = append(listing.List, res.Objects...)
 		}
 
+		listing.CommonPrefixes = append(listing.CommonPrefixes, res.CommonPrefixes...)
+
 		if !res.IsTruncated {
 			break
 		}
@@ -437,13 +448,30 @@ func (c *Client) listAllObjects(ctx context.Context, bucket, prefix string, recu
 }
 
 func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (*ListObjectsOutput, error) {
-	out := make(ListObjectsOutput, 0)
-	dirsOut := make(ListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
+	listObjects := c.listObjectsFunc(bucket, prefix, recursive, stream)
 
-	listing, err := c.listAllObjects(ctx, bucket, prefix, recursive, stream)
+	listing, err := c.listAllObjects(ctx, listObjects, stream)
 	if err != nil {
 		return nil, err
 	}
+
+	return c.PrepareListObjectsOutput(listing, recursive, stream)
+}
+
+func (c *Client) ListObjectVersions(ctx context.Context, bucket, prefix string, recursive, stream bool) (*ListObjectsOutput, error) {
+	listObjects := c.listVersionedObjectsFunc(bucket, prefix, recursive, stream)
+
+	listing, err := c.listAllObjects(ctx, listObjects, stream)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.PrepareListObjectsOutput(listing, recursive, stream)
+}
+
+func (c *Client) PrepareListObjectsOutput(listing *entities.ObjectListing, recursive, stream bool) (*ListObjectsOutput, error) {
+	out := make(ListObjectsOutput, 0)
+	dirsOut := make(ListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
 
 	if !recursive {
 		for _, cp := range listing.CommonPrefixes {

@@ -25,6 +25,10 @@ type ObjectInterface interface {
 	GetLastModified() *time.Time
 }
 
+type ObjectVersionInterface interface {
+	ObjectInterface
+}
+
 func (o *Object) GetKey() *string {
 	return o.Key
 }
