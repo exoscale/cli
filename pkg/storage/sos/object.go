@@ -19,6 +19,7 @@ import (
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/dustin/go-humanize"
 	"github.com/vbauerster/mpb/v4"
@@ -310,17 +311,22 @@ type ListBucketsItemOutput struct {
 	Created string `json:"created"`
 }
 
-func (c *Client) listAllObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (*entities.ObjectListing, error) {
-	listing := entities.ObjectListing{}
-	dirs := make(map[string]struct{}) // for deduplication of common prefixes (commonPrefixes)
+type listFunc func(ctx context.Context) (*listCallOut, error)
 
-	var ct string
+type listCallOut struct {
+	Objects        []entities.ObjectInterface
+	CommonPrefixes []types.CommonPrefix
+	IsTruncated    bool
+}
 
-	for {
+func (c *Client) listObjectsFunc(bucket, prefix string, recursive bool) listFunc {
+	var continuationToken *string
+
+	return func(ctx context.Context) (*listCallOut, error) {
 		req := s3.ListObjectsV2Input{
 			Bucket:            aws.String(bucket),
 			Prefix:            aws.String(prefix),
-			ContinuationToken: aws.String(ct),
+			ContinuationToken: continuationToken,
 		}
 
 		if !recursive {
@@ -331,7 +337,74 @@ func (c *Client) listAllObjects(ctx context.Context, bucket, prefix string, recu
 		if err != nil {
 			return nil, err
 		}
-		ct = aws.ToString(res.NextContinuationToken)
+
+		continuationToken = res.NextContinuationToken
+
+		var objects []entities.ObjectInterface
+		for i := range res.Contents {
+			objects = append(objects, &entities.Object{
+				Object: &res.Contents[i],
+			})
+		}
+
+		return &listCallOut{
+			Objects:        objects,
+			CommonPrefixes: res.CommonPrefixes,
+			IsTruncated:    res.IsTruncated,
+		}, nil
+	}
+}
+
+func (c *Client) listVersionedObjectsFunc(bucket, prefix string, recursive bool) listFunc {
+	var keyMarker *string
+	var versionIdMarker *string
+
+	return func(ctx context.Context) (*listCallOut, error) {
+		req := s3.ListObjectVersionsInput{
+			Bucket:          aws.String(bucket),
+			Prefix:          aws.String(prefix),
+			KeyMarker:       keyMarker,
+			VersionIdMarker: versionIdMarker,
+		}
+
+		if !recursive {
+			req.Delimiter = aws.String("/")
+		}
+
+		res, err := c.S3Client.ListObjectVersions(ctx, &req)
+		if err != nil {
+			return nil, err
+		}
+
+		keyMarker = res.NextKeyMarker
+		versionIdMarker = res.NextVersionIdMarker
+
+		var objects []entities.ObjectInterface
+		for i := range res.Versions {
+			objects = append(objects, &entities.ObjectVersion{
+				ObjectVersion: &res.Versions[i],
+			})
+		}
+
+		return &listCallOut{
+			Objects:        objects,
+			CommonPrefixes: res.CommonPrefixes,
+			IsTruncated:    res.IsTruncated,
+		}, nil
+	}
+}
+
+func (c *Client) listAllObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (*entities.ObjectListing, error) {
+	listing := entities.ObjectListing{}
+	dirs := make(map[string]struct{}) // for deduplication of common prefixes (commonPrefixes)
+
+	listObjects := c.listObjectsFunc(bucket, prefix, recursive)
+
+	for {
+		res, err := listObjects(ctx)
+		if err != nil {
+			return nil, err
+		}
 
 		if !recursive {
 			for _, cp := range res.CommonPrefixes {
@@ -348,11 +421,11 @@ func (c *Client) listAllObjects(ctx context.Context, bucket, prefix string, recu
 		}
 
 		if stream {
-			for _, o := range res.Contents {
-				fmt.Println(aws.ToString(o.Key))
+			for _, o := range res.Objects {
+				fmt.Println(o.GetKey())
 			}
 		} else {
-			listing.List = append(listing.List, res.Contents...)
+			listing.List = append(listing.List, res.Objects...)
 		}
 
 		if !res.IsTruncated {
@@ -383,9 +456,9 @@ func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursi
 
 	for _, o := range listing.List {
 		out = append(out, ListObjectsItemOutput{
-			Path:         aws.ToString(o.Key),
-			Size:         o.Size,
-			LastModified: o.LastModified.Format(TimestampFormat),
+			Path:         aws.ToString(o.GetKey()),
+			Size:         o.GetSize(),
+			LastModified: o.GetLastModified().Format(TimestampFormat),
 		})
 	}
 
