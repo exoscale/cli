@@ -447,7 +447,7 @@ func (c *Client) listAllObjects(ctx context.Context, listObjects listFunc, strea
 	return &listing, nil
 }
 
-func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (*ListObjectsOutput, error) {
+func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursive, stream bool, filters ...entities.ObjectFilterFunc) (*ListObjectsOutput, error) {
 	listObjects := c.listObjectsFunc(bucket, prefix, recursive, stream)
 
 	listing, err := c.listAllObjects(ctx, listObjects, stream)
@@ -458,7 +458,7 @@ func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursi
 	return c.PrepareListObjectsOutput(listing, recursive, stream)
 }
 
-func (c *Client) ListObjectVersions(ctx context.Context, bucket, prefix string, recursive, stream bool) (*ListObjectsOutput, error) {
+func (c *Client) ListObjectVersions(ctx context.Context, bucket, prefix string, recursive, stream bool, versionFilters ...entities.ObjectVersionFilterFunc) (*ListObjectsOutput, error) {
 	listObjects := c.listVersionedObjectsFunc(bucket, prefix, recursive, stream)
 
 	listing, err := c.listAllObjects(ctx, listObjects, stream)
