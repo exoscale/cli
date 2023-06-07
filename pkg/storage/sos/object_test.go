@@ -213,7 +213,9 @@ func TestListObjects(t *testing.T) {
 	recursive := false
 	stream := false
 	ctx := context.Background()
-	output, err := client.ListObjects(ctx, bucket, prefix, recursive, stream)
+
+	list := client.ListObjectsFunc(bucket, prefix, recursive, stream, nil)
+	output, err := client.ListObjects(ctx, list, recursive, stream)
 	assert.NoError(t, err)
 
 	// Define the expected output

@@ -450,7 +450,7 @@ func (c *Client) ListVersionedObjectsFunc(bucket, prefix string, recursive, stre
 	}
 }
 
-func (c *Client) listAllObjects(ctx context.Context, list listFunc, stream bool) (*entities.ObjectListing, error) {
+func (c *Client) GetObjectListing(ctx context.Context, list listFunc, stream bool) (*entities.ObjectListing, error) {
 	listing := entities.ObjectListing{}
 
 	for {
@@ -478,15 +478,15 @@ func (c *Client) listAllObjects(ctx context.Context, list listFunc, stream bool)
 }
 
 func (c *Client) ListObjects(ctx context.Context, list listFunc, recursive, stream bool) (*ListObjectsOutput, error) {
-	listing, err := c.listAllObjects(ctx, list, stream)
+	listing, err := c.GetObjectListing(ctx, list, stream)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.PrepareListObjectsOutput(listing, recursive, stream)
+	return c.prepareListObjectsOutput(listing, recursive, stream)
 }
 
-func (c *Client) PrepareListObjectsOutput(listing *entities.ObjectListing, recursive, stream bool) (*ListObjectsOutput, error) {
+func (c *Client) prepareListObjectsOutput(listing *entities.ObjectListing, recursive, stream bool) (*ListObjectsOutput, error) {
 	out := make(ListObjectsOutput, 0)
 	dirsOut := make(ListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
 
