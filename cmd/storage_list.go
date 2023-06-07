@@ -31,10 +31,12 @@ Supported output template annotations:
 		strings.Join(output.TemplateAnnotations(&sos.ListObjectsItemOutput{}), ", ")),
 	Aliases: gListAlias,
 
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 1 {
 			args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 		}
+
+		return flags.ValidateVersionsFlags(cmd)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
