@@ -7,7 +7,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/entities"
 	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -85,16 +84,12 @@ Supported output template annotations:
 		}
 
 		if listVersions {
-			var versionFilters []entities.ObjectVersionFilterFunc
-
-			for _, filter := range filters {
-				versionFilters = append(versionFilters, entities.AsVersionFilter(filter))
-			}
-
-			return printOutput(storage.ListObjectVersions(gContext, bucket, prefix, recursive, stream, versionFilters...))
+			list := storage.ListVersionedObjectsFunc(bucket, prefix, recursive, stream, filters, nil)
+			return printOutput(storage.ListObjects(gContext, list, recursive, stream))
 		}
 
-		return printOutput(storage.ListObjects(gContext, bucket, prefix, recursive, stream, filters...))
+		list := storage.ListObjectsFunc(bucket, prefix, recursive, stream, filters)
+		return printOutput(storage.ListObjects(gContext, list, recursive, stream))
 	},
 }
 
