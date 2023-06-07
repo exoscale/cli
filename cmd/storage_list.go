@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/entities"
 	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -36,7 +37,7 @@ Supported output template annotations:
 			args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 		}
 
-		return flags.ValidateVersionsFlags(cmd)
+		return flags.ValidateTimestampFlags(cmd)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -65,7 +66,7 @@ Supported output template annotations:
 			prefix = parts[1]
 		}
 
-		filters, err := flags.TranslateFlagsToFilters(cmd)
+		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
 		if err != nil {
 			return err
 		}
@@ -78,7 +79,22 @@ Supported output template annotations:
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return printOutput(storage.ListObjectVersions(gContext, bucket, prefix, recursive, stream, filters...))
+		listVersions, err := cmd.Flags().GetBool(flags.Versions)
+		if err != nil {
+			return err
+		}
+
+		if listVersions {
+			var versionFilters []entities.ObjectVersionFilterFunc
+
+			for _, filter := range filters {
+				versionFilters = append(versionFilters, entities.AsVersionFilter(filter))
+			}
+
+			return printOutput(storage.ListObjectVersions(gContext, bucket, prefix, recursive, stream, versionFilters...))
+		}
+
+		return printOutput(storage.ListObjects(gContext, bucket, prefix, recursive, stream, filters...))
 	},
 }
 
@@ -88,6 +104,7 @@ func init() {
 	storageListCmd.Flags().BoolP("stream", "s", false,
 		"stream listed files instead of waiting for complete listing (useful for large buckets)")
 	flags.AddVersionsFlags(storageListCmd)
+	flags.AddTimeFilterFlags(storageListCmd)
 	storageCmd.AddCommand(storageListCmd)
 }
 
