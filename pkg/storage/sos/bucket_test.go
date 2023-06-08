@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	"github.com/stretchr/testify/assert"
 
@@ -229,10 +228,10 @@ func TestShowBucket(t *testing.T) {
 				mockGetBucketCors: mockGetBucketCorsEmpty,
 				mockGetBucketOwnershipControls: func(ctx context.Context, params *s3.GetBucketOwnershipControlsInput, optFns ...func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error) {
 					return &s3.GetBucketOwnershipControlsOutput{
-						OwnershipControls: &s3types.OwnershipControls{
-							Rules: []s3types.OwnershipControlsRule{
+						OwnershipControls: &types.OwnershipControls{
+							Rules: []types.OwnershipControlsRule{
 								{
-									ObjectOwnership: s3types.ObjectOwnershipObjectWriter,
+									ObjectOwnership: types.ObjectOwnershipObjectWriter,
 								},
 							},
 						},

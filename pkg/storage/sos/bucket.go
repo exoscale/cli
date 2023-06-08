@@ -15,7 +15,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 )
 
@@ -104,7 +103,7 @@ func (c *Client) CreateNewBucket(ctx context.Context, name, acl string) error {
 				strings.Join(BucketCannedACLToStrings(), ", "))
 		}
 
-		s3Bucket.ACL = s3types.BucketCannedACL(acl)
+		s3Bucket.ACL = types.BucketCannedACL(acl)
 	}
 
 	_, err := c.S3Client.CreateBucket(ctx, &s3Bucket)
@@ -200,8 +199,8 @@ func (c Client) GetBucketObjectOwnershipInfo(ctx context.Context, bucket string)
 type BucketObjectOwnership string
 
 const (
-	ObjectOwnershipObjectWriter         BucketObjectOwnership = BucketObjectOwnership(s3types.ObjectOwnershipObjectWriter)
-	ObjectOwnershipBucketOwnerPreferred BucketObjectOwnership = BucketObjectOwnership(s3types.ObjectOwnershipBucketOwnerPreferred)
+	ObjectOwnershipObjectWriter         BucketObjectOwnership = BucketObjectOwnership(types.ObjectOwnershipObjectWriter)
+	ObjectOwnershipBucketOwnerPreferred BucketObjectOwnership = BucketObjectOwnership(types.ObjectOwnershipBucketOwnerPreferred)
 	ObjectOwnershipBucketOwnerEnforced  BucketObjectOwnership = "BucketOwnerEnforced"
 )
 
