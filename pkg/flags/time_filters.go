@@ -22,10 +22,10 @@ func parseTimestamp(s string) (time.Time, error) {
 }
 
 func AddTimeFilterFlags(cmd *cobra.Command) {
-	cmd.Flags().Duration(OlderThan, 0, "TODO")
-	cmd.Flags().String(OlderThanTimestamp, "", "TODO")
-	cmd.Flags().Duration(NewerThan, 0, "TODO")
-	cmd.Flags().String(NewerThanTimestamp, "", "TODO")
+	cmd.Flags().Duration(OlderThan, 0, "only objects older than a duration. Accepts durations in the format of Go's time.ParseDuration. examples: \"2h45m\", \"10m\", \"45s\"")
+	cmd.Flags().String(OlderThanTimestamp, "", "only objects older than an ISO 8601 timestamp. examples: '2023-06-07T10:00:00+02:00', use the date command $(date -d \"yesterday 10am\" --iso-8601=seconds)")
+	cmd.Flags().Duration(NewerThan, 0, "only objects newer than a duration. Accepts durations in the format of Go's time.ParseDuration. examples: \"2h45m\", \"10m\", \"45s\"")
+	cmd.Flags().String(NewerThanTimestamp, "", "only objects newer than an ISO 8601 timestamp. examples: '2023-06-07T10:00:00+02:00', use the date command $(date -d \"yesterday 10am\" --iso-8601=seconds)")
 }
 
 func ValidateTimestampFlags(cmd *cobra.Command) error {

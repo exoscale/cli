@@ -5,11 +5,9 @@ import (
 )
 
 const (
-	Versions              = "versions"
-	ExcludeCurrentVersion = "exclude-current-version"
+	Versions = "versions"
 )
 
 func AddVersionsFlags(cmd *cobra.Command) {
-	cmd.Flags().Bool(Versions, false, "TODO")
-	cmd.Flags().Bool(ExcludeCurrentVersion, false, "list all versions except the current latest one")
+	cmd.Flags().Bool(Versions, false, "list all versions of objects(if the bucket is versioned)")
 }
