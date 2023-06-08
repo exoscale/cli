@@ -1,5 +1,7 @@
 package object
 
+import "time"
+
 type ObjectFilterFunc func(ObjectInterface) bool
 
 type ObjectVersionFilterFunc func(ObjectVersionInterface) bool
@@ -22,4 +24,16 @@ func ApplyVersionedFilters(obj ObjectVersionInterface, filters []ObjectVersionFi
 	}
 
 	return true
+}
+
+func OlderThanFilterFunc(t time.Time) ObjectFilterFunc {
+	return func(obj ObjectInterface) bool {
+		return obj.GetLastModified().Before(t)
+	}
+}
+
+func NewerThanFilterFunc(t time.Time) ObjectFilterFunc {
+	return func(obj ObjectInterface) bool {
+		return obj.GetLastModified().After(t)
+	}
 }

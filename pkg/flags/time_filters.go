@@ -88,9 +88,7 @@ func olderThanDurationFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error
 		return nil, nil
 	}
 
-	return func(obj object.ObjectInterface) bool {
-		return obj.GetLastModified().Before(time.Now().Add(-dur))
-	}, nil
+	return object.OlderThanFilterFunc(time.Now().Add(-dur)), nil
 }
 
 func olderThanTimestampFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error) {
@@ -108,9 +106,7 @@ func olderThanTimestampFilter(cmd *cobra.Command) (object.ObjectFilterFunc, erro
 		return nil, err
 	}
 
-	return func(obj object.ObjectInterface) bool {
-		return obj.GetLastModified().Before(timestamp)
-	}, nil
+	return object.OlderThanFilterFunc(timestamp), nil
 }
 
 func newerThanDurationFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error) {
@@ -123,9 +119,7 @@ func newerThanDurationFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error
 		return nil, nil
 	}
 
-	return func(obj object.ObjectInterface) bool {
-		return obj.GetLastModified().After(time.Now().Add(-dur))
-	}, nil
+	return object.NewerThanFilterFunc(time.Now().Add(-dur)), nil
 }
 
 func newerThanTimestampFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error) {
@@ -143,7 +137,5 @@ func newerThanTimestampFilter(cmd *cobra.Command) (object.ObjectFilterFunc, erro
 		return nil, err
 	}
 
-	return func(obj object.ObjectInterface) bool {
-		return obj.GetLastModified().After(timestamp)
-	}, nil
+	return object.NewerThanFilterFunc(timestamp), nil
 }

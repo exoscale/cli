@@ -20,7 +20,6 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/dustin/go-humanize"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -31,10 +30,10 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
-	deleteList := make([]s3types.ObjectIdentifier, 0)
-	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
-		deleteList = append(deleteList, s3types.ObjectIdentifier{Key: o.Key})
+func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]types.DeletedObject, error) {
+	deleteList := make([]types.ObjectIdentifier, 0)
+	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *types.Object) error {
+		deleteList = append(deleteList, types.ObjectIdentifier{Key: o.Key})
 		return nil
 	})
 	if err != nil {
@@ -44,7 +43,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 	// The S3 DeleteObjects API call is limited to 1000 keys per call, as a
 	// precaution we're batching deletes.
 	maxKeys := 1000
-	deleted := make([]s3types.DeletedObject, 0)
+	deleted := make([]types.DeletedObject, 0)
 
 	for i := 0; i < len(deleteList); i += maxKeys {
 		j := i + maxKeys
@@ -54,7 +53,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 
 		res, err := c.S3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: &bucket,
-			Delete: &s3types.Delete{Objects: deleteList[i:j]},
+			Delete: &types.Delete{Objects: deleteList[i:j]},
 		})
 		if err != nil {
 			return nil, err
@@ -108,7 +107,7 @@ type DownloadConfig struct {
 	Prefix      string
 	Source      string
 	Destination string
-	Objects     []*s3types.Object
+	Objects     []*types.Object
 	Recursive   bool
 	Overwrite   bool
 	DryRun      bool
@@ -190,7 +189,7 @@ func (prox *proxyWriterAt) WriteAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
-func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3types.Object, dst string) error {
+func (c *Client) DownloadFile(ctx context.Context, bucket string, object *types.Object, dst string) error {
 	maxFilenameLen := 16
 
 	pb := mpb.NewWithContext(ctx,
@@ -525,7 +524,7 @@ func (c *Client) UploadFile(ctx context.Context, bucket, file, key, acl string) 
 	}
 
 	if acl != "" {
-		putObjectInput.ACL = s3types.ObjectCannedACL(acl)
+		putObjectInput.ACL = types.ObjectCannedACL(acl)
 	}
 
 	_, err = c.NewUploader(c.S3Client, partSizeOpt).
