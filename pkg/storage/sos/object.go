@@ -25,9 +25,9 @@ import (
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 
-	"github.com/exoscale/cli/pkg/entities"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos/object"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 )
@@ -314,7 +314,7 @@ type ListBucketsItemOutput struct {
 type listFunc func(ctx context.Context) (*listCallOut, error)
 
 type listCallOut struct {
-	Objects        []entities.ObjectInterface
+	Objects        []object.ObjectInterface
 	CommonPrefixes []string
 	IsTruncated    bool
 }
@@ -341,7 +341,7 @@ func GetCommonPrefixDeduplicator(stream bool) func([]types.CommonPrefix) []strin
 	}
 }
 
-func (c *Client) ListObjectsFunc(bucket, prefix string, recursive, stream bool, filters []entities.ObjectFilterFunc) listFunc {
+func (c *Client) ListObjectsFunc(bucket, prefix string, recursive, stream bool, filters []object.ObjectFilterFunc) listFunc {
 	var continuationToken *string
 
 	deduplicate := GetCommonPrefixDeduplicator(stream)
@@ -364,9 +364,9 @@ func (c *Client) ListObjectsFunc(bucket, prefix string, recursive, stream bool, 
 
 		continuationToken = res.NextContinuationToken
 
-		var objects []entities.ObjectInterface
+		var objects []object.ObjectInterface
 		for i := range res.Contents {
-			o := &entities.Object{
+			o := &object.Object{
 				Object: &res.Contents[i],
 			}
 
@@ -383,7 +383,7 @@ func (c *Client) ListObjectsFunc(bucket, prefix string, recursive, stream bool, 
 	}
 }
 
-func applyFilters(obj entities.ObjectInterface, filters []entities.ObjectFilterFunc) bool {
+func applyFilters(obj object.ObjectInterface, filters []object.ObjectFilterFunc) bool {
 	for _, filter := range filters {
 		if !filter(obj) {
 			return false
@@ -393,7 +393,7 @@ func applyFilters(obj entities.ObjectInterface, filters []entities.ObjectFilterF
 	return true
 }
 
-func applyVersionedFilters(obj entities.ObjectVersionInterface, filters []entities.ObjectVersionFilterFunc) bool {
+func applyVersionedFilters(obj object.ObjectVersionInterface, filters []object.ObjectVersionFilterFunc) bool {
 	for _, filter := range filters {
 		if !filter(obj) {
 			return false
@@ -404,8 +404,8 @@ func applyVersionedFilters(obj entities.ObjectVersionInterface, filters []entiti
 }
 
 func (c *Client) ListVersionedObjectsFunc(bucket, prefix string, recursive, stream bool,
-	filters []entities.ObjectFilterFunc,
-	versionFilters []entities.ObjectVersionFilterFunc) listFunc {
+	filters []object.ObjectFilterFunc,
+	versionFilters []object.ObjectVersionFilterFunc) listFunc {
 	var keyMarker *string
 	var versionIdMarker *string
 
@@ -431,9 +431,9 @@ func (c *Client) ListVersionedObjectsFunc(bucket, prefix string, recursive, stre
 		keyMarker = res.NextKeyMarker
 		versionIdMarker = res.NextVersionIdMarker
 
-		var objects []entities.ObjectInterface
+		var objects []object.ObjectInterface
 		for i := range res.Versions {
-			o := entities.ObjectVersion{
+			o := object.ObjectVersion{
 				ObjectVersion: &res.Versions[i],
 			}
 
@@ -450,8 +450,8 @@ func (c *Client) ListVersionedObjectsFunc(bucket, prefix string, recursive, stre
 	}
 }
 
-func (c *Client) GetObjectListing(ctx context.Context, list listFunc, stream bool) (*entities.ObjectListing, error) {
-	listing := entities.ObjectListing{}
+func (c *Client) GetObjectListing(ctx context.Context, list listFunc, stream bool) (*object.ObjectListing, error) {
+	listing := object.ObjectListing{}
 
 	for {
 		res, err := list(ctx)
@@ -486,7 +486,7 @@ func (c *Client) ListObjects(ctx context.Context, list listFunc, recursive, stre
 	return c.prepareListObjectsOutput(listing, recursive, stream)
 }
 
-func (c *Client) prepareListObjectsOutput(listing *entities.ObjectListing, recursive, stream bool) (*ListObjectsOutput, error) {
+func (c *Client) prepareListObjectsOutput(listing *object.ObjectListing, recursive, stream bool) (*ListObjectsOutput, error) {
 	out := make(ListObjectsOutput, 0)
 	dirsOut := make(ListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
 

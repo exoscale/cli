@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/entities"
+	"github.com/exoscale/cli/pkg/storage/sos/object"
 )
 
 const (
@@ -52,8 +52,8 @@ func ValidateTimestampFlags(cmd *cobra.Command) error {
 	return nil
 }
 
-func TranslateTimeFilterFlagsToFilterFuncs(cmd *cobra.Command) ([]entities.ObjectFilterFunc, error) {
-	var filters []entities.ObjectFilterFunc
+func TranslateTimeFilterFlagsToFilterFuncs(cmd *cobra.Command) ([]object.ObjectFilterFunc, error) {
+	var filters []object.ObjectFilterFunc
 
 	filterCreationFuncs := []filterCreationFunc{
 		olderThanDurationFilter,
@@ -76,9 +76,9 @@ func TranslateTimeFilterFlagsToFilterFuncs(cmd *cobra.Command) ([]entities.Objec
 	return filters, nil
 }
 
-type filterCreationFunc func(*cobra.Command) (entities.ObjectFilterFunc, error)
+type filterCreationFunc func(*cobra.Command) (object.ObjectFilterFunc, error)
 
-func olderThanDurationFilter(cmd *cobra.Command) (entities.ObjectFilterFunc, error) {
+func olderThanDurationFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error) {
 	dur, err := cmd.Flags().GetDuration(OlderThan)
 	if err != nil {
 		return nil, err
@@ -88,12 +88,12 @@ func olderThanDurationFilter(cmd *cobra.Command) (entities.ObjectFilterFunc, err
 		return nil, nil
 	}
 
-	return func(obj entities.ObjectInterface) bool {
+	return func(obj object.ObjectInterface) bool {
 		return obj.GetLastModified().Before(time.Now().Add(-dur))
 	}, nil
 }
 
-func olderThanTimestampFilter(cmd *cobra.Command) (entities.ObjectFilterFunc, error) {
+func olderThanTimestampFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error) {
 	timestampStr, err := cmd.Flags().GetString(OlderThanTimestamp)
 	if err != nil {
 		return nil, err
@@ -108,12 +108,12 @@ func olderThanTimestampFilter(cmd *cobra.Command) (entities.ObjectFilterFunc, er
 		return nil, err
 	}
 
-	return func(obj entities.ObjectInterface) bool {
+	return func(obj object.ObjectInterface) bool {
 		return obj.GetLastModified().Before(timestamp)
 	}, nil
 }
 
-func newerThanDurationFilter(cmd *cobra.Command) (entities.ObjectFilterFunc, error) {
+func newerThanDurationFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error) {
 	dur, err := cmd.Flags().GetDuration(NewerThan)
 	if err != nil {
 		return nil, err
@@ -123,12 +123,12 @@ func newerThanDurationFilter(cmd *cobra.Command) (entities.ObjectFilterFunc, err
 		return nil, nil
 	}
 
-	return func(obj entities.ObjectInterface) bool {
+	return func(obj object.ObjectInterface) bool {
 		return obj.GetLastModified().After(time.Now().Add(-dur))
 	}, nil
 }
 
-func newerThanTimestampFilter(cmd *cobra.Command) (entities.ObjectFilterFunc, error) {
+func newerThanTimestampFilter(cmd *cobra.Command) (object.ObjectFilterFunc, error) {
 	timestampStr, err := cmd.Flags().GetString(NewerThanTimestamp)
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func newerThanTimestampFilter(cmd *cobra.Command) (entities.ObjectFilterFunc, er
 		return nil, err
 	}
 
-	return func(obj entities.ObjectInterface) bool {
+	return func(obj object.ObjectInterface) bool {
 		return obj.GetLastModified().After(timestamp)
 	}, nil
 }

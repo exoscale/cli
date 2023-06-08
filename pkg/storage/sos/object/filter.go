@@ -1,4 +1,4 @@
-package entities
+package object
 
 type ObjectFilterFunc func(ObjectInterface) bool
 
