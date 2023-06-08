@@ -14,11 +14,6 @@ type ObjectVersion struct {
 	*types.ObjectVersion
 }
 
-type ObjectListing struct {
-	List           []ObjectInterface
-	CommonPrefixes []string
-}
-
 type ObjectInterface interface {
 	GetKey() *string
 	GetSize() int64
