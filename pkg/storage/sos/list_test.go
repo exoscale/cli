@@ -13,44 +13,41 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testObject struct {
+	Key          string
+	Size         int64
+	LastModified time.Time
+}
+
 func TestListObjects(t *testing.T) {
+	now := time.Now()
+	timeNow := func() time.Time { return now }
 	bucket := "testbucket"
 
 	testData := []struct {
-		name              string
-		prefix            string
-		recursive         bool
-		filters           []object.ObjectFilterFunc
-		mockListObjectsV2 func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error)
-		expected          *sos.ListObjectsOutput
+		name           string
+		prefix         string
+		recursive      bool
+		filters        []object.ObjectFilterFunc
+		objects        []testObject
+		commonPrefixes []string
+		expected       *sos.ListObjectsOutput
 	}{
 		{
 			name: "simple list",
-			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
-				return &s3.ListObjectsV2Output{
-					Contents: []s3types.Object{
-						{
-							Key:          aws.String("file1.txt"),
-							Size:         100,
-							LastModified: aws.Time(time.Now()),
-						},
-						{
-							Key:          aws.String("file2.txt"),
-							Size:         200,
-							LastModified: aws.Time(time.Now()),
-						},
-					},
-					CommonPrefixes: []s3types.CommonPrefix{
-						{
-							Prefix: aws.String("folder1/"),
-						},
-						{
-							Prefix: aws.String("folder2/"),
-						},
-					},
-					IsTruncated: false,
-				}, nil
+			objects: []testObject{
+				{
+					Key:          "file1.txt",
+					Size:         100,
+					LastModified: timeNow(),
+				},
+				{
+					Key:          "file2.txt",
+					Size:         200,
+					LastModified: timeNow(),
+				},
 			},
+			commonPrefixes: []string{"folder1/", "folder2/"},
 			expected: &sos.ListObjectsOutput{
 				{
 					Path: "folder1/",
@@ -63,50 +60,38 @@ func TestListObjects(t *testing.T) {
 				{
 					Path:         "file1.txt",
 					Size:         100,
-					LastModified: time.Now().Format(sos.TimestampFormat),
+					LastModified: timeNow().Format(sos.TimestampFormat),
 				},
 				{
 					Path:         "file2.txt",
 					Size:         200,
-					LastModified: time.Now().Format(sos.TimestampFormat),
+					LastModified: timeNow().Format(sos.TimestampFormat),
 				},
 			},
 		},
 		{
 			name: "with timestamp filters",
-			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
-				return &s3.ListObjectsV2Output{
-					Contents: []s3types.Object{
-						{
-							Key:          aws.String("file1.txt"),
-							Size:         100,
-							LastModified: aws.Time(time.Now().Add(-time.Hour)),
-						},
-						{
-							Key:          aws.String("file2.txt"),
-							Size:         200,
-							LastModified: aws.Time(time.Now().Add(-2 * time.Hour)),
-						},
-						{
-							Key:          aws.String("file3.txt"),
-							Size:         200,
-							LastModified: aws.Time(time.Now().Add(-4 * time.Hour)),
-						},
-					},
-					CommonPrefixes: []s3types.CommonPrefix{
-						{
-							Prefix: aws.String("folder1/"),
-						},
-						{
-							Prefix: aws.String("folder2/"),
-						},
-					},
-					IsTruncated: false,
-				}, nil
+			objects: []testObject{
+				{
+					Key:          "file1.txt",
+					Size:         100,
+					LastModified: timeNow(),
+				},
+				{
+					Key:          "file2.txt",
+					Size:         200,
+					LastModified: timeNow().Add(-2 * time.Hour),
+				},
+				{
+					Key:          "file3.txt",
+					Size:         200,
+					LastModified: timeNow().Add(-4 * time.Hour),
+				},
 			},
+			commonPrefixes: []string{"folder1/", "folder2/"},
 			filters: []object.ObjectFilterFunc{
-				object.OlderThanFilterFunc(time.Now().Add(-time.Hour)),
-				object.NewerThanFilterFunc(time.Now().Add(-3 * time.Hour)),
+				object.OlderThanFilterFunc(timeNow().Add(-time.Hour)),
+				object.NewerThanFilterFunc(timeNow().Add(-3 * time.Hour)),
 			},
 			expected: &sos.ListObjectsOutput{
 				{
@@ -120,86 +105,65 @@ func TestListObjects(t *testing.T) {
 				{
 					Path:         "file2.txt",
 					Size:         200,
-					LastModified: time.Now().Add(-2 * time.Hour).Format(sos.TimestampFormat),
+					LastModified: timeNow().Add(-2 * time.Hour).Format(sos.TimestampFormat),
 				},
 			},
 		},
 		{
 			name:      "recursive",
 			recursive: true,
-			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
-				return &s3.ListObjectsV2Output{
-					Contents: []s3types.Object{
-						{
-							Key:          aws.String("folder1/file1.txt"),
-							Size:         100,
-							LastModified: aws.Time(time.Now().Add(-time.Hour)),
-						},
-						{
-							Key:          aws.String("folder1/file2.txt"),
-							Size:         200,
-							LastModified: aws.Time(time.Now().Add(-2 * time.Hour)),
-						},
-						{
-							Key:          aws.String("folder2/file3.txt"),
-							Size:         200,
-							LastModified: aws.Time(time.Now().Add(-4 * time.Hour)),
-						},
-					},
-					CommonPrefixes: []s3types.CommonPrefix{
-						{
-							Prefix: aws.String("folder1/"),
-						},
-						{
-							Prefix: aws.String("folder2/"),
-						},
-					},
-					IsTruncated: false,
-				}, nil
+			objects: []testObject{
+				{
+					Key:          "folder1/file1.txt",
+					Size:         100,
+					LastModified: timeNow(),
+				},
+				{
+					Key:          "folder1/file2.txt",
+					Size:         200,
+					LastModified: timeNow(),
+				},
+				{
+					Key:          "folder2/file3.txt",
+					Size:         200,
+					LastModified: timeNow(),
+				},
 			},
+			commonPrefixes: []string{"folder1/", "folder2/"},
 			expected: &sos.ListObjectsOutput{
 				{
 					Path:         "folder1/file1.txt",
 					Size:         100,
-					LastModified: time.Now().Add(-time.Hour).Format(sos.TimestampFormat),
+					LastModified: timeNow().Format(sos.TimestampFormat),
 				},
 				{
 					Path:         "folder1/file2.txt",
 					Size:         200,
-					LastModified: time.Now().Add(-2 * time.Hour).Format(sos.TimestampFormat),
+					LastModified: timeNow().Format(sos.TimestampFormat),
 				},
 				{
 					Path:         "folder2/file3.txt",
 					Size:         200,
-					LastModified: time.Now().Add(-4 * time.Hour).Format(sos.TimestampFormat),
+					LastModified: timeNow().Format(sos.TimestampFormat),
 				},
 			},
 		},
 		{
 			name:   "prefix",
 			prefix: "folder1/",
-			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
-				return &s3.ListObjectsV2Output{
-					Contents: []s3types.Object{
-						{
-							Key:          aws.String("folder1/file1.txt"),
-							Size:         100,
-							LastModified: aws.Time(time.Now().Add(-time.Hour)),
-						},
-						{
-							Key:          aws.String("folder1/file2.txt"),
-							Size:         200,
-							LastModified: aws.Time(time.Now().Add(-2 * time.Hour)),
-						},
-					},
-					CommonPrefixes: []s3types.CommonPrefix{
-						{
-							Prefix: aws.String("folder1/"),
-						},
-					},
-					IsTruncated: false,
-				}, nil
+			objects: []testObject{
+				{
+					Key:          "folder1/file1.txt",
+					Size:         100,
+					LastModified: timeNow(),
+				},
+				{
+					Key:          "folder1/file2.txt",
+					Size:         200,
+					LastModified: timeNow(),
+				},
 			},
+			commonPrefixes: []string{"folder1/"},
 			expected: &sos.ListObjectsOutput{
 				{
 					Path: "folder1/",
@@ -208,12 +172,12 @@ func TestListObjects(t *testing.T) {
 				{
 					Path:         "folder1/file1.txt",
 					Size:         100,
-					LastModified: time.Now().Add(-time.Hour).Format(sos.TimestampFormat),
+					LastModified: timeNow().Format(sos.TimestampFormat),
 				},
 				{
 					Path:         "folder1/file2.txt",
 					Size:         200,
-					LastModified: time.Now().Add(-2 * time.Hour).Format(sos.TimestampFormat),
+					LastModified: timeNow().Format(sos.TimestampFormat),
 				},
 			},
 		},
@@ -222,7 +186,52 @@ func TestListObjects(t *testing.T) {
 	for _, testCase := range testData {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockS3API := &MockS3API{
-				mockListObjectsV2: testCase.mockListObjectsV2,
+				mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
+					contents := make([]s3types.Object, len(testCase.objects))
+					for i, object := range testCase.objects {
+						contents[i] = s3types.Object{
+							Key:          aws.String(object.Key),
+							Size:         object.Size,
+							LastModified: aws.Time(object.LastModified),
+						}
+					}
+
+					awsCommonPrefixes := make([]s3types.CommonPrefix, len(testCase.commonPrefixes))
+					for i, prefix := range testCase.commonPrefixes {
+						awsCommonPrefixes[i] = s3types.CommonPrefix{
+							Prefix: aws.String(prefix),
+						}
+					}
+
+					return &s3.ListObjectsV2Output{
+						Contents:       contents,
+						CommonPrefixes: awsCommonPrefixes,
+						IsTruncated:    false,
+					}, nil
+				},
+				mockListObjectVersions: func(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+					versions := make([]s3types.ObjectVersion, len(testCase.objects))
+					for i, object := range testCase.objects {
+						versions[i] = s3types.ObjectVersion{
+							Key:          aws.String(object.Key),
+							Size:         object.Size,
+							LastModified: aws.Time(object.LastModified),
+						}
+					}
+
+					awsCommonPrefixes := make([]s3types.CommonPrefix, len(testCase.commonPrefixes))
+					for i, prefix := range testCase.commonPrefixes {
+						awsCommonPrefixes[i] = s3types.CommonPrefix{
+							Prefix: aws.String(prefix),
+						}
+					}
+
+					return &s3.ListObjectVersionsOutput{
+						Versions:       versions,
+						CommonPrefixes: awsCommonPrefixes,
+						IsTruncated:    false,
+					}, nil
+				},
 			}
 
 			client := sos.Client{
@@ -239,6 +248,12 @@ func TestListObjects(t *testing.T) {
 			assert.NoError(t, err)
 
 			assert.Equal(t, testCase.expected, output)
+
+			list = client.ListVersionedObjectsFunc(bucket, prefix, testCase.recursive, stream, testCase.filters, nil)
+			versionedOutput, err := client.ListObjects(ctx, list, testCase.recursive, stream)
+			assert.NoError(t, err)
+
+			assert.Equal(t, testCase.expected, versionedOutput)
 		})
 	}
 }
