@@ -185,15 +185,19 @@ func TestListObjects(t *testing.T) {
 
 	for _, testCase := range testData {
 		t.Run(testCase.name, func(t *testing.T) {
+			truncateListAfter := 1
+			truncatedAfter := 0
+			truncatedVersionsAfter := 0
 			mockS3API := &MockS3API{
 				mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
-					contents := make([]s3types.Object, len(testCase.objects))
-					for i, object := range testCase.objects {
-						contents[i] = s3types.Object{
+					contents := make([]s3types.Object, 0, truncateListAfter)
+					for i := truncatedAfter; i < truncatedAfter+truncateListAfter; i++ {
+						object := testCase.objects[i]
+						contents = append(contents, s3types.Object{
 							Key:          aws.String(object.Key),
 							Size:         object.Size,
 							LastModified: aws.Time(object.LastModified),
-						}
+						})
 					}
 
 					awsCommonPrefixes := make([]s3types.CommonPrefix, len(testCase.commonPrefixes))
@@ -202,21 +206,24 @@ func TestListObjects(t *testing.T) {
 							Prefix: aws.String(prefix),
 						}
 					}
+
+					truncatedAfter += truncateListAfter
 
 					return &s3.ListObjectsV2Output{
 						Contents:       contents,
 						CommonPrefixes: awsCommonPrefixes,
-						IsTruncated:    false,
+						IsTruncated:    truncatedAfter < len(testCase.objects),
 					}, nil
 				},
 				mockListObjectVersions: func(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
-					versions := make([]s3types.ObjectVersion, len(testCase.objects))
-					for i, object := range testCase.objects {
-						versions[i] = s3types.ObjectVersion{
+					versions := make([]s3types.ObjectVersion, 0, truncateListAfter)
+					for i := truncatedVersionsAfter; i < truncatedVersionsAfter+truncateListAfter; i++ {
+						object := testCase.objects[i]
+						versions = append(versions, s3types.ObjectVersion{
 							Key:          aws.String(object.Key),
 							Size:         object.Size,
 							LastModified: aws.Time(object.LastModified),
-						}
+						})
 					}
 
 					awsCommonPrefixes := make([]s3types.CommonPrefix, len(testCase.commonPrefixes))
@@ -226,10 +233,12 @@ func TestListObjects(t *testing.T) {
 						}
 					}
 
+					truncatedVersionsAfter += truncateListAfter
+
 					return &s3.ListObjectVersionsOutput{
 						Versions:       versions,
 						CommonPrefixes: awsCommonPrefixes,
-						IsTruncated:    false,
+						IsTruncated:    truncatedVersionsAfter < len(testCase.objects),
 					}, nil
 				},
 			}
