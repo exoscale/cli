@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
 	"github.com/exoscale/cli/pkg/storage/sos/object"
 )
 
@@ -122,7 +123,7 @@ func (c *Client) GetObjectListing(ctx context.Context, list listFunc, stream boo
 
 		if stream {
 			for _, o := range res.Objects {
-				fmt.Println(o.GetKey())
+				fmt.Println(*o.GetKey())
 			}
 		} else {
 			listing.List = append(listing.List, res.Objects...)
