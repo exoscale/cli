@@ -74,8 +74,8 @@ nfpms:
 
 brews:
   - tap:
-    # TODO(sauterp) philippsauterexoscale -> exoscale
-      owner: philippsauterexoscale
+    # TODO(sauterp) sauterp -> exoscale
+      owner: sauterp
       name: homebrew-tap
     folder: Formula
     homepage: "https://exoscale.github.io/cli/"
