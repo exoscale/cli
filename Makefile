@@ -1,7 +1,8 @@
 include go.mk/init.mk
 include go.mk/public.mk
 
-PROJECT_URL = https://github.com/exoscale/cli
+# TODO(sauterp) sauterp -> exoscale
+PROJECT_URL = https://github.com/sauterp/cli
 GO_BIN_OUTPUT_NAME := exo
 OAS_FILE := public-api.json
 RM = rm -rf
@@ -19,18 +20,20 @@ x-cmd: $(OAS_FILE) ## Generates code for "exo x" experimental subcommands
 	wget -q https://openapi-v2.exoscale.com/source.json
 	openapi-cli-generator generate -p x -n x -o cmd/internal/x/x.gen.go $(OAS_FILE)
 
+# TODO(sauterp) sauterp -> exoscale
 .PHONY: docker
 docker: ## Builds a Docker image containing the exo CLI
 	docker build  \
-		-t exoscale/cli \
+		-t sauterp/cli \
 		--build-arg VERSION="${VERSION}" \
 		--build-arg VCS_REF="${GIT_REVISION}" \
 		--build-arg BUILD_DATE="$(shell date -u +"%Y-%m-%dT%H:%m:%SZ")" \
 		.
-	docker tag exoscale/cli:latest exoscale/cli:${VERSION}
+	docker tag sauterp/cli:latest sauterp/cli:${VERSION}
 
+# TODO(sauterp) sauterp -> exoscale
 docker-push: ## Pushes the Docker image to the public Docker registry
-	docker push exoscale/cli:latest && docker push exoscale/cli:${VERSION}
+	docker push sauterp/cli:latest && docker push sauterp/cli:${VERSION}
 
 .PHONY: release
 release:
