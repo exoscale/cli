@@ -48,7 +48,8 @@ archives:
 
 release:
   github:
-    owner: exoscale
+    # TODO(sauterp) sauterp -> exoscale
+    owner: sauterp
     name: cli
 
 nfpms:
@@ -73,7 +74,8 @@ nfpms:
 
 brews:
   - tap:
-      owner: exoscale
+    # TODO(sauterp) sauterp -> exoscale
+      owner: sauterp
       name: homebrew-tap
     folder: Formula
     homepage: "https://exoscale.github.io/cli/"
@@ -87,11 +89,12 @@ brews:
 dockers:
   - goos: linux
     goarch: amd64
+    # TODO(sauterp) sauterp -> exoscale
     image_templates:
-      - "exoscale/cli:latest"
-      - "exoscale/cli:{{ .Major }}"
-      - "exoscale/cli:{{ .Major }}.{{ .Minor }}"
-      - "exoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "sauterp/cli:latest"
+      - "sauterp/cli:{{ .Major }}"
+      - "sauterp/cli:{{ .Major }}.{{ .Minor }}"
+      - "sauterp/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
     dockerfile: Dockerfile.goreleaser
     build_flag_templates:
       - --pull
