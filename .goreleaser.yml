@@ -86,18 +86,18 @@ brews:
       bash_completion.install "contrib/completion/bash/exo"
       zsh_completion.install "contrib/completion/zsh/_exo"
 
-dockers:
-  - goos: linux
-    goarch: amd64
-    # TODO(sauterp) philippsauterexoscale -> exoscale
-    image_templates:
-      - "philippsauterexoscale/cli:latest"
-      - "philippsauterexoscale/cli:{{ .Major }}"
-      - "philippsauterexoscale/cli:{{ .Major }}.{{ .Minor }}"
-      - "philippsauterexoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-    dockerfile: Dockerfile.goreleaser
-    build_flag_templates:
-      - --pull
-      - --build-arg="VERSION={{.Version}}"
-      - --build-arg="VCS_REF={{.ShortCommit}}"
-      - --build-arg="BUILD_DATE={{.Date}}"
+# dockers:
+#   - goos: linux
+#     goarch: amd64
+#     # TODO(sauterp) philippsauterexoscale -> exoscale
+#     image_templates:
+#       - "philippsauterexoscale/cli:latest"
+#       - "philippsauterexoscale/cli:{{ .Major }}"
+#       - "philippsauterexoscale/cli:{{ .Major }}.{{ .Minor }}"
+#       - "philippsauterexoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+#     dockerfile: Dockerfile.goreleaser
+#     build_flag_templates:
+#       - --pull
+#       - --build-arg="VERSION={{.Version}}"
+#       - --build-arg="VCS_REF={{.ShortCommit}}"
+#       - --build-arg="BUILD_DATE={{.Date}}"
