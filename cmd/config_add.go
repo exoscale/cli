@@ -74,75 +74,41 @@ func promptAccountInformation() (*account.Account, error) {
 		Secret:   "",
 	}
 
-	for i := 0; ; i++ {
-		if i > 0 {
-			endpoint, err := readInput(reader, "API Endpoint", account.Endpoint)
-			if err != nil {
-				return nil, err
-			}
-			if endpoint != account.Endpoint {
-				account.Endpoint = endpoint
-			}
-		}
+	endpoint, err := readInput(reader, "API Endpoint", account.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+	if endpoint != account.Endpoint {
+		account.Endpoint = endpoint
+	}
 
-		apiKey, err := readInput(reader, "API Key", account.Key)
-		if err != nil {
-			return nil, err
-		}
-		if apiKey != account.Key {
-			account.Key = apiKey
-		}
+	apiKey, err := readInput(reader, "API Key", account.Key)
+	if err != nil {
+		return nil, err
+	}
+	if apiKey != account.Key {
+		account.Key = apiKey
+	}
 
-		secret := account.APISecret()
-		secretShow := account.APISecret()
-		if secret != "" && len(secret) > 10 {
-			secretShow = secret[0:7] + "..."
-		}
-		secretKey, err := readInput(reader, "Secret Key", secretShow)
-		if err != nil {
-			return nil, err
-		}
-		if secretKey != secret && secretKey != secretShow {
-			account.Secret = secretKey
-		}
+	secret := account.APISecret()
+	secretShow := account.APISecret()
+	if secret != "" && len(secret) > 10 {
+		secretShow = secret[0:7] + "..."
+	}
+	secretKey, err := readInput(reader, "Secret Key", secretShow)
+	if err != nil {
+		return nil, err
+	}
+	if secretKey != secret && secretKey != secretShow {
+		account.Secret = secretKey
+	}
 
-		client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
-
-		fmt.Printf("Retrieving account information...")
-		resp, err := client.GetWithContext(gContext, egoscale.Account{})
-		if err != nil {
-			if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
-				fmt.Print(`
-
-Unable to retrieve information, please enter your account details:
-
-`)
-				for {
-					acc, err := readInput(reader, "Account name", account.Account)
-					if err != nil {
-						return nil, err
-					}
-					if acc != "" {
-						account.Account = acc
-						break
-					}
-				}
-
-				break
-			}
-
-			fmt.Print(` failure.
-
-Let's start over.
-
-`)
-		} else {
-			fmt.Print(" done!\n\n")
-			acc := resp.(*egoscale.Account)
-			account.Name = acc.Name
-			account.Account = acc.Name
-			break
-		}
+	acc, err := readInput(reader, "Account name", account.Account)
+	if err != nil {
+		return nil, err
+	}
+	if acc != "" {
+		account.Account = acc
 	}
 
 	name, err := readInput(reader, "Name", account.Name)
@@ -166,6 +132,8 @@ Let's start over.
 
 		account.Name = name
 	}
+
+	client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
 
 	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
