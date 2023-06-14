@@ -8,3 +8,4 @@ contrib
 *.snap
 *.xdelta3
 go.work
+.goreleaser.yml
