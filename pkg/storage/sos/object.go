@@ -19,7 +19,7 @@ import (
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/dustin/go-humanize"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -30,10 +30,10 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]s3types.DeletedObject, error) {
-	deleteList := make([]s3types.ObjectIdentifier, 0)
-	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
-		deleteList = append(deleteList, s3types.ObjectIdentifier{Key: o.Key})
+func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]types.DeletedObject, error) {
+	deleteList := make([]types.ObjectIdentifier, 0)
+	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *types.Object) error {
+		deleteList = append(deleteList, types.ObjectIdentifier{Key: o.Key})
 		return nil
 	})
 	if err != nil {
@@ -43,7 +43,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 	// The S3 DeleteObjects API call is limited to 1000 keys per call, as a
 	// precaution we're batching deletes.
 	maxKeys := 1000
-	deleted := make([]s3types.DeletedObject, 0)
+	deleted := make([]types.DeletedObject, 0)
 
 	for i := 0; i < len(deleteList); i += maxKeys {
 		j := i + maxKeys
@@ -53,7 +53,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 
 		res, err := c.S3Client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: &bucket,
-			Delete: &s3types.Delete{Objects: deleteList[i:j]},
+			Delete: &types.Delete{Objects: deleteList[i:j]},
 		})
 		if err != nil {
 			return nil, err
@@ -107,7 +107,7 @@ type DownloadConfig struct {
 	Prefix      string
 	Source      string
 	Destination string
-	Objects     []*s3types.Object
+	Objects     []*types.Object
 	Recursive   bool
 	Overwrite   bool
 	DryRun      bool
@@ -189,7 +189,7 @@ func (prox *proxyWriterAt) WriteAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
-func (c *Client) DownloadFile(ctx context.Context, bucket string, object *s3types.Object, dst string) error {
+func (c *Client) DownloadFile(ctx context.Context, bucket string, object *types.Object, dst string) error {
 	maxFilenameLen := 16
 
 	pb := mpb.NewWithContext(ctx,
@@ -309,68 +309,26 @@ type ListBucketsItemOutput struct {
 	Created string `json:"created"`
 }
 
-func (c *Client) ListObjects(ctx context.Context, bucket, prefix string, recursive, stream bool) (output.Outputter, error) {
-	out := make(ListObjectsOutput, 0)
-	dirs := make(map[string]struct{})     // for deduplication of common prefixes (folders)
-	dirsOut := make(ListObjectsOutput, 0) // to separate common prefixes (folders) from objects (files)
+func GetCommonPrefixDeduplicator(stream bool) func([]types.CommonPrefix) []string {
+	dirs := make(map[string]struct{})
 
-	var ct string
-	for {
-		req := s3.ListObjectsV2Input{
-			Bucket:            aws.String(bucket),
-			Prefix:            aws.String(prefix),
-			ContinuationToken: aws.String(ct),
-		}
-		if !recursive {
-			req.Delimiter = aws.String("/")
-		}
+	return func(prefixes []types.CommonPrefix) []string {
+		var deduplicatedPrefixes []string
 
-		res, err := c.S3Client.ListObjectsV2(ctx, &req)
-		if err != nil {
-			return nil, err
-		}
-		ct = aws.ToString(res.NextContinuationToken)
-
-		if !recursive {
-			for _, cp := range res.CommonPrefixes {
-				dir := aws.ToString(cp.Prefix)
-				if _, ok := dirs[dir]; !ok {
-					if stream {
-						fmt.Println(dir)
-					} else {
-						dirsOut = append(dirsOut, ListObjectsItemOutput{
-							Path: dir,
-							Dir:  true,
-						})
-					}
-					dirs[dir] = struct{}{}
+		for _, cp := range prefixes {
+			dir := aws.ToString(cp.Prefix)
+			if _, ok := dirs[dir]; !ok {
+				if stream {
+					fmt.Println(dir)
+				} else {
+					deduplicatedPrefixes = append(deduplicatedPrefixes, dir)
 				}
+				dirs[dir] = struct{}{}
 			}
 		}
 
-		for _, o := range res.Contents {
-			if stream {
-				fmt.Println(aws.ToString(o.Key))
-			} else {
-				out = append(out, ListObjectsItemOutput{
-					Path:         aws.ToString(o.Key),
-					Size:         o.Size,
-					LastModified: o.LastModified.Format(TimestampFormat),
-				})
-			}
-		}
-
-		if !res.IsTruncated {
-			break
-		}
+		return deduplicatedPrefixes
 	}
-
-	// To be user friendly, we are going to push dir records to the top of the output list
-	if !stream && !recursive {
-		out = append(dirsOut, out...)
-	}
-
-	return &out, nil
 }
 
 type StorageUploadConfig struct {
@@ -566,7 +524,7 @@ func (c *Client) UploadFile(ctx context.Context, bucket, file, key, acl string) 
 	}
 
 	if acl != "" {
-		putObjectInput.ACL = s3types.ObjectCannedACL(acl)
+		putObjectInput.ACL = types.ObjectCannedACL(acl)
 	}
 
 	_, err = c.NewUploader(c.S3Client, partSizeOpt).
