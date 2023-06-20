@@ -36,7 +36,11 @@ Supported output template annotations:
 			args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 		}
 
-		return flags.ValidateTimestampFlags(cmd)
+		if err := flags.ValidateTimestampFlags(cmd); err != nil {
+			return err
+		}
+
+		return flags.ValidateVersionFlags(cmd)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -83,8 +87,13 @@ Supported output template annotations:
 			return err
 		}
 
-		if listVersions {
-			list := storage.ListVersionedObjectsFunc(bucket, prefix, recursive, stream, filters, nil)
+		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		if listVersions || len(versionFilters) > 0 {
+			list := storage.ListVersionedObjectsFunc(bucket, prefix, recursive, stream, filters, versionFilters)
 			return printOutput(storage.ListObjects(gContext, list, recursive, stream))
 		}
 

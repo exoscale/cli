@@ -271,16 +271,21 @@ func (o *ListObjectsOutput) ToTable() {
 		if f.Dir {
 			_, _ = fmt.Fprintf(table, " \tDIR \t%s\n", f.Path)
 		} else {
-			_, _ = fmt.Fprintf(table, "%s\t%6s \t%s\n", f.LastModified, humanize.IBytes(uint64(f.Size)), f.Path)
+			versionId := ""
+			if f.VersionId != nil {
+				versionId += ", " + *f.VersionId
+			}
+			_, _ = fmt.Fprintf(table, "%s\t%6s \t%s%s\n", f.LastModified, humanize.IBytes(uint64(f.Size)), f.Path, versionId)
 		}
 	}
 }
 
 type ListObjectsItemOutput struct {
-	Path         string `json:"name"`
-	Size         int64  `json:"size"`
-	LastModified string `json:"last_modified,omitempty"`
-	Dir          bool   `json:"dir"`
+	Path         string  `json:"name"`
+	Size         int64   `json:"size"`
+	LastModified string  `json:"last_modified,omitempty"`
+	Dir          bool    `json:"dir"`
+	VersionId    *string `json:"version_id"`
 }
 
 type ListBucketsOutput []ListBucketsItemOutput

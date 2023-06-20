@@ -162,10 +162,22 @@ func (c *Client) prepareListObjectsOutput(listing *ObjectListing, recursive, str
 	}
 
 	for _, o := range listing.List {
+		var versionId *string = nil
+
+		ov, isVersioned := o.(*object.ObjectVersion)
+		if isVersioned {
+			if ov.GetIsLatest() {
+				versionId = aws.String("latest")
+			} else {
+				versionId = ov.GetVersionId()
+			}
+		}
+
 		out = append(out, ListObjectsItemOutput{
 			Path:         aws.ToString(o.GetKey()),
 			Size:         o.GetSize(),
 			LastModified: o.GetLastModified().Format(TimestampFormat),
+			VersionId:    versionId,
 		})
 	}
 

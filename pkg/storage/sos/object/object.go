@@ -22,6 +22,8 @@ type ObjectInterface interface {
 
 type ObjectVersionInterface interface {
 	ObjectInterface
+	GetIsLatest() bool
+	GetVersionId() *string
 }
 
 func (o *Object) GetKey() *string {
@@ -46,4 +48,12 @@ func (o *Object) GetLastModified() *time.Time {
 
 func (o *ObjectVersion) GetLastModified() *time.Time {
 	return o.LastModified
+}
+
+func (o *ObjectVersion) GetIsLatest() bool {
+	return o.IsLatest
+}
+
+func (o *ObjectVersion) GetVersionId() *string {
+	return o.VersionId
 }
