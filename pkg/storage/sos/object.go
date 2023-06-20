@@ -26,6 +26,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/storage/sos/object"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 )
@@ -252,40 +253,6 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *types.
 	}
 
 	return err
-}
-
-type ListObjectsOutput []ListObjectsItemOutput
-
-func (o *ListObjectsOutput) ToJSON() { output.JSON(o) }
-func (o *ListObjectsOutput) ToText() { output.Text(o) }
-func (o *ListObjectsOutput) ToTable() {
-	table := tabwriter.NewWriter(os.Stdout,
-		0,
-		0,
-		1,
-		' ',
-		tabwriter.TabIndent)
-	defer table.Flush()
-
-	for _, f := range *o {
-		if f.Dir {
-			_, _ = fmt.Fprintf(table, " \tDIR \t%s\n", f.Path)
-		} else {
-			versionId := ""
-			if f.VersionId != nil {
-				versionId += ", " + *f.VersionId
-			}
-			_, _ = fmt.Fprintf(table, "%s\t%6s \t%s%s\n", f.LastModified, humanize.IBytes(uint64(f.Size)), f.Path, versionId)
-		}
-	}
-}
-
-type ListObjectsItemOutput struct {
-	Path         string  `json:"name"`
-	Size         int64   `json:"size"`
-	LastModified string  `json:"last_modified,omitempty"`
-	Dir          bool    `json:"dir"`
-	VersionId    *string `json:"version_id"`
 }
 
 type ListBucketsOutput []ListBucketsItemOutput
@@ -578,7 +545,7 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 }
 
 func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjectOutput, error) {
-	object, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
+	obj, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -597,11 +564,11 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjec
 	out := ShowObjectOutput{
 		Path:         key,
 		Bucket:       bucket,
-		LastModified: object.LastModified.Format(TimestampFormat),
-		Size:         object.ContentLength,
+		LastModified: obj.LastModified.Format(object.TimestampFormat),
+		Size:         obj.ContentLength,
 		ACL:          ACLFromS3(acl.Grants),
-		Metadata:     object.Metadata,
-		Headers:      ObjectHeadersFromS3(object),
+		Metadata:     obj.Metadata,
+		Headers:      ObjectHeadersFromS3(obj),
 		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.Zone, bucket, key),
 	}
 
@@ -609,8 +576,7 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjec
 }
 
 const (
-	BucketPrefix    = "sos://"
-	TimestampFormat = "2006-01-02 15:04:05 MST"
+	BucketPrefix = "sos://"
 )
 
 // ObjectHeadersFromS3 returns mutable object headers in a human-friendly

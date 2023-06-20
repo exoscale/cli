@@ -11,6 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/pkg/storage/sos/object"
 	"github.com/exoscale/egoscale"
 )
 
@@ -28,7 +29,7 @@ Supported output template annotations:
   * When listing buckets: %s
   * When listing objects: %s`,
 		strings.Join(output.TemplateAnnotations(&sos.ListBucketsItemOutput{}), ", "),
-		strings.Join(output.TemplateAnnotations(&sos.ListObjectsItemOutput{}), ", ")),
+		strings.Join(output.TemplateAnnotations(&object.ListObjectsItemOutput{}), ", ")),
 	Aliases: gListAlias,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -93,12 +94,12 @@ Supported output template annotations:
 		}
 
 		if listVersions || len(versionFilters) > 0 {
-			list := storage.ListVersionedObjectsFunc(bucket, prefix, recursive, stream, filters, versionFilters)
-			return printOutput(storage.ListObjects(gContext, list, recursive, stream))
+			list := storage.ListVersionedObjectsFunc(bucket, prefix, recursive, stream)
+			return printOutput(storage.ListObjectsVersions(gContext, list, recursive, stream, filters, versionFilters))
 		}
 
-		list := storage.ListObjectsFunc(bucket, prefix, recursive, stream, filters)
-		return printOutput(storage.ListObjects(gContext, list, recursive, stream))
+		list := storage.ListObjectsFunc(bucket, prefix, recursive, stream)
+		return printOutput(storage.ListObjects(gContext, list, recursive, stream, filters))
 	},
 }
 
@@ -130,7 +131,7 @@ func listStorageBuckets() (output.Outputter, error) {
 			Name:    b.Name,
 			Zone:    b.Region,
 			Size:    b.Usage,
-			Created: created.Format(sos.TimestampFormat),
+			Created: created.Format(object.TimestampFormat),
 		})
 	}
 
