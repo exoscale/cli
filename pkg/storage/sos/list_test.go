@@ -32,7 +32,7 @@ func TestListObjects(t *testing.T) {
 		filters        []object.ObjectFilterFunc
 		objects        []testObject
 		commonPrefixes []string
-		expected       *sos.ListObjectsOutput
+		expected       *object.ListObjectsOutput
 	}{
 		{
 			name: "simple list",
@@ -49,7 +49,7 @@ func TestListObjects(t *testing.T) {
 				},
 			},
 			commonPrefixes: []string{"folder1/", "folder2/"},
-			expected: &sos.ListObjectsOutput{
+			expected: &object.ListObjectsOutput{
 				{
 					Path: "folder1/",
 					Dir:  true,
@@ -59,14 +59,16 @@ func TestListObjects(t *testing.T) {
 					Dir:  true,
 				},
 				{
-					Path:         "file1.txt",
-					Size:         100,
-					LastModified: timeNow().Format(sos.TimestampFormat),
+					Path:          "file1.txt",
+					Size:          100,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
 				},
 				{
-					Path:         "file2.txt",
-					Size:         200,
-					LastModified: timeNow().Format(sos.TimestampFormat),
+					Path:          "file2.txt",
+					Size:          200,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
 				},
 			},
 		},
@@ -94,7 +96,7 @@ func TestListObjects(t *testing.T) {
 				object.OlderThanFilterFunc(timeNow().Add(-time.Hour)),
 				object.NewerThanFilterFunc(timeNow().Add(-3 * time.Hour)),
 			},
-			expected: &sos.ListObjectsOutput{
+			expected: &object.ListObjectsOutput{
 				{
 					Path: "folder1/",
 					Dir:  true,
@@ -104,9 +106,10 @@ func TestListObjects(t *testing.T) {
 					Dir:  true,
 				},
 				{
-					Path:         "file2.txt",
-					Size:         200,
-					LastModified: timeNow().Add(-2 * time.Hour).Format(sos.TimestampFormat),
+					Path:          "file2.txt",
+					Size:          200,
+					LastModified:  timeNow().Add(-2 * time.Hour).Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
 				},
 			},
 		},
@@ -131,21 +134,24 @@ func TestListObjects(t *testing.T) {
 				},
 			},
 			commonPrefixes: []string{"folder1/", "folder2/"},
-			expected: &sos.ListObjectsOutput{
+			expected: &object.ListObjectsOutput{
 				{
-					Path:         "folder1/file1.txt",
-					Size:         100,
-					LastModified: timeNow().Format(sos.TimestampFormat),
+					Path:          "folder1/file1.txt",
+					Size:          100,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
 				},
 				{
-					Path:         "folder1/file2.txt",
-					Size:         200,
-					LastModified: timeNow().Format(sos.TimestampFormat),
+					Path:          "folder1/file2.txt",
+					Size:          200,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
 				},
 				{
-					Path:         "folder2/file3.txt",
-					Size:         200,
-					LastModified: timeNow().Format(sos.TimestampFormat),
+					Path:          "folder2/file3.txt",
+					Size:          200,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
 				},
 			},
 		},
@@ -165,20 +171,22 @@ func TestListObjects(t *testing.T) {
 				},
 			},
 			commonPrefixes: []string{"folder1/"},
-			expected: &sos.ListObjectsOutput{
+			expected: &object.ListObjectsOutput{
 				{
 					Path: "folder1/",
 					Dir:  true,
 				},
 				{
-					Path:         "folder1/file1.txt",
-					Size:         100,
-					LastModified: timeNow().Format(sos.TimestampFormat),
+					Path:          "folder1/file1.txt",
+					Size:          100,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
 				},
 				{
-					Path:         "folder1/file2.txt",
-					Size:         200,
-					LastModified: timeNow().Format(sos.TimestampFormat),
+					Path:          "folder1/file2.txt",
+					Size:          200,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
 				},
 			},
 		},
@@ -253,14 +261,22 @@ func TestListObjects(t *testing.T) {
 			stream := false
 			ctx := context.Background()
 
-			list := client.ListObjectsFunc(bucket, prefix, testCase.recursive, stream, testCase.filters)
-			output, err := client.ListObjects(ctx, list, testCase.recursive, stream)
+			list := client.ListObjectsFunc(bucket, prefix, testCase.recursive, stream)
+			output, err := client.ListObjects(ctx, list, testCase.recursive, stream, testCase.filters)
 			assert.NoError(t, err)
 
-			assert.Equal(t, testCase.expected, output)
+			expectedOutList := *testCase.expected
+			expectedOutputWithoutVersionNums := make(object.ListObjectsOutput, 0, len(expectedOutList))
+			for _, expectedWithVNum := range expectedOutList {
+				expectedWithoutVNum := expectedWithVNum
+				expectedWithoutVNum.VersionNumber = nil
+				expectedOutputWithoutVersionNums = append(expectedOutputWithoutVersionNums, expectedWithoutVNum)
+			}
 
-			list = client.ListVersionedObjectsFunc(bucket, prefix, testCase.recursive, stream, testCase.filters, nil)
-			versionedOutput, err := client.ListObjects(ctx, list, testCase.recursive, stream)
+			assert.Equal(t, &expectedOutputWithoutVersionNums, output)
+
+			listVersions := client.ListVersionedObjectsFunc(bucket, prefix, testCase.recursive, stream)
+			versionedOutput, err := client.ListObjectsVersions(ctx, listVersions, testCase.recursive, stream, testCase.filters, nil)
 			assert.NoError(t, err)
 
 			assert.Equal(t, testCase.expected, versionedOutput)
