@@ -11,25 +11,32 @@ import (
 )
 
 const (
-	Versions        = "versions"
-	OnlyVersions    = "only-versions"
-	ExcludeVersions = "exclude-versions"
+	Versions             = "versions"
+	OnlyVersions         = "only-versions"
+	ExcludeVersions      = "exclude-versions"
+	ExcludeLatestVersion = "exclude-latest-version"
 )
 
 var (
-	VersionRegex = regexp.MustCompile(`v?\d+`)
+	VersionRegex       = regexp.MustCompile(`v?\d+`)
+	VersionNumberRegex = regexp.MustCompile(`v\d+`)
 )
 
 func AddVersionsFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(Versions, false, "list all versions of objects(if the bucket is versioned)")
 	cmd.Flags().StringSlice(OnlyVersions, []string{}, "limit the versions to be listed; implies --"+Versions)
 	cmd.Flags().StringSlice(ExcludeVersions, []string{}, "exclude versions from being listed; implies --"+Versions)
+	cmd.Flags().Bool(ExcludeLatestVersion, false, "exclude the latest version from being listed; implies --"+Versions)
 }
 
-func validateVersions(versions []string) error {
+func validateVersions(versions []string, stream bool) error {
 	for _, v := range versions {
 		if !VersionRegex.MatchString(v) {
 			return fmt.Errorf("%q is not a valid version id(865029700534464769) or version number(v123)", v)
+		}
+
+		if stream && VersionNumberRegex.MatchString(v) {
+			return fmt.Errorf("cannot use version number filter %q in combination with --stream flag", v)
 		}
 	}
 
@@ -51,21 +58,39 @@ func ValidateVersionFlags(cmd *cobra.Command) error {
 		return fmt.Errorf("--%s and --%s are mutually exclusive", OnlyVersions, ExcludeVersions)
 	}
 
-	if err := validateVersions(vsToInclude); err != nil {
+	stream, err := cmd.Flags().GetBool("stream")
+	if err != nil {
 		return err
 	}
 
-	return validateVersions(vsToExclude)
+	if err := validateVersions(vsToInclude, stream); err != nil {
+		return err
+	}
+
+	return validateVersions(vsToExclude, stream)
 }
 
 func TranslateVersionFilterFlagsToFilterFuncs(cmd *cobra.Command) ([]object.ObjectVersionFilterFunc, error) {
+	var filters []object.ObjectVersionFilterFunc
+
+	excludeLatest, err := cmd.Flags().GetBool(ExcludeLatestVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	if excludeLatest {
+		filters = append(filters, func(ovi object.ObjectVersionInterface) bool {
+			return !ovi.GetIsLatest()
+		})
+	}
+
 	vsToInclude, err := cmd.Flags().GetStringSlice(OnlyVersions)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(vsToInclude) > 0 {
-		return []object.ObjectVersionFilterFunc{onlyVersionsFilter(vsToInclude)}, nil
+		return append(filters, onlyVersionsFilter(vsToInclude)), nil
 	}
 
 	vsToExclude, err := cmd.Flags().GetStringSlice(ExcludeVersions)
@@ -74,10 +99,10 @@ func TranslateVersionFilterFlagsToFilterFuncs(cmd *cobra.Command) ([]object.Obje
 	}
 
 	if len(vsToExclude) > 0 {
-		return []object.ObjectVersionFilterFunc{excludeVersionsFilter(vsToExclude)}, nil
+		return append(filters, excludeVersionsFilter(vsToExclude)), nil
 	}
 
-	return nil, nil
+	return filters, nil
 }
 
 func doesVersionMatch(ovi object.ObjectVersionInterface, matchVersions []string) bool {
