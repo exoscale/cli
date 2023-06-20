@@ -82,12 +82,7 @@ func (o *Object) GetListObjectsItemOutput() *ListObjectsItemOutput {
 func (o *ObjectVersion) GetListObjectsItemOutput() *ListObjectsItemOutput {
 	out := getListObjectsItemOutput(o)
 
-	if o.GetIsLatest() {
-		out.VersionId = aws.String("latest")
-	} else {
-		out.VersionId = o.GetVersionId()
-	}
-
+	out.VersionId = o.GetVersionId()
 	out.VersionNumber = &o.VersionNumber
 
 	return out

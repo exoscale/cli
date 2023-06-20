@@ -107,11 +107,13 @@ func (c *Client) ListVersionedObjectsFunc(bucket, prefix string, recursive, stre
 }
 
 func assignVersionNumbers(objs []object.ObjectVersionInterface) {
+	// S3 does not guarantee that versions of objects appear in a particular order thus we have to sort before we assign a version number
 	sort.Slice(objs, func(i, j int) bool {
 		return objs[i].GetLastModified().After(*objs[j].GetLastModified())
 	})
 
 	latestVersionPerObj := make(map[string]uint64)
+	// we traverse in reverse order because the latest version should always get the highest version number. Why don't we sort in reverse order? Because we also want the latest version to appear on top.
 	for i := len(objs) - 1; i >= 0; i-- {
 		obj := objs[i]
 		key := *obj.GetKey()
