@@ -26,13 +26,15 @@ func TestListObjects(t *testing.T) {
 	bucket := "testbucket"
 
 	testData := []struct {
-		name           string
-		prefix         string
-		recursive      bool
-		filters        []object.ObjectFilterFunc
-		objects        []testObject
-		commonPrefixes []string
-		expected       *object.ListObjectsOutput
+		name                string
+		prefix              string
+		recursive           bool
+		filters             []object.ObjectFilterFunc
+		objects             []testObject
+		oldVersionObjects   []testObject
+		commonPrefixes      []string
+		expected            *object.ListObjectsOutput
+		expectedOldVersions *object.ListObjectsOutput
 	}{
 		{
 			name: "simple list",
@@ -190,6 +192,83 @@ func TestListObjects(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "one old version of file",
+			objects: []testObject{
+				{
+					Key:          "file1.txt",
+					Size:         100,
+					LastModified: timeNow(),
+				},
+			},
+			oldVersionObjects: []testObject{
+				{
+					Key:          "file1.txt",
+					Size:         100,
+					LastModified: timeNow().Add(-1 * time.Hour),
+				},
+			},
+			expected: &object.ListObjectsOutput{
+				{
+					Path:          "file1.txt",
+					Size:          100,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(1),
+				},
+			},
+			expectedOldVersions: &object.ListObjectsOutput{
+				{
+					Path:          "file1.txt",
+					Size:          100,
+					LastModified:  timeNow().Add(-1 * time.Hour).Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
+				},
+			},
+		},
+		{
+			name: "multiple versions of file",
+			objects: []testObject{
+				{
+					Key:          "file1.txt",
+					Size:         100,
+					LastModified: timeNow(),
+				},
+			},
+			oldVersionObjects: []testObject{
+				{
+					Key:          "file1.txt",
+					Size:         100,
+					LastModified: timeNow().Add(-1 * time.Hour),
+				},
+				{
+					Key:          "file1.txt",
+					Size:         300,
+					LastModified: timeNow().Add(-2 * time.Hour),
+				},
+			},
+			expected: &object.ListObjectsOutput{
+				{
+					Path:          "file1.txt",
+					Size:          100,
+					LastModified:  timeNow().Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(2),
+				},
+			},
+			expectedOldVersions: &object.ListObjectsOutput{
+				{
+					Path:          "file1.txt",
+					Size:          100,
+					LastModified:  timeNow().Add(-1 * time.Hour).Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(1),
+				},
+				{
+					Path:          "file1.txt",
+					Size:          300,
+					LastModified:  timeNow().Add(-2 * time.Hour).Format(object.TimestampFormat),
+					VersionNumber: aws.Uint64(0),
+				},
+			},
+		},
 	}
 
 	for _, testCase := range testData {
@@ -226,8 +305,15 @@ func TestListObjects(t *testing.T) {
 				},
 				mockListObjectVersions: func(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
 					versions := make([]s3types.ObjectVersion, 0, truncateListAfter)
-					for i := truncatedVersionsAfter; i < truncatedVersionsAfter+truncateListAfter; i++ {
-						object := testCase.objects[i]
+					objs := testCase.objects
+					tva := truncatedVersionsAfter
+					if tva >= len(testCase.objects) {
+						objs = testCase.oldVersionObjects
+						tva -= len(testCase.objects)
+					}
+
+					for i := tva; i < tva+truncateListAfter; i++ {
+						object := objs[i]
 						versions = append(versions, s3types.ObjectVersion{
 							Key:          aws.String(object.Key),
 							Size:         object.Size,
@@ -247,7 +333,7 @@ func TestListObjects(t *testing.T) {
 					return &s3.ListObjectVersionsOutput{
 						Versions:       versions,
 						CommonPrefixes: awsCommonPrefixes,
-						IsTruncated:    truncatedVersionsAfter < len(testCase.objects),
+						IsTruncated:    truncatedVersionsAfter < len(testCase.objects)+len(testCase.oldVersionObjects),
 					}, nil
 				},
 			}
@@ -279,7 +365,12 @@ func TestListObjects(t *testing.T) {
 			versionedOutput, err := client.ListObjectsVersions(ctx, listVersions, testCase.recursive, stream, testCase.filters, nil)
 			assert.NoError(t, err)
 
-			assert.Equal(t, testCase.expected, versionedOutput)
+			expec := *testCase.expected
+			if testCase.expectedOldVersions != nil {
+				expVersioned := *testCase.expectedOldVersions
+				expec = append(expec, expVersioned...)
+			}
+			assert.Equal(t, &expec, versionedOutput)
 		})
 	}
 }
