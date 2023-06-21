@@ -15,6 +15,7 @@ const (
 	OnlyVersions         = "only-versions"
 	ExcludeVersions      = "exclude-versions"
 	ExcludeLatestVersion = "exclude-latest-version"
+	versionFlagDoc       = "accepts comma separated version IDs(865029700534464769) and numbers(v123)"
 )
 
 var (
@@ -24,8 +25,8 @@ var (
 
 func AddVersionsFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(Versions, false, "list all versions of objects(if the bucket is versioned)")
-	cmd.Flags().StringSlice(OnlyVersions, []string{}, "limit the versions to be listed; implies --"+Versions)
-	cmd.Flags().StringSlice(ExcludeVersions, []string{}, "exclude versions from being listed; implies --"+Versions)
+	cmd.Flags().StringSlice(OnlyVersions, []string{}, "limit the versions to be listed; "+versionFlagDoc+"; implies --"+Versions)
+	cmd.Flags().StringSlice(ExcludeVersions, []string{}, "exclude versions from being listed; "+versionFlagDoc+"; implies --"+Versions)
 	cmd.Flags().Bool(ExcludeLatestVersion, false, "exclude the latest version from being listed; implies --"+Versions)
 }
 
