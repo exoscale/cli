@@ -39,6 +39,9 @@ docker-push: ## Pushes the Docker image to the public Docker registry
 release:
 	$(MAKE) PROJECT_URL=$(PROJECT_URL) VERSION=$(VERSION) -f go.mk/public.mk release-default
 
+release-in-docker:
+	$(MAKE) PROJECT_URL=$(PROJECT_URL) VERSION=$(VERSION) -f go.mk/public.mk release-in-docker
+
 manpage:
 	mkdir -p $@
 
