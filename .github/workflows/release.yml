@@ -15,7 +15,7 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      - uses: .github/workflows/main.yml
+      - uses: ./.github/workflows/build
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
