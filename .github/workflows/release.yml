@@ -35,6 +35,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+
       - uses: actions/setup-go@v3
 
       - name: Compute goreleaser cache key
@@ -62,3 +68,4 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.EXTENDED_GITHUB_TOKEN }}
+          GPG_PASSWORD: ${{ secrets.PASSPHRASE }}
