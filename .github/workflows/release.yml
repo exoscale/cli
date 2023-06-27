@@ -1,7 +1,11 @@
 name: release
 
 on:
-  workflow_dispatch: {}
+  # TODO(sauterp) remove push trigger before merging
+  push:
+    branches:
+      - sauterp/sc-42833/cli-release
+  workflow_dispatch:
 
 permissions:
   contents: write
