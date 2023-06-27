@@ -34,6 +34,8 @@ jobs:
       - uses: actions/setup-go@v3
       - run: make install-goreleaser
         shell: bash
+      - run: ls $GOPATH/bin/
+        shell: bash
       - run: go env
         shell: bash
       - run: make release
