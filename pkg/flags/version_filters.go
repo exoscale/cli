@@ -11,11 +11,10 @@ import (
 )
 
 const (
-	Versions             = "versions"
-	OnlyVersions         = "only-versions"
-	ExcludeVersions      = "exclude-versions"
-	ExcludeLatestVersion = "exclude-latest-version"
-	versionFlagDoc       = "accepts comma separated version IDs(865029700534464769) and numbers(v123)"
+	Versions        = "versions"
+	OnlyVersions    = "only-versions"
+	ExcludeVersions = "exclude-versions"
+	versionFlagDoc  = "accepts comma separated version IDs(865029700534464769) and numbers(v123)"
 )
 
 var (
@@ -27,7 +26,6 @@ func AddVersionsFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(Versions, false, "list all versions of objects(if the bucket is versioned)")
 	cmd.Flags().StringSlice(OnlyVersions, []string{}, "limit the versions to be listed; "+versionFlagDoc+"; implies --"+Versions)
 	cmd.Flags().StringSlice(ExcludeVersions, []string{}, "exclude versions from being listed; "+versionFlagDoc+"; implies --"+Versions)
-	cmd.Flags().Bool(ExcludeLatestVersion, false, "exclude the latest version from being listed; implies --"+Versions)
 }
 
 func validateVersions(versions []string, stream bool) error {
@@ -73,18 +71,6 @@ func ValidateVersionFlags(cmd *cobra.Command) error {
 
 func TranslateVersionFilterFlagsToFilterFuncs(cmd *cobra.Command) ([]object.ObjectVersionFilterFunc, error) {
 	var filters []object.ObjectVersionFilterFunc
-
-	excludeLatest, err := cmd.Flags().GetBool(ExcludeLatestVersion)
-	if err != nil {
-		return nil, err
-	}
-
-	if excludeLatest {
-		filters = append(filters, func(ovi object.ObjectVersionInterface) bool {
-			return !ovi.GetIsLatest()
-		})
-	}
-
 	vsToInclude, err := cmd.Flags().GetStringSlice(OnlyVersions)
 	if err != nil {
 		return nil, err
