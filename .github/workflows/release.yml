@@ -22,8 +22,6 @@ jobs:
       # TODO(sauterp) remove
       - run: git submodule update --init --recursive go.mk
         shell: bash
-      # TODO(sauterp) remove
-      - uses: ./go.mk/.github/actions/setup
       # TODO(sauterp) reenable
       #- uses: ./.github/actions/build
       - run: |
