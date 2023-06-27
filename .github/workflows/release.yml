@@ -36,15 +36,17 @@ jobs:
       - name: Compute goreleaser cache key
         run: |
           echo "GORELEASER_CACHE_KEY=$(make --just-print install-goreleaser)" >> $GITHUB_OUTPUT
+        id: goreleaser-cache-key
       - name: Cache goreleaser
         id: cache-goreleaser
         uses: actions/cache@v3
         with:
           path: /home/runner/go/bin/goreleaser
-          key: ${env.GORELEASER_CACHE_KEY}
-      - name: Generate Prime Numbers
+          key: ${{ steps.goreleaser-cache-key.outputs.GORELEASER_CACHE_KEY }}
+      - name: Install goreleaser
         if: steps.cache-goreleaser.outputs.cache-hit != 'true'
         run: make install-goreleaser
+        shell: bash
 
       - run: echo "$(go env GOPATH)/bin/" >> $GITHUB_PATH
         shell: bash
