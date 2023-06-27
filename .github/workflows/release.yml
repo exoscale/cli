@@ -31,8 +31,10 @@ jobs:
           difference=$((current - yesterday))
           git tag v1.70.$difference
         shell: bash
+      - uses: actions/setup-go@v3
+      - run: make install-goreleaser
+        shell: bash
       - run: make release
-        uses: goreleaser/goreleaser-action@v4
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
