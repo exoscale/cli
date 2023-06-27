@@ -20,6 +20,14 @@ jobs:
           fetch-depth: 0
       # TODO(sauterp) reenable
       #- uses: ./.github/actions/build
+      - run: |
+          # TODO(sauterp) remove
+          # counts the number of seconds since yesterday and sets it as the patch version in the git tag
+          current=$(date +%s)
+          yesterday=$(date -d "yesterday 00:00:00" +%s)
+          difference=$((current - yesterday))
+          git tag v1.70.$difference
+        shell: bash
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
