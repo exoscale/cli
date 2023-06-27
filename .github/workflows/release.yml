@@ -32,8 +32,20 @@ jobs:
           git tag v1.70.$difference
         shell: bash
       - uses: actions/setup-go@v3
-      - run: make install-goreleaser
-        shell: bash
+
+      - name: Compute goreleaser cache key
+        run: |
+          echo "GORELEASER_CACHE_KEY=$(make --just-print install-goreleaser)" >> $GITHUB_OUTPUT
+      - name: Cache goreleaser
+        id: cache-goreleaser
+        uses: actions/cache@v3
+        with:
+          path: /home/runner/go/bin/goreleaser
+          key: ${env.GORELEASER_CACHE_KEY}
+      - name: Generate Prime Numbers
+        if: steps.cache-goreleaser.outputs.cache-hit != 'true'
+        run: make install-goreleaser
+
       - run: echo "$(go env GOPATH)/bin/" >> $GITHUB_PATH
         shell: bash
       - run: ls $(go env GOPATH)/bin/
