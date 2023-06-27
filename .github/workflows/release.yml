@@ -39,7 +39,7 @@ jobs:
 
       - name: Compute goreleaser cache key
         run: |
-          echo "GORELEASER_CACHE_KEY=$(make --just-print install-goreleaser | tr --delete [:space:] | base32)" >> $GITHUB_OUTPUT
+          echo "GORELEASER_CACHE_KEY=$(make --just-print install-goreleaser | tr --delete [:space:] | base32 --wrap 0)" >> $GITHUB_OUTPUT
         id: goreleaser-cache-key
       - name: Cache goreleaser
         id: cache-goreleaser
