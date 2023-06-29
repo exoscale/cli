@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.71.0
+
+### Features
+
+- sos: add flags for filtering by version number and ID (#521)
+- storage list: allow listing versions of objects (#518)
+
+### Improvements
+
+- Don't fetch account info when adding new account (#520)
+
 ## 1.70.0
 
 ### Features
