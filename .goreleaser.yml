@@ -114,7 +114,6 @@ docker_signs:
     args:
     - "sign"
     - "--oidc-issuer=https://token.actions.githubusercontent.com"
-    - "--upload=false"
     - "${artifact}@${digest}"
     - "--yes"
     artifacts: all
