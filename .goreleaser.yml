@@ -78,19 +78,20 @@ universal_binaries:
   - replace: true
     name_template: 'exo'
 
-brews:
-  - tap:
-    # TODO(sauterp) sauterp -> exoscale
-      owner: sauterp
-      name: homebrew-tap
-    folder: Formula
-    homepage: "https://exoscale.github.io/cli/"
-    description: Manage easily your Exoscale infrastructure from the command-line.
-    install: |
-      bin.install "exo"
-      man1.install Dir["manpage/exo*.1"]
-      bash_completion.install "contrib/completion/bash/exo"
-      zsh_completion.install "contrib/completion/zsh/_exo"
+# TODO(sauterp) reenable
+#brews:
+#  - tap:
+#    # TODO(sauterp) sauterp -> exoscale
+#      owner: sauterp
+#      name: homebrew-tap
+#    folder: Formula
+#    homepage: "https://exoscale.github.io/cli/"
+#    description: Manage easily your Exoscale infrastructure from the command-line.
+#    install: |
+#      bin.install "exo"
+#      man1.install Dir["manpage/exo*.1"]
+#      bash_completion.install "contrib/completion/bash/exo"
+#      zsh_completion.install "contrib/completion/zsh/_exo"
  
 dockers:
   - goos: linux
@@ -107,3 +108,14 @@ dockers:
       - --build-arg="VERSION={{.Version}}"
       - --build-arg="VCS_REF={{.ShortCommit}}"
       - --build-arg="BUILD_DATE={{.Date}}"
+
+docker_signs:
+  - cmd: cosign
+    args:
+    - "sign"
+    - "--oidc-issuer=https://token.actions.githubusercontent.com"
+    - "--upload=false"
+    - "${artifact}"
+    - "--yes"
+    artifacts: all
+    output: true

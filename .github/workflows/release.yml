@@ -11,10 +11,20 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.1.1
+
       # TODO(sauterp) remove
       - run: git submodule update --init --recursive go.mk
         shell: bash
@@ -60,12 +70,9 @@ jobs:
 
       - run: echo "$(go env GOPATH)/bin/" >> $GITHUB_PATH
         shell: bash
-      - run: ls $(go env GOPATH)/bin/
-        shell: bash
-      - run: go env
-        shell: bash
       - run: make release
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.EXTENDED_GITHUB_TOKEN }}
+          #GITHUB_TOKEN: ${{ secrets.EXTENDED_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_PASSWORD: ${{ secrets.PASSPHRASE }}
