@@ -45,7 +45,6 @@ signs:
     - "--bundle=${artifact}.bundle"
     - "${artifact}"
     - "--yes"
-    artifacts: all
 
 archives:
   - id: windows
