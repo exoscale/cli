@@ -25,6 +25,9 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.1.1
 
+      - run: apt-get install -y aptly
+        shell: bash
+
       # TODO(sauterp) remove
       - run: git submodule update --init --recursive go.mk
         shell: bash
@@ -76,3 +79,5 @@ jobs:
           TAP_REPO_GITHUB_TOKEN: ${{ secrets.EXTENDED_GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_PASSWORD: ${{ secrets.PASSPHRASE }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
