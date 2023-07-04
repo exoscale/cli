@@ -83,6 +83,7 @@ brews:
     # TODO(sauterp) sauterp -> exoscale
       owner: sauterp
       name: homebrew-tap
+      token: "{{ .Env.TAP_REPO_GITHUB_TOKEN }}"
     folder: Formula
     homepage: "https://exoscale.github.io/cli/"
     description: Manage easily your Exoscale infrastructure from the command-line.
