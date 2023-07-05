@@ -25,7 +25,7 @@ jobs:
       #- uses: ./.github/actions/build
 
       - uses: ./go.mk/.github/actions/release
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        with:
+          release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          retistry_password: ${{ secrets.DOCKERHUB_TOKEN }}
