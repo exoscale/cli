@@ -1,7 +1,6 @@
 name: release
 
 on:
-  # TODO(sauterp) remove push trigger before merging
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
@@ -24,14 +23,6 @@ jobs:
 
       # TODO(sauterp) reenable
       #- uses: ./.github/actions/build
-      - run: |
-          # TODO(sauterp) remove
-          # counts the number of seconds since yesterday and sets it as the patch version in the git tag
-          current=$(date +%s)
-          yesterday=$(date -d "yesterday 00:00:00" +%s)
-          difference=$((current - yesterday))
-          git tag v1.70.$difference
-        shell: bash
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
