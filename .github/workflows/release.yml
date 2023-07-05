@@ -3,8 +3,6 @@ name: release
 on:
   # TODO(sauterp) remove push trigger before merging
   push:
-    branches:
-      - sauterp/sc-42833/cli-release
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
