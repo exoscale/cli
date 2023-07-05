@@ -24,7 +24,7 @@ jobs:
       # TODO(sauterp) reenable
       #- uses: ./.github/actions/build
 
-      - uses: ./go.mk/.github/actions/setup
+      - uses: ./go.mk/.github/actions/release
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
