@@ -17,6 +17,8 @@ jobs:
         with:
           fetch-depth: 0
 
+      # TODO move this job to go.mk
+
       # TODO(sauterp) remove
       - run: git submodule update --init --recursive go.mk
         shell: bash
