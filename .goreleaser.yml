@@ -31,21 +31,6 @@ builds:
       - goos: openbsd
         goarch: arm64
 
-#signs:
-#  - artifacts: all
-#    cmd: gpg
-#    args: ["--default-key", "A288978B2A7DC513B60D3BFAA86C80E1EA93F691", "--detach-sign", "${artifact}"]
-#    stdin: '{{ .Env.GPG_PASSWORD }}'
-signs:
-  - artifacts: all
-    cmd: cosign
-    args:
-    - "sign-blob"
-    - "--oidc-issuer=https://token.actions.githubusercontent.com"
-    - "--bundle=${artifact}.bundle"
-    - "${artifact}"
-    - "--yes"
-
 archives:
   - id: windows
     format_overrides:
@@ -92,7 +77,6 @@ brews:
     # TODO(sauterp) sauterp -> exoscale
       owner: sauterp
       name: homebrew-tap
-      token: "{{ .Env.TAP_REPO_GITHUB_TOKEN }}"
     folder: Formula
     homepage: "https://exoscale.github.io/cli/"
     description: Manage easily your Exoscale infrastructure from the command-line.
@@ -117,19 +101,3 @@ dockers:
       - --build-arg="VERSION={{.Version}}"
       - --build-arg="VCS_REF={{.ShortCommit}}"
       - --build-arg="BUILD_DATE={{.Date}}"
-
-docker_signs:
-  - cmd: cosign
-    args:
-    - "sign"
-    - "--oidc-issuer=https://token.actions.githubusercontent.com"
-    - "${artifact}@${digest}"
-    - "--yes"
-    artifacts: all
-
-publishers:
-  - name: aptly-publisher
-    cmd: "./aptly-release.sh {{ abs .ArtifactPath }}"
-    env:
-      - AWS_ACCESS_KEY_ID={{ .Env.AWS_ACCESS_KEY_ID }}
-      - AWS_SECRET_ACCESS_KEY={{ .Env.AWS_SECRET_ACCESS_KEY }}

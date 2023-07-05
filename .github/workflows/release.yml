@@ -12,25 +12,15 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-      packages: write
-      id-token: write
-
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.1.1
-
-      - run: sudo apt-get install -y aptly
-        shell: bash
-
       # TODO(sauterp) remove
       - run: git submodule update --init --recursive go.mk
         shell: bash
+
       # TODO(sauterp) reenable
       #- uses: ./.github/actions/build
       - run: |
@@ -48,24 +38,20 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      #- name: Import GPG key
-      #  uses: crazy-max/ghaction-import-gpg@v5
-      #  with:
-      #    gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-      #    passphrase: ${{ secrets.PASSPHRASE }}
-
       - uses: actions/setup-go@v3
 
       - name: Compute goreleaser cache key
         run: |
           echo "GORELEASER_CACHE_KEY=$(make --just-print install-goreleaser | tr --delete [:space:] | base32 --wrap 0)" >> $GITHUB_OUTPUT
         id: goreleaser-cache-key
+
       - name: Cache goreleaser
         id: cache-goreleaser
         uses: actions/cache@v3
         with:
           path: /home/runner/go/bin/goreleaser
           key: ${{ steps.goreleaser-cache-key.outputs.GORELEASER_CACHE_KEY }}
+
       - name: Install goreleaser
         if: steps.cache-goreleaser.outputs.cache-hit != 'true'
         run: make install-goreleaser
@@ -73,11 +59,8 @@ jobs:
 
       - run: echo "$(go env GOPATH)/bin/" >> $GITHUB_PATH
         shell: bash
+
       - run: make release
         shell: bash
         env:
-          TAP_REPO_GITHUB_TOKEN: ${{ secrets.EXTENDED_GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPG_PASSWORD: ${{ secrets.PASSPHRASE }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
