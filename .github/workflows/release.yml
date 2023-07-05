@@ -28,4 +28,4 @@ jobs:
         with:
           release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          retistry_password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
