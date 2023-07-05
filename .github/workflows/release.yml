@@ -24,35 +24,8 @@ jobs:
       # TODO(sauterp) reenable
       #- uses: ./.github/actions/build
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - uses: actions/setup-go@v3
-
-      - name: Compute goreleaser cache key
-        run: |
-          echo "GORELEASER_CACHE_KEY=$(make --just-print install-goreleaser | tr --delete [:space:] | base32 --wrap 0)" >> $GITHUB_OUTPUT
-        id: goreleaser-cache-key
-
-      - name: Cache goreleaser
-        id: cache-goreleaser
-        uses: actions/cache@v3
-        with:
-          path: /home/runner/go/bin/goreleaser
-          key: ${{ steps.goreleaser-cache-key.outputs.GORELEASER_CACHE_KEY }}
-
-      - name: Install goreleaser
-        if: steps.cache-goreleaser.outputs.cache-hit != 'true'
-        run: make install-goreleaser
-        shell: bash
-
-      - run: echo "$(go env GOPATH)/bin/" >> $GITHUB_PATH
-        shell: bash
-
-      - run: make release
-        shell: bash
+      - uses: ./go.mk/.github/actions/setup
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
