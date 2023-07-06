@@ -31,6 +31,11 @@ builds:
       - goos: openbsd
         goarch: arm64
 
+# macOS Universal Binaries
+universal_binaries:
+  - replace: true
+    name_template: 'exo'
+
 archives:
   - id: windows
     format_overrides:
@@ -40,6 +45,11 @@ archives:
       - LICENSE
       - contrib/completion/**/*
       - manpage/*
+
+release:
+  github:
+    owner: exoscale
+    name: cli
 
 nfpms:
   - vendor: Exoscale
@@ -61,21 +71,9 @@ nfpms:
       - src: "./contrib/completion/zsh/_exo"
         dst: "/usr/share/zsh/vendor-completions/_exo"
 
-release:
-  github:
-    # TODO(sauterp) sauterp -> exoscale
-    owner: sauterp
-    name: cli
-
-# macOS Universal Binaries
-universal_binaries:
-  - replace: true
-    name_template: 'exo'
-
 brews:
   - tap:
-    # TODO(sauterp) sauterp -> exoscale
-      owner: sauterp
+      owner: exoscale
       name: homebrew-tap
     folder: Formula
     homepage: "https://exoscale.github.io/cli/"
@@ -85,16 +83,15 @@ brews:
       man1.install Dir["manpage/exo*.1"]
       bash_completion.install "contrib/completion/bash/exo"
       zsh_completion.install "contrib/completion/zsh/_exo"
- 
+
 dockers:
   - goos: linux
     goarch: amd64
-    # TODO(sauterp) philippsauterexoscale -> exoscale
     image_templates:
-      - "philippsauterexoscale/cli:latest"
-      - "philippsauterexoscale/cli:{{ .Major }}"
-      - "philippsauterexoscale/cli:{{ .Major }}.{{ .Minor }}"
-      - "philippsauterexoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+      - "exoscale/cli:latest"
+      - "exoscale/cli:{{ .Major }}"
+      - "exoscale/cli:{{ .Major }}.{{ .Minor }}"
+      - "exoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
     dockerfile: Dockerfile.goreleaser
     build_flag_templates:
       - --pull
