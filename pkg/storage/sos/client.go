@@ -44,7 +44,7 @@ func (c *Client) NewUploader(client s3manager.UploadAPIClient, options ...func(*
 	return c.NewUploaderFunc(client, options...)
 }
 
-func checkStuff(obj object.ObjectInterface, dirs map[string]struct{}, prefix string, recursive bool) bool {
+func checkPrefix(obj object.ObjectInterface, dirs map[string]struct{}, prefix string, recursive bool) bool {
 	// If not invoked in recursive mode, split object keys on the "/" separator and skip
 	// objects "below" the base directory prefix.
 	parts := strings.SplitN(strings.TrimPrefix(aws.ToString(obj.GetKey()), prefix), "/", 2)
@@ -81,6 +81,42 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 
 	dirs := make(map[string]struct{})
 
+	if listVersions || len(versionFilters) > 0 {
+		// TODO optimize away unnecessary deduplication
+		listFn := c.ListVersionedObjectsFunc(bucket, prefix, recursive, false)
+
+		for {
+			lco, err := listFn(ctx)
+			if err != nil {
+				return err
+			}
+
+			for _, o := range lco.Objects {
+				if !checkPrefix(o, dirs, prefix, recursive) {
+					continue
+				}
+
+				if !object.ApplyFilters(o, filters) {
+					continue
+				}
+
+				if !object.ApplyVersionedFilters(o, versionFilters) {
+					continue
+				}
+
+				if err := fn(o.GetObject()); err != nil {
+					return err
+				}
+			}
+
+			if !lco.IsTruncated {
+				break
+			}
+		}
+
+		return nil
+	}
+
 	// TODO optimize away unnecessary deduplication
 	listFn := c.ListObjectsFunc(bucket, prefix, recursive, false)
 
@@ -91,7 +127,7 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 		}
 
 		for _, o := range lco.Objects {
-			if !checkStuff(o, dirs, prefix, recursive) {
+			if !checkPrefix(o, dirs, prefix, recursive) {
 				continue
 			}
 
