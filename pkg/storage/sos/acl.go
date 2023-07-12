@@ -113,7 +113,7 @@ func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL)
 func (c *Client) SetObjectsACL(ctx context.Context, bucket, prefix string, acl *ACL, recursive bool) error {
 	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.SetObjectACL(ctx, bucket, aws.ToString(o.Key), acl)
-	})
+	}, nil, false, nil)
 }
 
 func BucketCannedACLToStrings() []string {

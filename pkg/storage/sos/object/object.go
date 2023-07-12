@@ -21,10 +21,21 @@ type ObjectVersion struct {
 }
 
 type ObjectInterface interface {
+	GetObject() *types.Object // TODO remove
 	GetKey() *string
 	GetSize() int64
 	GetLastModified() *time.Time
 	GetListObjectsItemOutput() *ListObjectsItemOutput
+}
+
+// Remove
+func (o *Object) GetObject() *types.Object {
+	return o.Object
+}
+
+// Remove
+func (o *ObjectVersion) GetObject() *types.Object {
+	return nil
 }
 
 type ObjectVersionInterface interface {

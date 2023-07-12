@@ -7,6 +7,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+
+	"github.com/exoscale/cli/pkg/storage/sos/object"
 )
 
 const MetadataForbiddenCharset = `()<>@,;!:\\'&"/[]?_={} `
@@ -33,10 +35,10 @@ func (c *Client) AddObjectMetadata(ctx context.Context, bucket, key string, meta
 	return err
 }
 
-func (c *Client) AddObjectsMetadata(ctx context.Context, bucket, prefix string, metadata map[string]string, recursive bool) error {
+func (c *Client) AddObjectsMetadata(ctx context.Context, bucket, prefix string, metadata map[string]string, recursive bool, filters []object.ObjectFilterFunc, listVersions bool, versionFilters []object.ObjectVersionFilterFunc) error {
 	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.AddObjectMetadata(ctx, bucket, aws.ToString(o.Key), metadata)
-	})
+	}, nil, false, nil)
 }
 
 func (c *Client) DeleteObjectMetadata(ctx context.Context, bucket, key string, mdKeys []string) error {
@@ -59,5 +61,5 @@ func (c *Client) DeleteObjectMetadata(ctx context.Context, bucket, key string, m
 func (c *Client) DeleteObjectsMetadata(ctx context.Context, bucket, prefix string, mdKeys []string, recursive bool) error {
 	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.DeleteObjectMetadata(ctx, bucket, aws.ToString(o.Key), mdKeys)
-	})
+	}, nil, false, nil)
 }

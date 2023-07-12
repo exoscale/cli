@@ -15,6 +15,7 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/storage/sos/object"
 )
 
 var (
@@ -43,10 +44,34 @@ func (c *Client) NewUploader(client s3manager.UploadAPIClient, options ...func(*
 	return c.NewUploaderFunc(client, options...)
 }
 
+func checkStuff(obj object.ObjectInterface, dirs map[string]struct{}, prefix string, recursive bool) bool {
+	// If not invoked in recursive mode, split object keys on the "/" separator and skip
+	// objects "below" the base directory prefix.
+	parts := strings.SplitN(strings.TrimPrefix(aws.ToString(obj.GetKey()), prefix), "/", 2)
+	if len(parts) > 1 && !recursive {
+		dir := path.Base(parts[0])
+		if _, ok := dirs[dir]; !ok {
+			dirs[dir] = struct{}{}
+		}
+
+		return false
+	}
+
+	// If the prefix doesn't end with a trailing prefix separator ("/"),
+	// consider it as a single object key and match only one exact result
+	// (except in recursive mode, where the prefix is expected to be a
+	// "directory").
+	if !recursive && !strings.HasSuffix(prefix, "/") && aws.ToString(obj.GetKey()) != prefix {
+		return false
+	}
+
+	return true
+}
+
 // forEachObject is a convenience wrapper to execute a callback function on
 // each object listed in the specified bucket/prefix. Upon callback function
 // error, the whole processing ends.
-func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
+func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recursive bool, fn func(*s3types.Object) error, filters []object.ObjectFilterFunc, listVersions bool, versionFilters []object.ObjectVersionFilterFunc) error {
 	// The "/" value can be used at command-level to mean that we want to
 	// list from the root of the bucket, but the actual bucket root is an
 	// empty prefix.
@@ -56,45 +81,30 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 
 	dirs := make(map[string]struct{})
 
-	var ct string
+	// TODO optimize away unnecessary deduplication
+	listFn := c.ListObjectsFunc(bucket, prefix, recursive, false)
+
 	for {
-		res, err := c.S3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
-			Bucket:            aws.String(bucket),
-			Prefix:            aws.String(prefix),
-			ContinuationToken: aws.String(ct),
-		})
+		lco, err := listFn(ctx)
 		if err != nil {
 			return err
 		}
-		ct = aws.ToString(res.NextContinuationToken)
 
-		for _, o := range res.Contents {
-			// If not invoked in recursive mode, split object keys on the "/" separator and skip
-			// objects "below" the base directory prefix.
-			parts := strings.SplitN(strings.TrimPrefix(aws.ToString(o.Key), prefix), "/", 2)
-			if len(parts) > 1 && !recursive {
-				dir := path.Base(parts[0])
-				if _, ok := dirs[dir]; !ok {
-					dirs[dir] = struct{}{}
-				}
+		for _, o := range lco.Objects {
+			if !checkStuff(o, dirs, prefix, recursive) {
 				continue
 			}
 
-			// If the prefix doesn't end with a trailing prefix separator ("/"),
-			// consider it as a single object key and match only one exact result
-			// (except in recursive mode, where the prefix is expected to be a
-			// "directory").
-			if !recursive && !strings.HasSuffix(prefix, "/") && aws.ToString(o.Key) != prefix {
+			if !object.ApplyFilters(o, filters) {
 				continue
 			}
 
-			o := o
-			if err := fn(&o); err != nil {
+			if err := fn(o.GetObject()); err != nil {
 				return err
 			}
 		}
 
-		if !res.IsTruncated {
+		if !lco.IsTruncated {
 			break
 		}
 	}

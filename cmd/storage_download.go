@@ -99,7 +99,7 @@ Examples:
 		if err := storage.ForEachObject(gContext, bucket, prefix, recursive, func(o *s3types.Object) error {
 			objects = append(objects, o)
 			return nil
-		}); err != nil {
+		}, nil, false, nil); err != nil {
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 

@@ -36,7 +36,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *types.Object) error {
 		deleteList = append(deleteList, types.ObjectIdentifier{Key: o.Key})
 		return nil
-	})
+	}, nil, false, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error listing objects to delete: %w", err)
 	}
