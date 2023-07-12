@@ -14,10 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: git submodule update --init --recursive go.mk
-      - uses: ./go.mk/.github/actions/setup
+        with:
+          fetch-depth: 0
 
-      - uses: ./go.mk/.github/actions/pre-check
-
-      - run: make build
-      - run: make test-verbose
+      - uses: ./.github/actions/build

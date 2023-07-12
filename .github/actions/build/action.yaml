@@ -1,0 +1,19 @@
+name: "Build"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - run: git submodule update --init --recursive go.mk
+      shell: bash
+    - uses: ./go.mk/.github/actions/setup
+
+    - uses: ./go.mk/.github/actions/pre-check
+
+    - run: make build
+      shell: bash
+
+    - run: make test-verbose
+      shell: bash
