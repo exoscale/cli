@@ -42,7 +42,7 @@ func validateVersions(versions []string, stream bool) error {
 	return nil
 }
 
-func ValidateVersionFlags(cmd *cobra.Command) error {
+func ValidateVersionFlags(cmd *cobra.Command, useStream bool) error {
 	vsToInclude, err := cmd.Flags().GetStringSlice(OnlyVersions)
 	if err != nil {
 		return err
@@ -57,9 +57,12 @@ func ValidateVersionFlags(cmd *cobra.Command) error {
 		return fmt.Errorf("--%s and --%s are mutually exclusive", OnlyVersions, ExcludeVersions)
 	}
 
-	stream, err := cmd.Flags().GetBool("stream")
-	if err != nil {
-		return err
+	stream := false
+	if useStream {
+		stream, err = cmd.Flags().GetBool("stream")
+		if err != nil {
+			return err
+		}
 	}
 
 	if err := validateVersions(vsToInclude, stream); err != nil {

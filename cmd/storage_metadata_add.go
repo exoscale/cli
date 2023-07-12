@@ -53,7 +53,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		return flags.ValidateVersionFlags(cmd)
+		return flags.ValidateVersionFlags(cmd, false)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -103,7 +103,9 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
+		// TODO only show if it's a single version object
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
+			// TODO show version number or id if available
 			return printOutput(storage.ShowObject(gContext, bucket, prefix))
 		}
 

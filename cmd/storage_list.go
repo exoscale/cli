@@ -41,7 +41,7 @@ Supported output template annotations:
 			return err
 		}
 
-		return flags.ValidateVersionFlags(cmd)
+		return flags.ValidateVersionFlags(cmd, true)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
