@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -48,7 +49,11 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		return nil
+		if err := flags.ValidateTimestampFlags(cmd); err != nil {
+			return err
+		}
+
+		return flags.ValidateVersionFlags(cmd)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -79,7 +84,22 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive); err != nil {
+		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		listVersions, err := cmd.Flags().GetBool(flags.Versions)
+		if err != nil {
+			return err
+		}
+
+		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive, filters, listVersions, versionFilters); err != nil {
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
@@ -98,5 +118,7 @@ Supported output template annotations: %s`,
 func init() {
 	storageMetadataAddCmd.Flags().BoolP("recursive", "r", false,
 		"add metadata recursively (with object prefix only)")
+	flags.AddVersionsFlags(storageMetadataAddCmd)
+	flags.AddTimeFilterFlags(storageMetadataAddCmd)
 	storageMetadataCmd.AddCommand(storageMetadataAddCmd)
 }
