@@ -33,10 +33,10 @@ import (
 
 func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]types.DeletedObject, error) {
 	deleteList := make([]types.ObjectIdentifier, 0)
-	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *types.Object) error {
-		deleteList = append(deleteList, types.ObjectIdentifier{Key: o.Key})
+	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o object.ObjectInterface) error {
+		deleteList = append(deleteList, types.ObjectIdentifier{Key: o.GetKey()})
 		return nil
-	}, nil, false, nil)
+	}, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error listing objects to delete: %w", err)
 	}

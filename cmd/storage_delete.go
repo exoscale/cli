@@ -84,6 +84,8 @@ argument with "/":
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
+		// TODO delete versions
+
 		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive)
 		if err != nil {
 			return fmt.Errorf("unable to delete objects: %w", err)

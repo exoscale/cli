@@ -166,8 +166,8 @@ func init() {
 	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagReadACP, "", "ACP Read ACP grantee")
 	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagWriteACP, "", "ACP Write ACP grantee")
 	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagFullControl, "", "ACP Full Control grantee")
-	flags.AddVersionsFlags(storageMetadataAddCmd)
-	flags.AddTimeFilterFlags(storageMetadataAddCmd)
+	flags.AddVersionsFlags(storageSetACLCmd)
+	flags.AddTimeFilterFlags(storageSetACLCmd)
 	storageCmd.AddCommand(storageSetACLCmd)
 }
 
