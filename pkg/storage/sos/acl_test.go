@@ -55,7 +55,8 @@ func TestSetObjectACL(t *testing.T) {
 			return &s3.PutObjectAclOutput{}, nil
 		}
 
-		err := client.SetObjectACL(context.Background(), testBucket, testKey, testACL)
+		// TODO test with versionID
+		err := client.SetObjectACL(context.Background(), testBucket, testKey, testACL, "")
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, putObjectACLCount, "PutObjectAcl should be called once")
@@ -110,7 +111,8 @@ func TestSetObjectACL(t *testing.T) {
 			return &s3.PutObjectAclOutput{}, nil
 		}
 
-		err := client.SetObjectACL(context.Background(), testBucket, testKey, acl)
+		// TODO test with versionID
+		err := client.SetObjectACL(context.Background(), testBucket, testKey, acl, "")
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, putObjectACLCount, "PutObjectAcl should be called once")
