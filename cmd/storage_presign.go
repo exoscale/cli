@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -21,7 +22,23 @@ var storagePresignCmd = &cobra.Command{
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		return nil
+		versionID, err := cmd.Flags().GetString(flags.VersionID)
+		if err != nil {
+			return err
+		}
+
+		if versionID != "" {
+			method, err := cmd.Flags().GetString(sos.PresignMethodFlag)
+			if err != nil {
+				return err
+			}
+
+			if method == sos.PresignPutMethod {
+				return fmt.Errorf("--%s flag is not compatible with %q method", flags.VersionID, sos.PresignPutMethod)
+			}
+		}
+
+		return flags.ValidateVersionIDFlag(cmd)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -35,7 +52,7 @@ var storagePresignCmd = &cobra.Command{
 			return err
 		}
 
-		method, err := cmd.Flags().GetString("method")
+		method, err := cmd.Flags().GetString(sos.PresignGetMethod)
 		if err != nil {
 			return err
 		}
@@ -51,8 +68,12 @@ var storagePresignCmd = &cobra.Command{
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		// TODO presign versions
-		url, err := storage.GenPresignedURL(gContext, method, bucket, key, expires)
+		versionID, err := cmd.Flags().GetString(flags.VersionID)
+		if err != nil {
+			return err
+		}
+
+		url, err := storage.GenPresignedURL(gContext, method, bucket, key, expires, versionID)
 		if err != nil {
 			return fmt.Errorf("unable to pre-sign %s%s/%s: %w", sos.BucketPrefix, bucket, key, err)
 		}
@@ -67,5 +88,6 @@ func init() {
 	storagePresignCmd.Flags().StringP("method", "m", "get", "pre-signed URL method (get|put)")
 	storagePresignCmd.Flags().DurationP("expires", "e", 900*time.Second,
 		`expiration duration for the generated pre-signed URL (e.g. "1h45m", "30s"); supported units: "s", "m", "h"`)
+	storagePresignCmd.Flags().String(flags.VersionID, "", flags.VersionIDUsage)
 	storageCmd.AddCommand(storagePresignCmd)
 }

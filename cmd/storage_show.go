@@ -31,17 +31,7 @@ Supported output template annotations:
 
 			args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-			// TODO add version flag
-			versionID, err := cmd.Flags().GetString(flags.VersionID)
-			if err != nil {
-				return err
-			}
-
-			if versionID == "" {
-				return nil
-			}
-
-			return flags.ValidateVersionID(versionID)
+			return flags.ValidateVersionIDFlag(cmd)
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {

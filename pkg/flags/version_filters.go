@@ -32,6 +32,19 @@ func AddVersionsFlags(cmd *cobra.Command) {
 	cmd.Flags().StringSlice(ExcludeVersions, []string{}, "exclude versions from being listed; "+versionFlagDoc+"; implies --"+Versions)
 }
 
+func ValidateVersionIDFlag(cmd *cobra.Command) error {
+	versionID, err := cmd.Flags().GetString(VersionID)
+	if err != nil {
+		return err
+	}
+
+	if versionID == "" {
+		return nil
+	}
+
+	return ValidateVersionID(versionID)
+}
+
 func ValidateVersionID(versionID string) error {
 	if !VersionRegex.MatchString(versionID) {
 		return fmt.Errorf("%q is not a valid version id(865029700534464769)", versionID)

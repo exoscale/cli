@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/flags"
@@ -101,29 +100,31 @@ Examples:
 			return fmt.Errorf("unable to initialize storage client: %v", err)
 		}
 
-		// TODO download versions
 		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
 		if err != nil {
 			return err
 		}
 
-		/*
-			modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
-			if err != nil {
-				return err
-			}
+		modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
+		if err != nil {
+			return err
+		}
 
-			versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
-			if err != nil {
-				return err
-			}
-		*/
+		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
 
-		objects := make([]*s3types.Object, 0)
-		if err := storage.ForEachObject(gContext, bucket, prefix, recursive, func(o object.ObjectInterface) error {
-			objects = append(objects, o.GetObject())
-			return nil
-		}, filters); err != nil {
+		objects := make([]object.ObjectInterface, 0)
+		if err := storage.ForEachCaller(gContext, bucket, prefix, recursive,
+			func(o object.ObjectInterface) error {
+				objects = append(objects, o)
+				return nil
+			},
+			func(o object.ObjectVersionInterface) error {
+				objects = append(objects, o)
+				return nil
+			}, filters, modifyVersions, versionFilters); err != nil {
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 
