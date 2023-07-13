@@ -544,11 +544,17 @@ func computeSeekerLength(s io.Seeker) (int64, error) {
 	return endOffset - curOffset, nil
 }
 
-func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjectOutput, error) {
-	obj, err := c.S3Client.GetObject(ctx, &s3.GetObjectInput{
+func (c *Client) ShowObject(ctx context.Context, bucket, key, versionID string) (*ShowObjectOutput, error) {
+	getObjInput := &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
-	})
+	}
+	if versionID != "" {
+		fmt.Println("setting version id", versionID)
+		getObjInput.VersionId = aws.String(versionID)
+	}
+
+	obj, err := c.S3Client.GetObject(ctx, getObjInput)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve object information: %w", err)
 	}
@@ -561,6 +567,7 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjec
 		return nil, fmt.Errorf("unable to retrieve bucket ACL: %w", err)
 	}
 
+	// TODO is it possible to show the version number
 	out := ShowObjectOutput{
 		Path:         key,
 		Bucket:       bucket,

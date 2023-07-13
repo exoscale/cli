@@ -99,6 +99,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
+		// TODO versionFilters dont make sense here, as metadata on older versions cannot be changed
 		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive, filters, listVersions, versionFilters); err != nil {
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
@@ -106,7 +107,8 @@ Supported output template annotations: %s`,
 		// TODO only show if it's a single version object
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
 			// TODO show version number or id if available
-			return printOutput(storage.ShowObject(gContext, bucket, prefix))
+			versionID := ""
+			return printOutput(storage.ShowObject(gContext, bucket, prefix, versionID))
 		}
 
 		if !globalstate.Quiet {

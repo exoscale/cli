@@ -6,12 +6,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
 func init() {
-	storageCmd.AddCommand(&cobra.Command{
+	storageShowCmd := &cobra.Command{
 		Use:   "show sos://BUCKET/[OBJECT]",
 		Short: "Show a bucket/object details",
 		Long: fmt.Sprintf(`This command lists Storage buckets and objects.
@@ -30,7 +31,17 @@ Supported output template annotations:
 
 			args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-			return nil
+			// TODO add version flag
+			versionID, err := cmd.Flags().GetString(flags.VersionID)
+			if err != nil {
+				return err
+			}
+
+			if versionID == "" {
+				return nil
+			}
+
+			return flags.ValidateVersionID(versionID)
 		},
 
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -53,11 +64,22 @@ Supported output template annotations:
 				return fmt.Errorf("unable to initialize storage client: %w", err)
 			}
 
+			versionID, err := cmd.Flags().GetString(flags.VersionID)
+			if err != nil {
+				return err
+			}
+
 			if key == "" {
+				if versionID != "" {
+					fmt.Println("Warning: version id is ignored when showing a bucket")
+				}
+
 				return printOutput(storage.ShowBucket(gContext, bucket))
 			}
 
-			return printOutput(storage.ShowObject(gContext, bucket, key))
+			return printOutput(storage.ShowObject(gContext, bucket, key, versionID))
 		},
-	})
+	}
+	storageShowCmd.Flags().String(flags.VersionID, "", flags.VersionIDUsage)
+	storageCmd.AddCommand(storageShowCmd)
 }
