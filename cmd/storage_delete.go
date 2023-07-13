@@ -24,7 +24,7 @@ argument with "/":
     exo storage delete -r sos://my-bucket/some-directory/
 `,
 
-	PreRun: func(cmd *cobra.Command, args []string) {
+	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
@@ -34,6 +34,12 @@ argument with "/":
 		if !strings.Contains(args[0], "/") {
 			args[0] += "/"
 		}
+
+		if err := flags.ValidateTimestampFlags(cmd); err != nil {
+			return err
+		}
+
+		return flags.ValidateVersionFlags(cmd, false)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -100,6 +106,7 @@ argument with "/":
 			return err
 		}
 
+		// TODO exo storage delete -v --only-versions v0 versioning-test-bucket/testFile.txt deletes all versions
 		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive, filters, modifyVersions, versionFilters)
 		if err != nil {
 			return fmt.Errorf("unable to delete objects: %w", err)
@@ -119,5 +126,7 @@ func init() {
 	storageDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	storageDeleteCmd.Flags().BoolP("recursive", "r", false, "delete objects recursively")
 	storageDeleteCmd.Flags().BoolP("verbose", "v", false, "output deleted objects")
+	flags.AddVersionsFlags(storageDeleteCmd)
+	flags.AddTimeFilterFlags(storageDeleteCmd)
 	storageCmd.AddCommand(storageDeleteCmd)
 }

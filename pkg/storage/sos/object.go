@@ -149,7 +149,9 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 		dst := func() string {
 			versionIDSuffix := ""
 			if objectVersion, ok := obj.(object.ObjectVersionInterface); ok {
-				versionIDSuffix = "." + *objectVersion.GetVersionId()
+				if !objectVersion.GetIsLatest() {
+					versionIDSuffix = "-" + *objectVersion.GetVersionId()
+				}
 			}
 
 			if strings.HasSuffix(config.Source, "/") {
@@ -250,7 +252,9 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, obj object.Obj
 	}
 
 	if objectVersion, ok := obj.(object.ObjectVersionInterface); ok {
-		getObjectInput.VersionId = objectVersion.GetVersionId()
+		if !objectVersion.GetIsLatest() {
+			getObjectInput.VersionId = objectVersion.GetVersionId()
+		}
 	}
 
 	_, err = s3manager.
