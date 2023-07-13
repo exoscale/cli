@@ -7,6 +7,7 @@ import (
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -43,7 +44,11 @@ Examples:
 			args[0] += "/"
 		}
 
-		return nil
+		if err := flags.ValidateTimestampFlags(cmd); err != nil {
+			return err
+		}
+
+		return flags.ValidateVersionFlags(cmd, false)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -95,11 +100,27 @@ Examples:
 			return fmt.Errorf("unable to initialize storage client: %v", err)
 		}
 
+		// TODO download versions
+		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
+		if err != nil {
+			return err
+		}
+
+		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
 		objects := make([]*s3types.Object, 0)
 		if err := storage.ForEachObject(gContext, bucket, prefix, recursive, func(o *s3types.Object) error {
 			objects = append(objects, o)
 			return nil
-		}, nil, false, nil); err != nil {
+		}, filters, modifyVersions, versionFilters); err != nil {
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 
@@ -123,5 +144,7 @@ func init() {
 		"simulate files download, don't actually do it")
 	storageDownloadCmd.Flags().BoolP("recursive", "r", false,
 		"download prefix recursively")
+	flags.AddVersionsFlags(storageDownloadCmd)
+	flags.AddTimeFilterFlags(storageDownloadCmd)
 	storageCmd.AddCommand(storageDownloadCmd)
 }

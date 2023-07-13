@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -70,7 +71,11 @@ Supported output template annotations:
 			cmdExitOnUsageError(cmd, "either a canned ACL or ACL grantee options must be specified")
 		}
 
-		return nil
+		if err := flags.ValidateTimestampFlags(cmd); err != nil {
+			return err
+		}
+
+		return flags.ValidateVersionFlags(cmd, false)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -121,11 +126,27 @@ Supported output template annotations:
 			return nil
 		}
 
-		if err := storage.SetObjectsACL(gContext, bucket, prefix, acl, recursive); err != nil {
+		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
+		if err != nil {
+			return err
+		}
+
+		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		if err := storage.SetObjectsACL(gContext, bucket, prefix, acl, recursive, filters, modifyVersions, versionFilters); err != nil {
 			return fmt.Errorf("unable to set ACL: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
+			// TODO
 			versionID := ""
 			return printOutput(storage.ShowObject(gContext, bucket, prefix, versionID))
 		}
@@ -145,6 +166,8 @@ func init() {
 	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagReadACP, "", "ACP Read ACP grantee")
 	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagWriteACP, "", "ACP Write ACP grantee")
 	storageSetACLCmd.Flags().String(sos.SetACLCmdFlagFullControl, "", "ACP Full Control grantee")
+	flags.AddVersionsFlags(storageMetadataAddCmd)
+	flags.AddTimeFilterFlags(storageMetadataAddCmd)
 	storageCmd.AddCommand(storageSetACLCmd)
 }
 

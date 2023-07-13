@@ -102,6 +102,7 @@ Supported output template annotations: %s`,
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
+			// TODO
 			versionID := ""
 			return printOutput(storage.ShowObject(gContext, bucket, prefix, versionID))
 		}
