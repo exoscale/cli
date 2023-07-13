@@ -225,7 +225,7 @@ func (c Client) SetBucketObjectOwnership(ctx context.Context, bucket string, own
 
 func (c Client) DeleteBucket(ctx context.Context, bucket string, recursive bool) error {
 	if recursive {
-		if _, err := c.DeleteObjects(ctx, bucket, "", true); err != nil {
+		if _, err := c.DeleteObjects(ctx, bucket, "", true, nil, true, nil); err != nil {
 			return fmt.Errorf("error deleting objects: %s", err)
 		}
 	}

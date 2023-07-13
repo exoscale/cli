@@ -115,12 +115,14 @@ func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL,
 }
 
 func (c *Client) SetObjectsACL(ctx context.Context, bucket, prefix string, acl *ACL, recursive bool, filters []object.ObjectFilterFunc, modifyVersions bool, versionFilters []object.ObjectVersionFilterFunc) error {
-	// TODO non-versioned call
-	return c.ForEachObjectVersion(ctx, bucket, prefix, recursive, func(o object.ObjectVersionInterface) error {
-		// TODO specialize for version and non-versioned objects
-		// TODO versonID
-		return c.SetObjectACL(ctx, bucket, aws.ToString(o.GetKey()), acl, "")
-	}, filters, modifyVersions, versionFilters)
+	return c.ForEachCaller(ctx, bucket, prefix, recursive,
+		func(o object.ObjectInterface) error {
+			return c.SetObjectACL(ctx, bucket, aws.ToString(o.GetKey()), acl, "")
+		},
+		func(o object.ObjectVersionInterface) error {
+			return c.SetObjectACL(ctx, bucket, aws.ToString(o.GetKey()), acl, *o.GetVersionId())
+		},
+		filters, modifyVersions, versionFilters)
 }
 
 func BucketCannedACLToStrings() []string {

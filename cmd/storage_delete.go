@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -84,9 +85,22 @@ argument with "/":
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		// TODO delete versions
+		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
 
-		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive)
+		modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
+		if err != nil {
+			return err
+		}
+
+		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive, filters, modifyVersions, versionFilters)
 		if err != nil {
 			return fmt.Errorf("unable to delete objects: %w", err)
 		}

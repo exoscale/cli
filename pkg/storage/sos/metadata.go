@@ -57,8 +57,8 @@ func (c *Client) DeleteObjectMetadata(ctx context.Context, bucket, key string, m
 	return err
 }
 
-func (c *Client) DeleteObjectsMetadata(ctx context.Context, bucket, prefix string, mdKeys []string, recursive bool) error {
+func (c *Client) DeleteObjectsMetadata(ctx context.Context, bucket, prefix string, mdKeys []string, recursive bool, filters []object.ObjectFilterFunc) error {
 	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o object.ObjectInterface) error {
 		return c.DeleteObjectMetadata(ctx, bucket, aws.ToString(o.GetKey()), mdKeys)
-	}, nil)
+	}, filters)
 }

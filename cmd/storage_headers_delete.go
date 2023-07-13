@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -58,7 +59,7 @@ Supported output template annotations: %s`,
 			cmdExitOnUsageError(cmd, "no header flag specified")
 		}
 
-		return nil
+		return flags.ValidateTimestampFlags(cmd)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -97,14 +98,17 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		if err := storage.DeleteObjectsHeaders(gContext, bucket, prefix, headers, recursive); err != nil {
+		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		if err := storage.DeleteObjectsHeaders(gContext, bucket, prefix, headers, recursive, filters); err != nil {
 			return fmt.Errorf("unable to add headers to object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			// TODO
-			versionID := ""
-			return printOutput(storage.ShowObject(gContext, bucket, prefix, versionID))
+			return printOutput(storage.ShowObject(gContext, bucket, prefix, ""))
 		}
 
 		if !globalstate.Quiet {
@@ -130,5 +134,6 @@ func init() {
 		`delete the "Content-Type" header`)
 	storageHeaderDeleteCmd.Flags().Bool(strings.ToLower(sos.ObjectHeaderExpires), false,
 		`delete the "Expires" header`)
+	flags.AddTimeFilterFlags(storageHeaderDeleteCmd)
 	storageHeaderCmd.AddCommand(storageHeaderDeleteCmd)
 }

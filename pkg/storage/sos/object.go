@@ -31,12 +31,23 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]types.DeletedObject, error) {
+func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool, filters []object.ObjectFilterFunc, modifyVersions bool, versionFilters []object.ObjectVersionFilterFunc) ([]types.DeletedObject, error) {
 	deleteList := make([]types.ObjectIdentifier, 0)
-	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o object.ObjectInterface) error {
-		deleteList = append(deleteList, types.ObjectIdentifier{Key: o.GetKey()})
-		return nil
-	}, nil)
+	err := c.ForEachCaller(ctx, bucket, prefix, recursive,
+		func(o object.ObjectInterface) error {
+			deleteList = append(deleteList, types.ObjectIdentifier{Key: o.GetKey()})
+
+			return nil
+		},
+		func(o object.ObjectVersionInterface) error {
+			deleteList = append(deleteList, types.ObjectIdentifier{
+				Key:       o.GetKey(),
+				VersionId: o.GetVersionId(),
+			})
+
+			return nil
+		},
+		filters, modifyVersions, versionFilters)
 	if err != nil {
 		return nil, fmt.Errorf("error listing objects to delete: %w", err)
 	}
@@ -550,7 +561,6 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key, versionID string) 
 		Key:    aws.String(key),
 	}
 	if versionID != "" {
-		fmt.Println("setting version id", versionID)
 		getObjInput.VersionId = aws.String(versionID)
 	}
 
