@@ -15,17 +15,29 @@ const (
 	OnlyVersions    = "only-versions"
 	ExcludeVersions = "exclude-versions"
 	versionFlagDoc  = "accepts comma separated version IDs(865029700534464769) and numbers(v123)"
+	VersionID       = "version-id"
+
+	VersionIDUsage = "get a specific verison id of an object"
 )
 
 var (
 	VersionRegex       = regexp.MustCompile(`v?\d+`)
 	VersionNumberRegex = regexp.MustCompile(`v\d+`)
+	VersionIDRegex     = regexp.MustCompile(`\d+`)
 )
 
 func AddVersionsFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(Versions, false, "list all versions of objects(if the bucket is versioned)")
 	cmd.Flags().StringSlice(OnlyVersions, []string{}, "limit the versions to be listed; "+versionFlagDoc+"; implies --"+Versions)
 	cmd.Flags().StringSlice(ExcludeVersions, []string{}, "exclude versions from being listed; "+versionFlagDoc+"; implies --"+Versions)
+}
+
+func ValidateVersionID(versionID string) error {
+	if !VersionRegex.MatchString(versionID) {
+		return fmt.Errorf("%q is not a valid version id(865029700534464769)", versionID)
+	}
+
+	return nil
 }
 
 func validateVersions(versions []string, stream bool) error {
