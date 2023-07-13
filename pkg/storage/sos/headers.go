@@ -52,10 +52,10 @@ func (c *Client) UpdateObjectHeaders(ctx context.Context, bucket, key string, he
 	return err
 }
 
-func (c *Client) UpdateObjectsHeaders(ctx context.Context, bucket, prefix string, headers map[string]*string, recursive bool) error {
+func (c *Client) UpdateObjectsHeaders(ctx context.Context, bucket, prefix string, headers map[string]*string, recursive bool, filters []object.ObjectFilterFunc) error {
 	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o object.ObjectInterface) error {
 		return c.UpdateObjectHeaders(ctx, bucket, aws.ToString(o.GetKey()), headers)
-	}, nil)
+	}, filters)
 }
 
 func (c *Client) DeleteObjectHeaders(ctx context.Context, bucket, key string, headers []string) error {
@@ -90,8 +90,8 @@ func (c *Client) DeleteObjectHeaders(ctx context.Context, bucket, key string, he
 	return err
 }
 
-func (c *Client) DeleteObjectsHeaders(ctx context.Context, bucket, prefix string, headers []string, recursive bool) error {
+func (c *Client) DeleteObjectsHeaders(ctx context.Context, bucket, prefix string, headers []string, recursive bool, filters []object.ObjectFilterFunc) error {
 	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o object.ObjectInterface) error {
 		return c.DeleteObjectHeaders(ctx, bucket, aws.ToString(o.GetKey()), headers)
-	}, nil)
+	}, filters)
 }

@@ -49,11 +49,7 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		if err := flags.ValidateTimestampFlags(cmd); err != nil {
-			return err
-		}
-
-		return flags.ValidateVersionFlags(cmd, false)
+		return flags.ValidateTimestampFlags(cmd)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -93,11 +89,8 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
-		// TODO only show if it's a single version object
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			// TODO show version number or id if available
-			versionID := ""
-			return printOutput(storage.ShowObject(gContext, bucket, prefix, versionID))
+			return printOutput(storage.ShowObject(gContext, bucket, prefix, ""))
 		}
 
 		if !globalstate.Quiet {
@@ -111,7 +104,6 @@ Supported output template annotations: %s`,
 func init() {
 	storageMetadataAddCmd.Flags().BoolP("recursive", "r", false,
 		"add metadata recursively (with object prefix only)")
-	flags.AddVersionsFlags(storageMetadataAddCmd)
 	flags.AddTimeFilterFlags(storageMetadataAddCmd)
 	storageMetadataCmd.AddCommand(storageMetadataAddCmd)
 }

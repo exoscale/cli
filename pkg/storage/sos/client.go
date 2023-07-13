@@ -157,6 +157,14 @@ func (c *Client) ForEachObjectVersion(ctx context.Context, bucket, prefix string
 	return nil
 }
 
+func (c *Client) ForEachCaller(ctx context.Context, bucket, prefix string, recursive bool, fn func(object.ObjectInterface) error, fnVersioned func(object.ObjectVersionInterface) error, filters []object.ObjectFilterFunc, modifyVersions bool, versionFilters []object.ObjectVersionFilterFunc) error {
+	if modifyVersions || len(versionFilters) > 0 {
+		return c.ForEachObjectVersion(ctx, bucket, prefix, recursive, fnVersioned, filters, modifyVersions, versionFilters)
+	}
+
+	return c.ForEachObject(ctx, bucket, prefix, recursive, fn, filters)
+}
+
 // copyObject is a helper function to be used in commands involving object
 // copying such as metadata/headers manipulation, retrieving information about
 // the targeted object for a later copy.

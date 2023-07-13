@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -35,7 +36,7 @@ Supported output template annotations: %s`,
 			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 		}
 
-		return nil
+		return flags.ValidateTimestampFlags(cmd)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -61,14 +62,17 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.DeleteObjectsMetadata(gContext, bucket, prefix, mdKeys, recursive); err != nil {
+		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
+		if err != nil {
+			return err
+		}
+
+		if err := storage.DeleteObjectsMetadata(gContext, bucket, prefix, mdKeys, recursive, filters); err != nil {
 			return fmt.Errorf("unable to delete metadata from object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			// TODO
-			versionID := ""
-			return printOutput(storage.ShowObject(gContext, bucket, prefix, versionID))
+			return printOutput(storage.ShowObject(gContext, bucket, prefix, ""))
 		}
 
 		if !globalstate.Quiet {
@@ -82,5 +86,6 @@ Supported output template annotations: %s`,
 func init() {
 	storageMetadataDeleteCmd.Flags().BoolP("recursive", "r", false,
 		"delete metadata recursively (with object prefix only)")
+	flags.AddTimeFilterFlags(storageMetadataDeleteCmd)
 	storageMetadataCmd.AddCommand(storageMetadataDeleteCmd)
 }
