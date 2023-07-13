@@ -9,6 +9,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/storage/sos"
+	"github.com/exoscale/cli/pkg/storage/sos/object"
 )
 
 var storageDownloadCmd = &cobra.Command{
@@ -106,21 +107,23 @@ Examples:
 			return err
 		}
 
-		modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
-		if err != nil {
-			return err
-		}
+		/*
+			modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
+			if err != nil {
+				return err
+			}
 
-		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
-		if err != nil {
-			return err
-		}
+			versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
+			if err != nil {
+				return err
+			}
+		*/
 
 		objects := make([]*s3types.Object, 0)
-		if err := storage.ForEachObject(gContext, bucket, prefix, recursive, func(o *s3types.Object) error {
-			objects = append(objects, o)
+		if err := storage.ForEachObject(gContext, bucket, prefix, recursive, func(o object.ObjectInterface) error {
+			objects = append(objects, o.GetObject())
 			return nil
-		}, filters, modifyVersions, versionFilters); err != nil {
+		}, filters); err != nil {
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 

@@ -71,7 +71,7 @@ func checkPrefix(obj object.ObjectInterface, dirs map[string]struct{}, prefix st
 // forEachObject is a convenience wrapper to execute a callback function on
 // each object listed in the specified bucket/prefix. Upon callback function
 // error, the whole processing ends.
-func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recursive bool, fn func(*s3types.Object) error, filters []object.ObjectFilterFunc, listVersions bool, versionFilters []object.ObjectVersionFilterFunc) error {
+func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recursive bool, fn func(object.ObjectInterface) error, filters []object.ObjectFilterFunc) error {
 	// The "/" value can be used at command-level to mean that we want to
 	// list from the root of the bucket, but the actual bucket root is an
 	// empty prefix.
@@ -80,42 +80,6 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 	}
 
 	dirs := make(map[string]struct{})
-
-	if listVersions || len(versionFilters) > 0 {
-		// TODO optimize away unnecessary deduplication
-		listFn := c.ListVersionedObjectsFunc(bucket, prefix, recursive, false)
-
-		for {
-			lco, err := listFn(ctx)
-			if err != nil {
-				return err
-			}
-
-			for _, o := range lco.Objects {
-				if !checkPrefix(o, dirs, prefix, recursive) {
-					continue
-				}
-
-				if !object.ApplyFilters(o, filters) {
-					continue
-				}
-
-				if !object.ApplyVersionedFilters(o, versionFilters) {
-					continue
-				}
-
-				if err := fn(o.GetObject()); err != nil {
-					return err
-				}
-			}
-
-			if !lco.IsTruncated {
-				break
-			}
-		}
-
-		return nil
-	}
 
 	// TODO optimize away unnecessary deduplication
 	listFn := c.ListObjectsFunc(bucket, prefix, recursive, false)
@@ -135,7 +99,52 @@ func (c *Client) ForEachObject(ctx context.Context, bucket, prefix string, recur
 				continue
 			}
 
-			if err := fn(o.GetObject()); err != nil {
+			if err := fn(o); err != nil {
+				return err
+			}
+		}
+
+		if !lco.IsTruncated {
+			break
+		}
+	}
+
+	return nil
+}
+
+func (c *Client) ForEachObjectVersion(ctx context.Context, bucket, prefix string, recursive bool, fn func(object.ObjectVersionInterface) error, filters []object.ObjectFilterFunc, modifyVersions bool, versionFilters []object.ObjectVersionFilterFunc) error {
+	// The "/" value can be used at command-level to mean that we want to
+	// list from the root of the bucket, but the actual bucket root is an
+	// empty prefix.
+	if prefix == "/" {
+		prefix = ""
+	}
+
+	dirs := make(map[string]struct{})
+
+	// TODO optimize away unnecessary deduplication
+	listFn := c.ListVersionedObjectsFunc(bucket, prefix, recursive, false)
+
+	for {
+		lco, err := listFn(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, o := range lco.Objects {
+			if !checkPrefix(o, dirs, prefix, recursive) {
+				continue
+			}
+
+			if !object.ApplyFilters(o, filters) {
+				continue
+			}
+
+			if !object.ApplyVersionedFilters(o, versionFilters) {
+				continue
+			}
+
+			if err := fn(o); err != nil {
 				return err
 			}
 		}

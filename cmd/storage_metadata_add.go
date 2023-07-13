@@ -89,18 +89,7 @@ Supported output template annotations: %s`,
 			return err
 		}
 
-		listVersions, err := cmd.Flags().GetBool(flags.Versions)
-		if err != nil {
-			return err
-		}
-
-		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
-		if err != nil {
-			return err
-		}
-
-		// TODO versionFilters dont make sense here, as metadata on older versions cannot be changed
-		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive, filters, listVersions, versionFilters); err != nil {
+		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive, filters); err != nil {
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
