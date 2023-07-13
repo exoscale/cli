@@ -77,7 +77,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 	return deleted, nil
 }
 
-func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string, expires time.Duration) (string, error) {
+func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string, expires time.Duration, versionID string) (string, error) {
 	var (
 		psURL *v4.PresignedHTTPRequest
 		err   error
@@ -91,13 +91,17 @@ func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string
 	})
 
 	switch method {
-	case "get":
-		psURL, err = psClient.PresignGetObject(ctx, &s3.GetObjectInput{
+	case PresignGetMethod:
+		getObjInput := &s3.GetObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
-		})
+		}
+		if versionID != "" {
+			getObjInput.VersionId = aws.String(versionID)
+		}
+		psURL, err = psClient.PresignGetObject(ctx, getObjInput)
 
-	case "put":
+	case PresignPutMethod:
 		psURL, err = psClient.PresignPutObject(ctx, &s3.PutObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
@@ -119,7 +123,7 @@ type DownloadConfig struct {
 	Prefix      string
 	Source      string
 	Destination string
-	Objects     []*types.Object
+	Objects     []object.ObjectInterface
 	Recursive   bool
 	Overwrite   bool
 	DryRun      bool
@@ -141,21 +145,26 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 		fmt.Println("[DRY-RUN]")
 	}
 
-	for _, object := range config.Objects {
+	for _, obj := range config.Objects {
 		dst := func() string {
+			versionIDSuffix := ""
+			if objectVersion, ok := obj.(object.ObjectVersionInterface); ok {
+				versionIDSuffix = "." + *objectVersion.GetVersionId()
+			}
+
 			if strings.HasSuffix(config.Source, "/") {
-				return path.Join(config.Destination, strings.TrimPrefix(aws.ToString(object.Key), config.Prefix))
+				return path.Join(config.Destination, strings.TrimPrefix(aws.ToString(obj.GetKey()), config.Prefix)+versionIDSuffix)
 			}
 
 			if strings.HasSuffix(config.Destination, "/") {
-				return path.Join(config.Destination, path.Base(aws.ToString(object.Key)))
+				return path.Join(config.Destination, path.Base(aws.ToString(obj.GetKey()))+versionIDSuffix)
 			}
 
-			return path.Join(config.Destination)
+			return path.Join(config.Destination + versionIDSuffix)
 		}()
 
 		if config.DryRun {
-			fmt.Printf("%s/%s -> %s\n", config.Bucket, aws.ToString(object.Key), dst)
+			fmt.Printf("%s/%s -> %s\n", config.Bucket, aws.ToString(obj.GetKey()), dst)
 			continue
 		}
 
@@ -169,7 +178,7 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 			}
 		}
 
-		if err := c.DownloadFile(ctx, config.Bucket, object, dst); err != nil {
+		if err := c.DownloadFile(ctx, config.Bucket, obj, dst); err != nil {
 			return err
 		}
 	}
@@ -201,7 +210,7 @@ func (prox *proxyWriterAt) WriteAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
-func (c *Client) DownloadFile(ctx context.Context, bucket string, object *types.Object, dst string) error {
+func (c *Client) DownloadFile(ctx context.Context, bucket string, obj object.ObjectInterface, dst string) error {
 	maxFilenameLen := 16
 
 	pb := mpb.NewWithContext(ctx,
@@ -211,9 +220,9 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *types.
 	)
 
 	bar := pb.AddBar(
-		object.Size,
+		obj.GetSize(),
 		mpb.PrependDecorators(
-			decor.Name(utils.EllipString(aws.ToString(object.Key), maxFilenameLen),
+			decor.Name(utils.EllipString(aws.ToString(obj.GetKey()), maxFilenameLen),
 				decor.WC{W: maxFilenameLen, C: decor.DidentRight}),
 		),
 		mpb.AppendDecorators(
@@ -225,7 +234,7 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *types.
 
 	// Workaround required to avoid the io.Reader from hanging when uploading empty files
 	// (see https://github.com/vbauerster/mpb/issues/7#issuecomment-518756758)
-	if object.Size == 0 {
+	if obj.GetSize() == 0 {
 		bar.SetTotal(100, true)
 	}
 
@@ -237,7 +246,11 @@ func (c *Client) DownloadFile(ctx context.Context, bucket string, object *types.
 
 	getObjectInput := s3.GetObjectInput{
 		Bucket: aws.String(bucket),
-		Key:    object.Key,
+		Key:    obj.GetKey(),
+	}
+
+	if objectVersion, ok := obj.(object.ObjectVersionInterface); ok {
+		getObjectInput.VersionId = objectVersion.GetVersionId()
 	}
 
 	_, err = s3manager.
@@ -594,6 +607,10 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key, versionID string) 
 
 const (
 	BucketPrefix = "sos://"
+
+	PresignMethodFlag = "method"
+	PresignGetMethod  = "get"
+	PresignPutMethod  = "put"
 )
 
 // ObjectHeadersFromS3 returns mutable object headers in a human-friendly
