@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.71.1
+
+### Improvements
+
+- create release GH Action workflow (#522) 
+
 ## 1.71.0
 
 ### Features
