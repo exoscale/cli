@@ -15,8 +15,10 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -169,6 +171,211 @@ func TestDeleteObjects(t *testing.T) {
 
 	_, err = client.DeleteObjects(context.Background(), bucket, commonPrefix, false, nil, false, nil)
 	assert.Error(t, err)
+}
+
+func TestDeleteObjectVersions(t *testing.T) {
+	bucket := "test-bucket"
+	commonPrefix := "myobjects/"
+
+	object1Name := "object1"
+	objectKeys := []struct {
+		Key       string
+		Timestamp time.Time
+		VersionID string
+	}{
+		{
+			Key:       commonPrefix + object1Name,
+			VersionID: "123",
+		},
+		{
+			Key:       commonPrefix + object1Name,
+			VersionID: "456",
+		},
+		{
+			Key:       commonPrefix + object1Name,
+			VersionID: "789",
+		},
+	}
+
+	nCalls := 0
+	expectedDeleteInput := &s3.DeleteObjectsInput{
+		Bucket: &bucket,
+		Delete: &types.Delete{
+			Objects: []types.ObjectIdentifier{
+				{
+					Key:       aws.String(objectKeys[0].Key),
+					VersionId: aws.String(objectKeys[0].VersionID),
+				},
+				{
+					Key:       aws.String(objectKeys[1].Key),
+					VersionId: aws.String(objectKeys[1].VersionID),
+				},
+				{
+					Key:       aws.String(objectKeys[2].Key),
+					VersionId: aws.String(objectKeys[2].VersionID),
+				},
+			},
+		},
+	}
+	client := sos.Client{
+		S3Client: &MockS3API{
+			mockDeleteObjects: func(ctx context.Context, params *s3.DeleteObjectsInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				nCalls++
+				assert.Equal(t, expectedDeleteInput, params)
+				return &s3.DeleteObjectsOutput{
+					Deleted: []types.DeletedObject{
+						{
+							Key:       aws.String(objectKeys[0].Key),
+							VersionId: aws.String(objectKeys[0].VersionID),
+						},
+						{
+							Key:       aws.String(objectKeys[1].Key),
+							VersionId: aws.String(objectKeys[1].VersionID),
+						},
+						{
+							Key:       aws.String(objectKeys[2].Key),
+							VersionId: aws.String(objectKeys[2].VersionID),
+						},
+					},
+				}, nil
+			},
+			mockListObjectVersions: func(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+				return &s3.ListObjectVersionsOutput{
+					IsTruncated: false,
+					Versions: []types.ObjectVersion{
+						{
+							Key:       aws.String(objectKeys[0].Key),
+							VersionId: aws.String(objectKeys[0].VersionID),
+						},
+						{
+							Key:       aws.String(objectKeys[1].Key),
+							VersionId: aws.String(objectKeys[1].VersionID),
+						},
+						{
+							Key:       aws.String(objectKeys[2].Key),
+							VersionId: aws.String(objectKeys[2].VersionID),
+						},
+					},
+				}, nil
+			},
+		},
+	}
+
+	deleted, err := client.DeleteObjects(context.Background(), bucket, commonPrefix, false, nil, true, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, 3, len(deleted))
+	assert.Equal(t, 1, nCalls)
+
+	for i, deletedObjs := range deleted {
+		assert.Equal(t, objectKeys[i].Key, *deletedObjs.Key)
+		assert.Equal(t, objectKeys[i].VersionID, *deletedObjs.VersionId)
+	}
+}
+
+func TestDeleteObjectVersionsFiltered(t *testing.T) {
+	bucket := "test-bucket"
+	commonPrefix := "myobjects/"
+
+	object1Name := "object1"
+	objectKeys := []struct {
+		Key       string
+		Timestamp time.Time
+		VersionID string
+	}{
+		{
+			Key:       commonPrefix + object1Name,
+			VersionID: "123",
+		},
+		{
+			Key:       commonPrefix + object1Name,
+			VersionID: "456",
+		},
+		{
+			Key:       commonPrefix + object1Name,
+			VersionID: "789",
+		},
+	}
+
+	nCalls := 0
+	expectedDeleteInput := &s3.DeleteObjectsInput{
+		Bucket: &bucket,
+		Delete: &types.Delete{
+			Objects: []types.ObjectIdentifier{
+				{
+					Key:       aws.String(objectKeys[0].Key),
+					VersionId: aws.String(objectKeys[0].VersionID),
+				},
+				{
+					Key:       aws.String(objectKeys[1].Key),
+					VersionId: aws.String(objectKeys[1].VersionID),
+				},
+				{
+					Key:       aws.String(objectKeys[2].Key),
+					VersionId: aws.String(objectKeys[2].VersionID),
+				},
+			},
+		},
+	}
+	client := sos.Client{
+		S3Client: &MockS3API{
+			mockDeleteObjects: func(ctx context.Context, params *s3.DeleteObjectsInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				nCalls++
+				assert.Equal(t, expectedDeleteInput, params)
+				return &s3.DeleteObjectsOutput{
+					Deleted: []types.DeletedObject{
+						{
+							Key:       aws.String(objectKeys[0].Key),
+							VersionId: aws.String(objectKeys[0].VersionID),
+						},
+						{
+							Key:       aws.String(objectKeys[1].Key),
+							VersionId: aws.String(objectKeys[1].VersionID),
+						},
+						{
+							Key:       aws.String(objectKeys[2].Key),
+							VersionId: aws.String(objectKeys[2].VersionID),
+						},
+					},
+				}, nil
+			},
+			mockListObjectVersions: func(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error) {
+				return &s3.ListObjectVersionsOutput{
+					IsTruncated: false,
+					Versions: []types.ObjectVersion{
+						{
+							Key:       aws.String(objectKeys[0].Key),
+							VersionId: aws.String(objectKeys[0].VersionID),
+						},
+						{
+							Key:       aws.String(objectKeys[1].Key),
+							VersionId: aws.String(objectKeys[1].VersionID),
+						},
+						{
+							Key:       aws.String(objectKeys[2].Key),
+							VersionId: aws.String(objectKeys[2].VersionID),
+						},
+					},
+				}, nil
+			},
+		},
+	}
+
+	cmd := &cobra.Command{}
+	flags.AddVersionsFlags(cmd)
+	cmd.ParseFlags([]string{"--" + flags.OnlyVersions, "v1"})
+	versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(versionFilters))
+
+	deleted, err := client.DeleteObjects(context.Background(), bucket, commonPrefix, false, nil, false, versionFilters)
+	assert.NoError(t, err)
+	assert.Equal(t, 3, len(deleted))
+	assert.Equal(t, 1, nCalls)
+
+	for i, deletedObjs := range deleted {
+		assert.Equal(t, objectKeys[i].Key, *deletedObjs.Key)
+		assert.Equal(t, objectKeys[i].VersionID, *deletedObjs.VersionId)
+	}
 }
 
 type MockUploader struct {
