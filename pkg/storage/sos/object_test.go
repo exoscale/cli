@@ -82,7 +82,7 @@ func TestShowObject(t *testing.T) {
 			bucket := "test-bucket"
 			key := "test-key"
 
-			output, err := client.ShowObject(ctx, bucket, key)
+			output, err := client.ShowObject(ctx, bucket, key, "")
 
 			if tt.expectErr {
 				assert.Error(t, err)
@@ -140,7 +140,7 @@ func TestDeleteObjects(t *testing.T) {
 		},
 	}
 
-	deleted, err := client.DeleteObjects(context.Background(), bucket, commonPrefix, false)
+	deleted, err := client.DeleteObjects(context.Background(), bucket, commonPrefix, false, nil, false, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(deleted))
 	assert.Equal(t, 1, nCalls)
@@ -167,7 +167,7 @@ func TestDeleteObjects(t *testing.T) {
 		},
 	}
 
-	_, err = client.DeleteObjects(context.Background(), bucket, commonPrefix, false)
+	_, err = client.DeleteObjects(context.Background(), bucket, commonPrefix, false, nil, false, nil)
 	assert.Error(t, err)
 }
 

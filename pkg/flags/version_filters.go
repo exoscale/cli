@@ -144,6 +144,7 @@ func doesVersionMatch(ovi object.ObjectVersionInterface, matchVersions []string)
 }
 
 func onlyVersionsFilter(acceptedVersions []string) object.ObjectVersionFilterFunc {
+	// TODO(sauterp) optimize this, the versions should be parsed only once
 	return func(ovi object.ObjectVersionInterface) bool {
 		return doesVersionMatch(ovi, acceptedVersions)
 	}
