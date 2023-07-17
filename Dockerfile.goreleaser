@@ -1,7 +1,7 @@
 # This Dockerfile variant is for usage with GoReleaser, which reuses the binaries
 # compiled in configured builds instead of re-compiling it in a container.
 
-FROM alpine:3.12 as ca-certificates
+FROM alpine:3.18 as ca-certificates
 RUN apk update && apk add --no-cache ca-certificates
 COPY exo /
 
