@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine as builder
+FROM golang:1.20-alpine as builder
 
 ADD . /src
 WORKDIR /src
@@ -10,7 +10,7 @@ ENV CGO_ENABLED=0
 RUN go build -a -mod vendor -o exo \
         -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${VCS_REF}"
 
-FROM alpine:3.12
+FROM alpine:3.18
 
 WORKDIR /
 
