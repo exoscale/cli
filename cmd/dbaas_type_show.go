@@ -171,12 +171,12 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 		out := make(dbaasTypePlanListOutput, len(dt.Plans))
 		for i := range dt.Plans {
 			out[i] = dbaasTypePlanListItemOutput{
-				Name:       *dt.Plans[i].Name,
-				Nodes:      *dt.Plans[i].Nodes,
-				NodeCPUs:   *dt.Plans[i].NodeCPUs,
-				NodeMemory: *dt.Plans[i].NodeMemory,
-				DiskSpace:  *dt.Plans[i].DiskSpace,
-				Authorized: *dt.Plans[i].Authorized,
+				Name:       utils.DefaultString(dt.Plans[i].Name, ""),
+				Nodes:      utils.DefaultInt64(dt.Plans[i].Nodes, 0),
+				NodeCPUs:   utils.DefaultInt64(dt.Plans[i].NodeCPUs, 0),
+				NodeMemory: utils.DefaultInt64(dt.Plans[i].NodeMemory, 0),
+				DiskSpace:  utils.DefaultInt64(dt.Plans[i].DiskSpace, 0),
+				Authorized: utils.DefaultBool(dt.Plans[i].Authorized, false),
 			}
 		}
 		return c.outputFunc(&out, nil)
