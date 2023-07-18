@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.71.2
+
+### Bug Fixes
+
+- Fixed panic in in dbaas type show when authorized is nil (#524) 
+
+### Improvements
+
+- Updated alpine version in Dockerfile (#523) 
+
 ## 1.71.1
 
 ### Improvements
