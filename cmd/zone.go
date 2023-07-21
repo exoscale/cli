@@ -7,9 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/egoscale"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
 )
 
@@ -37,7 +38,6 @@ var (
 )
 
 type zoneListItemOutput struct {
-	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -67,44 +67,24 @@ Supported output template annotations: %s`,
 }
 
 func listZones() (output.Outputter, error) {
-	zones, err := globalstate.EgoscaleClient.ListWithContext(gContext, &egoscale.Zone{})
+
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+
+	zones, err := globalstate.EgoscaleClient.ListZones(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	out := zoneListOutput{}
 
-	for _, key := range zones {
-		zone := key.(*egoscale.Zone)
+	for _, zone := range zones {
 
 		out = append(out, zoneListItemOutput{
-			ID:   zone.ID.String(),
-			Name: zone.Name,
+			Name: zone,
 		})
 	}
 
 	sort.Sort(out)
 
 	return &out, nil
-}
-
-func getZoneByNameOrID(name string) (*egoscale.Zone, error) {
-	zone := &egoscale.Zone{}
-
-	id, err := egoscale.ParseUUID(name)
-	if err != nil {
-		zone.Name = name
-	} else {
-		zone.ID = id
-	}
-
-	resp, err := globalstate.EgoscaleClient.GetWithContext(gContext, zone)
-	if err != nil {
-		if err == egoscale.ErrNotFound {
-			return nil, fmt.Errorf("invalid zone %q", name)
-		}
-		return nil, err
-	}
-
-	return resp.(*egoscale.Zone), nil
 }
