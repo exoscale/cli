@@ -93,7 +93,4 @@ func buildClient() {
 	}
 	globalstate.EgoscaleClient.Client = clientExoV2
 
-	csRunstatus = egoscale.NewClient(account.CurrentAccount.RunstatusEndpoint,
-		account.CurrentAccount.Key,
-		account.CurrentAccount.APISecret())
 }
