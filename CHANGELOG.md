@@ -1,20 +1,27 @@
 # Changelog
 
+## UNRELEASED
+
+### Changes
+
+- remove **runstatus** commands
+
+
 ## 1.71.2
 
 ### Bug Fixes
 
-- Fixed panic in in dbaas type show when authorized is nil (#524) 
+- Fixed panic in in dbaas type show when authorized is nil (#524)
 
 ### Improvements
 
-- Updated alpine version in Dockerfile (#523) 
+- Updated alpine version in Dockerfile (#523)
 
 ## 1.71.1
 
 ### Improvements
 
-- create release GH Action workflow (#522) 
+- create release GH Action workflow (#522)
 
 ## 1.71.0
 

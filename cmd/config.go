@@ -27,7 +27,6 @@ const (
 	defaultTemplateVisibility = "public"
 	defaultTemplateFilter     = "featured"
 	defaultSosEndpoint        = "https://sos-{zone}.exo.io"
-	defaultRunstatusEndpoint  = "https://api.runstatus.com"
 	defaultZone               = "ch-dk-2"
 	defaultOutputFormat       = "table"
 	defaultClientTimeout      = 20
@@ -123,9 +122,6 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
 		}
-		if acc.DefaultRunstatusPage != "" {
-			accounts[i]["defaultRunstatusPage"] = acc.DefaultRunstatusPage
-		}
 		if acc.DefaultTemplate != "" {
 			accounts[i]["defaultTemplate"] = acc.DefaultTemplate
 		}
@@ -151,9 +147,6 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 			accounts[accountsSize+i]["environment"] = acc.Environment
 			if acc.DefaultSSHKey != "" {
 				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
-			}
-			if acc.DefaultRunstatusPage != "" {
-				accounts[accountsSize+i]["defaultRunstatusPage"] = acc.DefaultRunstatusPage
 			}
 			accounts[accountsSize+i]["account"] = acc.Account
 			conf.Accounts = append(conf.Accounts, acc)

@@ -17,24 +17,22 @@ var (
 )
 
 type Account struct {
-	Name                 string
-	Account              string
-	Endpoint             string
-	ComputeEndpoint      string // legacy config.
-	DNSEndpoint          string
-	SosEndpoint          string
-	RunstatusEndpoint    string
-	Environment          string
-	Key                  string
-	Secret               string
-	SecretCommand        []string
-	DefaultZone          string
-	DefaultSSHKey        string
-	DefaultTemplate      string
-	DefaultRunstatusPage string
-	DefaultOutputFormat  string
-	ClientTimeout        int
-	CustomHeaders        map[string]string
+	Name                string
+	Account             string
+	Endpoint            string
+	ComputeEndpoint     string // legacy config.
+	DNSEndpoint         string
+	SosEndpoint         string
+	Environment         string
+	Key                 string
+	Secret              string
+	SecretCommand       []string
+	DefaultZone         string
+	DefaultSSHKey       string
+	DefaultTemplate     string
+	DefaultOutputFormat string
+	ClientTimeout       int
+	CustomHeaders       map[string]string
 }
 
 func (a Account) APISecret() string {

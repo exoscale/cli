@@ -30,8 +30,6 @@ var gConfigFilePath string
 // current Account information
 var gAccountName string
 
-var csRunstatus *egoscale.Client
-
 // Aliases
 var gListAlias = []string{"ls"}
 var gRemoveAlias = []string{"rm"}
@@ -331,10 +329,6 @@ func initConfig() { //nolint:gocyclo
 		account.CurrentAccount.SosEndpoint = defaultSosEndpoint
 	}
 
-	if account.CurrentAccount.RunstatusEndpoint == "" {
-		account.CurrentAccount.RunstatusEndpoint = defaultRunstatusEndpoint
-	}
-
 	if account.CurrentAccount.ClientTimeout == 0 {
 		account.CurrentAccount.ClientTimeout = defaultClientTimeout
 	}
@@ -348,7 +342,6 @@ func initConfig() { //nolint:gocyclo
 	account.CurrentAccount.Endpoint = strings.TrimRight(account.CurrentAccount.Endpoint, "/")
 	account.CurrentAccount.DNSEndpoint = strings.TrimRight(account.CurrentAccount.DNSEndpoint, "/")
 	account.CurrentAccount.SosEndpoint = strings.TrimRight(account.CurrentAccount.SosEndpoint, "/")
-	account.CurrentAccount.RunstatusEndpoint = strings.TrimRight(account.CurrentAccount.RunstatusEndpoint, "/")
 }
 
 func isNonCredentialCmd(cmds ...string) bool {
