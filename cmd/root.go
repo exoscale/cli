@@ -18,13 +18,12 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/egoscale"
+	"github.com/exoscale/egoscale/version"
 )
 
 var gContext context.Context
 
 var gConfig *viper.Viper
-var gConfigFolder string
 var gConfigFilePath string
 
 // current Account information
@@ -55,7 +54,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of exo",
 	Run: func(cmd *cobra.Command, _ []string) {
-		fmt.Printf("%s %s %s (egoscale %s)\n", cmd.Parent().Name(), gVersion, gCommit, egoscale.Version)
+		fmt.Printf("%s %s %s (egoscale %s)\n", cmd.Parent().Name(), gVersion, gCommit, version.Version)
 	},
 }
 
@@ -94,7 +93,6 @@ func init() {
 	account.CurrentAccount = &account.Account{
 		DefaultZone:     defaultZone,
 		DefaultTemplate: defaultTemplate,
-		Endpoint:        defaultEndpoint,
 		Environment:     defaultEnvironment,
 		SosEndpoint:     defaultSosEndpoint,
 	}
@@ -138,13 +136,6 @@ func initConfig() { //nolint:gocyclo
 		}
 	}
 
-	endpointFromEnv := readFromEnv(
-		"EXOSCALE_API_ENDPOINT",
-		"EXOSCALE_COMPUTE_API_ENDPOINT",
-		"EXOSCALE_ENDPOINT",
-		"EXOSCALE_COMPUTE_ENDPOINT",
-		"CLOUDSTACK_ENDPOINT")
-
 	sosEndpointFromEnv := readFromEnv(
 		"EXOSCALE_STORAGE_API_ENDPOINT",
 		"EXOSCALE_SOS_ENDPOINT",
@@ -177,14 +168,9 @@ func initConfig() { //nolint:gocyclo
 		if apiEnvironmentFromEnv != "" {
 			account.CurrentAccount.Environment = apiEnvironmentFromEnv
 		}
-		if endpointFromEnv != "" {
-			account.CurrentAccount.Endpoint = endpointFromEnv
-		}
 		if sosEndpointFromEnv != "" {
 			account.CurrentAccount.SosEndpoint = sosEndpointFromEnv
 		}
-		account.CurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(account.CurrentAccount.Endpoint)
-
 		if account.CurrentAccount.ClientTimeout == 0 {
 			account.CurrentAccount.ClientTimeout = defaultClientTimeout
 		}
@@ -217,11 +203,11 @@ func initConfig() { //nolint:gocyclo
 	if err != nil {
 		log.Fatalf("could not find configuration directory: %s", err)
 	}
-	gConfigFolder = path.Join(cfgdir, "exoscale")
+	globalstate.ConfigFolder = path.Join(cfgdir, "exoscale")
 
 	// Snap packages use $HOME/.exoscale (as negotiated with the snap store)
 	if _, snap := os.LookupEnv("SNAP_USER_COMMON"); snap {
-		gConfigFolder = path.Join(usr.HomeDir, ".exoscale")
+		globalstate.ConfigFolder = path.Join(usr.HomeDir, ".exoscale")
 	}
 
 	if gConfigFilePath != "" {
@@ -229,7 +215,8 @@ func initConfig() { //nolint:gocyclo
 		gConfig.SetConfigFile(gConfigFilePath)
 	} else {
 		gConfig.SetConfigName("exoscale")
-		gConfig.AddConfigPath(gConfigFolder)
+		gConfig.SetConfigType("toml")
+		gConfig.AddConfigPath(globalstate.ConfigFolder)
 		// Retain backwards compatibility
 		gConfig.AddConfigPath(path.Join(usr.HomeDir, ".exoscale"))
 		gConfig.AddConfigPath(usr.HomeDir)
@@ -253,7 +240,7 @@ func initConfig() { //nolint:gocyclo
 
 	// All the stored data (e.g. ssh keys) will be put next to the config file.
 	gConfigFilePath = gConfig.ConfigFileUsed()
-	gConfigFolder = filepath.Dir(gConfigFilePath)
+	globalstate.ConfigFolder = filepath.Dir(gConfigFilePath)
 
 	if err := gConfig.Unmarshal(config); err != nil {
 		log.Fatal(fmt.Errorf("couldn't read config: %s", err))
@@ -291,14 +278,6 @@ func initConfig() { //nolint:gocyclo
 		log.Fatalf("error: could't find any configured account named %q", gAccountName)
 	}
 
-	if account.CurrentAccount.Endpoint == "" {
-		if account.CurrentAccount.ComputeEndpoint != "" {
-			account.CurrentAccount.Endpoint = account.CurrentAccount.ComputeEndpoint
-		} else {
-			account.CurrentAccount.Endpoint = defaultEndpoint
-		}
-	}
-
 	if account.CurrentAccount.Environment == "" {
 		account.CurrentAccount.Environment = defaultEnvironment
 	}
@@ -315,10 +294,6 @@ func initConfig() { //nolint:gocyclo
 		} else {
 			globalstate.OutputFormat = defaultOutputFormat
 		}
-	}
-
-	if account.CurrentAccount.DNSEndpoint == "" {
-		account.CurrentAccount.DNSEndpoint = buildDNSAPIEndpoint(account.CurrentAccount.Endpoint)
 	}
 
 	if account.CurrentAccount.DefaultTemplate == "" {
@@ -339,8 +314,6 @@ func initConfig() { //nolint:gocyclo
 		}
 	}
 
-	account.CurrentAccount.Endpoint = strings.TrimRight(account.CurrentAccount.Endpoint, "/")
-	account.CurrentAccount.DNSEndpoint = strings.TrimRight(account.CurrentAccount.DNSEndpoint, "/")
 	account.CurrentAccount.SosEndpoint = strings.TrimRight(account.CurrentAccount.SosEndpoint, "/")
 }
 
@@ -351,15 +324,6 @@ func isNonCredentialCmd(cmds ...string) bool {
 		}
 	}
 	return false
-}
-
-func buildDNSAPIEndpoint(defaultEndpoint string) string {
-	dnsEndpoint := strings.Replace(defaultEndpoint, "/"+apiVersion, "/dns", 1)
-	if strings.Contains(dnsEndpoint, "/"+legacyAPIVersion) {
-		dnsEndpoint = strings.Replace(defaultEndpoint, "/"+legacyAPIVersion, "/dns", 1)
-	}
-
-	return dnsEndpoint
 }
 
 // getCmdPosition returns a command position by fetching os.args and ignoring flags

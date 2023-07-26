@@ -107,16 +107,6 @@ func cmdShowHelpFlags(flags *pflag.FlagSet, prefix string) {
 	fmt.Print(buf)
 }
 
-// completeVMNames is a Cobra Command.ValidArgsFunction that returns the list of Compute instance names belonging to
-// the current user for shell auto-completion.
-func completeVMNames(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	list, err := listVMs()
-	if err != nil {
-		return nil, cobra.ShellCompDirectiveError
-	}
-	return list.(*vmListOutput).names(), cobra.ShellCompDirectiveNoFileComp
-}
-
 func getCommaflag(p string) []string {
 	if p == "" {
 		return nil

@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/exoscale/egoscale"
 	v2 "github.com/exoscale/egoscale/v2"
 )
 
@@ -23,7 +22,7 @@ func RandStringBytes(n int) (string, error) {
 	return base64.StdEncoding.EncodeToString(b), nil
 }
 
-func GetInstancesInSecurityGroup(ctx context.Context, client *egoscale.Client, securityGroupID, zone string) ([]*v2.Instance, error) {
+func GetInstancesInSecurityGroup(ctx context.Context, client *v2.Client, securityGroupID, zone string) ([]*v2.Instance, error) {
 	allInstances, err := client.ListInstances(ctx, zone)
 	if err != nil {
 		return nil, err
@@ -45,7 +44,7 @@ func GetInstancesInSecurityGroup(ctx context.Context, client *egoscale.Client, s
 	return instancesInSG, nil
 }
 
-func GetInstancesAttachedToEIP(ctx context.Context, client *egoscale.Client, elasticIPID, zone string) ([]*v2.Instance, error) {
+func GetInstancesAttachedToEIP(ctx context.Context, client *v2.Client, elasticIPID, zone string) ([]*v2.Instance, error) {
 	instances, err := client.ListInstances(ctx, zone, v2.ListInstancesByIpAddress(elasticIPID))
 	if err != nil {
 		return nil, err

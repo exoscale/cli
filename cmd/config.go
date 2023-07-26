@@ -12,20 +12,19 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/account"
-	"github.com/exoscale/egoscale"
+	"github.com/exoscale/cli/pkg/globalstate"
+	egoscale "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 const (
 	legacyAPIVersion          = "compute"
-	apiVersion                = "v1"
-	defaultEndpoint           = "https://api.exoscale.com/" + apiVersion
 	defaultEnvironment        = "api"
 	defaultConfigFileName     = "exoscale"
 	defaultInstanceType       = "medium"
 	defaultInstanceTypeFamily = "standard"
 	defaultTemplate           = "Linux Ubuntu 22.04 LTS 64-bit"
 	defaultTemplateVisibility = "public"
-	defaultTemplateFilter     = "featured"
 	defaultSosEndpoint        = "https://sos-{zone}.exo.io"
 	defaultZone               = "ch-dk-2"
 	defaultOutputFormat       = "table"
@@ -113,7 +112,6 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		accounts[i] = map[string]interface{}{}
 
 		accounts[i]["name"] = acc.Name
-		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["key"] = acc.Key
 		accounts[i]["defaultZone"] = acc.DefaultZone
 		accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
@@ -140,7 +138,6 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 			accounts[accountsSize+i] = map[string]interface{}{}
 
 			accounts[accountsSize+i]["name"] = acc.Name
-			accounts[accountsSize+i]["endpoint"] = acc.Endpoint
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
@@ -169,13 +166,13 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 }
 
 func createConfigFile(fileName string) (string, error) {
-	if _, err := os.Stat(gConfigFolder); os.IsNotExist(err) {
-		if err := os.MkdirAll(gConfigFolder, os.ModePerm); err != nil {
+	if _, err := os.Stat(globalstate.ConfigFolder); os.IsNotExist(err) {
+		if err := os.MkdirAll(globalstate.ConfigFolder, os.ModePerm); err != nil {
 			return "", err
 		}
 	}
 
-	filepath := path.Join(gConfigFolder, fileName+".toml")
+	filepath := path.Join(globalstate.ConfigFolder, fileName+".toml")
 
 	if gConfig.ConfigFileUsed() == "" {
 		if _, err := os.Stat(filepath); !os.IsNotExist(err) {
@@ -264,9 +261,12 @@ func getAccountByName(name string) *account.Account {
 	return nil
 }
 
-func chooseZone(cs *egoscale.Client, zones []string) (string, error) {
+func chooseZone(client *egoscale.Client, zones []string) (string, error) {
 	if zones == nil {
-		zonesResp, err := cs.ListWithContext(gContext, &egoscale.Zone{})
+
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(defaultEnvironment, defaultZone))
+		zonesResp, err := client.ListZones(ctx)
+
 		if err != nil {
 			return "", err
 		}
@@ -274,13 +274,11 @@ func chooseZone(cs *egoscale.Client, zones []string) (string, error) {
 		if len(zonesResp) == 0 {
 			return "", fmt.Errorf("no zones were found")
 		}
-
 		zones = make([]string, len(zonesResp))
 		for i, z := range zonesResp {
-			zone := z.(*egoscale.Zone)
-			zName := strings.ToLower(zone.Name)
-			zones[i] = zName
+			zones[i] = z
 		}
+
 	}
 
 	prompt := promptui.Select{

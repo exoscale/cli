@@ -67,9 +67,4 @@ func init() {
 	cobra.CheckErr(registerCLICommand(sksCmd, &sksVersionsCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
-
-	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksVersionsCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
-	}))
 }

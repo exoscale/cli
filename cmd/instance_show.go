@@ -11,6 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
@@ -82,7 +83,7 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if c.ShowUserData {
 		if instance.UserData != nil {
-			userData, err := decodeUserData(*instance.UserData)
+			userData, err := userdata.DecodeUserData(*instance.UserData)
 			if err != nil {
 				return fmt.Errorf("error decoding user data: %w", err)
 			}

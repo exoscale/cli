@@ -11,6 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
@@ -82,7 +83,7 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if c.ShowUserData {
 		if instancePool.UserData != nil {
-			userData, err := decodeUserData(*instancePool.UserData)
+			userData, err := userdata.DecodeUserData(*instancePool.UserData)
 			if err != nil {
 				return fmt.Errorf("error decoding user data: %w", err)
 			}
@@ -184,11 +185,6 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 func init() {
 	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
-	}))
-
-	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

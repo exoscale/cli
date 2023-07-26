@@ -49,7 +49,7 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 
 	// Template registration can take a _long time_, raising
 	// the Exoscale API client timeout as a precaution.
-	globalstate.EgoscaleClient.Client.SetTimeout(30 * time.Minute)
+	globalstate.EgoscaleClient.SetTimeout(30 * time.Minute)
 
 	ctx := exoapi.WithEndpoint(
 		gContext,

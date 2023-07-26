@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -11,6 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/userdata"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
@@ -26,23 +26,17 @@ type instancePoolUpdateCmd struct {
 	CloudInitCompress  bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
 	DeployTarget       string            `cli-usage:"managed Compute instances Deploy Target NAME|ID"`
 	Description        string            `cli-usage:"Instance Pool description"`
-	Disk               int64             `cli-flag:"disk" cli-short:"d" cli-usage:"[DEPRECATED] use --disk-size"`
 	DiskSize           int64             `cli-usage:"managed Compute instances disk size"`
 	ElasticIPs         []string          `cli-flag:"elastic-ip" cli-short:"e" cli-usage:"managed Compute instances Elastic IP ADDRESS|ID (can be specified multiple times)"`
 	IPv6               bool              `cli-flag:"ipv6" cli-short:"6" cli-usage:"enable IPv6 on managed Compute instances"`
 	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
 	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
-	Keypair            string            `cli-short:"k" cli-usage:"[DEPRECATED] use --ssh-key"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
 	Name               string            `cli-short:"n" cli-usage:"Instance Pool name"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
-	Privnet            []string          `cli-short:"p" cli-usage:"[DEPRECATED] use --private-network"`
 	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
-	ServiceOffering    string            `cli-short:"o" cli-usage:"[DEPRECATED] use --instance-type"`
-	Size               int64             `cli-usage:"[DEPRECATED] use the 'exo compute instance-pool scale' command"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
-	TemplateFilter     string            `cli-usage:"[DEPRECATED] use --template-visibility"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
 	Zone               string            `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
@@ -60,84 +54,6 @@ Supported output template annotations: %s`,
 }
 
 func (c *instancePoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	// TODO: remove this once the `--disk` flag is retired.
-	if cmd.Flags().Changed("disk") {
-		cmd.PrintErr(`**********************************************************************
-WARNING: flag "--disk" has been deprecated and will be removed in a
-future release, please use "--disk-size" instead.
-**********************************************************************
-`)
-		if !cmd.Flags().Changed("disk-size") {
-			diskFlag := cmd.Flags().Lookup("disk")
-			if err := cmd.Flags().Set("disk-size", fmt.Sprint(diskFlag.Value.String())); err == nil {
-				return err
-			}
-		}
-	}
-
-	// TODO: remove this once the `--keypair` flag is retired.
-	if cmd.Flags().Changed("keypair") {
-		cmd.PrintErr(`**********************************************************************
-WARNING: flag "--keypair" has been deprecated and will be removed in
-a future release, please use "--ssh-key" instead.
-**********************************************************************
-`)
-		if !cmd.Flags().Changed("ssh-key") {
-			keypairFlag := cmd.Flags().Lookup("keypair")
-			if err := cmd.Flags().Set("ssh-key", keypairFlag.Value.String()); err != nil {
-				return err
-			}
-		}
-	}
-
-	// TODO: remove this once the `--privnet` flag is retired.
-	if cmd.Flags().Changed("privnet") {
-		cmd.PrintErr(`**********************************************************************
-WARNING: flag "--privnet" has been deprecated and will be removed in
-a future release, please use "--private-network" instead.
-**********************************************************************
-`)
-		if !cmd.Flags().Changed("private-network") {
-			privnetFlag := cmd.Flags().Lookup("privnet")
-			if err := cmd.Flags().Set(
-				"private-network",
-				strings.Trim(privnetFlag.Value.String(), "[]"),
-			); err != nil {
-				return err
-			}
-		}
-	}
-
-	// TODO: remove this once the `--service-offering` flag is retired.
-	if cmd.Flags().Changed("service-offering") {
-		cmd.PrintErr(`**********************************************************************
-WARNING: flag "--service-offering" has been deprecated and will be removed
-in a future release, please use "--instance-type" instead.
-**********************************************************************
-`)
-		if !cmd.Flags().Changed("instance-type") {
-			serviceOfferingFlag := cmd.Flags().Lookup("service-offering")
-			if err := cmd.Flags().Set("instance-type", serviceOfferingFlag.Value.String()); err != nil {
-				return err
-			}
-		}
-	}
-
-	// TODO: remove this once the `--template-filter` flag is retired.
-	if cmd.Flags().Changed("template-filter") {
-		cmd.PrintErr(`**********************************************************************
-WARNING: flag "--template-filter" has been deprecated and will be removed in
-a future release, please use "--template-visibility" instead.
-**********************************************************************
-`)
-		if !cmd.Flags().Changed("template-visibility") {
-			templateFilterFlag := cmd.Flags().Lookup("template-filter")
-			if err := cmd.Flags().Set("template-visibility", templateFilterFlag.Value.String()); err != nil {
-				return err
-			}
-		}
-	}
-
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
@@ -275,7 +191,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.CloudInitFile)) {
-		userData, err := getUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
+		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
@@ -294,19 +210,6 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		}
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Size)) {
-		_, _ = fmt.Fprintln(
-			os.Stderr,
-			`WARNING: the "--size" flag is deprecated and replaced by the `+
-				`"exo compute instance-pool scale" command, it will be removed `+
-				`in a future version.`,
-		)
-
-		decorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
-			err = globalstate.EgoscaleClient.ScaleInstancePool(ctx, c.Zone, instancePool, c.Size)
-		})
-	}
-
 	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
@@ -320,13 +223,6 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 
 func init() {
 	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
-
-		TemplateVisibility: defaultTemplateVisibility,
-	}))
-
-	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolUpdateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		TemplateVisibility: defaultTemplateVisibility,

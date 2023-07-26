@@ -76,7 +76,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		err      error
 	)
 
-	globalstate.EgoscaleClient.Client.SetTimeout(time.Duration(c.Timeout) * time.Second)
+	globalstate.EgoscaleClient.SetTimeout(time.Duration(c.Timeout) * time.Second)
 
 	ctx := exoapi.WithEndpoint(
 		gContext,

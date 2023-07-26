@@ -17,6 +17,8 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	exossh "github.com/exoscale/cli/pkg/ssh"
+	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
@@ -189,7 +191,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 	instance.TemplateID = template.ID
 
 	if c.CloudInitFile != "" {
-		userData, err := getUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
+		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
@@ -213,7 +215,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 	}
 
 	if singleUseSSHPrivateKey != nil {
-		privateKeyFilePath := getInstanceSSHKeyPath(*instance.ID)
+		privateKeyFilePath := exossh.GetInstanceSSHKeyPath(*instance.ID)
 
 		if err = os.MkdirAll(path.Dir(privateKeyFilePath), 0o700); err != nil {
 			return fmt.Errorf("error writing SSH private key file: %w", err)
