@@ -158,7 +158,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.100.1
+# github.com/exoscale/egoscale v0.100.3
 ## explicit; go 1.17
 github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
@@ -174,8 +174,9 @@ github.com/fatih/camelcase
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
-# github.com/gofrs/uuid v4.0.0+incompatible
+# github.com/gofrs/uuid v4.4.0+incompatible
 ## explicit
+github.com/gofrs/uuid
 # github.com/golang/lint v0.0.0-20181026193005-c67002cb31c3
 ## explicit
 github.com/golang/lint/golint
@@ -312,7 +313,7 @@ github.com/spf13/viper/internal/encoding/yaml
 # github.com/stretchr/objx v0.5.0
 ## explicit; go 1.12
 github.com/stretchr/objx
-# github.com/stretchr/testify v1.8.1
+# github.com/stretchr/testify v1.8.2
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
