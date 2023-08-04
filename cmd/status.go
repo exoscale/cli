@@ -62,8 +62,8 @@ func statusShow() error {
 	t.Append([]string{"Services", buf.String()})
 	buf.Reset()
 
-	// Get the impacted services by zone (incidents and maintenances)
-	incidents, maintenances, err := status.GetIncidents()
+	// Get the active incidents with impacted services by zone
+	incidents, err := status.Incidents.GetActiveEvents(status.Services)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,11 @@ func statusShow() error {
 	t.Append([]string{"Incidents", buf.String()})
 	buf.Reset()
 
-	// Show maintenances currently taking place
+	// Get the active maintenances with impacted services by zone
+	maintenances, err := status.Maintenances.GetActiveEvents(status.Services)
+	if err != nil {
+		return err
+	}
 	if len(maintenances) > 0 {
 		mt := table.NewEmbeddedTable(buf)
 		mt.Table.AppendBulk(maintenances)
