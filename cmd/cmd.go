@@ -107,26 +107,6 @@ func cmdShowHelpFlags(flags *pflag.FlagSet, prefix string) {
 	fmt.Print(buf)
 }
 
-func getCommaflag(p string) []string {
-	if p == "" {
-		return nil
-	}
-
-	p = strings.Trim(p, ",")
-	args := strings.Split(p, ",")
-
-	res := []string{}
-
-	for _, arg := range args {
-		if arg == "" {
-			continue
-		}
-		res = append(res, strings.TrimSpace(arg))
-	}
-
-	return res
-}
-
 // cliCommandSettings represents a CLI command settings.
 type cliCommandSettings struct {
 	outputFunc func(o output.Outputter, err error) error

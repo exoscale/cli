@@ -60,7 +60,3 @@ func (i icmpCode) StringFormatted() string {
 	}
 	return cases.Title(language.Und).String(res)
 }
-
-func (i icmpCode) icmpType() icmpType {
-	return icmpType(i >> 8)
-}

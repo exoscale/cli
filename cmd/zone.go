@@ -25,16 +25,6 @@ var (
 		string(oapi.ZoneNameDeFra1),
 		string(oapi.ZoneNameDeMuc1),
 	}
-
-	zoneHelp = "zone NAME|ID " + func() string {
-		zonesList := "("
-
-		for _, zone := range allZones {
-			zonesList += zone + "|"
-		}
-
-		return zonesList[:len(zonesList)-1] + ")"
-	}()
 )
 
 type zoneListItemOutput struct {

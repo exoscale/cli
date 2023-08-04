@@ -33,12 +33,8 @@ var gAccountName string
 var gListAlias = []string{"ls"}
 var gRemoveAlias = []string{"rm"}
 var gDeleteAlias = []string{"del"}
-var gRevokeAlias = []string{"rvk"}
 var gShowAlias = []string{"get"}
 var gCreateAlias = []string{"add"}
-var gUploadAlias = []string{"up"}
-var gDissociateAlias = []string{"disassociate", "dissoc"}
-var gAssociateAlias = []string{"assoc"}
 
 var RootCmd = &cobra.Command{
 	Use:           "exo",

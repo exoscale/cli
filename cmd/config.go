@@ -265,20 +265,15 @@ func chooseZone(client *egoscale.Client, zones []string) (string, error) {
 	if zones == nil {
 
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(defaultEnvironment, defaultZone))
-		zonesResp, err := client.ListZones(ctx)
+		zones, err := client.ListZones(ctx)
 
 		if err != nil {
 			return "", err
 		}
 
-		if len(zonesResp) == 0 {
+		if len(zones) == 0 {
 			return "", fmt.Errorf("no zones were found")
 		}
-		zones = make([]string, len(zonesResp))
-		for i, z := range zonesResp {
-			zones[i] = z
-		}
-
 	}
 
 	prompt := promptui.Select{
