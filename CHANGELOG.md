@@ -5,6 +5,8 @@
 ### Changes
 
 - remove **runstatus** commands
+- **status** command shows new status page
+
 
 
 ## 1.71.2
