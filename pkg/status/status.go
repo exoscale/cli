@@ -112,7 +112,7 @@ func (e Events) GetActiveEvents(services Services) ([][]string, error) {
 				events = append(events, eventDetails)
 			} else {
 
-				eventDetails = append(eventDetails, fmt.Sprint(*event.Type), "since "+startTimeUTC)
+				eventDetails = append(eventDetails, *event.Type, "since "+startTimeUTC)
 				events = append(events, eventDetails)
 			}
 		}
