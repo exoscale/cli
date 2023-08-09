@@ -1,13 +1,11 @@
 # Changelog
 
-## UNRELEASED
+## 1.72.0
 
 ### Changes
 
 - remove **runstatus** commands
 - **status** command shows new status page
-
-
 
 ## 1.71.2
 
