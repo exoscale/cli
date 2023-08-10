@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+- fixed: instance reset default template now falling back to current instance template
+
 ## 1.72.0
 
 ### Changes
