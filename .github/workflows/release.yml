@@ -27,7 +27,8 @@ jobs:
   archrelease:
     needs: goreleaser
 
-    runs-on: archlinux
+    runs-on: ubuntu-latest
+    container: archlinux
 
     steps:
     - name: test arch linux
