@@ -61,7 +61,7 @@ jobs:
         shell: bash
 
       - name: install tools
-        run: pacman --noconfirm -Sy git
+        run: pacman --noconfirm -Sy git openssh
         shell: bash
 
       - name: clone
