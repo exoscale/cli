@@ -64,11 +64,25 @@ jobs:
         run: pacman --noconfirm -Sy git openssh glibc
         shell: bash
 
+      - name: Add SSH key
+        run: |
+            mkdir -p /home/runner/.ssh
+            ssh-keyscan example.com >> /home/runner/.ssh/known_hosts
+            echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/github_actions
+            chmod 600 /home/runner/.ssh/github_actions
+            ssh-agent -a $SSH_AUTH_SOCK > /dev/null	
+            ssh-add /home/runner/.ssh/github_actions
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        shell: bash
+
       - name: clone
         run: git clone aur@aur.archlinux.org:exoscale-cli.git
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        shell: bash
 
       - name: test ls
         run: ls
         working-directory:  exoscale-cli
+        shell: bash
