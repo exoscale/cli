@@ -86,7 +86,7 @@ jobs:
       - name: makepkg
         run: |
           whoami
-          su runner
+          su runner && whoami
           whoami
           cd /home/runner/exoscale-cli
           sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
