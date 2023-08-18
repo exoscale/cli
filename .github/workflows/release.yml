@@ -53,6 +53,6 @@ jobs:
       - name: test arch linux
         run: |
           echo ${{ needs.goreleaser.outputs.version_tag }}
-          echo ${{ steps.get-linux-amd64-checksum.outputs.linux_amd64_checksum }}
+          echo ${{ steps.goreleaser.outputs.linux_amd64_checksum }}
         shell: bash
 
