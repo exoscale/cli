@@ -75,12 +75,12 @@ jobs:
             sudo -u runner echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/github_actions
             chown -R runner /home/runner/
             sudo -u runner chmod 600 /home/runner/.ssh/github_actions
-            sudo -E -u runner ssh-agent -a $SSH_AUTH_SOCK
-            sudo -E -u runner ssh-add /home/runner/.ssh/github_actions
-            sudo -E -u runner git clone aur@aur.archlinux.org:exoscale-cli.git
+            sudo -u runner ssh-agent -a /home/runner/ssh_agent.sock
+            ssh-add /home/runner/.ssh/github_actions
+            sudo -u runner git clone aur@aur.archlinux.org:exoscale-cli.git
         env:
           SSH_AUTH_SOCK: /home/runner/ssh_agent.sock
-          GIT_SSH_COMMAND: "sudo -E -u runner ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
+          GIT_SSH_COMMAND: "sudo -u runner ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
         shell: bash
 
       - name: makepkg
