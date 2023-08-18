@@ -67,6 +67,7 @@ jobs:
       - name: Add SSH key
         run: |
             mkdir -p /home/runner/.ssh
+            ssh-keyscan aur.archlinux.org >> /home/runner/.ssh/known_hosts
             echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/github_actions
             chmod 600 /home/runner/.ssh/github_actions
             ssh-agent -a $SSH_AUTH_SOCK
