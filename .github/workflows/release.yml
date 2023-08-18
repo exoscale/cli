@@ -60,3 +60,11 @@ jobs:
           echo ${{ needs.goreleaser.outputs.linux_amd64_checksum }}
         shell: bash
 
+      - name: clone
+        run: git clone aur@aur.archlinux.org:exoscale-cli.git
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+
+      - name: test ls
+        run: ls
+        working-directory:  exoscale-cli
