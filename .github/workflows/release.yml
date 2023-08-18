@@ -100,5 +100,7 @@ jobs:
 
           sudo -u runner makepkg --printsrcinfo > .SRCINFO
           sudo -u runner git add PKGBUILD .SRCINFO
+          sudo -u runner git config --global user.email "ops@exoscale.com"
+          sudo -u runner git config --global user.name "Exoscale"
           sudo -u runner git commit -m "release ${{ needs.goreleaser.outputs.version_tag }}"
         shell: bash
