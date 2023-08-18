@@ -13,6 +13,7 @@ jobs:
 
     outputs:
       version_tag: ${{ steps.get-version-tag.outputs.version_tag }}
+      linux_amd64_checksum: ${{ steps.get-linux-amd64-checksum.outputs.linux_amd64_checksum }}
 
     steps:
       - uses: actions/checkout@v3
@@ -25,7 +26,15 @@ jobs:
       - run: echo "version_tag=$(make get-version-tag)" >> $GITHUB_OUTPUT
         id: get-version-tag
         shell: bash
-      
+
+      #TODO remove
+      - run: echo "816fcf0fa1c8acffa0bb557317a7f67f2657241783a20fcebcea408794f884c2  exoscale-cli_1.72.0_linux_amd64.tar.gz" > dist/exoscale-cli_1.72.0_checksums.txt
+        shell: bash
+
+      - run: echo "linux_amd64_checksum="$(grep -P 'exoscale-cli_[0-9]+\.[0-9]+\.[0-9]_linux_amd64.tar.gz' dist/exoscale-cli_*_checksums.txt | head -n 1 | cut -c1-64) >> $GITHUB_OUTPUT
+        id: get-linux-amd64-checksum
+        shell: bash
+
 #      - uses: ./.github/actions/build
 #
 #      - uses: ./go.mk/.github/actions/release
@@ -41,7 +50,9 @@ jobs:
     container: archlinux
 
     steps:
-    - name: test arch linux
-      run: echo ${{ needs.goreleaser.outputs.version_tag }}
-      shell: bash
+      - name: test arch linux
+        run: |
+          echo ${{ needs.goreleaser.outputs.version_tag }}
+          echo ${{ steps.get-linux-amd64-checksum.outputs.linux_amd64_checksum }}
+        shell: bash
 
