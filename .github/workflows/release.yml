@@ -2,8 +2,10 @@ name: release
 
 on:
   push:
-    tags:
-      - 'v[0-9]+\.[0-9]+\.[0-9]+'
+    branches:
+      - 'sauterp/sc-75094/gh-action-aur-release'
+#    tags:
+#      - 'v[0-9]+\.[0-9]+\.[0-9]+'
 
 jobs:
   goreleaser:
@@ -14,10 +16,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: ./.github/actions/build
+#      - uses: ./.github/actions/build
+#
+#      - uses: ./go.mk/.github/actions/release
+#        with:
+#          release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+#          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: ./go.mk/.github/actions/release
-        with:
-          release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
+  archrelease:
+    needs: goreleaser
+
+    runs-on: archlinux
+
+    steps:
+    - name: test arch linux
+      run: "pacman -h"
+      shell: bash
