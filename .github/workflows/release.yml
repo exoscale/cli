@@ -11,11 +11,21 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
 
+    outputs:
+      version_tag: ${{ steps.get-version-tag.outputs.version_tag }}
+
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - run: git submodule update --init --recursive go.mk
+        shell: bash
+
+      - run: echo "version_tag=$(make get-version-tag)" >> $GITHUB_OUTPUT
+        id: get-version-tag
+        shell: bash
+      
 #      - uses: ./.github/actions/build
 #
 #      - uses: ./go.mk/.github/actions/release
@@ -32,5 +42,6 @@ jobs:
 
     steps:
     - name: test arch linux
-      run: "pacman -h"
+      run: echo ${{ needs.goreleaser.outputs.version_tag }}
       shell: bash
+
