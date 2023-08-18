@@ -80,7 +80,7 @@ jobs:
             sudo -u runner git clone aur@aur.archlinux.org:exoscale-cli.git
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-          GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
+          GIT_SSH_COMMAND: "sudo -u runner ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
         shell: bash
 
       - name: makepkg
