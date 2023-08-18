@@ -64,7 +64,7 @@ jobs:
         shell: bash
 
       - name: install tools
-        run: pacman --noconfirm -Sy git openssh glibc sudo
+        run: pacman --noconfirm -Sy git openssh glibc sudo binutils make gcc pkg-config fakeroot
         shell: bash
 
       - name: Add SSH key
