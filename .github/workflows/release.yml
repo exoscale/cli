@@ -69,15 +69,14 @@ jobs:
 
       - name: Add SSH key
         run: |
-            su runner
             cd /home/runner/
-            mkdir -p /home/runner/.ssh
-            ssh-keyscan aur.archlinux.org >> /home/runner/.ssh/known_hosts
-            echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/github_actions
-            chmod 600 /home/runner/.ssh/github_actions
-            ssh-agent -a $SSH_AUTH_SOCK
-            ssh-add /home/runner/.ssh/github_actions
-            git clone aur@aur.archlinux.org:exoscale-cli.git
+            sudo -u runner mkdir -p /home/runner/.ssh
+            sudo -u runner ssh-keyscan aur.archlinux.org >> /home/runner/.ssh/known_hosts
+            sudo -u runner echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/github_actions
+            sudo -u runner chmod 600 /home/runner/.ssh/github_actions
+            sudo -u runner ssh-agent -a $SSH_AUTH_SOCK
+            sudo -u runner ssh-add /home/runner/.ssh/github_actions
+            sudo -u runner git clone aur@aur.archlinux.org:exoscale-cli.git
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
           GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
@@ -87,7 +86,7 @@ jobs:
         run: |
           sudo -u runner whoami
           cd /home/runner/exoscale-cli
-          sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
-          sed -i "/^sha256sums=/s/.*/sha256sums=\('${{ needs.goreleaser.outputs.linux_amd64_checksum }}'\)/" PKGBUILD
-          makepkg
+          sudo -u runner sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
+          sudo -u runner sed -i "/^sha256sums=/s/.*/sha256sums=\('${{ needs.goreleaser.outputs.linux_amd64_checksum }}'\)/" PKGBUILD
+          sudo -u runner makepkg
         shell: bash
