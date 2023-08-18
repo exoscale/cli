@@ -72,7 +72,7 @@ jobs:
             chmod 600 /home/runner/.ssh/github_actions
             ssh-agent -a $SSH_AUTH_SOCK
             ssh-add /home/runner/.ssh/github_actions
-            git clone aur@aur.archlinux.org:exoscale-cli.git
+            git clone aur@aur.archlinux.org:exoscale-cli.git -o GlobalKnownHostsFile=/home/runner/.ssh/known_hosts
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         shell: bash
