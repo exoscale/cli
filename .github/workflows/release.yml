@@ -58,6 +58,11 @@ jobs:
         run: |
           echo ${{ needs.goreleaser.outputs.version_tag }}
           echo ${{ needs.goreleaser.outputs.linux_amd64_checksum }}
+
+          useradd -G root asdf
+          su asdf && whoami
+          whoami
+
           useradd -G root runner
           mkdir /home/runner/
           chown -R runner /home/runner
