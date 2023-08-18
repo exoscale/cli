@@ -58,19 +58,13 @@ jobs:
         run: |
           echo ${{ needs.goreleaser.outputs.version_tag }}
           echo ${{ needs.goreleaser.outputs.linux_amd64_checksum }}
-
-          useradd -G root asdf
-          su asdf && whoami
-          whoami
-          sudo -u asdf whoami
-
           useradd -G root runner
           mkdir /home/runner/
           chown -R runner /home/runner
         shell: bash
 
       - name: install tools
-        run: pacman --noconfirm -Sy git openssh glibc
+        run: pacman --noconfirm -Sy git openssh glibc sudo
         shell: bash
 
       - name: Add SSH key
@@ -91,9 +85,7 @@ jobs:
 
       - name: makepkg
         run: |
-          whoami
-          su runner && whoami
-          whoami
+          sudo -u runner whoami
           cd /home/runner/exoscale-cli
           sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
           sed -i "/^sha256sums=/s/.*/sha256sums=\('${{ needs.goreleaser.outputs.linux_amd64_checksum }}'\)/" PKGBUILD
