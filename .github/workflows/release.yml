@@ -78,7 +78,10 @@ jobs:
           GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
         shell: bash
 
-      - name: test ls
-        run: ls
+      - name: makepkg
+        run: |
+          sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
+          sed -i '/^sha256sums=/s/.*/sha256sums=(\'${{ needs.goreleaser.outputs.linux_amd64_checksum }}\')/' PKGBUILD
+          makepkg
         working-directory:  exoscale-cli
         shell: bash
