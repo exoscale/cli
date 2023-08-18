@@ -28,7 +28,7 @@ jobs:
         shell: bash
 
       #TODO remove
-      - run: echo "816fcf0fa1c8acffa0bb557317a7f67f2657241783a20fcebcea408794f884c2  exoscale-cli_1.72.0_linux_amd64.tar.gz" > dist/exoscale-cli_1.72.0_checksums.txt
+      - run: mkdir dist && echo "816fcf0fa1c8acffa0bb557317a7f67f2657241783a20fcebcea408794f884c2  exoscale-cli_1.72.0_linux_amd64.tar.gz" > dist/exoscale-cli_1.72.0_checksums.txt
         shell: bash
 
       - run: echo "linux_amd64_checksum="$(grep -P 'exoscale-cli_[0-9]+\.[0-9]+\.[0-9]_linux_amd64.tar.gz' dist/exoscale-cli_*_checksums.txt | head -n 1 | cut -c1-64) >> $GITHUB_OUTPUT
