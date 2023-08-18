@@ -27,7 +27,9 @@ jobs:
         shell: bash
 
       #TODO remove
-      - run: git tag v1.71.0
+      - run: |
+          git tag -d v1.71.0
+          git tag v1.71.0
         shell: bash
 
 #TODO uncomment
