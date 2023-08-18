@@ -2,8 +2,10 @@ name: release
 
 on:
   push:
+#TODO remove
     branches:
       - 'sauterp/sc-75094/gh-action-aur-release'
+#TODO uncomment
 #    tags:
 #      - 'v[0-9]+\.[0-9]+\.[0-9]+'
 
@@ -20,8 +22,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      #TODO remove
       - run: git submodule update --init --recursive go.mk
         shell: bash
+
+#TODO uncomment
+#      - uses: ./.github/actions/build
+#
+#      - uses: ./go.mk/.github/actions/release
+#        with:
+#          release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+#          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - run: echo "version_tag=$(make get-version-tag)" >> $GITHUB_OUTPUT
         id: get-version-tag
@@ -34,14 +46,6 @@ jobs:
       - run: echo "linux_amd64_checksum="$(grep -P 'exoscale-cli_[0-9]+\.[0-9]+\.[0-9]_linux_amd64.tar.gz' dist/exoscale-cli_*_checksums.txt | head -n 1 | cut -c1-64) >> $GITHUB_OUTPUT
         id: get-linux-amd64-checksum
         shell: bash
-
-#      - uses: ./.github/actions/build
-#
-#      - uses: ./go.mk/.github/actions/release
-#        with:
-#          release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-#          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
 
   archrelease:
     needs: goreleaser
