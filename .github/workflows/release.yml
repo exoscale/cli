@@ -58,6 +58,8 @@ jobs:
         run: |
           echo ${{ needs.goreleaser.outputs.version_tag }}
           echo ${{ needs.goreleaser.outputs.linux_amd64_checksum }}
+          useradd -G root runner
+          chown -R runner /home/runner
         shell: bash
 
       - name: install tools
@@ -66,6 +68,8 @@ jobs:
 
       - name: Add SSH key
         run: |
+            su runner
+            cd /home/runner/
             mkdir -p /home/runner/.ssh
             ssh-keyscan aur.archlinux.org >> /home/runner/.ssh/known_hosts
             echo "${{ secrets.AUR_SSH_PRIVATE_KEY }}" > /home/runner/.ssh/github_actions
@@ -80,8 +84,9 @@ jobs:
 
       - name: makepkg
         run: |
+          su runner
+          cd /home/runner/exoscale-cli
           sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
           sed -i "/^sha256sums=/s/.*/sha256sums=\('${{ needs.goreleaser.outputs.linux_amd64_checksum }}'\)/" PKGBUILD
           makepkg
-        working-directory:  exoscale-cli
         shell: bash
