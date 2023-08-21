@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      continue-on-error: true
+      fail-fast: false
       matrix:
         aurpkg:
           - exoscale-cli
