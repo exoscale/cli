@@ -95,11 +95,12 @@ jobs:
               version_tag=$2
               checksum=$3
 
+              export SSH_AUTH_SOCK=/home/runner/ssh_agent.sock
               export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
 
               ssh-keyscan aur.archlinux.org >>/home/runner/.ssh/known_hosts
               chmod 600 /home/runner/.ssh/github_actions
-              ssh-agent
+              eval $(ssh-agent)
               ssh-add /home/runner/.ssh/github_actions
 
               git clone aur@aur.archlinux.org:$aurpkg.git
