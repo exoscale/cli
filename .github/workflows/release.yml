@@ -95,7 +95,7 @@ jobs:
               version_tag=$2
               checksum=$3
 
-              export GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
+              export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
 
               ssh-keyscan aur.archlinux.org >>/home/runner/.ssh/known_hosts
               chmod 600 /home/runner/.ssh/github_actions
