@@ -57,7 +57,17 @@ jobs:
     needs: goreleaser
 
     runs-on: ubuntu-latest
-    container: archlinux
+
+    strategy:
+      matrix:
+        aurpkg:
+          - exoscale-cli
+          - exoscale-cli-bin
+
+    container:
+      image: archlinux
+      volumes:
+        - /var/cache/pacman/pkg/
 
     steps:
       - name: test arch linux
@@ -91,12 +101,15 @@ jobs:
       - name: makepkg
         run: |
           cd /home/runner/
-          git clone aur@aur.archlinux.org:exoscale-cli.git
+          git clone aur@aur.archlinux.org:${{ matrix.aurpkg }}.git
           chown -R runner /home/runner/
           sudo -u runner whoami
-          cd /home/runner/exoscale-cli
+          cd /home/runner/${{ matrix.aurpkg }}
           sudo -u runner sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
-          sudo -u runner sed -i "/^sha256sums=/s/.*/sha256sums=\('${{ needs.goreleaser.outputs.linux_amd64_checksum }}'\)/" PKGBUILD
+          if [ ${{ matrix.aurpkg }} == "exoscale-cli-bin" ];
+          then
+            sudo -u runner sed -i "/^sha256sums=/s/.*/sha256sums=\('${{ needs.goreleaser.outputs.linux_amd64_checksum }}'\)/" PKGBUILD
+          fi
           sudo -u runner cat PKGBUILD
 
           sudo -u runner makepkg
