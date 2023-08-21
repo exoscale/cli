@@ -62,14 +62,14 @@ jobs:
       fail-fast: false
       matrix:
         aurpkg:
-#          - exoscale-cli
+          - exoscale-cli
           - exoscale-cli-bin
 
     container:
       image: archlinux
 
     steps:
-      - name: test arch linux
+      - name: create build user
         run: |
           useradd -G root runner
           mkdir /home/runner/
@@ -80,7 +80,7 @@ jobs:
         run: pacman --noconfirm -Sy git openssh glibc sudo binutils make gcc pkg-config fakeroot go which
         shell: bash
 
-      - name: Add SSH key
+      - name: release
         run: |
             cd /home/runner/
             sudo -u runner mkdir -p /home/runner/.ssh
@@ -96,7 +96,6 @@ jobs:
               version_tag=$2
               checksum=$3
 
-              export SSH_AUTH_SOCK=/home/runner/ssh_agent.sock
               export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
 
               ssh-keyscan aur.archlinux.org >>/home/runner/.ssh/known_hosts
