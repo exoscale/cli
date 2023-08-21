@@ -2,12 +2,8 @@ name: release
 
 on:
   push:
-#TODO remove
-    branches:
-      - 'sauterp/sc-75094/gh-action-aur-release'
-#TODO uncomment
-#    tags:
-#      - 'v[0-9]+\.[0-9]+\.[0-9]+'
+    tags:
+      - 'v[0-9]+\.[0-9]+\.[0-9]+'
 
 jobs:
   goreleaser:
@@ -22,31 +18,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      #TODO remove
-      - run: git submodule update --init --recursive go.mk
-        shell: bash
+      - uses: ./.github/actions/build
 
-      #TODO remove
-      - run: |
-          git tag -d v1.71.0
-          git tag v1.71.0
-        shell: bash
-
-#TODO uncomment
-#      - uses: ./.github/actions/build
-#
-#      - uses: ./go.mk/.github/actions/release
-#        with:
-#          release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-#          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: ./go.mk/.github/actions/release
+        with:
+          release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - run: echo "version_tag=$(make get-version-tag)" >> $GITHUB_OUTPUT
         id: get-version-tag
-        shell: bash
-
-      #TODO remove
-      - run: mkdir dist && echo "543d88ff8c224e14a077408ca2f1f6993c15c55dc252c61c4875256a28fc09ff  exoscale-cli_1.71.0_linux_amd64.tar.gz" > dist/exoscale-cli_1.71.0_checksums.txt
         shell: bash
 
       - run: echo "linux_amd64_checksum="$(grep -P 'exoscale-cli_[0-9]+\.[0-9]+\.[0-9]_linux_amd64.tar.gz' dist/exoscale-cli_*_checksums.txt | head -n 1 | cut -c1-64) >> $GITHUB_OUTPUT
@@ -119,6 +100,7 @@ jobs:
               git config --global user.email "ops@exoscale.com"
               git config --global user.name "Exoscale"
               git commit -m "release $version_tag"
+              git push
             EOF
 
             chown runner release.bash
