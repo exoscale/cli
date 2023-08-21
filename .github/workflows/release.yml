@@ -64,6 +64,7 @@ jobs:
         aurpkg:
           - exoscale-cli
           - exoscale-cli-bin
+          - exoscale-cli-git
 
     container:
       image: archlinux
