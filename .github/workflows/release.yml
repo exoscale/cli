@@ -83,8 +83,6 @@ jobs:
             sudo -u runner chmod 600 /home/runner/.ssh/github_actions
             sudo -u runner ssh-agent -a /home/runner/ssh_agent.sock
             ssh-add /home/runner/.ssh/github_actions
-            git clone aur@aur.archlinux.org:exoscale-cli.git
-            chown -R runner /home/runner/
         env:
           SSH_AUTH_SOCK: /home/runner/ssh_agent.sock
           GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
@@ -92,6 +90,8 @@ jobs:
 
       - name: makepkg
         run: |
+          git clone aur@aur.archlinux.org:exoscale-cli.git
+          chown -R runner /home/runner/
           sudo -u runner whoami
           cd /home/runner/exoscale-cli
           sudo -u runner sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
@@ -106,3 +106,6 @@ jobs:
           sudo -u runner git config --global user.name "Exoscale"
           sudo -u runner git commit -m "release ${{ needs.goreleaser.outputs.version_tag }}"
         shell: bash
+        env:
+          SSH_AUTH_SOCK: /home/runner/ssh_agent.sock
+          GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
