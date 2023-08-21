@@ -89,11 +89,12 @@ jobs:
             cat << 'EOF' > release.bash
               #!/usr/bin/env bash
 
+              set -e pipe
+
               aurpkg=$1
               version_tag=$2
               checksum=$3
 
-              export SSH_AUTH_SOCK=/home/runner/ssh_agent.sock
               export GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
 
               ssh-keyscan aur.archlinux.org >>/home/runner/.ssh/known_hosts
@@ -106,7 +107,7 @@ jobs:
               cd /home/runner/$aurpkg
               sed -i "/^pkgver=/s/.*/pkgver=$version_tag/" PKGBUILD
               if [ $aurpkg == "exoscale-cli-bin" ]; then
-              sed -i "/^sha256sums=/s/.*/sha256sums=\('$checksum'\)/" PKGBUILD
+                sed -i "/^sha256sums=/s/.*/sha256sums=\('$checksum'\)/" PKGBUILD
               fi
 
               makepkg
