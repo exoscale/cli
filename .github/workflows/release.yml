@@ -88,8 +88,8 @@ jobs:
             sudo -u runner mkdir -p /home/runner/.ssh
             sudo -u runner ssh-keyscan aur.archlinux.org >> /home/runner/.ssh/known_hosts
             sudo -u runner sh -c "echo \"${{ secrets.AUR_SSH_PRIVATE_KEY }}\" > /home/runner/.ssh/github_actions"
-            sudo -u runner sh -c 'export SSH_AUTH_SOCK=/home/runner/ssh_agent.sock && ssh-agent -a /home/runner/ssh_agent.sock'
-            sudo -u runner ssh-add /home/runner/.ssh/github_actions
+            sudo -u runner ssh-agent -a /home/runner/ssh_agent.sock
+            sudo -u runner sh -c 'export SSH_AUTH_SOCK=/home/runner/ssh_agent.sock && ssh-add /home/runner/.ssh/github_actions'
 
             sudo -u runner git clone aur@aur.archlinux.org:${{ matrix.aurpkg }}.git
             #sudo -u runner chown -R runner /home/runner/
