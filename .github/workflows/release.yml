@@ -90,6 +90,7 @@ jobs:
 
       - name: makepkg
         run: |
+          cd /home/runner/
           git clone aur@aur.archlinux.org:exoscale-cli.git
           chown -R runner /home/runner/
           sudo -u runner whoami
