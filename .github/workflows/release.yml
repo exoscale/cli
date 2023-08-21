@@ -71,8 +71,6 @@ jobs:
     steps:
       - name: test arch linux
         run: |
-          echo ${{ needs.goreleaser.outputs.version_tag }}
-          echo ${{ needs.goreleaser.outputs.linux_amd64_checksum }}
           useradd -G root runner
           mkdir /home/runner/
           chown -R runner /home/runner
@@ -86,30 +84,42 @@ jobs:
         run: |
             cd /home/runner/
             sudo -u runner mkdir -p /home/runner/.ssh
-            sudo -u runner ssh-keyscan aur.archlinux.org >> /home/runner/.ssh/known_hosts
             sudo -u runner sh -c "echo \"${{ secrets.AUR_SSH_PRIVATE_KEY }}\" > /home/runner/.ssh/github_actions"
-            sudo -u runner chmod 600 /home/runner/.ssh/github_actions
-            sudo -u runner ssh-agent -a /home/runner/ssh_agent.sock
-            sudo -u runner sh -c 'export SSH_AUTH_SOCK=/home/runner/ssh_agent.sock && ssh-add /home/runner/.ssh/github_actions'
 
-            sudo -u runner git clone aur@aur.archlinux.org:${{ matrix.aurpkg }}.git
-            #sudo -u runner chown -R runner /home/runner/
+            cat << 'EOF' > release.bash
+              #!/usr/bin/env bash
 
-            cd /home/runner/${{ matrix.aurpkg }}
-            sudo -u runner sed -i '/^pkgver=/s/.*/pkgver=${{ needs.goreleaser.outputs.version_tag }}/' PKGBUILD
-            if [ ${{ matrix.aurpkg }} == "exoscale-cli-bin" ];
-            then
-              sudo -u runner sed -i "/^sha256sums=/s/.*/sha256sums=\('${{ needs.goreleaser.outputs.linux_amd64_checksum }}'\)/" PKGBUILD
-            fi
+              aurpkg=$1
+              version_tag=$2
+              checksum=$3
 
-            sudo -u runner makepkg
+              export SSH_AUTH_SOCK=/home/runner/ssh_agent.sock
+              export GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
 
-            sudo -u runner makepkg --printsrcinfo > .SRCINFO
-            sudo -u runner git add PKGBUILD .SRCINFO
-            sudo -u runner git config --global user.email "ops@exoscale.com"
-            sudo -u runner git config --global user.name "Exoscale"
-            sudo -u runner git commit -m "release ${{ needs.goreleaser.outputs.version_tag }}"
-        env:
-          SSH_AUTH_SOCK: /home/runner/ssh_agent.sock
-          GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
+              ssh-keyscan aur.archlinux.org >>/home/runner/.ssh/known_hosts
+              chmod 600 /home/runner/.ssh/github_actions
+              ssh-agent
+              ssh-add /home/runner/.ssh/github_actions
+
+              git clone aur@aur.archlinux.org:$aurpkg.git
+
+              cd /home/runner/$aurpkg
+              sed -i "/^pkgver=/s/.*/pkgver=$version_tag/" PKGBUILD
+              if [ $aurpkg == "exoscale-cli-bin" ]; then
+              sed -i "/^sha256sums=/s/.*/sha256sums=\('$checksum'\)/" PKGBUILD
+              fi
+
+              makepkg
+
+              makepkg --printsrcinfo >.SRCINFO
+              git add PKGBUILD .SRCINFO
+              git config --global user.email "ops@exoscale.com"
+              git config --global user.name "Exoscale"
+              git commit -m "release $version_tag"
+            EOF
+            chown runner release.bash
+            sudo -u runner ./release.bash \
+              ${{ matrix.aurpkg }} \
+              ${{ needs.goreleaser.outputs.version_tag }} \
+              ${{ needs.goreleaser.outputs.linux_amd64_checksum }}
         shell: bash
