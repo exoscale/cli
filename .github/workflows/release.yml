@@ -89,7 +89,8 @@ jobs:
             cat << 'EOF' > release.bash
               #!/usr/bin/env bash
 
-              set -e pipe
+              set -e
+              set -o pipefail
 
               aurpkg=$1
               version_tag=$2
