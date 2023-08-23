@@ -2,7 +2,16 @@
 
 ## UNRELEASED
 
-- fixed: instance reset default template now falling back to current instance template
+### Deprecations
+
+- Remove all the deprecated commands (#526) (Deprecated since v0.51.0)
+
+### Bug fixes
+
+- compute: instance reset default template now falling back to current instance template (#528)
+
+- cmd: fix panic if inexistent config file is given (#530)
+
 
 ## 1.72.0
 
