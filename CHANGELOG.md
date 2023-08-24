@@ -12,6 +12,10 @@
 - compute: remmove uri and tlssni fields when nlb service healthcheck is "tcp"
 - cmd: fix panic if inexistent config file is given (#530)
 
+## Improvements
+
+- release: automate AUR releases for Arch Linux (#531)
+
 ## 1.72.0
 
 ### Changes
