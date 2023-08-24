@@ -277,18 +277,9 @@ func init() {
 		CNI:                  defaultSKSClusterCNI,
 		KubernetesVersion:    "latest",
 		NodepoolDiskSize:     50,
-		NodepoolInstanceType: defaultServiceOffering,
-		ServiceLevel:         defaultSKSClusterServiceLevel,
+		NodepoolInstanceType: fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
+
+		ServiceLevel: defaultSKSClusterServiceLevel,
 	}))
 
-	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedSKSCmd, &sksCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
-
-		CNI:                  defaultSKSClusterCNI,
-		KubernetesVersion:    "latest",
-		NodepoolDiskSize:     50,
-		NodepoolInstanceType: defaultServiceOffering,
-		ServiceLevel:         defaultSKSClusterServiceLevel,
-	}))
 }

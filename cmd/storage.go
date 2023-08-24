@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/storage/sos"
-	"github.com/exoscale/egoscale"
+	egoscale "github.com/exoscale/egoscale/v2"
 )
 
 var (
@@ -20,6 +20,7 @@ var (
 		Short:            "Object Storage management",
 		Long:             storageCmdLongHelp(),
 		TraverseChildren: true,
+		SuggestFor:       []string{"sos"},
 	}
 )
 

@@ -5,9 +5,10 @@ import (
 )
 
 var computeCmd = &cobra.Command{
-	Use:     "compute",
-	Short:   "Compute services management",
-	Aliases: []string{"c"},
+	Use:        "compute",
+	Short:      "Compute services management",
+	Aliases:    []string{"c"},
+	SuggestFor: []string{"vm", "aag", "firewall", "instancepool", "nlb"},
 }
 
 func init() {

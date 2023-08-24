@@ -3,16 +3,16 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
 	"github.com/exoscale/cli/pkg/storage/sos/object"
-	"github.com/exoscale/egoscale"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 var storageListCmd = &cobra.Command{
@@ -50,8 +50,13 @@ Supported output template annotations:
 			prefix string
 		)
 
+		zone, err := cmd.Flags().GetString("zone")
+		if err != nil {
+			return err
+		}
+
 		if len(args) == 0 {
-			return printOutput(listStorageBuckets())
+			return printOutput(listStorageBuckets(zone))
 		}
 
 		recursive, err := cmd.Flags().GetBool("recursive")
@@ -110,29 +115,36 @@ func init() {
 		"stream listed files instead of waiting for complete listing (useful for large buckets)")
 	flags.AddVersionsFlags(storageListCmd)
 	flags.AddTimeFilterFlags(storageListCmd)
+	flags.AddZoneListFlag(storageListCmd)
 	storageCmd.AddCommand(storageListCmd)
 }
 
-func listStorageBuckets() (output.Outputter, error) {
+func listStorageBuckets(zone string) (output.Outputter, error) {
+
 	out := make(sos.ListBucketsOutput, 0)
 
-	res, err := globalstate.EgoscaleClient.RequestWithContext(gContext, egoscale.ListBucketsUsage{})
+	// ListSosBucketsUsageWithResponse is a global command, use default zone
+	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+
+	res, err := globalstate.EgoscaleClient.ListSosBucketsUsageWithResponse(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	for _, b := range res.(*egoscale.ListBucketsUsageResponse).BucketsUsage {
-		created, err := time.Parse(time.RFC3339, b.Created)
+	for _, b := range *res.JSON200.SosBucketsUsage {
+		created := *b.CreatedAt
 		if err != nil {
 			return nil, err
 		}
 
-		out = append(out, sos.ListBucketsItemOutput{
-			Name:    b.Name,
-			Zone:    b.Region,
-			Size:    b.Usage,
-			Created: created.Format(object.TimestampFormat),
-		})
+		// Filter the zone if set as flag
+		if zone == "" || zone == string(*b.ZoneName) {
+			out = append(out, sos.ListBucketsItemOutput{
+				Name:    *b.Name,
+				Zone:    string(*b.ZoneName),
+				Size:    *b.Size,
+				Created: created.Format(object.TimestampFormat),
+			})
+		}
 	}
 
 	return &out, nil

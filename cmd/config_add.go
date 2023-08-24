@@ -9,7 +9,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/egoscale"
+	exo "github.com/exoscale/egoscale/v2"
 )
 
 func init() {
@@ -65,21 +65,12 @@ func addConfigAccount(firstRun bool) error {
 }
 
 func promptAccountInformation() (*account.Account, error) {
-	var client *egoscale.Client
+	var client *exo.Client
 
 	reader := bufio.NewReader(os.Stdin)
 	account := &account.Account{
-		Endpoint: defaultEndpoint,
-		Key:      "",
-		Secret:   "",
-	}
-
-	endpoint, err := readInput(reader, "API Endpoint", account.Endpoint)
-	if err != nil {
-		return nil, err
-	}
-	if endpoint != account.Endpoint {
-		account.Endpoint = endpoint
+		Key:    "",
+		Secret: "",
 	}
 
 	apiKey, err := readInput(reader, "API Key", account.Key)
@@ -133,27 +124,23 @@ func promptAccountInformation() (*account.Account, error) {
 		account.Name = name
 	}
 
-	client = egoscale.NewClient(account.Endpoint, account.Key, account.APISecret())
-
+	client, err = exo.NewClient(account.Key, account.APISecret())
+	if err != nil {
+		return nil, err
+	}
 	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
-		if egoerr, ok := err.(*egoscale.ErrorResponse); ok && egoerr.ErrorCode == egoscale.ErrorCode(403) {
-			for {
-				defaultZone, err := chooseZone(globalstate.EgoscaleClient, allZones)
-				if err != nil {
-					return nil, err
-				}
-				if defaultZone != "" {
-					account.DefaultZone = defaultZone
-					break
-				}
+		for {
+			defaultZone, err := chooseZone(globalstate.EgoscaleClient, allZones)
+			if err != nil {
+				return nil, err
 			}
-		} else {
-			return nil, err
+			if defaultZone != "" {
+				account.DefaultZone = defaultZone
+				break
+			}
 		}
 	}
-
-	account.DNSEndpoint = buildDNSAPIEndpoint(account.Endpoint)
 
 	return account, nil
 }

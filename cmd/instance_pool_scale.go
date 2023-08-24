@@ -89,9 +89,4 @@ func init() {
 	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolScaleCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
-
-	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedInstancePoolCmd, &instancePoolScaleCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
-	}))
 }

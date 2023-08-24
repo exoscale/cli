@@ -16,9 +16,7 @@ type configShowOutput struct {
 	APISecret          string `json:"api_secret"`
 	DefaultZone        string `json:"default_zone"`
 	DefaultTemplate    string `json:"default_template,omitempty"`
-	ComputeAPIEndpoint string `json:"compute_api_endpoint,omitempty"`
 	StorageAPIEndpoint string `json:"storage_api_endpoint,omitempty"`
-	DNSAPIEndpoint     string `json:"dns_api_endpoint,omitempty" outputLabel:"DNS API Endpoint"`
 	ConfigFile         string `json:"config_file" outputLabel:"Configuration File"`
 	ClientTimeout      int    `json:"client_timeout" outputLabel:"API Timeout (in minutes)"`
 }
@@ -41,8 +39,8 @@ Supported output template annotations: %s`,
 			if account.GAllAccount == nil {
 				return fmt.Errorf("no accounts configured")
 			}
-			name := account.CurrentAccount.GetName(gContext)
 
+			name := account.CurrentAccount.Name
 			if len(args) > 0 {
 				name = args[0]
 			}
@@ -70,9 +68,7 @@ func showConfig(name string) (output.Outputter, error) {
 		APISecret:          secret,
 		DefaultZone:        account.DefaultZone,
 		DefaultTemplate:    account.DefaultTemplate,
-		ComputeAPIEndpoint: account.Endpoint,
 		StorageAPIEndpoint: account.SosEndpoint,
-		DNSAPIEndpoint:     account.DNSEndpoint,
 		ClientTimeout:      account.ClientTimeout,
 	}
 

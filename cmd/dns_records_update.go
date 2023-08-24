@@ -7,13 +7,28 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/egoscale"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/exoscale/egoscale/v2/oapi"
 )
 
 func init() {
-	for i := egoscale.A; i <= egoscale.URL; i++ {
-		recordType := egoscale.Record.String(i)
+	rtypes := []oapi.DnsDomainRecordType{
+		oapi.DnsDomainRecordTypeA,
+		oapi.DnsDomainRecordTypeAAAA,
+		oapi.DnsDomainRecordTypeALIAS,
+		oapi.DnsDomainRecordTypeCAA,
+		oapi.DnsDomainRecordTypeCNAME,
+		oapi.DnsDomainRecordTypeHINFO,
+		oapi.DnsDomainRecordTypeMX,
+		oapi.DnsDomainRecordTypeNAPTR,
+		oapi.DnsDomainRecordTypeNS,
+		oapi.DnsDomainRecordTypePOOL,
+		oapi.DnsDomainRecordTypeSPF,
+		oapi.DnsDomainRecordTypeSRV,
+		oapi.DnsDomainRecordTypeSSHFP,
+		oapi.DnsDomainRecordTypeTXT,
+	}
+	for _, recordType := range rtypes {
 		cmdUpdateRecord := &cobra.Command{
 			Use:   fmt.Sprintf("%s DOMAIN-NAME|ID RECORD-NAME|ID", recordType),
 			Short: fmt.Sprintf("Update %s record type to a domain", recordType),
@@ -71,7 +86,8 @@ func init() {
 }
 
 func updateDomainRecord(
-	domainIdent, recordIdent, recordType string,
+	domainIdent, recordIdent string,
+	recordType oapi.DnsDomainRecordType,
 	name, content *string,
 	ttl, priority *int64,
 ) error {
@@ -80,7 +96,8 @@ func updateDomainRecord(
 		return err
 	}
 
-	record, err := domainRecordFromIdent(*domain.ID, recordIdent, &recordType)
+	rtype := fmt.Sprint(recordType)
+	record, err := domainRecordFromIdent(*domain.ID, recordIdent, &rtype)
 	if err != nil {
 		return err
 	}

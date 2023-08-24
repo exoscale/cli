@@ -15,7 +15,6 @@ var envCmd = &cobra.Command{
 		vars := map[string]string{
 			"EXOSCALE_API_KEY":         account.CurrentAccount.Key,
 			"EXOSCALE_API_SECRET":      account.CurrentAccount.Secret,
-			"EXOSCALE_API_ENDPOINT":    account.CurrentAccount.Endpoint,
 			"EXOSCALE_API_ENVIRONMENT": account.CurrentAccount.Environment,
 		}
 
@@ -41,7 +40,6 @@ variables supported:
 
   * EXOSCALE_API_KEY: the Exoscale client API key
   * EXOSCALE_API_SECRET: the Exoscale client API secret
-  * EXOSCALE_API_ENDPOINT: the Exoscale (Compute) API endpoint to use
   * EXOSCALE_API_TIMEOUT: the Exoscale API timeout in minutes
 
 Note: to override the current profile API credentials, *both* EXOSCALE_API_KEY
