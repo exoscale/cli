@@ -79,9 +79,4 @@ func init() {
 	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
-
-	// FIXME: remove this someday.
-	cobra.CheckErr(registerCLICommand(deprecatedNLBCmd, &nlbCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
-	}))
 }

@@ -13,6 +13,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/pkg/ssh"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
@@ -106,7 +107,7 @@ func (c *instanceSSHCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	c.sshInfo.keyFile = getInstanceSSHKeyPath(*instance.ID)
+	c.sshInfo.keyFile = ssh.GetInstanceSSHKeyPath(*instance.ID)
 
 	c.sshInfo.ipAddress = instance.PublicIPAddress.String()
 	if c.IPv6 {

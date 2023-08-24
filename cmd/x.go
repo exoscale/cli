@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/egoscale"
+	egoscale "github.com/exoscale/egoscale/v2"
 
 	"github.com/exoscale/cli/cmd/internal/x"
 	"github.com/exoscale/cli/pkg/account"

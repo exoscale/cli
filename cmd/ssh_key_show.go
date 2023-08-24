@@ -53,7 +53,7 @@ func (c *computeSSHKeyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
-	sshKey, err := globalstate.EgoscaleClient.Client.GetSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Key)
+	sshKey, err := globalstate.EgoscaleClient.GetSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Key)
 	if err != nil {
 		return err
 	}

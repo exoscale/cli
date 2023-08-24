@@ -10,6 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/pkg/userdata"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
@@ -69,7 +70,7 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.CloudInitFile)) {
-		userData, err := getUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
+		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}

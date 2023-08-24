@@ -9,6 +9,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 const (
@@ -61,7 +62,9 @@ Supported output template annotations: %s`,
 
 		out := LimitsOutput{}
 
-		quotas, err := globalstate.EgoscaleClient.ListQuotas(gContext, account.CurrentAccount.DefaultZone)
+		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+
+		quotas, err := globalstate.EgoscaleClient.ListQuotas(ctx, account.CurrentAccount.DefaultZone)
 		if err != nil {
 			return err
 		}

@@ -1,14 +1,10 @@
 package account
 
 import (
-	"context"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
-
-	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/egoscale"
 )
 
 var (
@@ -19,9 +15,6 @@ var (
 type Account struct {
 	Name                string
 	Account             string
-	Endpoint            string
-	ComputeEndpoint     string // legacy config.
-	DNSEndpoint         string
 	SosEndpoint         string
 	Environment         string
 	Key                 string
@@ -48,19 +41,6 @@ func (a Account) APISecret() string {
 	}
 
 	return a.Secret
-}
-
-func (a Account) GetName(ctx context.Context) string {
-	if a.Name == "" {
-		resp, err := globalstate.EgoscaleClient.GetWithContext(ctx, egoscale.Account{})
-		if err != nil {
-			log.Fatal(err)
-		}
-		acc := resp.(*egoscale.Account)
-		return acc.Name
-	}
-
-	return a.Name
 }
 
 type Config struct {
