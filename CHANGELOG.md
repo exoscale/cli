@@ -9,9 +9,8 @@
 ### Bug fixes
 
 - compute: instance reset default template now falling back to current instance template (#528)
-
+- compute: remmove uri and tlssni fields when nlb service healthcheck is "tcp"
 - cmd: fix panic if inexistent config file is given (#530)
-
 
 ## 1.72.0
 

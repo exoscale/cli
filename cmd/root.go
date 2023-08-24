@@ -207,6 +207,15 @@ func initConfig() { //nolint:gocyclo
 	}
 
 	if gConfigFilePath != "" {
+		configFileStat, err := os.Stat(gConfigFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if configFileStat.IsDir() {
+			log.Fatalf("%q is a directory but but should be configuration file", gConfigFilePath)
+		}
+
 		// Use config file from the flag.
 		gConfig.SetConfigFile(gConfigFilePath)
 	} else {
@@ -332,9 +341,11 @@ func getCmdPosition(cmd string) int {
 
 	for _, arg := range os.Args[1:] {
 		if strings.HasPrefix(arg, "-") {
-			flag := RootCmd.Flags().Lookup(strings.Trim(arg, "-"))
-			if flag == nil {
-				flag = RootCmd.Flags().ShorthandLookup(strings.Trim(arg, "-"))
+			trimmedArg := strings.Trim(arg, "-")
+
+			flag := RootCmd.Flags().Lookup(trimmedArg)
+			if flag == nil && len(trimmedArg) < 2 {
+				flag = RootCmd.Flags().ShorthandLookup(trimmedArg)
 			}
 
 			if flag != nil && (flag.Value.Type() != "bool") {

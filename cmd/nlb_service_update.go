@@ -11,6 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
@@ -118,6 +119,18 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckURI)) {
 		service.Healthcheck.URI = &c.HealthcheckURI
+		updated = true
+	}
+
+	// If mode is is tcp, ensure URI and TLSSNI are not set
+	if *service.Healthcheck.Mode == "tcp" && (utils.DefaultString(service.Healthcheck.TLSSNI, "") != "" || utils.DefaultString(service.Healthcheck.URI, "") != "") {
+		service.Healthcheck = &egoscale.NetworkLoadBalancerServiceHealthcheck{
+			Interval: service.Healthcheck.Interval,
+			Mode:     service.Healthcheck.Mode,
+			Port:     service.Healthcheck.Port,
+			Retries:  service.Healthcheck.Retries,
+			Timeout:  service.Healthcheck.Timeout,
+		}
 		updated = true
 	}
 
