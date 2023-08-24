@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 1.72.1
 
 ### Deprecations
 
