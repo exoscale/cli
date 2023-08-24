@@ -2,7 +2,13 @@
 
 ## UNRELEASED
 
+### Bug Fixes
+
 - fixed: instance reset default template now falling back to current instance template
+
+## Improvements
+
+- release: automate AUR releases for Arch Linux (#531)
 
 ## 1.72.0
 
