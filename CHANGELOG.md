@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Improvements
+
+- sks show: display whether auto-upgrade is enabled #534
+
 ## 1.72.1
 
 ### Deprecations
@@ -12,7 +18,7 @@
 - compute: remmove uri and tlssni fields when nlb service healthcheck is "tcp"
 - cmd: fix panic if inexistent config file is given (#530)
 
-## Improvements
+### Improvements
 
 - release: automate AUR releases for Arch Linux (#531)
 

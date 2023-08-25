@@ -20,7 +20,7 @@ type sksUpdateCmd struct {
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	AutoUpgrade bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
+	AutoUpgrade bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
 	Description string            `cli-usage:"SKS cluster description"`
 	Labels      map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
 	Name        string            `cli-usage:"SKS cluster name"`
