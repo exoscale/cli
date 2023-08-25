@@ -52,7 +52,7 @@ func (c *Client) UpdateObjectHeaders(ctx context.Context, bucket, key string, he
 }
 
 func (c *Client) UpdateObjectsHeaders(ctx context.Context, bucket, prefix string, headers map[string]*string, recursive bool) error {
-	return c.ForEachObjectOld(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+	return c.ForEachObjectUnfiltered(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.UpdateObjectHeaders(ctx, bucket, aws.ToString(o.Key), headers)
 	})
 }
@@ -90,7 +90,7 @@ func (c *Client) DeleteObjectHeaders(ctx context.Context, bucket, key string, he
 }
 
 func (c *Client) DeleteObjectsHeaders(ctx context.Context, bucket, prefix string, headers []string, recursive bool) error {
-	return c.ForEachObjectOld(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+	return c.ForEachObjectUnfiltered(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.DeleteObjectHeaders(ctx, bucket, aws.ToString(o.Key), headers)
 	})
 }

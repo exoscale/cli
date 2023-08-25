@@ -154,7 +154,8 @@ func (c *Client) ForEachCaller(ctx context.Context, bucket, prefix string, recur
 // forEachObject is a convenience wrapper to execute a callback function on
 // each object listed in the specified bucket/prefix. Upon callback function
 // error, the whole processing ends.
-func (c *Client) ForEachObjectOld(ctx context.Context, bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
+// TODO(sauterp) remove this function once all commands use the new ForEachObject() func
+func (c *Client) ForEachObjectUnfiltered(ctx context.Context, bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
 	// The "/" value can be used at command-level to mean that we want to
 	// list from the root of the bucket, but the actual bucket root is an
 	// empty prefix.

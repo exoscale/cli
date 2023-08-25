@@ -33,7 +33,7 @@ import (
 
 func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]types.DeletedObject, error) {
 	deleteList := make([]types.ObjectIdentifier, 0)
-	err := c.ForEachObjectOld(ctx, bucket, prefix, recursive, func(o *types.Object) error {
+	err := c.ForEachObjectUnfiltered(ctx, bucket, prefix, recursive, func(o *types.Object) error {
 		deleteList = append(deleteList, types.ObjectIdentifier{Key: o.Key})
 		return nil
 	})
