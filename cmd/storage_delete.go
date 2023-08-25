@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 
@@ -24,7 +23,7 @@ argument with "/":
     exo storage delete -r sos://my-bucket/some-directory/
 `,
 
-	PreRunE: func(cmd *cobra.Command, args []string) error {
+	PreRun: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
 			cmdExitOnUsageError(cmd, "invalid arguments")
 		}
@@ -34,12 +33,6 @@ argument with "/":
 		if !strings.Contains(args[0], "/") {
 			args[0] += "/"
 		}
-
-		if err := flags.ValidateTimestampFlags(cmd); err != nil {
-			return err
-		}
-
-		return flags.ValidateVersionFlags(cmd, false)
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -91,23 +84,7 @@ argument with "/":
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
-		if err != nil {
-			return err
-		}
-
-		modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
-		if err != nil {
-			return err
-		}
-
-		versionFilters, err := flags.TranslateVersionFilterFlagsToFilterFuncs(cmd)
-		if err != nil {
-			return err
-		}
-
-		// TODO exo storage delete -v --only-versions v0 versioning-test-bucket/testFile.txt deletes all versions
-		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive, filters, modifyVersions, versionFilters)
+		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive)
 		if err != nil {
 			return fmt.Errorf("unable to delete objects: %w", err)
 		}
@@ -126,7 +103,5 @@ func init() {
 	storageDeleteCmd.Flags().BoolP("force", "f", false, cmdFlagForceHelp)
 	storageDeleteCmd.Flags().BoolP("recursive", "r", false, "delete objects recursively")
 	storageDeleteCmd.Flags().BoolP("verbose", "v", false, "output deleted objects")
-	flags.AddVersionsFlags(storageDeleteCmd)
-	flags.AddTimeFilterFlags(storageDeleteCmd)
 	storageCmd.AddCommand(storageDeleteCmd)
 }

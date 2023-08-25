@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/exoscale/cli/pkg/storage/sos/object"
 	"github.com/exoscale/cli/utils"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -69,13 +68,10 @@ func (c *Client) SetBucketACL(ctx context.Context, bucket string, acl *ACL) erro
 	return nil
 }
 
-func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL, versionID string) error {
+func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL) error {
 	s3ACL := s3.PutObjectAclInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
-	}
-	if versionID != "" {
-		s3ACL.VersionId = aws.String(versionID)
 	}
 
 	if acl.Canned != "" {
@@ -114,15 +110,10 @@ func (c *Client) SetObjectACL(ctx context.Context, bucket, key string, acl *ACL,
 	return nil
 }
 
-func (c *Client) SetObjectsACL(ctx context.Context, bucket, prefix string, acl *ACL, recursive bool, filters []object.ObjectFilterFunc, modifyVersions bool, versionFilters []object.ObjectVersionFilterFunc) error {
-	return c.ForEachCaller(ctx, bucket, prefix, recursive,
-		func(o object.ObjectInterface) error {
-			return c.SetObjectACL(ctx, bucket, aws.ToString(o.GetKey()), acl, "")
-		},
-		func(o object.ObjectVersionInterface) error {
-			return c.SetObjectACL(ctx, bucket, aws.ToString(o.GetKey()), acl, *o.GetVersionId())
-		},
-		filters, modifyVersions, versionFilters)
+func (c *Client) SetObjectsACL(ctx context.Context, bucket, prefix string, acl *ACL, recursive bool) error {
+	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+		return c.SetObjectACL(ctx, bucket, aws.ToString(o.Key), acl)
+	})
 }
 
 func BucketCannedACLToStrings() []string {

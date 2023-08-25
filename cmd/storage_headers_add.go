@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -45,7 +44,7 @@ Supported output template annotations: %s`,
 			cmdExitOnUsageError(cmd, "no header flag specified")
 		}
 
-		return flags.ValidateTimestampFlags(cmd)
+		return nil
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -70,18 +69,13 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
-		if err != nil {
-			return err
-		}
-
 		headers := storageHeadersFromCmdFlags(cmd.Flags())
-		if err := storage.UpdateObjectsHeaders(gContext, bucket, prefix, headers, recursive, filters); err != nil {
+		if err := storage.UpdateObjectsHeaders(gContext, bucket, prefix, headers, recursive); err != nil {
 			return fmt.Errorf("unable to add headers to object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(gContext, bucket, prefix, ""))
+			return printOutput(storage.ShowObject(gContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {
@@ -107,7 +101,6 @@ func init() {
 		`value for "Content-Type" header`)
 	storageHeaderAddCmd.Flags().String(strings.ToLower(sos.ObjectHeaderExpires), "",
 		`value for "Expires" header`)
-	flags.AddTimeFilterFlags(storageHeaderAddCmd)
 	storageHeaderCmd.AddCommand(storageHeaderAddCmd)
 }
 

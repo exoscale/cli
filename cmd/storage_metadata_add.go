@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -49,7 +48,7 @@ Supported output template annotations: %s`,
 			}
 		}
 
-		return flags.ValidateTimestampFlags(cmd)
+		return nil
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -80,17 +79,12 @@ Supported output template annotations: %s`,
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		filters, err := flags.TranslateTimeFilterFlagsToFilterFuncs(cmd)
-		if err != nil {
-			return err
-		}
-
-		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive, filters); err != nil {
+		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive); err != nil {
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(gContext, bucket, prefix, ""))
+			return printOutput(storage.ShowObject(gContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {
@@ -104,6 +98,5 @@ Supported output template annotations: %s`,
 func init() {
 	storageMetadataAddCmd.Flags().BoolP("recursive", "r", false,
 		"add metadata recursively (with object prefix only)")
-	flags.AddTimeFilterFlags(storageMetadataAddCmd)
 	storageMetadataCmd.AddCommand(storageMetadataAddCmd)
 }
