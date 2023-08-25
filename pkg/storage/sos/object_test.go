@@ -15,10 +15,8 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/exoscale/cli/pkg/flags"
 	"github.com/exoscale/cli/pkg/storage/sos"
 )
 

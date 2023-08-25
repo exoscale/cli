@@ -176,9 +176,9 @@ func (c *Client) ListObjects(ctx context.Context, list listFunc[object.ObjectInt
 	return prepareListObjectsOutput(listing, recursive, stream)
 }
 
-func (c *Client) ListObjectsVersions(ctx context.Context, list listFunc[object.ObjectVersionInterface], recursive, stream bool,
+func (c *Client) GetVersionedFilteredListing(ctx context.Context, list listFunc[object.ObjectVersionInterface], recursive, stream bool,
 	filters []object.ObjectFilterFunc,
-	versionFilters []object.ObjectVersionFilterFunc) (*object.ListObjectsOutput, error) {
+	versionFilters []object.ObjectVersionFilterFunc) (*ObjectListing[object.ObjectVersionInterface], error) {
 	listing, err := getObjectListing(ctx, c, list, stream)
 	if err != nil {
 		return nil, err
@@ -194,6 +194,17 @@ func (c *Client) ListObjectsVersions(ctx context.Context, list listFunc[object.O
 	}
 
 	listing.List = objects
+
+	return listing, nil
+}
+
+func (c *Client) ListObjectsVersions(ctx context.Context, list listFunc[object.ObjectVersionInterface], recursive, stream bool,
+	filters []object.ObjectFilterFunc,
+	versionFilters []object.ObjectVersionFilterFunc) (*object.ListObjectsOutput, error) {
+	listing, err := c.GetVersionedFilteredListing(ctx, list, recursive, stream, filters, versionFilters)
+	if err != nil {
+		return nil, err
+	}
 
 	return prepareListObjectsOutput(listing, recursive, stream)
 }

@@ -120,37 +120,23 @@ func (c *Client) ForEachObjectVersion(ctx context.Context, bucket, prefix string
 		prefix = ""
 	}
 
-	dirs := make(map[string]struct{})
-
 	// TODO optimize away unnecessary deduplication
 	listFn := c.ListVersionedObjectsFunc(bucket, prefix, recursive, false)
 
-	for {
-		lco, err := listFn(ctx)
-		if err != nil {
+	listing, err := c.GetVersionedFilteredListing(ctx, listFn, recursive, false, filters, versionFilters)
+	if err != nil {
+		return err
+	}
+
+	dirs := make(map[string]struct{})
+
+	for _, o := range listing.List {
+		if !checkPrefix(o, dirs, prefix, recursive) {
+			continue
+		}
+
+		if err := fn(o); err != nil {
 			return err
-		}
-
-		for _, o := range lco.Objects {
-			if !checkPrefix(o, dirs, prefix, recursive) {
-				continue
-			}
-
-			if !object.ApplyFilters(o, filters) {
-				continue
-			}
-
-			if !object.ApplyVersionedFilters(o, versionFilters) {
-				continue
-			}
-
-			if err := fn(o); err != nil {
-				return err
-			}
-		}
-
-		if !lco.IsTruncated {
-			break
 		}
 	}
 

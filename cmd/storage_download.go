@@ -105,7 +105,7 @@ Examples:
 			return err
 		}
 
-		modifyVersions, err := cmd.Flags().GetBool(flags.Versions)
+		downloadVersions, err := cmd.Flags().GetBool(flags.Versions)
 		if err != nil {
 			return err
 		}
@@ -124,7 +124,7 @@ Examples:
 			func(o object.ObjectVersionInterface) error {
 				objects = append(objects, o)
 				return nil
-			}, filters, modifyVersions, versionFilters); err != nil {
+			}, filters, downloadVersions, versionFilters); err != nil {
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 
