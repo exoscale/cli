@@ -21,6 +21,7 @@ type sksShowOutput struct {
 	Name         string                  `json:"name"`
 	Description  string                  `json:"description"`
 	CreationDate string                  `json:"creation_date"`
+	AutoUpgrade  bool                    `json:"auto_upgrade"`
 	Zone         string                  `json:"zone"`
 	Endpoint     string                  `json:"endpoint"`
 	Version      string                  `json:"version"`
@@ -44,6 +45,7 @@ func (o *sksShowOutput) ToTable() {
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Zone", o.Zone})
 	t.Append([]string{"Creation Date", o.CreationDate})
+	t.Append([]string{"Auto-upgrade", fmt.Sprint(o.AutoUpgrade)})
 	t.Append([]string{"Endpoint", o.Endpoint})
 	t.Append([]string{"Version", o.Version})
 	t.Append([]string{"Service Level", o.ServiceLevel})
@@ -137,6 +139,7 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			}(),
 			CNI:          utils.DefaultString(cluster.CNI, "-"),
 			CreationDate: cluster.CreatedAt.String(),
+			AutoUpgrade:  *cluster.AutoUpgrade,
 			Description:  utils.DefaultString(cluster.Description, ""),
 			Endpoint:     *cluster.Endpoint,
 			ID:           *cluster.ID,
