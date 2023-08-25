@@ -31,23 +31,12 @@ import (
 	"github.com/exoscale/cli/utils"
 )
 
-func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool, filters []object.ObjectFilterFunc, modifyVersions bool, versionFilters []object.ObjectVersionFilterFunc) ([]types.DeletedObject, error) {
+func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]types.DeletedObject, error) {
 	deleteList := make([]types.ObjectIdentifier, 0)
-	err := c.ForEachCaller(ctx, bucket, prefix, recursive,
-		func(o object.ObjectInterface) error {
-			deleteList = append(deleteList, types.ObjectIdentifier{Key: o.GetKey()})
-
-			return nil
-		},
-		func(o object.ObjectVersionInterface) error {
-			deleteList = append(deleteList, types.ObjectIdentifier{
-				Key:       o.GetKey(),
-				VersionId: o.GetVersionId(),
-			})
-
-			return nil
-		},
-		filters, modifyVersions, versionFilters)
+	err := c.ForEachObject(ctx, bucket, prefix, recursive, func(o *types.Object) error {
+		deleteList = append(deleteList, types.ObjectIdentifier{Key: o.Key})
+		return nil
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error listing objects to delete: %w", err)
 	}
@@ -77,7 +66,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 	return deleted, nil
 }
 
-func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string, expires time.Duration, versionID string) (string, error) {
+func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string, expires time.Duration) (string, error) {
 	var (
 		psURL *v4.PresignedHTTPRequest
 		err   error
@@ -91,17 +80,13 @@ func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string
 	})
 
 	switch method {
-	case PresignGetMethod:
-		getObjInput := &s3.GetObjectInput{
+	case "get":
+		psURL, err = psClient.PresignGetObject(ctx, &s3.GetObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
-		}
-		if versionID != "" {
-			getObjInput.VersionId = aws.String(versionID)
-		}
-		psURL, err = psClient.PresignGetObject(ctx, getObjInput)
+		})
 
-	case PresignPutMethod:
+	case "put":
 		psURL, err = psClient.PresignPutObject(ctx, &s3.PutObjectInput{
 			Bucket: aws.String(bucket),
 			Key:    aws.String(key),
@@ -611,10 +596,6 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key, versionID string) 
 
 const (
 	BucketPrefix = "sos://"
-
-	PresignMethodFlag = "method"
-	PresignGetMethod  = "get"
-	PresignPutMethod  = "put"
 )
 
 // ObjectHeadersFromS3 returns mutable object headers in a human-friendly
