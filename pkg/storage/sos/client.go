@@ -165,6 +165,65 @@ func (c *Client) ForEachCaller(ctx context.Context, bucket, prefix string, recur
 	return c.ForEachObject(ctx, bucket, prefix, recursive, fn, filters)
 }
 
+// forEachObject is a convenience wrapper to execute a callback function on
+// each object listed in the specified bucket/prefix. Upon callback function
+// error, the whole processing ends.
+func (c *Client) ForEachObjectOld(ctx context.Context, bucket, prefix string, recursive bool, fn func(*s3types.Object) error) error {
+	// The "/" value can be used at command-level to mean that we want to
+	// list from the root of the bucket, but the actual bucket root is an
+	// empty prefix.
+	if prefix == "/" {
+		prefix = ""
+	}
+
+	dirs := make(map[string]struct{})
+
+	var ct string
+	for {
+		res, err := c.S3Client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+			Bucket:            aws.String(bucket),
+			Prefix:            aws.String(prefix),
+			ContinuationToken: aws.String(ct),
+		})
+		if err != nil {
+			return err
+		}
+		ct = aws.ToString(res.NextContinuationToken)
+
+		for _, o := range res.Contents {
+			// If not invoked in recursive mode, split object keys on the "/" separator and skip
+			// objects "below" the base directory prefix.
+			parts := strings.SplitN(strings.TrimPrefix(aws.ToString(o.Key), prefix), "/", 2)
+			if len(parts) > 1 && !recursive {
+				dir := path.Base(parts[0])
+				if _, ok := dirs[dir]; !ok {
+					dirs[dir] = struct{}{}
+				}
+				continue
+			}
+
+			// If the prefix doesn't end with a trailing prefix separator ("/"),
+			// consider it as a single object key and match only one exact result
+			// (except in recursive mode, where the prefix is expected to be a
+			// "directory").
+			if !recursive && !strings.HasSuffix(prefix, "/") && aws.ToString(o.Key) != prefix {
+				continue
+			}
+
+			o := o
+			if err := fn(&o); err != nil {
+				return err
+			}
+		}
+
+		if !res.IsTruncated {
+			break
+		}
+	}
+
+	return nil
+}
+
 // copyObject is a helper function to be used in commands involving object
 // copying such as metadata/headers manipulation, retrieving information about
 // the targeted object for a later copy.

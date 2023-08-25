@@ -225,9 +225,7 @@ func (c Client) SetBucketObjectOwnership(ctx context.Context, bucket string, own
 
 func (c Client) DeleteBucket(ctx context.Context, bucket string, recursive bool) error {
 	if recursive {
-		// TODO check for the version flag
-		// TODO is there a difference if the user deletes all objects?
-		if _, err := c.DeleteObjects(ctx, bucket, "", true, nil, true, nil); err != nil {
+		if _, err := c.DeleteObjects(ctx, bucket, "", true); err != nil {
 			return fmt.Errorf("error deleting objects: %s", err)
 		}
 	}

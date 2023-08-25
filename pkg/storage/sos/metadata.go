@@ -34,7 +34,7 @@ func (c *Client) AddObjectMetadata(ctx context.Context, bucket, key string, meta
 }
 
 func (c *Client) AddObjectsMetadata(ctx context.Context, bucket, prefix string, metadata map[string]string, recursive bool) error {
-	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+	return c.ForEachObjectOld(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.AddObjectMetadata(ctx, bucket, aws.ToString(o.Key), metadata)
 	})
 }
@@ -57,7 +57,7 @@ func (c *Client) DeleteObjectMetadata(ctx context.Context, bucket, key string, m
 }
 
 func (c *Client) DeleteObjectsMetadata(ctx context.Context, bucket, prefix string, mdKeys []string, recursive bool) error {
-	return c.ForEachObject(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
+	return c.ForEachObjectOld(ctx, bucket, prefix, recursive, func(o *s3types.Object) error {
 		return c.DeleteObjectMetadata(ctx, bucket, aws.ToString(o.Key), mdKeys)
 	})
 }

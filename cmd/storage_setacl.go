@@ -126,7 +126,7 @@ Supported output template annotations:
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(gContext, bucket, prefix))
+			return printOutput(storage.ShowObject(gContext, bucket, prefix, ""))
 		}
 
 		if !globalstate.Quiet {
