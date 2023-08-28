@@ -23,6 +23,9 @@ const (
 	zone = "ch-dk-2"
 )
 
+// SOSSuite creates a bucket with a partially random name
+// as well as two temporary directories for preparations and downloads respectively,
+// for each test in the suite.
 type SOSSuite struct {
 	acctests.AcceptanceTestSuite
 
@@ -76,27 +79,18 @@ func (s *SOSSuite) SetupTest() {
 	}
 
 	s.S3Client = s3.NewFromConfig(cfg)
+
+	s.T().Logf("creating test bucket %q", s.BucketName)
 	_, err = s.S3Client.CreateBucket(ctx, input)
 	s.Assert().NoError(err)
 }
 
 func (s *SOSSuite) TearDownTest() {
-	var (
-		err error
-		ctx context.Context = context.Background()
-	)
+	var err error
 
-	for _, v := range s.ObjectList {
-		_, err := s.S3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
-			Bucket: &s.BucketName,
-			Key:    &v,
-		})
-		s.Assert().NoError(err)
-	}
-
-	_, err = s.S3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
-		Bucket: &s.BucketName,
-	})
+	s.T().Logf("deleting test bucket %q", s.BucketName)
+	// TODO rewrite this, eventually tests should handle bucket creation by themselves
+	s.exoCMD("storage rb -r -f {bucket}")
 	s.Assert().NoError(err)
 
 	err = os.RemoveAll(s.PrepDir)
@@ -116,35 +110,22 @@ func TestSOSSuite(t *testing.T) {
 	suite.Run(t, s)
 }
 
-func (s *SOSSuite) findLatestVersion() string {
-	output := s.exo("storage list --versions " + s.BucketName)
-
-	lines := strings.Split(output, "\n")
-	words := strings.Split(lines[0], " ")
-	return words[len(words)-1]
-}
-
-func (s *SOSSuite) downloadVersion(version string) {
-	s.exo(fmt.Sprintf("storage download --only-versions %s -r %s %s", version, s.BucketName, s.DownloadDir))
-}
-
 func (s *SOSSuite) writeFile(filename, content string) {
 	err := os.WriteFile(s.PrepDir+filename, []byte(content), 0644)
 	s.Assert().NoError(err)
 }
 
-func (s *SOSSuite) uploadFile(filePath string) {
-	s.exo(fmt.Sprintf("storage upload %s %s", s.PrepDir+filePath, s.BucketName))
-	s.ObjectList = append(s.ObjectList, filePath)
-}
+func (s *SOSSuite) exoCMD(cmdStr string) string {
+	cmdWithBucket := strings.Replace(cmdStr, "{bucket}", s.BucketName, 1)
+	cmdWithPrepDir := strings.Replace(cmdWithBucket, "{prepDir}", s.PrepDir, 1)
+	cmdComplete := strings.Replace(cmdWithPrepDir, "{downloadDir}", s.DownloadDir, 1)
+	cmds := strings.Split(cmdComplete, " ")
 
-func (s *SOSSuite) exo(args string) string {
-	cmds := strings.Split(args, " ")
-
-	cmds = append([]string{"--quiet"}, cmds...)
+	s.T().Logf("executing command: exo %s", strings.Join(cmds, " "))
 	command := exec.Command(s.ExoCLIExecutable, cmds...)
 	output, err := command.CombinedOutput()
-	s.Assert().NoError(err, string(output))
+	s.T().Log(string(output))
+	s.Assert().NoError(err)
 
 	return string(output)
 }
