@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -27,26 +29,26 @@ type SOSSuite struct {
 
 	PrepDir     string
 	DownloadDir string
+
+	ObjectList []string
+
+	S3Client *s3.Client
 }
 
 func (s *SOSSuite) SetupTest() {
+	// TODO introduce a TF_ACC like test guard
 	ctx := context.Background()
 
-	// TODO build the cli
-	// if err := exec.Command("go", "build").Run(); err != nil {
-	// 	fmt.Println("Error building CLI:", err)
-	// 	return
-	// }
+	var err error
 
-	// Create test and download directories
-	if err := os.MkdirAll(s.PrepDir, 0755); err != nil {
-		fmt.Println("Error creating test directory:", err)
-		return
-	}
-	if err := os.MkdirAll(s.DownloadDir, 0755); err != nil {
-		fmt.Println("Error creating download directory:", err)
-		return
-	}
+	tmpDirPrefix := "exo-cli-acc-tests"
+	prepDir, err := ioutil.TempDir("", tmpDirPrefix)
+	s.Assert().NoError(err)
+	s.PrepDir = prepDir + "/"
+
+	downloadDir, err := ioutil.TempDir("", tmpDirPrefix)
+	s.Assert().NoError(err)
+	s.DownloadDir = downloadDir + "/"
 
 	var caCerts io.Reader
 
@@ -57,7 +59,7 @@ func (s *SOSSuite) SetupTest() {
 
 			config.WithEndpointResolver(aws.EndpointResolverFunc(
 				func(service, region string) (aws.Endpoint, error) {
-					sosURL := strings.Replace("https://sos-{zone}.exo.io", "{zone}", zone, 1)
+					sosURL := fmt.Sprintf("https://sos-%s.exo.io", zone)
 					return aws.Endpoint{
 						URL:           sosURL,
 						SigningRegion: zone,
@@ -68,39 +70,46 @@ func (s *SOSSuite) SetupTest() {
 		)...)
 	s.Assert().NoError(err)
 
-	// TODO assert that bucket doesn't exist
-	//
-	// TODO create bucket
-	// input := &s3.CreateBucketInput{
-	// 	Bucket: &bucketName,
-	// }
+	input := &s3.CreateBucketInput{
+		Bucket: &s.BucketName,
+	}
 
-	// TODO enable versioning
-
-	_ = s3.NewFromConfig(cfg)
-	//svc := s3.NewFromConfig(cfg)
-	// _, err = svc.CreateBucket(ctx, input)
+	s.S3Client = s3.NewFromConfig(cfg)
+	_, err = s.S3Client.CreateBucket(ctx, input)
 	s.Assert().NoError(err)
 }
 
 func (s *SOSSuite) TearDownTest() {
-	if err := os.RemoveAll(s.PrepDir); err != nil {
-		fmt.Println("Error cleaning up test directory:", err)
+	var (
+		err error
+		ctx context.Context = context.Background()
+	)
+
+	for _, v := range s.ObjectList {
+		s.S3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+			Bucket: &s.BucketName,
+			Key:    &v,
+		})
 	}
 
-	if err := os.RemoveAll(s.DownloadDir); err != nil {
-		fmt.Println("Error cleaning up download directory:", err)
-	}
+	_, err = s.S3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
+		Bucket: &s.BucketName,
+	})
+	s.Assert().NoError(err)
+
+	err = os.RemoveAll(s.PrepDir)
+	s.Assert().NoError(err)
+
+	err = os.RemoveAll(s.DownloadDir)
+	s.Assert().NoError(err)
 }
 
 func TestSOSSuite(t *testing.T) {
-	integDir := "integdir/"
-	s := &SOSSuite{
-		BucketName:       "integ-bucket",
-		ExoCLIExecutable: "../../../cli",
+	testBucketName := fmt.Sprintf("exo-cli-acc-tests-%d", rand.Int())
 
-		PrepDir:     integDir + "prep/",
-		DownloadDir: integDir + "downloads/",
+	s := &SOSSuite{
+		BucketName:       testBucketName,
+		ExoCLIExecutable: "../../../bin/exo",
 	}
 	suite.Run(t, s)
 }
@@ -147,6 +156,7 @@ func (s *SOSSuite) writeFile(filename, content string) {
 
 func (s *SOSSuite) uploadFile(filePath string) {
 	s.exo(fmt.Sprintf("storage upload %s %s", s.PrepDir+filePath, s.BucketName))
+	s.ObjectList = append(s.ObjectList, filePath)
 }
 
 func (s *SOSSuite) exo(args string) string {

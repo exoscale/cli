@@ -55,3 +55,7 @@ completions:
 .PHONY: clean
 clean::
 	$(RM) contrib/completion manpage $(OAS_FILE)
+
+test-acc: build
+	cd internal/integration-testing/sos
+	go test -test.v
