@@ -21,7 +21,7 @@ func (s *SOSSuite) Execute(test SOSTest) {
 		}
 
 		for _, command := range step.Commands {
-			s.exoCMD(command)
+			s.exo(command)
 		}
 
 		files, err := os.ReadDir(s.DownloadDir)

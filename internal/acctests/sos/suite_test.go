@@ -88,15 +88,64 @@ func (s *SOSSuite) SetupTest() {
 func (s *SOSSuite) TearDownTest() {
 	var err error
 
-	s.T().Logf("deleting test bucket %q", s.BucketName)
-	// TODO rewrite this, eventually tests should handle bucket creation by themselves
-	s.exoCMD("storage rb -r -f {bucket}")
+	s.deleteBucket(s.BucketName)
 	s.Assert().NoError(err)
 
 	err = os.RemoveAll(s.PrepDir)
 	s.Assert().NoError(err)
 
 	err = os.RemoveAll(s.DownloadDir)
+	s.Assert().NoError(err)
+}
+
+func (s *SOSSuite) deleteBucket(bucketName string) {
+	ctx := context.Background()
+
+	s.T().Logf("deleting test bucket %q", bucketName)
+
+	// Delete all objects
+	listObjectsInput := &s3.ListObjectsV2Input{
+		Bucket: &bucketName,
+	}
+
+	listObjectsResp, err := s.S3Client.ListObjectsV2(ctx, listObjectsInput)
+	s.Assert().NoError(err)
+
+	for _, obj := range listObjectsResp.Contents {
+		s.T().Log("deleting object: ", *obj.Key)
+		deleteObjectInput := &s3.DeleteObjectInput{
+			Bucket: &bucketName,
+			Key:    obj.Key,
+		}
+		_, err := s.S3Client.DeleteObject(ctx, deleteObjectInput)
+		s.Assert().NoError(err)
+	}
+
+	// Delete all object versions
+	listObjectsVersionsInput := &s3.ListObjectVersionsInput{
+		Bucket: &bucketName,
+	}
+
+	listObjectsVersionsResp, err := s.S3Client.ListObjectVersions(ctx, listObjectsVersionsInput)
+	s.Assert().NoError(err)
+
+	for _, obj := range listObjectsVersionsResp.Versions {
+		s.T().Log("deleting object version: ", *obj.Key, *obj.VersionId)
+		deleteObjectInput := &s3.DeleteObjectInput{
+			Bucket:    &bucketName,
+			Key:       obj.Key,
+			VersionId: obj.VersionId,
+		}
+		_, err := s.S3Client.DeleteObject(ctx, deleteObjectInput)
+		s.Assert().NoError(err)
+	}
+
+	// Delete bucket
+	deleteBucketInput := &s3.DeleteBucketInput{
+		Bucket: &bucketName,
+	}
+
+	_, err = s.S3Client.DeleteBucket(ctx, deleteBucketInput)
 	s.Assert().NoError(err)
 }
 
@@ -115,7 +164,7 @@ func (s *SOSSuite) writeFile(filename, content string) {
 	s.Assert().NoError(err)
 }
 
-func (s *SOSSuite) exoCMD(cmdStr string) string {
+func (s *SOSSuite) exo(cmdStr string) string {
 	cmdWithBucket := strings.Replace(cmdStr, "{bucket}", s.BucketName, 1)
 	cmdWithPrepDir := strings.Replace(cmdWithBucket, "{prepDir}", s.PrepDir, 1)
 	cmdComplete := strings.Replace(cmdWithPrepDir, "{downloadDir}", s.DownloadDir, 1)
