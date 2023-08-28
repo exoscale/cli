@@ -1,4 +1,4 @@
-package main
+package sos_test
 
 import (
 	"context"
@@ -15,6 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/exoscale/cli/internal/acctests"
 )
 
 const (
@@ -22,7 +24,7 @@ const (
 )
 
 type SOSSuite struct {
-	suite.Suite
+	acctests.AcceptanceTestSuite
 
 	BucketName       string
 	ExoCLIExecutable string
@@ -36,7 +38,6 @@ type SOSSuite struct {
 }
 
 func (s *SOSSuite) SetupTest() {
-	// TODO introduce a TF_ACC like test guard
 	ctx := context.Background()
 
 	var err error
@@ -86,10 +87,11 @@ func (s *SOSSuite) TearDownTest() {
 	)
 
 	for _, v := range s.ObjectList {
-		s.S3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		_, err := s.S3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
 			Bucket: &s.BucketName,
 			Key:    &v,
 		})
+		s.Assert().NoError(err)
 	}
 
 	_, err = s.S3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
@@ -112,29 +114,6 @@ func TestSOSSuite(t *testing.T) {
 		ExoCLIExecutable: "../../../bin/exo",
 	}
 	suite.Run(t, s)
-}
-
-func (s *SOSSuite) TestDownloadFiles() {
-	file1Name := "file1.txt"
-	originalContent := "original content"
-
-	s.writeFile(file1Name, originalContent)
-	s.uploadFile(file1Name)
-
-	expectedContent := "expected new content"
-	s.writeFile(file1Name, expectedContent)
-	s.uploadFile(file1Name)
-
-	s.downloadVersion(s.findLatestVersion())
-
-	files, err := os.ReadDir(s.DownloadDir)
-	s.Assert().NoError(err)
-	s.Equal(1, len(files))
-	s.Equal(file1Name, files[0].Name())
-
-	file1Content, err := os.ReadFile(s.DownloadDir + file1Name)
-	s.Assert().NoError(err)
-	s.Equal(expectedContent, string(file1Content))
 }
 
 func (s *SOSSuite) findLatestVersion() string {
@@ -162,7 +141,7 @@ func (s *SOSSuite) uploadFile(filePath string) {
 func (s *SOSSuite) exo(args string) string {
 	cmds := strings.Split(args, " ")
 
-	cmds = append([]string{"-A", "exosauterp", "--quiet"}, cmds...)
+	cmds = append([]string{"--quiet"}, cmds...)
 	command := exec.Command(s.ExoCLIExecutable, cmds...)
 	output, err := command.CombinedOutput()
 	s.Assert().NoError(err, string(output))

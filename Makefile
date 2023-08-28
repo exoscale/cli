@@ -57,5 +57,5 @@ clean::
 	$(RM) contrib/completion manpage $(OAS_FILE)
 
 test-acc: build
-	cd internal/integration-testing/sos
-	go test -test.v
+	cd internal/acctests/sos
+	EXO_CLI_ACC=1 go test -test.v
