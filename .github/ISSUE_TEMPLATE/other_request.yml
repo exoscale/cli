@@ -1,0 +1,16 @@
+---
+name: Other Request
+description: File a request
+title: "[Request]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this request!
+  - type: textarea
+    id: request
+    attributes:
+      label: Your request
+      description: Describe your request
+    validations:
+      required: true
