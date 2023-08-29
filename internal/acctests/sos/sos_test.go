@@ -1,18 +1,55 @@
 package sos_test
 
-import "os"
+import (
+	"os"
+	"path/filepath"
+)
 
 type LocalFiles map[string]string
 
 type Step struct {
-	Description           string
-	PreparedFiles         LocalFiles
-	Commands              []string
-	ExpectedDownloadFiles LocalFiles
+	Description                    string
+	PreparedFiles                  LocalFiles
+	ClearDownloadDirBeforeCommands bool
+	Commands                       []string
+	ExpectedDownloadFiles          LocalFiles
 }
 
 type SOSTest struct {
 	Steps []Step
+}
+
+func emptyDirectory(dirPath string) error {
+	// Open the directory
+	dir, err := os.Open(dirPath)
+	if err != nil {
+		return err
+	}
+	defer dir.Close()
+
+	// Read all directory entries
+	entries, err := dir.Readdir(-1)
+	if err != nil {
+		return err
+	}
+
+	// Loop through the entries and remove them
+	for _, entry := range entries {
+		entryPath := filepath.Join(dirPath, entry.Name())
+
+		// Remove file or directory
+		if entry.IsDir() {
+			err = os.RemoveAll(entryPath)
+		} else {
+			err = os.Remove(entryPath)
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *SOSSuite) Execute(test SOSTest) {
@@ -20,6 +57,10 @@ func (s *SOSSuite) Execute(test SOSTest) {
 		s.T().Logf("step number: %d %q", stepNr, step.Description)
 		for filename, content := range step.PreparedFiles {
 			s.writeFile(filename, content)
+		}
+
+		if step.ClearDownloadDirBeforeCommands && !s.NoError(emptyDirectory(s.DownloadDir)) {
+			return
 		}
 
 		for _, command := range step.Commands {

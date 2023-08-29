@@ -65,6 +65,17 @@ func (s *SOSSuite) TestDownloadOverwrittenVersionedFile() {
 					"file1.txt": "new expected content",
 				},
 			},
+			{
+				Description:                    "check if v0 can be downloaded and renamed",
+				PreparedFiles:                  LocalFiles{},
+				ClearDownloadDirBeforeCommands: true,
+				Commands: []string{
+					"exo storage download -f --only-versions v0 {bucket}/file1.txt {downloadDir}/file1-v0.txt",
+				},
+				ExpectedDownloadFiles: LocalFiles{
+					"file1-v0.txt": "original content",
+				},
+			},
 		},
 	})
 }

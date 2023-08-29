@@ -110,19 +110,24 @@ type DownloadConfig struct {
 	Destination string
 	Objects     []object.ObjectInterface
 	Recursive   bool
+	Versions    bool
 	Overwrite   bool
 	DryRun      bool
 }
 
 func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) error {
-	if len(config.Objects) > 1 && !strings.HasSuffix(config.Destination, "/") {
+	var (
+		downloadToDir = strings.HasSuffix(config.Destination, "/")
+	)
+	if len(config.Objects) > 1 && !downloadToDir {
 		return errors.New(`multiple files to download, destination must end with "/"`)
 	}
 
 	// Handle relative filesystem destination (e.g. ".", "../.." etc.)
 	if dstInfo, err := os.Stat(config.Destination); err == nil {
-		if dstInfo.IsDir() && !strings.HasSuffix(config.Destination, "/") {
+		if dstInfo.IsDir() && !downloadToDir {
 			config.Destination += "/"
+			downloadToDir = true
 		}
 	}
 
@@ -130,11 +135,13 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 		fmt.Println("[DRY-RUN]")
 	}
 
+	downloadingSingleObject := len(config.Objects) == 1
+
 	for _, obj := range config.Objects {
 		dst := func() string {
 			versionIDSuffix := ""
 			if objectVersion, ok := obj.(object.ObjectVersionInterface); ok {
-				if !objectVersion.GetIsLatest() {
+				if !objectVersion.GetIsLatest() && !downloadingSingleObject {
 					versionIDSuffix = "-" + *objectVersion.GetVersionId()
 				}
 			}
@@ -143,7 +150,7 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 				return path.Join(config.Destination, strings.TrimPrefix(aws.ToString(obj.GetKey()), config.Prefix)+versionIDSuffix)
 			}
 
-			if strings.HasSuffix(config.Destination, "/") {
+			if downloadToDir {
 				return path.Join(config.Destination, path.Base(aws.ToString(obj.GetKey()))+versionIDSuffix)
 			}
 

@@ -135,6 +135,7 @@ Examples:
 			Objects:     objects,
 			Destination: dst,
 			Recursive:   recursive,
+			Versions:    downloadVersions || len(versionFilters) > 0,
 			Overwrite:   force,
 			DryRun:      dryRun,
 		})
