@@ -35,8 +35,6 @@ type SOSSuite struct {
 	PrepDir     string
 	DownloadDir string
 
-	ObjectList []string
-
 	S3Client *s3.Client
 }
 
@@ -74,15 +72,16 @@ func (s *SOSSuite) SetupTest() {
 		)...)
 	s.Assert().NoError(err)
 
+	testBucketName := fmt.Sprintf("exo-cli-acc-tests-%d", rand.Int())
+	s.BucketName = testBucketName
 	input := &s3.CreateBucketInput{
 		Bucket: &s.BucketName,
 	}
 
 	s.S3Client = s3.NewFromConfig(cfg)
 
-	s.T().Logf("creating test bucket %q", s.BucketName)
 	_, err = s.S3Client.CreateBucket(ctx, input)
-	s.Assert().NoError(err)
+	s.Assert().NoError(err, fmt.Sprintf("error creating test bucket %q", s.BucketName))
 }
 
 func (s *SOSSuite) TearDownTest() {
@@ -98,28 +97,17 @@ func (s *SOSSuite) TearDownTest() {
 	s.Assert().NoError(err)
 }
 
+func getStr(a *string) string {
+	if a == nil {
+		return ""
+	}
+
+	return *a
+}
+
+// TODO(sauterp) once deletion of versioned buckets, tests should handle deletions themselves.
 func (s *SOSSuite) deleteBucket(bucketName string) {
 	ctx := context.Background()
-
-	s.T().Logf("deleting test bucket %q", bucketName)
-
-	// Delete all objects
-	listObjectsInput := &s3.ListObjectsV2Input{
-		Bucket: &bucketName,
-	}
-
-	listObjectsResp, err := s.S3Client.ListObjectsV2(ctx, listObjectsInput)
-	s.Assert().NoError(err)
-
-	for _, obj := range listObjectsResp.Contents {
-		s.T().Log("deleting object: ", *obj.Key)
-		deleteObjectInput := &s3.DeleteObjectInput{
-			Bucket: &bucketName,
-			Key:    obj.Key,
-		}
-		_, err := s.S3Client.DeleteObject(ctx, deleteObjectInput)
-		s.Assert().NoError(err)
-	}
 
 	// Delete all object versions
 	listObjectsVersionsInput := &s3.ListObjectVersionsInput{
@@ -127,17 +115,16 @@ func (s *SOSSuite) deleteBucket(bucketName string) {
 	}
 
 	listObjectsVersionsResp, err := s.S3Client.ListObjectVersions(ctx, listObjectsVersionsInput)
-	s.Assert().NoError(err)
+	s.Assert().NoError(err, fmt.Sprintf("error deleting test bucket %q", bucketName))
 
 	for _, obj := range listObjectsVersionsResp.Versions {
-		s.T().Log("deleting object version: ", *obj.Key, *obj.VersionId)
 		deleteObjectInput := &s3.DeleteObjectInput{
 			Bucket:    &bucketName,
 			Key:       obj.Key,
 			VersionId: obj.VersionId,
 		}
 		_, err := s.S3Client.DeleteObject(ctx, deleteObjectInput)
-		s.Assert().NoError(err)
+		s.Assert().NoError(err, fmt.Sprintf("deleting object %s version %s", getStr(obj.Key), getStr(obj.VersionId)))
 	}
 
 	// Delete bucket
@@ -150,12 +137,10 @@ func (s *SOSSuite) deleteBucket(bucketName string) {
 }
 
 func TestSOSSuite(t *testing.T) {
-	testBucketName := fmt.Sprintf("exo-cli-acc-tests-%d", rand.Int())
-
 	s := &SOSSuite{
-		BucketName:       testBucketName,
 		ExoCLIExecutable: "../../../bin/exo",
 	}
+
 	suite.Run(t, s)
 }
 
@@ -165,15 +150,23 @@ func (s *SOSSuite) writeFile(filename, content string) {
 }
 
 func (s *SOSSuite) exo(cmdStr string) string {
+	// remove the "exo " prefix
+	cmdStr = cmdStr[4:]
+
 	cmdWithBucket := strings.Replace(cmdStr, "{bucket}", s.BucketName, 1)
 	cmdWithPrepDir := strings.Replace(cmdWithBucket, "{prepDir}", s.PrepDir, 1)
 	cmdComplete := strings.Replace(cmdWithPrepDir, "{downloadDir}", s.DownloadDir, 1)
 	cmds := strings.Split(cmdComplete, " ")
 
+	cmds = append([]string{"--quiet"}, cmds...)
+
 	s.T().Logf("executing command: exo %s", strings.Join(cmds, " "))
+
 	command := exec.Command(s.ExoCLIExecutable, cmds...)
 	output, err := command.CombinedOutput()
-	s.T().Log(string(output))
+	if len(output) > 0 {
+		s.T().Log(string(output))
+	}
 	s.Assert().NoError(err)
 
 	return string(output)

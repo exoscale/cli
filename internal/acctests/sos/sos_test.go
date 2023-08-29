@@ -5,6 +5,7 @@ import "os"
 type LocalFiles map[string]string
 
 type Step struct {
+	Description           string
 	PreparedFiles         LocalFiles
 	Commands              []string
 	ExpectedDownloadFiles LocalFiles
@@ -15,7 +16,8 @@ type SOSTest struct {
 }
 
 func (s *SOSSuite) Execute(test SOSTest) {
-	for _, step := range test.Steps {
+	for stepNr, step := range test.Steps {
+		s.T().Logf("step number: %d %q", stepNr, step.Description)
 		for filename, content := range step.PreparedFiles {
 			s.writeFile(filename, content)
 		}
@@ -29,18 +31,24 @@ func (s *SOSSuite) Execute(test SOSTest) {
 			return
 		}
 
-		if !s.Equal(len(step.ExpectedDownloadFiles), len(files), "number of actual files doesn't match number of expected files") {
-			return
-		}
+		actualFileNumberMismatches := !s.Equal(len(step.ExpectedDownloadFiles), len(files), "number of actual files doesn't match number of expected files")
 
 		downloadDir := LocalFiles{}
 		for _, file := range files {
+			if actualFileNumberMismatches {
+				s.T().Logf("actual file: %s", file)
+			}
+
 			content, err := os.ReadFile(s.DownloadDir + file.Name())
 			if !s.NoError(err) {
 				return
 			}
 
 			downloadDir[file.Name()] = string(content)
+		}
+
+		if actualFileNumberMismatches {
+			return
 		}
 
 		for expectedFilename, expectedContent := range step.ExpectedDownloadFiles {
