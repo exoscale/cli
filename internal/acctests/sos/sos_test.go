@@ -12,6 +12,7 @@ type Step struct {
 	PreparedFiles                  LocalFiles
 	ClearDownloadDirBeforeCommands bool
 	Commands                       []string
+	ExpectErrorInCommandNr         int
 	ExpectedDownloadFiles          LocalFiles
 }
 
@@ -63,8 +64,25 @@ func (s *SOSSuite) Execute(test SOSTest) {
 			return
 		}
 
-		for _, command := range step.Commands {
-			s.exo(command)
+		for i, command := range step.Commands {
+			commandNr := i + 1
+
+			_, err := s.exo(command)
+
+			errorExpected := step.ExpectErrorInCommandNr > 0 && step.ExpectErrorInCommandNr == commandNr
+			gotError := err != nil
+
+			switch {
+			case errorExpected && !gotError:
+				s.Fail("expected error in command nr ", step.ExpectErrorInCommandNr)
+
+				return
+			case !errorExpected && gotError:
+				s.NoError(err)
+
+				return
+			case errorExpected == gotError:
+			}
 		}
 
 		files, err := os.ReadDir(s.DownloadDir)

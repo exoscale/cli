@@ -1,6 +1,6 @@
 package sos_test
 
-func (s *SOSSuite) TestDownloadFiles() {
+func (s *SOSSuite) TestDownloadSingleObject() {
 	s.Execute(SOSTest{
 		Steps: []Step{
 			{
@@ -15,11 +15,50 @@ func (s *SOSSuite) TestDownloadFiles() {
 					"file1.txt": "expected content",
 				},
 			},
+			{
+				PreparedFiles: LocalFiles{
+					"file1.txt": "this file should not get written",
+				},
+				Commands: []string{
+					"exo storage upload {prepDir}file1.txt {bucket}",
+					"exo storage download -r {bucket} {downloadDir}",
+				},
+				ExpectErrorInCommandNr: 2,
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt": "expected content",
+				},
+			},
+			{
+				PreparedFiles: LocalFiles{
+					"file1.txt": "this file should get written",
+				},
+				Commands: []string{
+					"exo storage upload {prepDir}file1.txt {bucket}",
+					"exo storage download -f -r {bucket} {downloadDir}",
+				},
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt": "this file should get written",
+				},
+			},
+			{
+				Description: "check if latest object can be renamed",
+				PreparedFiles: LocalFiles{
+					"file1.txt": "new new expected content",
+				},
+				Commands: []string{
+					"exo storage upload {prepDir}file1.txt {bucket}",
+					"exo storage download -r {bucket} {downloadDir}/file1-new.txt",
+				},
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt":     "this file should get written",
+					"file1-new.txt": "new new expected content",
+				},
+			},
 		},
 	})
 }
 
-func (s *SOSSuite) TestDownloadOverwrittenVersionedFile() {
+func (s *SOSSuite) TestDownloadSingleVersionedObject() {
 	s.Execute(SOSTest{
 		Steps: []Step{
 			{

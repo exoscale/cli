@@ -149,7 +149,7 @@ func (s *SOSSuite) writeFile(filename, content string) {
 	s.Assert().NoError(err)
 }
 
-func (s *SOSSuite) exo(cmdStr string) string {
+func (s *SOSSuite) exo(cmdStr string) (string, error) {
 	// remove the "exo " prefix
 	cmdStr = cmdStr[4:]
 
@@ -167,7 +167,6 @@ func (s *SOSSuite) exo(cmdStr string) string {
 	if len(output) > 0 {
 		s.T().Log(string(output))
 	}
-	s.Assert().NoError(err)
 
-	return string(output)
+	return string(output), err
 }
