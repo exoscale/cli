@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
-	ego3 "github.com/exoscale/egoscale/v3"
+	"github.com/exoscale/cli/pkg/client"
+	"github.com/exoscale/cli/pkg/instance"
 	"github.com/exoscale/egoscale/v3/oapi"
 )
 
@@ -19,9 +19,7 @@ type instanceResetPasswordCmd struct {
 
 	Instance string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	// TODO
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"instance zone"`
+	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
 func (c *instanceResetPasswordCmd) cmdAliases() []string { return gRemoveAlias }
@@ -43,42 +41,28 @@ func (c *instanceResetPasswordCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		ctx = context.Background()
 	)
 
-	client, err := ego3.DefaultClient(ego3.ClientOptWithCredentials(
-		account.CurrentAccount.Key,
-		account.CurrentAccount.APISecret(),
-	))
+	v3Client, err := client.Get()
 	if err != nil {
 		return err
 	}
 
-	client.SetZone(oapi.ZoneName(c.Zone))
+	v3Client.SetZone(oapi.ZoneName(c.Zone))
 
 	instanceUUID, err := uuid.Parse(c.Instance)
 	if err != nil {
-		// TODO move this to a function named FindInstanceByName
-		instanceList, err := client.Compute().Instance().List(ctx, nil)
+		instance, err := instance.FindInstanceByName(ctx, &v3Client.Client, c.Instance)
 		if err != nil {
-			return fmt.Errorf("failed to list instances: %w", err)
+			return err
 		}
 
-		var instanceID uuid.NullUUID
-		for _, instance := range instanceList {
-			if *instance.Name == c.Instance {
-				instanceID = uuid.NullUUID{
-					UUID:  *instance.Id,
-					Valid: true,
-				}
-			}
-		}
-
-		if !instanceID.Valid {
+		if instance == nil {
 			return fmt.Errorf("unable to find instance by name %q", c.Instance)
 		}
 
-		instanceUUID = instanceID.UUID
+		instanceUUID = *instance.Id
 	}
 
-	_, err = client.Compute().Instance().ResetPassword(ctx, instanceUUID)
+	_, err = v3Client.Compute().Instance().ResetPassword(ctx, instanceUUID)
 	return err
 }
 

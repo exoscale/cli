@@ -20,7 +20,7 @@ type InstancesListElement struct {
 	SecurityGroups     *[]SecurityGroup
 	SshKey             *SshKey
 	SshKeys            *[]SshKey
-	State              *[]InstanceState
+	State              *InstanceState
 	Template           *Template
 }
 

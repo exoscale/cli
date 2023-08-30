@@ -1,7 +1,7 @@
 module github.com/exoscale/cli
 
 replace (
-	github.com/exoscale/egoscale/v3 => github.com/exoscale/egoscale/v3 v3.0.0-20230830145018-2a52db7bef92
+	github.com/exoscale/egoscale/v3 => github.com/exoscale/egoscale/v3 v3.0.0-20230830163612-a8c92b4e9a83
 	gopkg.ini/ini.v1 => github.com/go-ini/ini v1.42.0
 )
 

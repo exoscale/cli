@@ -16,7 +16,7 @@ func NewOrgPolicy(c *oapi.ClientWithResponses) *OrgPolicy {
 	return &OrgPolicy{c}
 }
 
-func (a *OrgPolicy) Get(ctx context.Context) ([]oapi.IamPolicy, error) {
+func (a *OrgPolicy) Get(ctx context.Context) (*oapi.IamPolicy, error) {
 	resp, err := a.oapiClient.GetIamOrganizationPolicyWithResponse(ctx)
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func (a *OrgPolicy) Get(ctx context.Context) ([]oapi.IamPolicy, error) {
 		return nil, err
 	}
 
-	return *resp.JSON200, nil
+	return resp.JSON200, nil
 }
 
 func (a *OrgPolicy) Update(ctx context.Context, body oapi.UpdateIamOrganizationPolicyJSONRequestBody) (*oapi.Operation, error) {

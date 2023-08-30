@@ -193,7 +193,7 @@ github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/oapi
 github.com/exoscale/egoscale/version
-# github.com/exoscale/egoscale/v3 v3.0.0-00010101000000-000000000000 => github.com/exoscale/egoscale/v3 v3.0.0-20230830145018-2a52db7bef92
+# github.com/exoscale/egoscale/v3 v3.0.0-00010101000000-000000000000 => github.com/exoscale/egoscale/v3 v3.0.0-20230830163612-a8c92b4e9a83
 ## explicit; go 1.20
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/api/compute
@@ -584,5 +584,5 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# github.com/exoscale/egoscale/v3 => github.com/exoscale/egoscale/v3 v3.0.0-20230830145018-2a52db7bef92
+# github.com/exoscale/egoscale/v3 => github.com/exoscale/egoscale/v3 v3.0.0-20230830163612-a8c92b4e9a83
 # gopkg.ini/ini.v1 => github.com/go-ini/ini v1.42.0
