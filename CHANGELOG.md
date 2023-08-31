@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+### Features
+
+- compute instance: implement reset-password command #536
+
 ### Improvements
 
 - sks show: display whether auto-upgrade is enabled #534
