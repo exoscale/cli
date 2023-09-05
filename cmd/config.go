@@ -265,7 +265,8 @@ func chooseZone(client *egoscale.Client, zones []string) (string, error) {
 	if zones == nil {
 
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(defaultEnvironment, defaultZone))
-		zones, err := client.ListZones(ctx)
+		var err error
+		zones, err = client.ListZones(ctx)
 
 		if err != nil {
 			return "", err
