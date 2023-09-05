@@ -6,6 +6,10 @@
 
 - sks show: display whether auto-upgrade is enabled #534
 
+### Bug Fixes
+
+- config add: fix adding new config (#537)
+
 ## 1.72.1
 
 ### Deprecations
