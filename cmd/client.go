@@ -70,6 +70,7 @@ func buildClient() {
 			}
 			return false
 		}, exov2.ClientOptWithTrace()),
+		exov2.ClientOptWithRecording("testdata.json"),
 	)
 	if err != nil {
 		panic(fmt.Sprintf("unable to initialize Exoscale API V2 client: %v", err))
