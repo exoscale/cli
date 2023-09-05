@@ -2,6 +2,8 @@
 
 ## UNRELEASED
 
+## 1.72.2
+
 ### Improvements
 
 - sks show: display whether auto-upgrade is enabled #534
