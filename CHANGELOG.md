@@ -6,9 +6,15 @@
 
 - compute instance: implement reset-password command #536
 
+## 1.72.2
+
 ### Improvements
 
 - sks show: display whether auto-upgrade is enabled #534
+
+### Bug Fixes
+
+- config add: fix adding new config (#537)
 
 ## 1.72.1
 
