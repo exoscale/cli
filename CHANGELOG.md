@@ -2,6 +2,10 @@
 
 ## UNRELEASED
 
+### Features
+
+- compute instance: implement reset-password command #536
+
 ## 1.72.2
 
 ### Improvements
