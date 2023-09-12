@@ -98,3 +98,16 @@ dockers:
       - --build-arg="VERSION={{.Version}}"
       - --build-arg="VCS_REF={{.ShortCommit}}"
       - --build-arg="BUILD_DATE={{.Date}}"
+
+source:
+  enabled: true
+  prefix_template: "{{ .ProjectName }}_{{ .Version }}/"
+  name_template: "{{ .ProjectName }}_{{ .Version }}"
+  rlcp: true
+  files:
+    - go.mk/*
+
+signs:
+- cmd: gpg
+  args: ["--default-key", "7100E8BFD6199CE0374CB7F003686F8CDE378D41", "--detach-sign", "${artifact}"]
+  artifacts: all
