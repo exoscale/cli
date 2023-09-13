@@ -6,6 +6,10 @@
 
 - compute instance: implement reset-password command #536
 
+### Improvements
+
+- release: create source tarball and sign all artifacts #538
+
 ## 1.72.2
 
 ### Improvements
