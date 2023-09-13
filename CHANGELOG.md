@@ -5,6 +5,7 @@
 ### Features
 
 - compute instance: implement reset-password command #536
+- Updated `exo x` #539
 
 ### Improvements
 
