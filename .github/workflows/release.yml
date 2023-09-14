@@ -100,7 +100,7 @@ jobs:
               cd /home/runner/$aurpkg
               sed -i "/^pkgver=/s/.*/pkgver=$version_tag/" PKGBUILD
               if [ $aurpkg == "exoscale-cli-bin" ]; then
-                sed -i "/^sha256sums=/s/.*/sha256sums=\('$checksum'\)/" PKGBUILD
+                sed -i "/^sha256sums=/s/.*/sha256sums=\('$checksum'/" PKGBUILD
               fi
 
               makepkg
