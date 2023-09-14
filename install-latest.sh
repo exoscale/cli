@@ -148,8 +148,9 @@ else
     TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
 
     # Check if the tooling key is installed
-    if gpg --list-keys | grep -q "$TOOLING_KEY_FINGERPRINT"; then
+    if gpg --list-keys | grep "$TOOLING_KEY_FINGERPRINT"; then
         # verity sig
+        echo "the key is available"
         exit 1
     else
         read -p "The GPG key $TOOLING_KEY_NAME ($TOOLING_KEY_FINGERPRINT) is missing, would you like to import it? (N/y): " import_key
@@ -158,6 +159,7 @@ else
             gpg --recv-keys "$TOOLING_KEY_FINGERPRINT"
             if [ $? -eq 0 ]; then
                 echo "Import successful."
+                echo "the key is available"
                 # verity sig
             else
                 echo "Import failed. Exiting."
