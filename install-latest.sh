@@ -117,7 +117,9 @@ GITHUB_DOWNLOAD_URL="https://github.com/exoscale/cli/releases/download"
 TEMPDIR=$(mktemp -d)
 PKGPREFIX="exoscale-cli"
 PKGFILE="${PKGPREFIX}_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.${FILEEXT}"
+PKGSIGFILE=$PKGFILE.sig
 PKGPATH=$TEMPDIR/$PKGFILE
+PKGSIGPATH=$TEMPDIR/$PKGSIGFILE
 $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGFILE" >$PKGPATH
 
 # check the checksum
@@ -135,40 +137,16 @@ if [ "$COMPUTED_CHECKSUM" != "$EXPECTED_CHECKSUM" ]; then
     exit 1
 fi
 
-if ! command -v gpg >/dev/null 2>&1; then
-    echo "GPG is not installed. It is recommended to verify the authenticity of the exo cli package before installing it. Please install GPG."
-
-    read -p "Would you like to install exo cli without verifying the package's authenticity? (N/y): " verify_signature
-    if [ ! "$verify_signature" = "y" ]; then
-        echo "Exiting."
-        exit 1
-    fi
-else
+if command -v gpg >/dev/null 2>&1; then
     TOOLING_KEY_NAME="Exoscale Tooling <tooling@exoscale.ch>"
     TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
 
-    # Check if the tooling key is available
-    if gpg --list-keys | grep -q $TOOLING_KEY_FINGERPRINT; then
-        # verity sig
-        echo "the key is available"
-        exit 1
-    else
-        read -p "The GPG key $TOOLING_KEY_NAME ($TOOLING_KEY_FINGERPRINT) is missing, would you like to import it? (N/y): " import_key
-        if [ "$import_key" = "y" ]; then
-            echo "Importing key"
-            gpg --recv-keys "$TOOLING_KEY_FINGERPRINT"
-            if [ $? -eq 0 ]; then
-                echo "Import successful."
-                echo "the key is available"
-                # verity sig
-            else
-                echo "Import failed. Exiting."
-                exit 1
-            fi
-        else
-            echo "Exiting."
-        fi
+    if ! gpg --list-keys | grep -q $TOOLING_KEY_FINGERPRINT; then
+        gpg --recv-keys "$TOOLING_KEY_FINGERPRINT"
     fi
+
+    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGSIGFILE" >$PKGSIGPATH
+    gpg --verify $PKGSIGPATH $PKGPATH
 fi
 
 echo "Installing exo CLI, using $PACKAGETYPE"
