@@ -147,8 +147,11 @@ else
     TOOLING_KEY_NAME="Exoscale Tooling <tooling@exoscale.ch>"
     TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
 
-    # Check if the tooling key is installed
-    if gpg --list-keys | grep "$TOOLING_KEY_FINGERPRINT"; then
+    GPG_KEY_LIST=$(gpg --list-keys 2>/dev/null)
+    GPG_TOOLING_KEY_MATCH=$(echo $GPG_KEY_LIST | grep $TOOLING_KEY_FINGERPRINT)
+
+    # Check if the tooling key is available
+    if [[ $GPG_TOOLING_KEY_MATCH != "" ]]; then
         # verity sig
         echo "the key is available"
         exit 1
