@@ -151,7 +151,7 @@ else
     GPG_TOOLING_KEY_MATCH=$(echo $GPG_KEY_LIST | grep $TOOLING_KEY_FINGERPRINT)
 
     # Check if the tooling key is available
-    if [ -n $GPG_TOOLING_KEY_MATCH ]; then
+    if [ -n "$GPG_TOOLING_KEY_MATCH" ]; then
         # verity sig
         echo "the key is available"
         exit 1
