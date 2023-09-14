@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+- release: adapt AUR release script for signed packages #541
+
 ## 1.73.0
 
 ### Features
