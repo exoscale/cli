@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+- install script: verify signatures before installation #540
+
 ## 1.73.0
 
 ### Features
