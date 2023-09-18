@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 - install script: verify signatures before installation #540
+- release: adapt AUR release script for signed packages #541
 
 ## 1.73.0
 
