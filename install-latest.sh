@@ -117,7 +117,9 @@ GITHUB_DOWNLOAD_URL="https://github.com/exoscale/cli/releases/download"
 TEMPDIR=$(mktemp -d)
 PKGPREFIX="exoscale-cli"
 PKGFILE="${PKGPREFIX}_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.${FILEEXT}"
+PKGSIGFILE=$PKGFILE.sig
 PKGPATH=$TEMPDIR/$PKGFILE
+PKGSIGPATH=$TEMPDIR/$PKGSIGFILE
 $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGFILE" >$PKGPATH
 
 # check the checksum
@@ -133,6 +135,18 @@ if [ "$COMPUTED_CHECKSUM" != "$EXPECTED_CHECKSUM" ]; then
     echo $COMPUTED_CHECKSUM
     echo $EXPECTED_CHECKSUM
     exit 1
+fi
+
+if command -v gpg >/dev/null 2>&1; then
+    TOOLING_KEY_NAME="Exoscale Tooling <tooling@exoscale.ch>"
+    TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
+
+    if ! gpg --list-keys | grep -q $TOOLING_KEY_FINGERPRINT; then
+        gpg --recv-keys "$TOOLING_KEY_FINGERPRINT"
+    fi
+
+    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGSIGFILE" >$PKGSIGPATH
+    gpg --verify $PKGSIGPATH $PKGPATH
 fi
 
 echo "Installing exo CLI, using $PACKAGETYPE"
