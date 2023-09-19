@@ -8072,7 +8072,7 @@ func XUpdateReverseDnsInstance(paramId string, params *viper.Viper, body string)
 	return resp, decoded, nil
 }
 
-// XCreateSecondaryVolume Create a secondary volume
+// XCreateSecondaryVolume Create a secondary volume. If snapshot-id is passed in from an existing secondary volume snapshot.
 func XCreateSecondaryVolume(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-secondary-volume"
 	if xSubcommand {
@@ -17496,8 +17496,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-secondary-volume",
-			Short:   "Create a secondary volume",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Volume name\n    maxLength: 255\n    minLength: 1\n    type: string\n  size:\n    description: Volume size in GB\n    format: int64\n    maximum: 1024\n    minimum: 100\n    type: integer\nrequired:\n- size\ntype: object\n"),
+			Short:   "Create a secondary volume. If snapshot-id is passed in from an existing secondary volume snapshot.",
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Volume name\n    maxLength: 255\n    minLength: 1\n    type: string\n  size:\n    description: Volume size in GB\n    format: int64\n    maximum: 1024\n    minimum: 100\n    type: integer\n  snapshot-id:\n    description: Secondary volume snapshot ID\n    format: uuid\n    type: string\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
