@@ -3,6 +3,7 @@
 ## UNRELEASED
 
 - release: adapt AUR release script for signed packages #541
+- Updated `exo x` #542
 
 ## 1.73.0
 
