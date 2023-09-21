@@ -116,6 +116,9 @@ nfpms:
 
 publishers:
   - name: aptly
+    env:
+      - AWS_ACCESS_KEY_ID={{ .Env.AWS_ACCESS_KEY_ID }}
+      - AWS_SECRET_ACCESS_KEY={{ .Env.AWS_SECRET_ACCESS_KEY }}
     ids:
       - nfpms
     cmd: ./publish-artifact.sh {{ .ArtifactPath }}
