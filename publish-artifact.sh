@@ -11,35 +11,40 @@ aptlydistro=stable
 aptlycmd="aptly -config=.aptly.conf"
 gpgkeyflag='-gpg-key=7100E8BFD6199CE0374CB7F003686F8CDE378D41'
 
-# if $aptlycmd mirror show $aptlymirror >/dev/null 2>&1; then
-#     echo "repo $aptlymirror already exists"
-# else
-#     $aptlycmd mirror create \
-#         -filter="(latest)" \
-#         $aptlymirror \
-#         $archiveurl \
-#         $aptlydistro
-# fi
+# Get the 10 latest Git tags
+latest_tags=$(git tag --sort=-v:refname | head -n 10)
 
-# $aptlycmd mirror update \
-#     $aptlymirror
+# Create a package query filter for aptly
+package_filter=""
+for tag in $latest_tags; do
+    stripped_tag=$(expr "$tag" : '.\(.*\)')
+    if [ $first_tag_set ]; then
+        package_filter+=" | "
+    fi
+    package_filter+="exoscale-cli (= $stripped_tag)"
+    first_tag_set=1
+done
 
-if $aptlycmd repo show $aptlyrepo >/dev/null 2>&1; then
-    echo "repo $aptlyrepo already exists"
-else
-    $aptlycmd repo create $aptlyrepo
-    # $aptlycmd repo import $aptlymirror $aptlyrepo $aptlydistro
+mirrorrepo() {
+    $aptlycmd mirror create \
+        $aptlymirror \
+        $archiveurl \
+        $aptlydistro
+
+    $aptlycmd mirror update \
+        $aptlymirror
+}
+
+$aptlycmd repo create $aptlyrepo
+
+if mirrorrepo; then
+    $aptlycmd repo import $aptlymirror $aptlyrepo "$package_filter"
 fi
 
-if echo $artifact | grep -q '.*.deb'; then
-    $aptlycmd repo add $aptlyrepo $artifact
-    $aptlycmd publish repo \
-        $gpgkeyflag \
-        -distribution=$aptlydistro \
-        $aptlyrepo \
-        $aptlyremote
-    # $aptlycmd publish update \
-    #     $gpgkeyflag \
-    #     $aptlydistro \
-    #     $aptlyremote
-fi
+$aptlycmd repo add $aptlyrepo $artifact
+
+$aptlycmd publish repo \
+    $gpgkeyflag \
+    -distribution=$aptlydistro \
+    $aptlyrepo \
+    $aptlyremote
