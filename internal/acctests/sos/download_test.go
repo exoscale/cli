@@ -47,7 +47,7 @@ func (s *SOSSuite) TestDownloadSingleObject() {
 				},
 				Commands: []string{
 					"exo storage upload {prepDir}file1.txt {bucket}",
-					"exo storage download -r {bucket} {downloadDir}/file1-new.txt",
+					"exo storage download {bucket}/file1.txt {downloadDir}/file1-new.txt",
 				},
 				ExpectedDownloadFiles: LocalFiles{
 					"file1.txt":     "this file should get written",

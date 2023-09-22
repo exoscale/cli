@@ -105,7 +105,7 @@ func getStr(a *string) string {
 	return *a
 }
 
-// TODO(sauterp) once deletion of versioned buckets, tests should handle deletions themselves.
+// TODO(sauterp) once deletion of versioned buckets is implemented, tests should handle deletions themselves.
 func (s *SOSSuite) deleteBucket(bucketName string) {
 	ctx := context.Background()
 
