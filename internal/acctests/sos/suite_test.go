@@ -145,6 +145,13 @@ func TestSOSSuite(t *testing.T) {
 }
 
 func (s *SOSSuite) writeFile(filename, content string) {
+	slashInd := strings.LastIndex(filename, "/")
+	if slashInd != -1 {
+		folders := filename[:slashInd]
+		err := os.MkdirAll(s.PrepDir+folders, 0744)
+		s.Assert().NoError(err)
+	}
+
 	err := os.WriteFile(s.PrepDir+filename, []byte(content), 0644)
 	s.Assert().NoError(err)
 }

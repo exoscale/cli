@@ -1,8 +1,11 @@
 package sos_test
 
 import (
+	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type LocalFiles map[string]string
@@ -55,6 +58,26 @@ func emptyDirectory(dirPath string) error {
 	return nil
 }
 
+func registerFile(s *SOSSuite, files LocalFiles, prefix string) fs.WalkDirFunc {
+	return func(path string, info fs.DirEntry, err error) error {
+		if err != nil {
+			fmt.Println(err)
+			return nil
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		content, err := os.ReadFile(path)
+		s.NoError(err)
+
+		localPath := strings.TrimPrefix(path, prefix)
+		files[localPath] = string(content)
+		return nil
+	}
+}
+
 func (s *SOSSuite) Execute(test SOSTest) {
 	for stepNr, step := range test.Steps {
 		s.T().Logf("step number: %d %q", stepNr, step.Description)
@@ -87,27 +110,13 @@ func (s *SOSSuite) Execute(test SOSTest) {
 			}
 		}
 
-		files, err := os.ReadDir(s.DownloadDir)
-		if !s.NoError(err) {
-			return
-		}
-
-		actualFileNumberMismatches := !s.Equal(len(step.ExpectedDownloadFiles), len(files), "number of actual files doesn't match number of expected files")
-
 		downloadDir := LocalFiles{}
-		for _, file := range files {
-			if actualFileNumberMismatches {
-				s.T().Logf("actual file: %s", file)
-			}
+		err := filepath.WalkDir(s.DownloadDir, registerFile(s, downloadDir, s.DownloadDir))
+		s.NoError(err)
+		nFiles := len(downloadDir)
+		fmt.Printf("downloadDir: %v\n", downloadDir)
 
-			content, err := os.ReadFile(s.DownloadDir + file.Name())
-			if !s.NoError(err) {
-				return
-			}
-
-			downloadDir[file.Name()] = string(content)
-		}
-
+		actualFileNumberMismatches := !s.Equal(len(step.ExpectedDownloadFiles), nFiles, "number of actual files doesn't match number of expected files")
 		if actualFileNumberMismatches {
 			return
 		}

@@ -1,5 +1,7 @@
 package sos_test
 
+import "fmt"
+
 func (s *SOSSuite) TestDownloadSingleObject() {
 	s.Execute(SOSTest{
 		Steps: []Step{
@@ -113,6 +115,89 @@ func (s *SOSSuite) TestDownloadSingleVersionedObject() {
 				},
 				ExpectedDownloadFiles: LocalFiles{
 					"file1-v0.txt": "original content",
+				},
+			},
+		},
+	})
+}
+
+func (s *SOSSuite) TestDownloadMultipleObjects() {
+	fmt.Println(s.T().Name())
+	s.Execute(SOSTest{
+		Steps: []Step{
+			{
+				Description: "check that multiple files can be downloaded",
+				PreparedFiles: LocalFiles{
+					"file1.txt": "expected content 1",
+					"file2.txt": "expected content 2",
+				},
+				Commands: []string{
+					"exo storage upload {prepDir}file1.txt {bucket}",
+					"exo storage upload {prepDir}file2.txt {bucket}",
+					"exo storage download -r {bucket} {downloadDir}",
+				},
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt": "expected content 1",
+					"file2.txt": "expected content 2",
+				},
+			},
+			{
+				Description: "check that multiple files can be uploaded",
+				PreparedFiles: LocalFiles{
+					"file1.txt": "expected content 1",
+					"file2.txt": "expected content 2",
+				},
+				Commands: []string{
+					"exo storage upload -r {prepDir} {bucket}",
+					"exo storage download -r {bucket} {downloadDir}",
+				},
+				ClearDownloadDirBeforeCommands: true,
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt": "expected content 1",
+					"file2.txt": "expected content 2",
+				},
+			},
+			{
+				Description: "check that a directory can be uploaded and downloaded",
+				PreparedFiles: LocalFiles{
+					"dir/file1.txt": "expected content 1",
+					"dir/file2.txt": "expected content 2",
+				},
+				Commands: []string{
+					"exo storage upload -r {prepDir} {bucket}",
+					"exo storage download -r {bucket} {downloadDir}",
+				},
+				ClearDownloadDirBeforeCommands: true,
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt":     "expected content 1",
+					"file2.txt":     "expected content 2",
+					"dir/file1.txt": "expected content 1",
+					"dir/file2.txt": "expected content 2",
+				},
+			},
+			{
+				Description:   "check for error if directory download doesn't end in slash",
+				PreparedFiles: LocalFiles{},
+				Commands: []string{
+					"exo storage download -r {bucket} {downloadDir}newDir",
+				},
+				ClearDownloadDirBeforeCommands: true,
+				ExpectErrorInCommandNr:         1,
+				ExpectedDownloadFiles:          LocalFiles{},
+			},
+			{
+				Description:   "check that a directory can be downloaded and renamed",
+				PreparedFiles: LocalFiles{},
+				Commands: []string{
+					"exo storage upload -r {prepDir} {bucket}",
+					"exo storage download -r {bucket} {downloadDir}newDir/",
+				},
+				ClearDownloadDirBeforeCommands: true,
+				ExpectedDownloadFiles: LocalFiles{
+					"newDir/file1.txt":     "expected content 1",
+					"newDir/file2.txt":     "expected content 2",
+					"newDir/dir/file1.txt": "expected content 1",
+					"newDir/dir/file2.txt": "expected content 2",
 				},
 			},
 		},
