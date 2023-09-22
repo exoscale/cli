@@ -114,7 +114,6 @@ func (s *SOSSuite) Execute(test SOSTest) {
 		err := filepath.WalkDir(s.DownloadDir, registerFile(s, downloadDir, s.DownloadDir))
 		s.NoError(err)
 		nFiles := len(downloadDir)
-		fmt.Printf("downloadDir: %v\n", downloadDir)
 
 		actualFileNumberMismatches := !s.Equal(len(step.ExpectedDownloadFiles), nFiles, "number of actual files doesn't match number of expected files")
 		if actualFileNumberMismatches {

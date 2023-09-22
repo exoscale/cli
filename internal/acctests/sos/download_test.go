@@ -203,3 +203,61 @@ func (s *SOSSuite) TestDownloadMultipleObjects() {
 		},
 	})
 }
+
+func (s *SOSSuite) TestDownloadMultipleVersionedObjects() {
+	s.Execute(SOSTest{
+		Steps: []Step{
+			{
+				Description: "check that multiple files can be uploaded and downloaded from versioned bucket",
+				PreparedFiles: LocalFiles{
+					"file1.txt": "original content 1",
+					"file2.txt": "original content 2",
+				},
+				Commands: []string{
+					"exo storage bucket versioning enable {bucket}",
+					"exo storage upload {prepDir}file1.txt {bucket}",
+					"exo storage upload {prepDir}file2.txt {bucket}",
+					"exo storage download -r {bucket} {downloadDir}",
+				},
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt": "original content 1",
+					"file2.txt": "original content 2",
+				},
+			},
+			{
+				Description: "check that the latest version is downloaded from versioned bucket",
+				PreparedFiles: LocalFiles{
+					"file1.txt": "new content 1",
+					"file2.txt": "new content 2",
+				},
+				Commands: []string{
+					"exo storage upload {prepDir}file1.txt {bucket}",
+					"exo storage upload {prepDir}file2.txt {bucket}",
+					"exo storage download -r {bucket} {downloadDir}",
+				},
+				ClearDownloadDirBeforeCommands: true,
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt": "new content 1",
+					"file2.txt": "new content 2",
+				},
+			},
+			{
+				Description: "download all versions of multiple files",
+				PreparedFiles: LocalFiles{
+					"file1.txt": "newer content 1",
+					"file2.txt": "newer content 2",
+				},
+				Commands: []string{
+					"exo storage upload {prepDir}file1.txt {bucket}",
+					"exo storage upload {prepDir}file2.txt {bucket}",
+					"exo storage download --versions -r {bucket} {downloadDir}",
+				},
+				ClearDownloadDirBeforeCommands: true,
+				ExpectedDownloadFiles: LocalFiles{
+					"file1.txt": "new content 1",
+					"file2.txt": "new content 2",
+				},
+			},
+		},
+	})
+}
