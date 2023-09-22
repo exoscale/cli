@@ -12,8 +12,10 @@ type Step struct {
 	PreparedFiles                  LocalFiles
 	ClearDownloadDirBeforeCommands bool
 	Commands                       []string
-	ExpectErrorInCommandNr         int
-	ExpectedDownloadFiles          LocalFiles
+
+	// 0 means don't expect an error, counting starts at 1
+	ExpectErrorInCommandNr int
+	ExpectedDownloadFiles  LocalFiles
 }
 
 type SOSTest struct {
