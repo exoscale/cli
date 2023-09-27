@@ -1,13 +1,14 @@
 name: CI
 
-on:
-  push:
-    branches:
-    - '**'
-    paths-ignore:
-    - '**.md'
-    tags-ignore:
-    - 'v*' # Don't run CI tests on release tags
+# TODO(sc-78180) temporary
+# on:
+#   push:
+#     branches:
+#     - '**'
+#     paths-ignore:
+#     - '**.md'
+#     tags-ignore:
+#     - 'v*' # Don't run CI tests on release tags
 
 jobs:
   build:
