@@ -111,3 +111,14 @@ signs:
 - cmd: gpg
   args: ["--default-key", "7100E8BFD6199CE0374CB7F003686F8CDE378D41", "--detach-sign", "${artifact}"]
   artifacts: all
+
+scoops:
+  - description: "Command-line tool for everything at Exoscale: compute, storage, dns."
+    commit_author:
+      name: "Exoscale Tooling"
+      email: "tooling@exoscale.ch"
+    commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
+    homepage: "https://github.com/exoscale/cli"
+    license: "Apache License 2.0"
+    # TODO(sc-78180) remove
+    skip_upload: true
