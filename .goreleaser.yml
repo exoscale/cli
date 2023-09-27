@@ -46,12 +46,11 @@ archives:
       - contrib/completion/**/*
       - manpage/*
 
-# TODO(sc-78180) reenable
 release:
-  disable: true
-  # github:
-  #   owner: exoscale
-  #   name: cli
+  github:
+    # TODO(sc-78180) change to exoscale
+    owner: sauterp
+    name: cli
 
 # TODO(sc-78180) remove
 # nfpms:
