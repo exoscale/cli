@@ -25,6 +25,21 @@ $ make build
 
 Upon successful compilation, the resulting `exo` binary is stored in the `bin/` directory.
 
+### Using the scoop package manager on Windows
+
+If you haven't installed scoop already, follow the instructions at [scoop.sh](https://scoop.sh) and before installing `exo` with:
+
+```shell
+scoop bucket add exoscale-cli https://github.com/sauterp/cli
+scoop install exoscale-cli
+```
+
+To update `exo` to the latest version:
+
+```shell
+scoop update
+scoop update exoscale-cli
+```
 
 ## Configuration
 

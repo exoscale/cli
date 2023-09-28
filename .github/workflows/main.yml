@@ -6,6 +6,7 @@ on:
     - '**'
     paths-ignore:
     - '**.md'
+    - 'bucket/**'
     tags-ignore:
     - 'v*' # Don't run CI tests on release tags
 

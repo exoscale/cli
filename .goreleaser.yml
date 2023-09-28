@@ -122,7 +122,6 @@ scoops:
     homepage: "https://github.com/exoscale/cli"
     license: "Apache License 2.0"
     repository:
-      # TODO(sc-78180) -> exoscale
-      owner: sauterp
+      owner: exoscale
       name: cli
       branch: master
