@@ -116,6 +116,7 @@ release:
 
 scoops:
   - description: "Command-line tool for everything at Exoscale: compute, storage, dns."
+    folder: "bucket"
     commit_author:
       name: "Exoscale Tooling"
       email: "tooling@exoscale.ch"
