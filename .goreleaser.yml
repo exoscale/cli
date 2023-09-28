@@ -15,9 +15,9 @@ builds:
       - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
     goos:
       - windows
-      # - darwin
-      # - linux
-      # - openbsd
+      - darwin
+      - linux
+      - openbsd
     goarch:
       - amd64
       - arm
@@ -48,71 +48,69 @@ archives:
 
 release:
   github:
-    # TODO(sc-78180) change to exoscale
-    owner: sauterp
+    owner: exoscale
     name: cli
 
-# TODO(sc-78180) remove
-# nfpms:
-#   - vendor: Exoscale
-#     homepage: https://www.exoscale.com/
-#     maintainer: Exoscale Support <support@exoscale.com>
-#     description: Manage easily your Exoscale infrastructure from the command-line.
-#     license: Apache 2.0
-#     formats:
-#       - deb
-#       - rpm
-#     contents:
-#       # manpages
-#       - src: "./manpage/exo*.1"
-#         dst: "/usr/share/man/man1"
-#       # bash
-#       - src: "./contrib/completion/bash/exo"
-#         dst: "/usr/share/bash-completion/completions/exo"
-#       # zsh
-#       - src: "./contrib/completion/zsh/_exo"
-#         dst: "/usr/share/zsh/vendor-completions/_exo"
+nfpms:
+  - vendor: Exoscale
+    homepage: https://www.exoscale.com/
+    maintainer: Exoscale Support <support@exoscale.com>
+    description: Manage easily your Exoscale infrastructure from the command-line.
+    license: Apache 2.0
+    formats:
+      - deb
+      - rpm
+    contents:
+      # manpages
+      - src: "./manpage/exo*.1"
+        dst: "/usr/share/man/man1"
+      # bash
+      - src: "./contrib/completion/bash/exo"
+        dst: "/usr/share/bash-completion/completions/exo"
+      # zsh
+      - src: "./contrib/completion/zsh/_exo"
+        dst: "/usr/share/zsh/vendor-completions/_exo"
 
-# brews:
-#   - tap:
-#       owner: exoscale
-#       name: homebrew-tap
-#     folder: Formula
-#     homepage: "https://exoscale.github.io/cli/"
-#     description: Manage easily your Exoscale infrastructure from the command-line.
-#     install: |
-#       bin.install "exo"
-#       man1.install Dir["manpage/exo*.1"]
-#       bash_completion.install "contrib/completion/bash/exo"
-#       zsh_completion.install "contrib/completion/zsh/_exo"
+brews:
+  - tap:
+      owner: exoscale
+      name: homebrew-tap
+    folder: Formula
+    homepage: "https://exoscale.github.io/cli/"
+    description: Manage easily your Exoscale infrastructure from the command-line.
+    install: |
+      bin.install "exo"
+      man1.install Dir["manpage/exo*.1"]
+      bash_completion.install "contrib/completion/bash/exo"
+      zsh_completion.install "contrib/completion/zsh/_exo"
 
-# dockers:
-#   - goos: linux
-#     goarch: amd64
-#     image_templates:
-#       - "exoscale/cli:latest"
-#       - "exoscale/cli:{{ .Major }}"
-#       - "exoscale/cli:{{ .Major }}.{{ .Minor }}"
-#       - "exoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-#     dockerfile: Dockerfile.goreleaser
-#     build_flag_templates:
-#       - --pull
-#       - --build-arg="VERSION={{.Version}}"
-#       - --build-arg="VCS_REF={{.ShortCommit}}"
-#       - --build-arg="BUILD_DATE={{.Date}}"
+dockers:
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - "exoscale/cli:latest"
+      - "exoscale/cli:{{ .Major }}"
+      - "exoscale/cli:{{ .Major }}.{{ .Minor }}"
+      - "exoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    dockerfile: Dockerfile.goreleaser
+    build_flag_templates:
+      - --pull
+      - --build-arg="VERSION={{.Version}}"
+      - --build-arg="VCS_REF={{.ShortCommit}}"
+      - --build-arg="BUILD_DATE={{.Date}}"
 
-# source:
-#   enabled: true
-#   prefix_template: "{{ .ProjectName }}_{{ .Version }}/"
-#   name_template: "{{ .ProjectName }}_{{ .Version }}"
-#   rlcp: true
-#   files:
-#     - go.mk/*
+source:
+  enabled: true
+  prefix_template: "{{ .ProjectName }}_{{ .Version }}/"
+  name_template: "{{ .ProjectName }}_{{ .Version }}"
+  rlcp: true
+  files:
+    - go.mk/*
 
-# signs:
-# - cmd: gpg
-#   args: ["--default-key", "7100E8BFD6199CE0374CB7F003686F8CDE378D41", "--detach-sign", "${artifact}"]
-#   artifacts: all
+signs:
+- cmd: gpg
+  args: ["--default-key", "7100E8BFD6199CE0374CB7F003686F8CDE378D41", "--detach-sign", "${artifact}"]
+  artifacts: all
 
 scoops:
   - description: "Command-line tool for everything at Exoscale: compute, storage, dns."
