@@ -122,3 +122,8 @@ scoops:
     commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
     homepage: "https://github.com/exoscale/cli"
     license: "Apache License 2.0"
+    repository:
+      # TODO(sc-78180) -> exoscale
+      owner: sauterp
+      name: cli
+      branch: master
