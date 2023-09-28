@@ -30,7 +30,7 @@ Upon successful compilation, the resulting `exo` binary is stored in the `bin/` 
 If you haven't installed scoop already, follow the instructions at [scoop.sh](https://scoop.sh) before installing `exo` with:
 
 ```shell
-scoop bucket add exoscale-cli https://github.com/sauterp/cli
+scoop bucket add exoscale-cli https://github.com/exoscale/cli
 scoop install exoscale-cli
 ```
 
