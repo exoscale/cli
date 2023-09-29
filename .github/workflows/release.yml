@@ -103,7 +103,7 @@ jobs:
                 sed -i "/^sha256sums=/s/.*/sha256sums=\('$checksum'/" PKGBUILD
               fi
 
-              makepkg
+              makepkg --skippgpcheck
 
               makepkg --printsrcinfo >.SRCINFO
               git add PKGBUILD .SRCINFO
