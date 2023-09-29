@@ -1,0 +1,22 @@
+{
+    "version": "1.74.0",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/exoscale/cli/releases/download/v1.74.0/exoscale-cli_1.74.0_windows_amd64.zip",
+            "bin": [
+                "exo.exe"
+            ],
+            "hash": "05df74e49500478a1bf6a026b94539a0b6bde3b463ab367a1072aef03f1e583b"
+        },
+        "arm64": {
+            "url": "https://github.com/exoscale/cli/releases/download/v1.74.0/exoscale-cli_1.74.0_windows_arm64.zip",
+            "bin": [
+                "exo.exe"
+            ],
+            "hash": "112b05929359e70e315aa6d59851f3ff2fcab28f17dfcab87d9298be2ed9c6ba"
+        }
+    },
+    "homepage": "https://github.com/exoscale/cli",
+    "license": "Apache License 2.0",
+    "description": "Command-line tool for everything at Exoscale: compute, storage, dns."
+}
