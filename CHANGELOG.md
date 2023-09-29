@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 
+- publish cli releases as scoop packages #546
 - install script: verify signatures before installation #540
 - release: adapt AUR release script for signed packages #541
 - Updated `exo x` #542
