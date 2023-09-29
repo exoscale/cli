@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 1.74.0
 
 - publish cli releases as scoop packages #546
 - install script: verify signatures before installation #540
