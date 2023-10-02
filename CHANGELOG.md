@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+- aur releases: skip pgp check #547
+
 ## 1.74.0
 
 - publish cli releases as scoop packages #546
