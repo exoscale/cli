@@ -1,6 +1,8 @@
 # Changelog
 
-## UNRELEASED
+## 1.74.1
+
+### Improvements
 
 - release workflow: publish deb packages to SOS #544
 - aur releases: skip pgp check #547
