@@ -57,6 +57,7 @@ nfpms:
     maintainer: Exoscale Support <support@exoscale.com>
     description: Manage easily your Exoscale infrastructure from the command-line.
     license: Apache 2.0
+    id: nfpms
     formats:
       - deb
       - rpm
@@ -125,3 +126,12 @@ scoops:
       owner: exoscale
       name: cli
       branch: master
+
+publishers:
+  - name: aptly
+    env:
+      - AWS_ACCESS_KEY_ID={{ .Env.EXOSCALE_API_KEY }}
+      - AWS_SECRET_ACCESS_KEY={{ .Env.EXOSCALE_API_SECRET }}
+    ids:
+      - nfpms
+    cmd: ./go.mk/scripts/publish-deb-artifact-to-sos.sh {{ .ArtifactPath }} exoscale-packages deb/cli 10

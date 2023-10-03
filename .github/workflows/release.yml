@@ -35,6 +35,8 @@ jobs:
           release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
+          exoscale_api_key: ${{ secrets.SOS_PKG_BUCKET_KEY }}
+          exoscale_api_secret: ${{ secrets.SOS_PKG_BUCKET_SECRET }}
 
       - run: echo "version_tag=$(make get-version-tag)" >> $GITHUB_OUTPUT
         id: get-version-tag

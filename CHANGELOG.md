@@ -2,6 +2,7 @@
 
 ## UNRELEASED
 
+- release workflow: publish deb packages to SOS #544
 - aur releases: skip pgp check #547
 
 ## 1.74.0
