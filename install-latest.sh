@@ -163,6 +163,7 @@ TOOLING_KEY_NAME="Exoscale Tooling <tooling@exoscale.ch>"
 TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
 
 GPG_AVAILABLE=no
+# downloads and verifies the signature file for the package if gpg is available
 verify_pkg() {
     if [ "$GPG_AVAILABLE" = "yes" ]; then
         $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGSIGFILE" >$PKGSIGPATH
