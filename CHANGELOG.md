@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.74.2
+
+- update go.mk
+
 ## 1.74.1
 
 ### Improvements
