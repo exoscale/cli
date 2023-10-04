@@ -15,11 +15,33 @@ CPUARCHITECTURE=""
 FILEEXT=""
 PACKAGETYPE=""
 
+is_apt_newer_than_v2_2() {
+    apt_version=$(apt-get --version 2>&1 | grep -oP '(?<=apt )[0-9]+\.[0-9]+\.[0-9]+')
+
+    if [ -z "$apt_version" ]; then
+        # can't determine apt version
+        return 1
+    elif [ "$(
+        dpkg --compare-versions "$apt_version" ge "2.2.0"
+        echo $?
+    )" -eq 0 ]; then
+        # apt is >= 2.2.0
+        return 0
+    else
+        # apt is < 2.2.0
+        return 1
+    fi
+}
+
 if [ -f /etc/os-release ]; then
     . /etc/os-release
     case "$ID" in
         debian | ubuntu | pop | neon | zorin | linuxmint | elementary | parrot | mendel | galliumos | pureos | raspian | kali | Deepin)
-            PACKAGETYPE="dpkg"
+            if is_apt_newer_than_v2_2; then
+                PACKAGETYPE="apt"
+            else
+                PACKAGETYPE="dpkg"
+            fi
             FILEEXT="deb"
             OSTYPE="linux"
             ;;
@@ -137,27 +159,49 @@ if [ "$COMPUTED_CHECKSUM" != "$EXPECTED_CHECKSUM" ]; then
     exit 1
 fi
 
-if command -v gpg >/dev/null 2>&1; then
-    TOOLING_KEY_NAME="Exoscale Tooling <tooling@exoscale.ch>"
-    TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
+TOOLING_KEY_NAME="Exoscale Tooling <tooling@exoscale.ch>"
+TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
 
+GPG_AVAILABLE=no
+verify_pkg() {
+    if [ "$GPG_AVAILABLE" = "yes" ]; then
+        $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGSIGFILE" >$PKGSIGPATH
+        gpg --verify $PKGSIGPATH $PKGPATH
+    fi
+}
+
+if command -v gpg >/dev/null 2>&1; then
     if ! gpg --list-keys | grep -q $TOOLING_KEY_FINGERPRINT; then
         gpg --recv-keys "$TOOLING_KEY_FINGERPRINT"
     fi
 
-    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGSIGFILE" >$PKGSIGPATH
-    gpg --verify $PKGSIGPATH $PKGPATH
+    GPG_AVAILABLE=yes
+else
+    if [ "$PACKAGETYPE" = "apt" ]; then
+        # since gpg is not available, we have to fall back to installing via dpkg
+        PACKAGETYPE="dpkg"
+    fi
 fi
 
 echo "Installing exo CLI, using $PACKAGETYPE"
 case "$PACKAGETYPE" in
+    apt)
+        $SUDO mkdir -p /etc/apt/keyrings
+        gpg --export $TOOLING_KEY_FINGERPRINT | $SUDO tee /etc/apt/keyrings/exoscale.gpg >/dev/null
+        echo "deb [signed-by=/etc/apt/keyrings/exoscale.gpg] https://sos-ch-gva-2.exo.io/exoscale-packages/deb/cli stable main" | $SUDO tee /etc/apt/sources.list.d/exoscale.list >/dev/null
+        $SUDO apt-get update
+        $SUDO apt-get install -y exoscale-cli
+        ;;
     dpkg)
+        verify_pkg
         $SUDO dpkg -i $PKGPATH
         ;;
     yum)
+        verify_pkg
         $SUDO yum install -y $PKGPATH
         ;;
     dnf)
+        verify_pkg
         $SUDO dnf install -y $PKGPATH
         ;;
 esac
