@@ -7,7 +7,15 @@ Manage your Exoscale infrastructure easily from the command-line with `exo`.
 
 ## Installation
 
-### Using pre-built releases (recommended)
+### Debian and Red Hat based distributions
+
+On Debian and Red Hat based distributions like Ubuntu and Fedora, we recommend using the installation script.
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
+```
+
+### Using pre-built releases
 
 You can find pre-built releases of the CLI [here][releases].
 

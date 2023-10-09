@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Improvements
+
+- install script: install from SOS apt repo if possible #551
+
 ## 1.74.2
 
 - update go.mk
