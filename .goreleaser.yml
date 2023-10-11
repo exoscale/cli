@@ -20,11 +20,11 @@ builds:
       # - openbsd
     goarch:
       - amd64
-      # - arm
-      # - arm64
-    # goarm:
-    #   - 6
-    #   - 7
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
     ignore:
       - goos: openbsd
         goarch: arm
@@ -60,7 +60,7 @@ nfpms:
     license: Apache 2.0
     id: nfpms
     formats:
-      # - deb
+      - deb
       - rpm
     contents:
       # manpages
@@ -129,10 +129,21 @@ nfpms:
 #       branch: master
 
 publishers:
-  # - name: aptly
-  #   env:
-  #     - AWS_ACCESS_KEY_ID={{ .Env.EXOSCALE_API_KEY }}
-  #     - AWS_SECRET_ACCESS_KEY={{ .Env.EXOSCALE_API_SECRET }}
-  #   ids:
-  #     - nfpms
-  #   cmd: ./go.mk/scripts/publish-deb-artifact-to-sos.sh {{ .ArtifactPath }} exoscale-packages deb/cli 10
+  - name: rpms
+    env:
+      - AWS_ACCESS_KEY_ID={{ .Env.EXOSCALE_API_KEY }}
+      - AWS_SECRET_ACCESS_KEY={{ .Env.EXOSCALE_API_SECRET }}
+    ids:
+      - nfpms
+      # TODO(sc-78178) remove sauterp
+      # TODO(sc-78178) set number of versions to keep to 10
+    cmd: ./go.mk/scripts/publish-rpm-artifact-to-sos.sh {{ .ArtifactPath }} sauterp-exoscale-packages rpm/cli 3
+  - name: aptly
+    env:
+      - AWS_ACCESS_KEY_ID={{ .Env.EXOSCALE_API_KEY }}
+      - AWS_SECRET_ACCESS_KEY={{ .Env.EXOSCALE_API_SECRET }}
+    ids:
+      - nfpms
+      # TODO(sc-78178) remove sauterp
+      # TODO(sc-78178) set number of versions to keep to 10
+    cmd: ./go.mk/scripts/publish-deb-artifact-to-sos.sh {{ .ArtifactPath }} sauterp-exoscale-packages deb/cli 3 {{ .ProjectName }}
