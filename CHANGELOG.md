@@ -8,7 +8,7 @@
 
 ### Bug Fixes
 
-- Allow executing commands when dbaas JSON schema cannot be loaded
+- Allow executing commands when dbaas JSON schema cannot be loaded #554
 
 ## 1.74.2
 
