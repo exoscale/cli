@@ -74,7 +74,10 @@ func validateDatabaseServiceSettings(in string, schema interface{}) (map[string]
 		gojsonschema.NewStringLoader(in),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to validate JSON Schema: %w", err)
+		// JSON Schema is provided by API and if loading fails there is nothing a user can to to fix the issue.
+		// One example is incompatible regex engines for pattern validation that will prevent loading JSON schema.
+		// When that happens we should still allow running the command as API would validate request.
+		return userSettings, nil
 	}
 
 	if !res.Valid() {
