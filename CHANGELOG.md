@@ -6,6 +6,10 @@
 
 - install script: install from SOS apt repo if possible #551
 
+### Bug Fixes
+
+- Allow executing commands when dbaas JSON schema cannot be loaded
+
 ## 1.74.2
 
 - update go.mk
