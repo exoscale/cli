@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## 1.74.3
 
 ### Improvements
 
