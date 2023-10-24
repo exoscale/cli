@@ -14,10 +14,10 @@ builds:
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.ShortCommit}} -X main.date={{.Date}}
     goos:
-      # - windows
-      # - darwin
+      - windows
+      - darwin
       - linux
-      # - openbsd
+      - openbsd
     goarch:
       - amd64
       - arm
@@ -32,24 +32,23 @@ builds:
         goarch: arm64
 
 # macOS Universal Binaries
-# universal_binaries:
-#   - replace: true
-#     name_template: 'exo'
+universal_binaries:
+  - replace: true
+    name_template: 'exo'
 
-# archives:
-#   - id: windows
-#     format_overrides:
-#       - goos: windows
-#         format: zip
-#     files:
-#       - LICENSE
-#       - contrib/completion/**/*
-#       - manpage/*
+archives:
+  - id: windows
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - contrib/completion/**/*
+      - manpage/*
 
 release:
-  disable: true
   github:
-    owner: sauterp
+    owner: exoscale
     name: cli
 
 nfpms:
@@ -73,60 +72,60 @@ nfpms:
       - src: "./contrib/completion/zsh/_exo"
         dst: "/usr/share/zsh/vendor-completions/_exo"
 
-# brews:
-#   - tap:
-#       owner: exoscale
-#       name: homebrew-tap
-#     folder: Formula
-#     homepage: "https://exoscale.github.io/cli/"
-#     description: Manage easily your Exoscale infrastructure from the command-line.
-#     install: |
-#       bin.install "exo"
-#       man1.install Dir["manpage/exo*.1"]
-#       bash_completion.install "contrib/completion/bash/exo"
-#       zsh_completion.install "contrib/completion/zsh/_exo"
+brews:
+  - tap:
+      owner: exoscale
+      name: homebrew-tap
+    folder: Formula
+    homepage: "https://exoscale.github.io/cli/"
+    description: Manage easily your Exoscale infrastructure from the command-line.
+    install: |
+      bin.install "exo"
+      man1.install Dir["manpage/exo*.1"]
+      bash_completion.install "contrib/completion/bash/exo"
+      zsh_completion.install "contrib/completion/zsh/_exo"
 
-# dockers:
-#   - goos: linux
-#     goarch: amd64
-#     image_templates:
-#       - "exoscale/cli:latest"
-#       - "exoscale/cli:{{ .Major }}"
-#       - "exoscale/cli:{{ .Major }}.{{ .Minor }}"
-#       - "exoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
-#     dockerfile: Dockerfile.goreleaser
-#     build_flag_templates:
-#       - --pull
-#       - --build-arg="VERSION={{.Version}}"
-#       - --build-arg="VCS_REF={{.ShortCommit}}"
-#       - --build-arg="BUILD_DATE={{.Date}}"
+dockers:
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - "exoscale/cli:latest"
+      - "exoscale/cli:{{ .Major }}"
+      - "exoscale/cli:{{ .Major }}.{{ .Minor }}"
+      - "exoscale/cli:{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+    dockerfile: Dockerfile.goreleaser
+    build_flag_templates:
+      - --pull
+      - --build-arg="VERSION={{.Version}}"
+      - --build-arg="VCS_REF={{.ShortCommit}}"
+      - --build-arg="BUILD_DATE={{.Date}}"
 
-# source:
-#   enabled: true
-#   prefix_template: "{{ .ProjectName }}_{{ .Version }}/"
-#   name_template: "{{ .ProjectName }}_{{ .Version }}"
-#   rlcp: true
-#   files:
-#     - go.mk/*
+source:
+  enabled: true
+  prefix_template: "{{ .ProjectName }}_{{ .Version }}/"
+  name_template: "{{ .ProjectName }}_{{ .Version }}"
+  rlcp: true
+  files:
+    - go.mk/*
 
-# signs:
-# - cmd: gpg
-#   args: ["--default-key", "7100E8BFD6199CE0374CB7F003686F8CDE378D41", "--detach-sign", "${artifact}"]
-#   artifacts: all
+signs:
+- cmd: gpg
+  args: ["--default-key", "7100E8BFD6199CE0374CB7F003686F8CDE378D41", "--detach-sign", "${artifact}"]
+  artifacts: all
 
-# scoops:
-#   - description: "Command-line tool for everything at Exoscale: compute, storage, dns."
-#     folder: "bucket"
-#     commit_author:
-#       name: "Exoscale Tooling"
-#       email: "tooling@exoscale.ch"
-#     commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
-#     homepage: "https://github.com/exoscale/cli"
-#     license: "Apache License 2.0"
-#     repository:
-#       owner: exoscale
-#       name: cli
-#       branch: master
+scoops:
+  - description: "Command-line tool for everything at Exoscale: compute, storage, dns."
+    folder: "bucket"
+    commit_author:
+      name: "Exoscale Tooling"
+      email: "tooling@exoscale.ch"
+    commit_msg_template: "Scoop update for {{ .ProjectName }} version {{ .Tag }}"
+    homepage: "https://github.com/exoscale/cli"
+    license: "Apache License 2.0"
+    repository:
+      owner: exoscale
+      name: cli
+      branch: master
 
 publishers:
   - name: rpms
@@ -135,15 +134,11 @@ publishers:
       - AWS_SECRET_ACCESS_KEY={{ .Env.EXOSCALE_API_SECRET }}
     ids:
       - nfpms
-      # TODO(sc-78178) remove sauterp
-      # TODO(sc-78178) set number of versions to keep to 10
-    cmd: ./go.mk/scripts/publish-rpm-artifact-to-sos.sh {{ .ArtifactPath }} sauterp-exoscale-packages rpm/cli 3
+    cmd: ./go.mk/scripts/publish-rpm-artifact-to-sos.sh {{ .ArtifactPath }} exoscale-packages rpm/cli 10
   - name: aptly
     env:
       - AWS_ACCESS_KEY_ID={{ .Env.EXOSCALE_API_KEY }}
       - AWS_SECRET_ACCESS_KEY={{ .Env.EXOSCALE_API_SECRET }}
     ids:
       - nfpms
-      # TODO(sc-78178) remove sauterp
-      # TODO(sc-78178) set number of versions to keep to 10
-    cmd: ./go.mk/scripts/publish-deb-artifact-to-sos.sh {{ .ArtifactPath }} sauterp-exoscale-packages deb/cli 3 {{ .ProjectName }}
+    cmd: ./go.mk/scripts/publish-deb-artifact-to-sos.sh {{ .ArtifactPath }} exoscale-packages deb/cli 10 {{ .ProjectName }}

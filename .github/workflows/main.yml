@@ -1,21 +1,21 @@
-# name: CI
+name: CI
 
-# on:
-#   push:
-#     branches:
-#     - '**'
-#     paths-ignore:
-#     - '**.md'
-#     - 'bucket/**'
-#     tags-ignore:
-#     - 'v*' # Don't run CI tests on release tags
+on:
+  push:
+    branches:
+    - '**'
+    paths-ignore:
+    - '**.md'
+    - 'bucket/**'
+    tags-ignore:
+    - 'v*' # Don't run CI tests on release tags
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#         with:
-#           fetch-depth: 0
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-#       - uses: ./.github/actions/build
+      - uses: ./.github/actions/build

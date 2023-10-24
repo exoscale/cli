@@ -20,21 +20,21 @@ jobs:
 
       - uses: ./.github/actions/build
 
-      # - name: Import GPG key
-      #   # This is a third-party GitHub action and we trust it with our GPG key.
-      #   # To be on the safer side, we should always pin to the commit SHA.
-      #   # It's not a perfect mitigation, but we should always do some due diligence before upgrading.
-      #   # The author seems trustworthy, as the author is part of the docker and goreleaser organizations on GitHub.
-      #   uses: crazy-max/ghaction-import-gpg@72b6676b71ab476b77e676928516f6982eef7a41
-      #   with:
-      #     gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-      #     passphrase: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Import GPG key
+        # This is a third-party GitHub action and we trust it with our GPG key.
+        # To be on the safer side, we should always pin to the commit SHA.
+        # It's not a perfect mitigation, but we should always do some due diligence before upgrading.
+        # The author seems trustworthy, as the author is part of the docker and goreleaser organizations on GitHub.
+        uses: crazy-max/ghaction-import-gpg@72b6676b71ab476b77e676928516f6982eef7a41
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - uses: ./go.mk/.github/actions/release
         with:
           release_github_token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          # registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          # registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
           exoscale_api_key: ${{ secrets.SOS_PKG_BUCKET_KEY }}
           exoscale_api_secret: ${{ secrets.SOS_PKG_BUCKET_SECRET }}
 
@@ -46,79 +46,79 @@ jobs:
         id: get-linux-amd64-checksum
         shell: bash
 
-  # archrelease:
-  #   needs: goreleaser
+  archrelease:
+    needs: goreleaser
 
-  #   runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       aurpkg:
-  #         - exoscale-cli
-  #         - exoscale-cli-bin
-  #         - exoscale-cli-git
+    strategy:
+      fail-fast: false
+      matrix:
+        aurpkg:
+          - exoscale-cli
+          - exoscale-cli-bin
+          - exoscale-cli-git
 
-  #   container:
-  #     image: archlinux
+    container:
+      image: archlinux
 
-  #   steps:
-  #     - name: create build user
-  #       run: |
-  #         useradd -G root runner
-  #         mkdir /home/runner/
-  #         chown -R runner /home/runner
-  #       shell: bash
+    steps:
+      - name: create build user
+        run: |
+          useradd -G root runner
+          mkdir /home/runner/
+          chown -R runner /home/runner
+        shell: bash
 
-  #     - name: install tools
-  #       run: pacman --noconfirm -Sy git openssh glibc sudo binutils make gcc pkg-config fakeroot go which
-  #       shell: bash
+      - name: install tools
+        run: pacman --noconfirm -Sy git openssh glibc sudo binutils make gcc pkg-config fakeroot go which
+        shell: bash
 
-  #     - name: release
-  #       run: |
-  #           cd /home/runner/
-  #           sudo -u runner mkdir -p /home/runner/.ssh
-  #           sudo -u runner sh -c "echo \"${{ secrets.AUR_SSH_PRIVATE_KEY }}\" > /home/runner/.ssh/github_actions"
+      - name: release
+        run: |
+            cd /home/runner/
+            sudo -u runner mkdir -p /home/runner/.ssh
+            sudo -u runner sh -c "echo \"${{ secrets.AUR_SSH_PRIVATE_KEY }}\" > /home/runner/.ssh/github_actions"
 
-  #           cat << 'EOF' > release.bash
-  #             #!/usr/bin/env bash
+            cat << 'EOF' > release.bash
+              #!/usr/bin/env bash
 
-  #             set -e
-  #             set -o pipefail
+              set -e
+              set -o pipefail
 
-  #             aurpkg=$1
-  #             version_tag=$2
-  #             checksum=$3
+              aurpkg=$1
+              version_tag=$2
+              checksum=$3
 
-  #             export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
+              export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/home/runner/.ssh/known_hosts"
 
-  #             ssh-keyscan aur.archlinux.org >>/home/runner/.ssh/known_hosts
-  #             chmod 600 /home/runner/.ssh/github_actions
-  #             eval $(ssh-agent)
-  #             ssh-add /home/runner/.ssh/github_actions
+              ssh-keyscan aur.archlinux.org >>/home/runner/.ssh/known_hosts
+              chmod 600 /home/runner/.ssh/github_actions
+              eval $(ssh-agent)
+              ssh-add /home/runner/.ssh/github_actions
 
-  #             git clone aur@aur.archlinux.org:$aurpkg.git
+              git clone aur@aur.archlinux.org:$aurpkg.git
 
-  #             cd /home/runner/$aurpkg
-  #             sed -i "/^pkgver=/s/.*/pkgver=$version_tag/" PKGBUILD
-  #             if [ $aurpkg == "exoscale-cli-bin" ]; then
-  #               sed -i "/^sha256sums=/s/.*/sha256sums=\('$checksum'/" PKGBUILD
-  #             fi
+              cd /home/runner/$aurpkg
+              sed -i "/^pkgver=/s/.*/pkgver=$version_tag/" PKGBUILD
+              if [ $aurpkg == "exoscale-cli-bin" ]; then
+                sed -i "/^sha256sums=/s/.*/sha256sums=\('$checksum'/" PKGBUILD
+              fi
 
-  #             makepkg --skippgpcheck
+              makepkg --skippgpcheck
 
-  #             makepkg --printsrcinfo >.SRCINFO
-  #             git add PKGBUILD .SRCINFO
-  #             git config --global user.email "ops@exoscale.com"
-  #             git config --global user.name "Exoscale"
-  #             git commit -m "release $version_tag"
-  #             git push
-  #           EOF
+              makepkg --printsrcinfo >.SRCINFO
+              git add PKGBUILD .SRCINFO
+              git config --global user.email "ops@exoscale.com"
+              git config --global user.name "Exoscale"
+              git commit -m "release $version_tag"
+              git push
+            EOF
 
-  #           chown runner release.bash
-  #           sudo -u runner chmod +x release.bash
-  #           sudo -u runner ./release.bash \
-  #             ${{ matrix.aurpkg }} \
-  #             ${{ needs.goreleaser.outputs.version_tag }} \
-  #             ${{ needs.goreleaser.outputs.linux_amd64_checksum }}
-  #       shell: bash
+            chown runner release.bash
+            sudo -u runner chmod +x release.bash
+            sudo -u runner ./release.bash \
+              ${{ matrix.aurpkg }} \
+              ${{ needs.goreleaser.outputs.version_tag }} \
+              ${{ needs.goreleaser.outputs.linux_amd64_checksum }}
+        shell: bash
