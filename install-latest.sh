@@ -142,22 +142,24 @@ PKGFILE="${PKGPREFIX}_${LATEST_VERSION}_${OSTYPE}_${CPUARCHITECTURE}.${FILEEXT}"
 PKGSIGFILE=$PKGFILE.sig
 PKGPATH=$TEMPDIR/$PKGFILE
 PKGSIGPATH=$TEMPDIR/$PKGSIGFILE
-$CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGFILE" >$PKGPATH
 
-# check the checksum
-CHECKSUMSFILE="${PKGPREFIX}_${LATEST_VERSION}_checksums.txt"
-CHECKSUMSPATH=$TEMPDIR/$CHECKSUMSFILE
-$CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$CHECKSUMSFILE" >$CHECKSUMSPATH
+download_pkg() {
+    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$PKGFILE" >$PKGPATH
 
-COMPUTED_CHECKSUM=$(sha256sum "$PKGPATH" | cut -d " " -f 1)
-EXPECTED_CHECKSUM=$(grep -m 1 $PKGFILE $CHECKSUMSPATH | cut -d " " -f 1)
+    CHECKSUMSFILE="${PKGPREFIX}_${LATEST_VERSION}_checksums.txt"
+    CHECKSUMSPATH=$TEMPDIR/$CHECKSUMSFILE
+    $CURL "$GITHUB_DOWNLOAD_URL/${LATEST_TAG}/$CHECKSUMSFILE" >$CHECKSUMSPATH
 
-if [ "$COMPUTED_CHECKSUM" != "$EXPECTED_CHECKSUM" ]; then
-    echo "Error: Checksum of $PKGFILE does not match the expected checksum"
-    echo $COMPUTED_CHECKSUM
-    echo $EXPECTED_CHECKSUM
-    exit 1
-fi
+    COMPUTED_CHECKSUM=$(sha256sum "$PKGPATH" | cut -d " " -f 1)
+    EXPECTED_CHECKSUM=$(grep -m 1 $PKGFILE $CHECKSUMSPATH | cut -d " " -f 1)
+
+    if [ "$COMPUTED_CHECKSUM" != "$EXPECTED_CHECKSUM" ]; then
+        echo "Error: Checksum of $PKGFILE does not match the expected checksum"
+        echo $COMPUTED_CHECKSUM
+        echo $EXPECTED_CHECKSUM
+        exit 1
+    fi
+}
 
 TOOLING_KEY_NAME="Exoscale Tooling <tooling@exoscale.ch>"
 TOOLING_KEY_FINGERPRINT="7100E8BFD6199CE0374CB7F003686F8CDE378D41"
@@ -171,9 +173,9 @@ verify_pkg() {
     fi
 }
 
-if command -v gpg >/dev/null 2>&1; then
+if command -v gpg >/dev/null 2>&1 && [ "$PACKAGETYPE" != "yum" ]; then
     if ! gpg --list-keys | grep -q $TOOLING_KEY_FINGERPRINT; then
-        gpg --recv-keys "$TOOLING_KEY_FINGERPRINT"
+        gpg --keyserver keys.openpgp.org --recv-keys "$TOOLING_KEY_FINGERPRINT"
     fi
 
     GPG_AVAILABLE=yes
@@ -183,6 +185,33 @@ else
         PACKAGETYPE="dpkg"
     fi
 fi
+
+install_rpm_pkg() {
+    # TODO (sc-78179) remove sauterp
+    repofile=/etc/yum.repos.d/exoscale-cli.repo
+    cat <<EOF >$repofile
+[exoscale-cli-repo]
+name=exoscale-cli-repo
+baseurl=https://sos-ch-gva-2.exo.io/sauterp-exoscale-packages/rpm/cli
+enabled=1
+repo_gpgcheck=1
+gpgcheck=0
+gpgkey=https://keys.openpgp.org/vks/v1/by-fingerprint/7100E8BFD6199CE0374CB7F003686F8CDE378D41
+EOF
+
+    if [ "$PACKAGETYPE" = "yum" ]; then
+        REPOFLAG=""
+    else
+        REPOFLAG="--repo=exoscale-cli-repo"
+    fi
+    if $PACKAGETYPE list installed exoscale-cli >/dev/null 2>&1; then
+        $SUDO $PACKAGETYPE makecache -y $REPOFLAG
+        $SUDO $PACKAGETYPE $REPOFLAG upgrade -y exoscale-cli
+    else
+        $SUDO $PACKAGETYPE makecache -y $REPOFLAG
+        $SUDO $PACKAGETYPE $REPOFLAG install -y exoscale-cli
+    fi
+}
 
 echo "Installing exo CLI, using $PACKAGETYPE"
 case "$PACKAGETYPE" in
@@ -194,15 +223,14 @@ case "$PACKAGETYPE" in
         $SUDO apt-get install -y exoscale-cli
         ;;
     dpkg)
+        download_pkg
         verify_pkg
         $SUDO dpkg -i $PKGPATH
         ;;
     yum)
-        verify_pkg
-        $SUDO yum install -y $PKGPATH
+        install_rpm_pkg
         ;;
     dnf)
-        verify_pkg
-        $SUDO dnf install -y $PKGPATH
+        install_rpm_pkg
         ;;
 esac
