@@ -187,12 +187,11 @@ else
 fi
 
 install_rpm_pkg() {
-    # TODO (sc-78179) remove sauterp
     repofile=/etc/yum.repos.d/exoscale-cli.repo
     cat <<EOF >$repofile
 [exoscale-cli-repo]
 name=exoscale-cli-repo
-baseurl=https://sos-ch-gva-2.exo.io/sauterp-exoscale-packages/rpm/cli
+baseurl=https://sos-ch-gva-2.exo.io/exoscale-packages/rpm/cli
 enabled=1
 repo_gpgcheck=1
 gpgcheck=0
