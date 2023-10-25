@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+- README: document installation from AUR #557 
+
 ## 1.74.3
 
 ### Improvements
