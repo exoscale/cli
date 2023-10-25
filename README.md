@@ -49,6 +49,17 @@ scoop update
 scoop update exoscale-cli
 ```
 
+### From the AUR on Arch Linux
+
+```shell
+gpg --keyserver keys.openpgp.org --recv-key 7100E8BFD6199CE0374CB7F003686F8CDE378D41
+git clone https://aur.archlinux.org/exoscale-cli-bin.git
+cd exoscale-cli-bin/
+makepkg --install
+```
+
+Alternatively there are two packages building from source https://aur.archlinux.org/exoscale-cli.git and https://aur.archlinux.org/exoscale-cli-git.git where the latter builds from the latest commit on the master branch and the former from the latest release commit.
+
 ## Configuration
 
 Running the `exo config` command will guide you through the initial configuration.
