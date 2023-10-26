@@ -188,7 +188,7 @@ fi
 
 install_rpm_pkg() {
     repofile=/etc/yum.repos.d/exoscale-cli.repo
-    cat <<EOF >$repofile
+    cat <<EOF | $SUDO tee $repofile
 [exoscale-cli-repo]
 name=exoscale-cli-repo
 baseurl=https://sos-ch-gva-2.exo.io/exoscale-packages/rpm/cli
