@@ -128,10 +128,17 @@ scoops:
       branch: master
 
 publishers:
+  - name: rpms
+    env:
+      - AWS_ACCESS_KEY_ID={{ .Env.EXOSCALE_API_KEY }}
+      - AWS_SECRET_ACCESS_KEY={{ .Env.EXOSCALE_API_SECRET }}
+    ids:
+      - nfpms
+    cmd: ./go.mk/scripts/publish-rpm-artifact-to-sos.sh {{ .ArtifactPath }} exoscale-packages rpm/cli 10
   - name: aptly
     env:
       - AWS_ACCESS_KEY_ID={{ .Env.EXOSCALE_API_KEY }}
       - AWS_SECRET_ACCESS_KEY={{ .Env.EXOSCALE_API_SECRET }}
     ids:
       - nfpms
-    cmd: ./go.mk/scripts/publish-deb-artifact-to-sos.sh {{ .ArtifactPath }} exoscale-packages deb/cli 10
+    cmd: ./go.mk/scripts/publish-deb-artifact-to-sos.sh {{ .ArtifactPath }} exoscale-packages deb/cli 10 {{ .ProjectName }}
