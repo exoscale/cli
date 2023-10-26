@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- README: document installation from AUR #557 
 - install-script: install rpms from SOS repo #556 
 
 ## 1.74.4
