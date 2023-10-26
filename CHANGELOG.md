@@ -1,5 +1,11 @@
 # Changelog
 
+## UNRELEASED
+
+### Improvements
+
+- install-script: install rpms from SOS repo #556 
+
 ## 1.74.4
 
 ### Improvements
