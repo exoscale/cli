@@ -26,9 +26,8 @@ type iamOrgPolicyServiceShowOutput struct {
 }
 
 type iamOrgPolicyServiceRuleShowOutput struct {
-	Action     string   `json:"action"`
-	Expression string   `json:"expression"`
-	Resources  []string `json:"resources,omitempty"`
+	Action     string `json:"action"`
+	Expression string `json:"expression"`
 }
 
 func (o *iamOrgPolicyShowOutput) ToJSON() { output.JSON(o) }
@@ -36,15 +35,18 @@ func (o *iamOrgPolicyShowOutput) ToText() { output.Text(o) }
 func (o *iamOrgPolicyShowOutput) ToTable() {
 	t := table.NewTable(os.Stdout)
 	t.SetAutoMergeCells(true)
+	t.SetAutoMergeCellsByColumnIndex([]int{0, 1})
 
 	t.SetHeader([]string{
 		"Service",
 		fmt.Sprintf("Type (default strategy \"%s\")", o.DefaultServiceStrategy),
 		"Rule Action",
 		"Rule Expression",
-		"Rule Resources",
 	})
-	defer t.Render()
+
+	// use underlying tablewriter.Render to display table even with empty rows
+	// as default strategy is in header.
+	defer t.Table.Render()
 
 	for name, service := range o.Services {
 		if len(service.Rules) == 0 {
@@ -58,7 +60,6 @@ func (o *iamOrgPolicyShowOutput) ToTable() {
 				service.Type,
 				rule.Action,
 				rule.Expression,
-				strings.Join(rule.Resources, ","),
 			})
 		}
 	}
@@ -107,7 +108,6 @@ func (c *iamOrgPolicyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			rules = append(rules, iamOrgPolicyServiceRuleShowOutput{
 				Action:     utils.DefaultString(rule.Action, ""),
 				Expression: utils.DefaultString(rule.Expression, ""),
-				Resources:  rule.Resources,
 			})
 		}
 
