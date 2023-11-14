@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,25 +12,22 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	exoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+
+	"github.com/exoscale/cli/utils"
 )
 
 type iamOrgPolicyUpdate struct {
 	cliCommandSettings `cli-cmd:"-"`
 
+	DeleteService string `cli-flag:"delete-service" cli-usage:"Delete service class"`
+	AddService    string `cli-flag:"add-service" cli-usage:"Add service class"`
+	UpdateService string `cli-flag:"update-service" cli-usage:"Update service class"`
+
+	ServiceType            string `cli-flag:"service-type" cli-usage:"Default Strategy for service type. Allowed values: 'allow', 'deny' and 'rules'. Used with --add-service"`
+	AppendServiceRuleAllow string `cli-flag:"append-service-rule-allow" cli-usage:"Append service rule of type 'allow' to the end of the rules list"`
+	AppendServiceRuleDeny  string `cli-flag:"append-service-rule-deny" cli-usage:"Append service rule of type 'deny' to the end of the rules list"`
+
 	_ bool `cli-cmd:"update"`
-
-	// Root settings
-	DefaultServiceStrategy string `cli-flag:"default-service-strategy" cli-usage:"The default service strategy applies to all service classes that have not been explicitly configured. Allowed values are 'allow' and 'deny'"`
-
-	// Actions (mutually exclusive)
-	Clear           bool   `cli-flag:"clear" cli-usage:"Remove all existing service classes"`
-	ReplacePolicy   string `cli-flag:"replace-policy" cli-usage:"Replace the whole policy. New policy must be provided in JSON format. If value '-' is used, policy is read from stdin"`
-	DeleteService   string `cli-flag:"delete-service" cli-usage:"Delete service class"`
-	AddService      string `cli-flag:"add-service" cli-usage:"Add service class"`
-	AddServiceRules string `cli-flag:"add-service-rules" cli-usage:"Update service class by adding more rules"`
-
-	// Service level settings
-	ServiceType string `cli-flag:"service-type" cli-usage:"Default Strategy for service type. Allowed values: 'allow', 'deny' and 'rules'. Required for --add-service, optional for --update-service"`
 }
 
 func (c *iamOrgPolicyUpdate) cmdAliases() []string { return nil }
@@ -44,14 +39,13 @@ func (c *iamOrgPolicyUpdate) cmdShort() string {
 func (c *iamOrgPolicyUpdate) cmdLong() string {
 	return fmt.Sprintf(`This command updates an IAM Organization Policy.
 
-Command requires exacly one flag to be set from the following: --clear, --replace-policy, --delete-service, --add-service, --update-service.
+Command can update only a single service and a single service rule.
+For bigger changes to Org Policy command must be executed multiple times.
+
+Pro Tip: use 'exo iam org-policy replace' command to edit Org Policy as JSON document.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamOrgPolicyShowOutput{}), ", "))
-}
-
-func (c *iamOrgPolicyUpdate) cmdUse() string {
-	return "exo iam org-policy update [flags] test"
 }
 
 func (c *iamOrgPolicyUpdate) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -61,30 +55,30 @@ func (c *iamOrgPolicyUpdate) cmdPreRun(cmd *cobra.Command, args []string) error 
 	}
 
 	counter := 0
-	if c.Clear {
-		counter++
-	}
-	if c.ReplacePolicy != "" {
-		counter++
-	}
 	if c.DeleteService != "" {
 		counter++
 	}
 	if c.AddService != "" {
 		counter++
 	}
-	if c.AddServiceRules != "" {
+	if c.UpdateService != "" {
 		counter++
 	}
 
-	if counter == 0 || counter > 1 {
-		return errors.New("command requires exacly one flag to be set from the following: --clear, --replace-policy, --delete-service, --add-service, --update-service")
+	if counter != 1 {
+		return errors.New("only one service can be updated")
+	}
+
+	if c.AddService != "" || c.UpdateService != "" {
+		if c.AppendServiceRuleAllow != "" && c.AppendServiceRuleDeny != "" {
+			return errors.New("only one service rule can be added")
+		}
 	}
 
 	return nil
 }
 
-func (c *iamOrgPolicyUpdate) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *iamOrgPolicyUpdate) cmdRun(cmd *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
@@ -94,68 +88,6 @@ func (c *iamOrgPolicyUpdate) cmdRun(cmd *cobra.Command, args []string) error {
 	}
 
 	switch {
-	case c.ReplacePolicy != "":
-		if c.ReplacePolicy == "-" {
-			inputReader := cmd.InOrStdin()
-			b, err := io.ReadAll(inputReader)
-			if err != nil {
-				return fmt.Errorf("failed to read policy from stdin: %w", err)
-			}
-
-			c.ReplacePolicy = string(b)
-		}
-
-		var obj iamOrgPolicyShowOutput
-		err := json.Unmarshal([]byte(c.ReplacePolicy), &obj)
-		if err != nil {
-			return fmt.Errorf("failed to parse policy: %w", err)
-		}
-
-		policy = &exoscale.IAMPolicy{
-			DefaultServiceStrategy: obj.DefaultServiceStrategy,
-			Services:               map[string]exoscale.IAMPolicyService{},
-		}
-
-		if len(obj.Services) > 0 {
-			for name, sv := range obj.Services {
-				service := exoscale.IAMPolicyService{
-					Type: func() *string {
-						t := sv.Type
-						return &t
-					}(),
-				}
-
-				if len(sv.Rules) > 0 {
-					service.Rules = []exoscale.IAMPolicyServiceRule{}
-					for _, rl := range sv.Rules {
-
-						rule := exoscale.IAMPolicyServiceRule{
-							Action: func() *string {
-								t := rl.Action
-								return &t
-							}(),
-						}
-
-						if rl.Expression != "" {
-							rule.Expression = func() *string {
-								t := rl.Expression
-								return &t
-							}()
-						}
-
-						if len(rl.Resources) > 0 {
-							rule.Resources = rl.Resources
-						}
-
-						service.Rules = append(service.Rules, rule)
-					}
-				}
-
-				policy.Services[name] = service
-			}
-		}
-	case c.Clear:
-		policy.Services = map[string]exoscale.IAMPolicyService{}
 	case c.DeleteService != "":
 		if _, found := policy.Services[c.DeleteService]; !found {
 			return fmt.Errorf("service class %q not found", c.DeleteService)
@@ -164,7 +96,7 @@ func (c *iamOrgPolicyUpdate) cmdRun(cmd *cobra.Command, args []string) error {
 		delete(policy.Services, c.DeleteService)
 	case c.AddService != "":
 		if _, found := policy.Services[c.AddService]; found {
-			return fmt.Errorf("service class %q already exists in policy", c.AddService)
+			return fmt.Errorf("service class %q already exists", c.AddService)
 		}
 
 		service := exoscale.IAMPolicyService{}
@@ -179,50 +111,59 @@ func (c *iamOrgPolicyUpdate) cmdRun(cmd *cobra.Command, args []string) error {
 		service.Type = &c.ServiceType
 
 		if c.ServiceType == "rules" {
-			// For rules service type arguments will hold pairs of "action" and "expression" definitions.
-			if len(args) == 0 || len(args)%2 != 0 {
-				return errors.New("at least one rule must be specified when --service-type is 'rules'")
+			if c.AppendServiceRuleAllow == "" && c.AppendServiceRuleDeny == "" {
+				return errors.New("service rule must be specified, use --append-service-rule-allow or --append-service-rule-deny")
 			}
 
-			service.Rules = []exoscale.IAMPolicyServiceRule{}
+			var rule exoscale.IAMPolicyServiceRule
 
-			for i := 0; i < len(args); i = i + 2 {
-				rule := exoscale.IAMPolicyServiceRule{
-					Action:     &args[i],
-					Expression: &args[i+1],
+			if c.AppendServiceRuleAllow != "" {
+				rule = exoscale.IAMPolicyServiceRule{
+					Action:     utils.NonEmptyStringPtr("allow"),
+					Expression: &c.AppendServiceRuleAllow,
 				}
-
-				service.Rules = append(service.Rules, rule)
 			}
+
+			if c.AppendServiceRuleDeny != "" {
+				rule = exoscale.IAMPolicyServiceRule{
+					Action:     utils.NonEmptyStringPtr("deny"),
+					Expression: &c.AppendServiceRuleDeny,
+				}
+			}
+
+			service.Rules = []exoscale.IAMPolicyServiceRule{rule}
 		}
 
 		policy.Services[c.AddService] = service
-	case c.AddServiceRules != "":
-		if _, found := policy.Services[c.AddServiceRules]; !found {
-			return fmt.Errorf("service class %q not found", c.AddService)
+	case c.UpdateService != "":
+		service, found := policy.Services[c.UpdateService]
+		if !found {
+			return fmt.Errorf("service class %q does not exist", c.UpdateService)
 		}
 
-		service := policy.Services[c.AddServiceRules]
-
-		if *service.Type != "rules" {
-			return fmt.Errorf("cannot add rules to service class of type %q", *service.Type)
+		if c.AppendServiceRuleAllow == "" && c.AppendServiceRuleDeny == "" {
+			return errors.New("service rule must be specified, use --append-service-rule-allow or --append-service-rule-deny")
 		}
 
-		// For rules service type arguments must hold pairs of "action" and "expression" definitions.
-		if len(args) == 0 || len(args)%2 != 0 {
-			return errors.New("at least one rule must be specified when --service-type is 'rules'")
-		}
+		var rule exoscale.IAMPolicyServiceRule
 
-		for i := 0; i < len(args); i = i + 2 {
-			rule := exoscale.IAMPolicyServiceRule{
-				Action:     &args[i],
-				Expression: &args[i+1],
+		if c.AppendServiceRuleAllow != "" {
+			rule = exoscale.IAMPolicyServiceRule{
+				Action:     utils.NonEmptyStringPtr("allow"),
+				Expression: &c.AppendServiceRuleAllow,
 			}
-
-			service.Rules = append(service.Rules, rule)
 		}
 
-		policy.Services[c.AddServiceRules] = service
+		if c.AppendServiceRuleDeny != "" {
+			rule = exoscale.IAMPolicyServiceRule{
+				Action:     utils.NonEmptyStringPtr("deny"),
+				Expression: &c.AppendServiceRuleDeny,
+			}
+		}
+
+		service.Rules = append(service.Rules, rule)
+
+		policy.Services[c.UpdateService] = service
 	}
 
 	err = globalstate.EgoscaleClient.UpdateIAMOrgPolicy(ctx, zone, policy)
