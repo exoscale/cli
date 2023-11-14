@@ -26,7 +26,8 @@ func (c *iamOrgPolicyResetCmd) cmdShort() string {
 }
 
 func (c *iamOrgPolicyResetCmd) cmdLong() string {
-	return fmt.Sprint(`This command resets IAM Organization Policy to default (allow all).`)
+	return fmt.Sprint(`This command resets IAM Organization Policy to default (allow all).
+This will remove any constraing that are set in Org Policy.`)
 }
 
 func (c *iamOrgPolicyResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
