@@ -20,7 +20,7 @@ type iamOrgPolicyResetCmd struct {
 func (c *iamOrgPolicyResetCmd) cmdAliases() []string { return nil }
 
 func (c *iamOrgPolicyResetCmd) cmdShort() string {
-	return "Reset IAM Org policy to default"
+	return "Reset Org policy to default"
 }
 
 func (c *iamOrgPolicyResetCmd) cmdLong() string {

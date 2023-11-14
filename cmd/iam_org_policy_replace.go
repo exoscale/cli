@@ -26,7 +26,7 @@ type iamOrgPolicyReplaceCmd struct {
 func (c *iamOrgPolicyReplaceCmd) cmdAliases() []string { return nil }
 
 func (c *iamOrgPolicyReplaceCmd) cmdShort() string {
-	return "Replace IAM Org policy"
+	return "Replace Org policy"
 }
 
 func (c *iamOrgPolicyReplaceCmd) cmdLong() string {
