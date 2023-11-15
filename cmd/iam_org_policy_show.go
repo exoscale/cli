@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -10,60 +9,9 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
-
-type iamOrgPolicyShowOutput struct {
-	DefaultServiceStrategy string                                   `json:"default-service-strategy"`
-	Services               map[string]iamOrgPolicyServiceShowOutput `json:"services"`
-}
-
-type iamOrgPolicyServiceShowOutput struct {
-	Type  string                              `json:"type"`
-	Rules []iamOrgPolicyServiceRuleShowOutput `json:"rules"`
-}
-
-type iamOrgPolicyServiceRuleShowOutput struct {
-	Action     string `json:"action"`
-	Expression string `json:"expression"`
-}
-
-func (o *iamOrgPolicyShowOutput) ToJSON() { output.JSON(o) }
-func (o *iamOrgPolicyShowOutput) ToText() { output.Text(o) }
-func (o *iamOrgPolicyShowOutput) ToTable() {
-	t := table.NewTable(os.Stdout)
-	t.SetAutoMergeCells(true)
-	t.SetAutoMergeCellsByColumnIndex([]int{0, 1})
-
-	t.SetHeader([]string{
-		"Service",
-		fmt.Sprintf("Type (default strategy \"%s\")", o.DefaultServiceStrategy),
-		"Rule Action",
-		"Rule Expression",
-	})
-
-	// use underlying tablewriter.Render to display table even with empty rows
-	// as default strategy is in header.
-	defer t.Table.Render()
-
-	for name, service := range o.Services {
-		if len(service.Rules) == 0 {
-			t.Append([]string{name, service.Type, "", "", ""})
-			continue
-		}
-
-		for _, rule := range service.Rules {
-			t.Append([]string{
-				name,
-				service.Type,
-				rule.Action,
-				rule.Expression,
-			})
-		}
-	}
-}
 
 type iamOrgPolicyShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -81,7 +29,7 @@ func (c *iamOrgPolicyShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows IAM Org Policy details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&iamOrgPolicyShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&iamPolicyServiceOutput{}), ", "))
 }
 
 func (c *iamOrgPolicyShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -97,21 +45,21 @@ func (c *iamOrgPolicyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	out := iamOrgPolicyShowOutput{
+	out := iamPolicyOutput{
 		DefaultServiceStrategy: policy.DefaultServiceStrategy,
-		Services:               map[string]iamOrgPolicyServiceShowOutput{},
+		Services:               map[string]iamPolicyServiceOutput{},
 	}
 
 	for name, service := range policy.Services {
-		rules := []iamOrgPolicyServiceRuleShowOutput{}
+		rules := []iamPolicyServiceRuleOutput{}
 		for _, rule := range service.Rules {
-			rules = append(rules, iamOrgPolicyServiceRuleShowOutput{
+			rules = append(rules, iamPolicyServiceRuleOutput{
 				Action:     utils.DefaultString(rule.Action, ""),
 				Expression: utils.DefaultString(rule.Expression, ""),
 			})
 		}
 
-		out.Services[name] = iamOrgPolicyServiceShowOutput{
+		out.Services[name] = iamPolicyServiceOutput{
 			Type:  utils.DefaultString(service.Type, ""),
 			Rules: rules,
 		}

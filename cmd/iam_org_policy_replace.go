@@ -38,7 +38,7 @@ Pro Tip: you can get policy in JSON format with command:
 	exo iam org-policy show --output-format json
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&iamOrgPolicyShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&iamPolicyOutput{}), ", "))
 }
 
 func (c *iamOrgPolicyReplaceCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -62,7 +62,7 @@ func (c *iamOrgPolicyReplaceCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		c.Policy = string(b)
 	}
 
-	var obj iamOrgPolicyShowOutput
+	var obj iamPolicyOutput
 	err := json.Unmarshal([]byte(c.Policy), &obj)
 	if err != nil {
 		return fmt.Errorf("failed to parse policy: %w", err)
