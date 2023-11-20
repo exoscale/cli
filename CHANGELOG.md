@@ -2,11 +2,14 @@
 
 ## UNRELEASED
 
+### Features
+
+- iam: implement Org Policy management commands #553
+
 ### Improvements
 
 - README: document installation from AUR #557 
 - install-script: install rpms from SOS repo #556 
-- iam: implement Org Policy management commands #553
 
 ## 1.74.4
 
