@@ -38,9 +38,9 @@ func (c *iamRoleCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a new IAM Role.
 To read Policy from STDIN use '-' for policy.
 
-Pro Tip: you can clone existing role by providing output of show command as Policy:
+Pro Tip: you can reuse existing role policy by providing output of show command as input:
 
-	exo iam role show --policy --output-format json <policy-name> | exo iam role create --name <cloned-policy-name> --policy -
+	exo iam role show --policy --output-format json <role-name> | exo iam role create --name <new-role-name> --policy -
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamRoleShowOutput{}), ", "))
