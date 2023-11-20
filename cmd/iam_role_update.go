@@ -17,36 +17,40 @@ import (
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
-type iamRolePolicyReplaceCmd struct {
+type iamRoleUpdateCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
-	Role   string `cli-arg:"#" cli-usage:"ID|NAME"`
-	Policy string `cli-arg:"#"`
+	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 
-	_ bool `cli-cmd:"replace-policy"`
+	Description string            `cli-flag:"description" cli-usage:"Role description"`
+	Permissions []string          `cli-flag:"permissions" cli-usage:"Role permissions"`
+	Labels      map[string]string `cli-flag:"label" cli-usage:"Role labels (format: key=value)"`
+	Policy      string            `cli-flag:"policy" cli-usage:"Role policy (use '-' to read from STDIN)"`
+
+	_ bool `cli-cmd:"update"`
 }
 
-func (c *iamRolePolicyReplaceCmd) cmdAliases() []string { return nil }
+func (c *iamRoleUpdateCmd) cmdAliases() []string { return nil }
 
-func (c *iamRolePolicyReplaceCmd) cmdShort() string {
-	return "Replace IAM Role Policy"
+func (c *iamRoleUpdateCmd) cmdShort() string {
+	return "Update IAM Role"
 }
 
-func (c *iamRolePolicyReplaceCmd) cmdLong() string {
-	return fmt.Sprintf(`This command replaces complete IAM Role Policy with the new one provided in JSON format.
-To read Policy from STDIN provide '-' as argument.
+func (c *iamRoleUpdateCmd) cmdLong() string {
+	return fmt.Sprintf(`This command updates IAM Role.
+When replacing Policy command will read data from STDIN if you provide '-' as flag argument.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamPolicyOutput{}), ", "))
 }
 
-func (c *iamRolePolicyReplaceCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *iamRoleUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamRolePolicyReplaceCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if c.Role == "" {
-		return errors.New("Role ID not provided")
+		return errors.New("Role not provided")
 	}
 
 	zone := account.CurrentAccount.DefaultZone
@@ -72,6 +76,33 @@ func (c *iamRolePolicyReplaceCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	role, err := globalstate.EgoscaleClient.GetIAMRole(ctx, zone, c.Role)
 	if err != nil {
 		return err
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+		role.Description = &c.Description
+	}
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+		role.Labels = c.Labels
+	}
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Permissions)) {
+		role.Permissions = c.Permissions
+	}
+
+	err = globalstate.EgoscaleClient.UpdateIAMRole(ctx, zone, role)
+	if err != nil {
+		return err
+	}
+
+	// If we don't need to update Policy we can exit now
+	if c.Policy == "" {
+		if !globalstate.Quiet {
+			return (&iamRoleShowCmd{
+				cliCommandSettings: c.cliCommandSettings,
+				Role:               *role.ID,
+			}).cmdRun(nil, nil)
+		}
+
+		return nil
 	}
 
 	if c.Policy == "-" {
@@ -141,7 +172,6 @@ func (c *iamRolePolicyReplaceCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return (&iamRoleShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Role:               *role.ID,
-			Policy:             true,
 		}).cmdRun(nil, nil)
 	}
 
@@ -149,7 +179,7 @@ func (c *iamRolePolicyReplaceCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamRoleCmd, &iamRolePolicyReplaceCmd{
+	cobra.CheckErr(registerCLICommand(iamRoleCmd, &iamRoleUpdateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
