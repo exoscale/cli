@@ -6,17 +6,13 @@
 
 - README: document installation from AUR #557 
 - install-script: install rpms from SOS repo #556 
+- iam: implement Org Policy management commands #553
 
 ## 1.74.4
 
 ### Improvements
 
 - publish releases as rpm packages on SOS #555
-
-### Features
-
-- iam: implement Org Policy management commands #553
->>>>>>> ce5e2128 (Update CHANGELOG.md)
 
 ## 1.74.3
 
