@@ -115,6 +115,7 @@ func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	role := &exoscale.IAMRole{
 		Name:        &c.Name,
+		Description: &c.Description,
 		Editable:    &c.Editable,
 		Labels:      c.Labels,
 		Permissions: c.Permissions,
