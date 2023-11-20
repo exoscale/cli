@@ -42,10 +42,6 @@ func (c *Client) UpdateIAMOrgPolicy(ctx context.Context, zone string, policy *IA
 						Expression: rule.Expression,
 					}
 
-					if rule.Resources != nil {
-						r.Resources = &rule.Resources
-					}
-
 					rules = append(rules, r)
 				}
 

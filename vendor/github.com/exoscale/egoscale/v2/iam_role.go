@@ -125,10 +125,6 @@ func (c *Client) CreateIAMRole(
 							Expression: rule.Expression,
 						}
 
-						if rule.Resources != nil {
-							r.Resources = &rule.Resources
-						}
-
 						rules = append(rules, r)
 					}
 
@@ -259,10 +255,6 @@ func (c *Client) UpdateIAMRolePolicy(ctx context.Context, zone string, role *IAM
 					r := oapi.IamServicePolicyRule{
 						Action:     (*oapi.IamServicePolicyRuleAction)(rule.Action),
 						Expression: rule.Expression,
-					}
-
-					if rule.Resources != nil {
-						r.Resources = &rule.Resources
 					}
 
 					rules = append(rules, r)

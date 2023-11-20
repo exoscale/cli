@@ -29,15 +29,9 @@ func iamPolicyFromAPI(r *oapi.IamPolicy) *IAMPolicy {
 		rules := []IAMPolicyServiceRule{}
 		if service.Rules != nil && len(*service.Rules) > 0 {
 			for _, rule := range *service.Rules {
-				resources := []string{}
-				if rule.Resources != nil && len(*rule.Resources) > 0 {
-					resources = *rule.Resources
-				}
-
 				rules = append(rules, IAMPolicyServiceRule{
 					Action:     (*string)(rule.Action),
 					Expression: rule.Expression,
-					Resources:  resources,
 				})
 			}
 		}
