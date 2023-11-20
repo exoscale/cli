@@ -6,6 +6,7 @@
 
 - README: document installation from AUR #557 
 - install-script: install rpms from SOS repo #556 
+- Updated `exo x` for blockstorage #559
 
 ## 1.74.4
 
