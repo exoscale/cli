@@ -53,7 +53,7 @@ func (o *iamPolicyOutput) ToTable() {
 
 	for name, service := range o.Services {
 		if len(service.Rules) == 0 {
-			t.Append([]string{name, service.Type, "", "", ""})
+			t.Append([]string{name, service.Type, "", ""})
 			continue
 		}
 
