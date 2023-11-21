@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -20,10 +21,10 @@ type iamRoleCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Name        string            `cli-flag:"name" cli-usage:"Role name (required)"`
+	Name        string            `cli-arg:"#" cli-usage:"NAME"`
 	Description string            `cli-flag:"description" cli-usage:"Role description"`
 	Permissions []string          `cli-flag:"permissions" cli-usage:"Role permissions"`
-	Editable    bool              `cli-flag:"editable" cli-usage:"Sets if the Role Policy is editable or not (default: true). This setting cannot be changed after creation"`
+	Editable    bool              `cli-flag:"editable" cli-usage:"Set --editable=false do prevent editing Policy after creation"`
 	Labels      map[string]string `cli-flag:"label" cli-usage:"Role labels (format: key=value)"`
 	Policy      string            `cli-flag:"policy" cli-usage:"Role policy (use '-' to read from STDIN)"`
 }
@@ -51,6 +52,10 @@ func (c *iamRoleCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+	if c.Name == "" {
+		return errors.New("NAME not provided")
+	}
+
 	zone := account.CurrentAccount.DefaultZone
 	ctx := exoapi.WithEndpoint(
 		gContext,
