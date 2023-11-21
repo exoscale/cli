@@ -40,6 +40,31 @@ func (c *iamAPIKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
+	if len(c.APIKey) == 27 && strings.HasPrefix(c.APIKey, "EX") {
+		_, err := globalstate.EgoscaleClient.GetAPIKey(ctx, zone, c.APIKey)
+		if err != nil {
+			return err
+		}
+	} else {
+		apikeys, err := globalstate.EgoscaleClient.ListAPIKeys(ctx, zone)
+		if err != nil {
+			return err
+		}
+
+		found := false
+		for _, apikey := range apikeys {
+			if apikey.Name != nil && *apikey.Name == c.APIKey {
+				c.APIKey = *apikey.Key
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("key with name %q not found", c.APIKey)
+		}
+	}
+
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf("Are you sure you want to delete API Key %s?", c.APIKey)) {
 			return nil
@@ -48,20 +73,6 @@ func (c *iamAPIKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Deleting API Key %s...", c.APIKey), func() {
-		if len(c.APIKey) != 27 || !strings.HasPrefix(c.APIKey, "EX") {
-			apikeys, err := globalstate.EgoscaleClient.ListAPIKeys(ctx, zone)
-			if err != nil {
-				return
-			}
-
-			for _, apikey := range apikeys {
-				if apikey.Name != nil && *apikey.Name == c.APIKey {
-					c.APIKey = *apikey.Key
-					break
-				}
-			}
-		}
-
 		err = globalstate.EgoscaleClient.DeleteAPIKey(ctx, zone, &egoscale.APIKey{Key: &c.APIKey})
 	})
 	if err != nil {
