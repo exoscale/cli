@@ -41,6 +41,26 @@ func (c *iamRoleDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
+	if _, err := uuid.Parse(c.Role); err != nil {
+		roles, err := globalstate.EgoscaleClient.ListIAMRoles(ctx, zone)
+		if err != nil {
+			return err
+		}
+
+		found := false
+		for _, role := range roles {
+			if role.Name != nil && *role.Name == c.Role {
+				c.Role = *role.ID
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return fmt.Errorf("role with name %q not found", c.Role)
+		}
+	}
+
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf("Are you sure you want to delete IAM Role %s?", c.Role)) {
 			return nil
@@ -49,19 +69,6 @@ func (c *iamRoleDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var err error
 	decorateAsyncOperation(fmt.Sprintf("Deleting IAM role %s...", c.Role), func() {
-		if _, err = uuid.Parse(c.Role); err != nil {
-			roles, err := globalstate.EgoscaleClient.ListIAMRoles(ctx, zone)
-			if err != nil {
-				return
-			}
-
-			for _, role := range roles {
-				if role.Name != nil && *role.Name == c.Role {
-					c.Role = *role.ID
-					break
-				}
-			}
-		}
 
 		err = globalstate.EgoscaleClient.DeleteIAMRole(ctx, zone, &egoscale.IAMRole{ID: &c.Role})
 	})
