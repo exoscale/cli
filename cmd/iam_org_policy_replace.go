@@ -30,10 +30,10 @@ func (c *iamOrgPolicyReplaceCmd) cmdShort() string {
 }
 
 func (c *iamOrgPolicyReplaceCmd) cmdLong() string {
-	return fmt.Sprintf(`This command replaces complete IAM Organization Policy with the new one provided in JSON format.
-To read Policy from STDIN provide '-' as argument.
+	return fmt.Sprintf(`This command replaces the complete IAM Organization Policy with the new one provided in JSON format.
+To read the Policy from STDIN provide '-' as an argument.
 
-Pro Tip: you can get policy in JSON format with command:
+Pro Tip: you can get the policy in JSON format with the command:
 
 	exo iam org-policy show --output-format json
 
