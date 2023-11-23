@@ -5,6 +5,7 @@
 ### Features
 
 - iam: implement Org Policy management commands #553
+- iam: implement Role management commands #558
 
 ### Improvements
 
