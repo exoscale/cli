@@ -75,7 +75,7 @@ func (c *iamAPIKeyListCmd) cmdAliases() []string { return gListAlias }
 func (c *iamAPIKeyListCmd) cmdShort() string { return "List API Keys" }
 
 func (c *iamAPIKeyListCmd) cmdLong() string {
-	return fmt.Sprintf(`This command lists existing API Keys.
+	return fmt.Sprintf(`This command lists all API Keys.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamAPIKeyListOutput{}), ", "))

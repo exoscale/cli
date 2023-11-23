@@ -25,7 +25,7 @@ type iamAPIKeyDeleteCmd struct {
 func (c *iamAPIKeyDeleteCmd) cmdAliases() []string { return gDeleteAlias }
 
 func (c *iamAPIKeyDeleteCmd) cmdShort() string {
-	return "Delete API Key"
+	return "Delete an API Key"
 }
 
 func (c *iamAPIKeyDeleteCmd) cmdLong() string {
@@ -66,7 +66,7 @@ func (c *iamAPIKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete API Key %s?", c.APIKey)) {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to delete API Key %q?", c.APIKey)) {
 			return nil
 		}
 	}
