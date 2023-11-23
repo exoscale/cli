@@ -2,6 +2,10 @@
 
 ## 1.74.5
 
+### Features
+
+- iam: implement Org Policy management commands #553
+
 ### Improvements
 
 - README: document installation from AUR #557 

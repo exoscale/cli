@@ -214,7 +214,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.1
 ## explicit; go 1.16
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.101.0
+# github.com/exoscale/egoscale v0.102.1
 ## explicit; go 1.17
 github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
@@ -477,7 +477,7 @@ github.com/nicksnyder/go-i18n/i18n
 github.com/nicksnyder/go-i18n/i18n/bundle
 github.com/nicksnyder/go-i18n/i18n/language
 github.com/nicksnyder/go-i18n/i18n/translation
-# github.com/olekukonko/tablewriter v0.0.4
+# github.com/olekukonko/tablewriter v0.0.5
 ## explicit; go 1.12
 github.com/olekukonko/tablewriter
 # github.com/pelletier/go-toml v1.9.4
