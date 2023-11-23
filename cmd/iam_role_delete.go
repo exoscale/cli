@@ -29,8 +29,8 @@ func (c *iamRoleDeleteCmd) cmdShort() string {
 }
 
 func (c *iamRoleDeleteCmd) cmdLong() string {
-	return `This commands delete existing API Role.
-Command will fail if Role is attached to an API Key.`
+	return `This command deletes an existing IAM Role.
+It will fail if the Role is attached to an IAM Key.`
 }
 
 func (c *iamRoleDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

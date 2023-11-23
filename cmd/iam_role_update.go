@@ -33,12 +33,12 @@ type iamRoleUpdateCmd struct {
 func (c *iamRoleUpdateCmd) cmdAliases() []string { return nil }
 
 func (c *iamRoleUpdateCmd) cmdShort() string {
-	return "Update IAM Role"
+	return "Update an IAM Role"
 }
 
 func (c *iamRoleUpdateCmd) cmdLong() string {
-	return fmt.Sprintf(`This command updates IAM Role.
-When replacing Policy command will read data from STDIN if you provide '-' as flag argument.
+	return fmt.Sprintf(`This command updates an IAM Role.
+When you supply '-' as a flag argument to '--policy', the new policy will be read from STDIN.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamPolicyOutput{}), ", "))
