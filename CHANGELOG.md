@@ -1,11 +1,14 @@
 # Changelog
 
-## 1.74.5
+## Unreleased
 
 ### Features
 
 - iam: implement Org Policy management commands #553
 - iam: implement Role management commands #558
+- iam: implement API Key management commands #560
+
+## 1.74.5
 
 ### Improvements
 
