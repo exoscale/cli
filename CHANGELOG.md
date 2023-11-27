@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Updated 'exo x' list-block-storage-volumes #562
+
 ## 1.75.0
 
 ### Features
