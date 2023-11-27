@@ -24,11 +24,6 @@ func xServers() []map[string]string {
 			"description": "",
 			"url":         "https://api-{zone}.exoscale.com/v2",
 		},
-
-		map[string]string{
-			"description": "",
-			"url":         "https://ppapi-{zone}.exoscale.com/v2",
-		},
 	}
 }
 
@@ -684,6 +679,11 @@ func XListBlockStorageVolumes(params *viper.Viper) (*gentleman.Response, map[str
 	url := server + "/block-storage"
 
 	req := cli.Client.Get().URL(url)
+
+	paramInstanceId := params.GetString("instance-id")
+	if paramInstanceId != "" {
+		req = req.AddQuery("instance-id", fmt.Sprintf("%v", paramInstanceId))
+	}
 
 	cli.HandleBefore(handlerPath, params, req)
 
@@ -11329,7 +11329,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "list-block-storage-volumes",
 			Short:   "List block storage volumes",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  instance:\n    $ref: '#/components/schemas/instance-target'\ntype: object\n"),
+			Long:    cli.Markdown(""),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -11347,6 +11347,8 @@ func xRegister(subcommand bool) {
 		}
 
 		root.AddCommand(cmd)
+
+		cmd.Flags().String("instance-id", "", "")
 
 		cli.SetCustomFlags(cmd)
 
@@ -13249,7 +13251,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-opensearch-acl-config name",
 			Short:   "Create a DBaaS OpenSearch ACL configuration",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  acl-enabled:\n    description: Enable OpenSearch ACLs. When disabled authenticated service users have unrestricted access.\n    type: boolean\n  acls:\n    description: List of OpenSearch ACLs\n    items:\n      properties:\n        rules:\n          items:\n            properties:\n              index:\n                description: OpenSearch index pattern\n                maxLength: 249\n                pattern: '[a-zA-Z0-9]+'\n                type: string\n              permission:\n                $ref: '#/components/schemas/enum-opensearch-rule-permission'\n            required:\n            - index\n            type: object\n          type: array\n        username:\n          $ref: '#/components/schemas/dbaas-user-username'\n      type: object\n    type: array\n  extended-acl-enabled:\n    description: Enable to enforce index rules in a limited fashion for requests that use the _mget, _msearch, and _bulk APIs\n    type: boolean\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  acl-enabled:\n    description: Enable OpenSearch ACLs. When disabled authenticated service users have unrestricted access.\n    type: boolean\n  acls:\n    description: List of OpenSearch ACLs\n    items:\n      properties:\n        rules:\n          items:\n            properties:\n              index:\n                description: OpenSearch index pattern\n                maxLength: 249\n                pattern: '[a-zA-Z0-9-_:.]+'\n                type: string\n              permission:\n                $ref: '#/components/schemas/enum-opensearch-rule-permission'\n            required:\n            - index\n            type: object\n          type: array\n        username:\n          $ref: '#/components/schemas/dbaas-user-username'\n      type: object\n    type: array\n  extended-acl-enabled:\n    description: Enable to enforce index rules in a limited fashion for requests that use the _mget, _msearch, and _bulk APIs\n    type: boolean\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
