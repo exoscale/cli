@@ -103,6 +103,12 @@ Examples:
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 
+		if len(objects) == 0 {
+			fmt.Printf("no objects exist at %q\n", prefix)
+
+			return nil
+		}
+
 		return storage.DownloadFiles(gContext, &sos.DownloadConfig{
 			Bucket:      bucket,
 			Prefix:      prefix,

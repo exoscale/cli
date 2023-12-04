@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- SOS download: output warning when no objects exist at prefix #563 
 - Updated 'exo x' list-block-storage-volumes #562
 
 ## 1.75.0
