@@ -41,7 +41,7 @@ To read the Policy from STDIN, append '-' to the '--policy' flag.
 
 Pro Tip: you can reuse an existing role policy by providing the output of the show command as input:
 
-	exo iam role show --policy --output-format json <role-name> | exo iam role create --name <new-role-name> --policy -
+	exo iam role show --policy --output-format json <role-name> | exo iam role create <new-role-name> --description "new role description" --policy -
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamRoleShowOutput{}), ", "))

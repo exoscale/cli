@@ -2,8 +2,14 @@
 
 ## Unreleased
 
-- SOS download: output warning when no objects exist at prefix #563 
+### Bug Fixes
+- SOS download: output warning when no objects exist at prefix #563
+
+### Features
 - Updated 'exo x' list-block-storage-volumes #562
+
+### Improvements
+- Update `exo iam role create` pro tip #55
 
 ## 1.75.0
 
@@ -17,8 +23,8 @@
 
 ### Improvements
 
-- README: document installation from AUR #557 
-- install-script: install rpms from SOS repo #556 
+- README: document installation from AUR #557
+- install-script: install rpms from SOS repo #556
 - Updated `exo x` for blockstorage #559
 
 ## 1.74.4
