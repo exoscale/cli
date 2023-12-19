@@ -7,6 +7,7 @@
 
 ### Features
 - Updated 'exo x' list-block-storage-volumes #562
+- completion: Adding fish support
 
 ### Improvements
 - Update `exo iam role create` pro tip #55
