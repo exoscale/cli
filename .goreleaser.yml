@@ -68,6 +68,9 @@ nfpms:
       # bash
       - src: "./contrib/completion/bash/exo"
         dst: "/usr/share/bash-completion/completions/exo"
+      # fish
+      - src: "./contrib/completion/fish/exo"
+        dst: "/usr/share/fish/vendor_completions.d/exo.fish"
       # zsh
       - src: "./contrib/completion/zsh/_exo"
         dst: "/usr/share/zsh/vendor-completions/_exo"
@@ -83,6 +86,7 @@ brews:
       bin.install "exo"
       man1.install Dir["manpage/exo*.1"]
       bash_completion.install "contrib/completion/bash/exo"
+      fish_completion.install "contrib/completion/fish/exo"
       zsh_completion.install "contrib/completion/zsh/_exo"
 
 dockers:

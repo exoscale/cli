@@ -46,9 +46,11 @@ manpages: manpage
 .PHONY: completions
 completions:
 	mkdir -p contrib/completion/bash \
+		contrib/completion/fish \
 		contrib/completion/powershell \
 		contrib/completion/zsh
 	$(GO) run -mod vendor completion/main.go bash ; mv bash_completion contrib/completion/bash/exo
+	$(GO) run -mod vendor completion/main.go fish ; mv fish_completion contrib/completion/fish/exo
 	$(GO) run -mod vendor completion/main.go powershell ; mv powershell_completion contrib/completion/powershell/exo
 	$(GO) run -mod vendor completion/main.go zsh ; mv zsh_completion contrib/completion/zsh/_exo
 
