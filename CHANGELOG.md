@@ -7,6 +7,7 @@
 
 ### Improvements
 - x: make `exo api` an alias to `exo x` #579
+- Update `iam org-policy reset` confirmation text #568
 
 ## 1.76.1
 
