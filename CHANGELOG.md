@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 - SOS download: output warning when no objects exist at prefix #563
+- Fix the bug in `iam role create` description that made them required #569
 
 ### Features
 - Updated 'exo x' list-block-storage-volumes #562
