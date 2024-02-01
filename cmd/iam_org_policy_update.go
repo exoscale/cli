@@ -15,21 +15,23 @@ import (
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
-type iamOrgPolicyReplaceCmd struct {
+type iamOrgPolicyUpdateCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	Policy string `cli-arg:"#"`
 
-	_ bool `cli-cmd:"replace"`
+	_ bool `cli-cmd:"update"`
 }
 
-func (c *iamOrgPolicyReplaceCmd) cmdAliases() []string { return nil }
-
-func (c *iamOrgPolicyReplaceCmd) cmdShort() string {
-	return "Replace Org policy"
+func (c *iamOrgPolicyUpdateCmd) cmdAliases() []string {
+	return []string{"replace"}
 }
 
-func (c *iamOrgPolicyReplaceCmd) cmdLong() string {
+func (c *iamOrgPolicyUpdateCmd) cmdShort() string {
+	return "Update Org policy"
+}
+
+func (c *iamOrgPolicyUpdateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command replaces the complete IAM Organization Policy with the new one provided in JSON format.
 To read the Policy from STDIN provide '-' as an argument.
 
@@ -41,11 +43,11 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamPolicyOutput{}), ", "))
 }
 
-func (c *iamOrgPolicyReplaceCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *iamOrgPolicyUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamOrgPolicyReplaceCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *iamOrgPolicyUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 	ctx := exoapi.WithEndpoint(
 		gContext,
@@ -123,7 +125,7 @@ func (c *iamOrgPolicyReplaceCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamOrgPolicyCmd, &iamOrgPolicyReplaceCmd{
+	cobra.CheckErr(registerCLICommand(iamOrgPolicyCmd, &iamOrgPolicyUpdateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
