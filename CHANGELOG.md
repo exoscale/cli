@@ -4,7 +4,8 @@
 
 ### Bug Fixes
 - SOS download: output warning when no objects exist at prefix #563
-- Fix the bug in `iam role create` description that made them required #569
+- Fix the bug in `iam role create` description that made it required #569
+- Fix creating role with empty policy #569
 
 ### Features
 - Updated 'exo x' list-block-storage-volumes #562
@@ -12,6 +13,7 @@
 
 ### Improvements
 - Update `exo iam role create` pro tip #55
+- `exo iam org-policy`  `replace` command renamed to `update` where `replace` is now alias #569
 
 ## 1.75.0
 
