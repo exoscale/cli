@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.76.0
 
 ### Bug Fixes
 - SOS download: output warning when no objects exist at prefix #563
