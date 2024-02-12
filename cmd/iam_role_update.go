@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -73,9 +72,8 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	role, err := globalstate.EgoscaleClient.GetIAMRole(ctx, zone, c.Role)
-	if err != nil {
-		return err
+	role := &exoscale.IAMRole{
+		ID: &c.Role,
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
@@ -88,7 +86,7 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		role.Permissions = c.Permissions
 	}
 
-	err = globalstate.EgoscaleClient.UpdateIAMRole(ctx, zone, role)
+	err := globalstate.EgoscaleClient.UpdateIAMRole(ctx, zone, role)
 	if err != nil {
 		return err
 	}
@@ -115,50 +113,9 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		c.Policy = string(b)
 	}
 
-	var obj iamPolicyOutput
-	err = json.Unmarshal([]byte(c.Policy), &obj)
+	policy, err := iamPolicyFromJSON([]byte(c.Policy))
 	if err != nil {
-		return fmt.Errorf("failed to parse policy: %w", err)
-	}
-
-	policy := &exoscale.IAMPolicy{
-		DefaultServiceStrategy: obj.DefaultServiceStrategy,
-		Services:               map[string]exoscale.IAMPolicyService{},
-	}
-
-	if len(obj.Services) > 0 {
-		for name, sv := range obj.Services {
-			service := exoscale.IAMPolicyService{
-				Type: func() *string {
-					t := sv.Type
-					return &t
-				}(),
-			}
-
-			if len(sv.Rules) > 0 {
-				service.Rules = []exoscale.IAMPolicyServiceRule{}
-				for _, rl := range sv.Rules {
-
-					rule := exoscale.IAMPolicyServiceRule{
-						Action: func() *string {
-							t := rl.Action
-							return &t
-						}(),
-					}
-
-					if rl.Expression != "" {
-						rule.Expression = func() *string {
-							t := rl.Expression
-							return &t
-						}()
-					}
-
-					service.Rules = append(service.Rules, rule)
-				}
-			}
-
-			policy.Services[name] = service
-		}
+		return fmt.Errorf("failed to parse IAM policy: %w", err)
 	}
 
 	role.Policy = policy
