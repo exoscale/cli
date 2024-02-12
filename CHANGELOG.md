@@ -1,5 +1,10 @@
 # Changelog
 
+## UNRELEASED
+
+### Features
+- sks: flag for CSI addon #572 
+
 ## 1.76.0
 
 ### Bug Fixes
