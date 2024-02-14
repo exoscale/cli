@@ -18,6 +18,11 @@ type blockstorageCreateCmd struct {
 	_ bool `cli-cmd:"create"`
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
+
+	Size     int64             `cli-usage:"block storage volume size"`
+	Snapshot string            `cli-usage:"block storage volume snapshot NAME|ID"`
+	Labels   map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
+	Zone     string            `cli-short:"z" cli-usage:"block storage zone"`
 }
 
 func (c *blockstorageCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -33,7 +38,6 @@ Supported output template annotations: %s`,
 
 func (c *blockstorageCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
-	cmdSetTemplateFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
@@ -41,7 +45,22 @@ func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
 	TODO := context.TODO()
 
-	op, err := client.CreateBlockStorageVolume(TODO, v3.CreateBlockStorageVolumeRequest{})
+	var snapshot *v3.BlockStorageSnapshotTarget
+	if c.Snapshot != "" {
+		id, err := v3.ParseUUID(c.Snapshot)
+		if err != nil {
+			return err
+		}
+
+		snapshot = &v3.BlockStorageSnapshotTarget{ID: id}
+	}
+
+	op, err := client.CreateBlockStorageVolume(TODO, v3.CreateBlockStorageVolumeRequest{
+		Name:                 c.Name,
+		Size:                 c.Size,
+		Labels:               c.Labels,
+		BlockStorageSnapshot: snapshot,
+	})
 	if err != nil {
 		return err
 	}
@@ -57,7 +76,8 @@ func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&blockstorageShowCmd{
-			Name: bs.Name,
+			cliCommandSettings: c.cliCommandSettings,
+			Name:               bs.ID.String(),
 		}).cmdRun(nil, nil)
 	}
 

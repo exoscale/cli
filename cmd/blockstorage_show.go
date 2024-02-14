@@ -1,17 +1,29 @@
 package cmd
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockstorageShowOutput struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	BlockStorageSnapshots []string          `json:"block-storage-snapshots"`
+	Blocksize             int64             `json:"blocksize"`
+	CreatedAT             time.Time         `json:"created-at"`
+	ID                    string            `json:"id"`
+	Instance              string            `json:"instance"`
+	Labels                map[string]string `json:"labels"`
+	Name                  string            `json:"name"`
+	Size                  int64             `json:"size"`
+	State                 string            `json:"state"`
 }
 
 func (o *blockstorageShowOutput) Type() string { return "Block Storage Volume" }
@@ -45,7 +57,40 @@ func (c *blockstorageShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *blockstorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	return nil
+	client := globalstate.EgoscaleV3Client
+	TODO := context.TODO()
+
+	bs, err := client.GetBlockStorageVolume(TODO, v3.UUID(c.Name))
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
+
+		return err
+	}
+
+	return c.outputFunc(&blockstorageShowOutput{
+		ID:        bs.ID.String(),
+		Name:      bs.Name,
+		Size:      bs.Size,
+		Blocksize: bs.Blocksize,
+		CreatedAT: bs.CreatedAT,
+		State:     string(bs.State),
+		Instance: func(i *v3.InstanceTarget) string {
+			if i != nil {
+				return i.ID.String()
+			}
+			return ""
+		}(bs.Instance),
+		Labels: bs.Labels,
+		BlockStorageSnapshots: func(snapshots []v3.BlockStorageSnapshotTarget) []string {
+			var v []string
+			for _, s := range snapshots {
+				v = append(v, s.ID.String())
+			}
+			return v
+		}(bs.BlockStorageSnapshots),
+	}, nil)
 }
 
 func init() {
