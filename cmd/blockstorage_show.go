@@ -24,8 +24,8 @@ type blockstorageShowCmd struct {
 
 	_ bool `cli-cmd:"show"`
 
-	Instance string `cli-arg:"#" cli-usage:"NAME|ID"`
-	Zone     string `cli-short:"z" cli-usage:"block storage volume zone"`
+	Name string `cli-arg:"#" cli-usage:"NAME|ID"`
+	Zone string `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
 func (c *blockstorageShowCmd) cmdAliases() []string { return gShowAlias }

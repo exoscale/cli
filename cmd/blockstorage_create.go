@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockstorageCreateCmd struct {
@@ -35,6 +38,29 @@ func (c *blockstorageCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	client := globalstate.EgoscaleV3Client
+	TODO := context.TODO()
+
+	op, err := client.CreateBlockStorageVolume(TODO, v3.CreateBlockStorageVolumeRequest{})
+	if err != nil {
+		return err
+	}
+	op, err = client.Wait(TODO, op, v3.OperationStateSuccess)
+	if err != nil {
+		return err
+	}
+
+	bs, err := client.GetBlockStorageVolume(TODO, op.Reference.ID)
+	if err != nil {
+		return err
+	}
+
+	if !globalstate.Quiet {
+		return (&blockstorageShowCmd{
+			Name: bs.Name,
+		}).cmdRun(nil, nil)
+	}
+
 	return nil
 }
 

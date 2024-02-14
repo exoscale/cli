@@ -9,6 +9,8 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	exov2 "github.com/exoscale/egoscale/v2"
+	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 // cliRoundTripper implements the http.RoundTripper interface and allows client
@@ -76,4 +78,21 @@ func buildClient() {
 	}
 	globalstate.EgoscaleClient = clientExoV2
 
+	creds := credentials.NewStaticCredentials(
+		account.CurrentAccount.Key,
+		account.CurrentAccount.APISecret(),
+	)
+
+	clientV3, err := v3.NewClient(
+		creds,
+		v3.ClientOptWithHTTPClient(httpClient),
+	)
+	if err != nil {
+		panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))
+	}
+
+	if v := os.Getenv("EXOSCALE_TRACE"); v != "" {
+		clientV3 = clientV3.WithTrace()
+	}
+	globalstate.EgoscaleV3Client = clientV3
 }
