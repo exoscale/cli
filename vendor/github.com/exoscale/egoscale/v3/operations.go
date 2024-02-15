@@ -299,6 +299,17 @@ type ListAntiAffinityGroupsResponse struct {
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 }
 
+// FindAntiAffinityGroup attempts to find an AntiAffinityGroup by name or ID.
+func (l ListAntiAffinityGroupsResponse) FindAntiAffinityGroup(nameOrID string) (AntiAffinityGroup, error) {
+	for i, elem := range l.AntiAffinityGroups {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.AntiAffinityGroups[i], nil
+		}
+	}
+
+	return AntiAffinityGroup{}, fmt.Errorf("%q not found in ListAntiAffinityGroupsResponse: %w", nameOrID, ErrNotFound)
+}
+
 // List Anti-affinity Groups
 func (c Client) ListAntiAffinityGroups(ctx context.Context) (*ListAntiAffinityGroupsResponse, error) {
 	path := "/anti-affinity-group"
@@ -671,6 +682,17 @@ type ListBlockStorageVolumesResponse struct {
 	BlockStorageVolumes []BlockStorageVolume `json:"block-storage-volumes,omitempty"`
 }
 
+// FindBlockStorageVolume attempts to find an BlockStorageVolume by name or ID.
+func (l ListBlockStorageVolumesResponse) FindBlockStorageVolume(nameOrID string) (BlockStorageVolume, error) {
+	for i, elem := range l.BlockStorageVolumes {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.BlockStorageVolumes[i], nil
+		}
+	}
+
+	return BlockStorageVolume{}, fmt.Errorf("%q not found in ListBlockStorageVolumesResponse: %w", nameOrID, ErrNotFound)
+}
+
 type ListBlockStorageVolumesOpt func(url.Values)
 
 func ListBlockStorageVolumesWithInstanceID(instanceID UUID) ListBlockStorageVolumesOpt {
@@ -791,6 +813,17 @@ func (c Client) CreateBlockStorageVolume(ctx context.Context, req CreateBlockSto
 
 type ListBlockStorageSnapshotsResponse struct {
 	BlockStorageSnapshots []BlockStorageSnapshot `json:"block-storage-snapshots,omitempty"`
+}
+
+// FindBlockStorageSnapshot attempts to find an BlockStorageSnapshot by name or ID.
+func (l ListBlockStorageSnapshotsResponse) FindBlockStorageSnapshot(nameOrID string) (BlockStorageSnapshot, error) {
+	for i, elem := range l.BlockStorageSnapshots {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.BlockStorageSnapshots[i], nil
+		}
+	}
+
+	return BlockStorageSnapshot{}, fmt.Errorf("%q not found in ListBlockStorageSnapshotsResponse: %w", nameOrID, ErrNotFound)
 }
 
 // List block storage snapshots
@@ -6096,6 +6129,17 @@ type ListDeployTargetsResponse struct {
 	DeployTargets []DeployTarget `json:"deploy-targets,omitempty"`
 }
 
+// FindDeployTarget attempts to find an DeployTarget by name or ID.
+func (l ListDeployTargetsResponse) FindDeployTarget(nameOrID string) (DeployTarget, error) {
+	for i, elem := range l.DeployTargets {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.DeployTargets[i], nil
+		}
+	}
+
+	return DeployTarget{}, fmt.Errorf("%q not found in ListDeployTargetsResponse: %w", nameOrID, ErrNotFound)
+}
+
 // List Deploy Targets
 func (c Client) ListDeployTargets(ctx context.Context) (*ListDeployTargetsResponse, error) {
 	path := "/deploy-target"
@@ -6283,6 +6327,17 @@ func (c Client) CreateDNSDomain(ctx context.Context, req CreateDNSDomainRequest)
 
 type ListDNSDomainRecordsResponse struct {
 	DNSDomainRecords []DNSDomainRecord `json:"dns-domain-records,omitempty"`
+}
+
+// FindDNSDomainRecord attempts to find an DNSDomainRecord by name or ID.
+func (l ListDNSDomainRecordsResponse) FindDNSDomainRecord(nameOrID string) (DNSDomainRecord, error) {
+	for i, elem := range l.DNSDomainRecords {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.DNSDomainRecords[i], nil
+		}
+	}
+
+	return DNSDomainRecord{}, fmt.Errorf("%q not found in ListDNSDomainRecordsResponse: %w", nameOrID, ErrNotFound)
 }
 
 // List DNS domain records
@@ -7253,6 +7308,17 @@ type ListIAMRolesResponse struct {
 	IAMRoles []IAMRole `json:"iam-roles,omitempty"`
 }
 
+// FindIAMRole attempts to find an IAMRole by name or ID.
+func (l ListIAMRolesResponse) FindIAMRole(nameOrID string) (IAMRole, error) {
+	for i, elem := range l.IAMRoles {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.IAMRoles[i], nil
+		}
+	}
+
+	return IAMRole{}, fmt.Errorf("%q not found in ListIAMRolesResponse: %w", nameOrID, ErrNotFound)
+}
+
 // List IAM Roles
 func (c Client) ListIAMRoles(ctx context.Context) (*ListIAMRolesResponse, error) {
 	path := "/iam-role"
@@ -7583,6 +7649,17 @@ type ListInstancesResponse struct {
 	Instances []ListInstancesResponseInstances `json:"instances,omitempty"`
 }
 
+// FindListInstancesResponseInstances attempts to find an ListInstancesResponseInstances by name or ID.
+func (l ListInstancesResponse) FindListInstancesResponseInstances(nameOrID string) (ListInstancesResponseInstances, error) {
+	for i, elem := range l.Instances {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.Instances[i], nil
+		}
+	}
+
+	return ListInstancesResponseInstances{}, fmt.Errorf("%q not found in ListInstancesResponse: %w", nameOrID, ErrNotFound)
+}
+
 type ListInstancesManagerType string
 
 const (
@@ -7739,6 +7816,17 @@ func (c Client) CreateInstance(ctx context.Context, req CreateInstanceRequest) (
 
 type ListInstancePoolsResponse struct {
 	InstancePools []InstancePool `json:"instance-pools,omitempty"`
+}
+
+// FindInstancePool attempts to find an InstancePool by name or ID.
+func (l ListInstancePoolsResponse) FindInstancePool(nameOrID string) (InstancePool, error) {
+	for i, elem := range l.InstancePools {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.InstancePools[i], nil
+		}
+	}
+
+	return InstancePool{}, fmt.Errorf("%q not found in ListInstancePoolsResponse: %w", nameOrID, ErrNotFound)
 }
 
 // List Instance Pools
@@ -9071,6 +9159,17 @@ type ListLoadBalancersResponse struct {
 	LoadBalancers []LoadBalancer `json:"load-balancers,omitempty"`
 }
 
+// FindLoadBalancer attempts to find an LoadBalancer by name or ID.
+func (l ListLoadBalancersResponse) FindLoadBalancer(nameOrID string) (LoadBalancer, error) {
+	for i, elem := range l.LoadBalancers {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.LoadBalancers[i], nil
+		}
+	}
+
+	return LoadBalancer{}, fmt.Errorf("%q not found in ListLoadBalancersResponse: %w", nameOrID, ErrNotFound)
+}
+
 // List Load Balancers
 func (c Client) ListLoadBalancers(ctx context.Context) (*ListLoadBalancersResponse, error) {
 	path := "/load-balancer"
@@ -9698,6 +9797,17 @@ func (c Client) GetOperation(ctx context.Context, id UUID) (*Operation, error) {
 
 type ListPrivateNetworksResponse struct {
 	PrivateNetworks []PrivateNetwork `json:"private-networks,omitempty"`
+}
+
+// FindPrivateNetwork attempts to find an PrivateNetwork by name or ID.
+func (l ListPrivateNetworksResponse) FindPrivateNetwork(nameOrID string) (PrivateNetwork, error) {
+	for i, elem := range l.PrivateNetworks {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.PrivateNetworks[i], nil
+		}
+	}
+
+	return PrivateNetwork{}, fmt.Errorf("%q not found in ListPrivateNetworksResponse: %w", nameOrID, ErrNotFound)
 }
 
 // List Private Networks
@@ -10542,6 +10652,17 @@ type ListSecurityGroupsResponse struct {
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 }
 
+// FindSecurityGroup attempts to find an SecurityGroup by name or ID.
+func (l ListSecurityGroupsResponse) FindSecurityGroup(nameOrID string) (SecurityGroup, error) {
+	for i, elem := range l.SecurityGroups {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.SecurityGroups[i], nil
+		}
+	}
+
+	return SecurityGroup{}, fmt.Errorf("%q not found in ListSecurityGroupsResponse: %w", nameOrID, ErrNotFound)
+}
+
 type ListSecurityGroupsVisibility string
 
 const (
@@ -11104,6 +11225,17 @@ func (c Client) RemoveExternalSourceFromSecurityGroup(ctx context.Context, id UU
 
 type ListSKSClustersResponse struct {
 	SKSClusters []SKSCluster `json:"sks-clusters,omitempty"`
+}
+
+// FindSKSCluster attempts to find an SKSCluster by name or ID.
+func (l ListSKSClustersResponse) FindSKSCluster(nameOrID string) (SKSCluster, error) {
+	for i, elem := range l.SKSClusters {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.SKSClusters[i], nil
+		}
+	}
+
+	return SKSCluster{}, fmt.Errorf("%q not found in ListSKSClustersResponse: %w", nameOrID, ErrNotFound)
 }
 
 // List SKS clusters
@@ -12260,6 +12392,17 @@ type ListSnapshotsResponse struct {
 	Snapshots []Snapshot `json:"snapshots,omitempty"`
 }
 
+// FindSnapshot attempts to find an Snapshot by name or ID.
+func (l ListSnapshotsResponse) FindSnapshot(nameOrID string) (Snapshot, error) {
+	for i, elem := range l.Snapshots {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.Snapshots[i], nil
+		}
+	}
+
+	return Snapshot{}, fmt.Errorf("%q not found in ListSnapshotsResponse: %w", nameOrID, ErrNotFound)
+}
+
 // List Snapshots
 func (c Client) ListSnapshots(ctx context.Context) (*ListSnapshotsResponse, error) {
 	path := "/snapshot"
@@ -12786,6 +12929,17 @@ func (c Client) GetSSHKey(ctx context.Context, name string) (*SSHKey, error) {
 
 type ListTemplatesResponse struct {
 	Templates []Template `json:"templates,omitempty"`
+}
+
+// FindTemplate attempts to find an Template by name or ID.
+func (l ListTemplatesResponse) FindTemplate(nameOrID string) (Template, error) {
+	for i, elem := range l.Templates {
+		if elem.Name == nameOrID || elem.ID.String() == nameOrID {
+			return l.Templates[i], nil
+		}
+	}
+
+	return Template{}, fmt.Errorf("%q not found in ListTemplatesResponse: %w", nameOrID, ErrNotFound)
 }
 
 type ListTemplatesVisibility string

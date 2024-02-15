@@ -47,12 +47,15 @@ func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var snapshot *v3.BlockStorageSnapshotTarget
 	if c.Snapshot != "" {
-		id, err := v3.ParseUUID(c.Snapshot)
+		snapshots, err := client.ListBlockStorageSnapshots(TODO)
 		if err != nil {
 			return err
 		}
-
-		snapshot = &v3.BlockStorageSnapshotTarget{ID: id}
+		s, err := snapshots.FindBlockStorageSnapshot(c.Snapshot)
+		if err != nil {
+			return err
+		}
+		snapshot = &v3.BlockStorageSnapshotTarget{ID: s.ID}
 	}
 
 	op, err := client.CreateBlockStorageVolume(TODO, v3.CreateBlockStorageVolumeRequest{

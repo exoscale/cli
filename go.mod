@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/exoscale/egoscale v0.102.4-0.20240213131656-be2da0e455ee
+	github.com/exoscale/egoscale v0.102.4-0.20240215141418-bff0f29af307
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/google/uuid v1.4.0

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -60,36 +59,36 @@ func (c *blockstorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
 	TODO := context.TODO()
 
-	bs, err := client.GetBlockStorageVolume(TODO, v3.UUID(c.Name))
+	volumes, err := client.ListBlockStorageVolumes(TODO)
 	if err != nil {
-		if errors.Is(err, v3.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
-
+		return err
+	}
+	volume, err := volumes.FindBlockStorageVolume(c.Name)
+	if err != nil {
 		return err
 	}
 
 	return c.outputFunc(&blockstorageShowOutput{
-		ID:        bs.ID.String(),
-		Name:      bs.Name,
-		Size:      bs.Size,
-		Blocksize: bs.Blocksize,
-		CreatedAT: bs.CreatedAT,
-		State:     string(bs.State),
+		ID:        volume.ID.String(),
+		Name:      volume.Name,
+		Size:      volume.Size,
+		Blocksize: volume.Blocksize,
+		CreatedAT: volume.CreatedAT,
+		State:     string(volume.State),
 		Instance: func(i *v3.InstanceTarget) string {
 			if i != nil {
 				return i.ID.String()
 			}
 			return ""
-		}(bs.Instance),
-		Labels: bs.Labels,
+		}(volume.Instance),
+		Labels: volume.Labels,
 		BlockStorageSnapshots: func(snapshots []v3.BlockStorageSnapshotTarget) []string {
 			var v []string
 			for _, s := range snapshots {
 				v = append(v, s.ID.String())
 			}
 			return v
-		}(bs.BlockStorageSnapshots),
+		}(volume.BlockStorageSnapshots),
 	}, nil)
 }
 
