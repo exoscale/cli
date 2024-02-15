@@ -1,12 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockstorageDeleteCmd struct {
@@ -15,6 +18,7 @@ type blockstorageDeleteCmd struct {
 	_ bool `cli-cmd:"delete"`
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
+	Zone string `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
 func (c *blockstorageDeleteCmd) cmdAliases() []string { return gCreateAlias }
@@ -30,11 +34,31 @@ Supported output template annotations: %s`,
 
 func (c *blockstorageDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
-	cmdSetTemplateFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockstorageDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	client := globalstate.EgoscaleV3Client
+	TODO := context.TODO()
+
+	resp, err := client.ListBlockStorageVolumes(TODO)
+	if err != nil {
+		return err
+	}
+	volume, err := resp.FindBlockStorageVolume(c.Name)
+	if err != nil {
+		return err
+	}
+
+	op, err := client.DeleteBlockStorageVolume(TODO, volume.ID)
+	if err != nil {
+		return err
+	}
+	_, err = client.Wait(TODO, op, v3.OperationStateSuccess)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
