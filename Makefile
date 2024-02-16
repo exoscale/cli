@@ -1,3 +1,5 @@
+GO_MK_REF := master
+
 ifndef MAKE_RESTARTS
 # This section will be processed the first time that make reads this file.
 
@@ -23,12 +25,12 @@ include go.mk/public.mk
 
 .ONESHELL:
 go.mk:
-	git clone git@github.com:exoscale/go.mk.git
+	git clone https://github.com/exoscale/go.mk.git
 
 .PHONY: go.mk-ref
 go.mk-ref:
 	@cd go.mk && \
-		git checkout --quiet philippsauter/sc-88913/go-mk-provide-alternative-to-submodule-approach
+		git checkout --quiet ${GO_MK_REF}
 
 PROJECT_URL = https://github.com/exoscale/cli
 GO_BIN_OUTPUT_NAME := exo
