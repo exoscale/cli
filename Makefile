@@ -1,23 +1,36 @@
+ifndef MAKE_RESTARTS
+# This section will be processed the first time that make reads this file.
+
 # make go.mk a dependency for all targets
 .EXTRA_PREREQS = go.mk
-
-go.mk/init.mk:
-include go.mk/init.mk
-go.mk/public.mk:
-include go.mk/public.mk
 
 # This causes make to re-read the Makefile
 # and all included makefiles after go.mk
 # has been cloned.
 Makefile:
 	touch Makefile
+else
+# This section will be processed the second time that make reads this file.
+
+# make go.mk-ref a dependency for all targets
+.EXTRA_PREREQS = go.mk-ref
+endif
+
+go.mk/init.mk:
+include go.mk/init.mk
+go.mk/public.mk:
+include go.mk/public.mk
 
 .ONESHELL:
 go.mk:
 	git clone \
 		--depth 1 \
-		--branch philippsauter/sc-88913/go-mk-provide-alternative-to-submodule-approach \
 		git@github.com:exoscale/go.mk.git
+
+.PHONY: go.mk-ref
+go.mk-ref:
+	cd go.mk && \
+	git checkout philippsauter/sc-88913/go-mk-provide-alternative-to-submodule-approach
 
 PROJECT_URL = https://github.com/exoscale/cli
 GO_BIN_OUTPUT_NAME := exo
