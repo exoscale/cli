@@ -8,7 +8,7 @@ ifndef MAKE_RESTARTS
 # and all included makefiles after go.mk
 # has been cloned.
 Makefile:
-	touch Makefile
+	@touch Makefile
 else
 # This section will be processed the second time that make reads this file.
 
@@ -23,14 +23,12 @@ include go.mk/public.mk
 
 .ONESHELL:
 go.mk:
-	git clone \
-		--depth 1 \
-		git@github.com:exoscale/go.mk.git
+	git clone git@github.com:exoscale/go.mk.git
 
 .PHONY: go.mk-ref
 go.mk-ref:
-	cd go.mk && \
-	git checkout philippsauter/sc-88913/go-mk-provide-alternative-to-submodule-approach
+	@cd go.mk && \
+		git checkout --quiet philippsauter/sc-88913/go-mk-provide-alternative-to-submodule-approach
 
 PROJECT_URL = https://github.com/exoscale/cli
 GO_BIN_OUTPUT_NAME := exo
