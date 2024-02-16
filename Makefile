@@ -4,17 +4,13 @@ include go.mk/public.mk
 go.mk/init.mk: go.mk
 go.mk/public.mk: go.mk
 
-.PHONY: go.mk
 .ONESHELL:
 go.mk:
-	@if [ ! -d "go.mk" ]; then
-		git clone --depth 1 git@github.com:exoscale/go.mk.git
-		cd go.mk
-		git fetch --tags
-		git checkout 314a757ba0e1668ebfe7252269d4b58560854c69
-		cd ..
-		$(MAKE) $(MAKECMDGOALS)
-	fi
+	git clone \
+		--depth 1 \
+		--branch philippsauter/sc-88913/go-mk-provide-alternative-to-submodule-approach \
+		git@github.com:exoscale/go.mk.git
+	$(MAKE) $(MAKEFLAGS) $(MFLAGS) $(MAKECMDGOALS)
 
 PROJECT_URL = https://github.com/exoscale/cli
 GO_BIN_OUTPUT_NAME := exo
