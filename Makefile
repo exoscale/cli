@@ -1,3 +1,6 @@
+include go.mk/init.mk
+include go.mk/public.mk
+
 go.mk/init.mk: go.mk
 go.mk/public.mk: go.mk
 
@@ -6,13 +9,12 @@ go.mk/public.mk: go.mk
 go.mk:
 	@if [ ! -d "go.mk" ]; then
 		git clone --depth 1 git@github.com:exoscale/go.mk.git
+		cd go.mk
+		git fetch --tags
+		git checkout 314a757ba0e1668ebfe7252269d4b58560854c69
+		cd ..
+		$(MAKE) $(MAKECMDGOALS)
 	fi
-	cd go.mk && \
-	git fetch --tags && \
-	git checkout 314a757ba0e1668ebfe7252269d4b58560854c69 > /dev/null
-
-include go.mk/init.mk
-include go.mk/public.mk
 
 PROJECT_URL = https://github.com/exoscale/cli
 GO_BIN_OUTPUT_NAME := exo
