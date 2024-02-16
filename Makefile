@@ -3,13 +3,10 @@ GO_MK_REF := master
 ifndef MAKE_RESTARTS
 # This section will be processed the first time that make reads this file.
 
-# make go.mk a dependency for all targets
-.EXTRA_PREREQS = go.mk
-
 # This causes make to re-read the Makefile
 # and all included makefiles after go.mk
 # has been cloned.
-Makefile:
+Makefile: go.mk
 	@touch Makefile
 else
 # This section will be processed the second time that make reads this file.
@@ -23,9 +20,12 @@ include go.mk/init.mk
 go.mk/public.mk:
 include go.mk/public.mk
 
+.PHONY:
 .ONESHELL:
 go.mk:
-	git clone https://github.com/exoscale/go.mk.git
+	@if [ ! -d "go.mk" ]; then
+		git clone https://github.com/exoscale/go.mk.git
+	fi
 
 .PHONY: go.mk-ref
 go.mk-ref:
