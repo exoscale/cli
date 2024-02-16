@@ -1,8 +1,10 @@
+go.mk/init.mk: go.mk
 include go.mk/init.mk
+go.mk/public.mk: go.mk
 include go.mk/public.mk
 
-go.mk/init.mk: go.mk
-go.mk/public.mk: go.mk
+Makefile: go.mk
+	touch Makefile
 
 .ONESHELL:
 go.mk:
@@ -10,7 +12,6 @@ go.mk:
 		--depth 1 \
 		--branch philippsauter/sc-88913/go-mk-provide-alternative-to-submodule-approach \
 		git@github.com:exoscale/go.mk.git
-	$(MAKE) $(MAKEFLAGS) $(MFLAGS) $(MAKECMDGOALS)
 
 PROJECT_URL = https://github.com/exoscale/cli
 GO_BIN_OUTPUT_NAME := exo
