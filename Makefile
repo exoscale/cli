@@ -1,9 +1,15 @@
-go.mk/init.mk: go.mk
+# make go.mk a dependency for all targets
+.EXTRA_PREREQS = go.mk
+
+go.mk/init.mk:
 include go.mk/init.mk
-go.mk/public.mk: go.mk
+go.mk/public.mk:
 include go.mk/public.mk
 
-Makefile: go.mk
+# This causes make to re-read the Makefile
+# and all included makefiles after go.mk
+# has been cloned.
+Makefile:
 	touch Makefile
 
 .ONESHELL:
