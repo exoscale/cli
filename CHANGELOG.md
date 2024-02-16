@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+- go.mk: use as a plain repo instead of a submodule #575 
+
 ## 1.76.0
 
 ### Bug Fixes
