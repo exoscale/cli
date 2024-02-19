@@ -1,4 +1,4 @@
-GO_MK_REF := master
+GO_MK_REF := v1.0.0
 
 # make go.mk a dependency for all targets
 .EXTRA_PREREQS = go.mk
@@ -25,8 +25,14 @@ go.mk:
 	@if [ ! -d "go.mk" ]; then
 		git clone https://github.com/exoscale/go.mk.git
 	fi
-	@cd go.mk && \
-		git checkout --quiet ${GO_MK_REF}
+	@cd go.mk
+	@if ! git show-ref --quiet --verify "refs/heads/${GO_MK_REF}"; then
+		git fetch
+	fi
+	@if ! git show-ref --quiet --verify "refs/tags/${GO_MK_REF}"; then
+		git fetch --tags
+	fi
+	git checkout --quiet ${GO_MK_REF}
 
 PROJECT_URL = https://github.com/exoscale/cli
 GO_BIN_OUTPUT_NAME := exo
