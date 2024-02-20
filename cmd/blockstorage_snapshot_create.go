@@ -16,12 +16,10 @@ type blockstorageSnapshotCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Volume string `cli-arg:"#" cli-usage:"NAME|ID"`
-
-	Size     int64             `cli-usage:"block storage volume size"`
-	Snapshot string            `cli-usage:"block storage volume snapshot NAME|ID"`
-	Labels   map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
-	Zone     v3.ZoneName       `cli-short:"z" cli-usage:"block storage zone"`
+	Volume string            `cli-arg:"#" cli-usage:"<volume NAME|ID>"`
+	Name   string            `cli-flag:"name" cli-usage:"block storage volume snapshot name"`
+	Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
+	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage zone"`
 }
 
 func (c *blockstorageSnapshotCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -44,36 +42,49 @@ func (c *blockstorageSnapshotCreateCmd) cmdPreRun(cmd *cobra.Command, args []str
 
 func (c *blockstorageSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
-	_, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	// op, err := client.CreateBlockStorageVolume(ctx, v3.CreateBlockStorageVolumeRequest{
-	// 	Name:                 c.Name,
-	// 	Size:                 c.Size,
-	// 	Labels:               c.Labels,
-	// 	BlockStorageSnapshot: snapshot,
-	// })
-	// if err != nil {
-	// 	return err
-	// }
-	// op, err = client.Wait(TODO, op, v3.OperationStateSuccess)
-	// if err != nil {
-	// 	return err
-	// }
+	volumes, err := client.ListBlockStorageVolumes(ctx)
+	if err != nil {
+		return err
+	}
 
-	// bs, err := client.GetBlockStorageVolume(TODO, op.Reference.ID)
-	// if err != nil {
-	// 	return err
-	// }
+	volume, err := volumes.FindBlockStorageVolume(c.Volume)
+	if err != nil {
+		return err
+	}
 
-	// if !globalstate.Quiet {
-	// 	return (&blockstorageShowCmd{
-	// 		cliCommandSettings: c.cliCommandSettings,
-	// 		Name:               bs.ID.String(),
-	// 	}).cmdRun(nil, nil)
-	// }
+	op, err := client.CreateBlockStorageSnapshot(ctx, volume.ID,
+		v3.CreateBlockStorageSnapshotRequest{
+			Labels: c.Labels,
+			Name:   c.Name,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Snapshoting block storage volume %q...", c.Volume), func() {
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+	if err != nil {
+		return err
+	}
+
+	name := c.Name
+	if c.Name == "" {
+		name = op.Reference.ID.String()
+	}
+
+	if !globalstate.Quiet {
+		return (&blockstorageSnapshotShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Name:               name,
+		}).cmdRun(nil, nil)
+	}
 
 	return nil
 }
