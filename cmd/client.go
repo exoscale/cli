@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -95,4 +96,16 @@ func buildClient() {
 		clientV3 = clientV3.WithTrace()
 	}
 	globalstate.EgoscaleV3Client = clientV3
+}
+
+func switchClientZoneV3(ctx context.Context, client *v3.Client, zone v3.ZoneName) (*v3.Client, error) {
+	if zone == "" {
+		return client, nil
+	}
+	endpoint, err := client.GetZoneAPIEndpoint(ctx, zone)
+	if err != nil {
+		return nil, fmt.Errorf("switch client zone v3: %w", err)
+	}
+
+	return client.WithEndpoint(endpoint), nil
 }

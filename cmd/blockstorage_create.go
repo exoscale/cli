@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -22,7 +21,7 @@ type blockstorageCreateCmd struct {
 	Size     int64             `cli-usage:"block storage volume size"`
 	Snapshot string            `cli-usage:"block storage volume snapshot NAME|ID"`
 	Labels   map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
-	Zone     string            `cli-short:"z" cli-usage:"block storage zone"`
+	Zone     v3.ZoneName       `cli-short:"z" cli-usage:"block storage zone"`
 }
 
 func (c *blockstorageCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -42,12 +41,15 @@ func (c *blockstorageCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	client := globalstate.EgoscaleV3Client
-	TODO := context.TODO()
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
 	var snapshot *v3.BlockStorageSnapshotTarget
 	if c.Snapshot != "" {
-		snapshots, err := client.ListBlockStorageSnapshots(TODO)
+		snapshots, err := client.ListBlockStorageSnapshots(ctx)
 		if err != nil {
 			return err
 		}
@@ -57,22 +59,30 @@ func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 		snapshot = &v3.BlockStorageSnapshotTarget{ID: s.ID}
 	}
-
-	op, err := client.CreateBlockStorageVolume(TODO, v3.CreateBlockStorageVolumeRequest{
-		Name:                 c.Name,
+	req := v3.CreateBlockStorageVolumeRequest{
+		Name:                 "",
 		Size:                 c.Size,
 		Labels:               c.Labels,
 		BlockStorageSnapshot: snapshot,
+	}
+
+	if err := client.Validate(req); err != nil {
+		return err
+	}
+
+	op, err := client.CreateBlockStorageVolume(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Creating block storage volume %q...", c.Name), func() {
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
 	}
-	op, err = client.Wait(TODO, op, v3.OperationStateSuccess)
-	if err != nil {
-		return err
-	}
 
-	bs, err := client.GetBlockStorageVolume(TODO, op.Reference.ID)
+	bs, err := client.GetBlockStorageVolume(ctx, op.Reference.ID)
 	if err != nil {
 		return err
 	}

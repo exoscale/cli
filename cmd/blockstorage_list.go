@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -14,11 +13,11 @@ import (
 )
 
 type blockstorageListItemOutput struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Zone  string `json:"zone"`
-	Size  string `json:"size"`
-	State string `json:"state"`
+	ID    v3.UUID                    `json:"id"`
+	Name  string                     `json:"name"`
+	Zone  v3.ZoneName                `json:"zone"`
+	Size  string                     `json:"size"`
+	State v3.BlockStorageVolumeState `json:"state"`
 }
 
 type blockstorageListOutput []blockstorageListItemOutput
@@ -32,7 +31,7 @@ type blockstorageListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *blockstorageListCmd) cmdAliases() []string { return gCreateAlias }
@@ -52,16 +51,16 @@ func (c *blockstorageListCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 
 func (c *blockstorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
-	TODO := context.TODO()
+	ctx := gContext
 
-	resp, err := client.ListZones(TODO)
+	resp, err := client.ListZones(ctx)
 	if err != nil {
 		return err
 	}
 	zones := resp.Zones
 
 	if c.Zone != "" {
-		endpoint, err := client.GetZoneAPIEndpoint(TODO, v3.ZoneName(c.Zone))
+		endpoint, err := client.GetZoneAPIEndpoint(ctx, c.Zone)
 		if err != nil {
 			return err
 		}
@@ -73,7 +72,7 @@ func (c *blockstorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	for _, zone := range zones {
 		c := client.WithEndpoint(zone.APIEndpoint)
 
-		resp, err := c.ListBlockStorageVolumes(TODO)
+		resp, err := c.ListBlockStorageVolumes(ctx)
 		if err != nil {
 			// TODO: remove it once Block Storage is deployed in every zone.
 			if strings.Contains(err.Error(), "Availability of the block storage volumes") {
@@ -85,11 +84,11 @@ func (c *blockstorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		for _, volume := range resp.BlockStorageVolumes {
 			output = append(output, blockstorageListItemOutput{
-				ID:    volume.ID.String(),
+				ID:    volume.ID,
 				Name:  volume.Name,
-				Zone:  string(zone.Name),
+				Zone:  zone.Name,
 				Size:  humanize.IBytes(uint64(volume.Size)),
-				State: string(volume.State),
+				State: volume.State,
 			})
 		}
 	}

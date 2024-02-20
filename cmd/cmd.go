@@ -230,7 +230,7 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 
 		switch t := cTypeField.Type.Kind(); t {
 		case reflect.String:
-			fs.StringP(flagName, flagShort, flagDefaultValue.(string), flagUsage)
+			fs.StringP(flagName, flagShort, fmt.Sprint(flagDefaultValue), flagUsage)
 
 		case reflect.Int64:
 			fs.Int64P(flagName, flagShort, flagDefaultValue.(int64), flagUsage)

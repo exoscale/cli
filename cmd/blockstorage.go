@@ -5,7 +5,7 @@ import (
 )
 
 var blockstorageCmd = &cobra.Command{
-	Use:     "blockstorage",
+	Use:     "block-storage",
 	Short:   "Block Storage management",
 	Aliases: []string{"block", "bs"},
 }

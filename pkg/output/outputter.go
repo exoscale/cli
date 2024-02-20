@@ -216,6 +216,25 @@ func Table(o interface{}) {
 			} else {
 				switch v.Field(i).Type().Elem().Kind() {
 				case reflect.Struct:
+					// If the slice contains structs {ID: "UUID"} with single field ID
+					// we build a []string of ID's, and show a clean table of ID.
+					items := []string{}
+					for j := 0; j < v.Field(i).Len(); j++ {
+						elem := v.Field(i).Index(j)
+						if elem.NumField() != 1 {
+							break
+						}
+						idField := elem.FieldByName("ID")
+						if idField.IsValid() {
+							items = append(items, idField.String())
+						}
+					}
+
+					if len(items) > 0 {
+						tab.Append([]string{label, strings.Join(items, "\n")})
+						continue
+					}
+
 					var embeddedBuf bytes.Buffer
 					embeddedTable := table.NewEmbeddedTable(&embeddedBuf)
 
@@ -256,6 +275,13 @@ func Table(o interface{}) {
 			if v.Field(i).IsNil() {
 				tab.Append([]string{label, "n/a"})
 			} else {
+				// Most of our openAPI resource reference has {ID: "UUID"}
+				// That facilitate the outputers struct.
+				if v.Field(i).Elem().FieldByName("ID").String() != "" {
+					tab.Append([]string{label, fmt.Sprint(v.Field(i).Elem().FieldByName("ID").String())})
+					continue
+				}
+
 				tab.Append([]string{label, fmt.Sprint(v.Field(i).Elem().Interface())})
 			}
 
