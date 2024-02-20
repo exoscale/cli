@@ -3,7 +3,8 @@
 ## Unreleased
 
 ### Features
-- limits: get block storage volume limit #577 
+- compute: Add Block Storage #574
+- limits: get block storage volume limit #577
 
 ## 1.76.1
 
