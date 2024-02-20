@@ -59,7 +59,7 @@ func (c *blockstorageAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 	instance, err := resp.FindListInstancesResponseInstances(c.Instance)
-	if err != err {
+	if err != nil {
 		return err
 	}
 
