@@ -67,11 +67,8 @@ func (c *blockstorageDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	decorateAsyncOperation(fmt.Sprintf("Deleting block storage volume %q...", c.Name), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func init() {

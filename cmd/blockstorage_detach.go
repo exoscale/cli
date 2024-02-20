@@ -6,7 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockstorageDetachCmd struct {
@@ -14,7 +16,9 @@ type blockstorageDetachCmd struct {
 
 	_ bool `cli-cmd:"detach"`
 
-	Name string `cli-arg:"#" cli-usage:"NAME"`
+	Volume string      `cli-arg:"#" cli-usage:"NAME|ID"`
+	Force  bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone   v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 }
 
 func (c *blockstorageDetachCmd) cmdAliases() []string { return gCreateAlias }
@@ -30,12 +34,42 @@ Supported output template annotations: %s`,
 
 func (c *blockstorageDetachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
-	cmdSetTemplateFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockstorageDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return nil
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
+
+	volumes, err := client.ListBlockStorageVolumes(ctx)
+	if err != nil {
+		return err
+	}
+
+	volume, err := volumes.FindBlockStorageVolume(c.Volume)
+	if err != nil {
+		return err
+	}
+
+	if !c.Force {
+		if !askQuestion(fmt.Sprintf("Are you sure you want to detach block storage volume %q?", c.Volume)) {
+			return nil
+		}
+	}
+
+	op, err := client.DetachBlockStorageVolume(ctx, volume.ID)
+	if err != nil {
+		return err
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Detaching block storage volume %q...", c.Volume), func() {
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+
+	return err
 }
 
 func init() {

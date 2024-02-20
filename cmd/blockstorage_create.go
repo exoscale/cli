@@ -60,7 +60,7 @@ func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		snapshot = &v3.BlockStorageSnapshotTarget{ID: s.ID}
 	}
 	req := v3.CreateBlockStorageVolumeRequest{
-		Name:                 "",
+		Name:                 c.Name,
 		Size:                 c.Size,
 		Labels:               c.Labels,
 		BlockStorageSnapshot: snapshot,
@@ -82,15 +82,10 @@ func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	bs, err := client.GetBlockStorageVolume(ctx, op.Reference.ID)
-	if err != nil {
-		return err
-	}
-
 	if !globalstate.Quiet {
 		return (&blockstorageShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Name:               bs.ID.String(),
+			Name:               c.Name,
 		}).cmdRun(nil, nil)
 	}
 
