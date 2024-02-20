@@ -6,8 +6,9 @@ runs:
       with:
         fetch-depth: 0
 
-    - run: git submodule update --init --recursive go.mk
+    - run: make go.mk
       shell: bash
+
     - uses: ./go.mk/.github/actions/setup
 
     - uses: ./go.mk/.github/actions/pre-check

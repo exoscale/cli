@@ -13,17 +13,18 @@ import (
 )
 
 const (
-	limitComputeInstances  = "instance"
-	limitDatabases         = "database"
-	limitElasticIPs        = "elastic-ip"
-	limitIAMAPIKeys        = "iam-key"
-	limitInstanceGPUs      = "gpu"
-	limitInstanceSnapshots = "snapshot"
-	limitInstanceTemplates = "template"
-	limitNLB               = "network-load-balancer"
-	limitPrivateNetworks   = "private-network"
-	limitSKSClusters       = "sks-cluster"
-	limitSOSBuckets        = "bucket"
+	limitComputeInstances    = "instance"
+	limitDatabases           = "database"
+	limitElasticIPs          = "elastic-ip"
+	limitIAMAPIKeys          = "iam-key"
+	limitInstanceGPUs        = "gpu"
+	limitInstanceSnapshots   = "snapshot"
+	limitInstanceTemplates   = "template"
+	limitNLB                 = "network-load-balancer"
+	limitPrivateNetworks     = "private-network"
+	limitSKSClusters         = "sks-cluster"
+	limitSOSBuckets          = "bucket"
+	limitBlockStorageVolumes = "block-storage-volume"
 )
 
 type LimitsItemOutput struct {
@@ -47,17 +48,18 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&LimitsOutput{}), ", ")),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resourceLimitLabels := map[string]string{
-			limitComputeInstances:  "Compute instances",
-			limitDatabases:         "Databases",
-			limitElasticIPs:        "Elastic IP addresses",
-			limitIAMAPIKeys:        "IAM API keys",
-			limitInstanceGPUs:      "Compute instance GPUs",
-			limitInstanceSnapshots: "Compute instance snapshots",
-			limitInstanceTemplates: "Compute instance templates",
-			limitNLB:               "Network Load Balancers",
-			limitPrivateNetworks:   "Private networks",
-			limitSKSClusters:       "SKS clusters",
-			limitSOSBuckets:        "SOS buckets",
+			limitComputeInstances:    "Compute instances",
+			limitDatabases:           "Databases",
+			limitElasticIPs:          "Elastic IP addresses",
+			limitIAMAPIKeys:          "IAM API keys",
+			limitInstanceGPUs:        "Compute instance GPUs",
+			limitInstanceSnapshots:   "Compute instance snapshots",
+			limitInstanceTemplates:   "Compute instance templates",
+			limitNLB:                 "Network Load Balancers",
+			limitPrivateNetworks:     "Private networks",
+			limitSKSClusters:         "SKS clusters",
+			limitSOSBuckets:          "SOS buckets",
+			limitBlockStorageVolumes: "Block Storage Volumes",
 		}
 
 		out := LimitsOutput{}
