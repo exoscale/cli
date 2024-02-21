@@ -16,6 +16,7 @@ var xCmd *cobra.Command
 func init() {
 	xCmd = x.InitCommand()
 	xCmd.Use = "x"
+	xCmd.Aliases = append(xCmd.Aliases, "api")
 	xCmd.Hidden = true
 	xCmd.Long = `Low-level Exoscale API calls -- don't use this unless you have to.
 

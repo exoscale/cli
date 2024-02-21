@@ -5,6 +5,9 @@
 ### Features
 - limits: get block storage volume limit #577 
 
+### Improvements
+- x: make `exo api` an alias to `exo x` #579
+
 ## 1.76.1
 
 ### Improvements
