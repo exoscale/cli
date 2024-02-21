@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/exoscale/cli/table"
+	v3 "github.com/exoscale/egoscale/v3"
 
 	"github.com/fatih/camelcase"
 )
@@ -260,7 +261,13 @@ func Table(o interface{}) {
 			if n := v.Field(i).Len(); n == 0 {
 				tab.Append([]string{label, "n/a"})
 			} else {
-				items := v.Field(i).Interface().(map[string]string)
+				var items map[string]string
+				switch v.Field(i).Interface().(type) {
+				case v3.Labels:
+					items = v.Field(i).Interface().(v3.Labels)
+				default:
+					items = v.Field(i).Interface().(map[string]string)
+				}
 				tab.Append([]string{label, strings.Join(func() []string {
 					list := make([]string, 0)
 					for k, v := range items {
