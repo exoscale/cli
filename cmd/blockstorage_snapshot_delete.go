@@ -17,7 +17,7 @@ type blockstorageSnapshotDeleteCmd struct {
 	_ bool `cli-cmd:"delete"`
 
 	Name  string      `cli-arg:"#" cli-usage:"<NAME|ID>"`
-	Zone  v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"block storage volume snapshot zone"`
 	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
