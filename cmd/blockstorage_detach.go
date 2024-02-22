@@ -18,7 +18,7 @@ type blockstorageDetachCmd struct {
 
 	Volume string      `cli-arg:"#" cli-usage:"NAME|ID"`
 	Force  bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone   v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
+	Zone   v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
 func (c *blockstorageDetachCmd) cmdAliases() []string { return gCreateAlias }
