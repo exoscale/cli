@@ -19,7 +19,7 @@ type blockstorageSnapshotCreateCmd struct {
 	Volume string            `cli-arg:"#" cli-usage:"<volume NAME|ID>"`
 	Name   string            `cli-flag:"name" cli-usage:"block storage volume snapshot name"`
 	Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume snapshot label (format: key=value)"`
-	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage zone"`
+	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage volume snapshot zone"`
 }
 
 func (c *blockstorageSnapshotCreateCmd) cmdAliases() []string { return gCreateAlias }
