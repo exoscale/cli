@@ -27,7 +27,7 @@ func (c *blockstorageUpdateCmd) cmdAliases() []string { return gCreateAlias }
 func (c *blockstorageUpdateCmd) cmdShort() string { return "Update a Block Storage Volume" }
 
 func (c *blockstorageUpdateCmd) cmdLong() string {
-	return fmt.Sprintf(`This command Updates Block Storage Volume.
+	return fmt.Sprintf(`This command updates a Block Storage Volume.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
