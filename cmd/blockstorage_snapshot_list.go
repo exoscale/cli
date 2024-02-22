@@ -37,7 +37,7 @@ func (c *blockstorageSnapshotListCmd) cmdAliases() []string { return gCreateAlia
 func (c *blockstorageSnapshotListCmd) cmdShort() string { return "List Block Storage Volume Snapshots" }
 
 func (c *blockstorageSnapshotListCmd) cmdLong() string {
-	return fmt.Sprintf(`This command lists Block Storage Volumes.
+	return fmt.Sprintf(`This command lists Block Storage Volume Snapshots.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockstorageListOutput{}), ", "))
