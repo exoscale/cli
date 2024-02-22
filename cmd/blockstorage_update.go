@@ -19,7 +19,7 @@ type blockstorageUpdateCmd struct {
 	Name   string            `cli-arg:"#" cli-usage:"NAME|ID"`
 	Size   int64             `cli-usage:"block storage volume size"`
 	Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
-	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage zone"`
+	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
 func (c *blockstorageUpdateCmd) cmdAliases() []string { return gCreateAlias }
