@@ -26,7 +26,7 @@ func (c *blockstorageAttachCmd) cmdAliases() []string { return gCreateAlias }
 func (c *blockstorageAttachCmd) cmdShort() string { return "Attach a Block Storage Volume" }
 
 func (c *blockstorageAttachCmd) cmdLong() string {
-	return fmt.Sprintf(`This command attaches Block Storage Volume.
+	return fmt.Sprintf(`This command attaches Block Storage Volume to a Compute Instance.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
