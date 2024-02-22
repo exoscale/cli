@@ -29,7 +29,7 @@ func (c *blockstorageCreateCmd) cmdAliases() []string { return gCreateAlias }
 func (c *blockstorageCreateCmd) cmdShort() string { return "Create a Block Storage Volume" }
 
 func (c *blockstorageCreateCmd) cmdLong() string {
-	return fmt.Sprintf(`This command creates Block Storage Volume.
+	return fmt.Sprintf(`This command creates a Block Storage Volume.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
