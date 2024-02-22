@@ -67,7 +67,7 @@ func (c *blockstorageSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) err
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Snapshoting block storage volume %q...", c.Volume), func() {
+	decorateAsyncOperation(fmt.Sprintf("Snapshotting block storage volume %q...", c.Volume), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
