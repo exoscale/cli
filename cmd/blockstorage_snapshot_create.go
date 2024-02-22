@@ -29,7 +29,7 @@ func (c *blockstorageSnapshotCreateCmd) cmdShort() string {
 }
 
 func (c *blockstorageSnapshotCreateCmd) cmdLong() string {
-	return fmt.Sprintf(`This command creates Block Storage Volume Snapshot.
+	return fmt.Sprintf(`This command creates a Block Storage Volume Snapshot.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
