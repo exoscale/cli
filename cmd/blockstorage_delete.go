@@ -26,7 +26,7 @@ func (c *blockstorageDeleteCmd) cmdAliases() []string { return gCreateAlias }
 func (c *blockstorageDeleteCmd) cmdShort() string { return "Delete a Block Storage Volume" }
 
 func (c *blockstorageDeleteCmd) cmdLong() string {
-	return fmt.Sprintf(`This command deletes Block Storage Volume.
+	return fmt.Sprintf(`This command deletes a Block Storage Volume.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
