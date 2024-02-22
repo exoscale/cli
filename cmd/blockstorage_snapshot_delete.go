@@ -28,7 +28,7 @@ func (c *blockstorageSnapshotDeleteCmd) cmdShort() string {
 }
 
 func (c *blockstorageSnapshotDeleteCmd) cmdLong() string {
-	return fmt.Sprintf(`This command deletes Block Storage Volume Snapshot.
+	return fmt.Sprintf(`This command deletes a Block Storage Volume Snapshot.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
