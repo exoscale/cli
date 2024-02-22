@@ -11,7 +11,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type blockstorageDetachCmd struct {
+type blockStorageDetachCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"detach"`
@@ -21,23 +21,23 @@ type blockstorageDetachCmd struct {
 	Zone   v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
-func (c *blockstorageDetachCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageDetachCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *blockstorageDetachCmd) cmdShort() string { return "Detach a Block Storage Volume" }
+func (c *blockStorageDetachCmd) cmdShort() string { return "Detach a Block Storage Volume" }
 
-func (c *blockstorageDetachCmd) cmdLong() string {
+func (c *blockStorageDetachCmd) cmdLong() string {
 	return fmt.Sprintf(`This command detaches Block Storage Volume.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockstorageDetachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *blockStorageDetachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockstorageDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -73,7 +73,7 @@ func (c *blockstorageDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockstorageDetachCmd{
+	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageDetachCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

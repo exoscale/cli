@@ -13,7 +13,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type blockstorageSnapshotShowOutput struct {
+type blockStorageSnapshotShowOutput struct {
 	CreatedAT time.Time                    `json:"created-at"`
 	ID        v3.UUID                      `json:"id"`
 	Labels    v3.Labels                    `json:"labels"`
@@ -23,12 +23,12 @@ type blockstorageSnapshotShowOutput struct {
 	State     v3.BlockStorageSnapshotState `json:"state"`
 }
 
-func (o *blockstorageSnapshotShowOutput) Type() string { return "Block Storage Volume Snapshot" }
-func (o *blockstorageSnapshotShowOutput) ToJSON()      { output.JSON(o) }
-func (o *blockstorageSnapshotShowOutput) ToText()      { output.Text(o) }
-func (o *blockstorageSnapshotShowOutput) ToTable()     { output.Table(o) }
+func (o *blockStorageSnapshotShowOutput) Type() string { return "Block Storage Volume Snapshot" }
+func (o *blockStorageSnapshotShowOutput) ToJSON()      { output.JSON(o) }
+func (o *blockStorageSnapshotShowOutput) ToText()      { output.Text(o) }
+func (o *blockStorageSnapshotShowOutput) ToTable()     { output.Table(o) }
 
-type blockstorageSnapshotShowCmd struct {
+type blockStorageSnapshotShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
@@ -37,23 +37,23 @@ type blockstorageSnapshotShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 }
 
-func (c *blockstorageSnapshotShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *blockStorageSnapshotShowCmd) cmdAliases() []string { return gShowAlias }
 
-func (c *blockstorageSnapshotShowCmd) cmdShort() string { return "Show a Block Storage Volume details" }
+func (c *blockStorageSnapshotShowCmd) cmdShort() string { return "Show a Block Storage Volume details" }
 
-func (c *blockstorageSnapshotShowCmd) cmdLong() string {
+func (c *blockStorageSnapshotShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Block Storage Volume Snapshot details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *blockstorageSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *blockStorageSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockstorageSnapshotShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *blockStorageSnapshotShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -69,7 +69,7 @@ func (c *blockstorageSnapshotShowCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		return err
 	}
 
-	return c.outputFunc(&blockstorageSnapshotShowOutput{
+	return c.outputFunc(&blockStorageSnapshotShowOutput{
 		ID:        snapshot.ID,
 		Name:      snapshot.Name,
 		Size:      humanize.IBytes(uint64(snapshot.Size)),
@@ -81,7 +81,7 @@ func (c *blockstorageSnapshotShowCmd) cmdRun(cmd *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockstorageSnapshotShowCmd{
+	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

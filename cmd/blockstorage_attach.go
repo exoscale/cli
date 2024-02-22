@@ -11,7 +11,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type blockstorageAttachCmd struct {
+type blockStorageAttachCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"attach"`
@@ -21,23 +21,23 @@ type blockstorageAttachCmd struct {
 	Zone     v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 }
 
-func (c *blockstorageAttachCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageAttachCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *blockstorageAttachCmd) cmdShort() string { return "Attach a Block Storage Volume" }
+func (c *blockStorageAttachCmd) cmdShort() string { return "Attach a Block Storage Volume" }
 
-func (c *blockstorageAttachCmd) cmdLong() string {
-	return fmt.Sprintf(`This command attaches Block Storage Volume to a Compute Instance.
+func (c *blockStorageAttachCmd) cmdLong() string {
+	return fmt.Sprintf(`This command attaches a Block Storage Volume to a Compute Instance.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockstorageAttachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *blockStorageAttachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockstorageAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -82,7 +82,7 @@ func (c *blockstorageAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockstorageAttachCmd{
+	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageAttachCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

@@ -12,7 +12,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type blockstorageListItemOutput struct {
+type blockStorageListItemOutput struct {
 	ID    v3.UUID                    `json:"id"`
 	Name  string                     `json:"name"`
 	Zone  v3.ZoneName                `json:"zone"`
@@ -20,13 +20,13 @@ type blockstorageListItemOutput struct {
 	State v3.BlockStorageVolumeState `json:"state"`
 }
 
-type blockstorageListOutput []blockstorageListItemOutput
+type blockStorageListOutput []blockStorageListItemOutput
 
-func (o *blockstorageListOutput) ToJSON()  { output.JSON(o) }
-func (o *blockstorageListOutput) ToText()  { output.Text(o) }
-func (o *blockstorageListOutput) ToTable() { output.Table(o) }
+func (o *blockStorageListOutput) ToJSON()  { output.JSON(o) }
+func (o *blockStorageListOutput) ToText()  { output.Text(o) }
+func (o *blockStorageListOutput) ToTable() { output.Table(o) }
 
-type blockstorageListCmd struct {
+type blockStorageListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
@@ -34,22 +34,22 @@ type blockstorageListCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *blockstorageListCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageListCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *blockstorageListCmd) cmdShort() string { return "List Block Storage Volumes" }
+func (c *blockStorageListCmd) cmdShort() string { return "List Block Storage Volumes" }
 
-func (c *blockstorageListCmd) cmdLong() string {
+func (c *blockStorageListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Block Storage Volumes.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&blockstorageListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&blockStorageListOutput{}), ", "))
 }
 
-func (c *blockstorageListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *blockStorageListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockstorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := gContext
 
@@ -68,7 +68,7 @@ func (c *blockstorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
-	output := make(blockstorageListOutput, 0)
+	output := make(blockStorageListOutput, 0)
 	for _, zone := range zones {
 		c := client.WithEndpoint(zone.APIEndpoint)
 
@@ -83,7 +83,7 @@ func (c *blockstorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		for _, volume := range resp.BlockStorageVolumes {
-			output = append(output, blockstorageListItemOutput{
+			output = append(output, blockStorageListItemOutput{
 				ID:    volume.ID,
 				Name:  volume.Name,
 				Zone:  zone.Name,
@@ -97,7 +97,7 @@ func (c *blockstorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockstorageListCmd{
+	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageListCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

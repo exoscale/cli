@@ -11,7 +11,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type blockstorageSnapshotDeleteCmd struct {
+type blockStorageSnapshotDeleteCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
@@ -21,25 +21,25 @@ type blockstorageSnapshotDeleteCmd struct {
 	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *blockstorageSnapshotDeleteCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageSnapshotDeleteCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *blockstorageSnapshotDeleteCmd) cmdShort() string {
+func (c *blockStorageSnapshotDeleteCmd) cmdShort() string {
 	return "Delete a Block Storage Volume Snapshot"
 }
 
-func (c *blockstorageSnapshotDeleteCmd) cmdLong() string {
+func (c *blockStorageSnapshotDeleteCmd) cmdLong() string {
 	return fmt.Sprintf(`This command deletes a Block Storage Volume Snapshot.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockstorageSnapshotDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *blockStorageSnapshotDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockstorageSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -74,7 +74,7 @@ func (c *blockstorageSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockstorageSnapshotDeleteCmd{
+	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotDeleteCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

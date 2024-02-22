@@ -11,7 +11,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type blockstorageCreateCmd struct {
+type blockStorageCreateCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
@@ -24,23 +24,23 @@ type blockstorageCreateCmd struct {
 	Zone     v3.ZoneName       `cli-short:"z" cli-usage:"block storage zone"`
 }
 
-func (c *blockstorageCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageCreateCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *blockstorageCreateCmd) cmdShort() string { return "Create a Block Storage Volume" }
+func (c *blockStorageCreateCmd) cmdShort() string { return "Create a Block Storage Volume" }
 
-func (c *blockstorageCreateCmd) cmdLong() string {
+func (c *blockStorageCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Block Storage Volume.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&blockstorageShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockstorageCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *blockStorageCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -83,7 +83,7 @@ func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		return (&blockstorageShowCmd{
+		return (&blockStorageShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Name:               c.Name,
 		}).cmdRun(nil, nil)
@@ -93,7 +93,7 @@ func (c *blockstorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockstorageCreateCmd{
+	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

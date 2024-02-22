@@ -11,20 +11,20 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type blockstorageSnapshotListItemOutput struct {
+type blockStorageSnapshotListItemOutput struct {
 	ID     v3.UUID     `json:"id"`
 	Name   string      `json:"name"`
 	Zone   v3.ZoneName `json:"zone"`
 	Volume v3.UUID     `json:"volume"`
 }
 
-type blockstorageSnapshotListOutput []blockstorageSnapshotListItemOutput
+type blockStorageSnapshotListOutput []blockStorageSnapshotListItemOutput
 
-func (o *blockstorageSnapshotListOutput) ToJSON()  { output.JSON(o) }
-func (o *blockstorageSnapshotListOutput) ToText()  { output.Text(o) }
-func (o *blockstorageSnapshotListOutput) ToTable() { output.Table(o) }
+func (o *blockStorageSnapshotListOutput) ToJSON()  { output.JSON(o) }
+func (o *blockStorageSnapshotListOutput) ToText()  { output.Text(o) }
+func (o *blockStorageSnapshotListOutput) ToTable() { output.Table(o) }
 
-type blockstorageSnapshotListCmd struct {
+type blockStorageSnapshotListCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
@@ -32,22 +32,22 @@ type blockstorageSnapshotListCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *blockstorageSnapshotListCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageSnapshotListCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *blockstorageSnapshotListCmd) cmdShort() string { return "List Block Storage Volume Snapshots" }
+func (c *blockStorageSnapshotListCmd) cmdShort() string { return "List Block Storage Volume Snapshots" }
 
-func (c *blockstorageSnapshotListCmd) cmdLong() string {
+func (c *blockStorageSnapshotListCmd) cmdLong() string {
 	return fmt.Sprintf(`This command lists Block Storage Volume Snapshots.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&blockstorageListOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&blockStorageListOutput{}), ", "))
 }
 
-func (c *blockstorageSnapshotListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *blockStorageSnapshotListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockstorageSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
 	ctx := gContext
 
@@ -66,7 +66,7 @@ func (c *blockstorageSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error
 		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
-	output := make(blockstorageSnapshotListOutput, 0)
+	output := make(blockStorageSnapshotListOutput, 0)
 	for _, zone := range zones {
 		c := client.WithEndpoint(zone.APIEndpoint)
 
@@ -81,7 +81,7 @@ func (c *blockstorageSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error
 		}
 
 		for _, volume := range resp.BlockStorageSnapshots {
-			output = append(output, blockstorageSnapshotListItemOutput{
+			output = append(output, blockStorageSnapshotListItemOutput{
 				ID:     volume.ID,
 				Name:   volume.Name,
 				Zone:   zone.Name,
@@ -94,7 +94,7 @@ func (c *blockstorageSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockstorageSnapshotListCmd{
+	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotListCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

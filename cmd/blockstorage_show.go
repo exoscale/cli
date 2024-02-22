@@ -13,7 +13,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type blockstorageShowOutput struct {
+type blockStorageShowOutput struct {
 	BlockStorageSnapshots []v3.BlockStorageSnapshotTarget `json:"block-storage-snapshots"`
 	Blocksize             int64                           `json:"blocksize"`
 	CreatedAT             time.Time                       `json:"created-at"`
@@ -25,12 +25,12 @@ type blockstorageShowOutput struct {
 	State                 v3.BlockStorageVolumeState      `json:"state"`
 }
 
-func (o *blockstorageShowOutput) Type() string { return "Block Storage Volume" }
-func (o *blockstorageShowOutput) ToJSON()      { output.JSON(o) }
-func (o *blockstorageShowOutput) ToText()      { output.Text(o) }
-func (o *blockstorageShowOutput) ToTable()     { output.Table(o) }
+func (o *blockStorageShowOutput) Type() string { return "Block Storage Volume" }
+func (o *blockStorageShowOutput) ToJSON()      { output.JSON(o) }
+func (o *blockStorageShowOutput) ToText()      { output.Text(o) }
+func (o *blockStorageShowOutput) ToTable()     { output.Table(o) }
 
-type blockstorageShowCmd struct {
+type blockStorageShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
@@ -39,23 +39,23 @@ type blockstorageShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
-func (c *blockstorageShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *blockStorageShowCmd) cmdAliases() []string { return gShowAlias }
 
-func (c *blockstorageShowCmd) cmdShort() string { return "Show a Block Storage Volume details" }
+func (c *blockStorageShowCmd) cmdShort() string { return "Show a Block Storage Volume details" }
 
-func (c *blockstorageShowCmd) cmdLong() string {
+func (c *blockStorageShowCmd) cmdLong() string {
 	return fmt.Sprintf(`This command shows a Block Storage Volume details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *blockstorageShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *blockStorageShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockstorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *blockStorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *blockstorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return c.outputFunc(&blockstorageShowOutput{
+	return c.outputFunc(&blockStorageShowOutput{
 		ID:                    volume.ID,
 		Name:                  volume.Name,
 		Size:                  humanize.IBytes(uint64(volume.Size)),
@@ -85,7 +85,7 @@ func (c *blockstorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockstorageShowCmd{
+	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
