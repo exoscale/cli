@@ -20,9 +20,8 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	databaseService := oapi.CreateDbaasServicePgJSONRequestBody{
-		Plan:                  c.Plan,
-		TerminationProtection: &c.TerminationProtection,
-		Version:               utils.NonEmptyStringPtr(c.PGVersion),
+		Plan:    c.Plan,
+		Version: utils.NonEmptyStringPtr(c.PGVersion),
 	}
 
 	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)

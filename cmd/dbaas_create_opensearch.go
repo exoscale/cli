@@ -24,7 +24,6 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 		KeepIndexRefreshInterval: &c.OpensearchKeepIndexRefreshInterval,
 		Plan:                     c.Plan,
 		RecoveryBackupName:       utils.NonEmptyStringPtr(c.OpensearchRecoveryBackupName),
-		TerminationProtection:    &c.TerminationProtection,
 		Version:                  utils.NonEmptyStringPtr(c.OpensearchVersion),
 		OpensearchDashboards: &struct {
 			Enabled                  *bool  "json:\"enabled,omitempty\""

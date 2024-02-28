@@ -18,8 +18,7 @@ func (c *dbaasServiceCreateCmd) createGrafana(_ *cobra.Command, _ []string) erro
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	databaseService := oapi.CreateDbaasServiceGrafanaJSONRequestBody{
-		Plan:                  c.Plan,
-		TerminationProtection: &c.TerminationProtection,
+		Plan: c.Plan,
 	}
 
 	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsGrafanaWithResponse(ctx)

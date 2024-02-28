@@ -23,7 +23,6 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		KafkaRestEnabled:      &c.KafkaEnableKafkaREST,
 		Plan:                  c.Plan,
 		SchemaRegistryEnabled: &c.KafkaEnableSchemaRegistry,
-		TerminationProtection: &c.TerminationProtection,
 		Version:               utils.NonEmptyStringPtr(c.KafkaVersion),
 	}
 

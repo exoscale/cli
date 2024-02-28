@@ -20,9 +20,8 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	databaseService := oapi.CreateDbaasServiceMysqlJSONRequestBody{
-		Plan:                  c.Plan,
-		TerminationProtection: &c.TerminationProtection,
-		Version:               utils.NonEmptyStringPtr(c.MysqlVersion),
+		Plan:    c.Plan,
+		Version: utils.NonEmptyStringPtr(c.MysqlVersion),
 	}
 
 	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)

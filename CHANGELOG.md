@@ -9,6 +9,9 @@
 - x: make `exo api` an alias to `exo x` #579
 - Update `iam org-policy reset` confirmation text #568
 
+### Changes
+- dbaas: remove the ability to set termination protection 
+
 ## 1.76.1
 
 ### Improvements

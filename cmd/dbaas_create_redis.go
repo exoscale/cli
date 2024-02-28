@@ -20,8 +20,7 @@ func (c *dbaasServiceCreateCmd) createRedis(_ *cobra.Command, _ []string) error 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	databaseService := oapi.CreateDbaasServiceRedisJSONRequestBody{
-		Plan:                  c.Plan,
-		TerminationProtection: &c.TerminationProtection,
+		Plan: c.Plan,
 	}
 
 	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsRedisWithResponse(ctx)

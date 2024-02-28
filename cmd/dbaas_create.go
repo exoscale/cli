@@ -26,10 +26,9 @@ type dbaasServiceCreateCmd struct {
 	HelpRedis      bool `cli-usage:"show usage for flags specific to the redis type"`
 	HelpGrafana    bool `cli-usage:"show usage for flags specific to the grafana type"`
 
-	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
-	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
-	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
-	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
+	MaintenanceDOW  string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
+	MaintenanceTime string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
+	Zone            string `cli-short:"z" cli-usage:"Database Service zone"`
 
 	// "grafana" type specific flags
 	GrafanaForkFrom string   `cli-flag:"grafana-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
@@ -191,7 +190,5 @@ func (c *dbaasServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 func init() {
 	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
-
-		TerminationProtection: true,
 	}))
 }
