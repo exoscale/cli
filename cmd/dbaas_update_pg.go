@@ -57,11 +57,6 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
-		databaseService.TerminationProtection = &c.TerminationProtection
-		updated = true
-	}
-
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
 		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &struct {

@@ -19,17 +19,16 @@ type dbaasServiceUpdateCmd struct {
 
 	Name string `cli-arg:"#"`
 
-	HelpGrafana           bool   `cli-usage:"show usage for flags specific to the grafana type"`
-	HelpKafka             bool   `cli-usage:"show usage for flags specific to the kafka type"`
-	HelpOpensearch        bool   `cli-usage:"show usage for flags specific to the opensearch type"`
-	HelpMysql             bool   `cli-usage:"show usage for flags specific to the mysql type"`
-	HelpPg                bool   `cli-usage:"show usage for flags specific to the pg type"`
-	HelpRedis             bool   `cli-usage:"show usage for flags specific to the redis type"`
-	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
-	MaintenanceTime       string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
-	Plan                  string `cli-usage:"Database Service plan"`
-	TerminationProtection bool   `cli-usage:"enable Database Service termination protection; set --termination-protection=false to disable"`
-	Zone                  string `cli-short:"z" cli-usage:"Database Service zone"`
+	HelpGrafana     bool   `cli-usage:"show usage for flags specific to the grafana type"`
+	HelpKafka       bool   `cli-usage:"show usage for flags specific to the kafka type"`
+	HelpOpensearch  bool   `cli-usage:"show usage for flags specific to the opensearch type"`
+	HelpMysql       bool   `cli-usage:"show usage for flags specific to the mysql type"`
+	HelpPg          bool   `cli-usage:"show usage for flags specific to the pg type"`
+	HelpRedis       bool   `cli-usage:"show usage for flags specific to the redis type"`
+	MaintenanceDOW  string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
+	MaintenanceTime string `cli-usage:"automated Database Service maintenance time (format HH:MM:SS)"`
+	Plan            string `cli-usage:"Database Service plan"`
+	Zone            string `cli-short:"z" cli-usage:"Database Service zone"`
 
 	// "grafana" type specific flags
 	GrafanaIPFilter []string `cli-flag:"grafana-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`

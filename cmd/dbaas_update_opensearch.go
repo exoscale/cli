@@ -107,11 +107,6 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
-		db.TerminationProtection = &c.TerminationProtection
-		updated = true
-	}
-
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchKeepIndexRefreshInterval)) {
 		db.KeepIndexRefreshInterval = &c.OpensearchKeepIndexRefreshInterval
 		updated = true

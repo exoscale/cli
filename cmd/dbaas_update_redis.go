@@ -40,11 +40,6 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
-		databaseService.TerminationProtection = &c.TerminationProtection
-		updated = true
-	}
-
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
 		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &struct {
