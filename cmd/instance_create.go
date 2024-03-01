@@ -218,24 +218,25 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 		}
 
 		if c.BlockStorageVolume != "" {
-			volumes, e := clientv3.ListBlockStorageVolumes(ctx)
-			if e != nil {
-				err = e
-				return
-			}
-			volume, e := volumes.FindBlockStorageVolume(c.BlockStorageVolume)
-			if e != nil {
-				err = e
+			var volumes *v3.ListBlockStorageVolumesResponse
+			volumes, err = clientv3.ListBlockStorageVolumes(ctx)
+			if err != nil {
 				return
 			}
 
-			op, e := clientv3.AttachBlockStorageVolumeToInstance(ctx, volume.ID, v3.AttachBlockStorageVolumeToInstanceRequest{
+			var volume v3.BlockStorageVolume
+			volume, err = volumes.FindBlockStorageVolume(c.BlockStorageVolume)
+			if err != nil {
+				return
+			}
+
+			var op *v3.Operation
+			op, err = clientv3.AttachBlockStorageVolumeToInstance(ctx, volume.ID, v3.AttachBlockStorageVolumeToInstanceRequest{
 				Instance: &v3.InstanceTarget{
 					ID: v3.UUID(*instance.ID),
 				},
 			})
-			if e != nil {
-				err = e
+			if err != nil {
 				return
 			}
 			_, err = clientv3.Wait(ctx, op, v3.OperationStateSuccess)
