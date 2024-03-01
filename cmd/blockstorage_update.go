@@ -16,10 +16,11 @@ type blockStorageUpdateCmd struct {
 
 	_ bool `cli-cmd:"update"`
 
-	Name   string            `cli-arg:"#" cli-usage:"NAME|ID"`
-	Size   int64             `cli-usage:"block storage volume size"`
-	Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
-	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage volume zone"`
+	Name string `cli-arg:"#" cli-usage:"NAME|ID"`
+	Size int64  `cli-usage:"block storage volume size"`
+	// TODO(pej): Re-enable it when API is up to date on this call.
+	// Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
 func (c *blockStorageUpdateCmd) cmdAliases() []string { return gCreateAlias }
@@ -55,7 +56,7 @@ func (c *blockStorageUpdateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if len(c.Labels) == 0 && c.Size == 0 {
+	if c.Size == 0 {
 		return nil
 	}
 
@@ -70,25 +71,6 @@ func (c *blockStorageUpdateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if err != nil {
 				return
 			}
-			updated = true
-		}
-
-		if len(c.Labels) > 0 {
-			for k, v := range c.Labels {
-				volume.Labels[k] = v
-			}
-
-			var op *v3.Operation
-			op, err = client.UpdateBlockStorageVolumeLabels(ctx, volume.ID,
-				v3.UpdateBlockStorageVolumeLabelsRequest{
-					Labels: volume.Labels,
-				},
-			)
-			if err != nil {
-				return
-			}
-
-			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 			updated = true
 		}
 	})
