@@ -92,6 +92,10 @@ func buildClient() {
 		panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))
 	}
 
+	if account.CurrentAccount.Endpoint != "" {
+		clientV3 = clientV3.WithEndpoint(v3.Endpoint(account.CurrentAccount.Endpoint))
+	}
+
 	if v := os.Getenv("EXOSCALE_TRACE"); v != "" {
 		clientV3 = clientV3.WithTrace()
 	}

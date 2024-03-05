@@ -113,6 +113,7 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 
 		accounts[i]["name"] = acc.Name
 		accounts[i]["key"] = acc.Key
+		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["defaultZone"] = acc.DefaultZone
 		accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
 		accounts[i]["clientTimeout"] = acc.ClientTimeout
@@ -139,6 +140,7 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 
 			accounts[accountsSize+i]["name"] = acc.Name
 			accounts[accountsSize+i]["key"] = acc.Key
+			accounts[accountsSize+i]["endpoint"] = acc.Endpoint
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
 			accounts[accountsSize+i]["environment"] = acc.Environment

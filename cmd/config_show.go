@@ -14,6 +14,7 @@ type configShowOutput struct {
 	Name               string `json:"name"`
 	APIKey             string `json:"api_key"`
 	APISecret          string `json:"api_secret"`
+	Endpoint           string `json:"endpoint"`
 	DefaultZone        string `json:"default_zone"`
 	DefaultTemplate    string `json:"default_template,omitempty"`
 	StorageAPIEndpoint string `json:"storage_api_endpoint,omitempty"`
@@ -64,6 +65,7 @@ func showConfig(name string) (output.Outputter, error) {
 	out := configShowOutput{
 		Name:               account.Name,
 		ConfigFile:         gConfigFilePath,
+		Endpoint:           account.Endpoint,
 		APIKey:             account.Key,
 		APISecret:          secret,
 		DefaultZone:        account.DefaultZone,
