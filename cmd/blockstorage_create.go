@@ -18,7 +18,7 @@ type blockStorageCreateCmd struct {
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	Size     int64             `cli-usage:"block storage volume size"`
+	Size     int64             `cli-usage:"block storage volume size (default: 10)"`
 	Snapshot string            `cli-usage:"block storage volume snapshot NAME|ID"`
 	Labels   map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
 	Zone     v3.ZoneName       `cli-short:"z" cli-usage:"block storage zone"`
@@ -45,6 +45,10 @@ func (c *blockStorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
+	}
+
+	if c.Snapshot == "" && c.Size == 0 {
+		c.Size = 10
 	}
 
 	var snapshot *v3.BlockStorageSnapshotTarget

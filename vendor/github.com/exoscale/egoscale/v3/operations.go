@@ -759,7 +759,7 @@ type CreateBlockStorageVolumeRequest struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Volume size in GB.
 	// When a snapshot ID is supplied, this defaults to the size of the source volume, but can be set to a larger value.
-	Size int64 `json:"size,omitempty" validate:"omitempty,gte=100,lte=1024"`
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10,lte=10240"`
 }
 
 // Create a block storage volume
@@ -1242,7 +1242,7 @@ func (c Client) DetachBlockStorageVolume(ctx context.Context, id UUID) (*Operati
 
 type ResizeBlockStorageVolumeRequest struct {
 	// Volume size in GB
-	Size int64 `json:"size" validate:"required,gte=101,lte=1024"`
+	Size int64 `json:"size" validate:"required,gte=11,lte=10240"`
 }
 
 // This operation resizes a Block storage volume. Note: the volume can only grow, cannot be shrunk.
