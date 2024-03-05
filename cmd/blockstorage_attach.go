@@ -17,7 +17,7 @@ type blockStorageAttachCmd struct {
 	_ bool `cli-cmd:"attach"`
 
 	Volume   string      `cli-arg:"#" cli-usage:"NAME|ID"`
-	Instance string      `cli-arg:"#" cli-usage:"NAME|ID"`
+	Instance string      `cli-arg:"#" cli-usage:"INSTANCE-NAME|ID"`
 	Zone     v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 }
 
