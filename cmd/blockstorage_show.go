@@ -19,7 +19,6 @@ type blockStorageShowOutput struct {
 	CreatedAT             time.Time                       `json:"created-at"`
 	ID                    v3.UUID                         `json:"id"`
 	Instance              *v3.InstanceTarget              `json:"instance"`
-	Labels                v3.Labels                       `json:"labels"`
 	Name                  string                          `json:"name"`
 	Size                  string                          `json:"size"`
 	State                 v3.BlockStorageVolumeState      `json:"state"`
@@ -79,7 +78,6 @@ func (c *blockStorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		CreatedAT:             volume.CreatedAT,
 		State:                 volume.State,
 		Instance:              volume.Instance,
-		Labels:                volume.Labels,
 		BlockStorageSnapshots: volume.BlockStorageSnapshots,
 	}, nil)
 }

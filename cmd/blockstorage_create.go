@@ -18,10 +18,9 @@ type blockStorageCreateCmd struct {
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	Size     int64             `cli-usage:"block storage volume size (default: 10)"`
-	Snapshot string            `cli-usage:"block storage volume snapshot NAME|ID"`
-	Labels   map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
-	Zone     v3.ZoneName       `cli-short:"z" cli-usage:"block storage zone"`
+	Size     int64       `cli-usage:"block storage volume size (default: 10)"`
+	Snapshot string      `cli-usage:"block storage volume snapshot NAME|ID"`
+	Zone     v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 }
 
 func (c *blockStorageCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -66,7 +65,6 @@ func (c *blockStorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	req := v3.CreateBlockStorageVolumeRequest{
 		Name:                 c.Name,
 		Size:                 c.Size,
-		Labels:               c.Labels,
 		BlockStorageSnapshot: snapshot,
 	}
 
