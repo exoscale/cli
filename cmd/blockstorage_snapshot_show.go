@@ -16,7 +16,6 @@ import (
 type blockStorageSnapshotShowOutput struct {
 	CreatedAT time.Time                    `json:"created-at"`
 	ID        v3.UUID                      `json:"id"`
-	Labels    v3.Labels                    `json:"labels"`
 	Volume    *v3.BlockStorageVolumeTarget `json:"volume"`
 	Name      string                       `json:"name"`
 	Size      string                       `json:"size"`
@@ -75,7 +74,6 @@ func (c *blockStorageSnapshotShowCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		Size:      humanize.IBytes(uint64(snapshot.Size)),
 		CreatedAT: snapshot.CreatedAT,
 		State:     snapshot.State,
-		Labels:    snapshot.Labels,
 		Volume:    snapshot.BlockStorageVolume,
 	}, nil)
 }
