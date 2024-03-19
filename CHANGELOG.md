@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.76.2
 
 ### Features
 - limits: get block storage volume limit #577 
@@ -8,6 +8,7 @@
 ### Improvements
 - x: make `exo api` an alias to `exo x` #579
 - Update `iam org-policy reset` confirmation text #568
+- Update `README.md` with MacOS installation instructions #571
 
 ## 1.76.1
 
