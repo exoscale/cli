@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Deprecations
+
+- Removed Windows ARM targets from prebuilt binaries #582
+
 ## 1.76.2
 
 ### Features
