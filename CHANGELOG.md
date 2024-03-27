@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Instance reset password: remove wrong "rm" alias #583
+
 ### Deprecations
 
 - Removed Windows ARM targets from prebuilt binaries #582
