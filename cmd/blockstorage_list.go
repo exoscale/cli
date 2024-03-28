@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -87,7 +86,7 @@ func (c *blockStorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				ID:    volume.ID,
 				Name:  volume.Name,
 				Zone:  zone.Name,
-				Size:  humanize.IBytes(uint64(volume.Size)),
+				Size:  fmt.Sprintf("%d GiB", volume.Size),
 				State: volume.State,
 			})
 		}

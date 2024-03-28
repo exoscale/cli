@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -71,7 +70,7 @@ func (c *blockStorageSnapshotShowCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	return c.outputFunc(&blockStorageSnapshotShowOutput{
 		ID:        snapshot.ID,
 		Name:      snapshot.Name,
-		Size:      humanize.IBytes(uint64(snapshot.Size)),
+		Size:      fmt.Sprintf("%d GiB", snapshot.Size),
 		CreatedAT: snapshot.CreatedAT,
 		State:     snapshot.State,
 		Volume:    snapshot.BlockStorageVolume,

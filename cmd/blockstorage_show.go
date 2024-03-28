@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -73,7 +72,7 @@ func (c *blockStorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	return c.outputFunc(&blockStorageShowOutput{
 		ID:                    volume.ID,
 		Name:                  volume.Name,
-		Size:                  humanize.IBytes(uint64(volume.Size)),
+		Size:                  fmt.Sprintf("%d GiB", volume.Size),
 		Blocksize:             volume.Blocksize,
 		CreatedAT:             volume.CreatedAT,
 		State:                 volume.State,
