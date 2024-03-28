@@ -27,7 +27,6 @@ To build `exo` from sources, a Go compiler >= 1.16 is required.
 ```shell
 $ git clone https://github.com/exoscale/cli
 $ cd cli
-$ git submodule update --init --recursive go.mk
 $ make build
 ```
 
@@ -59,6 +58,13 @@ makepkg --install
 ```
 
 Alternatively there are two packages building from source https://aur.archlinux.org/exoscale-cli.git and https://aur.archlinux.org/exoscale-cli-git.git where the latter builds from the latest commit on the master branch and the former from the latest release commit.
+
+### With brew on MacOS
+
+```shell
+tap "exoscale/tap"
+brew install exoscale-cli
+```
 
 ## Configuration
 

@@ -21,7 +21,7 @@ type instanceResetPasswordCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceResetPasswordCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *instanceResetPasswordCmd) cmdAliases() []string { return nil }
 
 func (c *instanceResetPasswordCmd) cmdShort() string {
 	return "Reset the password of a Compute instance"

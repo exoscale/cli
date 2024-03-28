@@ -2,9 +2,22 @@
 
 ## Unreleased
 
+- Instance reset password: remove wrong "rm" alias #583
+
+### Deprecations
+
+- Removed Windows ARM targets from prebuilt binaries #582
+
+## 1.76.2
+
 ### Features
 - compute: Add Block Storage #574
 - limits: get block storage volume limit #577
+
+### Improvements
+- x: make `exo api` an alias to `exo x` #579
+- Update `iam org-policy reset` confirmation text #568
+- Update `README.md` with MacOS installation instructions #571
 
 ## 1.76.1
 

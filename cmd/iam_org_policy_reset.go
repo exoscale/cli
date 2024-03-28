@@ -34,7 +34,7 @@ func (c *iamOrgPolicyResetCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 
 func (c *iamOrgPolicyResetCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if !c.Force {
-		if !askQuestion("This action will remove any resource constraints you may have set in your Org Policy. Proceed?") {
+		if !askQuestion("This action will reset your Org Policy to the default, removing any constraints that were set in the Org Policy. Proceed?") {
 			return nil
 		}
 	}
