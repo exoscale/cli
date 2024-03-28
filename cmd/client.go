@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	exov2 "github.com/exoscale/egoscale/v2"
+	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/exoscale/egoscale/v3/credentials"
 )
 
 // cliRoundTripper implements the http.RoundTripper interface and allows client
@@ -76,4 +79,37 @@ func buildClient() {
 	}
 	globalstate.EgoscaleClient = clientExoV2
 
+	creds := credentials.NewStaticCredentials(
+		account.CurrentAccount.Key,
+		account.CurrentAccount.APISecret(),
+	)
+
+	clientV3, err := v3.NewClient(
+		creds,
+		v3.ClientOptWithHTTPClient(httpClient),
+	)
+	if err != nil {
+		panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))
+	}
+
+	if account.CurrentAccount.Endpoint != "" {
+		clientV3 = clientV3.WithEndpoint(v3.Endpoint(account.CurrentAccount.Endpoint))
+	}
+
+	if v := os.Getenv("EXOSCALE_TRACE"); v != "" {
+		clientV3 = clientV3.WithTrace()
+	}
+	globalstate.EgoscaleV3Client = clientV3
+}
+
+func switchClientZoneV3(ctx context.Context, client *v3.Client, zone v3.ZoneName) (*v3.Client, error) {
+	if zone == "" {
+		return client, nil
+	}
+	endpoint, err := client.GetZoneAPIEndpoint(ctx, zone)
+	if err != nil {
+		return nil, fmt.Errorf("switch client zone v3: %w", err)
+	}
+
+	return client.WithEndpoint(endpoint), nil
 }

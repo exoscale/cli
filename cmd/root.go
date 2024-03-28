@@ -137,6 +137,8 @@ func initConfig() { //nolint:gocyclo
 		"EXOSCALE_SOS_ENDPOINT",
 	)
 
+	apiEndpoint := os.Getenv("EXOSCALE_API_ENDPOINT")
+
 	apiKeyFromEnv := readFromEnv(
 		"EXOSCALE_API_KEY",
 		"EXOSCALE_KEY",
@@ -160,6 +162,10 @@ func initConfig() { //nolint:gocyclo
 		account.CurrentAccount.Account = "unknown"
 		account.CurrentAccount.Key = apiKeyFromEnv
 		account.CurrentAccount.Secret = apiSecretFromEnv
+
+		if apiEndpoint != "" {
+			account.CurrentAccount.Endpoint = apiEndpoint
+		}
 
 		if apiEnvironmentFromEnv != "" {
 			account.CurrentAccount.Environment = apiEnvironmentFromEnv
