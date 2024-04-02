@@ -112,27 +112,23 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:goc
 		cluster.CNI = nil
 	}
 
-	addOns := map[string]struct{}{
-		sksClusterAddonExoscaleCCM:   {},
-		sksClusterAddonMetricsServer: {},
-	}
 	cluster.AddOns = func() (v *[]string) {
-		if c.NoExoscaleCCM {
-			delete(addOns, sksClusterAddonExoscaleCCM)
+		addOns := make([]string, 0)
+
+		if !c.NoExoscaleCCM {
+			addOns = append(addOns, sksClusterAddonExoscaleCCM)
 		}
-		if c.NoMetricsServer {
-			delete(addOns, sksClusterAddonMetricsServer)
+
+		if !c.NoMetricsServer {
+			addOns = append(addOns, sksClusterAddonMetricsServer)
 		}
+
 		if c.ExoscaleCSI {
-			addOns[sksClusterAddonExoscaleCSI] = struct{}{}
+			addOns = append(addOns, sksClusterAddonExoscaleCSI)
 		}
 
 		if len(addOns) > 0 {
-			list := make([]string, 0)
-			for k := range addOns {
-				list = append(list, k)
-			}
-			v = &list
+			v = &addOns
 		}
 		return
 	}()
