@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -78,7 +79,9 @@ func (c *blockStorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				continue
 			}
 
-			return err
+			_, _ = fmt.Fprintf(os.Stderr,
+				"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
+			continue
 		}
 
 		for _, volume := range resp.BlockStorageVolumes {
