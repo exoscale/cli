@@ -74,7 +74,7 @@ func (c *blockStorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		resp, err := c.ListBlockStorageVolumes(ctx)
 		if err != nil {
-			// TODO: remove it once Block Storage is deployed in every zone.
+			// TODO(pej): remove it once Block Storage is deployed in every zone.
 			if strings.Contains(err.Error(), "Availability of the block storage volumes") {
 				continue
 			}
