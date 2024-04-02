@@ -19,6 +19,7 @@ var (
 	defaultSKSClusterCNI          = "calico"
 	defaultSKSClusterServiceLevel = "pro"
 	sksClusterAddonExoscaleCCM    = "exoscale-cloud-controller"
+	sksClusterAddonExoscaleCSI    = "exoscale-container-storage-interface"
 	sksClusterAddonMetricsServer  = "metrics-server"
 )
 
@@ -37,6 +38,7 @@ type sksCreateCmd struct {
 	NoCNI                      bool              `cli-usage:"do not deploy a default Container Network Interface plugin in the cluster control plane"`
 	NoExoscaleCCM              bool              `cli-usage:"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane"`
 	NoMetricsServer            bool              `cli-usage:"do not deploy the Kubernetes Metrics Server in the cluster control plane"`
+	ExoscaleCSI                bool              `cli-usage:"deploy the Exoscale Container Storage Interface on worker nodes"`
 	NodepoolAntiAffinityGroups []string          `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
 	NodepoolDeployTarget       string            `cli-usage:"default Nodepool Deploy Target NAME|ID"`
 	NodepoolDescription        string            `cli-usage:"default Nodepool description"`
@@ -110,24 +112,23 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:goc
 		cluster.CNI = nil
 	}
 
-	addOns := map[string]struct{}{
-		sksClusterAddonExoscaleCCM:   {},
-		sksClusterAddonMetricsServer: {},
-	}
 	cluster.AddOns = func() (v *[]string) {
-		if c.NoExoscaleCCM {
-			delete(addOns, sksClusterAddonExoscaleCCM)
+		addOns := make([]string, 0)
+
+		if !c.NoExoscaleCCM {
+			addOns = append(addOns, sksClusterAddonExoscaleCCM)
 		}
-		if c.NoMetricsServer {
-			delete(addOns, sksClusterAddonMetricsServer)
+
+		if !c.NoMetricsServer {
+			addOns = append(addOns, sksClusterAddonMetricsServer)
+		}
+
+		if c.ExoscaleCSI {
+			addOns = append(addOns, sksClusterAddonExoscaleCSI)
 		}
 
 		if len(addOns) > 0 {
-			list := make([]string, 0)
-			for k := range addOns {
-				list = append(list, k)
-			}
-			v = &list
+			v = &addOns
 		}
 		return
 	}()

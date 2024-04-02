@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+- sks: flag for CSI addon #572 
+
+### Improvements
 - Instance reset password: remove wrong "rm" alias #583
 
 ### Deprecations
