@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## 1.77.0
 
 ### Features
+- compute: Add Block Storage #574
 - sks: flag for CSI addon #572 
 
 ### Improvements
@@ -15,7 +16,6 @@
 ## 1.76.2
 
 ### Features
-- compute: Add Block Storage #574
 - limits: get block storage volume limit #577
 
 ### Improvements
