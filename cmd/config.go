@@ -152,15 +152,6 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
-			if acc.Environment != "" && acc.Environment != "api" {
-				accounts[i]["environment"] = acc.Environment
-			}
-			if acc.Endpoint != "" {
-				accounts[i]["endpoint"] = acc.Endpoint
-			}
-			if acc.DefaultSSHKey != "" {
-				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
-			}
 			conf.Accounts = append(conf.Accounts, acc)
 		}
 	}
