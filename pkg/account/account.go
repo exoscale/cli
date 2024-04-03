@@ -13,9 +13,14 @@ var (
 )
 
 type Account struct {
-	Name                string
-	Account             string
-	SosEndpoint         string
+	Name    string
+	Account string
+	// TODO: remove it to replace it with the new API listZones.
+	SosEndpoint string
+	// Endpoint is optional.
+	Endpoint string
+	// Environment will be deprecated and removed,
+	// once everything is egoscale v3 migrated.
 	Environment         string
 	Key                 string
 	Secret              string

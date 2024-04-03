@@ -20,7 +20,7 @@ type IAMRole struct {
 
 func iamRoleFromAPI(r *oapi.IamRole) *IAMRole {
 	labels := map[string]string{}
-	if r.Labels != nil {
+	if r.Labels != nil && r.Labels.AdditionalProperties != nil {
 		labels = r.Labels.AdditionalProperties
 	}
 
