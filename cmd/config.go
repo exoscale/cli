@@ -113,11 +113,19 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 
 		accounts[i]["name"] = acc.Name
 		accounts[i]["key"] = acc.Key
-		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["defaultZone"] = acc.DefaultZone
-		accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
-		accounts[i]["clientTimeout"] = acc.ClientTimeout
-		accounts[i]["environment"] = acc.Environment
+		if acc.ClientTimeout != 0 {
+			accounts[i]["clientTimeout"] = acc.ClientTimeout
+		}
+		if acc.DefaultOutputFormat != "" {
+			accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
+		}
+		if acc.Environment != "" {
+			accounts[i]["environment"] = acc.Environment
+		}
+		if acc.Endpoint != "" {
+			accounts[i]["endpoint"] = acc.Endpoint
+		}
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
 		}
@@ -140,10 +148,14 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 
 			accounts[accountsSize+i]["name"] = acc.Name
 			accounts[accountsSize+i]["key"] = acc.Key
-			accounts[accountsSize+i]["endpoint"] = acc.Endpoint
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
-			accounts[accountsSize+i]["environment"] = acc.Environment
+			if acc.Environment != "" {
+				accounts[i]["environment"] = acc.Environment
+			}
+			if acc.Endpoint != "" {
+				accounts[i]["endpoint"] = acc.Endpoint
+			}
 			if acc.DefaultSSHKey != "" {
 				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
 			}
