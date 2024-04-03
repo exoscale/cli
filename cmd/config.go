@@ -120,6 +120,10 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		if acc.DefaultOutputFormat != "" {
 			accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
 		}
+		// TODO(pej): This is a workaround to not propagate Environment 'api' on config reload.
+		// By default, acc.Environment is set to 'api' to be used for egoscale v2 in the whole codebase.
+		// We can not tweak it like DefaultTemplate by using the 'api' default const.
+		// Remove the environment when egoscale v3 will be fully integrated.
 		if acc.Environment != "" && acc.Environment != "api" {
 			accounts[i]["environment"] = acc.Environment
 		}
