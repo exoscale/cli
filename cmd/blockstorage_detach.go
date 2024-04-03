@@ -21,7 +21,7 @@ type blockStorageDetachCmd struct {
 	Zone   v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
-func (c *blockStorageDetachCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageDetachCmd) cmdAliases() []string { return []string{"d"} }
 
 func (c *blockStorageDetachCmd) cmdShort() string { return "Detach a Block Storage Volume" }
 

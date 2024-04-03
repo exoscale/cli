@@ -23,7 +23,7 @@ type blockStorageUpdateCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
-func (c *blockStorageUpdateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageUpdateCmd) cmdAliases() []string { return []string{"up"} }
 
 func (c *blockStorageUpdateCmd) cmdShort() string { return "Update a Block Storage Volume" }
 

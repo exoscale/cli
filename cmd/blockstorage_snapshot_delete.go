@@ -21,7 +21,7 @@ type blockStorageSnapshotDeleteCmd struct {
 	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *blockStorageSnapshotDeleteCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageSnapshotDeleteCmd) cmdAliases() []string { return gDeleteAlias }
 
 func (c *blockStorageSnapshotDeleteCmd) cmdShort() string {
 	return "Delete a Block Storage Volume Snapshot"

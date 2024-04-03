@@ -21,7 +21,7 @@ type blockStorageAttachCmd struct {
 	Zone     v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 }
 
-func (c *blockStorageAttachCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageAttachCmd) cmdAliases() []string { return []string{"a"} }
 
 func (c *blockStorageAttachCmd) cmdShort() string { return "Attach a Block Storage Volume" }
 

@@ -34,7 +34,7 @@ type blockStorageListCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *blockStorageListCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageListCmd) cmdAliases() []string { return gListAlias }
 
 func (c *blockStorageListCmd) cmdShort() string { return "List Block Storage Volumes" }
 
