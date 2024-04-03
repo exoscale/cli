@@ -16,24 +16,27 @@ import (
 )
 
 type sksNodepoolShowOutput struct {
-	ID                 string            `json:"id"`
-	Name               string            `json:"name"`
-	Description        string            `json:"description"`
-	CreationDate       string            `json:"creation_date"`
-	InstancePoolID     string            `json:"instance_pool_id"`
-	InstancePrefix     string            `json:"instance_prefix"`
-	InstanceType       string            `json:"instance_type"`
-	Template           string            `json:"template"`
-	DiskSize           int64             `json:"disk_size"`
-	AntiAffinityGroups []string          `json:"anti_affinity_groups"`
-	SecurityGroups     []string          `json:"security_groups"`
-	PrivateNetworks    []string          `json:"private_networks"`
-	Version            string            `json:"version"`
-	Size               int64             `json:"size"`
-	State              string            `json:"state"`
-	Taints             []string          `json:"taints"`
-	Labels             map[string]string `json:"labels"`
-	AddOns             []string          `json:"addons"`
+	ID                   string            `json:"id"`
+	Name                 string            `json:"name"`
+	Description          string            `json:"description"`
+	CreationDate         string            `json:"creation_date"`
+	InstancePoolID       string            `json:"instance_pool_id"`
+	InstancePrefix       string            `json:"instance_prefix"`
+	InstanceType         string            `json:"instance_type"`
+	Template             string            `json:"template"`
+	DiskSize             int64             `json:"disk_size"`
+	AntiAffinityGroups   []string          `json:"anti_affinity_groups"`
+	SecurityGroups       []string          `json:"security_groups"`
+	PrivateNetworks      []string          `json:"private_networks"`
+	Version              string            `json:"version"`
+	Size                 int64             `json:"size"`
+	State                string            `json:"state"`
+	Taints               []string          `json:"taints"`
+	Labels               map[string]string `json:"labels"`
+	AddOns               []string          `json:"addons"`
+	ImageGCMin           string            `json:"image_gc_min_age"`
+	ImageGcLowThreshold  int64             `json:"image_gc_low_threshold"`
+	ImageGcHighThreshold int64             `json:"image_gc_high_threshold"`
 }
 
 func (o *sksNodepoolShowOutput) Type() string { return "SKS Nodepool" }
@@ -124,6 +127,24 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				}
 			}
 			return
+		}(),
+		ImageGCMin: func() (s string) {
+			if nodepool.KubeletImageGc != nil && nodepool.KubeletImageGc.MinAge != nil {
+				return *nodepool.KubeletImageGc.MinAge
+			}
+			return "2m"
+		}(),
+		ImageGcLowThreshold: func() (s int64) {
+			if nodepool.KubeletImageGc != nil && nodepool.KubeletImageGc.LowThreshold != nil {
+				return *nodepool.KubeletImageGc.LowThreshold
+			}
+			return 80
+		}(),
+		ImageGcHighThreshold: func() (s int64) {
+			if nodepool.KubeletImageGc != nil && nodepool.KubeletImageGc.HighThreshold != nil {
+				return *nodepool.KubeletImageGc.HighThreshold
+			}
+			return 85
 		}(),
 		Version: *nodepool.Version,
 	}

@@ -23,19 +23,22 @@ type sksNodepoolAddCmd struct {
 	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 	Name    string `cli-arg:"#" cli-usage:"NODEPOOL-NAME"`
 
-	AntiAffinityGroups []string `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	DeployTarget       string   `cli-usage:"Nodepool Deploy Target NAME|ID"`
-	Description        string   `cli-usage:"Nodepool description"`
-	DiskSize           int64    `cli-usage:"Nodepool Compute instances disk size"`
-	InstancePrefix     string   `cli-usage:"string to prefix Nodepool member names with"`
-	InstanceType       string   `cli-usage:"Nodepool Compute instances type"`
-	Labels             []string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
-	PrivateNetworks    []string `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
-	SecurityGroups     []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
-	Size               int64    `cli-usage:"Nodepool size"`
-	StorageLvm         bool     `cli-usage:"Create nodes with non-standard partitioning for persistent storage"`
-	Taints             []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
-	Zone               string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+	AntiAffinityGroups   []string `cli-flag:"anti-affinity-group" cli-usage:"Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	DeployTarget         string   `cli-usage:"Nodepool Deploy Target NAME|ID"`
+	Description          string   `cli-usage:"Nodepool description"`
+	DiskSize             int64    `cli-usage:"Nodepool Compute instances disk size"`
+	ImageGcLowThreshold  int64    `cli-flag:"image-gc-low-threshold" cli-usage:"the percent of disk usage after which image garbage collection is never run"`
+	ImageGcHighThreshold int64    `cli-flag:"image-gc-high-threshold" cli-usage:"the percent of disk usage after which image garbage collection is always run"`
+	ImageGcMinAge        string   `cli-flag:"image-gc-min-age" cli-usage:"maximum age an image can be unused before it is garbage collected"`
+	InstancePrefix       string   `cli-usage:"string to prefix Nodepool member names with"`
+	InstanceType         string   `cli-usage:"Nodepool Compute instances type"`
+	Labels               []string `cli-flag:"label" cli-usage:"Nodepool label (format: key=value)"`
+	PrivateNetworks      []string `cli-flag:"private-network" cli-usage:"Nodepool Private Network NAME|ID (can be specified multiple times)"`
+	SecurityGroups       []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	Size                 int64    `cli-usage:"Nodepool size"`
+	StorageLvm           bool     `cli-usage:"Create nodes with non-standard partitioning for persistent storage"`
+	Taints               []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	Zone                 string   `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksNodepoolAddCmd) cmdAliases() []string { return nil }
@@ -61,6 +64,11 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		InstancePrefix: utils.NonEmptyStringPtr(c.InstancePrefix),
 		Name:           &c.Name,
 		Size:           &c.Size,
+		KubeletImageGc: &egoscale.SKSNodepoolKubeletImageGc{
+			MinAge:        &c.ImageGcMinAge,
+			LowThreshold:  &c.ImageGcLowThreshold,
+			HighThreshold: &c.ImageGcHighThreshold,
+		},
 	}
 
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
@@ -180,8 +188,11 @@ func init() {
 	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolAddCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
-		Size:         2,
-		InstanceType: fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
-		DiskSize:     50,
+		Size:                 2,
+		InstanceType:         fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
+		DiskSize:             50,
+		ImageGcLowThreshold:  80,
+		ImageGcHighThreshold: 85,
+		ImageGcMinAge:        "2m",
 	}))
 }
