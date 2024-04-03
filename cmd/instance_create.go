@@ -22,7 +22,6 @@ import (
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceCreateCmd struct {
@@ -33,7 +32,6 @@ type instanceCreateCmd struct {
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
 	AntiAffinityGroups []string          `cli-flag:"anti-affinity-group" cli-usage:"instance Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	BlockStorageVolume string            `cli-flag:"block-storage-volume" cli-usage:"Block Storage Volume NAME|ID to attach on the instance"`
 	CloudInitFile      string            `cli-flag:"cloud-init" cli-usage:"instance cloud-init user data configuration file path"`
 	CloudInitCompress  bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
 	DeployTarget       string            `cli-usage:"instance Deploy Target NAME|ID"`
@@ -200,11 +198,6 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 		instance.UserData = &userData
 	}
 
-	clientv3, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-	if err != nil {
-		return err
-	}
-
 	decorateAsyncOperation(fmt.Sprintf("Creating instance %q...", c.Name), func() {
 		instance, err = globalstate.EgoscaleClient.CreateInstance(ctx, c.Zone, instance)
 		if err != nil {
@@ -215,31 +208,6 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			if err = globalstate.EgoscaleClient.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, p); err != nil {
 				return
 			}
-		}
-
-		if c.BlockStorageVolume != "" {
-			var volumes *v3.ListBlockStorageVolumesResponse
-			volumes, err = clientv3.ListBlockStorageVolumes(ctx)
-			if err != nil {
-				return
-			}
-
-			var volume v3.BlockStorageVolume
-			volume, err = volumes.FindBlockStorageVolume(c.BlockStorageVolume)
-			if err != nil {
-				return
-			}
-
-			var op *v3.Operation
-			op, err = clientv3.AttachBlockStorageVolumeToInstance(ctx, volume.ID, v3.AttachBlockStorageVolumeToInstanceRequest{
-				Instance: &v3.InstanceTarget{
-					ID: v3.UUID(*instance.ID),
-				},
-			})
-			if err != nil {
-				return
-			}
-			_, err = clientv3.Wait(ctx, op, v3.OperationStateSuccess)
 		}
 	})
 	if err != nil {
