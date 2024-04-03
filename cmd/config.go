@@ -120,7 +120,7 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		if acc.DefaultOutputFormat != "" {
 			accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
 		}
-		if acc.Environment != "" {
+		if acc.Environment != "" && acc.Environment != "api" {
 			accounts[i]["environment"] = acc.Environment
 		}
 		if acc.Endpoint != "" {
@@ -132,12 +132,14 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		if acc.DefaultTemplate != "" {
 			accounts[i]["defaultTemplate"] = acc.DefaultTemplate
 		}
+		if acc.Account != "" {
+			accounts[i]["account"] = acc.Account
+		}
 		if len(acc.SecretCommand) != 0 {
 			accounts[i]["secretCommand"] = acc.SecretCommand
 		} else {
 			accounts[i]["secret"] = acc.Secret
 		}
-		accounts[i]["account"] = acc.Account
 
 		conf.Accounts = append(conf.Accounts, acc)
 	}
@@ -150,7 +152,7 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 			accounts[accountsSize+i]["key"] = acc.Key
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
-			if acc.Environment != "" {
+			if acc.Environment != "" && acc.Environment != "api" {
 				accounts[i]["environment"] = acc.Environment
 			}
 			if acc.Endpoint != "" {
@@ -159,7 +161,6 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 			if acc.DefaultSSHKey != "" {
 				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
 			}
-			accounts[accountsSize+i]["account"] = acc.Account
 			conf.Accounts = append(conf.Accounts, acc)
 		}
 	}

@@ -62,10 +62,14 @@ func buildClient() {
 
 	httpClient := &http.Client{Transport: newCLIRoundTripper(http.DefaultTransport, account.CurrentAccount.CustomHeaders)}
 
+	clientTimeout := account.CurrentAccount.ClientTimeout
+	if clientTimeout == 0 {
+		clientTimeout = defaultClientTimeout
+	}
 	clientExoV2, err := exov2.NewClient(
 		account.CurrentAccount.Key,
 		account.CurrentAccount.APISecret(),
-		exov2.ClientOptWithTimeout(time.Minute*time.Duration(account.CurrentAccount.ClientTimeout)),
+		exov2.ClientOptWithTimeout(time.Minute*time.Duration(clientTimeout)),
 		exov2.ClientOptWithHTTPClient(httpClient),
 		exov2.ClientOptCond(func() bool {
 			if v := os.Getenv("EXOSCALE_TRACE"); v != "" {
