@@ -86,7 +86,6 @@ The configuration parameters are then saved in a `exoscale.toml` file with the f
 defaultaccount = "account_name"
 
 [[accounts]]
-  account = "account_name"
   key = "API_KEY"
   name = "account_name"
   secret = "API_SECRET"
