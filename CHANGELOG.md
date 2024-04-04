@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+### Improvements
+
+### Deprecations
+- Config: Remove unused field on config reload #585
+
 ## 1.77.0
 
 ### Features

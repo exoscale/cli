@@ -81,7 +81,11 @@ func cmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 // set once this function returns.
 func cmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
 	if cmd.Flag("template").Value.String() == "" {
-		cmd.Flag("template").Value.Set(account.CurrentAccount.DefaultTemplate) // nolint:errcheck
+		if account.CurrentAccount.DefaultTemplate != "" {
+			cmd.Flag("template").Value.Set(account.CurrentAccount.DefaultTemplate) // nolint:errcheck
+		} else {
+			cmd.Flag("template").Value.Set(defaultTemplate) // nolint:errcheck
+		}
 	}
 }
 

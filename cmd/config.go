@@ -113,23 +113,37 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 
 		accounts[i]["name"] = acc.Name
 		accounts[i]["key"] = acc.Key
-		accounts[i]["endpoint"] = acc.Endpoint
 		accounts[i]["defaultZone"] = acc.DefaultZone
-		accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
-		accounts[i]["clientTimeout"] = acc.ClientTimeout
-		accounts[i]["environment"] = acc.Environment
+		if acc.ClientTimeout != 0 {
+			accounts[i]["clientTimeout"] = acc.ClientTimeout
+		}
+		if acc.DefaultOutputFormat != "" {
+			accounts[i]["defaultOutputFormat"] = acc.DefaultOutputFormat
+		}
+		// TODO(pej): This is a workaround to not propagate Environment 'api' on config reload.
+		// By default, acc.Environment is set to 'api' to be used for egoscale v2 in the whole codebase.
+		// We can not tweak it like DefaultTemplate by using the 'api' default const.
+		// Remove the environment when egoscale v3 will be fully integrated.
+		if acc.Environment != "" && acc.Environment != "api" {
+			accounts[i]["environment"] = acc.Environment
+		}
+		if acc.Endpoint != "" {
+			accounts[i]["endpoint"] = acc.Endpoint
+		}
 		if acc.DefaultSSHKey != "" {
 			accounts[i]["defaultSSHKey"] = acc.DefaultSSHKey
 		}
 		if acc.DefaultTemplate != "" {
 			accounts[i]["defaultTemplate"] = acc.DefaultTemplate
 		}
+		if acc.Account != "" {
+			accounts[i]["account"] = acc.Account
+		}
 		if len(acc.SecretCommand) != 0 {
 			accounts[i]["secretCommand"] = acc.SecretCommand
 		} else {
 			accounts[i]["secret"] = acc.Secret
 		}
-		accounts[i]["account"] = acc.Account
 
 		conf.Accounts = append(conf.Accounts, acc)
 	}
@@ -140,14 +154,8 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 
 			accounts[accountsSize+i]["name"] = acc.Name
 			accounts[accountsSize+i]["key"] = acc.Key
-			accounts[accountsSize+i]["endpoint"] = acc.Endpoint
 			accounts[accountsSize+i]["secret"] = acc.Secret
 			accounts[accountsSize+i]["defaultZone"] = acc.DefaultZone
-			accounts[accountsSize+i]["environment"] = acc.Environment
-			if acc.DefaultSSHKey != "" {
-				accounts[accountsSize+i]["defaultSSHKey"] = acc.DefaultSSHKey
-			}
-			accounts[accountsSize+i]["account"] = acc.Account
 			conf.Accounts = append(conf.Accounts, acc)
 		}
 	}
