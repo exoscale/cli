@@ -287,9 +287,9 @@ func init() {
 		KubernetesVersion:            "latest",
 		NodepoolDiskSize:             50,
 		NodepoolInstanceType:         fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
-		NodepoolImageGcLowThreshold:  80,
-		NodepoolImageGcHighThreshold: 85,
-		NodepoolImageGcMinAge:        "2m",
+		NodepoolImageGcLowThreshold:  kubeletImageGcLowThreshold,
+		NodepoolImageGcHighThreshold: kubeletImageGcHighThreshold,
+		NodepoolImageGcMinAge:        kubeletImageGcMinAge,
 		ServiceLevel:                 defaultSKSClusterServiceLevel,
 	}))
 

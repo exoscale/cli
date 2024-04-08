@@ -132,19 +132,19 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if nodepool.KubeletImageGc != nil && nodepool.KubeletImageGc.MinAge != nil {
 				return *nodepool.KubeletImageGc.MinAge
 			}
-			return "2m"
+			return kubeletImageGcMinAge
 		}(),
 		ImageGcLowThreshold: func() (s int64) {
 			if nodepool.KubeletImageGc != nil && nodepool.KubeletImageGc.LowThreshold != nil {
 				return *nodepool.KubeletImageGc.LowThreshold
 			}
-			return 80
+			return kubeletImageGcLowThreshold
 		}(),
 		ImageGcHighThreshold: func() (s int64) {
 			if nodepool.KubeletImageGc != nil && nodepool.KubeletImageGc.HighThreshold != nil {
 				return *nodepool.KubeletImageGc.HighThreshold
 			}
-			return 85
+			return kubeletImageGcHighThreshold
 		}(),
 		Version: *nodepool.Version,
 	}

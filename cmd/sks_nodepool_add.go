@@ -15,6 +15,12 @@ import (
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
+const (
+	kubeletImageGcLowThreshold  = 80
+	kubeletImageGcHighThreshold = 85
+	kubeletImageGcMinAge        = "2m"
+)
+
 type sksNodepoolAddCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
@@ -191,8 +197,8 @@ func init() {
 		Size:                 2,
 		InstanceType:         fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
 		DiskSize:             50,
-		ImageGcLowThreshold:  80,
-		ImageGcHighThreshold: 85,
-		ImageGcMinAge:        "2m",
+		ImageGcLowThreshold:  kubeletImageGcLowThreshold,
+		ImageGcHighThreshold: kubeletImageGcHighThreshold,
+		ImageGcMinAge:        kubeletImageGcMinAge,
 	}))
 }
