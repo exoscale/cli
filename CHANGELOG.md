@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- SKS nodepool: allow specifying kubelet image gc parameters on creation #586
+
 ### Features
 
 ### Improvements
