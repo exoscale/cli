@@ -22,6 +22,30 @@ func sksNodepoolTaintFromAPI(t *oapi.SksNodepoolTaint) *SKSNodepoolTaint {
 	}
 }
 
+type SKSNodepoolKubeletImageGc struct {
+	MinAge        *string
+	HighThreshold *int64
+	LowThreshold  *int64
+}
+
+func sksNodepoolKubeletImageGcFromAPI(gc *oapi.KubeletImageGc) *SKSNodepoolKubeletImageGc {
+	r := &SKSNodepoolKubeletImageGc{}
+
+	if gc != nil {
+		if gc.MinAge != nil {
+			r.MinAge = gc.MinAge
+		}
+		if gc.HighThreshold != nil {
+			r.HighThreshold = gc.HighThreshold
+		}
+		if gc.LowThreshold != nil {
+			r.LowThreshold = gc.LowThreshold
+		}
+	}
+
+	return r
+}
+
 // SKSNodepool represents an SKS Nodepool.
 type SKSNodepool struct {
 	AddOns               *[]string
@@ -40,6 +64,7 @@ type SKSNodepool struct {
 	SecurityGroupIDs     *[]string
 	Size                 *int64 `req-for:"create"`
 	State                *string
+	KubeletImageGc       *SKSNodepoolKubeletImageGc
 	Taints               *map[string]*SKSNodepoolTaint
 	TemplateID           *string
 	Version              *string
@@ -81,6 +106,7 @@ func sksNodepoolFromAPI(n *oapi.SksNodepool) *SKSNodepool {
 		InstancePoolID: n.InstancePool.Id,
 		InstancePrefix: n.InstancePrefix,
 		InstanceTypeID: n.InstanceType.Id,
+		KubeletImageGc: sksNodepoolKubeletImageGcFromAPI(n.KubeletImageGc),
 		Labels: func() (v *map[string]string) {
 			if n.Labels != nil && len(n.Labels.AdditionalProperties) > 0 {
 				v = &n.Labels.AdditionalProperties
@@ -176,6 +202,22 @@ func (c *Client) CreateSKSNodepool(
 			DiskSize:       *nodepool.DiskSize,
 			InstancePrefix: nodepool.InstancePrefix,
 			InstanceType:   oapi.InstanceType{Id: nodepool.InstanceTypeID},
+			KubeletImageGc: func() (v *oapi.KubeletImageGc) {
+				v = &oapi.KubeletImageGc{}
+
+				if nodepool.KubeletImageGc != nil {
+					if nodepool.KubeletImageGc.MinAge != nil {
+						v.MinAge = nodepool.KubeletImageGc.MinAge
+					}
+					if nodepool.KubeletImageGc.HighThreshold != nil {
+						v.HighThreshold = nodepool.KubeletImageGc.HighThreshold
+					}
+					if nodepool.KubeletImageGc.LowThreshold != nil {
+						v.LowThreshold = nodepool.KubeletImageGc.LowThreshold
+					}
+				}
+				return
+			}(),
 			Labels: func() (v *oapi.Labels) {
 				if nodepool.Labels != nil {
 					v = &oapi.Labels{AdditionalProperties: *nodepool.Labels}
@@ -240,7 +282,6 @@ func (c *Client) CreateSKSNodepool(
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve Nodepool: %s", err)
 	}
-
 	return sksNodepoolFromAPI(nodepoolRes.JSON200), nil
 }
 

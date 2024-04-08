@@ -30,36 +30,39 @@ type sksCreateCmd struct {
 
 	Name string `cli-arg:"#" cli-usage:"NAME"`
 
-	AutoUpgrade                bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
-	CNI                        string            `cli-usage:"CNI plugin to deploy. e.g. 'calico', or 'cilium'"`
-	Description                string            `cli-usage:"SKS cluster description"`
-	KubernetesVersion          string            `cli-usage:"SKS cluster control plane Kubernetes version"`
-	Labels                     map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
-	NoCNI                      bool              `cli-usage:"do not deploy a default Container Network Interface plugin in the cluster control plane"`
-	NoExoscaleCCM              bool              `cli-usage:"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane"`
-	NoMetricsServer            bool              `cli-usage:"do not deploy the Kubernetes Metrics Server in the cluster control plane"`
-	ExoscaleCSI                bool              `cli-usage:"deploy the Exoscale Container Storage Interface on worker nodes"`
-	NodepoolAntiAffinityGroups []string          `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
-	NodepoolDeployTarget       string            `cli-usage:"default Nodepool Deploy Target NAME|ID"`
-	NodepoolDescription        string            `cli-usage:"default Nodepool description"`
-	NodepoolDiskSize           int64             `cli-usage:"default Nodepool Compute instances disk size"`
-	NodepoolInstancePrefix     string            `cli-usage:"string to prefix default Nodepool member names with"`
-	NodepoolInstanceType       string            `cli-usage:"default Nodepool Compute instances type"`
-	NodepoolLabels             map[string]string `cli-flag:"nodepool-label" cli-usage:"default Nodepool label (format: key=value)"`
-	NodepoolName               string            `cli-usage:"default Nodepool name"`
-	NodepoolPrivateNetworks    []string          `cli-flag:"nodepool-private-network" cli-usage:"default Nodepool Private Network NAME|ID (can be specified multiple times)"`
-	NodepoolSecurityGroups     []string          `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
-	NodepoolSize               int64             `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
-	NodepoolTaints             []string          `cli-flag:"nodepool-taint" cli-usage:"Kubernetes taint to apply to default Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
-	OIDCClientID               string            `cli-flag:"oidc-client-id" cli-usage:"OpenID client ID"`
-	OIDCGroupsClaim            string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
-	OIDCGroupsPrefix           string            `cli-flag:"oidc-groups-prefix" cli-usage:"OpenID prefix prepended to group claims"`
-	OIDCIssuerURL              string            `cli-flag:"oidc-issuer-url" cli-usage:"OpenID provider URL"`
-	OIDCRequiredClaim          map[string]string `cli-flag:"oidc-required-claim" cli-usage:"OpenID token required claim (format: key=value)"`
-	OIDCUsernameClaim          string            `cli-flag:"oidc-username-claim" cli-usage:"OpenID JWT claim to use as the user name"`
-	OIDCUsernamePrefix         string            `cli-flag:"oidc-username-prefix" cli-usage:"OpenID prefix prepended to username claims"`
-	ServiceLevel               string            `cli-usage:"SKS cluster control plane service level (starter|pro)"`
-	Zone                       string            `cli-short:"z" cli-usage:"SKS cluster zone"`
+	AutoUpgrade                  bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
+	CNI                          string            `cli-usage:"CNI plugin to deploy. e.g. 'calico', or 'cilium'"`
+	Description                  string            `cli-usage:"SKS cluster description"`
+	KubernetesVersion            string            `cli-usage:"SKS cluster control plane Kubernetes version"`
+	Labels                       map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
+	NoCNI                        bool              `cli-usage:"do not deploy a default Container Network Interface plugin in the cluster control plane"`
+	NoExoscaleCCM                bool              `cli-usage:"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane"`
+	NoMetricsServer              bool              `cli-usage:"do not deploy the Kubernetes Metrics Server in the cluster control plane"`
+	ExoscaleCSI                  bool              `cli-usage:"deploy the Exoscale Container Storage Interface on worker nodes"`
+	NodepoolAntiAffinityGroups   []string          `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
+	NodepoolDeployTarget         string            `cli-usage:"default Nodepool Deploy Target NAME|ID"`
+	NodepoolDescription          string            `cli-usage:"default Nodepool description"`
+	NodepoolDiskSize             int64             `cli-usage:"default Nodepool Compute instances disk size"`
+	NodepoolImageGcLowThreshold  int64             `cli-flag:"nodepool-image-gc-low-threshold" cli-usage:"default Nodepool the percent of disk usage after which image garbage collection is never run"`
+	NodepoolImageGcHighThreshold int64             `cli-flag:"nodepool-image-gc-high-threshold" cli-usage:"default Nodepool the percent of disk usage after which image garbage collection is always run"`
+	NodepoolImageGcMinAge        string            `cli-flag:"nodepool-image-gc-min-age" cli-usage:"default Nodepool maximum age an image can be unused before it is garbage collected"`
+	NodepoolInstancePrefix       string            `cli-usage:"string to prefix default Nodepool member names with"`
+	NodepoolInstanceType         string            `cli-usage:"default Nodepool Compute instances type"`
+	NodepoolLabels               map[string]string `cli-flag:"nodepool-label" cli-usage:"default Nodepool label (format: key=value)"`
+	NodepoolName                 string            `cli-usage:"default Nodepool name"`
+	NodepoolPrivateNetworks      []string          `cli-flag:"nodepool-private-network" cli-usage:"default Nodepool Private Network NAME|ID (can be specified multiple times)"`
+	NodepoolSecurityGroups       []string          `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
+	NodepoolSize                 int64             `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
+	NodepoolTaints               []string          `cli-flag:"nodepool-taint" cli-usage:"Kubernetes taint to apply to default Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	OIDCClientID                 string            `cli-flag:"oidc-client-id" cli-usage:"OpenID client ID"`
+	OIDCGroupsClaim              string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
+	OIDCGroupsPrefix             string            `cli-flag:"oidc-groups-prefix" cli-usage:"OpenID prefix prepended to group claims"`
+	OIDCIssuerURL                string            `cli-flag:"oidc-issuer-url" cli-usage:"OpenID provider URL"`
+	OIDCRequiredClaim            map[string]string `cli-flag:"oidc-required-claim" cli-usage:"OpenID token required claim (format: key=value)"`
+	OIDCUsernameClaim            string            `cli-flag:"oidc-username-claim" cli-usage:"OpenID JWT claim to use as the user name"`
+	OIDCUsernamePrefix           string            `cli-flag:"oidc-username-prefix" cli-usage:"OpenID prefix prepended to username claims"`
+	ServiceLevel                 string            `cli-usage:"SKS cluster control plane service level (starter|pro)"`
+	Zone                         string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -188,6 +191,11 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:goc
 				return c.Name
 			}()),
 			Size: &c.NodepoolSize,
+			KubeletImageGc: &egoscale.SKSNodepoolKubeletImageGc{
+				MinAge:        &c.NodepoolImageGcMinAge,
+				LowThreshold:  &c.NodepoolImageGcLowThreshold,
+				HighThreshold: &c.NodepoolImageGcHighThreshold,
+			},
 		}
 
 		if l := len(c.NodepoolAntiAffinityGroups); l > 0 {
@@ -275,12 +283,14 @@ func init() {
 	cobra.CheckErr(registerCLICommand(sksCmd, &sksCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
-		CNI:                  defaultSKSClusterCNI,
-		KubernetesVersion:    "latest",
-		NodepoolDiskSize:     50,
-		NodepoolInstanceType: fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
-
-		ServiceLevel: defaultSKSClusterServiceLevel,
+		CNI:                          defaultSKSClusterCNI,
+		KubernetesVersion:            "latest",
+		NodepoolDiskSize:             50,
+		NodepoolInstanceType:         fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
+		NodepoolImageGcLowThreshold:  kubeletImageGcLowThreshold,
+		NodepoolImageGcHighThreshold: kubeletImageGcHighThreshold,
+		NodepoolImageGcMinAge:        kubeletImageGcMinAge,
+		ServiceLevel:                 defaultSKSClusterServiceLevel,
 	}))
 
 }
