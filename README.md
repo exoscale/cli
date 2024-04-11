@@ -7,64 +7,8 @@ Manage your Exoscale infrastructure easily from the command-line with `exo`.
 
 ## Installation
 
-### Debian and Red Hat based distributions
+Follow the steps for your platform on our [community docs](https://community.exoscale.com/documentation/tools/exoscale-command-line-interface/#installation).
 
-On Debian and Red Hat based distributions like Ubuntu and Fedora, we recommend using the installation script.
-
-```shell
-curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
-```
-
-### Using pre-built releases
-
-You can find pre-built releases of the CLI [here][releases].
-
-
-### From sources
-
-To build `exo` from sources, a Go compiler >= 1.16 is required.
-
-```shell
-$ git clone https://github.com/exoscale/cli
-$ cd cli
-$ make build
-```
-
-Upon successful compilation, the resulting `exo` binary is stored in the `bin/` directory.
-
-### Using the scoop package manager on Windows
-
-If you haven't installed scoop already, follow the instructions at [scoop.sh](https://scoop.sh) before installing `exo` with:
-
-```shell
-scoop bucket add exoscale-cli https://github.com/exoscale/cli
-scoop install exoscale-cli
-```
-
-To update `exo` to the latest version:
-
-```shell
-scoop update
-scoop update exoscale-cli
-```
-
-### From the AUR on Arch Linux
-
-```shell
-gpg --keyserver keys.openpgp.org --recv-key 7100E8BFD6199CE0374CB7F003686F8CDE378D41
-git clone https://aur.archlinux.org/exoscale-cli-bin.git
-cd exoscale-cli-bin/
-makepkg --install
-```
-
-Alternatively there are two packages building from source https://aur.archlinux.org/exoscale-cli.git and https://aur.archlinux.org/exoscale-cli-git.git where the latter builds from the latest commit on the master branch and the former from the latest release commit.
-
-### With brew on MacOS
-
-```shell
-tap "exoscale/tap"
-brew install exoscale-cli
-```
 
 ## Configuration
 
