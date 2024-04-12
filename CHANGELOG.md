@@ -1,13 +1,12 @@
 # Changelog
 
-## Unreleased
-
-- Egoscale v3: Fix the exoscale trace output #587
-- SKS nodepool: allow specifying kubelet image gc parameters on creation #586
+## 1.77.1
 
 ### Features
+- SKS nodepool: allow specifying kubelet image gc parameters on creation #586
 
 ### Improvements
+- Egoscale v3: Fix the exoscale trace output #587
 
 ### Deprecations
 - Config: Remove unused field on config reload #585
