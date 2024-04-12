@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Egoscale v3: Fix the exoscale trace output #587
 - SKS nodepool: allow specifying kubelet image gc parameters on creation #586
 
 ### Features
