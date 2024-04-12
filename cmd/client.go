@@ -90,7 +90,13 @@ func buildClient() {
 
 	clientV3, err := v3.NewClient(
 		creds,
-		v3.ClientOptWithHTTPClient(httpClient),
+		v3.ClientOptWithRequestInterceptors(func(ctx context.Context, req *http.Request) error {
+			for k, v := range account.CurrentAccount.CustomHeaders {
+				req.Header.Add(k, v)
+			}
+
+			return nil
+		}),
 	)
 	if err != nil {
 		panic(fmt.Sprintf("unable to initialize Exoscale API V3 client: %v", err))

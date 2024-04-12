@@ -111,7 +111,7 @@ type BlockStorageSnapshot struct {
 	// Snapshot name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Snapshot size
-	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10,lte=10240"`
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10"`
 	// Snapshot state
 	State BlockStorageSnapshotState `json:"state,omitempty"`
 }
@@ -152,7 +152,7 @@ type BlockStorageVolume struct {
 	// Volume name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Volume size
-	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10,lte=10240"`
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10"`
 	// Volume state
 	State BlockStorageVolumeState `json:"state,omitempty"`
 }
@@ -1247,7 +1247,52 @@ type DBAASTask struct {
 	TaskType    string                 `json:"task-type,omitempty"`
 }
 
+// Kafka User secrets
+type DBAASUserKafkaSecrets struct {
+	// Kafka certificate
+	AccessCert       string    `json:"access-cert,omitempty"`
+	AccessCertExpiry time.Time `json:"access-cert-expiry,omitempty"`
+	// Kafka access key
+	AccessKey string `json:"access-key,omitempty"`
+	// Kafka password
+	Password string `json:"password,omitempty"`
+	// Kafka username
+	Username string `json:"username,omitempty"`
+}
+
+// MySQL User secrets
+type DBAASUserMysqlSecrets struct {
+	// MySQL password
+	Password string `json:"password,omitempty"`
+	// MySQL username
+	Username string `json:"username,omitempty"`
+}
+
+// Opensearch User secrets
+type DBAASUserOpensearchSecrets struct {
+	// Opensearch password
+	Password string `json:"password,omitempty"`
+	// Opensearch username
+	Username string `json:"username,omitempty"`
+}
+
 type DBAASUserPassword string
+
+// Postgres User secrets
+type DBAASUserPostgresSecrets struct {
+	// Postgres password
+	Password string `json:"password,omitempty"`
+	// Postgres username
+	Username string `json:"username,omitempty"`
+}
+
+// Redis User secrets
+type DBAASUserRedisSecrets struct {
+	// Redis password
+	Password string `json:"password,omitempty"`
+	// Redis username
+	Username string `json:"username,omitempty"`
+}
 
 type DBAASUserUsername string
 
@@ -1496,14 +1541,18 @@ type Event struct {
 	GetParams map[string]any `json:"get-params,omitempty"`
 	// Operation handler name
 	Handler string `json:"handler,omitempty"`
+	// IAM API Key
+	IAMAPIKey *IAMAPIKey `json:"iam-api-key,omitempty"`
+	// IAM Role
+	IAMRole *IAMRole `json:"iam-role,omitempty"`
 	// Operation message
 	Message string `json:"message,omitempty"`
 	// URI path parameters (free form map)
 	PathParams map[string]any `json:"path-params,omitempty"`
-	// Client IP address
-	RemoteAddr string `json:"remote-addr,omitempty"`
 	// Operation unique identifier
 	RequestID string `json:"request-id,omitempty"`
+	// Client IP address
+	SourceIP string `json:"source-ip,omitempty"`
 	// Operation HTTP status
 	Status int64 `json:"status,omitempty" validate:"omitempty,gt=0"`
 	// Time at which the event happened, millisecond resolution
@@ -1594,6 +1643,14 @@ type IAMServicePolicyRule struct {
 	Resources  []string                   `json:"resources,omitempty"`
 }
 
+// Private Network
+type InstancePrivateNetworks struct {
+	// Private Network ID
+	ID UUID `json:"id,omitempty"`
+	// Private Network MAC address
+	MACAddress string `json:"mac-address,omitempty"`
+}
+
 // Instance
 type Instance struct {
 	// Instance Anti-affinity Groups
@@ -1613,12 +1670,14 @@ type Instance struct {
 	// Instance IPv6 address
 	Ipv6Address string `json:"ipv6-address,omitempty"`
 	Labels      Labels `json:"labels,omitempty"`
+	// Instance MAC address
+	MACAddress string `json:"mac-address,omitempty"`
 	// Resource manager
 	Manager *Manager `json:"manager,omitempty"`
 	// Instance name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Instance Private Networks
-	PrivateNetworks []PrivateNetwork `json:"private-networks,omitempty"`
+	PrivateNetworks []InstancePrivateNetworks `json:"private-networks,omitempty"`
 	// Instance public IPv4 address
 	PublicIP           net.IP             `json:"public-ip,omitempty"`
 	PublicIPAssignment PublicIPAssignment `json:"public-ip-assignment,omitempty"`

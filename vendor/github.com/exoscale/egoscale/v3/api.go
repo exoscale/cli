@@ -290,10 +290,10 @@ func handleHTTPErrorResp(resp *http.Response) error {
 	return nil
 }
 
-func dumpRequest(req *http.Request) {
+func dumpRequest(req *http.Request, operationID string) {
 	if req != nil {
 		if dump, err := httputil.DumpRequest(req, true); err == nil {
-			fmt.Fprintf(os.Stderr, ">>> %s\n", dump)
+			fmt.Fprintf(os.Stderr, ">>> Operation: %s\n%s\n", operationID, dump)
 		}
 	}
 }
