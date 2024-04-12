@@ -13,7 +13,8 @@ var (
 )
 
 type Account struct {
-	Name    string
+	Name string
+	// TODO: deprecated field, will be deleted.
 	Account string
 	// TODO: remove it to replace it with the new API listZones.
 	SosEndpoint string

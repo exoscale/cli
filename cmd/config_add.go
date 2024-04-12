@@ -68,10 +68,7 @@ func promptAccountInformation() (*account.Account, error) {
 	var client *exo.Client
 
 	reader := bufio.NewReader(os.Stdin)
-	account := &account.Account{
-		Key:    "",
-		Secret: "",
-	}
+	account := &account.Account{}
 
 	apiKey, err := readInput(reader, "API Key", account.Key)
 	if err != nil {
@@ -92,14 +89,6 @@ func promptAccountInformation() (*account.Account, error) {
 	}
 	if secretKey != secret && secretKey != secretShow {
 		account.Secret = secretKey
-	}
-
-	acc, err := readInput(reader, "Account name", account.Account)
-	if err != nil {
-		return nil, err
-	}
-	if acc != "" {
-		account.Account = acc
 	}
 
 	name, err := readInput(reader, "Name", account.Name)

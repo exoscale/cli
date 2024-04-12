@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- SKS nodepool: allow specifying kubelet image gc parameters on creation #586
+
+### Features
+
+### Improvements
+
+### Deprecations
+- Config: Remove unused field on config reload #585
+
 ## 1.77.0
 
 ### Features

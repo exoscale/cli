@@ -87,10 +87,9 @@ func Execute(version, commit string) {
 
 func init() {
 	account.CurrentAccount = &account.Account{
-		DefaultZone:     defaultZone,
-		DefaultTemplate: defaultTemplate,
-		Environment:     defaultEnvironment,
-		SosEndpoint:     defaultSosEndpoint,
+		DefaultZone: defaultZone,
+		Environment: defaultEnvironment,
+		SosEndpoint: defaultSosEndpoint,
 	}
 
 	gConfig = viper.New()
@@ -159,7 +158,6 @@ func initConfig() { //nolint:gocyclo
 	if apiKeyFromEnv != "" && apiSecretFromEnv != "" {
 		account.CurrentAccount.Name = "<environment variables>"
 		gConfigFilePath = "<environment variables>"
-		account.CurrentAccount.Account = "unknown"
 		account.CurrentAccount.Key = apiKeyFromEnv
 		account.CurrentAccount.Secret = apiSecretFromEnv
 
@@ -172,9 +170,6 @@ func initConfig() { //nolint:gocyclo
 		}
 		if sosEndpointFromEnv != "" {
 			account.CurrentAccount.SosEndpoint = sosEndpointFromEnv
-		}
-		if account.CurrentAccount.ClientTimeout == 0 {
-			account.CurrentAccount.ClientTimeout = defaultClientTimeout
 		}
 
 		account.GAllAccount = &account.Config{
@@ -307,17 +302,10 @@ func initConfig() { //nolint:gocyclo
 		}
 	}
 
-	if account.CurrentAccount.DefaultTemplate == "" {
-		account.CurrentAccount.DefaultTemplate = defaultTemplate
-	}
-
 	if account.CurrentAccount.SosEndpoint == "" {
 		account.CurrentAccount.SosEndpoint = defaultSosEndpoint
 	}
 
-	if account.CurrentAccount.ClientTimeout == 0 {
-		account.CurrentAccount.ClientTimeout = defaultClientTimeout
-	}
 	clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
 	if clientTimeoutFromEnv != "" {
 		if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {

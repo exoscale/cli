@@ -195,8 +195,8 @@ github.com/envoyproxy/go-control-plane v0.9.10-0.20210907150352-cf90f659a021/go.
 github.com/envoyproxy/go-control-plane v0.10.1/go.mod h1:AY7fTTXNdv/aJ2O5jwpxAPOWUZ7hQAEvzN5Pf27BkQQ=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/envoyproxy/protoc-gen-validate v0.6.2/go.mod h1:2t7qjJNvHPx8IjnBOzl9E9/baC+qXE/TeeyBRzgJDws=
-github.com/exoscale/egoscale v0.102.4-0.20240411151757-e59fc2d046ea h1:4aA5D9bWRWtXiknjBWqoCgnwI9+KCFDCInrCx8AigV8=
-github.com/exoscale/egoscale v0.102.4-0.20240411151757-e59fc2d046ea/go.mod h1:sFBCvHJx/h6u8Z5igoIcgbPs+wltBbEJrXA2xp05KoU=
+github.com/exoscale/egoscale v0.102.4-0.20240327105104-a8a8cb197ac6 h1:UQwsohHjLp5mkcB+vZ7UuYrTi0FsBrQvgYD0guyNcSo=
+github.com/exoscale/egoscale v0.102.4-0.20240327105104-a8a8cb197ac6/go.mod h1:sFBCvHJx/h6u8Z5igoIcgbPs+wltBbEJrXA2xp05KoU=
 github.com/exoscale/openapi-cli-generator v1.1.0 h1:fYjmPqHR5vxlOBrbvde7eo7bISNQIFxsGn4A5/acwKA=
 github.com/exoscale/openapi-cli-generator v1.1.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
