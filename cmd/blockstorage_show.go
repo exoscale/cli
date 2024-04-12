@@ -64,7 +64,11 @@ func (c *blockStorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	volume, err := volumes.FindBlockStorageVolume(c.Name)
+	v, err := volumes.FindBlockStorageVolume(c.Name)
+	if err != nil {
+		return err
+	}
+	volume, err := client.GetBlockStorageVolume(ctx, v.ID)
 	if err != nil {
 		return err
 	}
