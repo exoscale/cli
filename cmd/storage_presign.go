@@ -41,6 +41,9 @@ var storagePresignCmd = &cobra.Command{
 		}
 
 		parts := strings.SplitN(args[0], "/", 2)
+		if len(parts) < 2 {
+			return fmt.Errorf("invalid object URL: %q", args[0])
+		}
 		bucket, key = parts[0], parts[1]
 
 		storage, err := sos.NewStorageClient(
