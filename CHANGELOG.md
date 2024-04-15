@@ -1,5 +1,9 @@
 # Changelog
 
+## Unrelease
+
+- Block Storage: Fix volume show with snapshot #589
+
 ## 1.77.1
 
 ### Features
