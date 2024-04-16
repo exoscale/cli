@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Block Storage: Show all quotas #591
 - Block Storage: Fix volume show with snapshot #589
 - storage presign: fix panic when parsing arg[0] #590 
 
