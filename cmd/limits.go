@@ -25,6 +25,8 @@ const (
 	limitSKSClusters         = "sks-cluster"
 	limitSOSBuckets          = "bucket"
 	limitBlockStorageVolumes = "block-storage-volume"
+	limitBlockStorage        = "block-storage"
+	limitBlockStorageMaxSize = "block-storage-max-size"
 )
 
 type LimitsItemOutput struct {
@@ -60,6 +62,8 @@ Supported output template annotations: %s`,
 			limitSKSClusters:         "SKS clusters",
 			limitSOSBuckets:          "SOS buckets",
 			limitBlockStorageVolumes: "Block Storage Volumes",
+			limitBlockStorage:        "Block Storage cumulative size",
+			limitBlockStorageMaxSize: "Max Size of Block Storage Volumes",
 		}
 
 		out := LimitsOutput{}
