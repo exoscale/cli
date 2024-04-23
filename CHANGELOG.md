@@ -5,6 +5,7 @@
 - Block Storage: Show all quotas #591
 - Block Storage: Fix volume show with snapshot #589
 - storage presign: fix panic when parsing arg[0] #590 
+- config: remind user that no default account was set #593 
 
 ## 1.77.1
 

@@ -170,6 +170,10 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 	}
 
 	conf.DefaultAccount = gConfig.Get("defaultAccount").(string)
+	if conf.DefaultAccount == "" {
+		fmt.Println("no default account set")
+	}
+
 	account.GAllAccount = conf
 
 	return nil
