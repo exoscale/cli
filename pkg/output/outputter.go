@@ -284,7 +284,7 @@ func Table(o interface{}) {
 			} else {
 				// Most of our openAPI resource reference has {ID: "UUID"}
 				// That facilitate the outputers struct.
-				if v.Field(i).Elem().FieldByName("ID").String() != "" {
+				if v.Field(i).Elem().Kind() == reflect.Struct && v.Field(i).Elem().FieldByName("ID").String() != "" {
 					tab.Append([]string{label, fmt.Sprint(v.Field(i).Elem().FieldByName("ID").String())})
 					continue
 				}
