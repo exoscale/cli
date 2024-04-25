@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -20,11 +21,12 @@ type sksUpdateCmd struct {
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	AutoUpgrade bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
-	Description string            `cli-usage:"SKS cluster description"`
-	Labels      map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
-	Name        string            `cli-usage:"SKS cluster name"`
-	Zone        string            `cli-short:"z" cli-usage:"SKS cluster zone"`
+	AutoUpgrade    bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
+	Description    string            `cli-usage:"SKS cluster description"`
+	Labels         map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
+	Name           string            `cli-usage:"SKS cluster name"`
+	EnableCSIAddon bool              `cli-usage:"enable the Exoscale CSI driver"`
+	Zone           string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksUpdateCmd) cmdAliases() []string { return nil }
@@ -74,6 +76,14 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
 		cluster.Description = &c.Description
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.EnableCSIAddon)) && !slices.Contains(*cluster.AddOns, sksClusterAddonExoscaleCSI) {
+		addons := *cluster.AddOns
+		addons = append(addons, sksClusterAddonExoscaleCSI)
+		fmt.Printf("addons: %v\n", addons)
+		cluster.AddOns = &addons
 		updated = true
 	}
 
