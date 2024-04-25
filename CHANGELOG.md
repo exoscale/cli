@@ -1,11 +1,15 @@
 # Changelog
 
-## Unreleased
+## 1.77.2
+
+### Improvements
 
 - Block Storage: Show all quotas #591
+- config: remind user that no default account was set #593
+
+### Bug Fixes
 - Block Storage: Fix volume show with snapshot #589
 - storage presign: fix panic when parsing arg[0] #590
-- config: remind user that no default account was set #593
 - dbaas migration show: fix panic #597
 
 ## 1.77.1
