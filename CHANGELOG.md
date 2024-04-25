@@ -4,8 +4,9 @@
 
 - Block Storage: Show all quotas #591
 - Block Storage: Fix volume show with snapshot #589
-- storage presign: fix panic when parsing arg[0] #590 
-- config: remind user that no default account was set #593 
+- storage presign: fix panic when parsing arg[0] #590
+- config: remind user that no default account was set #593
+- dbaas migration show: fix panic #597
 
 ## 1.77.1
 
@@ -22,7 +23,7 @@
 
 ### Features
 - compute: Add Block Storage #574
-- sks: flag for CSI addon #572 
+- sks: flag for CSI addon #572
 
 ### Improvements
 - Instance reset password: remove wrong "rm" alias #583
@@ -44,7 +45,7 @@
 ## 1.76.1
 
 ### Improvements
-- go.mk: use as a plain repo instead of a submodule #575 
+- go.mk: use as a plain repo instead of a submodule #575
 
 ## 1.76.0
 
