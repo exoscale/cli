@@ -82,7 +82,7 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.EnableCSIAddon)) && !slices.Contains(cluster.Addons, sksClusterAddonExoscaleCSI) {
-		updateReq.Addons = append(cluster.Addons, sksClusterAddonExoscaleCSI)
+		updateReq.Addons = append(cluster.Addons, sksClusterAddonExoscaleCSI) //nolint:gocritic
 		updated = true
 	}
 
