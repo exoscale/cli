@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"slices"
 	"strings"
@@ -48,7 +47,7 @@ func (c *sksUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := context.Background()
+	ctx := gContext
 
 	clusters, err := globalstate.EgoscaleV3Client.ListSKSClusters(ctx)
 	if err != nil {
