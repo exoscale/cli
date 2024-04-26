@@ -1,16 +1,15 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksUpdateCmd struct {
@@ -20,11 +19,12 @@ type sksUpdateCmd struct {
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	AutoUpgrade bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
-	Description string            `cli-usage:"SKS cluster description"`
-	Labels      map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
-	Name        string            `cli-usage:"SKS cluster name"`
-	Zone        string            `cli-short:"z" cli-usage:"SKS cluster zone"`
+	AutoUpgrade    bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
+	Description    string            `cli-usage:"SKS cluster description"`
+	Labels         map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
+	Name           string            `cli-usage:"SKS cluster name"`
+	EnableCSIAddon bool              `cli-usage:"enable the Exoscale CSI driver"`
+	Zone           string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksUpdateCmd) cmdAliases() []string { return nil }
@@ -47,40 +47,55 @@ func (c *sksUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
 
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	clusters, err := globalstate.EgoscaleV3Client.ListSKSClusters(ctx)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
+	cluster, err := clusters.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	updateReq := v3.UpdateSKSClusterRequest{}
+
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AutoUpgrade)) {
-		cluster.AutoUpgrade = &c.AutoUpgrade
+		updateReq.AutoUpgrade = &c.AutoUpgrade
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
-		cluster.Labels = &c.Labels
+		updateReq.Labels = c.Labels
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
-		cluster.Name = &c.Name
+		updateReq.Name = c.Name
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		cluster.Description = &c.Description
+		updateReq.Description = c.Description
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.EnableCSIAddon)) && !slices.Contains(cluster.Addons, sksClusterAddonExoscaleCSI) {
+		updateReq.Addons = append(cluster.Addons, sksClusterAddonExoscaleCSI) //nolint:gocritic
 		updated = true
 	}
 
 	if updated {
+		op, err := globalstate.EgoscaleV3Client.UpdateSKSCluster(ctx, cluster.ID, updateReq)
+		if err != nil {
+			return err
+		}
+
 		decorateAsyncOperation(fmt.Sprintf("Updating SKS cluster %q...", c.Cluster), func() {
-			err = globalstate.EgoscaleClient.UpdateSKSCluster(ctx, c.Zone, cluster)
+			_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
+
 		if err != nil {
 			return err
 		}
@@ -89,7 +104,7 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&sksShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Cluster:            *cluster.ID,
+			Cluster:            string(cluster.ID),
 			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}

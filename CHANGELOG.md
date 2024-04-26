@@ -11,6 +11,7 @@
 - Block Storage: Fix volume show with snapshot #589
 - storage presign: fix panic when parsing arg[0] #590
 - dbaas migration show: fix panic #597
+- sks: enable CSI addon on existing clusters #596 
 
 ## 1.77.1
 
