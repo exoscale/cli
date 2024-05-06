@@ -53,7 +53,7 @@ type sksCreateCmd struct {
 	NodepoolPrivateNetworks      []string          `cli-flag:"nodepool-private-network" cli-usage:"default Nodepool Private Network NAME|ID (can be specified multiple times)"`
 	NodepoolSecurityGroups       []string          `cli-flag:"nodepool-security-group" cli-usage:"default Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	NodepoolSize                 int64             `cli-usage:"default Nodepool size. If 0, no default Nodepool will be added to the cluster."`
-	NodepoolTaints               []string          `cli-flag:"nodepool-taint" cli-usage:"Kubernetes taint to apply to default Nodepool Nodes (format: KEY=VALUE:EFFECT or KEY=:EFFECT, can be specified multiple times)"`
+	NodepoolTaints               []string          `cli-flag:"nodepool-taint" cli-usage:"Kubernetes taint to apply to default Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
 	OIDCClientID                 string            `cli-flag:"oidc-client-id" cli-usage:"OpenID client ID"`
 	OIDCGroupsClaim              string            `cli-flag:"oidc-groups-claim" cli-usage:"OpenID JWT claim to use as the user's group"`
 	OIDCGroupsPrefix             string            `cli-flag:"oidc-groups-prefix" cli-usage:"OpenID prefix prepended to group claims"`

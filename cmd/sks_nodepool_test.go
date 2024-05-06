@@ -21,10 +21,9 @@ func TestParseSKSNodepoolTaint(t *testing.T) {
 			err:           nil,
 		},
 		{
-			input:         "key=:effect",
-			expectedKey:   "key",
-			expectedTaint: egoscale.SKSNodepoolTaint{Effect: "effect"},
-			err:           nil,
+			input: "key=:effect",
+
+			err: errExpectedFormatNodepoolTaint,
 		},
 		{
 			input: "key:effect",
