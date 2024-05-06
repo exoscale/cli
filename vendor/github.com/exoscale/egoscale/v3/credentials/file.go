@@ -30,7 +30,7 @@ type FileProvider struct {
 	account   string
 	retrieved bool
 
-	// TODO: export some fiels from the config like: default zone...etc.
+	// TODO: export some fields from the config like: default zone...etc.
 }
 
 func NewFileCredentials(opts ...FileOpt) *Credentials {

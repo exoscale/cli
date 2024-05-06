@@ -1,12 +1,14 @@
 package test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os/exec"
 	"reflect"
 	"strings"
 	"testing"
+	"text/template"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -23,16 +25,44 @@ type Step struct {
 }
 
 type Suite struct {
-	Zone  string
-	Steps []Step
-	T     *testing.T
+	Parameters any
+	Zone       string
+	Steps      []Step
+	T          *testing.T
 }
 
 func (s *Suite) Run() {
 	nSteps := len(s.Steps)
+
 	for nr, step := range s.Steps {
-		nr := nr + 1
-		errMsg := fmt.Sprintf("step %d/%d: %s\n", nr, nSteps, step.Description)
+		tmpl := template.New(fmt.Sprintf("step-%d", nr+1))
+		parsedTmpl, err := tmpl.Parse(step.Command)
+		if err != nil {
+			s.T.Errorf("failed to parse template: %s", err.Error())
+
+			return
+		}
+
+		buf := &bytes.Buffer{}
+		err = parsedTmpl.Execute(buf, s.Parameters)
+		if err != nil {
+			s.T.Errorf("failed to execute template: %s", err.Error())
+
+			return
+		}
+
+		newCommand := buf.String()
+		if strings.Contains(newCommand, "{{") {
+			s.T.Errorf("template execution didn't replace all parameters for step %d", nr+1)
+
+			return
+		}
+
+		s.Steps[nr].Command = newCommand
+	}
+
+	for nr, step := range s.Steps {
+		errMsg := fmt.Sprintf("step %d/%d: %s\n", nr+1, nSteps, step.Description)
 
 		commandParts := strings.Split(step.Command, " ")
 		commandParts = append([]string{"-z", s.Zone, "-O", "json"}, commandParts[1:]...)
@@ -61,5 +91,4 @@ func (s *Suite) Run() {
 
 		assert.EqualValues(s.T, expected, actual, errMsg)
 	}
-
 }

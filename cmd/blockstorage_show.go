@@ -20,6 +20,7 @@ type blockStorageShowOutput struct {
 	Instance              *v3.InstanceTarget              `json:"instance"`
 	Name                  string                          `json:"name"`
 	Size                  string                          `json:"size"`
+	Labels                map[string]string               `json:"labels"`
 	State                 v3.BlockStorageVolumeState      `json:"state"`
 }
 
@@ -82,6 +83,7 @@ func (c *blockStorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		State:                 volume.State,
 		Instance:              volume.Instance,
 		BlockStorageSnapshots: volume.BlockStorageSnapshots,
+		Labels:                volume.Labels,
 	}, nil)
 }
 

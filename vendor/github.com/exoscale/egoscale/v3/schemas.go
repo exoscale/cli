@@ -114,6 +114,8 @@ type BlockStorageSnapshot struct {
 	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10"`
 	// Snapshot state
 	State BlockStorageSnapshotState `json:"state,omitempty"`
+	// Original Volume size
+	VolumeSize int64 `json:"volume-size,omitempty" validate:"omitempty,gte=0"`
 }
 
 // Target block storage snapshot
