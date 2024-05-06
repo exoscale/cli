@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"errors"
-	"regexp"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -14,20 +14,30 @@ var sksNodepoolCmd = &cobra.Command{
 	Short:   "Manage SKS cluster Nodepools",
 	Aliases: []string{"np"},
 }
+var errExpectedFormatNodepoolTaint = errors.New("expected format KEY=VALUE:EFFECT or KEY=:EFFECT")
 
-// parseSKSNodepoolTaint parses a CLI-formatted Kubernetes Node taint
-// description formatted as KEY=VALUE:EFFECT, and returns discrete values
-// for the taint key as well as the value/effect as egoscale.SKSNodepoolTaint,
+// parseSKSNodepoolTaint parses a CLI-formatted Kubernetes Node taint.
+// According to:
+// https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#taint
+// We will support only: KEY=VALUE:EFFECT or KEY=:EFFECT for the moment.
 // or an error if the input value parsing failed.
 func parseSKSNodepoolTaint(v string) (string, *egoscale.SKSNodepoolTaint, error) {
-	res := regexp.MustCompile(`(\w+)=(\w+):(\w+)`).FindStringSubmatch(v)
-	if len(res) != 4 {
-		return "", nil, errors.New("expected format KEY=VALUE:EFFECT")
+	kv := strings.Split(v, "=")
+	if len(kv) != 2 {
+		return "", nil, errExpectedFormatNodepoolTaint
 	}
-	taintKey, taintValue, taintEffect := res[1], res[2], res[3]
 
-	if taintKey == "" || taintValue == "" || taintEffect == "" {
-		return "", nil, errors.New("expected format KEY=VALUE:EFFECT")
+	valueEffect := strings.Split(kv[1], ":")
+	if len(valueEffect) != 2 {
+		return "", nil, errExpectedFormatNodepoolTaint
+	}
+
+	taintKey := kv[0]
+	taintValue := valueEffect[0]
+	taintEffect := valueEffect[1]
+
+	if taintKey == "" || taintEffect == "" {
+		return "", nil, errExpectedFormatNodepoolTaint
 	}
 
 	return taintKey, &egoscale.SKSNodepoolTaint{Effect: taintEffect, Value: taintValue}, nil

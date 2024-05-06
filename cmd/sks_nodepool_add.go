@@ -43,7 +43,7 @@ type sksNodepoolAddCmd struct {
 	SecurityGroups       []string `cli-flag:"security-group" cli-usage:"Nodepool Security Group NAME|ID (can be specified multiple times)"`
 	Size                 int64    `cli-usage:"Nodepool size"`
 	StorageLvm           bool     `cli-usage:"Create nodes with non-standard partitioning for persistent storage"`
-	Taints               []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT, can be specified multiple times)"`
+	Taints               []string `cli-flag:"taint" cli-usage:"Kubernetes taint to apply to Nodepool Nodes (format: KEY=VALUE:EFFECT or KEY=:EFFECT, can be specified multiple times)"`
 	Zone                 string   `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
