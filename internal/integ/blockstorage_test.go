@@ -13,16 +13,32 @@ type blockStorageShowOutput struct {
 	State string `json:"state"`
 }
 
-func TestBlockStorageCreateDelete(t *testing.T) {
+func TestBlockStorage(t *testing.T) {
 	s := test.Suite{
 		Zone: "ch-gva-2",
-		Cases: []test.Case{
+		Steps: []test.Step{
 			{
+				Description: "create volume",
 				Command: "exo compute block-storage create my-test-volume" +
+					" --size 11",
+			},
+			{
+				Description: "check volume",
+				Command:     "exo compute block-storage show my-test-volume",
+				Expected: blockStorageShowOutput{
+					Name:  "my-test-volume",
+					Size:  "11 GiB",
+					State: "detached",
+				},
+			},
+			{
+				Description: "resize volume",
+				Command: "exo compute block-storage update my-test-volume" +
 					" --size 12",
 			},
 			{
-				Command: "exo compute block-storage show my-test-volume",
+				Description: "check volume",
+				Command:     "exo compute block-storage show my-test-volume",
 				Expected: blockStorageShowOutput{
 					Name:  "my-test-volume",
 					Size:  "12 GiB",
@@ -30,6 +46,7 @@ func TestBlockStorageCreateDelete(t *testing.T) {
 				},
 			},
 			{
+				Description: "clean up volume",
 				Command: "exo compute block-storage delete my-test-volume" +
 					" --force",
 			},
