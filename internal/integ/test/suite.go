@@ -11,28 +11,34 @@ import (
 )
 
 type Suite struct {
+	Zone  string
 	Cases []Case
 	T     *testing.T
 }
 
 func (s *Suite) Run() {
-	for _, tc := range s.Cases {
-		commandParts := strings.Split(tc.Command, " ")
-		cmd := exec.Command(Binary, commandParts[1:]...)
+	for _, testCase := range s.Cases {
+		commandParts := strings.Split(testCase.Command, " ")
+		commandParts = append([]string{"-z", s.Zone, "-O", "json"}, commandParts[1:]...)
+		cmd := exec.Command(Binary, commandParts...)
 		output, err := cmd.CombinedOutput()
-		if tc.ExpectedError != nil && err != nil {
-			assert.Equal(s.T, tc.ExpectedError, err)
+		if testCase.ExpectedError != nil && err != nil {
+			assert.Equal(s.T, testCase.ExpectedError, err)
 		} else if err != nil {
 			assert.NoError(s.T, err, "unexpected error: "+string(output))
 		}
 
-		expectedType := reflect.TypeOf(tc.Expected)
+		if testCase.Expected == nil {
+			continue
+		}
+
+		expectedType := reflect.TypeOf(testCase.Expected)
 		actualValue := reflect.New(expectedType)
 		actual := actualValue.Interface()
 		err = json.Unmarshal(output, actual)
 		assert.NoError(s.T, err)
 
-		expectedValue := reflect.ValueOf(tc.Expected)
+		expectedValue := reflect.ValueOf(testCase.Expected)
 		expectedPointer := reflect.New(expectedType)
 		expectedPointer.Elem().Set(expectedValue)
 		expected := expectedPointer.Interface()
