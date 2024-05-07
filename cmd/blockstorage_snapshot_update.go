@@ -18,7 +18,7 @@ type blockStorageSnapshotUpdateCmd struct {
 	_ bool `cli-cmd:"update"`
 
 	Name   string            `cli-arg:"#" cli-usage:"NAME|ID"`
-	Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume snapshot label (format: key=value)"`
+	Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume snapshot label (format: key=value), clearing the labels is possible by passing [=]"`
 	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage volume snapshot zone"`
 	Rename string            `cli-usage:"rename block storage volume snapshot"`
 }
