@@ -155,8 +155,28 @@ func TestBlockStorage(t *testing.T) {
 					},
 				},
 			},
-			// TODO clear volume labels
-			// TODO clear snapshot labels
+			{
+				Description: "clear snapshot labels",
+				Command: "exo compute block-storage snapshot update {{.SnapshotName}}" +
+					" --label=[=]",
+				Expected: blockStorageSnapshotShowOutput{
+					Name:   params.SnapshotName,
+					Size:   "0 GiB",
+					State:  "created",
+					Labels: map[string]string{},
+				},
+			},
+			{
+				Description: "clear volume labels",
+				Command: "exo compute block-storage update {{.NewVolumeName}}" +
+					" --label=[=]",
+				Expected: blockStorageShowOutput{
+					Name:   params.NewVolumeName,
+					Size:   "12 GiB",
+					State:  "detached",
+					Labels: map[string]string{},
+				},
+			},
 			{
 				Description: "clean up snapshot",
 				Command: "exo compute block-storage snapshot delete {{.SnapshotName}}" +
