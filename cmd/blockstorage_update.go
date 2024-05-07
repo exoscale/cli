@@ -39,7 +39,7 @@ func (c *blockStorageUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageUpdateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -77,13 +77,13 @@ func (c *blockStorageUpdateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	var updated bool
 	updateReq := v3.UpdateBlockStorageVolumeRequest{}
-	if c.Labels != nil {
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
 		updateReq.Labels = c.Labels
 
 		updated = true
 	}
 
-	if c.Rename != "" {
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Rename)) {
 		updateReq.Name = &c.Rename
 
 		updated = true
@@ -102,9 +102,13 @@ func (c *blockStorageUpdateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if (resized || updated) && !globalstate.Quiet {
+		name := c.Name
+		if c.Rename != "" {
+			name = c.Rename
+		}
 		return (&blockStorageShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Name:               c.Name,
+			Name:               name,
 		}).cmdRun(nil, nil)
 	}
 

@@ -16,13 +16,24 @@ type blockStorageShowOutput struct {
 	State  string            `json:"state"`
 }
 
+type blockStorageSnapshotShowOutput struct {
+	Name   string            `json:"name"`
+	Size   string            `json:"size"`
+	State  string            `json:"state"`
+	Labels map[string]string `json:"labels"`
+}
+
 func TestBlockStorage(t *testing.T) {
 	params := struct {
-		VolumeName    string
-		NewVolumeName string
+		VolumeName      string
+		NewVolumeName   string
+		SnapshotName    string
+		NewSnapshotName string
 	}{
-		VolumeName:    fmt.Sprintf("test-vol-name-%d", rand.Int()),
-		NewVolumeName: fmt.Sprintf("test-vol-name-%d", rand.Int()),
+		VolumeName:      fmt.Sprintf("test-vol-name-%d", rand.Int()),
+		NewVolumeName:   fmt.Sprintf("test-vol-name-%d-renamed", rand.Int()),
+		SnapshotName:    fmt.Sprintf("test-snap-name-%d", rand.Int()),
+		NewSnapshotName: fmt.Sprintf("test-snap-name-%d-renamed", rand.Int()),
 	}
 
 	s := test.Suite{
@@ -83,6 +94,73 @@ func TestBlockStorage(t *testing.T) {
 						"foo3": "bar3",
 					},
 				},
+			},
+			{
+				Description: "create snapshot",
+				Command: "exo compute block-storage snapshot create {{.NewVolumeName}}" +
+					" --name {{.SnapshotName}}" +
+					" --label ping=pong,key=val",
+			},
+			{
+				Description: "check snapshot",
+				Command:     "exo compute block-storage snapshot show {{.SnapshotName}}",
+				Expected: blockStorageSnapshotShowOutput{
+					Name:  params.SnapshotName,
+					Size:  "0 GiB",
+					State: "created",
+					Labels: map[string]string{
+						"ping": "pong",
+						"key":  "val",
+					},
+				},
+			},
+			{
+				Description: "update snapshot name",
+				Command: "exo compute block-storage snapshot update {{.SnapshotName}}" +
+					" --rename {{.NewSnapshotName}}",
+				Expected: blockStorageSnapshotShowOutput{
+					Name:  params.NewSnapshotName,
+					Size:  "0 GiB",
+					State: "created",
+					Labels: map[string]string{
+						"ping": "pong",
+						"key":  "val",
+					},
+				},
+			},
+			{
+				Description: "update snapshot labels",
+				Command: "exo compute block-storage snapshot update {{.NewSnapshotName}}" +
+					" --label new=label",
+				Expected: blockStorageSnapshotShowOutput{
+					Name:  params.NewSnapshotName,
+					Size:  "0 GiB",
+					State: "created",
+					Labels: map[string]string{
+						"new": "label",
+					},
+				},
+			},
+			{
+				Description: "update snapshot labels and name",
+				Command: "exo compute block-storage snapshot update {{.NewSnapshotName}}" +
+					" --label another=change" +
+					" --rename {{.SnapshotName}}",
+				Expected: blockStorageSnapshotShowOutput{
+					Name:  params.SnapshotName,
+					Size:  "0 GiB",
+					State: "created",
+					Labels: map[string]string{
+						"another": "change",
+					},
+				},
+			},
+			// TODO clear volume labels
+			// TODO clear snapshot labels
+			{
+				Description: "clean up snapshot",
+				Command: "exo compute block-storage snapshot delete {{.SnapshotName}}" +
+					" --force",
 			},
 			{
 				Description: "clean up volume",

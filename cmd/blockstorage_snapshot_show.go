@@ -19,6 +19,7 @@ type blockStorageSnapshotShowOutput struct {
 	Name      string                       `json:"name"`
 	Size      string                       `json:"size"`
 	State     v3.BlockStorageSnapshotState `json:"state"`
+	Labels    map[string]string            `json:"labels"`
 }
 
 func (o *blockStorageSnapshotShowOutput) Type() string { return "Block Storage Volume Snapshot" }
@@ -74,6 +75,7 @@ func (c *blockStorageSnapshotShowCmd) cmdRun(cmd *cobra.Command, _ []string) err
 		CreatedAT: snapshot.CreatedAT,
 		State:     snapshot.State,
 		Volume:    snapshot.BlockStorageVolume,
+		Labels:    snapshot.Labels,
 	}, nil)
 }
 
