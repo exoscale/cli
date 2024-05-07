@@ -47,7 +47,7 @@ func TestBlockStorage(t *testing.T) {
 					" --label foo1=bar1,foo2=bar2",
 			},
 			{
-				Description: "check volume",
+				Description: "check created volume",
 				Command:     "exo compute block-storage show {{.VolumeName}}",
 				Expected: blockStorageShowOutput{
 					Name:  params.VolumeName,
@@ -66,7 +66,7 @@ func TestBlockStorage(t *testing.T) {
 					" --rename {{.NewVolumeName}}",
 			},
 			{
-				Description: "check volume",
+				Description: "check resized volume",
 				Command:     "exo compute block-storage show {{.NewVolumeName}}",
 				Expected: blockStorageShowOutput{
 					Name:  params.NewVolumeName,
@@ -82,10 +82,6 @@ func TestBlockStorage(t *testing.T) {
 				Description: "update volume labels",
 				Command: "exo compute block-storage update {{.NewVolumeName}}" +
 					" --label foo3=bar3",
-			},
-			{
-				Description: "check volume",
-				Command:     "exo compute block-storage show {{.NewVolumeName}}",
 				Expected: blockStorageShowOutput{
 					Name:  params.NewVolumeName,
 					Size:  "12 GiB",
@@ -102,7 +98,7 @@ func TestBlockStorage(t *testing.T) {
 					" --label ping=pong,key=val",
 			},
 			{
-				Description: "check snapshot",
+				Description: "check created snapshot",
 				Command:     "exo compute block-storage snapshot show {{.SnapshotName}}",
 				Expected: blockStorageSnapshotShowOutput{
 					Name:  params.SnapshotName,
