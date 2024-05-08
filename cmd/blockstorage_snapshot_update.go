@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -82,8 +81,6 @@ func (c *blockStorageSnapshotUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) e
 		if err != nil {
 			return err
 		}
-
-		time.Sleep(1 * time.Second)
 	}
 
 	if updated && !globalstate.Quiet {
