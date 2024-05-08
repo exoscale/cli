@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- blockstorage: implement updating volume and snapshot labels and names #601 
+
 ## 1.77.2
 
 ### Improvements

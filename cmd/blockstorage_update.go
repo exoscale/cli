@@ -16,11 +16,11 @@ type blockStorageUpdateCmd struct {
 
 	_ bool `cli-cmd:"update"`
 
-	Name string `cli-arg:"#" cli-usage:"NAME|ID"`
-	Size int64  `cli-usage:"block storage volume size"`
-	// TODO(pej): Re-enable it when API is up to date on this call.
-	// Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value)"`
-	Zone v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
+	Name   string            `cli-arg:"#" cli-usage:"NAME|ID"`
+	Size   int64             `cli-usage:"block storage volume size"`
+	Labels map[string]string `cli-flag:"label" cli-usage:"block storage volume label (format: key=value), clearing the labels is possible by passing [=]"`
+	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage volume zone"`
+	Rename string            `cli-usage:"rename block storage volume"`
 }
 
 func (c *blockStorageUpdateCmd) cmdAliases() []string { return []string{"up"} }
@@ -39,7 +39,7 @@ func (c *blockStorageUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageUpdateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
@@ -56,13 +56,10 @@ func (c *blockStorageUpdateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if c.Size == 0 {
-		return nil
-	}
+	var resized bool
 
-	var updated bool
-	decorateAsyncOperation(fmt.Sprintf("Updating block storage volume %q...", c.Name), func() {
-		if c.Size != 0 {
+	if c.Size > 0 {
+		decorateAsyncOperation(fmt.Sprintf("Updating block storage volume %q...", c.Name), func() {
 			_, err = client.ResizeBlockStorageVolume(ctx, volume.ID,
 				v3.ResizeBlockStorageVolumeRequest{
 					Size: c.Size,
@@ -71,17 +68,47 @@ func (c *blockStorageUpdateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			if err != nil {
 				return
 			}
-			updated = true
+			resized = true
+		})
+		if err != nil {
+			return err
 		}
-	})
-	if err != nil {
-		return err
 	}
 
-	if updated && !globalstate.Quiet {
+	var updated bool
+	updateReq := v3.UpdateBlockStorageVolumeRequest{}
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+		updateReq.Labels = convertIfSpecialEmptyMap(c.Labels)
+
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Rename)) {
+		updateReq.Name = &c.Rename
+
+		updated = true
+	}
+
+	if updated {
+		op, err := client.UpdateBlockStorageVolume(ctx, volume.ID, updateReq)
+		if err != nil {
+			return err
+		}
+
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return err
+		}
+	}
+
+	if (resized || updated) && !globalstate.Quiet {
+		name := c.Name
+		if c.Rename != "" {
+			name = c.Rename
+		}
 		return (&blockStorageShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Name:               c.Name,
+			Name:               name,
 		}).cmdRun(nil, nil)
 	}
 
