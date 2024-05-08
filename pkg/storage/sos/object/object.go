@@ -30,7 +30,7 @@ type ObjectInterface interface {
 type ObjectVersionInterface interface {
 	ObjectInterface
 	GetIsLatest() bool
-	GetVersionId() *string
+	GetVersionID() *string
 	SetVersionNumber(uint64)
 	GetVersionNumber() uint64
 }
@@ -63,7 +63,7 @@ func (o *ObjectVersion) GetIsLatest() bool {
 	return o.IsLatest
 }
 
-func (o *ObjectVersion) GetVersionId() *string {
+func (o *ObjectVersion) GetVersionID() *string {
 	return o.VersionId
 }
 
@@ -82,7 +82,7 @@ func (o *Object) GetListObjectsItemOutput() *ListObjectsItemOutput {
 func (o *ObjectVersion) GetListObjectsItemOutput() *ListObjectsItemOutput {
 	out := getListObjectsItemOutput(o)
 
-	out.VersionId = o.GetVersionId()
+	out.VersionID = o.GetVersionID()
 	out.VersionNumber = &o.VersionNumber
 
 	return out

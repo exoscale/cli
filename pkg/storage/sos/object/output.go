@@ -29,8 +29,8 @@ func (o *ListObjectsOutput) ToTable() {
 			_, _ = fmt.Fprintf(table, " \tDIR \t%s\n", f.Path)
 		} else {
 			version := ""
-			if f.VersionId != nil {
-				version += "\t" + *f.VersionId + "\tv" + strconv.FormatUint(*f.VersionNumber, 10)
+			if f.VersionID != nil {
+				version += "\t" + *f.VersionID + "\tv" + strconv.FormatUint(*f.VersionNumber, 10)
 			}
 			_, _ = fmt.Fprintf(table, "%s\t%6s \t%s%s\n", f.LastModified, humanize.IBytes(uint64(f.Size)), f.Path, version)
 		}
@@ -42,6 +42,6 @@ type ListObjectsItemOutput struct {
 	Size          int64   `json:"size"`
 	LastModified  string  `json:"last_modified,omitempty"`
 	Dir           bool    `json:"dir"`
-	VersionId     *string `json:"version_id"`
+	VersionID     *string `json:"version_id"`
 	VersionNumber *uint64 `json:"version_number"`
 }

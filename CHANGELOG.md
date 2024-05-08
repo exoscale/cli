@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+- SKS: Fix nodepool taints format parsing #600
+
 ## 1.78.0
 
 ### Features

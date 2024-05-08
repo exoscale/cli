@@ -107,7 +107,7 @@ func doesVersionMatch(ovi object.ObjectVersionInterface, matchVersions []string)
 			}
 		}
 
-		if *ovi.GetVersionId() == version {
+		if *ovi.GetVersionID() == version {
 			return true
 		}
 	}

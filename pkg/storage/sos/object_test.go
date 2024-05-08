@@ -25,7 +25,7 @@ func TestShowObject(t *testing.T) {
 	tests := []struct {
 		name           string
 		getObjectFn    func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
-		getObjectAclFn func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) //nolint:revive
+		getObjectACLFn func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) //nolint:revive
 		expectErr      bool
 	}{
 		{
@@ -36,7 +36,7 @@ func TestShowObject(t *testing.T) {
 					LastModified:  &now,
 				}, nil
 			},
-			getObjectAclFn: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+			getObjectACLFn: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
 				return &s3.GetObjectAclOutput{}, nil
 			},
 			expectErr: false,
@@ -46,7 +46,7 @@ func TestShowObject(t *testing.T) {
 			getObjectFn: func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
 				return nil, errors.New("failed to get object")
 			},
-			getObjectAclFn: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+			getObjectACLFn: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
 				return &s3.GetObjectAclOutput{}, nil
 			},
 			expectErr: true,
@@ -59,7 +59,7 @@ func TestShowObject(t *testing.T) {
 					LastModified:  &now,
 				}, nil
 			},
-			getObjectAclFn: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
+			getObjectACLFn: func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) {
 				return nil, errors.New("failed to get object ACL")
 			},
 			expectErr: true,
@@ -70,7 +70,7 @@ func TestShowObject(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockS3API := &MockS3API{
 				mockGetObject:    tt.getObjectFn,
-				mockGetObjectAcl: tt.getObjectAclFn,
+				mockGetObjectAcl: tt.getObjectACLFn,
 			}
 
 			client := &sos.Client{

@@ -65,7 +65,7 @@ func (c *Client) ListObjectsFunc(bucket, prefix string, recursive, stream bool) 
 
 func (c *Client) ListVersionedObjectsFunc(bucket, prefix string, recursive, stream bool) listFunc[object.ObjectVersionInterface] {
 	var keyMarker *string
-	var versionIdMarker *string
+	var versionIDMarker *string
 
 	deduplicate := GetCommonPrefixDeduplicator(stream)
 
@@ -74,7 +74,7 @@ func (c *Client) ListVersionedObjectsFunc(bucket, prefix string, recursive, stre
 			Bucket:          aws.String(bucket),
 			Prefix:          aws.String(prefix),
 			KeyMarker:       keyMarker,
-			VersionIdMarker: versionIdMarker,
+			VersionIdMarker: versionIDMarker,
 		}
 
 		if !recursive {
@@ -87,7 +87,7 @@ func (c *Client) ListVersionedObjectsFunc(bucket, prefix string, recursive, stre
 		}
 
 		keyMarker = res.NextKeyMarker
-		versionIdMarker = res.NextVersionIdMarker
+		versionIDMarker = res.NextVersionIdMarker
 
 		var objects []object.ObjectVersionInterface
 		for i := range res.Versions {
