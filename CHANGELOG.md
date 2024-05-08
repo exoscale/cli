@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.78.1
 
 ### Bug Fixes
 - SKS: Fix nodepool taints format parsing #600
@@ -8,13 +8,11 @@
 ## 1.78.0
 
 ### Features
-
 - blockstorage: implement updating volume and snapshot labels and names #601 
 
 ## 1.77.2
 
 ### Improvements
-
 - Block Storage: Show all quotas #591
 - config: remind user that no default account was set #593
 
