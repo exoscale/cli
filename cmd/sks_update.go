@@ -77,7 +77,7 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		updateReq.Description = c.Description
+		updateReq.Description = &c.Description
 		updated = true
 	}
 

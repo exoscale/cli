@@ -5,6 +5,12 @@
 ### Bug Fixes
 - SKS: Fix nodepool taints format parsing #600
 
+## 1.78.0
+
+### Features
+
+- blockstorage: implement updating volume and snapshot labels and names #601 
+
 ## 1.77.2
 
 ### Improvements
