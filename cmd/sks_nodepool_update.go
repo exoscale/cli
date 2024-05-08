@@ -127,14 +127,19 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
-		labels := make(map[string]string)
+		if nodepool.Labels == nil {
+			nodepool.Labels = &map[string]string{}
+		}
 		if len(c.Labels) > 0 {
-			labels, err = utils.SliceToMap(c.Labels)
+			labels, err := utils.SliceToMap(c.Labels)
 			if err != nil {
 				return fmt.Errorf("label: %w", err)
 			}
+			for k, v := range labels {
+				(*nodepool.Labels)[k] = v
+			}
 		}
-		nodepool.Labels = &labels
+
 		updated = true
 	}
 
@@ -170,15 +175,17 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Taints)) {
-		taints := make(map[string]*egoscale.SKSNodepoolTaint)
+		if nodepool.Taints == nil {
+			nodepool.Taints = &map[string]*egoscale.SKSNodepoolTaint{}
+		}
 		for _, t := range c.Taints {
 			key, taint, err := parseSKSNodepoolTaint(t)
 			if err != nil {
 				return fmt.Errorf("invalid taint value %q: %w", t, err)
 			}
-			taints[key] = taint
+			(*nodepool.Taints)[key] = taint
 		}
-		nodepool.Taints = &taints
+
 		updated = true
 	}
 
