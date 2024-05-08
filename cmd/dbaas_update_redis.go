@@ -84,7 +84,7 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 			Port:     c.RedisMigrationPort,
 			Password: utils.NonEmptyStringPtr(c.RedisMigrationPassword),
 			Username: utils.NonEmptyStringPtr(c.RedisMigrationUsername),
-			Dbname:   utils.NonEmptyStringPtr(c.RedisMigrationDbName),
+			Dbname:   utils.NonEmptyStringPtr(c.RedisMigrationDBName),
 		}
 		if c.RedisMigrationSSL {
 			databaseService.Migration.Ssl = &c.RedisMigrationSSL

@@ -125,7 +125,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 			Port:     c.PGMigrationPort,
 			Password: utils.NonEmptyStringPtr(c.PGMigrationPassword),
 			Username: utils.NonEmptyStringPtr(c.PGMigrationUsername),
-			Dbname:   utils.NonEmptyStringPtr(c.PGMigrationDbName),
+			Dbname:   utils.NonEmptyStringPtr(c.PGMigrationDBName),
 		}
 		if c.PGMigrationSSL {
 			databaseService.Migration.Ssl = &c.PGMigrationSSL

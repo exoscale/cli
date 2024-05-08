@@ -59,8 +59,8 @@ func (c *instancePoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	for _, nlb := range nlbs {
 		for _, svc := range nlb.Services {
 			if svc.InstancePoolID == instancePool.ID {
-				return fmt.Errorf(
-					"Instance Pool %q is still referenced by NLB service %s/%s", // nolint:golint
+				return fmt.Errorf( // nolint:stylecheck
+					"Instance Pool %q is still referenced by NLB service %s/%s",
 					*instancePool.Name,
 					*nlb.Name,
 					*svc.Name,

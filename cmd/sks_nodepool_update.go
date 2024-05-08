@@ -77,7 +77,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 		}
 	}
 	if nodepool == nil {
-		return errors.New("Nodepool not found") // nolint:golint
+		return errors.New("Nodepool not found") // nolint:stylecheck
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AntiAffinityGroups)) {

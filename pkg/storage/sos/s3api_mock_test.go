@@ -8,7 +8,7 @@ import (
 
 type MockS3API struct {
 	mockGetObject                  func(ctx context.Context, input *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
-	mockGetObjectAcl               func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) //nolint:revive
+	mockGetObjectAcl               func(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) //nolint:stylecheck
 	mockDeleteObjects              func(ctx context.Context, params *s3.DeleteObjectsInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error)
 	mockListObjectsV2              func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error)
 	mockListObjectVersions         func(ctx context.Context, params *s3.ListObjectVersionsInput, optFns ...func(*s3.Options)) (*s3.ListObjectVersionsOutput, error)
@@ -16,10 +16,10 @@ type MockS3API struct {
 	mockDeleteBucketCors           func(ctx context.Context, params *s3.DeleteBucketCorsInput, optFns ...func(*s3.Options)) (*s3.DeleteBucketCorsOutput, error)
 	mockGetBucketCors              func(ctx context.Context, params *s3.GetBucketCorsInput, optFns ...func(*s3.Options)) (*s3.GetBucketCorsOutput, error)
 	mockPutBucketCors              func(ctx context.Context, params *s3.PutBucketCorsInput, optFns ...func(*s3.Options)) (*s3.PutBucketCorsOutput, error)
-	mockPutBucketAcl               func(ctx context.Context, params *s3.PutBucketAclInput, optFns ...func(*s3.Options)) (*s3.PutBucketAclOutput, error) //nolint:revive
-	mockPutObjectAcl               func(ctx context.Context, params *s3.PutObjectAclInput, optFns ...func(*s3.Options)) (*s3.PutObjectAclOutput, error) //nolint:revive
+	mockPutBucketAcl               func(ctx context.Context, params *s3.PutBucketAclInput, optFns ...func(*s3.Options)) (*s3.PutBucketAclOutput, error) //nolint:stylecheck
+	mockPutObjectAcl               func(ctx context.Context, params *s3.PutObjectAclInput, optFns ...func(*s3.Options)) (*s3.PutObjectAclOutput, error) //nolint:stylecheck
 	mockCreateBucket               func(ctx context.Context, params *s3.CreateBucketInput, optFns ...func(*s3.Options)) (*s3.CreateBucketOutput, error)
-	mockGetBucketAcl               func(ctx context.Context, params *s3.GetBucketAclInput, optFns ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) //nolint:revive
+	mockGetBucketAcl               func(ctx context.Context, params *s3.GetBucketAclInput, optFns ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) //nolint:stylecheck
 	mockGetBucketOwnershipControls func(ctx context.Context, params *s3.GetBucketOwnershipControlsInput, optFns ...func(*s3.Options)) (*s3.GetBucketOwnershipControlsOutput, error)
 	mockPutBucketOwnershipControls func(ctx context.Context, params *s3.PutBucketOwnershipControlsInput, optFns ...func(*s3.Options)) (*s3.PutBucketOwnershipControlsOutput, error)
 	mockGetBucketVersioning        func(ctx context.Context, params *s3.GetBucketVersioningInput, optFns ...func(*s3.Options)) (*s3.GetBucketVersioningOutput, error)
@@ -39,7 +39,7 @@ func (m *MockS3API) GetObject(ctx context.Context, input *s3.GetObjectInput, opt
 	return m.mockGetObject(ctx, input, optFns...)
 }
 
-func (m *MockS3API) GetObjectAcl(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) { //nolint:revive
+func (m *MockS3API) GetObjectAcl(ctx context.Context, input *s3.GetObjectAclInput, optFns ...func(*s3.Options)) (*s3.GetObjectAclOutput, error) { //nolint:stylecheck
 	return m.mockGetObjectAcl(ctx, input, optFns...)
 }
 
@@ -72,11 +72,11 @@ func (m *MockS3API) PutBucketCors(ctx context.Context, params *s3.PutBucketCorsI
 	return m.mockPutBucketCors(ctx, params, optFns...)
 }
 
-func (m *MockS3API) PutBucketAcl(ctx context.Context, params *s3.PutBucketAclInput, optFns ...func(*s3.Options)) (*s3.PutBucketAclOutput, error) { //nolint:revive
+func (m *MockS3API) PutBucketAcl(ctx context.Context, params *s3.PutBucketAclInput, optFns ...func(*s3.Options)) (*s3.PutBucketAclOutput, error) { //nolint:stylecheck
 	return m.mockPutBucketAcl(ctx, params, optFns...)
 }
 
-func (m *MockS3API) PutObjectAcl(ctx context.Context, params *s3.PutObjectAclInput, optFns ...func(*s3.Options)) (*s3.PutObjectAclOutput, error) { //nolint:revive
+func (m *MockS3API) PutObjectAcl(ctx context.Context, params *s3.PutObjectAclInput, optFns ...func(*s3.Options)) (*s3.PutObjectAclOutput, error) { //nolint:stylecheck
 	return m.mockPutObjectAcl(ctx, params, optFns...)
 }
 
@@ -84,7 +84,7 @@ func (m *MockS3API) CreateBucket(ctx context.Context, params *s3.CreateBucketInp
 	return m.mockCreateBucket(ctx, params, optFns...)
 }
 
-func (m *MockS3API) GetBucketAcl(ctx context.Context, params *s3.GetBucketAclInput, optFns ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) { //nolint:revive
+func (m *MockS3API) GetBucketAcl(ctx context.Context, params *s3.GetBucketAclInput, optFns ...func(*s3.Options)) (*s3.GetBucketAclOutput, error) { //nolint:stylecheck
 	return m.mockGetBucketAcl(ctx, params, optFns...)
 }
 

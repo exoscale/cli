@@ -65,7 +65,7 @@ func (c *sksNodepoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	return errors.New("Nodepool not found") // nolint:golint
+	return errors.New("Nodepool not found") // nolint:stylecheck
 }
 
 func init() {

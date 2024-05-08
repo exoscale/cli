@@ -54,7 +54,7 @@ func (c *instanceSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		snapshot, err = globalstate.EgoscaleClient.CreateInstanceSnapshot(ctx, c.Zone, instance)
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
-				err = fmt.Errorf("Request timeout reached. Snapshot creation is not canceled and might still be running, check the status with: exo c i snapshot list")
+				err = fmt.Errorf("Request timeout reached. Snapshot creation is not canceled and might still be running, check the status with: exo c i snapshot list") // nolint:stylecheck
 			}
 			return
 		}

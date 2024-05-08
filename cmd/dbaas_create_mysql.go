@@ -100,7 +100,7 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 			Port:     c.MysqlMigrationPort,
 			Password: utils.NonEmptyStringPtr(c.MysqlMigrationPassword),
 			Username: utils.NonEmptyStringPtr(c.MysqlMigrationUsername),
-			Dbname:   utils.NonEmptyStringPtr(c.MysqlMigrationDbName),
+			Dbname:   utils.NonEmptyStringPtr(c.MysqlMigrationDBName),
 		}
 		if c.MysqlMigrationSSL {
 			databaseService.Migration.Ssl = &c.MysqlMigrationSSL

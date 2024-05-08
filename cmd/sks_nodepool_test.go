@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	egoscale "github.com/exoscale/egoscale/v2"
+
 	"github.com/stretchr/testify/require"
 )
 

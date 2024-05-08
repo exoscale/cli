@@ -44,7 +44,7 @@ func (s StatusPalStatus) GetStatusByZone() ([][]string, error) {
 // - Parent services = Global and all the zones
 // - Child services = products available in a zone or globally
 type Service struct {
-	Id   *int    `json:"id,omitempty"`
+	ID   *int    `json:"id,omitempty"`
 	Name *string `json:"name,omitempty"`
 
 	// The type of the current incident:
@@ -72,7 +72,7 @@ func (s *Service) getIncidentType() string {
 
 // Active Maintenance or Incident
 type Event struct {
-	Id    *int    `json:"id,omitempty"`
+	ID    *int    `json:"id,omitempty"`
 	Title *string `json:"title,omitempty"`
 	// The time at which the incident/maintenance started(UTC).
 	StartsAt *string `json:"starts_at"`
@@ -97,7 +97,7 @@ func (e Events) GetActiveEvents(services Services) ([][]string, error) {
 			if services.IsParentService(impacted) {
 				continue
 			}
-			svcName, err := services.GetServiceNamebyId(impacted)
+			svcName, err := services.GetServiceNamebyID(impacted)
 			if err != nil {
 				return nil, err
 			}
@@ -127,7 +127,7 @@ type Services []Service
 // We have 2 levels of services, check if a service is a parent
 func (s Services) IsParentService(id int) bool {
 	for _, service := range s {
-		if service.Id != nil && *service.Id == id {
+		if service.ID != nil && *service.ID == id {
 			return true
 		}
 	}
@@ -136,17 +136,17 @@ func (s Services) IsParentService(id int) bool {
 }
 
 // Return the Zone and the impacted service = fullname (parent svc + child svc)
-func (s Services) GetServiceNamebyId(id int) (string, error) {
+func (s Services) GetServiceNamebyID(id int) (string, error) {
 	// For all zones / global services
 	for _, parentService := range s {
 		// id provided is a parent service, return the name
-		if *parentService.Id == id {
+		if *parentService.ID == id {
 			return *parentService.Name, nil
 		}
 		// Try to find the Service Id in the child services
 		for _, childService := range parentService.Children {
 			// In this case, we returen the Parent and the Child names
-			if *childService.Id == id {
+			if *childService.ID == id {
 				return *parentService.Name + " " + *childService.Name, nil
 			}
 		}

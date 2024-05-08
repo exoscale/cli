@@ -118,10 +118,10 @@ func TestStatusPageNoEvent(t *testing.T) {
 	assert.Equal(t, false, statusPageTest.Services.IsParentService(11))
 
 	// Check ServiceName contains Parent
-	name, err := statusPageTest.Services.GetServiceNamebyId(10)
+	name, err := statusPageTest.Services.GetServiceNamebyID(10)
 	assert.NoError(t, err)
 	assert.Equal(t, svc1Parent, name)
-	name, err = statusPageTest.Services.GetServiceNamebyId(11)
+	name, err = statusPageTest.Services.GetServiceNamebyID(11)
 	assert.NoError(t, err)
 	assert.Equal(t, svc1Parent+" "+svc1Child1, name)
 
@@ -145,7 +145,7 @@ func TestStatusPageEvents(t *testing.T) {
 	assert.Equal(t, 4, len(i[1]), "4 fields expected: Name, title, type and start time")
 	// Name = full service name and result is sorted by Name
 	// it should be svc3 first
-	name, _ := statusPageTest.Services.GetServiceNamebyId(31)
+	name, _ := statusPageTest.Services.GetServiceNamebyID(31)
 	assert.Equal(t, name, i[0][0], "Incidents should be sorted by name")
 	assert.Equal(t, "minor", i[0][2], "Incident Type minor")
 
