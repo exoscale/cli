@@ -219,7 +219,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	instances, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.EgoscaleClient, *securityGroup.ID, zone)
+	instances, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.EgoscaleClient, *securityGroup.ID)
 	if err != nil {
 		return fmt.Errorf("error retrieving instances in Security Group: %w", err)
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	exo "github.com/exoscale/egoscale/v2"
 )
 
@@ -120,7 +121,7 @@ func promptAccountInformation() (*account.Account, error) {
 	account.DefaultZone, err = chooseZone(client, nil)
 	if err != nil {
 		for {
-			defaultZone, err := chooseZone(globalstate.EgoscaleClient, allZones)
+			defaultZone, err := chooseZone(globalstate.EgoscaleClient, utils.AllZones)
 			if err != nil {
 				return nil, err
 			}

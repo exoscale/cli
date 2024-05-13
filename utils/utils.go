@@ -9,7 +9,26 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
+
+	exoapi "github.com/exoscale/egoscale/v2/api"
+
+	"github.com/exoscale/cli/pkg/account"
 	v2 "github.com/exoscale/egoscale/v2"
+	"github.com/exoscale/egoscale/v2/oapi"
+)
+
+var (
+	// utils.AllZones represents the list of known Exoscale zones, in case we need it without performing API lookup.
+	AllZones = []string{
+		string(oapi.ZoneNameAtVie1),
+		string(oapi.ZoneNameAtVie2),
+		string(oapi.ZoneNameBgSof1),
+		string(oapi.ZoneNameChDk2),
+		string(oapi.ZoneNameChGva2),
+		string(oapi.ZoneNameDeFra1),
+		string(oapi.ZoneNameDeMuc1),
+	}
 )
 
 // RandStringBytes Generate random string of n bytes
@@ -22,8 +41,20 @@ func RandStringBytes(n int) (string, error) {
 	return base64.StdEncoding.EncodeToString(b), nil
 }
 
-func GetInstancesInSecurityGroup(ctx context.Context, client *v2.Client, securityGroupID, zone string) ([]*v2.Instance, error) {
-	allInstances, err := client.ListInstances(ctx, zone)
+func GetInstancesInSecurityGroup(ctx context.Context, client *v2.Client, securityGroupID string) ([]*v2.Instance, error) {
+	allInstances := make([]*v2.Instance, 0)
+	err := ForEachZone(AllZones, func(zone string) error {
+		ctx := exoapi.WithEndpoint(ctx, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+
+		instances, err := client.ListInstances(ctx, zone)
+		if err != nil {
+			return err
+		}
+
+		allInstances = append(allInstances, instances...)
+
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -189,4 +220,19 @@ func VersionIsNewer(old, new string) bool {
 // VersionsAreEquivalent returns true if new and old versions both have same major and minor numbers
 func VersionsAreEquivalent(a, b string) bool {
 	return (VersionMajor(b) == VersionMajor(a) && VersionMinor(b) == VersionMinor(a))
+}
+
+// ForEachZone executes the function f for each specified zone, and return a multierror.Error containing all
+// errors that may have occurred during execution.
+func ForEachZone(zones []string, f func(zone string) error) error {
+	meg := new(multierror.Group)
+
+	for _, zone := range zones {
+		zone := zone
+		meg.Go(func() error {
+			return f(zone)
+		})
+	}
+
+	return meg.Wait().ErrorOrNil()
 }
