@@ -64,7 +64,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.Zone != "" {
 		zones = []string{c.Zone}
 	} else {
-		zones = allZones
+		zones = utils.AllZones
 	}
 
 	out := make(instanceListOutput, 0)
@@ -79,7 +79,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := forEachZone(zones, func(zone string) error {
+	err := utils.ForEachZone(zones, func(zone string) error {
 		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 		list, err := globalstate.EgoscaleClient.ListInstances(ctx, zone)
