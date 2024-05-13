@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+- security-group: show instances from all zones #605 
+
 ## 1.78.1
 
 ### Bug Fixes
