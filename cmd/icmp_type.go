@@ -8,6 +8,8 @@ import (
 
 //go:generate stringer -type=icmpType
 
+//lint:file-ignore U1000 unknown
+
 type icmpType uint8
 
 // nolint

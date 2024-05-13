@@ -81,7 +81,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 	if nodepool == nil {
-		return errors.New("Nodepool not found") // nolint:stylecheck
+		return errors.New("nodepool not found")
 	}
 
 	nodes := make([]string, len(c.Nodes))

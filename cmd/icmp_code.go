@@ -8,9 +8,10 @@ import (
 	"golang.org/x/text/language"
 )
 
+//lint:file-ignore U1000 unknown
+
 type icmpCode uint16
 
-// nolint
 const (
 	//destinationUnreachable
 	netUnreachable                                                 icmpCode = 0x0300

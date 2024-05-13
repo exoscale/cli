@@ -1,4 +1,4 @@
-GO_MK_REF := v1.0.1
+GO_MK_REF := philippsauter/sc-95507/public-tooling-switch-golanci-lint-staticcheck
 
 # make go.mk a dependency for all targets
 .EXTRA_PREREQS = go.mk

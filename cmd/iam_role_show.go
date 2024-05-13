@@ -57,7 +57,7 @@ func (c *iamRoleShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *iamRoleShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if c.Role == "" {
-		return errors.New("Role ID not provided") //nolint: stylecheck
+		return errors.New("role ID not provided")
 	}
 
 	zone := account.CurrentAccount.DefaultZone
