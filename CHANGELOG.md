@@ -5,6 +5,7 @@
 ### Improvements
 
 - go.mk: lint with staticcheck #606 
+- Update deprecated goreleaser directives #607
 
 ## 1.78.2
 
