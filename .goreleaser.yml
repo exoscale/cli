@@ -80,10 +80,10 @@ nfpms:
         dst: "/usr/share/zsh/vendor-completions/_exo"
 
 brews:
-  - tap:
+  - repository:
       owner: exoscale
       name: homebrew-tap
-    folder: Formula
+    directory: Formula
     homepage: "https://exoscale.github.io/cli/"
     description: Manage easily your Exoscale infrastructure from the command-line.
     install: |
@@ -112,7 +112,6 @@ source:
   enabled: true
   prefix_template: "{{ .ProjectName }}_{{ .Version }}/"
   name_template: "{{ .ProjectName }}_{{ .Version }}"
-  rlcp: true
   files:
     - go.mk/*
 
@@ -123,7 +122,7 @@ signs:
 
 scoops:
   - description: "Command-line tool for everything at Exoscale: compute, storage, dns."
-    folder: "bucket"
+    directory: "bucket"
     commit_author:
       name: "Exoscale Tooling"
       email: "tooling@exoscale.ch"
