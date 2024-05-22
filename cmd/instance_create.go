@@ -22,6 +22,7 @@ import (
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	egoscale3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceCreateCmd struct {
@@ -41,6 +42,7 @@ type instanceCreateCmd struct {
 	Labels             map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
 	PrivateInstance    bool              `cli-flag:"private-instance" cli-usage:"enable private instance to be created"`
+	Protection         bool              `cli-flag:"protection" cli-usage:"enable delete protection"`
 	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
 	Template           string            `cli-usage:"instance template NAME|ID"`
@@ -208,6 +210,21 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			if err = globalstate.EgoscaleClient.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, p); err != nil {
 				return
 			}
+		}
+
+		if c.Protection {
+			var value egoscale3.UUID
+			var op *egoscale3.Operation
+			value, err = egoscale3.ParseUUID(*instance.ID)
+			if err != nil {
+				return
+			}
+			op, err = globalstate.EgoscaleV3Client.AddInstanceProtection(ctx, value)
+			if err != nil {
+				return
+			}
+			op, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
+
 		}
 	})
 	if err != nil {
