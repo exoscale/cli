@@ -10,3 +10,4 @@ contrib
 *.xdelta3
 go.work
 .aptlydata
+.idea/
