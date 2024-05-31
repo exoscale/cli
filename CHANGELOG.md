@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- go.mk: lint with staticcheck #606 
+
 ## 1.78.2
 
 ### Bug Fixes
