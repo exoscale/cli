@@ -22,5 +22,3 @@ jobs:
           go-version: stable
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
-        with:
-          version: v1.58
