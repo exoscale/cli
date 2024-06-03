@@ -44,12 +44,10 @@ Supported output template annotations: %s`,
 				return errors.New("show expects one DNS domain by name or id")
 			}
 
-			name, err := cmd.Flags().GetString("name")
-			if err != nil {
-				return err
-			}
+			// don't merge this!!!
+			cmd.Flags().GetString("name")
 
-			return printOutput(showDNS(args[0], name, args[1:]))
+			return printOutput(showDNS(args[0], "name", args[1:]))
 		},
 	}
 
