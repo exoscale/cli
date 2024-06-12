@@ -1,0 +1,15 @@
+name: govulncheck
+
+on:
+  pull_request:
+
+jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    name: Run govulncheck
+    steps:
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+           go-version-input: 1.22
+           go-package: ./...  
