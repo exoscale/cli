@@ -21,8 +21,8 @@ type instanceShowOutput struct {
 	Name               string            `json:"name"`
 	CreationDate       string            `json:"creation_date"`
 	InstanceType       string            `json:"instance_type"`
-	Template           string            `json:"template_id"`
-	Zone               string            `json:"zoneid"`
+	Template           string            `json:"template"`
+	Zone               string            `json:"zone"`
 	AntiAffinityGroups []string          `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
 	DeployTarget       string            `json:"deploy_target"`
 	SecurityGroups     []string          `json:"security_groups"`
