@@ -71,10 +71,6 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 		db.OpensearchSettings = &settings
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchMaxIndexCount)) {
-		db.MaxIndexCount = &c.OpensearchMaxIndexCount
-	}
-
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
 		db.OpensearchDashboards.Enabled = &c.OpensearchDashboardEnabled
 	}
