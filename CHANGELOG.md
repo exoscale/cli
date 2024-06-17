@@ -7,6 +7,10 @@
 - go.mk: lint with staticcheck #606 
 - Update deprecated goreleaser directives #607
 
+### Bug Fixes
+
+- dbaas opensearch: remove top-level max-index-count flag #611
+
 ## 1.78.2
 
 ### Bug Fixes

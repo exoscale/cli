@@ -67,11 +67,6 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchMaxIndexCount)) {
-		db.MaxIndexCount = &c.OpensearchMaxIndexCount
-		updated = true
-	}
-
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
 		db.OpensearchDashboards.Enabled = &c.OpensearchDashboardEnabled
 		updated = true

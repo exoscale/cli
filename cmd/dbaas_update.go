@@ -48,7 +48,6 @@ type dbaasServiceUpdateCmd struct {
 	KafkaSettings               string   `cli-flag:"kafka-settings" cli-usage:"Kafka configuration settings (JSON format)" cli-hidden:""`
 
 	// "opensearch" type specific flags
-	OpensearchMaxIndexCount                          int64    `cli-flag:"opensearch-max-index-count" cli-usage:"Maximum number of indexes to keep before deleting the oldest one" cli-hidden:""`
 	OpensearchKeepIndexRefreshInterval               bool     `cli-flag:"opensearch-keep-index-refresh-interval" cli-usage:"index.refresh_interval is reset to default value for every index to be sure that indices are always visible to search. Set to true disable this." cli-hidden:""`
 	OpensearchIPFilter                               []string `cli-flag:"opensearch-ip-filter" cli-usage:"Allow incoming connections from CIDR address block" cli-hidden:""`
 	OpensearchIndexPatterns                          string   `cli-flag:"opensearch-index-patterns" cli-usage:"JSON Array of index patterns (https://openapi-v2.exoscale.com/#operation-get-dbaas-service-opensearch-200-index-patterns)" cli-hidden:""`

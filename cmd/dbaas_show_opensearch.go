@@ -71,7 +71,6 @@ type dbServiceOpensearchShowOutput struct {
 	IndexPatterns            []dbServiceOpensearchIndexPatternShowOutput `json:"index-patterns,omitempty"`
 	IndexTemplate            *dbServiceOpensearchIndexTemplateShowOutput `json:"index-template,omitempty"`
 	KeepIndexRefreshInterval bool                                        `json:"keep-index-refresh-interval,omitempty"`
-	MaxIndexCount            int64                                       `json:"max-index-count,omitempty"`
 	Dashboard                *dbServiceOpensearchDashboardShowOutput     `json:"opensearch-dashboards,omitempty"`
 	Users                    []dbServiceOpensearchUserShowOutput         `json:"users,omitempty"`
 }
@@ -113,7 +112,6 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 	t.Append([]string{"IndexTemplate", indexTemplate})
 
 	t.Append([]string{"KeepIndexRefreshInterval", fmt.Sprint(o.KeepIndexRefreshInterval)})
-	t.Append([]string{"MaxIndexCount", strconv.FormatInt(o.MaxIndexCount, 10)})
 
 	var dashboard string
 	if o.Dashboard != nil {
@@ -337,7 +335,6 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 			IndexPatterns:            indexPatterns,
 			IndexTemplate:            indexTemplate,
 			KeepIndexRefreshInterval: utils.DefaultBool(db.KeepIndexRefreshInterval, false),
-			MaxIndexCount:            utils.DefaultInt64(db.MaxIndexCount, 0),
 			Dashboard:                dashboard,
 			Users:                    users,
 		},
