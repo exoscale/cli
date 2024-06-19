@@ -10,6 +10,7 @@
 ### Bug Fixes
 
 - dbaas opensearch: remove top-level max-index-count flag #611
+- Fix instance/ipool key naming in json output #612
 
 ## 1.78.2
 

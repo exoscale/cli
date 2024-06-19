@@ -21,8 +21,8 @@ type instancePoolShowOutput struct {
 	Name               string            `json:"name"`
 	Description        string            `json:"description"`
 	InstanceType       string            `json:"instance_type"`
-	Template           string            `json:"template_id"`
-	Zone               string            `json:"zoneid"`
+	Template           string            `json:"template"`
+	Zone               string            `json:"zone"`
 	AntiAffinityGroups []string          `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
 	SecurityGroups     []string          `json:"security_groups"`
 	PrivateNetworks    []string          `json:"private_networks"`
