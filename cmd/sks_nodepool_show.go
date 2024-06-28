@@ -23,6 +23,7 @@ type sksNodepoolShowOutput struct {
 	InstancePoolID       string            `json:"instance_pool_id"`
 	InstancePrefix       string            `json:"instance_prefix"`
 	InstanceType         string            `json:"instance_type"`
+	InstanceFamily       string            `json:"instance_family"`
 	Template             string            `json:"template"`
 	DiskSize             int64             `json:"disk_size"`
 	AntiAffinityGroups   []string          `json:"anti_affinity_groups"`
@@ -184,6 +185,7 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("error retrieving service offering: %w", err)
 	}
 	out.InstanceType = *serviceOffering.Size
+	out.InstanceFamily = *serviceOffering.Family
 
 	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *nodepool.TemplateID)
 	if err != nil {
