@@ -179,11 +179,11 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	serviceOffering, err := globalstate.EgoscaleClient.GetInstanceType(ctx, c.Zone, *nodepool.InstanceTypeID)
+	instanceType, err := globalstate.EgoscaleClient.GetInstanceType(ctx, c.Zone, *nodepool.InstanceTypeID)
 	if err != nil {
 		return fmt.Errorf("error retrieving service offering: %w", err)
 	}
-	out.InstanceType = *serviceOffering.Size
+	out.InstanceType = fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size)
 
 	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *nodepool.TemplateID)
 	if err != nil {
