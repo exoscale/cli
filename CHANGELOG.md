@@ -7,6 +7,7 @@
 - go.mk: lint with staticcheck #606 
 - Update deprecated goreleaser directives #607
 - sks nodepool: show instance family #615 
+- Update exo x #616
 
 ### Bug Fixes
 
