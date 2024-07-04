@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"os"
 	"reflect"
 	"strings"
+	"text/template"
 
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
