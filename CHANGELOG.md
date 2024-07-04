@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+- output template: use text/template #617
+
 ## 1.78.3
 
 ### Improvements
