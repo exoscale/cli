@@ -19,6 +19,7 @@ import (
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbServiceOpensearchComponentsShowOutput struct {
@@ -147,7 +148,37 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context)
 	case c.ShowSettings != "":
 		return nil, opensearchShowSettings(c.ShowSettings, res.JSON200)
 	case c.ShowURI:
-		fmt.Println(utils.DefaultString(res.JSON200.Uri, ""))
+		// Read password from dedicated endpoint
+		client, err := switchClientZoneV3(
+			ctx,
+			globalstate.EgoscaleV3Client,
+			v3.ZoneName(c.Zone),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		uriParams := *res.JSON200.UriParams
+
+		creds, err := client.RevealDBAASOpensearchUserPassword(
+			ctx,
+			string(res.JSON200.Name),
+			uriParams["user"].(string),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Build URI
+		uri := fmt.Sprintf(
+			"https://%s:%s@%s:%s",
+			uriParams["user"],
+			creds.Password,
+			uriParams["host"],
+			uriParams["port"],
+		)
+
+		fmt.Println(uri)
 		return nil, nil
 	default:
 		return opensearchShowDatabase(res.JSON200, c.Zone)

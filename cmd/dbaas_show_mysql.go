@@ -17,6 +17,7 @@ import (
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbServiceMysqlComponentShowOutput struct {
@@ -147,7 +148,39 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (out
 		return nil, nil
 
 	case c.ShowURI:
-		fmt.Println(utils.DefaultString(databaseService.Uri, ""))
+		// Read password from dedicated endpoint
+		client, err := switchClientZoneV3(
+			ctx,
+			globalstate.EgoscaleV3Client,
+			v3.ZoneName(c.Zone),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		uriParams := *databaseService.UriParams
+
+		creds, err := client.RevealDBAASMysqlUserPassword(
+			ctx,
+			string(databaseService.Name),
+			uriParams["user"].(string),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Build URI
+		uri := fmt.Sprintf(
+			"mysql://%s:%s@%s:%s/%s?ssl-mode=%s",
+			uriParams["user"],
+			creds.Password,
+			uriParams["host"],
+			uriParams["port"],
+			uriParams["dbname"],
+			uriParams["ssl-mode"],
+		)
+
+		fmt.Println(uri)
 		return nil, nil
 	}
 
