@@ -1,16 +1,15 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceDeleteCmd struct {
@@ -18,7 +17,7 @@ type instanceDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	Instance string `cli-arg:"#" cli-usage:"NAME|ID"`
+	Instances []string `cli-arg:"#" cli-usage:"NAME|ID"`
 
 	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 	Zone  string `cli-short:"z" cli-usage:"instance zone"`
@@ -36,33 +35,64 @@ func (c *instanceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
-	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
-		return err
-	}
-
-	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete instance %q?", c.Instance)) {
-			return nil
-		}
-	}
-
-	decorateAsyncOperation(fmt.Sprintf("Deleting instance %q...", c.Instance), func() {
-		err = globalstate.EgoscaleClient.DeleteInstance(ctx, c.Zone, instance)
-	})
+	ctx := gContext
+	client, err := switchClientZoneV3(
+		ctx,
+		globalstate.EgoscaleV3Client,
+		v3.ZoneName(c.Zone),
+	)
 	if err != nil {
 		return err
 	}
 
-	instanceDir := path.Join(globalstate.ConfigFolder, "instances", *instance.ID)
-	if _, err := os.Stat(instanceDir); !os.IsNotExist(err) {
-		if err := os.RemoveAll(instanceDir); err != nil {
-			return fmt.Errorf("error deleting instance directory: %w", err)
+	instances, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+
+	instanceToDelete := []v3.UUID{}
+	for _, i := range c.Instances {
+		instance, err := instances.FindListInstancesResponseInstances(i)
+		if err != nil {
+			if !c.Force {
+				return err
+			}
+
+			continue
+		}
+
+		if !c.Force {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete instance %q?", i)) {
+				return nil
+			}
+		}
+
+		instanceToDelete = append(instanceToDelete, instance.ID)
+	}
+
+	var fns []func() error
+	for _, i := range instanceToDelete {
+		fns = append(fns, func() error {
+			op, err := client.DeleteInstance(ctx, i)
+			if err != nil {
+				return err
+			}
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+			return err
+		})
+	}
+
+	err = decorateAsyncOperations(fmt.Sprintf("Deleting instance %q...", strings.Join(c.Instances, ", ")), fns...)
+	if err != nil {
+		return err
+	}
+
+	for _, i := range instanceToDelete {
+		instanceDir := path.Join(globalstate.ConfigFolder, "instances", i.String())
+		if _, err := os.Stat(instanceDir); !os.IsNotExist(err) {
+			if err := os.RemoveAll(instanceDir); err != nil {
+				return fmt.Errorf("error deleting instance directory: %w", err)
+			}
 		}
 	}
 
