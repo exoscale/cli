@@ -19,6 +19,7 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	exossh "github.com/exoscale/cli/pkg/ssh"
 	"github.com/exoscale/cli/pkg/userdata"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -131,11 +132,16 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 		return fmt.Errorf("error listing instance type: %w", err)
 	}
 
-	instanceType, err := instanceTypes.FindInstanceType(c.InstanceType)
-	if err != nil {
-		return fmt.Errorf("error retrieving instance type: %w", err)
+	// c.InstanceType is never empty
+	instanceType := utils.ParseInstanceType(c.InstanceType)
+	for i, it := range instanceTypes.InstanceTypes {
+		if it.Family == instanceType.Family && it.Size == instanceType.Size {
+			instanceReq.InstanceType = &instanceTypes.InstanceTypes[i]
+		}
 	}
-	instanceReq.InstanceType = &instanceType
+	if instanceReq.InstanceType == nil {
+		return fmt.Errorf("error retrieving instance type %s: not found", c.InstanceType)
+	}
 
 	privateNetworks := make([]v3.PrivateNetwork, len(c.PrivateNetworks))
 	if l := len(c.PrivateNetworks); l > 0 {
@@ -280,7 +286,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			return fmt.Errorf("error writing SSH private key file: %w", err)
 		}
 
-		op, err := client.DeleteSSHKey(ctx, sshKeys[0].Name)
+		op, err := client.DeleteSSHKey(ctx, instanceReq.SSHKeys[0].Name)
 		if err != nil {
 			return fmt.Errorf("error deleting SSH key: %w", err)
 		}

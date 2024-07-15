@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 
 	"github.com/exoscale/cli/pkg/account"
 	v2 "github.com/exoscale/egoscale/v2"
@@ -235,4 +236,23 @@ func ForEachZone(zones []string, f func(zone string) error) error {
 	}
 
 	return meg.Wait().ErrorOrNil()
+}
+
+// ParseInstanceType returns an v3.InstanceType with family and name.
+func ParseInstanceType(instanceType string) v3.InstanceType {
+	var typeFamily, typeSize string
+
+	parts := strings.SplitN(instanceType, ".", 2)
+	if l := len(parts); l > 0 {
+		if l == 1 {
+			typeFamily, typeSize = "standard", strings.ToLower(parts[0])
+		} else {
+			typeFamily, typeSize = strings.ToLower(parts[0]), strings.ToLower(parts[1])
+		}
+	}
+
+	return v3.InstanceType{
+		Family: v3.InstanceTypeFamily(typeFamily),
+		Size:   v3.InstanceTypeSize(typeSize),
+	}
 }
