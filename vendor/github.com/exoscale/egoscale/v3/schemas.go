@@ -165,24 +165,6 @@ type BlockStorageVolumeTarget struct {
 	ID UUID `json:"id,omitempty"`
 }
 
-type CdnConfigurationStatus string
-
-const (
-	CdnConfigurationStatusDeactivated CdnConfigurationStatus = "deactivated"
-	CdnConfigurationStatusPending     CdnConfigurationStatus = "pending"
-	CdnConfigurationStatusActivated   CdnConfigurationStatus = "activated"
-)
-
-// CDN configuration
-type CdnConfiguration struct {
-	// CDN configuration bucket name
-	Bucket string `json:"bucket,omitempty"`
-	// FQDN that serves the bucket contents
-	Fqdn string `json:"fqdn,omitempty"`
-	// CDN configuration status
-	Status CdnConfigurationStatus `json:"status,omitempty"`
-}
-
 // DBaaS plan backup config
 type DBAASBackupConfig struct {
 	// Interval of taking a frequent backup in service types supporting different backup schedules
@@ -1091,10 +1073,10 @@ type DBAASServicePG struct {
 	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
 	// postgresql.conf configuration values
 	PGSettings JSONSchemaPG `json:"pg-settings,omitempty"`
-	// PGBouncer connection pooling settings
-	PgbouncerSettings JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
-	// PGLookout settings
-	PglookoutSettings JSONSchemaPglookout `json:"pglookout-settings,omitempty"`
+	// System-wide settings for pgbouncer.
+	PgbouncerSettings *JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
+	// System-wide settings for pglookout.
+	PglookoutSettings *JSONSchemaPglookout `json:"pglookout-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan" validate:"required"`
 	// Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.
@@ -1103,9 +1085,9 @@ type DBAASServicePG struct {
 	SynchronousReplication  EnumPGSynchronousReplication `json:"synchronous-replication,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
-	// TimescaleDB extension configuration values
-	TimescaledbSettings JSONSchemaTimescaledb `json:"timescaledb-settings,omitempty"`
-	Type                DBAASServiceTypeName  `json:"type" validate:"required,gte=0,lte=64"`
+	// System-wide settings for the timescaledb extension
+	TimescaledbSettings *JSONSchemaTimescaledb `json:"timescaledb-settings,omitempty"`
+	Type                DBAASServiceTypeName   `json:"type" validate:"required,gte=0,lte=64"`
 	// Service last update timestamp (ISO 8601)
 	UpdatedAT time.Time `json:"updated-at,omitempty"`
 	// URI for connecting to the service (may be absent)
@@ -1247,6 +1229,14 @@ type DBAASTask struct {
 	ResultCodes []DBAASTaskResultCodes `json:"result-codes,omitempty"`
 	Success     *bool                  `json:"success,omitempty"`
 	TaskType    string                 `json:"task-type,omitempty"`
+}
+
+// Grafana User secrets
+type DBAASUserGrafanaSecrets struct {
+	// Grafana password
+	Password string `json:"password,omitempty"`
+	// Grafana username
+	Username string `json:"username,omitempty"`
 }
 
 // Kafka User secrets
@@ -1547,6 +1537,8 @@ type Event struct {
 	IAMAPIKey *IAMAPIKey `json:"iam-api-key,omitempty"`
 	// IAM Role
 	IAMRole *IAMRole `json:"iam-role,omitempty"`
+	// User
+	IAMUser *User `json:"iam-user,omitempty"`
 	// Operation message
 	Message string `json:"message,omitempty"`
 	// URI path parameters (free form map)
@@ -1661,8 +1653,8 @@ type Instance struct {
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Deploy target
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
-	// Instance disk size in GB
-	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=50000"`
+	// Instance disk size in GiB
+	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
 	// Instance Elastic IPs
 	ElasticIPS []ElasticIP `json:"elastic-ips,omitempty"`
 	// Instance ID
@@ -1724,8 +1716,8 @@ type InstancePool struct {
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance Pool description
 	Description string `json:"description,omitempty" validate:"omitempty,gte=1,lte=255"`
-	// Instances disk size in GB
-	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=50000"`
+	// Instances disk size in GiB
+	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
 	// Instances Elastic IPs
 	ElasticIPS []ElasticIP `json:"elastic-ips,omitempty"`
 	// Instance Pool ID
@@ -1913,10 +1905,8 @@ type JSONSchemaGrafana struct {
 	MetricsEnabled *bool `json:"metrics_enabled,omitempty"`
 	// Enforce user lookup based on email instead of the unique ID provided by the IdP
 	OauthAllowInsecureEmailLookup *bool `json:"oauth_allow_insecure_email_lookup,omitempty"`
-	// Allow access to selected service components through Privatelink
-	PrivatelinkAccess map[string]any `json:"privatelink_access,omitempty"`
-	// Name of the basebackup to restore in forked service
-	RecoveryBasebackupName string `json:"recovery_basebackup_name,omitempty" validate:"omitempty,lte=128"`
+	// Store logs for the service so that they are available in the HTTP API and console.
+	ServiceLog *bool `json:"service_log,omitempty"`
 	// SMTP server settings
 	SMTPServer map[string]any `json:"smtp_server,omitempty"`
 	// Enable or disable Grafana unified alerting functionality. By default this is enabled and any legacy alerts will be migrated on upgrade to Grafana 9+. To stay on legacy alerting, set unified_alerting_enabled to false and alerting_enabled to true. See https://grafana.com/docs/grafana/latest/alerting/set-up/migrating-alerts/ for more details.
@@ -1947,11 +1937,41 @@ type JSONSchemaOpensearch map[string]any
 // postgresql.conf configuration values
 type JSONSchemaPG map[string]any
 
-// PGBouncer connection pooling settings
-type JSONSchemaPgbouncer map[string]any
+type JSONSchemaPgbouncerAutodbPoolMode string
 
-// PGLookout settings
-type JSONSchemaPglookout map[string]any
+const (
+	JSONSchemaPgbouncerAutodbPoolModeTransaction JSONSchemaPgbouncerAutodbPoolMode = "transaction"
+	JSONSchemaPgbouncerAutodbPoolModeSession     JSONSchemaPgbouncerAutodbPoolMode = "session"
+	JSONSchemaPgbouncerAutodbPoolModeStatement   JSONSchemaPgbouncerAutodbPoolMode = "statement"
+)
+
+// System-wide settings for pgbouncer.
+type JSONSchemaPgbouncer struct {
+	// If the automatically created database pools have been unused this many seconds, they are freed. If 0 then timeout is disabled. [seconds]
+	AutodbIdleTimeout int `json:"autodb_idle_timeout,omitempty" validate:"omitempty,gte=0,lte=86400"`
+	// Do not allow more than this many server connections per database (regardless of user). Setting it to 0 means unlimited.
+	AutodbMaxDBConnections int `json:"autodb_max_db_connections,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// PGBouncer pool mode
+	AutodbPoolMode JSONSchemaPgbouncerAutodbPoolMode `json:"autodb_pool_mode,omitempty"`
+	// If non-zero then create automatically a pool of that size per user when a pool doesn't exist.
+	AutodbPoolSize int `json:"autodb_pool_size,omitempty" validate:"omitempty,gte=0,lte=10000"`
+	// List of parameters to ignore when given in startup packet
+	IgnoreStartupParameters []string `json:"ignore_startup_parameters,omitempty"`
+	// Add more server connections to pool if below this number. Improves behavior when usual load comes suddenly back after period of total inactivity. The value is effectively capped at the pool size.
+	MinPoolSize int `json:"min_pool_size,omitempty" validate:"omitempty,gte=0,lte=10000"`
+	// If a server connection has been idle more than this many seconds it will be dropped. If 0 then timeout is disabled. [seconds]
+	ServerIdleTimeout int `json:"server_idle_timeout,omitempty" validate:"omitempty,gte=0,lte=86400"`
+	// The pooler will close an unused server connection that has been connected longer than this. [seconds]
+	ServerLifetime int `json:"server_lifetime,omitempty" validate:"omitempty,gte=60,lte=86400"`
+	// Run server_reset_query (DISCARD ALL) in all pooling modes
+	ServerResetQueryAlways *bool `json:"server_reset_query_always,omitempty"`
+}
+
+// System-wide settings for pglookout.
+type JSONSchemaPglookout struct {
+	// Number of seconds of master unavailability before triggering database failover to standby
+	MaxFailoverReplicationTimeLag int `json:"max_failover_replication_time_lag,omitempty" validate:"omitempty,gte=10,lte=9.223372036854776e+18"`
+}
 
 type JSONSchemaRedisAclChannelsDefault string
 
@@ -2009,8 +2029,11 @@ type JSONSchemaRedis struct {
 // Schema Registry configuration
 type JSONSchemaSchemaRegistry map[string]any
 
-// TimescaleDB extension configuration values
-type JSONSchemaTimescaledb map[string]any
+// System-wide settings for the timescaledb extension
+type JSONSchemaTimescaledb struct {
+	// The number of background workers for timescaledb operations. You should configure this setting to the sum of your number of databases and the total number of concurrent background workers you want running at any given point in time.
+	MaxBackgroundWorkers int `json:"max_background_workers,omitempty" validate:"omitempty,gte=1,lte=4096"`
+}
 
 // Kubelet image GC options
 type KubeletImageGC struct {
@@ -2087,6 +2110,7 @@ type LoadBalancerServiceStrategy string
 
 const (
 	LoadBalancerServiceStrategyRoundRobin LoadBalancerServiceStrategy = "round-robin"
+	LoadBalancerServiceStrategyMaglevHash LoadBalancerServiceStrategy = "maglev-hash"
 	LoadBalancerServiceStrategySourceHash LoadBalancerServiceStrategy = "source-hash"
 )
 
@@ -2206,6 +2230,26 @@ type Operation struct {
 	State OperationState `json:"state,omitempty"`
 }
 
+// Organization
+type Organization struct {
+	// Organization address
+	Address string `json:"address,omitempty"`
+	// Organization balance
+	Balance float64 `json:"balance,omitempty"`
+	// Organization city
+	City string `json:"city,omitempty"`
+	// Organization country
+	Country string `json:"country,omitempty"`
+	// Organization currency
+	Currency string `json:"currency,omitempty"`
+	// Organization ID
+	ID UUID `json:"id,omitempty"`
+	// Organization name
+	Name string `json:"name,omitempty"`
+	// Organization postcode
+	Postcode string `json:"postcode,omitempty"`
+}
+
 // Private Network
 type PrivateNetwork struct {
 	// Private Network description
@@ -2223,6 +2267,8 @@ type PrivateNetwork struct {
 	Netmask net.IP `json:"netmask,omitempty"`
 	// Private Network start IP address
 	StartIP net.IP `json:"start-ip,omitempty"`
+	// Private Network VXLAN ID
+	Vni int64 `json:"vni,omitempty" validate:"omitempty,gt=0"`
 }
 
 // Private Network leased IP address
@@ -2435,8 +2481,8 @@ type SKSNodepool struct {
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Nodepool description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
-	// Nodepool instances disk size in GB
-	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=20,lte=50000"`
+	// Nodepool instances disk size in GiB
+	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=20,lte=51200"`
 	// Nodepool ID
 	ID UUID `json:"id,omitempty"`
 	// Instance Pool
@@ -2533,8 +2579,8 @@ type Snapshot struct {
 	Instance *Instance `json:"instance,omitempty"`
 	// Snapshot name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
-	// Snapshot size in GB
-	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10,lte=50000"`
+	// Snapshot size in GiB
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10,lte=51200"`
 	// Snapshot state
 	State SnapshotState `json:"state,omitempty"`
 }
@@ -2608,6 +2654,22 @@ type Template struct {
 	Visibility TemplateVisibility `json:"visibility,omitempty"`
 	// Zones availability
 	Zones []ZoneName `json:"zones,omitempty"`
+}
+
+// User
+type User struct {
+	// User Email
+	Email string `json:"email" validate:"required"`
+	// User ID
+	ID UUID `json:"id,omitempty"`
+	// True if the user has not yet created an Exoscale account
+	Pending *bool `json:"pending,omitempty"`
+	// IAM Role
+	Role *IAMRole `json:"role" validate:"required"`
+	// SSO enabled
+	Sso *bool `json:"sso,omitempty"`
+	// Two Factor Authentication enabled
+	TwoFactorAuthentication *bool `json:"two-factor-authentication,omitempty"`
 }
 
 // Zone

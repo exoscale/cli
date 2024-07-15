@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale/v3/credentials"
-	"github.com/exoscale/egoscale/version"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -47,13 +46,13 @@ func (c Client) GetZoneAPIEndpoint(ctx context.Context, zoneName ZoneName) (Endp
 	if err != nil {
 		return "", fmt.Errorf("get zone api endpoint: %w", err)
 	}
-	for _, zone := range resp.Zones {
-		if zone.Name == zoneName {
-			return zone.APIEndpoint, nil
-		}
+
+	zone, err := resp.FindZone(string(zoneName))
+	if err != nil {
+		return "", fmt.Errorf("get zone api endpoint: %w", err)
 	}
 
-	return "", fmt.Errorf("get zone api endpoint: zone name %s not found", zoneName)
+	return zone.APIEndpoint, nil
 }
 
 // Client represents an Exoscale API client.
@@ -76,7 +75,7 @@ type RequestInterceptorFn func(ctx context.Context, req *http.Request) error
 
 // UserAgent is the "User-Agent" HTTP request header added to outgoing HTTP requests.
 var UserAgent = fmt.Sprintf("egoscale/%s (%s; %s/%s)",
-	version.Version,
+	Version,
 	runtime.Version(),
 	runtime.GOOS,
 	runtime.GOARCH)
