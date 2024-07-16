@@ -1,3 +1,4 @@
+## workspace
 # github.com/BurntSushi/toml v1.3.2
 ## explicit; go 1.16
 github.com/BurntSushi/toml
@@ -200,6 +201,8 @@ github.com/danielgtaylor/go-jmespath-plus
 # github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964
 ## explicit
 github.com/danwakefield/fnmatch
+# github.com/davecgh/go-spew v1.1.1
+## explicit
 # github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 ## explicit
 github.com/davecgh/go-spew/spew
@@ -214,14 +217,16 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.1
 ## explicit; go 1.16
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.102.4-0.20240506093113-3ae83713b097
-## explicit; go 1.21
+# github.com/exoscale/egoscale v0.102.4
+## explicit; go 1.22
 github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/oapi
+github.com/exoscale/egoscale/version
+# github.com/exoscale/egoscale/v3 v3.1.0
+## explicit; go 1.22
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
-github.com/exoscale/egoscale/version
 # github.com/exoscale/openapi-cli-generator v1.1.0
 ## explicit; go 1.12
 github.com/exoscale/openapi-cli-generator/cli
@@ -495,6 +500,8 @@ github.com/pelletier/go-toml/v2/unstable
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+## explicit
 # github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
 ## explicit
 github.com/pmezard/go-difflib/difflib
@@ -556,10 +563,14 @@ github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
 github.com/spf13/viper/internal/features
 # github.com/stretchr/objx v0.5.1
-## explicit; go 1.13
+## explicit; go 1.20
+# github.com/stretchr/objx v0.5.2
+## go 1.20
 github.com/stretchr/objx
 # github.com/stretchr/testify v1.8.4
-## explicit; go 1.20
+## explicit; go 1.17
+# github.com/stretchr/testify v1.9.0
+## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require
