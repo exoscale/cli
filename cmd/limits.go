@@ -62,8 +62,8 @@ Supported output template annotations: %s`,
 			limitSKSClusters:         "SKS clusters",
 			limitSOSBuckets:          "SOS buckets",
 			limitBlockStorageVolumes: "Block Storage Volumes",
-			limitBlockStorage:        "Block Storage cumulative size",
-			limitBlockStorageMaxSize: "Max Size of Block Storage Volumes",
+			limitBlockStorage:        "Block Storage cumulative size (GiB)",
+			limitBlockStorageMaxSize: "Max size of a Block Storage Volume (GiB)",
 		}
 
 		out := LimitsOutput{}
