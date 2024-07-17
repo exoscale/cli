@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.78.4
 
 ### Bug Fixes
 
