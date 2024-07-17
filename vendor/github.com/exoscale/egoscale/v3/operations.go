@@ -12,295 +12,6 @@ import (
 	"time"
 )
 
-type ListAccessKeysResponse struct {
-	AccessKeys []AccessKey `json:"access-keys,omitempty"`
-}
-
-// List IAM Access Keys
-func (c Client) ListAccessKeys(ctx context.Context) (*ListAccessKeysResponse, error) {
-	path := "/access-key"
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("ListAccessKeys: new request: %w", err)
-	}
-	request.Header.Add("User-Agent", UserAgent)
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("ListAccessKeys: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ListAccessKeys: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "list-access-keys")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("ListAccessKeys: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("ListAccessKeys: http response: %w", err)
-	}
-
-	bodyresp := &ListAccessKeysResponse{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("ListAccessKeys: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// IAM Access Key
-type CreateAccessKeyRequest struct {
-	// IAM Access Key name
-	Name string `json:"name,omitempty"`
-	// IAM Access Key operations
-	Operations []string `json:"operations,omitempty"`
-	// IAM Access Key Resources
-	Resources []AccessKeyResource `json:"resources,omitempty"`
-	// IAM Access Key tags
-	Tags []string `json:"tags,omitempty"`
-}
-
-// This operation creates a legacy IAM Access Key, to create a key for use with IAM roles use the api-key endpoint.The corresponding secret is only available in the response returned by this operation, the caller must take care of storing it safely as there is no other way to retrieve it.
-func (c Client) CreateAccessKey(ctx context.Context, req CreateAccessKeyRequest) (*AccessKey, error) {
-	path := "/access-key"
-
-	body, err := prepareJSONBody(req)
-	if err != nil {
-		return nil, fmt.Errorf("CreateAccessKey: prepare Json body: %w", err)
-	}
-
-	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
-	if err != nil {
-		return nil, fmt.Errorf("CreateAccessKey: new request: %w", err)
-	}
-	request.Header.Add("User-Agent", UserAgent)
-
-	request.Header.Add("Content-Type", "application/json")
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("CreateAccessKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("CreateAccessKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "create-access-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("CreateAccessKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("CreateAccessKey: http response: %w", err)
-	}
-
-	bodyresp := &AccessKey{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("CreateAccessKey: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-type ListAccessKeyKnownOperationsResponse struct {
-	AccessKeyOperations []AccessKeyOperation `json:"access-key-operations,omitempty"`
-}
-
-// Retrieve all known available IAM Access Key operations and associated tags
-func (c Client) ListAccessKeyKnownOperations(ctx context.Context) (*ListAccessKeyKnownOperationsResponse, error) {
-	path := "/access-key-known-operations"
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("ListAccessKeyKnownOperations: new request: %w", err)
-	}
-	request.Header.Add("User-Agent", UserAgent)
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("ListAccessKeyKnownOperations: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ListAccessKeyKnownOperations: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "list-access-key-known-operations")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("ListAccessKeyKnownOperations: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("ListAccessKeyKnownOperations: http response: %w", err)
-	}
-
-	bodyresp := &ListAccessKeyKnownOperationsResponse{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("ListAccessKeyKnownOperations: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-type ListAccessKeyOperationsResponse struct {
-	AccessKeyOperations []AccessKeyOperation `json:"access-key-operations,omitempty"`
-}
-
-// Retrieve IAM Access Key operations and associated tags for the signing key
-func (c Client) ListAccessKeyOperations(ctx context.Context) (*ListAccessKeyOperationsResponse, error) {
-	path := "/access-key-operations"
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("ListAccessKeyOperations: new request: %w", err)
-	}
-	request.Header.Add("User-Agent", UserAgent)
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("ListAccessKeyOperations: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("ListAccessKeyOperations: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "list-access-key-operations")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("ListAccessKeyOperations: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("ListAccessKeyOperations: http response: %w", err)
-	}
-
-	bodyresp := &ListAccessKeyOperationsResponse{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("ListAccessKeyOperations: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// This operation revokes the specified IAM Access Key. Access Keys created by the revoked Access Key will not be revoked.
-func (c Client) RevokeAccessKey(ctx context.Context, key string) (*Operation, error) {
-	path := fmt.Sprintf("/access-key/%v", key)
-
-	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("RevokeAccessKey: new request: %w", err)
-	}
-	request.Header.Add("User-Agent", UserAgent)
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("RevokeAccessKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("RevokeAccessKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "revoke-access-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("RevokeAccessKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("RevokeAccessKey: http response: %w", err)
-	}
-
-	bodyresp := &Operation{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("RevokeAccessKey: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
-// Retrieve IAM Access Key details
-func (c Client) GetAccessKey(ctx context.Context, key string) (*AccessKey, error) {
-	path := fmt.Sprintf("/access-key/%v", key)
-
-	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
-	if err != nil {
-		return nil, fmt.Errorf("GetAccessKey: new request: %w", err)
-	}
-	request.Header.Add("User-Agent", UserAgent)
-
-	if err := c.executeRequestInterceptors(ctx, request); err != nil {
-		return nil, fmt.Errorf("GetAccessKey: execute request editors: %w", err)
-	}
-
-	if err := c.signRequest(request); err != nil {
-		return nil, fmt.Errorf("GetAccessKey: sign request: %w", err)
-	}
-
-	if c.trace {
-		dumpRequest(request, "get-access-key")
-	}
-
-	response, err := c.httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("GetAccessKey: http client do: %w", err)
-	}
-
-	if c.trace {
-		dumpResponse(response)
-	}
-
-	if err := handleHTTPErrorResp(response); err != nil {
-		return nil, fmt.Errorf("GetAccessKey: http response: %w", err)
-	}
-
-	bodyresp := &AccessKey{}
-	if err := prepareJSONResponse(response, bodyresp); err != nil {
-		return nil, fmt.Errorf("GetAccessKey: prepare Json response: %w", err)
-	}
-
-	return bodyresp, nil
-}
-
 type ListAntiAffinityGroupsResponse struct {
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
 }
@@ -772,7 +483,7 @@ type CreateBlockStorageVolumeRequest struct {
 	Labels               Labels                      `json:"labels,omitempty"`
 	// Volume name
 	Name string `json:"name,omitempty" validate:"omitempty,lte=255"`
-	// Volume size in GB.
+	// Volume size in GiB.
 	// When a snapshot ID is supplied, this defaults to the size of the source volume, but can be set to a larger value.
 	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10"`
 }
@@ -1324,7 +1035,7 @@ func (c Client) DetachBlockStorageVolume(ctx context.Context, id UUID) (*Operati
 }
 
 type ResizeBlockStorageVolumeRequest struct {
-	// Volume size in GB
+	// Volume size in GiB
 	Size int64 `json:"size" validate:"required,gte=11"`
 }
 
@@ -1373,6 +1084,55 @@ func (c Client) ResizeBlockStorageVolume(ctx context.Context, id UUID, req Resiz
 	bodyresp := &BlockStorageVolume{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("ResizeBlockStorageVolume: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type GetConsoleProxyURLResponse struct {
+	Host string `json:"host,omitempty"`
+	Path string `json:"path,omitempty"`
+	URL  string `json:"url,omitempty"`
+}
+
+// Retrieve signed url valid for 60 seconds to connect via console-proxy websocket to VM VNC console.
+func (c Client) GetConsoleProxyURL(ctx context.Context, id UUID) (*GetConsoleProxyURLResponse, error) {
+	path := fmt.Sprintf("/console/%v", id)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetConsoleProxyURL: new request: %w", err)
+	}
+	request.Header.Add("User-Agent", UserAgent)
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetConsoleProxyURL: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetConsoleProxyURL: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-console-proxy-url")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetConsoleProxyURL: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetConsoleProxyURL: http response: %w", err)
+	}
+
+	bodyresp := &GetConsoleProxyURLResponse{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetConsoleProxyURL: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -1718,6 +1478,103 @@ func (c Client) StartDBAASGrafanaMaintenance(ctx context.Context, name string) (
 	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("StartDBAASGrafanaMaintenance: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type ResetDBAASGrafanaUserPasswordRequest struct {
+	Password DBAASUserPassword `json:"password,omitempty" validate:"omitempty,gte=8,lte=256"`
+}
+
+// If no password is provided one will be generated automatically.
+func (c Client) ResetDBAASGrafanaUserPassword(ctx context.Context, serviceName string, username string, req ResetDBAASGrafanaUserPasswordRequest) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-grafana/%v/user/%v/password/reset", serviceName, username)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: new request: %w", err)
+	}
+	request.Header.Add("User-Agent", UserAgent)
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "reset-dbaas-grafana-user-password")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ResetDBAASGrafanaUserPassword: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Reveal the secrets of a DBaaS Grafana user
+func (c Client) RevealDBAASGrafanaUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserGrafanaSecrets, error) {
+	path := fmt.Sprintf("/dbaas-grafana/%v/user/%v/password/reveal", serviceName, username)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RevealDBAASGrafanaUserPassword: new request: %w", err)
+	}
+	request.Header.Add("User-Agent", UserAgent)
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RevealDBAASGrafanaUserPassword: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RevealDBAASGrafanaUserPassword: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "reveal-dbaas-grafana-user-password")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RevealDBAASGrafanaUserPassword: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RevealDBAASGrafanaUserPassword: http response: %w", err)
+	}
+
+	bodyresp := &DBAASUserGrafanaSecrets{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RevealDBAASGrafanaUserPassword: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -4405,10 +4262,10 @@ type CreateDBAASServicePGRequest struct {
 	Migration *CreateDBAASServicePGRequestMigration `json:"migration,omitempty"`
 	// postgresql.conf configuration values
 	PGSettings JSONSchemaPG `json:"pg-settings,omitempty"`
-	// PGBouncer connection pooling settings
-	PgbouncerSettings JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
-	// PGLookout settings
-	PglookoutSettings JSONSchemaPglookout `json:"pglookout-settings,omitempty"`
+	// System-wide settings for pgbouncer.
+	PgbouncerSettings *JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
+	// System-wide settings for pglookout.
+	PglookoutSettings *JSONSchemaPglookout `json:"pglookout-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan" validate:"required,gte=1,lte=128"`
 	// ISO time of a backup to recover from for services that support arbitrary times
@@ -4418,10 +4275,10 @@ type CreateDBAASServicePGRequest struct {
 	SynchronousReplication  EnumPGSynchronousReplication `json:"synchronous-replication,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
-	// TimescaleDB extension configuration values
-	TimescaledbSettings JSONSchemaTimescaledb `json:"timescaledb-settings,omitempty"`
-	Variant             EnumPGVariant         `json:"variant,omitempty"`
-	Version             DBAASPGTargetVersions `json:"version,omitempty"`
+	// System-wide settings for the timescaledb extension
+	TimescaledbSettings *JSONSchemaTimescaledb `json:"timescaledb-settings,omitempty"`
+	Variant             EnumPGVariant          `json:"variant,omitempty"`
+	Version             DBAASPGTargetVersions  `json:"version,omitempty"`
 	// Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).
 	WorkMem int64 `json:"work-mem,omitempty" validate:"omitempty,gte=1,lte=1024"`
 }
@@ -4533,10 +4390,10 @@ type UpdateDBAASServicePGRequest struct {
 	Migration *UpdateDBAASServicePGRequestMigration `json:"migration,omitempty"`
 	// postgresql.conf configuration values
 	PGSettings JSONSchemaPG `json:"pg-settings,omitempty"`
-	// PGBouncer connection pooling settings
-	PgbouncerSettings JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
-	// PGLookout settings
-	PglookoutSettings JSONSchemaPglookout `json:"pglookout-settings,omitempty"`
+	// System-wide settings for pgbouncer.
+	PgbouncerSettings *JSONSchemaPgbouncer `json:"pgbouncer-settings,omitempty"`
+	// System-wide settings for pglookout.
+	PglookoutSettings *JSONSchemaPglookout `json:"pglookout-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan,omitempty" validate:"omitempty,gte=1,lte=128"`
 	// Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.
@@ -4544,9 +4401,9 @@ type UpdateDBAASServicePGRequest struct {
 	SynchronousReplication  EnumPGSynchronousReplication `json:"synchronous-replication,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool `json:"termination-protection,omitempty"`
-	// TimescaleDB extension configuration values
-	TimescaledbSettings JSONSchemaTimescaledb `json:"timescaledb-settings,omitempty"`
-	Variant             EnumPGVariant         `json:"variant,omitempty"`
+	// System-wide settings for the timescaledb extension
+	TimescaledbSettings *JSONSchemaTimescaledb `json:"timescaledb-settings,omitempty"`
+	Variant             EnumPGVariant          `json:"variant,omitempty"`
 	// Version
 	Version string `json:"version,omitempty"`
 	// Sets the maximum amount of memory to be used by a query operation (such as a sort or hash table) before writing to temporary disk files, in MB. Default is 1MB + 0.075% of total RAM (up to 32MB).
@@ -8316,8 +8173,8 @@ type CreateInstanceRequest struct {
 	AutoStart *bool `json:"auto-start,omitempty"`
 	// Deploy target
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
-	// Instance disk size in GB
-	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=50000"`
+	// Instance disk size in GiB
+	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=51200"`
 	// Compute instance type
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
 	// Enable IPv6. DEPRECATED: use `public-ip-assignments`.
@@ -8446,6 +8303,14 @@ func (c Client) ListInstancePools(ctx context.Context) (*ListInstancePoolsRespon
 	return bodyresp, nil
 }
 
+type CreateInstancePoolRequestPublicIPAssignment string
+
+const (
+	CreateInstancePoolRequestPublicIPAssignmentInet4 CreateInstancePoolRequestPublicIPAssignment = "inet4"
+	CreateInstancePoolRequestPublicIPAssignmentDual  CreateInstancePoolRequestPublicIPAssignment = "dual"
+	CreateInstancePoolRequestPublicIPAssignmentNone  CreateInstancePoolRequestPublicIPAssignment = "none"
+)
+
 type CreateInstancePoolRequest struct {
 	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups,omitempty"`
@@ -8453,8 +8318,8 @@ type CreateInstancePoolRequest struct {
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Instance Pool description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
-	// Instances disk size in GB
-	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=50000"`
+	// Instances disk size in GiB
+	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=51200"`
 	// Instances Elastic IPs
 	ElasticIPS []ElasticIP `json:"elastic-ips,omitempty"`
 	// Prefix to apply to Instances names (default: pool)
@@ -8469,8 +8334,9 @@ type CreateInstancePoolRequest struct {
 	// Instance Pool name
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 	// Instance Pool Private Networks
-	PrivateNetworks    []PrivateNetwork   `json:"private-networks,omitempty"`
-	PublicIPAssignment PublicIPAssignment `json:"public-ip-assignment,omitempty"`
+	PrivateNetworks []PrivateNetwork `json:"private-networks,omitempty"`
+	// Determines public IP assignment of the Instances. Type `none` is final and can't be changed later on.
+	PublicIPAssignment CreateInstancePoolRequestPublicIPAssignment `json:"public-ip-assignment,omitempty"`
 	// Instance Pool Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Number of Instances
@@ -8621,6 +8487,13 @@ func (c Client) GetInstancePool(ctx context.Context, id UUID) (*InstancePool, er
 	return bodyresp, nil
 }
 
+type UpdateInstancePoolRequestPublicIPAssignment string
+
+const (
+	UpdateInstancePoolRequestPublicIPAssignmentInet4 UpdateInstancePoolRequestPublicIPAssignment = "inet4"
+	UpdateInstancePoolRequestPublicIPAssignmentDual  UpdateInstancePoolRequestPublicIPAssignment = "dual"
+)
+
 type UpdateInstancePoolRequest struct {
 	// Instance Pool Anti-affinity Groups
 	AntiAffinityGroups []AntiAffinityGroup `json:"anti-affinity-groups"`
@@ -8628,8 +8501,8 @@ type UpdateInstancePoolRequest struct {
 	DeployTarget *DeployTarget `json:"deploy-target"`
 	// Instance Pool description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
-	// Instances disk size in GB
-	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=50000"`
+	// Instances disk size in GiB
+	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
 	// Instances Elastic IPs
 	ElasticIPS []ElasticIP `json:"elastic-ips"`
 	// Prefix to apply to Instances names (default: pool)
@@ -8644,8 +8517,9 @@ type UpdateInstancePoolRequest struct {
 	// Instance Pool name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Instance Pool Private Networks
-	PrivateNetworks    []PrivateNetwork   `json:"private-networks"`
-	PublicIPAssignment PublicIPAssignment `json:"public-ip-assignment,omitempty"`
+	PrivateNetworks []PrivateNetwork `json:"private-networks"`
+	// Determines public IP assignment of the Instances.
+	PublicIPAssignment UpdateInstancePoolRequestPublicIPAssignment `json:"public-ip-assignment,omitempty"`
 	// Instance Pool Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups"`
 	// SSH key
@@ -9379,8 +9253,8 @@ func (c Client) RemoveInstanceProtection(ctx context.Context, id UUID) (*Operati
 }
 
 type ResetInstanceRequest struct {
-	// Instance disk size in GB
-	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=50000"`
+	// Instance disk size in GiB
+	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=10,lte=51200"`
 	// Instance template
 	Template *Template `json:"template,omitempty"`
 }
@@ -9479,8 +9353,8 @@ func (c Client) ResetInstancePassword(ctx context.Context, id UUID) (*Operation,
 }
 
 type ResizeInstanceDiskRequest struct {
-	// Instance disk size in GB
-	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=50000"`
+	// Instance disk size in GiB
+	DiskSize int64 `json:"disk-size" validate:"required,gte=10,lte=51200"`
 }
 
 // This operation resizes a Compute instance's disk volume. Note: the disk can only grow, cannot be shrunk.
@@ -10020,6 +9894,7 @@ type AddServiceToLoadBalancerRequestStrategy string
 
 const (
 	AddServiceToLoadBalancerRequestStrategyRoundRobin AddServiceToLoadBalancerRequestStrategy = "round-robin"
+	AddServiceToLoadBalancerRequestStrategyMaglevHash AddServiceToLoadBalancerRequestStrategy = "maglev-hash"
 	AddServiceToLoadBalancerRequestStrategySourceHash AddServiceToLoadBalancerRequestStrategy = "source-hash"
 )
 
@@ -10189,6 +10064,7 @@ type UpdateLoadBalancerServiceRequestStrategy string
 
 const (
 	UpdateLoadBalancerServiceRequestStrategyRoundRobin UpdateLoadBalancerServiceRequestStrategy = "round-robin"
+	UpdateLoadBalancerServiceRequestStrategyMaglevHash UpdateLoadBalancerServiceRequestStrategy = "maglev-hash"
 	UpdateLoadBalancerServiceRequestStrategySourceHash UpdateLoadBalancerServiceRequestStrategy = "source-hash"
 )
 
@@ -10396,6 +10272,49 @@ func (c Client) GetOperation(ctx context.Context, id UUID) (*Operation, error) {
 	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetOperation: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Retrieve an organization
+func (c Client) GetOrganization(ctx context.Context) (*Organization, error) {
+	path := "/organization"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetOrganization: new request: %w", err)
+	}
+	request.Header.Add("User-Agent", UserAgent)
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetOrganization: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetOrganization: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-organization")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetOrganization: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetOrganization: http response: %w", err)
+	}
+
+	bodyresp := &Organization{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetOrganization: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -12417,8 +12336,8 @@ type CreateSKSNodepoolRequest struct {
 	DeployTarget *DeployTarget `json:"deploy-target,omitempty"`
 	// Nodepool description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
-	// Nodepool instances disk size in GB
-	DiskSize int64 `json:"disk-size" validate:"required,gte=20,lte=50000"`
+	// Nodepool instances disk size in GiB
+	DiskSize int64 `json:"disk-size" validate:"required,gte=20,lte=51200"`
 	// Prefix to apply to instances names (default: pool)
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Compute instance type
@@ -12580,8 +12499,8 @@ type UpdateSKSNodepoolRequest struct {
 	DeployTarget *DeployTarget `json:"deploy-target"`
 	// Nodepool description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
-	// Nodepool instances disk size in GB
-	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=20,lte=50000"`
+	// Nodepool instances disk size in GiB
+	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=20,lte=51200"`
 	// Prefix to apply to managed instances names (default: pool)
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Compute instance type

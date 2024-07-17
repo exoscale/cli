@@ -7,7 +7,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,20 +18,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-)
-
-var (
-	// ErrNotFound represents an error indicating a non-existent resource.
-	ErrNotFound = errors.New("resource not found")
-
-	// ErrTooManyFound represents an error indicating multiple results found for a single resource.
-	ErrTooManyFound = errors.New("multiple resources found")
-
-	// ErrInvalidRequest represents an error indicating that the caller's request is invalid.
-	ErrInvalidRequest = errors.New("invalid request")
-
-	// ErrAPIError represents an error indicating an API-side issue.
-	ErrAPIError = errors.New("API error")
 )
 
 type UUID string
@@ -254,40 +239,6 @@ func extractRequestParameters(req *http.Request) ([]string, string) {
 	}
 
 	return names, values
-}
-
-func handleHTTPErrorResp(resp *http.Response) error {
-	if resp.StatusCode >= 400 && resp.StatusCode <= 599 {
-		var res struct {
-			Message string `json:"message"`
-		}
-
-		data, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("error reading response body: %s", err)
-		}
-
-		if json.Valid(data) {
-			if err = json.Unmarshal(data, &res); err != nil {
-				return fmt.Errorf("error unmarshaling response: %s", err)
-			}
-		} else {
-			res.Message = string(data)
-		}
-
-		switch {
-		case resp.StatusCode == http.StatusNotFound:
-			return ErrNotFound
-
-		case resp.StatusCode >= 400 && resp.StatusCode < 500:
-			return fmt.Errorf("%w: %s", ErrInvalidRequest, res.Message)
-
-		case resp.StatusCode >= 500:
-			return fmt.Errorf("%w: %s", ErrAPIError, res.Message)
-		}
-	}
-
-	return nil
 }
 
 func dumpRequest(req *http.Request, operationID string) {

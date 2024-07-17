@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale/v3/credentials"
-	"github.com/exoscale/egoscale/version"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -76,7 +75,7 @@ type RequestInterceptorFn func(ctx context.Context, req *http.Request) error
 
 // UserAgent is the "User-Agent" HTTP request header added to outgoing HTTP requests.
 var UserAgent = fmt.Sprintf("egoscale/%s (%s; %s/%s)",
-	version.Version,
+	Version,
 	runtime.Version(),
 	runtime.GOOS,
 	runtime.GOARCH)

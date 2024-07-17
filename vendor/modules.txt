@@ -214,14 +214,16 @@ github.com/dlclark/regexp2/syntax
 # github.com/dustin/go-humanize v1.0.1
 ## explicit; go 1.16
 github.com/dustin/go-humanize
-# github.com/exoscale/egoscale v0.102.4-0.20240506093113-3ae83713b097
-## explicit; go 1.21
+# github.com/exoscale/egoscale v0.102.4
+## explicit; go 1.22
 github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/oapi
+github.com/exoscale/egoscale/version
+# github.com/exoscale/egoscale/v3 v3.1.0
+## explicit; go 1.22
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
-github.com/exoscale/egoscale/version
 # github.com/exoscale/openapi-cli-generator v1.1.0
 ## explicit; go 1.12
 github.com/exoscale/openapi-cli-generator/cli
