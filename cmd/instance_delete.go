@@ -54,6 +54,7 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	for _, i := range c.Instances {
 		instance, err := instances.FindListInstancesResponseInstances(i)
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: %s not found.\n", i)
 			if !c.Force {
 				return err
 			}
