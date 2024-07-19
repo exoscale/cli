@@ -54,10 +54,10 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	for _, i := range c.Instances {
 		instance, err := instances.FindListInstancesResponseInstances(i)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "warning: %s not found.\n", i)
 			if !c.Force {
 				return err
 			}
+			fmt.Fprintf(os.Stderr, "warning: %s not found.\n", i)
 
 			continue
 		}
@@ -88,6 +88,8 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
+	// Cleaning up resources created in create instance
+	// https://github.com/exoscale/cli/blob/master/cmd/instance_create.go#L220
 	for _, i := range instanceToDelete {
 		instanceDir := path.Join(globalstate.ConfigFolder, "instances", i.String())
 		if _, err := os.Stat(instanceDir); !os.IsNotExist(err) {
