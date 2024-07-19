@@ -2,6 +2,10 @@
 
 ## 1.78.4
 
+### Improvements
+
+- Compute Instance delete: Remove multiple entities by their IDs/Names #619
+
 ### Bug Fixes
 
 - output template: use text/template #617
