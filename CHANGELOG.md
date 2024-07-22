@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- Instance Create: Migrate to egoscale v3 and add multiple sshkeys #620
+
 ## 1.78.4
 
 ### Improvements
