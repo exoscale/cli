@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -46,6 +47,7 @@ func printOutput(o output.Outputter, err error) error {
 // decorateAsyncOperation is a cosmetic helper intended for wrapping long
 // asynchronous operations, outputting progress feedback to the user's
 // terminal.
+// TODO remove this one once all has been migrated to decorateAsyncOperations.
 func decorateAsyncOperation(message string, fn func()) {
 	p := mpb.New(
 		mpb.WithOutput(os.Stderr),
@@ -73,6 +75,54 @@ func decorateAsyncOperation(message string, fn func()) {
 	<-done
 	spinner.Increment(1)
 	p.Wait()
+}
+
+func decorateAsyncOperations(message string, fns ...func() error) error {
+	if len(fns) == 0 {
+		return nil
+	}
+
+	p := mpb.New(
+		mpb.WithOutput(os.Stderr),
+		mpb.WithWidth(1),
+		mpb.ContainerOptOn(mpb.WithOutput(nil), func() bool { return globalstate.Quiet }),
+	)
+
+	spinner := p.AddSpinner(
+		int64(len(fns)),
+		mpb.SpinnerOnLeft,
+		mpb.AppendDecorators(
+			decor.Name(message, decor.WC{W: len(message) + 1, C: decor.DidentRight}),
+			decor.Elapsed(decor.ET_STYLE_GO),
+		),
+		mpb.BarOnComplete("✔"),
+	)
+
+	errs := &multierror.Error{}
+	done := make(chan struct{})
+	defer close(done)
+
+	for i := 0; i < len(fns); i += 10 {
+		batchSize := min(10, len(fns)-i)
+		for j := 0; j < batchSize; j++ {
+			fnIndex := i + j
+			go func(doneCh chan struct{}, fn func() error) {
+				if err := fn(); err != nil {
+					errs = multierror.Append(errs, err)
+				}
+				doneCh <- struct{}{}
+			}(done, fns[fnIndex])
+		}
+
+		for j := 0; j < batchSize; j++ {
+			<-done
+			spinner.Increment(1)
+		}
+	}
+
+	p.Wait()
+
+	return errs.ErrorOrNil()
 }
 
 func init() {
