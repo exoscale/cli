@@ -40,7 +40,7 @@ type instanceCreateCmd struct {
 	Labels             map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
 	PrivateInstance    bool              `cli-flag:"private-instance" cli-usage:"enable private instance to be created"`
-	SSHKeys            []string          `cli-flag:"ssh-key" cli-usage:"SSH keys to deploy on the instance"`
+	SSHKeys            []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance (can be specified multiple times)"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
 	Template           string            `cli-usage:"instance template NAME|ID"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
