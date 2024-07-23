@@ -137,6 +137,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 	for i, it := range instanceTypes.InstanceTypes {
 		if it.Family == instanceType.Family && it.Size == instanceType.Size {
 			instanceReq.InstanceType = &instanceTypes.InstanceTypes[i]
+			break
 		}
 	}
 	if instanceReq.InstanceType == nil {
