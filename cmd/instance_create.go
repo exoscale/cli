@@ -20,8 +20,7 @@ import (
 	exossh "github.com/exoscale/cli/pkg/ssh"
 	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceCreateCmd struct {
@@ -41,11 +40,11 @@ type instanceCreateCmd struct {
 	Labels             map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
 	PrivateInstance    bool              `cli-flag:"private-instance" cli-usage:"enable private instance to be created"`
-	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance"`
+	SSHKeys            []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on the instance (can be specified multiple times)"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-usage:"instance Security Group NAME|ID (can be specified multiple times)"`
 	Template           string            `cli-usage:"instance template NAME|ID"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
-	Zone               string            `cli-short:"z" cli-usage:"instance zone"`
+	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
 }
 
 func (c *instanceCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -75,59 +74,83 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 	var (
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey
-		sshKey                 *egoscale.SSHKey
 	)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
-	instance := &egoscale.Instance{
-		DiskSize:    &c.DiskSize,
-		IPv6Enabled: &c.IPv6,
-		Labels: func() (v *map[string]string) {
-			if len(c.Labels) > 0 {
-				return &c.Labels
-			}
-			return
-		}(),
-		Name:   &c.Name,
-		SSHKey: utils.NonEmptyStringPtr(c.SSHKey),
+	var sshKeys []v3.SSHKey
+	for _, sshkeyName := range c.SSHKeys {
+		sshKeys = append(sshKeys, v3.SSHKey{Name: sshkeyName})
+	}
+
+	instanceReq := v3.CreateInstanceRequest{
+		DiskSize:    c.DiskSize,
+		Ipv6Enabled: &c.IPv6,
+		Labels:      c.Labels,
+		Name:        c.Name,
+		SSHKeys:     sshKeys,
 	}
 
 	if c.PrivateInstance {
-		t := "none"
-		instance.PublicIPAssignment = &t
+		instanceReq.PublicIPAssignment = v3.PublicIPAssignmentNone
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
 	if l := len(c.AntiAffinityGroups); l > 0 {
-		antiAffinityGroupIDs := make([]string, l)
+		instanceReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, l)
+		af, err := client.ListAntiAffinityGroups(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Anti-Affinity Group: %w", err)
+		}
 		for i := range c.AntiAffinityGroups {
-			antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
+			antiAffinityGroup, err := af.FindAntiAffinityGroup(c.AntiAffinityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
-			antiAffinityGroupIDs[i] = *antiAffinityGroup.ID
+			instanceReq.AntiAffinityGroups[i] = v3.AntiAffinityGroup{ID: antiAffinityGroup.ID}
 		}
-		instance.AntiAffinityGroupIDs = &antiAffinityGroupIDs
 	}
 
 	if c.DeployTarget != "" {
-		deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+		targets, err := client.ListDeployTargets(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Deploy Target: %w", err)
+		}
+		deployTarget, err := targets.FindDeployTarget(c.DeployTarget)
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
-		instance.DeployTargetID = deployTarget.ID
+		instanceReq.DeployTarget = &deployTarget
 	}
 
-	instanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.InstanceType)
+	instanceTypes, err := client.ListInstanceTypes(ctx)
 	if err != nil {
-		return fmt.Errorf("error retrieving instance type: %w", err)
+		return fmt.Errorf("error listing instance type: %w", err)
 	}
-	instance.InstanceTypeID = instanceType.ID
 
-	privateNetworks := make([]*egoscale.PrivateNetwork, len(c.PrivateNetworks))
+	// c.InstanceType is never empty
+	instanceType := utils.ParseInstanceType(c.InstanceType)
+	for i, it := range instanceTypes.InstanceTypes {
+		if it.Family == instanceType.Family && it.Size == instanceType.Size {
+			instanceReq.InstanceType = &instanceTypes.InstanceTypes[i]
+			break
+		}
+	}
+	if instanceReq.InstanceType == nil {
+		return fmt.Errorf("error retrieving instance type %s: not found", c.InstanceType)
+	}
+
+	privateNetworks := make([]v3.PrivateNetwork, len(c.PrivateNetworks))
 	if l := len(c.PrivateNetworks); l > 0 {
+		pNetworks, err := client.ListPrivateNetworks(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Private Network: %w", err)
+		}
+
 		for i := range c.PrivateNetworks {
-			privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
+			privateNetwork, err := pNetworks.FindPrivateNetwork(c.PrivateNetworks[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
@@ -136,23 +159,26 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 	}
 
 	if l := len(c.SecurityGroups); l > 0 {
-		securityGroupIDs := make([]string, l)
+		sgs, err := client.ListSecurityGroups(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Security Group: %w", err)
+		}
+		instanceReq.SecurityGroups = make([]v3.SecurityGroup, l)
 		for i := range c.SecurityGroups {
-			securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
+			securityGroup, err := sgs.FindSecurityGroup(c.SecurityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
-			securityGroupIDs[i] = *securityGroup.ID
+			instanceReq.SecurityGroups[i] = v3.SecurityGroup{ID: securityGroup.ID}
 		}
-		instance.SecurityGroupIDs = &securityGroupIDs
 	}
 
-	if instance.SSHKey == nil && account.CurrentAccount.DefaultSSHKey != "" {
-		instance.SSHKey = &account.CurrentAccount.DefaultSSHKey
+	if instanceReq.SSHKeys == nil && account.CurrentAccount.DefaultSSHKey != "" {
+		instanceReq.SSHKeys = []v3.SSHKey{{Name: account.CurrentAccount.DefaultSSHKey}}
 	}
 
 	// Generating a single-use SSH key pair for this instance.
-	if instance.SSHKey == nil {
+	if instanceReq.SSHKeys == nil {
 		singleUseSSHPrivateKey, err = rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
 			return fmt.Errorf("error generating SSH private key: %w", err)
@@ -166,20 +192,30 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			return fmt.Errorf("error generating SSH public key: %w", err)
 		}
 
-		sshKey, err = globalstate.EgoscaleClient.RegisterSSHKey(
+		sshKeyName := fmt.Sprintf("%s-%d", c.Name, time.Now().Unix())
+		op, err := client.RegisterSSHKey(
 			ctx,
-			c.Zone,
-			fmt.Sprintf("%s-%d", c.Name, time.Now().Unix()),
-			string(ssh.MarshalAuthorizedKey(singleUseSSHPublicKey)),
+			v3.RegisterSSHKeyRequest{
+				Name:      sshKeyName,
+				PublicKey: string(ssh.MarshalAuthorizedKey(singleUseSSHPublicKey)),
+			},
 		)
 		if err != nil {
 			return fmt.Errorf("error registering SSH key: %w", err)
 		}
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("error wait registering SSH key: %w", err)
+		}
 
-		instance.SSHKey = sshKey.Name
+		instanceReq.SSHKeys = []v3.SSHKey{{Name: sshKeyName}}
 	}
 
-	template, err := globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+	if err != nil {
+		return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
+	}
+	template, err := templates.FindTemplate(c.Template)
 	if err != nil {
 		return fmt.Errorf(
 			"no template %q found with visibility %s in zone %s",
@@ -188,24 +224,41 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			c.Zone,
 		)
 	}
-	instance.TemplateID = template.ID
+	instanceReq.Template = &template
 
 	if c.CloudInitFile != "" {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
-		instance.UserData = &userData
+		instanceReq.UserData = userData
 	}
 
+	var instanceID v3.UUID
 	decorateAsyncOperation(fmt.Sprintf("Creating instance %q...", c.Name), func() {
-		instance, err = globalstate.EgoscaleClient.CreateInstance(ctx, c.Zone, instance)
+		var op *v3.Operation
+		op, err = client.CreateInstance(ctx, instanceReq)
 		if err != nil {
 			return
 		}
 
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return
+		}
+		if op.Reference != nil {
+			instanceID = op.Reference.ID
+		}
+
 		for _, p := range privateNetworks {
-			if err = globalstate.EgoscaleClient.AttachInstanceToPrivateNetwork(ctx, c.Zone, instance, p); err != nil {
+			op, err = client.AttachInstanceToPrivateNetwork(ctx, p.ID, v3.AttachInstanceToPrivateNetworkRequest{
+				Instance: &v3.AttachInstanceToPrivateNetworkRequestInstance{ID: instanceID},
+			})
+			if err != nil {
+				return
+			}
+			_, err = client.Wait(ctx, op)
+			if err != nil {
 				return
 			}
 		}
@@ -215,7 +268,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 	}
 
 	if singleUseSSHPrivateKey != nil {
-		privateKeyFilePath := exossh.GetInstanceSSHKeyPath(*instance.ID)
+		privateKeyFilePath := exossh.GetInstanceSSHKeyPath(instanceID.String())
 
 		if err = os.MkdirAll(path.Dir(privateKeyFilePath), 0o700); err != nil {
 			return fmt.Errorf("error writing SSH private key file: %w", err)
@@ -232,16 +285,22 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			return fmt.Errorf("error writing SSH private key file: %w", err)
 		}
 
-		if err = globalstate.EgoscaleClient.DeleteSSHKey(ctx, c.Zone, sshKey); err != nil {
+		op, err := client.DeleteSSHKey(ctx, instanceReq.SSHKeys[0].Name)
+		if err != nil {
 			return fmt.Errorf("error deleting SSH key: %w", err)
+		}
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("error wait deleting SSH key: %w", err)
 		}
 	}
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Instance:           *instance.ID,
-			Zone:               c.Zone,
+			Instance:           instanceID.String(),
+			// TODO migrate instanceShow to v3 to pass v3.ZoneName
+			Zone: string(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 

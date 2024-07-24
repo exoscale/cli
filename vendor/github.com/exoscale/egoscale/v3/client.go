@@ -46,13 +46,13 @@ func (c Client) GetZoneAPIEndpoint(ctx context.Context, zoneName ZoneName) (Endp
 	if err != nil {
 		return "", fmt.Errorf("get zone api endpoint: %w", err)
 	}
-	for _, zone := range resp.Zones {
-		if zone.Name == zoneName {
-			return zone.APIEndpoint, nil
-		}
+
+	zone, err := resp.FindZone(string(zoneName))
+	if err != nil {
+		return "", fmt.Errorf("get zone api endpoint: %w", err)
 	}
 
-	return "", fmt.Errorf("get zone api endpoint: zone name %s not found", zoneName)
+	return zone.APIEndpoint, nil
 }
 
 // Client represents an Exoscale API client.
