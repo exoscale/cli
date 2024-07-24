@@ -5,6 +5,7 @@
 ### Improvements
 
 - Instance Create: Migrate to egoscale v3 and add multiple sshkeys #620
+- dbaas: use dedicated reveal-password endpoint to fetch password and build URI #618
 
 ## 1.78.4
 

@@ -17,6 +17,7 @@ import (
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbServicePGConnectionPool struct {
@@ -181,7 +182,39 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		return nil, nil
 
 	case c.ShowURI:
-		fmt.Println(utils.DefaultString(databaseService.Uri, ""))
+		// Read password from dedicated endpoint
+		client, err := switchClientZoneV3(
+			ctx,
+			globalstate.EgoscaleV3Client,
+			v3.ZoneName(c.Zone),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		uriParams := *databaseService.UriParams
+
+		creds, err := client.RevealDBAASPostgresUserPassword(
+			ctx,
+			string(databaseService.Name),
+			uriParams["user"].(string),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Build URI
+		uri := fmt.Sprintf(
+			"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+			uriParams["user"],
+			creds.Password,
+			uriParams["host"],
+			uriParams["port"],
+			uriParams["dbname"],
+			uriParams["sslmode"],
+		)
+
+		fmt.Println(uri)
 		return nil, nil
 	}
 
