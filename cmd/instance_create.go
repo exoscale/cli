@@ -299,7 +299,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           instanceID.String(),
-			// migrate instanceShow to v3 to pass v3.ZoneName
+			// TODO migrate instanceShow to v3 to pass v3.ZoneName
 			Zone: string(c.Zone),
 		}).cmdRun(nil, nil)
 	}
