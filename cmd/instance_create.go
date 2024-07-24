@@ -122,7 +122,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
-		instanceReq.DeployTarget = &deployTarget
+		instanceReq.DeployTarget = &v3.DeployTarget{ID: deployTarget.ID}
 	}
 
 	instanceTypes, err := client.ListInstanceTypes(ctx)
@@ -224,7 +224,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			c.Zone,
 		)
 	}
-	instanceReq.Template = &template
+	instanceReq.Template = &v3.Template{ID: template.ID}
 
 	if c.CloudInitFile != "" {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
