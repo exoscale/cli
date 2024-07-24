@@ -99,7 +99,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
-		antiAffinityGroupIDs := make([]v3.AntiAffinityGroup, l)
+		instanceReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, l)
 		af, err := client.ListAntiAffinityGroups(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing Anti-Affinity Group: %w", err)
@@ -109,10 +109,8 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
-			antiAffinityGroupIDs[i] = antiAffinityGroup
+			instanceReq.AntiAffinityGroups[i] = v3.AntiAffinityGroup{ID: antiAffinityGroup.ID}
 		}
-
-		instanceReq.AntiAffinityGroups = antiAffinityGroupIDs
 	}
 
 	if c.DeployTarget != "" {
@@ -171,7 +169,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
-			instanceReq.SecurityGroups[i] = securityGroup
+			instanceReq.SecurityGroups[i] = v3.SecurityGroup{ID: securityGroup.ID}
 		}
 	}
 
