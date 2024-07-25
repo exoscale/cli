@@ -5,7 +5,6 @@
 ### Improvements
 
 - dbaas: use dedicated reveal-password endpoint to fetch password and build URI #618
-- Compute Instance delete: Remove multiple entities by their IDs/Names (#619)
 - Instance Create: Migrate to egoscale v3 and add multiple sshkeys #620
 - Reword quota description for blockstorage quotas (#622)
 
