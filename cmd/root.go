@@ -172,6 +172,13 @@ func initConfig() { //nolint:gocyclo
 			account.CurrentAccount.SosEndpoint = sosEndpointFromEnv
 		}
 
+		clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
+		if clientTimeoutFromEnv != "" {
+			if t, err := strconv.Atoi(clientTimeoutFromEnv); err == nil {
+				account.CurrentAccount.ClientTimeout = t
+			}
+		}
+
 		account.GAllAccount = &account.Config{
 			DefaultAccount: account.CurrentAccount.Name,
 			Accounts:       []account.Account{*account.CurrentAccount},
