@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -86,6 +88,18 @@ argument with "/":
 
 		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive)
 		if err != nil {
+			e := sos.NewBatchErrorList()
+			if errors.As(err, e) {
+				if verbose {
+					for _, o := range deleted {
+						fmt.Println(aws.ToString(o.Key))
+					}
+				}
+
+				for _, e := range e.List {
+					fmt.Fprintln(os.Stderr, e)
+				}
+			}
 			return fmt.Errorf("unable to delete objects: %w", err)
 		}
 
