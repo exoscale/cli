@@ -100,6 +100,7 @@ argument with "/":
 					fmt.Fprintln(os.Stderr, e)
 				}
 			}
+
 			return fmt.Errorf("unable to delete objects: %w", err)
 		}
 
