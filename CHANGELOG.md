@@ -6,6 +6,10 @@
 
 - Set API timeout from ENV when credentials are specified in ENV #625
 
+### Changes
+
+- Remove IAM access-key commands #626
+
 ## 1.78.5
 
 ### Improvements
