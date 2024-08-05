@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+- Set API timeout from ENV when credentials are specified in ENV #625
+
 ## 1.78.5
 
 ### Improvements
