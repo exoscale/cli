@@ -49,7 +49,7 @@ func (l BatchErrorList) Error() string {
 
 func (l *BatchErrorList) AddErrors(errs []types.Error) {
 	for _, err := range errs {
-		l.List = append(l.List, fmt.Errorf("%s", err.Message))
+		l.List = append(l.List, fmt.Errorf("%v", err.Message))
 	}
 }
 
