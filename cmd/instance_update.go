@@ -3,8 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	egoscale3 "github.com/exoscale/egoscale/v3"
 	"strings"
+
+	egoscale3 "github.com/exoscale/egoscale/v3"
 
 	"github.com/spf13/cobra"
 
