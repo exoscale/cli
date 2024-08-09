@@ -263,8 +263,10 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 				return
 			}
 		}
+		fmt.Printf("Protection flag value: %v\n", c.Protection)
 
 		if c.Protection {
+			fmt.Println("Protection flag is set, adding protection...")
 			var value egoscale3.UUID
 			var op *egoscale3.Operation
 			value, err = egoscale3.ParseUUID(*instance.ID)
@@ -275,7 +277,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			if err != nil {
 				return
 			}
-			op, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
+			_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
 
 		}
 	})

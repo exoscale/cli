@@ -99,21 +99,25 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 					err = globalstate.EgoscaleClient.UpdateInstanceReverseDNS(ctx, c.Zone, *instance.ID, c.ReverseDNS)
 				}
 			}
-			var value egoscale3.UUID
-			var op *egoscale3.Operation
-			value, err = egoscale3.ParseUUID(*instance.ID)
-			if err != nil {
-				return
+
+			if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
+				fmt.Println("Protection flag is set, adding protection...")
+				var value egoscale3.UUID
+				var op *egoscale3.Operation
+				value, err = egoscale3.ParseUUID(*instance.ID)
+				if err != nil {
+					return
+				}
+				if c.Protection {
+					op, err = globalstate.EgoscaleV3Client.AddInstanceProtection(ctx, value)
+				} else {
+					op, err = globalstate.EgoscaleV3Client.RemoveInstanceProtection(ctx, value)
+				}
+				if err != nil {
+					return
+				}
+				_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
 			}
-			if c.Protection {
-				op, err = globalstate.EgoscaleV3Client.AddInstanceProtection(ctx, value)
-			} else {
-				op, err = globalstate.EgoscaleV3Client.RemoveInstanceProtection(ctx, value)
-			}
-			if err != nil {
-				return
-			}
-			op, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
 
 		})
 
