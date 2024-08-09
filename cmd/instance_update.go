@@ -101,7 +101,6 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			}
 
 			if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
-				fmt.Println("Protection flag is set, adding protection...")
 				var value egoscale3.UUID
 				var op *egoscale3.Operation
 				value, err = egoscale3.ParseUUID(*instance.ID)

@@ -263,10 +263,8 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 				return
 			}
 		}
-		fmt.Printf("Protection flag value: %v\n", c.Protection)
 
 		if c.Protection {
-			fmt.Println("Protection flag is set, adding protection...")
 			var value egoscale3.UUID
 			var op *egoscale3.Operation
 			value, err = egoscale3.ParseUUID(*instance.ID)
