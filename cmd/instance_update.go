@@ -84,7 +84,7 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		updatedRDNS = true
 	}
 
-	if updatedInstance || updatedRDNS {
+	if updatedInstance || updatedRDNS || cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
 		decorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
 			if updatedInstance {
 				if err = globalstate.EgoscaleClient.UpdateInstance(ctx, c.Zone, instance); err != nil {
