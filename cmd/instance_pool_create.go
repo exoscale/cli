@@ -2,17 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/spf13/cobra"
+	"strings"
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolCreateCmd struct {
@@ -33,13 +31,14 @@ type instancePoolCreateCmd struct {
 	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
 	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
+	MinAvailable       int64             `cli-usage:"Minimum number of running Instances"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
-	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances"`
+	SSHKeys            []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances (can be specified multiple times)"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
 	Size               int64             `cli-usage:"Instance Pool size"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
-	Zone               string            `cli-short:"z" cli-usage:"Instance Pool zone"`
+	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
 func (c *instancePoolCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -61,91 +60,129 @@ func (c *instancePoolCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	instancePool := &egoscale.InstancePool{
-		Description:    utils.NonEmptyStringPtr(c.Description),
-		DiskSize:       &c.DiskSize,
-		IPv6Enabled:    &c.IPv6,
-		InstancePrefix: utils.NonEmptyStringPtr(c.InstancePrefix),
-		Labels: func() (v *map[string]string) {
-			if len(c.Labels) > 0 {
-				return &c.Labels
-			}
-			return
-		}(),
-		Name:   &c.Name,
-		SSHKey: utils.NonEmptyStringPtr(c.SSHKey),
-		Size:   &c.Size,
+
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	var sshKeys []v3.SSHKey
+	for _, sshkeyName := range c.SSHKeys {
+		sshKeys = append(sshKeys, v3.SSHKey{Name: sshkeyName})
+	}
+
+	instancePoolReq := v3.CreateInstancePoolRequest{
+		Description:    c.Description,
+		DiskSize:       c.DiskSize,
+		Ipv6Enabled:    &c.IPv6,
+		InstancePrefix: c.InstancePrefix,
+		Labels:         c.Labels,
+		MinAvailable:   c.MinAvailable,
+		Name:           c.Name,
+		SSHKeys:        sshKeys,
+		Size:           c.Size,
+	}
 
 	if l := len(c.AntiAffinityGroups); l > 0 {
-		antiAffinityGroupIDs := make([]string, l)
+		instancePoolReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, l)
+		af, err := client.ListAntiAffinityGroups(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Anti-Affinity Group: %w", err)
+		}
 		for i := range c.AntiAffinityGroups {
-			antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
+			antiAffinityGroup, err := af.FindAntiAffinityGroup(c.AntiAffinityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
-			antiAffinityGroupIDs[i] = *antiAffinityGroup.ID
+			instancePoolReq.AntiAffinityGroups[i] = v3.AntiAffinityGroup{ID: antiAffinityGroup.ID}
 		}
-		instancePool.AntiAffinityGroupIDs = &antiAffinityGroupIDs
 	}
 
 	if c.DeployTarget != "" {
-		deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+		targets, err := client.ListDeployTargets(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Deploy Target: %w", err)
+		}
+		deployTarget, err := targets.FindDeployTarget(c.DeployTarget)
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
-		instancePool.DeployTargetID = deployTarget.ID
+		instancePoolReq.DeployTarget = &v3.DeployTarget{ID: deployTarget.ID}
 	}
 
-	if l := len(c.ElasticIPs); l > 0 {
-		elasticIPIDs := make([]string, l)
-		for i := range c.ElasticIPs {
-			elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIPs[i])
-			if err != nil {
-				return fmt.Errorf("error retrieving Elastic IP: %w", err)
-			}
-			elasticIPIDs[i] = *elasticIP.ID
-		}
-		instancePool.ElasticIPIDs = &elasticIPIDs
-	}
+	//if l := len(c.ElasticIPs); l > 0 {
+	//	instancePoolReq.ElasticIPS = make([]v3.ElasticIP, l)
+	//	eIP, err := client.ListElasticIPs(ctx)
+	//	if err != nil {
+	//		return fmt.Errorf("error listing Elastic IP: %w", err)
+	//	}
+	//	for i := range c.ElasticIPs {
+	//		elasticIP, err := eIP.FindElasticIP(c.ElasticIPs[i])
+	//		if err != nil {
+	//			return fmt.Errorf("error retrieving Elastic IP: %w", err)
+	//		}
+	//		instancePoolReq.ElasticIPS[i] = elasticIP
+	//	}
+	//}
 
-	instanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.InstanceType)
+	instanceTypes, err := client.ListInstanceTypes(ctx)
 	if err != nil {
-		return fmt.Errorf("error retrieving instance type: %w", err)
+		return fmt.Errorf("error listing instance type: %w", err)
 	}
-	instancePool.InstanceTypeID = instanceType.ID
 
+	// c.InstanceType is never empty
+	instanceType := utils.ParseInstanceType(c.InstanceType)
+	for i, it := range instanceTypes.InstanceTypes {
+		if it.Family == instanceType.Family && it.Size == instanceType.Size {
+			instancePoolReq.InstanceType = &instanceTypes.InstanceTypes[i]
+			break
+		}
+	}
+	if instancePoolReq.InstanceType == nil {
+		return fmt.Errorf("error retrieving instance type %s: not found", c.InstanceType)
+	}
+
+	privateNetworks := make([]v3.PrivateNetwork, len(c.PrivateNetworks))
 	if l := len(c.PrivateNetworks); l > 0 {
-		privateNetworkIDs := make([]string, l)
+		pNetworks, err := client.ListPrivateNetworks(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Private Network: %w", err)
+		}
+
 		for i := range c.PrivateNetworks {
-			privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
+			privateNetwork, err := pNetworks.FindPrivateNetwork(c.PrivateNetworks[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
-			privateNetworkIDs[i] = *privateNetwork.ID
+			privateNetworks[i] = privateNetwork
 		}
-		instancePool.PrivateNetworkIDs = &privateNetworkIDs
 	}
 
 	if l := len(c.SecurityGroups); l > 0 {
-		securityGroupIDs := make([]string, l)
+		sgs, err := client.ListSecurityGroups(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Security Group: %w", err)
+		}
+		instancePoolReq.SecurityGroups = make([]v3.SecurityGroup, l)
 		for i := range c.SecurityGroups {
-			securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
+			securityGroup, err := sgs.FindSecurityGroup(c.SecurityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
-			securityGroupIDs[i] = *securityGroup.ID
+			instancePoolReq.SecurityGroups[i] = v3.SecurityGroup{ID: securityGroup.ID}
 		}
-		instancePool.SecurityGroupIDs = &securityGroupIDs
 	}
 
-	if instancePool.SSHKey == nil && account.CurrentAccount.DefaultSSHKey != "" {
-		instancePool.SSHKey = &account.CurrentAccount.DefaultSSHKey
+	if instancePoolReq.SSHKeys == nil && account.CurrentAccount.DefaultSSHKey != "" {
+		instancePoolReq.SSHKeys = []v3.SSHKey{{Name: account.CurrentAccount.DefaultSSHKey}}
 	}
 
-	template, err := globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+	if err != nil {
+		return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
+	}
+	template, err := templates.FindTemplate(c.Template)
 	if err != nil {
 		return fmt.Errorf(
 			"no template %q found with visibility %s in zone %s",
@@ -154,18 +191,33 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			c.Zone,
 		)
 	}
-	instancePool.TemplateID = template.ID
+	instancePoolReq.Template = &v3.Template{ID: template.ID}
 
 	if c.CloudInitFile != "" {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
-		instancePool.UserData = &userData
+		instancePoolReq.UserData = userData
 	}
 
+	var instancePoolID v3.UUID
+
 	decorateAsyncOperation(fmt.Sprintf("Creating Instance Pool %q...", c.Name), func() {
-		instancePool, err = globalstate.EgoscaleClient.CreateInstancePool(ctx, c.Zone, instancePool)
+		var op *v3.Operation
+		op, err = client.CreateInstancePool(ctx, instancePoolReq)
+		if err != nil {
+			return
+		}
+
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return
+		}
+		if op.Reference != nil {
+			instancePoolID = op.Reference.ID
+		}
+
 	})
 	if err != nil {
 		return err
@@ -174,8 +226,9 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Zone:               c.Zone,
-			InstancePool:       *instancePool.ID,
+			InstancePool:       instancePoolID.String(),
+			// TODO migrate instanceShow to v3 to pass v3.ZoneName
+			Zone: string(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
@@ -189,6 +242,7 @@ func init() {
 		DiskSize:           50,
 		InstanceType:       fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
 		Size:               1,
+		MinAvailable:       0,
 		TemplateVisibility: defaultTemplateVisibility,
 	}))
 }
