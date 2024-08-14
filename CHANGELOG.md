@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+-  Fix list of dependencies for archlinux builds #628
+
 ## 1.78.6
 
 ### Bug Fixes
