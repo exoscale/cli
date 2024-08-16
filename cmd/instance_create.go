@@ -20,6 +20,7 @@ import (
 	exossh "github.com/exoscale/cli/pkg/ssh"
 	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
+	egoscale3 "github.com/exoscale/egoscale/v3"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
