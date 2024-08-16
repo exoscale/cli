@@ -3,6 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	egoscale3 "github.com/exoscale/egoscale/v3"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -25,6 +26,7 @@ type instanceUpdateCmd struct {
 	CloudInitCompress bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
 	Labels            map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	Name              string            `cli-short:"n" cli-usage:"instance name"`
+	Protection        bool              `cli-flag:"protection" cli-usage:"enable delete protection"`
 	Zone              string            `cli-short:"z" cli-usage:"instance zone"`
 	ReverseDNS        string            `cli-usage:"Reverse DNS Domain"`
 }
@@ -97,6 +99,22 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 					err = globalstate.EgoscaleClient.UpdateInstanceReverseDNS(ctx, c.Zone, *instance.ID, c.ReverseDNS)
 				}
 			}
+			var value egoscale3.UUID
+			var op *egoscale3.Operation
+			value, err = egoscale3.ParseUUID(*instance.ID)
+			if err != nil {
+				return
+			}
+			if c.Protection {
+				op, err = globalstate.EgoscaleV3Client.AddInstanceProtection(ctx, value)
+			} else {
+				op, err = globalstate.EgoscaleV3Client.RemoveInstanceProtection(ctx, value)
+			}
+			if err != nil {
+				return
+			}
+			op, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
+
 		})
 
 		if err != nil {
