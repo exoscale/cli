@@ -268,7 +268,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 		if c.Protection {
 			var value egoscale3.UUID
 			var op *egoscale3.Operation
-			value, err = egoscale3.ParseUUID(*instance.ID)
+			value, err = egoscale3.ParseUUID(instanceID.String())
 			if err != nil {
 				return
 			}
