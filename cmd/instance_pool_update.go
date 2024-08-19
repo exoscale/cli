@@ -33,7 +33,7 @@ type instancePoolUpdateCmd struct {
 	MinAvailable       int64             `cli-usage:"Minimum number of running Instances"`
 	Name               string            `cli-short:"n" cli-usage:"Instance Pool name"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
-	SSHKeys            []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances (can be specified multiple times)"`
+	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances (can be specified multiple times)"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
@@ -102,17 +102,17 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
-		instancePoolReq.DeployTarget = &v3.DeployTarget{ID: deployTarget.ID}
+		updateReq.DeployTarget = &v3.DeployTarget{ID: deployTarget.ID}
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		updateReq.Description = &c.Description
+		updateReq.Description = c.Description
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DiskSize)) {
-		updateReq.DiskSize = &c.DiskSize
+		updateReq.DiskSize = c.DiskSize
 		updated = true
 	}
 
@@ -127,7 +127,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 			if err != nil {
 				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
-			updateReq.ElasticIPs[i] = v3.ElasticIP{ID: elasticIP.ID}
+			updateReq.ElasticIPS[i] = v3.ElasticIP{ID: elasticIP.ID}
 
 		}
 		updated = true
@@ -154,7 +154,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
-		updateReq.Name = &c.Name
+		updateReq.Name = c.Name
 		updated = true
 	}
 
@@ -204,7 +204,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	//}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SSHKey)) {
-		updateReq.SSHKey = &c.SSHKey
+		updateReq.SSHKey = c.SSHKey
 		updated = true
 	}
 
@@ -237,7 +237,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 
 	if updated {
 		decorateAsyncOperation(fmt.Sprintf("Updating Instance Pool %q...", c.InstancePool), func() {
-			op, err := client.UpdateInstancePoolRequest(ctx, updateReq)
+			op, err := client.UpdateInstancePool(ctx, instancePool.ID, updateReq)
 		})
 		if err != nil {
 			return err
@@ -247,7 +247,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			InstancePool:       InstancePool.String(),
+			InstancePool:       instancePool.String(),
 			Zone:               string(c.Zone),
 		}).cmdRun(nil, nil)
 	}
