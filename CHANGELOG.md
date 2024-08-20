@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Improvements
+
+- go.mk: update to v2.0.2 #630 
+
 ### Bug Fixes
 
 -  Fix list of dependencies for archlinux builds #628
