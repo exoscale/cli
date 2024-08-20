@@ -20,7 +20,6 @@ import (
 	exossh "github.com/exoscale/cli/pkg/ssh"
 	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
-	egoscale3 "github.com/exoscale/egoscale/v3"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -266,9 +265,9 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 		}
 
 		if c.Protection {
-			var value egoscale3.UUID
-			var op *egoscale3.Operation
-			value, err = egoscale3.ParseUUID(instanceID.String())
+			var value v3.UUID
+			var op *v3.Operation
+			value, err = v3.ParseUUID(instanceID.String())
 			if err != nil {
 				return
 			}
@@ -276,7 +275,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			if err != nil {
 				return
 			}
-			_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
+			_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
 
 		}
 	})
