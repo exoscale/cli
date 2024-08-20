@@ -139,7 +139,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.IPv6)) {
-		updateReq.IPv6Enabled = &c.IPv6
+		updateReq.Ipv6Enabled = &c.IPv6
 		updated = true
 	}
 
@@ -204,7 +204,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	//}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SSHKey)) {
-		updateReq.SSHKey = c.SSHKey
+		updateReq.SSHKey = &v3.SSHKey{Name: c.SSHKey}
 		updated = true
 	}
 
@@ -231,13 +231,14 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
-		updateReq.UserData = userData
+		updateReq.UserData = &userData
 		updated = true
 	}
 
 	if updated {
 		decorateAsyncOperation(fmt.Sprintf("Updating Instance Pool %q...", c.InstancePool), func() {
-			op, err := client.UpdateInstancePool(ctx, instancePool.ID, updateReq)
+			_, updateErr := client.UpdateInstancePool(ctx, instancePool.ID, updateReq)
+			err = updateErr
 		})
 		if err != nil {
 			return err
@@ -247,7 +248,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			InstancePool:       instancePool.String(),
+			InstancePool:       instancePool.ID.String(),
 			Zone:               string(c.Zone),
 		}).cmdRun(nil, nil)
 	}
