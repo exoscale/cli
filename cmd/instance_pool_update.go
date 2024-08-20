@@ -71,7 +71,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		return err
 	}
 
-	instancePool, err := instancePools.FindInstancePool(c.Name)
+	instancePool, err := instancePools.FindInstancePool(c.InstancePool)
 	if err != nil {
 		return err
 	}
