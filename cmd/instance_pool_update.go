@@ -192,7 +192,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	//if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) {
+	//if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) { //
 	//	instanceTypes, err := client.ListInstanceTypes(ctx)
 	//
 	//	if err != nil {
