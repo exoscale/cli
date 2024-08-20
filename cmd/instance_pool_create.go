@@ -112,20 +112,20 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		instancePoolReq.DeployTarget = &v3.DeployTarget{ID: deployTarget.ID}
 	}
 
-	//if l := len(c.ElasticIPs); l > 0 {
-	//	instancePoolReq.ElasticIPS = make([]v3.ElasticIP, l)
-	//	eIP, err := client.ListElasticIPS(ctx)
-	//	if err != nil {
-	//		return fmt.Errorf("error listing Elastic IP: %w", err)
-	//	}
-	//	for i := range c.ElasticIPs {
-	//		elasticIP, err := eIP.FindElasticIP(c.ElasticIPs[i])
-	//		if err != nil {
-	//			return fmt.Errorf("error retrieving Elastic IP: %w", err)
-	//		}
-	//		instancePoolReq.ElasticIPS[i] = elasticIP
-	//	}
-	//}
+	if l := len(c.ElasticIPs); l > 0 {
+		instancePoolReq.ElasticIPS = make([]v3.ElasticIP, l)
+		eIP, err := client.ListElasticIPS(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Elastic IP: %w", err)
+		}
+		for i := range c.ElasticIPs {
+			elasticIP, err := eIP.FindElasticIP(c.ElasticIPs[i])
+			if err != nil {
+				return fmt.Errorf("error retrieving Elastic IP: %w", err)
+			}
+			instancePoolReq.ElasticIPS[i] = elasticIP
+		}
+	}
 
 	instanceTypes, err := client.ListInstanceTypes(ctx)
 	if err != nil {
