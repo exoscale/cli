@@ -33,7 +33,7 @@ type instancePoolUpdateCmd struct {
 	MinAvailable       int64             `cli-usage:"Minimum number of running Instances"`
 	Name               string            `cli-short:"n" cli-usage:"Instance Pool name"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
-	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances (can be specified multiple times)"`
+	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
