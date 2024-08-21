@@ -2,10 +2,11 @@
 
 ## Unreleased
 
-- DBaaS: external endpoints and integrations commands #631
+## 1.79.0
 
 ### Improvements
 
+- DBaaS: external endpoints and integrations commands #631
 - go.mk: update to v2.0.2 #630 
 
 ### Bug Fixes
