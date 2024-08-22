@@ -34,7 +34,7 @@ type instancePoolCreateCmd struct {
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
 	MinAvailable       int64             `cli-usage:"Minimum number of running Instances"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
-	SSHKeys            []string          `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances (can be specified multiple times)"`
+	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
 	Size               int64             `cli-usage:"Instance Pool size"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
@@ -68,10 +68,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	var sshKeys []v3.SSHKey
-	for _, sshkeyName := range c.SSHKeys {
-		sshKeys = append(sshKeys, v3.SSHKey{Name: sshkeyName})
-	}
+	sshKey := &v3.SSHKey{Name: c.SSHKey}
 
 	instancePoolReq := v3.CreateInstancePoolRequest{
 		Description:    c.Description,
@@ -81,7 +78,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Labels:         c.Labels,
 		MinAvailable:   c.MinAvailable,
 		Name:           c.Name,
-		SSHKeys:        sshKeys,
+		SSHKey:         sshKey,
 		Size:           c.Size,
 	}
 
@@ -175,8 +172,8 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	if instancePoolReq.SSHKeys == nil && account.CurrentAccount.DefaultSSHKey != "" {
-		instancePoolReq.SSHKeys = []v3.SSHKey{{Name: account.CurrentAccount.DefaultSSHKey}}
+	if instancePoolReq.SSHKey == nil && account.CurrentAccount.DefaultSSHKey != "" {
+		instancePoolReq.SSHKey = &v3.SSHKey{Name: account.CurrentAccount.DefaultSSHKey}
 	}
 
 	templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
