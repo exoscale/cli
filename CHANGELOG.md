@@ -4,6 +4,10 @@
 
 ## 1.79.0
 
+### Features
+
+- instance: add a protection flag to exo compute #608
+
 ### Improvements
 
 - DBaaS: external endpoints and integrations commands #631

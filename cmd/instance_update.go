@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	egoscale3 "github.com/exoscale/egoscale/v3"
+
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/account"
@@ -25,6 +27,7 @@ type instanceUpdateCmd struct {
 	CloudInitCompress bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
 	Labels            map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	Name              string            `cli-short:"n" cli-usage:"instance name"`
+	Protection        bool              `cli-flag:"protection" cli-usage:"enable delete protection"`
 	Zone              string            `cli-short:"z" cli-usage:"instance zone"`
 	ReverseDNS        string            `cli-usage:"Reverse DNS Domain"`
 }
@@ -82,7 +85,7 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		updatedRDNS = true
 	}
 
-	if updatedInstance || updatedRDNS {
+	if updatedInstance || updatedRDNS || cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
 		decorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
 			if updatedInstance {
 				if err = globalstate.EgoscaleClient.UpdateInstance(ctx, c.Zone, instance); err != nil {
@@ -97,6 +100,25 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 					err = globalstate.EgoscaleClient.UpdateInstanceReverseDNS(ctx, c.Zone, *instance.ID, c.ReverseDNS)
 				}
 			}
+
+			if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
+				var value egoscale3.UUID
+				var op *egoscale3.Operation
+				value, err = egoscale3.ParseUUID(*instance.ID)
+				if err != nil {
+					return
+				}
+				if c.Protection {
+					op, err = globalstate.EgoscaleV3Client.AddInstanceProtection(ctx, value)
+				} else {
+					op, err = globalstate.EgoscaleV3Client.RemoveInstanceProtection(ctx, value)
+				}
+				if err != nil {
+					return
+				}
+				_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
+			}
+
 		})
 
 		if err != nil {
