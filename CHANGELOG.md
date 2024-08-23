@@ -1,8 +1,15 @@
 # Changelog
 
 ## Unreleased
+
+### Improvements
+
+- go.mk: upgrade to v2.0.3 #632  
+
 ### Bug fixes
+
 - Fix creation and update of blockstorage volumes/snapshots in non-default zones
+
 ## 1.79.0
 
 ### Features
