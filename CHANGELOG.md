@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Improvements
+
+- go.mk: upgrade to v2.0.3 #632  
+
 ## 1.79.0
 
 ### Features
