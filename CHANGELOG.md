@@ -1,7 +1,8 @@
 # Changelog
 
 ## Unreleased
-
+### Bug fixes
+- Fix creation and update of blockstorage volumes/snapshots in non-default zones
 ## 1.79.0
 
 ### Features
