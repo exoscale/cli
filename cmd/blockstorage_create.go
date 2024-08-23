@@ -90,6 +90,7 @@ func (c *blockStorageCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return (&blockStorageShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Name:               c.Name,
+			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
 

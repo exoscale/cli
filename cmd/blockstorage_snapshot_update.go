@@ -91,6 +91,7 @@ func (c *blockStorageSnapshotUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) e
 		return (&blockStorageSnapshotShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Name:               name,
+			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
 
