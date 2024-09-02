@@ -1,17 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+
 	"github.com/spf13/cobra"
 )
-
-type DatadogTag struct {
-	// Optional tag explanation
-	Comment string `json:"comment,omitempty" validate:"omitempty,max=1024"`
-
-	// Tag value
-	Tag string `json:"tag" validate:"required,min=1,max=200,regex=^(?!aiven-)[^\\W\\d_](?:[:\\w./-]*[\\w./-])?$"`
-}
 
 type dbaasExternalEndpointCreateCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -21,19 +15,19 @@ type dbaasExternalEndpointCreateCmd struct {
 	Type string `cli-arg:"#"`
 	Name string `cli-arg:"#"`
 
-	HelpDatadog       bool `cli-usage:"show usage for flags specific to the datadog external endpoint	 type"`
+	HelpDatadog       bool `cli-usage:"show usage for flags specific to the datadog external endpoint type"`
 	HelpElasticsearch bool `cli-usage:"show usage for flags specific to the elasticsearch external endpoint type"`
 	HelpOpensearch    bool `cli-usage:"show usage for flags specific to the opensearch external endpoint type"`
 	HelpPrometheus    bool `cli-usage:"show usage for flags specific to the prometheus external endpoint type"`
 	HelpRsyslog       bool `cli-usage:"show usage for flags specific to the rsyslog external endpoint type"`
 
-	DatadogDatadogAPIKey               string       `cli-flag:"datadog-datadog-api-key" cli-usage:"Datadog API key" cli-hidden:""`
-	DatadogSite                        string       `cli-flag:"datadog-site" cli-usage:"Datadog intake site. Defaults to datadoghq.com" cli-hidden:""`
-	DatadogDatadogTags                 string       `cli-flag:"datadog-datadog-tags" cli-usage:"Datadog tags. Example. '[{\"comment\": \"ex\", \"tag\": \"aiven-asdfasda\"}]'" cli-hidden:""`
-	DatadogDisableConsumerStats        bool         `cli-flag:"datadog-disable-consumer-stats" cli-usage:"Disable consumer group metrics" cli-hidden:""`
-	DatadogKafkaConsumerCheckInstances int64        `cli-flag:"datadog-kafka-consumer-check-instances" cli-usage:"Number of separate instances to fetch kafka consumer statistics with" cli-hidden:""`
-	DatadogKafkaConsumerStatsTimeout   int64        `cli-flag:"datadog-kafka-consumer-stats-timeout" cli-usage:"Number of seconds that datadog will wait to get consumer statistics from brokers" cli-hidden:""`
-	DatadogMaxPartitionContexts        int64        `cli-flag:"datadog-max-partition-contexts" cli-usage:"Maximum number of partition contexts to send" cli-hidden:""`
+	DatadogAPIKey                      string `cli-flag:"datadog-api-key" cli-usage:"Datadog API key" cli-hidden:""`
+	DatadogSite                        string `cli-flag:"datadog-site" cli-usage:"Datadog intake site. Defaults to datadoghq.com" cli-hidden:""`
+	DatadogTags                        string `cli-flag:"datadog-tags" cli-usage:"Datadog tags. Example. '[{\"comment\": \"ex\", \"tag\": \"aiven-asdfasda\"}]'" cli-hidden:""`
+	DatadogDisableConsumerStats        bool   `cli-flag:"datadog-disable-consumer-stats" cli-usage:"Disable consumer group metrics" cli-hidden:""`
+	DatadogKafkaConsumerCheckInstances int64  `cli-flag:"datadog-kafka-consumer-check-instances" cli-usage:"Number of separate instances to fetch kafka consumer statistics with" cli-hidden:""`
+	DatadogKafkaConsumerStatsTimeout   int64  `cli-flag:"datadog-kafka-consumer-stats-timeout" cli-usage:"Number of seconds that datadog will wait to get consumer statistics from brokers" cli-hidden:""`
+	DatadogMaxPartitionContexts        int64  `cli-flag:"datadog-max-partition-contexts" cli-usage:"Maximum number of partition contexts to send" cli-hidden:""`
 
 	ElasticsearchURL          string `cli-flag:"elasticsearch-url" cli-usage:"Elasticsearch connection URL" cli-hidden:""`
 	ElasticsearchIndexPrefix  string `cli-flag:"elasticsearch-index-prefix" cli-usage:"Elasticsearch index prefix" cli-hidden:""`
@@ -81,12 +75,11 @@ func (c *dbaasExternalEndpointCreateCmd) cmdPreRun(cmd *cobra.Command, args []st
 		os.Exit(0)
 	}
 
-	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *dbaasExternalEndpointCreateCmd) cmdAliases() []string {
-	return []string{}
+	return gCreateAlias
 }
 
 func (c *dbaasExternalEndpointCreateCmd) cmdLong() string {
@@ -99,7 +92,21 @@ func (c *dbaasExternalEndpointCreateCmd) cmdShort() string {
 
 func (c *dbaasExternalEndpointCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	// Implement the command's main logic here
-	return nil
+	switch c.Type {
+	case "datadog":
+		return c.createDatadog(cmd, args)
+	// case "elasticsearch":
+	// 	return c.createElasticsearch(cmd, args)
+	// case "opensearch":
+	// 	return c.createOpensearch(cmd, args)
+	// case "prometheus":
+	// 	return c.createPrometheus(cmd, args)
+	// case "rsyslog":
+	// 	return c.createRsyslog(cmd, args)
+	default:
+		return fmt.Errorf("unsupported external endpoint type %q", c.Type)
+	}
+
 }
 
 func init() {
