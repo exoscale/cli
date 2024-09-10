@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -9,6 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -118,18 +120,24 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ElasticIPs)) {
 		updateReq.ElasticIPS = make([]v3.ElasticIP, len(c.ElasticIPs))
-		eIP, err := client.ListElasticIPS(ctx)
+		eipList, err := client.ListElasticIPS(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing Elastic IP: %w", err)
 		}
-		for i := range c.ElasticIPs {
-			elasticIP, err := eIP.FindElasticIP(c.ElasticIPs[i])
-			if err != nil {
-				return fmt.Errorf("error retrieving Elastic IP: %w", err)
+		for i, input := range c.ElasticIPs {
+			found := false
+			for _, eip := range eipList.ElasticIPS {
+				if input == eip.IP || input == string(eip.ID) {
+					updateReq.ElasticIPS[i] = v3.ElasticIP{ID: eip.ID}
+					found = true
+					break
+				}
 			}
-			updateReq.ElasticIPS[i] = v3.ElasticIP{ID: elasticIP.ID}
-
+			if !found {
+				fmt.Fprintf(os.Stderr, "warning: %s not found.\n", input)
+			}
 		}
+
 		updated = true
 	}
 
@@ -192,16 +200,25 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	//if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) { //
-	//	instanceTypes, err := client.ListInstanceTypes(ctx)
-	//
-	//	if err != nil {
-	//		return fmt.Errorf("error listing instance type: %w", err)
-	//	}
-	//
-	//	updateReq.InstanceTypeID = instanceType.ID
-	//	updated = true
-	//}
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) {
+		instanceTypes, err := client.ListInstanceTypes(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing instance type: %w", err)
+		}
+
+		instanceType := utils.ParseInstanceType(c.InstanceType)
+		for i, it := range instanceTypes.InstanceTypes {
+			if it.Family == instanceType.Family && it.Size == instanceType.Size {
+				updateReq.InstanceType = &v3.InstanceType{ID: instanceTypes.InstanceTypes[i].ID}
+				break
+			}
+		}
+		if updateReq.InstanceType == nil {
+			return fmt.Errorf("error retrieving instance type %s: not found", c.InstanceType)
+		}
+
+		updated = true
+	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SSHKey)) {
 		updateReq.SSHKey = &v3.SSHKey{Name: c.SSHKey}
