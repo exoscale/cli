@@ -191,6 +191,155 @@ type DBAASBackupConfig struct {
 
 type DBAASDatabaseName string
 
+type DBAASDatadogTag struct {
+	// Optional tag explanation
+	Comment string `json:"comment,omitempty" validate:"omitempty,lte=1024"`
+	// Tag value
+	Tag string `json:"tag" validate:"required,gte=1,lte=200"`
+}
+
+type DBAASEndpointDatadog struct {
+	// Datadog API key
+	DatadogAPIKey string `json:"datadog-api-key" validate:"required,gte=1,lte=256"`
+	// Custom tags provided by user
+	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
+	// Disable consumer group metrics
+	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
+	// Number of separate instances to fetch kafka consumer statistics with
+	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
+	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
+	// Maximum number of partition contexts to send
+	MaxPartitionContexts int64           `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
+	Site                 EnumDatadogSite `json:"site" validate:"required"`
+}
+
+type DBAASEndpointElasticsearch struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
+	// Maximum number of days of logs to keep
+	IndexDaysMax int64 `json:"index-days-max,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// Elasticsearch index prefix
+	IndexPrefix string `json:"index-prefix" validate:"required,gte=1,lte=1000"`
+	// Elasticsearch request timeout limit
+	Timeout int64 `json:"timeout,omitempty" validate:"omitempty,gte=10,lte=120"`
+	// Elasticsearch connection URL
+	URL string `json:"url" validate:"required,gte=12,lte=2048"`
+}
+
+type DBAASEndpointElasticsearchOutput struct {
+	// External integration endpoint id
+	ID UUID `json:"id,omitempty"`
+	// External integration endpoint name
+	Name     string                      `json:"name,omitempty"`
+	Settings *DBAASEndpointElasticsearch `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes   `json:"type,omitempty"`
+}
+
+type DBAASEndpointExternalPrometheusOutput struct {
+	// External integration endpoint id
+	ID UUID `json:"id,omitempty"`
+	// External integration endpoint name
+	Name     string                    `json:"name,omitempty"`
+	Settings *DBAASEndpointPrometheus  `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes `json:"type,omitempty"`
+}
+
+type DBAASEndpointOpensearch struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
+	// Maximum number of days of logs to keep
+	IndexDaysMax int64 `json:"index-days-max,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// OpenSearch index prefix
+	IndexPrefix string `json:"index-prefix" validate:"required,gte=1,lte=1000"`
+	// OpenSearch request timeout limit
+	Timeout int64 `json:"timeout,omitempty" validate:"omitempty,gte=10,lte=120"`
+	// OpenSearch connection URL
+	URL string `json:"url" validate:"required,gte=12,lte=2048"`
+}
+
+type DBAASEndpointOpensearchOutput struct {
+	// External integration endpoint id
+	ID UUID `json:"id,omitempty"`
+	// External integration endpoint name
+	Name     string                    `json:"name,omitempty"`
+	Settings *DBAASEndpointOpensearch  `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes `json:"type,omitempty"`
+}
+
+type DBAASEndpointPrometheus struct {
+	// Prometheus basic authentication password
+	BasicAuthPassword string `json:"basic-auth-password,omitempty" validate:"omitempty,gte=8,lte=64"`
+	// Prometheus basic authentication username
+	BasicAuthUsername string `json:"basic-auth-username,omitempty" validate:"omitempty,gte=5,lte=32"`
+}
+
+type DBAASEndpointRsyslog struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
+	// PEM encoded client certificate
+	Cert   string            `json:"cert,omitempty" validate:"omitempty,lte=16384"`
+	Format EnumRsyslogFormat `json:"format" validate:"required"`
+	// PEM encoded client key
+	Key string `json:"key,omitempty" validate:"omitempty,lte=16384"`
+	// Custom syslog message format
+	Logline string `json:"logline,omitempty" validate:"omitempty,gte=1,lte=512"`
+	// Rsyslog max message size
+	MaxMessageSize int64 `json:"max-message-size,omitempty" validate:"omitempty,gte=2048,lte=2.147483647e+09"`
+	// Rsyslog server port
+	Port int64 `json:"port" validate:"required,gte=1,lte=65535"`
+	// Structured data block for log message
+	SD string `json:"sd,omitempty" validate:"omitempty,lte=1024"`
+	// Rsyslog server IP address or hostname
+	Server string `json:"server" validate:"required,gte=4,lte=255"`
+	// Require TLS
+	Tls *bool `json:"tls" validate:"required"`
+}
+
+type DBAASExternalEndpoint struct {
+	// External integration endpoint id
+	ID UUID `json:"id,omitempty"`
+	// External integration endpoint name
+	Name string                    `json:"name,omitempty"`
+	Type EnumExternalEndpointTypes `json:"type,omitempty"`
+}
+
+type DBAASExternalEndpointDatadogOutput struct {
+	// External integration endpoint id
+	ID UUID `json:"id,omitempty"`
+	// External integration endpoint name
+	Name     string                    `json:"name,omitempty"`
+	Settings *DBAASEndpointDatadog     `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes `json:"type,omitempty"`
+}
+
+type DBAASExternalEndpointRsyslogOutput struct {
+	// External integration endpoint id
+	ID UUID `json:"id,omitempty"`
+	// External integration endpoint name
+	Name     string                    `json:"name,omitempty"`
+	Settings *DBAASEndpointRsyslog     `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes `json:"type,omitempty"`
+}
+
+// Integrations with other services
+type DBAASExternalIntegration struct {
+	// Description of the integration
+	Description string `json:"description" validate:"required"`
+	// External destination endpoint id
+	DestEndpointID string `json:"dest-endpoint-id,omitempty"`
+	// External destination endpoint name
+	DestEndpointName string `json:"dest-endpoint-name,omitempty"`
+	// Endpoint integration UUID
+	ID UUID `json:"id,omitempty"`
+	// DBaaS source service name
+	SourceServiceName string               `json:"source-service-name" validate:"required"`
+	SourceServiceType DBAASServiceTypeName `json:"source-service-type" validate:"required,gte=0,lte=64"`
+	// Integration status
+	Status string                    `json:"status,omitempty"`
+	Type   EnumExternalEndpointTypes `json:"type" validate:"required"`
+}
+
 type DBAASIntegration struct {
 	// Description of the integration
 	Description string `json:"description,omitempty"`
@@ -576,38 +725,6 @@ type DBAASServiceGrafana struct {
 	Version string `json:"version,omitempty"`
 	// The zone where the service is running
 	Zone string `json:"zone,omitempty"`
-}
-
-// Integrations with other services
-type DBAASServiceIntegration struct {
-	// True when integration is active
-	Active *bool `json:"active" validate:"required"`
-	// Description of the integration
-	Description string `json:"description" validate:"required"`
-	// Destination endpoint name
-	DestEndpoint string `json:"dest-endpoint,omitempty"`
-	// Destination endpoint id
-	DestEndpointID string `json:"dest-endpoint-id,omitempty"`
-	// Destination service name
-	DestService     string               `json:"dest-service" validate:"required"`
-	DestServiceType DBAASServiceTypeName `json:"dest-service-type" validate:"required,gte=0,lte=64"`
-	// True when integration is enabled
-	Enabled *bool `json:"enabled" validate:"required"`
-	// Integration status
-	IntegrationStatus map[string]any `json:"integration-status,omitempty"`
-	// Type of the integration
-	IntegrationType string `json:"integration-type" validate:"required"`
-	// Integration ID
-	ServiceIntegrationID string `json:"service-integration-id" validate:"required"`
-	// Source endpoint name
-	SourceEndpoint string `json:"source-endpoint,omitempty"`
-	// Source endpoint ID
-	SourceEndpointID string `json:"source-endpoint-id,omitempty"`
-	// Source service name
-	SourceService     string               `json:"source-service" validate:"required"`
-	SourceServiceType DBAASServiceTypeName `json:"source-service-type" validate:"required,gte=0,lte=64"`
-	// Service integration settings
-	UserConfig map[string]any `json:"user-config,omitempty"`
 }
 
 // Kafka authentication methods
@@ -1239,6 +1356,14 @@ type DBAASUserGrafanaSecrets struct {
 	Username string `json:"username,omitempty"`
 }
 
+// Kafka Connect secrets
+type DBAASUserKafkaConnectSecrets struct {
+	// Kafka Connect password
+	Password string `json:"password,omitempty"`
+	// Kafka Connect username
+	Username string `json:"username,omitempty"`
+}
+
 // Kafka User secrets
 type DBAASUserKafkaSecrets struct {
 	// Kafka certificate
@@ -1430,6 +1555,27 @@ const (
 	EnumComponentUsageReplica EnumComponentUsage = "replica"
 )
 
+type EnumDatadogSite string
+
+const (
+	EnumDatadogSiteUs3DatadoghqCom EnumDatadogSite = "us3.datadoghq.com"
+	EnumDatadogSiteDdogGovCom      EnumDatadogSite = "ddog-gov.com"
+	EnumDatadogSiteDatadoghqEU     EnumDatadogSite = "datadoghq.eu"
+	EnumDatadogSiteUs5DatadoghqCom EnumDatadogSite = "us5.datadoghq.com"
+	EnumDatadogSiteAp1DatadoghqCom EnumDatadogSite = "ap1.datadoghq.com"
+	EnumDatadogSiteDatadoghqCom    EnumDatadogSite = "datadoghq.com"
+)
+
+type EnumExternalEndpointTypes string
+
+const (
+	EnumExternalEndpointTypesPrometheus    EnumExternalEndpointTypes = "prometheus"
+	EnumExternalEndpointTypesOpensearch    EnumExternalEndpointTypes = "opensearch"
+	EnumExternalEndpointTypesRsyslog       EnumExternalEndpointTypes = "rsyslog"
+	EnumExternalEndpointTypesDatadog       EnumExternalEndpointTypes = "datadog"
+	EnumExternalEndpointTypesElasticsearch EnumExternalEndpointTypes = "elasticsearch"
+)
+
 type EnumIntegrationTypes string
 
 const (
@@ -1505,6 +1651,14 @@ type EnumPGVariant string
 const (
 	EnumPGVariantTimescale EnumPGVariant = "timescale"
 	EnumPGVariantAiven     EnumPGVariant = "aiven"
+)
+
+type EnumRsyslogFormat string
+
+const (
+	EnumRsyslogFormatCustom  EnumRsyslogFormat = "custom"
+	EnumRsyslogFormatRfc3164 EnumRsyslogFormat = "rfc3164"
+	EnumRsyslogFormatRfc5424 EnumRsyslogFormat = "rfc5424"
 )
 
 type EnumServiceState string
@@ -2457,6 +2611,13 @@ type SKSKubeconfigRequest struct {
 	User string `json:"user,omitempty"`
 }
 
+type SKSNodepoolPublicIPAssignment string
+
+const (
+	SKSNodepoolPublicIPAssignmentInet4 SKSNodepoolPublicIPAssignment = "inet4"
+	SKSNodepoolPublicIPAssignmentDual  SKSNodepoolPublicIPAssignment = "dual"
+)
+
 type SKSNodepoolState string
 
 const (
@@ -2498,6 +2659,10 @@ type SKSNodepool struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Nodepool Private Networks
 	PrivateNetworks []PrivateNetwork `json:"private-networks,omitempty"`
+	// Nodepool public IP assignment of the Instances:
+	// * IPv4 and IPv6 (`dual`) addressing.
+	// * IPv4 and IPv6 (`dual`) addressing.
+	PublicIPAssignment SKSNodepoolPublicIPAssignment `json:"public-ip-assignment,omitempty"`
 	// Nodepool Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Number of instances

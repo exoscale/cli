@@ -2080,6 +2080,94 @@ func XListDbaasExternalEndpoints(params *viper.Viper) (*gentleman.Response, map[
 	return resp, decoded, nil
 }
 
+// XGetDbaasExternalIntegrationSettingsDatadog get-dbaas-external-integration-settings-datadog
+func XGetDbaasExternalIntegrationSettingsDatadog(paramIntegrationId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "get-dbaas-external-integration-settings-datadog"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-external-integration-settings-datadog/{integration-id}"
+	url = strings.Replace(url, "{integration-id}", paramIntegrationId, 1)
+
+	req := cli.Client.Get().URL(url)
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
+// XUpdateDbaasExternalIntegrationSettingsDatadog update-dbaas-external-integration-settings-datadog
+func XUpdateDbaasExternalIntegrationSettingsDatadog(paramIntegrationId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
+	handlerPath := "update-dbaas-external-integration-settings-datadog"
+	if xSubcommand {
+		handlerPath = "x " + handlerPath
+	}
+
+	server := viper.GetString("server")
+	if server == "" {
+		server = xServers()[viper.GetInt("server-index")]["url"]
+	}
+
+	url := server + "/dbaas-external-integration-settings-datadog/{integration-id}"
+	url = strings.Replace(url, "{integration-id}", paramIntegrationId, 1)
+
+	req := cli.Client.Post().URL(url)
+
+	if body != "" {
+		req = req.AddHeader("Content-Type", "application/json").BodyString(body)
+	}
+
+	cli.HandleBefore(handlerPath, params, req)
+
+	resp, err := req.Do()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "Request failed")
+	}
+
+	var decoded map[string]interface{}
+
+	if resp.StatusCode < 400 {
+		if err := cli.UnmarshalResponse(resp, &decoded); err != nil {
+			return nil, nil, errors.Wrap(err, "Unmarshalling response failed")
+		}
+	} else {
+		return nil, nil, errors.Errorf("HTTP %d: %s", resp.StatusCode, resp.String())
+	}
+
+	after := cli.HandleAfter(handlerPath, params, resp, decoded)
+	if after != nil {
+		decoded = after.(map[string]interface{})
+	}
+
+	return resp, decoded, nil
+}
+
 // XGetDbaasExternalIntegration get-dbaas-external-integration
 func XGetDbaasExternalIntegration(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-dbaas-external-integration"
@@ -2476,7 +2564,7 @@ func XRevealDbaasGrafanaUserPassword(paramServiceName string, paramUsername stri
 	return resp, decoded, nil
 }
 
-// XCreateDbaasIntegration Create a new DBaaS integration between two services
+// XCreateDbaasIntegration create-dbaas-integration
 func XCreateDbaasIntegration(params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "create-dbaas-integration"
 	if xSubcommand {
@@ -2521,7 +2609,7 @@ func XCreateDbaasIntegration(params *viper.Viper, body string) (*gentleman.Respo
 	return resp, decoded, nil
 }
 
-// XListDbaasIntegrationSettings Get DBaaS integration settings
+// XListDbaasIntegrationSettings list-dbaas-integration-settings
 func XListDbaasIntegrationSettings(paramIntegrationType string, paramSourceType string, paramDestType string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-dbaas-integration-settings"
 	if xSubcommand {
@@ -2565,7 +2653,7 @@ func XListDbaasIntegrationSettings(paramIntegrationType string, paramSourceType 
 	return resp, decoded, nil
 }
 
-// XListDbaasIntegrationTypes Get DBaaS integration types
+// XListDbaasIntegrationTypes list-dbaas-integration-types
 func XListDbaasIntegrationTypes(params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "list-dbaas-integration-types"
 	if xSubcommand {
@@ -2606,7 +2694,7 @@ func XListDbaasIntegrationTypes(params *viper.Viper) (*gentleman.Response, map[s
 	return resp, decoded, nil
 }
 
-// XDeleteDbaasIntegration Delete a DBaaS Integration
+// XDeleteDbaasIntegration delete-dbaas-integration
 func XDeleteDbaasIntegration(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "delete-dbaas-integration"
 	if xSubcommand {
@@ -2648,7 +2736,7 @@ func XDeleteDbaasIntegration(paramId string, params *viper.Viper) (*gentleman.Re
 	return resp, decoded, nil
 }
 
-// XGetDbaasIntegration Get a DBaaS Integration
+// XGetDbaasIntegration get-dbaas-integration
 func XGetDbaasIntegration(paramId string, params *viper.Viper) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "get-dbaas-integration"
 	if xSubcommand {
@@ -2690,7 +2778,7 @@ func XGetDbaasIntegration(paramId string, params *viper.Viper) (*gentleman.Respo
 	return resp, decoded, nil
 }
 
-// XUpdateDbaasIntegration Update a existing DBaaS integration
+// XUpdateDbaasIntegration update-dbaas-integration
 func XUpdateDbaasIntegration(paramId string, params *viper.Viper, body string) (*gentleman.Response, map[string]interface{}, error) {
 	handlerPath := "update-dbaas-integration"
 	if xSubcommand {
@@ -14107,6 +14195,80 @@ func xRegister(subcommand bool) {
 		var examples string
 
 		cmd := &cobra.Command{
+			Use:     "get-dbaas-external-integration-settings-datadog integration-id",
+			Short:   "get-dbaas-external-integration-settings-datadog",
+			Long:    cli.Markdown("[BETA] Get Datadog integration settings"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+
+				_, decoded, err := XGetDbaasExternalIntegrationSettingsDatadog(args[0], params)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
+			Use:     "update-dbaas-external-integration-settings-datadog integration-id",
+			Short:   "update-dbaas-external-integration-settings-datadog",
+			Long:    cli.Markdown("[BETA] Manage Datadog integration settings\n## Request Schema (application/json)\n\nproperties:\n  settings:\n    $ref: '#/components/schemas/dbaas-integration-settings-datadog'\ntype: object\n"),
+			Example: examples,
+			Args:    cobra.MinimumNArgs(1),
+			Run: func(cmd *cobra.Command, args []string) {
+				body, err := cli.GetBody("application/json", args[1:])
+				if err != nil {
+					log.Fatal().Err(err).Msg("Unable to get body")
+				}
+
+				_, decoded, err := XUpdateDbaasExternalIntegrationSettingsDatadog(args[0], params, body)
+				if err != nil {
+					log.Fatal().Err(err).Msg("Error calling operation")
+				}
+
+				if err := cli.Formatter.Format(decoded); err != nil {
+					log.Fatal().Err(err).Msg("Formatting failed")
+				}
+
+			},
+		}
+
+		root.AddCommand(cmd)
+
+		cli.SetCustomFlags(cmd)
+
+		if cmd.Flags().HasFlags() {
+			params.BindPFlags(cmd.Flags())
+		}
+
+	}()
+
+	func() {
+		params := viper.New()
+
+		var examples string
+
+		cmd := &cobra.Command{
 			Use:     "get-dbaas-external-integration id",
 			Short:   "get-dbaas-external-integration",
 			Long:    cli.Markdown("[BETA] Get a DBaaS external integration"),
@@ -14439,8 +14601,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "create-dbaas-integration",
-			Short:   "Create a new DBaaS integration between two services",
-			Long:    cli.Markdown("Create a new DBaaS integration between two services\n## Request Schema (application/json)\n\nproperties:\n  dest-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integration-type:\n    $ref: '#/components/schemas/enum-integration-types'\n  settings:\n    description: Integration settings\n    type: object\n  source-service:\n    $ref: '#/components/schemas/dbaas-service-name'\nrequired:\n- integration-type\n- source-service\n- dest-service\ntype: object\n"),
+			Short:   "create-dbaas-integration",
+			Long:    cli.Markdown("[BETA] Create a new DBaaS integration between two services\n## Request Schema (application/json)\n\nproperties:\n  dest-service:\n    $ref: '#/components/schemas/dbaas-service-name'\n  integration-type:\n    $ref: '#/components/schemas/enum-integration-types'\n  settings:\n    description: Integration settings\n    type: object\n  source-service:\n    $ref: '#/components/schemas/dbaas-service-name'\nrequired:\n- integration-type\n- source-service\n- dest-service\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -14478,8 +14640,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-dbaas-integration-settings integration-type source-type dest-type",
-			Short:   "Get DBaaS integration settings",
-			Long:    cli.Markdown("Get DBaaS integration settings"),
+			Short:   "list-dbaas-integration-settings",
+			Long:    cli.Markdown("[BETA] Get DBaaS integration settings"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(3),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -14513,8 +14675,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "list-dbaas-integration-types",
-			Short:   "Get DBaaS integration types",
-			Long:    cli.Markdown("Get DBaaS integration types"),
+			Short:   "list-dbaas-integration-types",
+			Long:    cli.Markdown("[BETA] Get DBaaS integration types"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(0),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -14548,8 +14710,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "delete-dbaas-integration id",
-			Short:   "Delete a DBaaS Integration",
-			Long:    cli.Markdown("Delete a DBaaS Integration"),
+			Short:   "delete-dbaas-integration",
+			Long:    cli.Markdown("[BETA] Delete a DBaaS Integration"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -14583,8 +14745,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "get-dbaas-integration id",
-			Short:   "Get a DBaaS Integration",
-			Long:    cli.Markdown("Get a DBaaS Integration"),
+			Short:   "get-dbaas-integration",
+			Long:    cli.Markdown("[BETA] Get a DBaaS Integration"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -14618,8 +14780,8 @@ func xRegister(subcommand bool) {
 
 		cmd := &cobra.Command{
 			Use:     "update-dbaas-integration id",
-			Short:   "Update a existing DBaaS integration",
-			Long:    cli.Markdown("Update a existing DBaaS integration\n## Request Schema (application/json)\n\nproperties:\n  settings:\n    description: Integration settings\n    type: object\nrequired:\n- settings\ntype: object\n"),
+			Short:   "update-dbaas-integration",
+			Long:    cli.Markdown("[BETA] Update a existing DBaaS integration\n## Request Schema (application/json)\n\nproperties:\n  settings:\n    description: Integration settings\n    type: object\nrequired:\n- settings\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -21605,7 +21767,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "create-sks-nodepool id",
 			Short:   "Create a new SKS Nodepool",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Nodepool addons\n    items:\n      enum:\n      - storage-lvm\n      type: string\n    type: array\n    uniqueItems: true\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool)'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Nodepool name\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network'\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only (default);\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  size:\n    description: Number of instances\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\nrequired:\n- name\n- size\n- disk-size\n- instance-type\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  addons:\n    description: Nodepool addons\n    items:\n      enum:\n      - storage-lvm\n      type: string\n    type: array\n    uniqueItems: true\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  kubelet-image-gc:\n    $ref: '#/components/schemas/kubelet-image-gc'\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network'\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only (default);\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  size:\n    description: Number of instances\n    exclusiveMinimum: true\n    format: int64\n    minimum: 0\n    type: integer\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\nrequired:\n- name\n- size\n- disk-size\n- instance-type\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(1),
 			Run: func(cmd *cobra.Command, args []string) {
@@ -21714,7 +21876,7 @@ func xRegister(subcommand bool) {
 		cmd := &cobra.Command{
 			Use:     "update-sks-nodepool id sks-nodepool-id",
 			Short:   "Update an SKS Nodepool",
-			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to managed instances names (default: pool)'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Nodepool name\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network'\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only;\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\ntype: object\n"),
+			Long:    cli.Markdown("\n## Request Schema (application/json)\n\nproperties:\n  anti-affinity-groups:\n    description: Nodepool Anti-affinity Groups\n    items:\n      $ref: '#/components/schemas/anti-affinity-group'\n    type: array\n    uniqueItems: true\n  deploy-target:\n    $ref: '#/components/schemas/deploy-target'\n  description:\n    description: Nodepool description\n    maxLength: 255\n    type: string\n  disk-size:\n    description: Nodepool instances disk size in GiB\n    format: int64\n    maximum: 51200\n    minimum: 20\n    type: integer\n  instance-prefix:\n    description: 'Prefix to apply to managed instances names (default: pool), lowercase only'\n    maxLength: 30\n    minLength: 1\n    type: string\n  instance-type:\n    $ref: '#/components/schemas/instance-type'\n  labels:\n    $ref: '#/components/schemas/labels'\n  name:\n    description: Nodepool name, lowercase only\n    maxLength: 255\n    minLength: 1\n    type: string\n  private-networks:\n    description: Nodepool Private Networks\n    items:\n      $ref: '#/components/schemas/private-network'\n    type: array\n    uniqueItems: true\n  public-ip-assignment:\n    description: |-\n      Configures public IP assignment of the Instances with:\n\n      * IPv4 (`inet4`) addressing only;\n      * both IPv4 and IPv6 (`dual`) addressing.\n    enum:\n    - inet4\n    - dual\n    type: string\n  security-groups:\n    description: Nodepool Security Groups\n    items:\n      $ref: '#/components/schemas/security-group'\n    type: array\n    uniqueItems: true\n  taints:\n    $ref: '#/components/schemas/sks-nodepool-taints'\ntype: object\n"),
 			Example: examples,
 			Args:    cobra.MinimumNArgs(2),
 			Run: func(cmd *cobra.Command, args []string) {
