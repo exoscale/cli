@@ -34,6 +34,8 @@ func (c *dbaasExternalEndpointShowCmd) cmdRun(cmd *cobra.Command, args []string)
 	switch c.Type {
 	case "datadog":
 		return c.outputFunc(c.showDatadog())
+	case "opensearch":
+		return c.outputFunc(c.showOpensearch())
 	default:
 		return fmt.Errorf("unsupported external endpoint type %q", c.Type)
 	}
