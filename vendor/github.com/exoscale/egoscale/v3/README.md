@@ -75,11 +75,11 @@ func main() {
 Most of the list request `ListX()` return a type containing the list of the resource requested and a method `FindX()` to be able to retrieve a resource by its `name` or `id` most of the time.
 
 ```Golang
-instances, err := client.ListInstancePools(ctx)
+pools, err := client.ListInstancePools(ctx)
 if err != nil {
 	log.Fatal(err)
 }
-pool, err := instances.FindInstancePool("my-pool-example")
+pool, err := pools.FindInstancePool("my-pool-example")
 if err != nil {
 	log.Fatal(err)
 }

@@ -220,7 +220,7 @@ github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/oapi
 github.com/exoscale/egoscale/version
-# github.com/exoscale/egoscale/v3 v3.1.3-0.20240911131558-1388ae1762b4
+# github.com/exoscale/egoscale/v3 v3.1.3
 ## explicit; go 1.23.0
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
