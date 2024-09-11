@@ -77,9 +77,3 @@ func (c *dbaasExternalEndpointCreateCmd) createDatadog(_ *cobra.Command, _ []str
 
 	return nil
 }
-
-func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
-	}))
-}
