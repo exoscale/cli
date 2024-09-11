@@ -66,14 +66,15 @@ func (c *dbaasExternalEndpointCreateCmd) createDatadog(_ *cobra.Command, _ []str
 		return err
 	}
 
-	// endpointID := op.Reference.ID.String()
+	endpointID := op.Reference.ID.String()
 
-	// if !globalstate.Quiet {
-	// 	return (&dbaasExternalEndpointShowCmd{
-	// 		cliCommandSettings: defaultCLICmdSettings(),
-	// 		ExternalEndpointID: endpointID,
-	// 	}).cmdRun(nil, nil)
-	// }
+	if !globalstate.Quiet {
+		return (&dbaasExternalEndpointShowCmd{
+			cliCommandSettings: defaultCLICmdSettings(),
+			EndpointID: endpointID,
+			Type: "datadog",
+		}).cmdRun(nil, nil)
+	}
 
 	return nil
 }
