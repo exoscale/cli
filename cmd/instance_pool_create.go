@@ -232,7 +232,7 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return (&instancePoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			InstancePool:       instancePoolID.String(),
-			// TODO migrate instanceShow to v3 to pass v3.ZoneName
+			// TODO migrate instance_pool_show to v3 to pass v3.ZoneName
 			Zone: string(c.Zone),
 		}).cmdRun(nil, nil)
 	}
