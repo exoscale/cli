@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -110,17 +111,23 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if l := len(c.ElasticIPs); l > 0 {
-		instancePoolReq.ElasticIPS = make([]v3.ElasticIP, l)
-		eIP, err := client.ListElasticIPS(ctx)
+		result := []v3.ElasticIP{}
+		eipList, err := client.ListElasticIPS(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing Elastic IP: %w", err)
 		}
-		for i := range c.ElasticIPs {
-			elasticIP, err := eIP.FindElasticIP(c.ElasticIPs[i])
+		for _, input := range c.ElasticIPs {
+			eip, err := eipList.FindElasticIP(input)
 			if err != nil {
-				return fmt.Errorf("error retrieving Elastic IP: %w", err)
+				fmt.Fprintf(os.Stderr, "warning: Elastic IP %s not found.\n", input)
+				continue
 			}
-			instancePoolReq.ElasticIPS[i] = elasticIP
+
+			result = append(result, v3.ElasticIP{ID: eip.ID})
+		}
+
+		if len(result) != 0 {
+			instancePoolReq.ElasticIPS = result
 		}
 	}
 

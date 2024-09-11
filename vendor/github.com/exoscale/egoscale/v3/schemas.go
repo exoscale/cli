@@ -361,6 +361,13 @@ type DBAASIntegration struct {
 	Type string `json:"type,omitempty"`
 }
 
+type DBAASIntegrationSettingsDatadog struct {
+	// Database monitoring: view query metrics, explain plans, and execution details. Correlate queries with host metrics.
+	DatadogDbmEnabled *bool `json:"datadog-dbm-enabled,omitempty"`
+	// Integrate PgBouncer with Datadog to track connection pool metrics and monitor application traffic.
+	DatadogPgbouncerEnabled *bool `json:"datadog-pgbouncer-enabled,omitempty"`
+}
+
 // A JSON schema of additional settings of the integration.
 type DBAASIntegrationTypeSettings struct {
 	AdditionalProperties *bool          `json:"additionalProperties,omitempty"`

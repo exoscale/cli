@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -133,7 +134,7 @@ func (c Client) Validate(s any) error {
 		} else {
 			errorString += fmt.Sprintf("'%s=%v'", e.ActualTag(), e.Param())
 		}
-		return fmt.Errorf(errorString)
+		return errors.New(errorString)
 	}
 
 	return err

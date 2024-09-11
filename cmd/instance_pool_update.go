@@ -119,26 +119,25 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ElasticIPs)) {
-		updateReq.ElasticIPS = make([]v3.ElasticIP, len(c.ElasticIPs))
+		result := []v3.ElasticIP{}
 		eipList, err := client.ListElasticIPS(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing Elastic IP: %w", err)
 		}
-		for i, input := range c.ElasticIPs {
-			found := false
-			for _, eip := range eipList.ElasticIPS {
-				if input == eip.IP || input == string(eip.ID) {
-					updateReq.ElasticIPS[i] = v3.ElasticIP{ID: eip.ID}
-					found = true
-					break
-				}
+		for _, input := range c.ElasticIPs {
+			eip, err := eipList.FindElasticIP(input)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "warning: Elastic IP %s not found.\n", input)
+				continue
 			}
-			if !found {
-				fmt.Fprintf(os.Stderr, "warning: %s not found.\n", input)
-			}
+
+			result = append(result, v3.ElasticIP{ID: eip.ID})
 		}
 
-		updated = true
+		if len(result) != 0 {
+			updateReq.ElasticIPS = result
+			updated = true
+		}
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstancePrefix)) {
