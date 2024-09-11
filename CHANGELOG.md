@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Improvements
-
+- dbaas: added commands for getting and updating datadog integration settings #635
 - go.mk: upgrade to v2.0.3 #632  
 
 ### Bug fixes
