@@ -10,12 +10,17 @@ import (
 )
 
 type datadogOutput struct {
-	output.Outputter
 	ID       string                  `json:"id"`
 	Name     string                  `json:"name"`
 	Type     string                  `json:"type"`
-	// Settings v3.DBAASEndpointDatadog `json:"settings"`
+	Settings v3.DBAASEndpointDatadog `json:"settings"`
 }
+
+func (o *datadogOutput) ToJSON() { output.JSON(o) }
+
+func (o *datadogOutput) ToText() { output.Text(o) }
+
+func (o *datadogOutput) ToTable() { output.Table(o) }
 
 func (c *dbaasExternalEndpointShowCmd) showDatadog() (output.Outputter, error) {
 	ctx := gContext
@@ -38,7 +43,7 @@ func (c *dbaasExternalEndpointShowCmd) showDatadog() (output.Outputter, error) {
 		ID:       endpointResponse.ID.String(),
 		Name:     endpointResponse.Name,
 		Type:     string(endpointResponse.Type),
-		// Settings: *endpointResponse.Settings,
+		Settings: *endpointResponse.Settings,
 	}
 
 	return output, nil
