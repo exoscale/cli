@@ -101,8 +101,8 @@ func (c *dbaasExternalEndpointCreateCmd) cmdRun(cmd *cobra.Command, args []strin
 		return c.createElasticsearch(cmd, args)
 	case "prometheus":
 		return c.createPrometheus(cmd, args)
-	// case "rsyslog":
-	// 	return c.createRsyslog(cmd, args)
+	case "rsyslog":
+		return c.createRsyslog(cmd, args)
 	default:
 		return fmt.Errorf("unsupported external endpoint type %q", c.Type)
 	}
