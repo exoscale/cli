@@ -95,10 +95,10 @@ func (c *dbaasExternalEndpointCreateCmd) cmdRun(cmd *cobra.Command, args []strin
 	switch c.Type {
 	case "datadog":
 		return c.createDatadog(cmd, args)
-	// case "elasticsearch":
-	// 	return c.createElasticsearch(cmd, args)
 	case "opensearch":
 		return c.createOpensearch(cmd, args)
+	case "elasticsearch":
+		return c.createElasticsearch(cmd, args)
 	// case "prometheus":
 	// 	return c.createPrometheus(cmd, args)
 	// case "rsyslog":
