@@ -38,6 +38,8 @@ func (c *dbaasExternalEndpointShowCmd) cmdRun(cmd *cobra.Command, args []string)
 		return c.outputFunc(c.showOpensearch())
 	case "elasticsearch":
 		return c.outputFunc(c.showElasticsearch())
+	case "prometheus":
+		return c.outputFunc(c.showPrometheus())
 	default:
 		return fmt.Errorf("unsupported external endpoint type %q", c.Type)
 	}
