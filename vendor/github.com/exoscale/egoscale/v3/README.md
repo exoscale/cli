@@ -70,6 +70,23 @@ func main() {
 }	
 ```
 
+### Findable
+
+Most of the list request `ListX()` return a type containing the list of the resource requested and a method `FindX()` to be able to retrieve a resource by its `name` or `id` most of the time.
+
+```Golang
+pools, err := client.ListInstancePools(ctx)
+if err != nil {
+	log.Fatal(err)
+}
+pool, err := pools.FindInstancePool("my-pool-example")
+if err != nil {
+	log.Fatal(err)
+}
+
+fmt.Println(pool.Name)
+```
+
 ## Development
 
 ### Generate Egoscale v3
@@ -87,3 +104,53 @@ GENERATOR_DEBUG=client make generate > test/client.go
 GENERATOR_DEBUG=schemas make generate > test/schemas.go
 GENERATOR_DEBUG=operations make generate > test/operations.go
 ```
+
+### OpenAPI Extensions
+
+The generator support two types of extension:
+- `x-go-type` to specify a type definition in Golang.
+
+	OpenAPI Spec
+	```yaml
+	api-endpoint:
+	  type: string
+	  x-go-type: Endpoint
+	  description: Zone API endpoint
+	```
+	Generated code
+	```Golang
+	type Endpoint string
+
+	type Zone struct {
+		APIEndpoint Endpoint // Here is the generated type definition.
+		...
+	}
+	```
+- `x-go-findable` to specify which fields in the findable resource to fetch
+	OpenAPI Spec
+	```yaml
+	elastic-ip:
+      type: object
+      properties:
+        id:
+          type: string
+		  x-go-findable: "1"
+          description: Elastic IP ID
+        ip:
+          type: string
+		  x-go-findable: "2"
+          description: Elastic IP address
+	```
+	Generated code
+	```Golang
+	// FindElasticIP attempts to find an ElasticIP by idOrIP.
+	func (l ListElasticIPSResponse) FindElasticIP(idOrIP string) (ElasticIP, error) {
+		for i, elem := range l.ElasticIPS {
+			if string(elem.ID) == idOrIP || string(elem.IP) == idOrIP {
+				return l.ElasticIPS[i], nil
+			}
+		}
+
+		return ElasticIP{}, fmt.Errorf("%q not found in ListElasticIPSResponse: %w", idOrIP, ErrNotFound)
+	}
+	```

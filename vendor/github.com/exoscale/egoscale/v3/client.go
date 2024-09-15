@@ -30,26 +30,26 @@ const (
 func (c Client) GetZoneName(ctx context.Context, endpoint Endpoint) (ZoneName, error) {
 	resp, err := c.ListZones(ctx)
 	if err != nil {
-		return "", fmt.Errorf("get zone name: %w", err)
-	}
-	for _, zone := range resp.Zones {
-		if zone.APIEndpoint == endpoint {
-			return zone.Name, nil
-		}
+		return "", fmt.Errorf("get zone name: list zones: %w", err)
 	}
 
-	return "", fmt.Errorf("get zone name: no matching zone for %s", endpoint)
+	zone, err := resp.FindZone(string(endpoint))
+	if err != nil {
+		return "", fmt.Errorf("get zone name: find zone: %w", err)
+	}
+
+	return zone.Name, nil
 }
 
 func (c Client) GetZoneAPIEndpoint(ctx context.Context, zoneName ZoneName) (Endpoint, error) {
 	resp, err := c.ListZones(ctx)
 	if err != nil {
-		return "", fmt.Errorf("get zone api endpoint: %w", err)
+		return "", fmt.Errorf("get zone api endpoint: list zones: %w", err)
 	}
 
 	zone, err := resp.FindZone(string(zoneName))
 	if err != nil {
-		return "", fmt.Errorf("get zone api endpoint: %w", err)
+		return "", fmt.Errorf("get zone api endpoint: find zone: %w", err)
 	}
 
 	return zone.APIEndpoint, nil

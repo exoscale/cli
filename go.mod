@@ -11,7 +11,7 @@ require (
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/exoscale/egoscale v0.102.4
-	github.com/exoscale/egoscale/v3 v3.1.2
+	github.com/exoscale/egoscale/v3 v3.1.4
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/google/uuid v1.4.0
@@ -27,7 +27,7 @@ require (
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/vbauerster/mpb/v4 v4.12.2
 	github.com/withfig/autocomplete-tools/integrations/cobra v1.2.1
 	github.com/xeipuuv/gojsonschema v1.2.0
@@ -132,7 +132,7 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/stretchr/objx v0.5.1 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tdewolff/minify/v2 v2.12.8 // indirect
 	github.com/tdewolff/parse/v2 v2.6.7 // indirect
@@ -161,4 +161,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-go 1.22
+go 1.23.0
+
+toolchain go1.23.1

@@ -220,8 +220,8 @@ github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/oapi
 github.com/exoscale/egoscale/version
-# github.com/exoscale/egoscale/v3 v3.1.2
-## explicit; go 1.22
+# github.com/exoscale/egoscale/v3 v3.1.4
+## explicit; go 1.22.0
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
 # github.com/exoscale/openapi-cli-generator v1.1.0
@@ -557,11 +557,11 @@ github.com/spf13/viper/internal/encoding/json
 github.com/spf13/viper/internal/encoding/toml
 github.com/spf13/viper/internal/encoding/yaml
 github.com/spf13/viper/internal/features
-# github.com/stretchr/objx v0.5.1
-## explicit; go 1.13
-github.com/stretchr/objx
-# github.com/stretchr/testify v1.8.4
+# github.com/stretchr/objx v0.5.2
 ## explicit; go 1.20
+github.com/stretchr/objx
+# github.com/stretchr/testify v1.9.0
+## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/mock
 github.com/stretchr/testify/require

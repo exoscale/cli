@@ -1,17 +1,17 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	"github.com/exoscale/cli/utils"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePoolUpdateCmd struct {
@@ -32,13 +32,14 @@ type instancePoolUpdateCmd struct {
 	InstancePrefix     string            `cli-usage:"string to prefix managed Compute instances names with"`
 	InstanceType       string            `cli-usage:"managed Compute instances type (format: [FAMILY.]SIZE)"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"Instance Pool label (format: key=value)"`
+	MinAvailable       int64             `cli-usage:"Minimum number of running Instances"`
 	Name               string            `cli-short:"n" cli-usage:"Instance Pool name"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"managed Compute instances Private Network NAME|ID (can be specified multiple times)"`
 	SSHKey             string            `cli-flag:"ssh-key" cli-usage:"SSH key to deploy on managed Compute instances"`
 	SecurityGroups     []string          `cli-flag:"security-group" cli-short:"s" cli-usage:"managed Compute instances Security Group NAME|ID (can be specified multiple times)"`
 	Template           string            `cli-short:"t" cli-usage:"managed Compute instances template NAME|ID"`
 	TemplateVisibility string            `cli-usage:"instance template visibility (public|private)"`
-	Zone               string            `cli-short:"z" cli-usage:"Instance Pool zone"`
+	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
 func (c *instancePoolUpdateCmd) cmdAliases() []string { return nil }
@@ -61,123 +62,174 @@ func (c *instancePoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
+	instancePools, err := client.ListInstancePools(ctx)
+	if err != nil {
+		return err
+	}
+
+	instancePool, err := instancePools.FindInstancePool(c.InstancePool)
+	if err != nil {
+		return err
+	}
+	updateReq := v3.UpdateInstancePoolRequest{}
+
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
-		antiAffinityGroupIDs := make([]string, len(c.AntiAffinityGroups))
-		for i, v := range c.AntiAffinityGroups {
-			antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, v)
+		updateReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, len(c.AntiAffinityGroups))
+		af, err := client.ListAntiAffinityGroups(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Anti-Affinity Group: %w", err)
+		}
+		for i := range c.AntiAffinityGroups {
+			antiAffinityGroup, err := af.FindAntiAffinityGroup(c.AntiAffinityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
-			antiAffinityGroupIDs[i] = *antiAffinityGroup.ID
+			updateReq.AntiAffinityGroups[i] = v3.AntiAffinityGroup{ID: antiAffinityGroup.ID}
 		}
-		instancePool.AntiAffinityGroupIDs = &antiAffinityGroupIDs
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DeployTarget)) {
-		deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
+		targets, err := client.ListDeployTargets(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Deploy Target: %w", err)
+		}
+		deployTarget, err := targets.FindDeployTarget(c.DeployTarget)
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
-		instancePool.DeployTargetID = deployTarget.ID
+		updateReq.DeployTarget = &v3.DeployTarget{ID: deployTarget.ID}
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		instancePool.Description = &c.Description
+		updateReq.Description = c.Description
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DiskSize)) {
-		instancePool.DiskSize = &c.DiskSize
+		updateReq.DiskSize = c.DiskSize
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ElasticIPs)) {
-		elasticIPIDs := make([]string, len(c.ElasticIPs))
-		for i, v := range c.ElasticIPs {
-			elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, v)
-			if err != nil {
-				return fmt.Errorf("error retrieving Elastic IP: %w", err)
-			}
-			elasticIPIDs[i] = *elasticIP.ID
+		result := []v3.ElasticIP{}
+		eipList, err := client.ListElasticIPS(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Elastic IP: %w", err)
 		}
-		instancePool.ElasticIPIDs = &elasticIPIDs
-		updated = true
+		for _, input := range c.ElasticIPs {
+			eip, err := eipList.FindElasticIP(input)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "warning: Elastic IP %s not found.\n", input)
+				continue
+			}
+
+			result = append(result, v3.ElasticIP{ID: eip.ID})
+		}
+
+		if len(result) != 0 {
+			updateReq.ElasticIPS = result
+			updated = true
+		}
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstancePrefix)) {
-		instancePool.InstancePrefix = &c.InstancePrefix
+		updateReq.InstancePrefix = &c.InstancePrefix
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.IPv6)) {
-		instancePool.IPv6Enabled = &c.IPv6
+		updateReq.Ipv6Enabled = &c.IPv6
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
-		instancePool.Labels = &c.Labels
+		updateReq.Labels = convertIfSpecialEmptyMap(c.Labels)
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MinAvailable)) {
+		updateReq.MinAvailable = &c.MinAvailable
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
-		instancePool.Name = &c.Name
+		updateReq.Name = c.Name
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PrivateNetworks)) {
-		privateNetworkIDs := make([]string, len(c.PrivateNetworks))
-		for i, v := range c.PrivateNetworks {
-			privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, v)
+		updateReq.PrivateNetworks = make([]v3.PrivateNetwork, len(c.PrivateNetworks))
+		pn, err := client.ListPrivateNetworks(ctx)
+		if err != nil {
+			return fmt.Errorf("error listing Elastic IP: %w", err)
+		}
+		for i := range c.PrivateNetworks {
+			privateNetwork, err := pn.FindPrivateNetwork(c.PrivateNetworks[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
-			privateNetworkIDs[i] = *privateNetwork.ID
+			updateReq.PrivateNetworks[i] = v3.PrivateNetwork{ID: privateNetwork.ID}
 		}
-		instancePool.PrivateNetworkIDs = &privateNetworkIDs
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SecurityGroups)) {
-		securityGroupIDs := make([]string, len(c.SecurityGroups))
-		for i, v := range c.SecurityGroups {
-			securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, v)
+		sgs, err := client.ListSecurityGroups(ctx)
+
+		if err != nil {
+			return fmt.Errorf("error listing Security Group: %w", err)
+		}
+		updateReq.SecurityGroups = make([]v3.SecurityGroup, len(c.SecurityGroups))
+
+		for i := range c.SecurityGroups {
+			securityGroup, err := sgs.FindSecurityGroup(c.SecurityGroups[i])
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
-			securityGroupIDs[i] = *securityGroup.ID
+			updateReq.SecurityGroups[i] = v3.SecurityGroup{ID: securityGroup.ID}
 		}
-		instancePool.SecurityGroupIDs = &securityGroupIDs
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) {
-		instanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.InstanceType)
+		instanceTypes, err := client.ListInstanceTypes(ctx)
 		if err != nil {
-			return fmt.Errorf("error retrieving instance type: %w", err)
+			return fmt.Errorf("error listing instance type: %w", err)
 		}
-		instancePool.InstanceTypeID = instanceType.ID
+
+		instanceType := utils.ParseInstanceType(c.InstanceType)
+		for i, it := range instanceTypes.InstanceTypes {
+			if it.Family == instanceType.Family && it.Size == instanceType.Size {
+				updateReq.InstanceType = &v3.InstanceType{ID: instanceTypes.InstanceTypes[i].ID}
+				break
+			}
+		}
+		if updateReq.InstanceType == nil {
+			return fmt.Errorf("error retrieving instance type %s: not found", c.InstanceType)
+		}
+
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SSHKey)) {
-		instancePool.SSHKey = &c.SSHKey
+		updateReq.SSHKey = &v3.SSHKey{Name: c.SSHKey}
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Template)) {
-		template, err := globalstate.EgoscaleClient.FindTemplate(ctx, c.Zone, c.Template, c.TemplateVisibility)
+		templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
+		if err != nil {
+			return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
+		}
+		template, err := templates.FindTemplate(c.Template)
 		if err != nil {
 			return fmt.Errorf(
 				"no template %q found with visibility %s in zone %s",
@@ -186,7 +238,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 				c.Zone,
 			)
 		}
-		instancePool.TemplateID = template.ID
+		updateReq.Template = &template
 		updated = true
 	}
 
@@ -195,15 +247,14 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
 		}
-		instancePool.UserData = &userData
+		updateReq.UserData = &userData
 		updated = true
 	}
 
 	if updated {
 		decorateAsyncOperation(fmt.Sprintf("Updating Instance Pool %q...", c.InstancePool), func() {
-			if err = globalstate.EgoscaleClient.UpdateInstancePool(ctx, c.Zone, instancePool); err != nil {
-				return
-			}
+			_, updateErr := client.UpdateInstancePool(ctx, instancePool.ID, updateReq)
+			err = updateErr
 		})
 		if err != nil {
 			return err
@@ -213,8 +264,8 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Zone:               c.Zone,
-			InstancePool:       *instancePool.ID,
+			InstancePool:       instancePool.ID.String(),
+			Zone:               string(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
