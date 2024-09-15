@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Features
+- instance pool: added min-available flag to exo compute #629
+
 ## 1.79.1
 
 ### Improvements
