@@ -31,7 +31,6 @@ func (o *prometheusOutput) ToTable() {
 
 	settings := o.Settings
 	t.Append([]string{"Basic Auth Username", settings.BasicAuthUsername})
-	t.Append([]string{"Basic Auth Password", settings.BasicAuthPassword})
 }
 
 func (c *dbaasExternalEndpointShowCmd) showPrometheus() (output.Outputter, error) {

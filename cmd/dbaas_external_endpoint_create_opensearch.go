@@ -15,8 +15,8 @@ func (c *dbaasExternalEndpointCreateCmd) createOpensearch(_ *cobra.Command, _ []
 		return err
 	}
 
-	opensearchRequestPayload := v3.CreateDBAASExternalEndpointOpensearchRequest{
-		Settings: &v3.DBAASEndpointOpensearch{},
+	opensearchRequestPayload := v3.DBAASEndpointOpensearchPayload{
+		Settings: &v3.DBAASEndpointOpensearchPayloadSettings{},
 	}
 
 	if c.OpensearchURL != "" {

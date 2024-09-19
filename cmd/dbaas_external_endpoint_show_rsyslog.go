@@ -40,12 +40,8 @@ if settings.Tls != nil && *settings.Tls {
 	t.Append([]string{"Server", settings.Server})
 	t.Append([]string{"Port", strconv.FormatInt(settings.Port,10)})
 	t.Append([]string{"Tls", tls})
-	t.Append([]string{"CA Certificate", truncateString(settings.CA, 50)})
-	t.Append([]string{"Client Certificate", truncateString(settings.Cert, 50)})
-	t.Append([]string{"Client Key", truncateString(settings.Key, 50)})
 	t.Append([]string{"Max Message Size", strconv.FormatInt(settings.MaxMessageSize, 10)})
 	t.Append([]string{"Structured data block", settings.SD})
-	t.Append([]string{"Custom logline format", settings.Logline})
 	t.Append([]string{"Custom logline format", settings.Logline})
 }
 

@@ -15,8 +15,8 @@ func (c *dbaasExternalEndpointCreateCmd) createPrometheus(_ *cobra.Command, _ []
 		return err
 	}
 
-	prometheusRequestPayload := v3.CreateDBAASExternalEndpointPrometheusRequest{
-		Settings: &v3.DBAASEndpointPrometheus{},
+	prometheusRequestPayload := v3.DBAASEndpointPrometheusPayload{
+		Settings: &v3.DBAASEndpointPrometheusPayloadSettings{},
 	}
 
 	if c.PrometheusBasicAuthPassword != "" {

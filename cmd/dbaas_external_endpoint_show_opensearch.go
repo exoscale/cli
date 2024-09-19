@@ -33,7 +33,6 @@ func (o *opensearchOutput) ToTable() {
 	settings := o.Settings
 	t.Append([]string{"OpenSearch URL", settings.URL})
 	t.Append([]string{"Index Prefix", settings.IndexPrefix})
-	t.Append([]string{"CA Certificate", truncateString(settings.CA, 50)})
 	t.Append([]string{"Index Days Max", strconv.FormatInt(settings.IndexDaysMax, 10)})
 	t.Append([]string{"Timeout", strconv.FormatInt(settings.Timeout, 10)})
 }

@@ -33,7 +33,6 @@ func (o *datadogOutput) ToTable() {
 	t.Append([]string{"Endpoint Type", o.Type})
 
 	settings := o.Settings
-	t.Append([]string{"Datadog API Key", settings.DatadogAPIKey})
 	t.Append([]string{"Site", string(settings.Site)})
 
 	disableConsumerStats := "false"
