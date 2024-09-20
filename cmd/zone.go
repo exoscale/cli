@@ -7,10 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type zoneListItemOutput struct {
@@ -44,19 +42,20 @@ Supported output template annotations: %s`,
 
 func listZones() (output.Outputter, error) {
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+	ctx := gContext
+	client := globalstate.EgoscaleV3Client
 
-	zones, err := globalstate.EgoscaleClient.ListZones(ctx)
+	zones, err := client.ListZones(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	out := zoneListOutput{}
 
-	for _, zone := range zones {
+	for _, zone := range zones.Zones {
 
 		out = append(out, zoneListItemOutput{
-			Name: zone,
+			Name: string(zone.Name),
 		})
 	}
 
