@@ -6,10 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type computeSSHKeyShowOutput struct {
@@ -48,19 +46,16 @@ func (c *computeSSHKeyShowCmd) cmdPreRun(cmd *cobra.Command, args []string) erro
 }
 
 func (c *computeSSHKeyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
+	ctx := gContext
 
-	sshKey, err := globalstate.EgoscaleClient.GetSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Key)
+	sshKey, err := globalstate.EgoscaleV3Client.GetSSHKey(ctx, c.Key)
 	if err != nil {
 		return err
 	}
 
 	return c.outputFunc(&computeSSHKeyShowOutput{
-		Name:        *sshKey.Name,
-		Fingerprint: *sshKey.Fingerprint,
+		Name:        sshKey.Name,
+		Fingerprint: sshKey.Fingerprint,
 	}, nil)
 }
 
