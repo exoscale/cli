@@ -6,10 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exo "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var dnsCmd = &cobra.Command{
@@ -18,19 +16,28 @@ var dnsCmd = &cobra.Command{
 }
 
 // domainFromIdent returns a DNS domain from identifier (domain name or ID).
-func domainFromIdent(ident string) (*exo.DNSDomain, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	if exo.IsValidUUID(ident) {
-		return globalstate.EgoscaleClient.GetDNSDomain(ctx, account.CurrentAccount.DefaultZone, ident)
+func domainFromIdent(ident string) (*v3.DNSDomain, error) {
+	ctx := gContext
+
+	domainId, err := v3.ParseUUID(ident)
+	if err == nil {
+		// ident is a valid UUID
+		domain, err := globalstate.EgoscaleV3Client.GetDNSDomain(ctx, domainId)
+		if err != nil {
+			return nil, err
+		}
+
+		return domain, nil
 	}
 
-	domains, err := globalstate.EgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
+	// ident is not a UUID, trying finding domain by name
+	domains, err := globalstate.EgoscaleV3Client.ListDNSDomains(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, domain := range domains {
-		if *domain.UnicodeName == ident {
+	for _, domain := range domains.DNSDomains {
+		if domain.UnicodeName == ident {
 			return &domain, nil
 		}
 	}
@@ -39,25 +46,34 @@ func domainFromIdent(ident string) (*exo.DNSDomain, error) {
 }
 
 // domainRecordFromIdent returns a DNS record from identifier (record name or ID) and optional type
-func domainRecordFromIdent(domainID, ident string, rType *string) (*exo.DNSDomainRecord, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	if exo.IsValidUUID(ident) {
-		return globalstate.EgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, domainID, ident)
+func domainRecordFromIdent(domainID v3.UUID, ident string, rType *v3.DNSDomainRecordType) (*v3.DNSDomainRecord, error) {
+	ctx := gContext
+
+	RecordId, err := v3.ParseUUID(ident)
+	if err == nil {
+		// ident is a valid UUID
+		domainRecord, err := globalstate.EgoscaleV3Client.GetDNSDomainRecord(ctx, domainID, RecordId)
+		if err != nil {
+			return nil, err
+		}
+
+		return domainRecord, nil
 	}
 
-	records, err := globalstate.EgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, domainID)
+	// ident is not a UUID, trying finding domain by name
+	records, err := globalstate.EgoscaleV3Client.ListDNSDomainRecords(ctx, domainID)
 	if err != nil {
 		return nil, err
 	}
 
-	var foundRecord *exo.DNSDomainRecord
+	var foundRecord *v3.DNSDomainRecord
 
-	for _, r := range records {
-		if rType != nil && *r.Type != *rType {
+	for _, r := range records.DNSDomainRecords {
+		if rType != nil && r.Type != *rType {
 			continue
 		}
 
-		if ident == *r.Name {
+		if ident == r.Name {
 			if foundRecord != nil {
 				return nil, errors.New("more than one records were found")
 			}

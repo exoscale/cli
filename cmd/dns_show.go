@@ -7,10 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type dnsShowItemOutput struct {
@@ -70,53 +68,53 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 		return nil, err
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	records, err := globalstate.EgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, *domain.ID)
+	ctx := gContext
+	records, err := globalstate.EgoscaleV3Client.ListDNSDomainRecords(ctx, domain.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, r := range records {
-		if r.Name == nil || r.Type == nil {
+	for _, r := range records.DNSDomainRecords {
+		if r.Name == "" || r.Type == "" {
 			continue
 		}
 
-		if name != "" && *r.Name != name {
+		if name != "" && r.Name != name {
 			continue
 		}
 
 		if len(tMap) > 0 {
-			_, ok := tMap[*r.Type]
+			_, ok := tMap[string(r.Type)]
 			if !ok {
 				continue
 			}
 		}
 
-		record, err := globalstate.EgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, *r.ID)
+		record, err := globalstate.EgoscaleV3Client.GetDNSDomainRecord(ctx, domain.ID, r.ID)
 		if err != nil {
 			return nil, err
 		}
 
 		var priority int64
-		if record.Priority != nil {
-			priority = *record.Priority
+		if record.Priority != 0 {
+			priority = record.Priority
 		}
 
 		var ttl int64
-		if record.TTL != nil {
-			ttl = *record.TTL
+		if record.Ttl != 0 {
+			ttl = record.Ttl
 		}
 
 		out = append(out, dnsShowItemOutput{
-			ID:         *record.ID,
-			DomainID:   *domain.ID,
-			Name:       *record.Name,
-			RecordType: *record.Type,
-			Content:    StrPtrFormatOutput(record.Content),
+			ID:         string(record.ID),
+			DomainID:   string(domain.ID),
+			Name:       record.Name,
+			RecordType: string(record.Type),
+			Content:    StrPtrFormatOutput(&record.Content),
 			TTL:        ttl,
 			Prio:       priority,
-			CreatedAt:  DatePtrFormatOutput(record.CreatedAt),
-			UpdatedAt:  DatePtrFormatOutput(record.UpdatedAt),
+			CreatedAt:  DatePtrFormatOutput(&record.CreatedAT),
+			UpdatedAt:  DatePtrFormatOutput(&record.UpdatedAT),
 		})
 	}
 

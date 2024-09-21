@@ -5,11 +5,8 @@ import (
 	"os"
 	"strings"
 
-	exoapi "github.com/exoscale/egoscale/v2/api"
-
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -57,18 +54,23 @@ Supported output template annotations: %s`,
 }
 
 func listDomains(filters []string) (output.Outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	domains, err := globalstate.EgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
+	ctx := gContext
+	domains, err := globalstate.EgoscaleV3Client.ListDNSDomains(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	out := dnsListOutput{}
 
-	for _, d := range domains {
+	for _, d := range domains.DNSDomains {
+
+		// Convert v3.UUID to string using String() method, then get a pointer to it
+		// Don't know if it is best practice
+		idStr := d.ID.String()       // Convert UUID to string
+
 		o := dnsListItemOutput{
-			ID:   StrPtrFormatOutput(d.ID),
-			Name: StrPtrFormatOutput(d.UnicodeName),
+			ID:   StrPtrFormatOutput(&idStr),
+			Name: StrPtrFormatOutput(&d.UnicodeName),
 		}
 
 		if len(filters) == 0 {

@@ -5,10 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exo "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func init() {
@@ -27,23 +25,19 @@ func init() {
 }
 
 func createDomain(domainName string) error {
-	var err error
-	domain := &exo.DNSDomain{}
+	ctx := gContext
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	decorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
-		domain, err = globalstate.EgoscaleClient.CreateDNSDomain(
-			ctx,
-			account.CurrentAccount.DefaultZone,
-			&exo.DNSDomain{UnicodeName: &domainName},
-		)
+	decorateAsyncOperations(fmt.Sprintf("Creating DNS domain %q...", domainName), func() error {
+		_, err := globalstate.EgoscaleV3Client.CreateDNSDomain(ctx, v3.CreateDNSDomainRequest{UnicodeName: domainName})
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
-	if err != nil {
-		return err
-	}
 
 	if !globalstate.Quiet {
-		fmt.Printf("Domain %q was created successfully\n", *domain.UnicodeName)
+		fmt.Printf("Domain %q was created successfully\n", domainName)
 	}
 
 	return nil
