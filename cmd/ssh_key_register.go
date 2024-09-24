@@ -58,7 +58,7 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 	}
 
 	registerKeyRequest := v3.RegisterSSHKeyRequest{
-		Name: c.Name,
+		Name:      c.Name,
 		PublicKey: string(publicKey),
 	}
 
@@ -69,8 +69,8 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 			return err
 		}
 
-		 _, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-		 if err != nil {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
 			return err
 		}
 
