@@ -118,13 +118,13 @@ func updateDomainRecord(
 	decorateAsyncOperations(fmt.Sprintf("Updating DNS record %q...", record.ID), func() error {
 		op, err := globalstate.EgoscaleV3Client.UpdateDNSDomainRecord(ctx, domain.ID, record.ID, recordUpdateRequest)
 		if err != nil {
-            return fmt.Errorf("exoscale: error while updating DNS record: %w", err)
-        }
+			return fmt.Errorf("exoscale: error while updating DNS record: %w", err)
+		}
 
-        _, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
-        if err != nil {
-            return fmt.Errorf("exoscale: error while waiting for DNS record update: %w", err)
-        }
+		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for DNS record update: %w", err)
+		}
 
 		return nil
 	})

@@ -50,13 +50,13 @@ func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
 	decorateAsyncOperations(fmt.Sprintf("Deleting DNS record %q...", domain.UnicodeName), func() error {
 		op, err := globalstate.EgoscaleV3Client.DeleteDNSDomainRecord(ctx, domain.ID, record.ID)
 		if err != nil {
-            return fmt.Errorf("exoscale: error while deleting DNS record: %w", err)
-        }
+			return fmt.Errorf("exoscale: error while deleting DNS record: %w", err)
+		}
 
-        _, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
-        if err != nil {
-            return fmt.Errorf("exoscale: error while waiting DNS record deletion: %w", err)
-        }
+		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting DNS record deletion: %w", err)
+		}
 
 		return nil
 	})

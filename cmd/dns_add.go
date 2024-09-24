@@ -47,7 +47,6 @@ func StringToDNSDomainRecordRequestType(recordType string) (v3.CreateDNSDomainRe
 	return "", errors.New("invalid DNS record type")
 }
 
-
 func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priority *int64) error {
 	domain, err := domainFromIdent(domainIdent)
 	if err != nil {
@@ -58,15 +57,15 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 	err = decorateAsyncOperations(fmt.Sprintf("Adding DNS record %q to %q...", rType, domain.UnicodeName), func() error {
 
 		recordType, err := StringToDNSDomainRecordRequestType(rType)
-        if err != nil {
-            return fmt.Errorf("exoscale: error while get DNS record type: %w", err)
-        }
+		if err != nil {
+			return fmt.Errorf("exoscale: error while get DNS record type: %w", err)
+		}
 
 		dnsDomainRecordRequest := v3.CreateDNSDomainRecordRequest{
 			Content: content,
-			Name: name,
-			Ttl: ttl,
-			Type: recordType,
+			Name:    name,
+			Ttl:     ttl,
+			Type:    recordType,
 		}
 
 		if priority != nil {
@@ -76,13 +75,13 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 		op, err := globalstate.EgoscaleV3Client.CreateDNSDomainRecord(ctx, domain.ID, dnsDomainRecordRequest)
 
 		if err != nil {
-            return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
-        }
+			return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
+		}
 
-        _, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
-        if err != nil {
-            return fmt.Errorf("exoscale: error while waiting for DNS record creation: %w", err)
-        }
+		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for DNS record creation: %w", err)
+		}
 
 		return nil
 	})

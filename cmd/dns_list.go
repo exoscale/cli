@@ -66,7 +66,7 @@ func listDomains(filters []string) (output.Outputter, error) {
 
 		// Convert v3.UUID to string using String() method, then get a pointer to it
 		// Don't know if it is best practice
-		idStr := d.ID.String()       // Convert UUID to string
+		idStr := d.ID.String() // Convert UUID to string
 
 		o := dnsListItemOutput{
 			ID:   StrPtrFormatOutput(&idStr),
