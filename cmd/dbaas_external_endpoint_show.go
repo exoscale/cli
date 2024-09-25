@@ -22,7 +22,7 @@ func (c *dbaasExternalEndpointShowCmd) cmdShort() string {
 }
 
 func (c *dbaasExternalEndpointShowCmd) cmdLong() string {
-	return fmt.Sprintf(`This command shows a Database Service external endpoint details.`)
+	return "This command shows a Database Service external endpoint details."
 }
 
 func (c *dbaasExternalEndpointShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {

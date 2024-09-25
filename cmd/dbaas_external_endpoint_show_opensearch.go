@@ -37,13 +37,6 @@ func (o *opensearchOutput) ToTable() {
 	t.Append([]string{"Timeout", strconv.FormatInt(settings.Timeout, 10)})
 }
 
-func truncateString(s string, maxLen int) string {
-	if len(s) > maxLen {
-		return s[:maxLen] + "..."
-	}
-	return s
-}
-
 func (c *dbaasExternalEndpointShowCmd) showOpensearch() (output.Outputter, error) {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))

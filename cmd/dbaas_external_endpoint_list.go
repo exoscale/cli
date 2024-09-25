@@ -53,9 +53,9 @@ func (c *dbaasExternalEndpointListCmd) cmdRun(_ *cobra.Command, _ []string) erro
 
 	for _, endpoint := range res.DBAASEndpoints {
 		out = append(out, dbaasExternalEndpointListItemOutput{
-			Name: *&endpoint.Name,
-			ID:   string(*&endpoint.ID),
-			Type: string(*&endpoint.Type),
+			Name: endpoint.Name,
+			ID:   string(endpoint.ID),
+			Type: string(endpoint.Type),
 		})
 	}
 
