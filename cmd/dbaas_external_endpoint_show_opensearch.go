@@ -16,7 +16,7 @@ type opensearchOutput struct {
 	ID       string                    `json:"id"`
 	Name     string                    `json:"name"`
 	Type     string                    `json:"type"`
-	Settings v3.DBAASEndpointOpensearch `json:"settings"`
+	Settings v3.DBAASEndpointOpensearchOptionalFields `json:"settings"`
 }
 
 func (o *opensearchOutput) ToJSON() { output.JSON(o) }

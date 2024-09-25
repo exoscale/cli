@@ -15,7 +15,7 @@ type prometheusOutput struct {
 	ID       string                    `json:"id"`
 	Name     string                    `json:"name"`
 	Type     string                    `json:"type"`
-	Settings v3.DBAASEndpointPrometheus `json:"settings"`
+	Settings v3.DBAASEndpointExternalPrometheusOutputSettings `json:"settings"`
 }
 
 func (o *prometheusOutput) ToJSON() { output.JSON(o) }

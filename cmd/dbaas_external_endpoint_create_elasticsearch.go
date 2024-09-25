@@ -15,8 +15,8 @@ func (c *dbaasExternalEndpointCreateCmd) createElasticsearch(_ *cobra.Command, _
 		return err
 	}
 
-	elasticsearchRequestPayload := v3.DBAASEndpointElasticsearchPayload{
-		Settings: &v3.DBAASEndpointElasticsearchPayloadSettings{},
+	elasticsearchRequestPayload := v3.DBAASEndpointElasticsearchInputCreate{
+		Settings: &v3.DBAASEndpointElasticsearchInputCreateSettings{},
 	}
 
 	if c.ElasticsearchURL != "" {

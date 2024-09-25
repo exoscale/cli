@@ -1220,8 +1220,8 @@ func (c Client) GetDBAASCACertificate(ctx context.Context) (*GetDBAASCACertifica
 }
 
 // [BETA] Delete DataDog external integration endpoint
-func (c Client) DeleteDBAASExternalEndpointDatadog(ctx context.Context, id UUID) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-datadog/%v", id)
+func (c Client) DeleteDBAASExternalEndpointDatadog(ctx context.Context, endpointID UUID) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-datadog/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -1264,8 +1264,8 @@ func (c Client) DeleteDBAASExternalEndpointDatadog(ctx context.Context, id UUID)
 }
 
 // [BETA] Get DataDog external endpoint settings
-func (c Client) GetDBAASExternalEndpointDatadog(ctx context.Context, id UUID) (*DBAASExternalEndpointDatadogOutput, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-datadog/%v", id)
+func (c Client) GetDBAASExternalEndpointDatadog(ctx context.Context, endpointID UUID) (*DBAASExternalEndpointDatadogOutput, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-datadog/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -1308,8 +1308,8 @@ func (c Client) GetDBAASExternalEndpointDatadog(ctx context.Context, id UUID) (*
 }
 
 // [BETA] Update DataDog external integration endpoint
-func (c Client) UpdateDBAASExternalEndpointDatadog(ctx context.Context, id UUID, req DBAASEndpointDatadogPayload) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-datadog/%v", id)
+func (c Client) UpdateDBAASExternalEndpointDatadog(ctx context.Context, endpointID UUID, req DBAASEndpointDatadogInputUpdate) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-datadog/%v", endpointID)
 
 	body, err := prepareJSONBody(req)
 	if err != nil {
@@ -1359,7 +1359,7 @@ func (c Client) UpdateDBAASExternalEndpointDatadog(ctx context.Context, id UUID,
 }
 
 // [BETA] Create DataDog external integration endpoint
-func (c Client) CreateDBAASExternalEndpointDatadog(ctx context.Context, name string, req DBAASEndpointDatadogPayload) (*Operation, error) {
+func (c Client) CreateDBAASExternalEndpointDatadog(ctx context.Context, name string, req DBAASEndpointDatadogInputCreate) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-external-endpoint-datadog/%v", name)
 
 	body, err := prepareJSONBody(req)
@@ -1410,8 +1410,8 @@ func (c Client) CreateDBAASExternalEndpointDatadog(ctx context.Context, name str
 }
 
 // [BETA] Delete ElasticSearch logs external integration endpoint
-func (c Client) DeleteDBAASExternalEndpointElasticsearch(ctx context.Context, id UUID) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-elasticsearch/%v", id)
+func (c Client) DeleteDBAASExternalEndpointElasticsearch(ctx context.Context, endpointID UUID) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-elasticsearch/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -1454,8 +1454,8 @@ func (c Client) DeleteDBAASExternalEndpointElasticsearch(ctx context.Context, id
 }
 
 // [BETA] Get ElasticSearch Logs external integration endpoint settings
-func (c Client) GetDBAASExternalEndpointElasticsearch(ctx context.Context, id UUID) (*DBAASEndpointElasticsearchOutput, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-elasticsearch/%v", id)
+func (c Client) GetDBAASExternalEndpointElasticsearch(ctx context.Context, endpointID UUID) (*DBAASEndpointElasticsearchOutput, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-elasticsearch/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -1498,8 +1498,8 @@ func (c Client) GetDBAASExternalEndpointElasticsearch(ctx context.Context, id UU
 }
 
 // [BETA] Update ElasticSearch Logs external integration endpoint
-func (c Client) UpdateDBAASExternalEndpointElasticsearch(ctx context.Context, id UUID, req DBAASEndpointElasticsearchPayload) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-elasticsearch/%v", id)
+func (c Client) UpdateDBAASExternalEndpointElasticsearch(ctx context.Context, endpointID UUID, req DBAASEndpointElasticsearchInputUpdate) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-elasticsearch/%v", endpointID)
 
 	body, err := prepareJSONBody(req)
 	if err != nil {
@@ -1549,7 +1549,7 @@ func (c Client) UpdateDBAASExternalEndpointElasticsearch(ctx context.Context, id
 }
 
 // [BETA] Create ElasticSearch Logs external integration endpoint
-func (c Client) CreateDBAASExternalEndpointElasticsearch(ctx context.Context, name string, req DBAASEndpointElasticsearchPayload) (*Operation, error) {
+func (c Client) CreateDBAASExternalEndpointElasticsearch(ctx context.Context, name string, req DBAASEndpointElasticsearchInputCreate) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-external-endpoint-elasticsearch/%v", name)
 
 	body, err := prepareJSONBody(req)
@@ -1600,8 +1600,8 @@ func (c Client) CreateDBAASExternalEndpointElasticsearch(ctx context.Context, na
 }
 
 // [BETA] Delete OpenSearch logs external integration endpoint
-func (c Client) DeleteDBAASExternalEndpointOpensearch(ctx context.Context, id UUID) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-opensearch/%v", id)
+func (c Client) DeleteDBAASExternalEndpointOpensearch(ctx context.Context, endpointID UUID) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-opensearch/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -1644,8 +1644,8 @@ func (c Client) DeleteDBAASExternalEndpointOpensearch(ctx context.Context, id UU
 }
 
 // [BETA] Get OpenSearch Logs external integration endpoint settings
-func (c Client) GetDBAASExternalEndpointOpensearch(ctx context.Context, id UUID) (*DBAASEndpointOpensearchOutput, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-opensearch/%v", id)
+func (c Client) GetDBAASExternalEndpointOpensearch(ctx context.Context, endpointID UUID) (*DBAASEndpointOpensearchOutput, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-opensearch/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -1688,8 +1688,8 @@ func (c Client) GetDBAASExternalEndpointOpensearch(ctx context.Context, id UUID)
 }
 
 // [BETA] Update OpenSearch Logs external integration endpoint
-func (c Client) UpdateDBAASExternalEndpointOpensearch(ctx context.Context, id UUID, req DBAASEndpointOpensearchPayload) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-opensearch/%v", id)
+func (c Client) UpdateDBAASExternalEndpointOpensearch(ctx context.Context, endpointID UUID, req DBAASEndpointOpensearchInputUpdate) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-opensearch/%v", endpointID)
 
 	body, err := prepareJSONBody(req)
 	if err != nil {
@@ -1739,7 +1739,7 @@ func (c Client) UpdateDBAASExternalEndpointOpensearch(ctx context.Context, id UU
 }
 
 // [BETA] Create OpenSearch Logs external integration endpoint
-func (c Client) CreateDBAASExternalEndpointOpensearch(ctx context.Context, name string, req DBAASEndpointOpensearchPayload) (*Operation, error) {
+func (c Client) CreateDBAASExternalEndpointOpensearch(ctx context.Context, name string, req DBAASEndpointOpensearchInputCreate) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-external-endpoint-opensearch/%v", name)
 
 	body, err := prepareJSONBody(req)
@@ -1790,8 +1790,8 @@ func (c Client) CreateDBAASExternalEndpointOpensearch(ctx context.Context, name 
 }
 
 // [BETA] Delete Prometheus external integration endpoint
-func (c Client) DeleteDBAASExternalEndpointPrometheus(ctx context.Context, id UUID) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-prometheus/%v", id)
+func (c Client) DeleteDBAASExternalEndpointPrometheus(ctx context.Context, endpointID UUID) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-prometheus/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -1834,8 +1834,8 @@ func (c Client) DeleteDBAASExternalEndpointPrometheus(ctx context.Context, id UU
 }
 
 // [BETA] Get Prometheus external integration endpoint settings
-func (c Client) GetDBAASExternalEndpointPrometheus(ctx context.Context, id UUID) (*DBAASEndpointExternalPrometheusOutput, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-prometheus/%v", id)
+func (c Client) GetDBAASExternalEndpointPrometheus(ctx context.Context, endpointID UUID) (*DBAASEndpointExternalPrometheusOutput, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-prometheus/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -1878,8 +1878,8 @@ func (c Client) GetDBAASExternalEndpointPrometheus(ctx context.Context, id UUID)
 }
 
 // [BETA] Update Prometheus external integration endpoint
-func (c Client) UpdateDBAASExternalEndpointPrometheus(ctx context.Context, id UUID, req DBAASEndpointPrometheusPayload) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-prometheus/%v", id)
+func (c Client) UpdateDBAASExternalEndpointPrometheus(ctx context.Context, endpointID UUID, req DBAASEndpointPrometheusPayload) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-prometheus/%v", endpointID)
 
 	body, err := prepareJSONBody(req)
 	if err != nil {
@@ -1980,8 +1980,8 @@ func (c Client) CreateDBAASExternalEndpointPrometheus(ctx context.Context, name 
 }
 
 // [BETA] Delete RSyslog external integration endpoint
-func (c Client) DeleteDBAASExternalEndpointRsyslog(ctx context.Context, id UUID) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-rsyslog/%v", id)
+func (c Client) DeleteDBAASExternalEndpointRsyslog(ctx context.Context, endpointID UUID) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-rsyslog/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -2024,8 +2024,8 @@ func (c Client) DeleteDBAASExternalEndpointRsyslog(ctx context.Context, id UUID)
 }
 
 // [BETA] Get RSyslog external integration endpoint settings
-func (c Client) GetDBAASExternalEndpointRsyslog(ctx context.Context, id UUID) (*DBAASExternalEndpointRsyslogOutput, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-rsyslog/%v", id)
+func (c Client) GetDBAASExternalEndpointRsyslog(ctx context.Context, endpointID UUID) (*DBAASExternalEndpointRsyslogOutput, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-rsyslog/%v", endpointID)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -2068,8 +2068,8 @@ func (c Client) GetDBAASExternalEndpointRsyslog(ctx context.Context, id UUID) (*
 }
 
 // [BETA] Update RSyslog external integration endpoint
-func (c Client) UpdateDBAASExternalEndpointRsyslog(ctx context.Context, id UUID, req DBAASEndpointRsyslogPayload) (*Operation, error) {
-	path := fmt.Sprintf("/dbaas-external-endpoint-rsyslog/%v", id)
+func (c Client) UpdateDBAASExternalEndpointRsyslog(ctx context.Context, endpointID UUID, req DBAASEndpointRsyslogInputUpdate) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-external-endpoint-rsyslog/%v", endpointID)
 
 	body, err := prepareJSONBody(req)
 	if err != nil {
@@ -2119,7 +2119,7 @@ func (c Client) UpdateDBAASExternalEndpointRsyslog(ctx context.Context, id UUID,
 }
 
 // [BETA] Create RSyslog external integration endpoint
-func (c Client) CreateDBAASExternalEndpointRsyslog(ctx context.Context, name string, req DBAASEndpointRsyslogPayload) (*Operation, error) {
+func (c Client) CreateDBAASExternalEndpointRsyslog(ctx context.Context, name string, req DBAASEndpointRsyslogInputCreate) (*Operation, error) {
 	path := fmt.Sprintf("/dbaas-external-endpoint-rsyslog/%v", name)
 
 	body, err := prepareJSONBody(req)
@@ -2499,8 +2499,8 @@ func (c Client) UpdateDBAASExternalIntegrationSettingsDatadog(ctx context.Contex
 }
 
 // [BETA] Get a DBaaS external integration
-func (c Client) GetDBAASExternalIntegration(ctx context.Context, id UUID) (*DBAASExternalIntegration, error) {
-	path := fmt.Sprintf("/dbaas-external-integration/%v", id)
+func (c Client) GetDBAASExternalIntegration(ctx context.Context, integrationID UUID) (*DBAASExternalIntegration, error) {
+	path := fmt.Sprintf("/dbaas-external-integration/%v", integrationID)
 
 	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
 	if err != nil {
@@ -2544,17 +2544,6 @@ func (c Client) GetDBAASExternalIntegration(ctx context.Context, id UUID) (*DBAA
 
 type ListDBAASExternalIntegrationsResponse struct {
 	ExternalIntegrations []DBAASExternalIntegration `json:"external-integrations,omitempty"`
-}
-
-// FindDBAASExternalIntegration attempts to find an DBAASExternalIntegration by id.
-func (l ListDBAASExternalIntegrationsResponse) FindDBAASExternalIntegration(id string) (DBAASExternalIntegration, error) {
-	for i, elem := range l.ExternalIntegrations {
-		if string(elem.ID) == id {
-			return l.ExternalIntegrations[i], nil
-		}
-	}
-
-	return DBAASExternalIntegration{}, fmt.Errorf("%q not found in ListDBAASExternalIntegrationsResponse: %w", id, ErrNotFound)
 }
 
 // [BETA] List all DBaaS connections between services and external endpoints

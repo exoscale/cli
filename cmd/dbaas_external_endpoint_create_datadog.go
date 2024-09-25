@@ -26,8 +26,8 @@ func (c *dbaasExternalEndpointCreateCmd) createDatadog(_ *cobra.Command, _ []str
 		}
 	}
 
-	datadogRequestPayload := v3.DBAASEndpointDatadogPayload{
-		Settings: &v3.DBAASEndpointDatadogPayloadSettings{},
+	datadogRequestPayload := v3.DBAASEndpointDatadogInputCreate{
+		Settings: &v3.DBAASEndpointDatadogInputCreateSettings{},
 	}
 
 	if c.DatadogAPIKey != "" {

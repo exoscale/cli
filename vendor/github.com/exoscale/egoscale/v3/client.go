@@ -214,7 +214,17 @@ func (c *Client) WithTrace() *Client {
 }
 
 // WithHttpClient returns a copy of Client with new http.Client.
+// Deprecated: use WithHTTPClient instead.
 func (c *Client) WithHttpClient(client *http.Client) *Client {
+	clone := cloneClient(c)
+
+	clone.httpClient = client
+
+	return clone
+}
+
+// WithHTTPClient returns a copy of Client with new http.Client.
+func (c *Client) WithHTTPClient(client *http.Client) *Client {
 	clone := cloneClient(c)
 
 	clone.httpClient = client

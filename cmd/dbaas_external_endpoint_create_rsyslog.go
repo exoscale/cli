@@ -15,8 +15,8 @@ func (c *dbaasExternalEndpointCreateCmd) createRsyslog(_ *cobra.Command, _ []str
 		return err
 	}
 
-	rsyslogRequestPayload := v3.DBAASEndpointRsyslogPayload{
-		Settings: &v3.DBAASEndpointRsyslogPayloadSettings{},
+	rsyslogRequestPayload := v3.DBAASEndpointRsyslogInputCreate{
+		Settings: &v3.DBAASEndpointRsyslogInputCreateSettings{},
 	}
 
 	if c.RsyslogCA != "" {

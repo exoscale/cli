@@ -16,7 +16,7 @@ type datadogOutput struct {
 	ID       string                  `json:"id"`
 	Name     string                  `json:"name"`
 	Type     string                  `json:"type"`
-	Settings v3.DBAASEndpointDatadog `json:"settings"`
+	Settings v3.DBAASExternalEndpointDatadogOutputSettings `json:"settings"`
 }
 
 func (o *datadogOutput) ToJSON() { output.JSON(o) }
