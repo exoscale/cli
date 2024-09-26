@@ -6,7 +6,7 @@ import (
 
 var dbaasExternalEndpointCmd = &cobra.Command{
 	Use:   "external-endpoint",
-	Short: "Database as a Services External Endpoint management",
+	Short: "Manage DBaaS external endpoints",
 }
 
 func init() {
