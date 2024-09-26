@@ -15,7 +15,8 @@ type dbaasExternalIntegrationAttachCmd struct {
 	_ bool `cli-cmd:"attach"`
 
 	Type string `cli-arg:"#"`
-	SourceServiceName string `cli-flag:"source-service-name" cli-usage:"DBaaS source service name" cli-hidden:""`
+
+	SourceServiceName     string `cli-flag:"source-service-name" cli-usage:"DBaaS source service name" cli-hidden:""`
 	DestinationEndpointID string `cli-flag:"destination-endpoint-id" cli-usage:"Destination external endpoint id" cli-hidden:""`
 }
 
@@ -57,7 +58,7 @@ func(c *dbaasExternalIntegrationAttachCmd) cmdRun(cmd *cobra.Command, args []str
 	op, err := client.AttachDBAASServiceToEndpoint(ctx, c.SourceServiceName, req)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Attaching service %s to endpoint %s", c.SourceServiceName, endpointID), func() {
