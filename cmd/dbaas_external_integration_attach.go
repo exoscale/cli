@@ -16,8 +16,8 @@ type dbaasExternalIntegrationAttachCmd struct {
 
 	Type string `cli-arg:"#"`
 
-	SourceServiceName     string `cli-flag:"source-service-name" cli-usage:"DBaaS source service name" cli-hidden:""`
-	DestinationEndpointID string `cli-flag:"destination-endpoint-id" cli-usage:"Destination external endpoint id" cli-hidden:""`
+	SourceServiceName     string `cli-flag:"source-service-name" cli-usage:"DBaaS source service name"`
+	DestinationEndpointID string `cli-flag:"destination-endpoint-id" cli-usage:"Destination external endpoint id"`
 }
 
 func (c *dbaasExternalIntegrationAttachCmd) cmdAliases() []string {
