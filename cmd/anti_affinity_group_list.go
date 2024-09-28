@@ -6,10 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type antiAffinityGroupListItemOutput struct {
@@ -45,22 +43,19 @@ func (c *antiAffinityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *antiAffinityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
+	ctx := gContext
 
-	antiAffinityGroups, err := globalstate.EgoscaleClient.ListAntiAffinityGroups(ctx, account.CurrentAccount.DefaultZone)
+	antiAffinityGroups, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
 	if err != nil {
 		return err
 	}
 
 	out := make(antiAffinityGroupListOutput, 0)
 
-	for _, t := range antiAffinityGroups {
+	for _, t := range antiAffinityGroups.AntiAffinityGroups {
 		out = append(out, antiAffinityGroupListItemOutput{
-			ID:   *t.ID,
-			Name: *t.Name,
+			ID:   t.ID.String(),
+			Name: t.Name,
 		})
 	}
 

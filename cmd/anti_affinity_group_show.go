@@ -6,11 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type antiAffinityGroupShowOutput struct {
@@ -50,29 +47,28 @@ func (c *antiAffinityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
+	ctx := gContext
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
+	if err != nil {
+		return err
+	}
 
-	antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, zone, c.AntiAffinityGroup)
+	antiAffinityGroup, err := antiAffinityGroupsResp.FindAntiAffinityGroup(c.AntiAffinityGroup)
 	if err != nil {
 		return err
 	}
 
 	out := antiAffinityGroupShowOutput{
-		ID:          *antiAffinityGroup.ID,
-		Name:        *antiAffinityGroup.Name,
-		Description: utils.DefaultString(antiAffinityGroup.Description, ""),
+		ID:          antiAffinityGroup.ID.String(),
+		Name:        antiAffinityGroup.Name,
+		Description: antiAffinityGroup.Description,
 	}
 
-	if antiAffinityGroup.InstanceIDs != nil {
-		out.Instances = make([]string, len(*antiAffinityGroup.InstanceIDs))
-		for i, id := range *antiAffinityGroup.InstanceIDs {
-			instance, err := globalstate.EgoscaleClient.GetInstance(ctx, zone, id)
-			if err != nil {
-				return fmt.Errorf("unable to retrieve Compute instance %s: %w", id, err)
-			}
-			out.Instances[i] = *instance.Name
+	if antiAffinityGroup.Instances != nil {
+		out.Instances = make([]string, len(antiAffinityGroup.Instances))
+		for i, instance := range antiAffinityGroup.Instances {
+			out.Instances[i] = instance.Name
 		}
 	}
 
