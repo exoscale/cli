@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -19,74 +18,38 @@ var dnsCmd = &cobra.Command{
 func domainFromIdent(ident string) (*v3.DNSDomain, error) {
 	ctx := gContext
 
-	domainId, err := v3.ParseUUID(ident)
-	if err == nil {
-		// ident is a valid UUID
-		domain, err := globalstate.EgoscaleV3Client.GetDNSDomain(ctx, domainId)
-		if err != nil {
-			return nil, err
-		}
-
-		return domain, nil
-	}
-
-	// ident is not a UUID, trying finding domain by name
-	domains, err := globalstate.EgoscaleV3Client.ListDNSDomains(ctx)
+	domainsResp, err := globalstate.EgoscaleV3Client.ListDNSDomains(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, domain := range domains.DNSDomains {
-		if domain.UnicodeName == ident {
-			return &domain, nil
-		}
+	domain, err := domainsResp.FindDNSDomain(ident)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("domain %q not found", ident)
+	return &domain, err
 }
 
 // domainRecordFromIdent returns a DNS record from identifier (record name or ID) and optional type
 func domainRecordFromIdent(domainID v3.UUID, ident string, rType *v3.DNSDomainRecordType) (*v3.DNSDomainRecord, error) {
 	ctx := gContext
 
-	RecordId, err := v3.ParseUUID(ident)
-	if err == nil {
-		// ident is a valid UUID
-		domainRecord, err := globalstate.EgoscaleV3Client.GetDNSDomainRecord(ctx, domainID, RecordId)
-		if err != nil {
-			return nil, err
-		}
-
-		return domainRecord, nil
-	}
-
-	// ident is not a UUID, trying finding domain by name
-	records, err := globalstate.EgoscaleV3Client.ListDNSDomainRecords(ctx, domainID)
+	domainRecordsResp, err := globalstate.EgoscaleV3Client.ListDNSDomainRecords(ctx, domainID)
 	if err != nil {
 		return nil, err
 	}
 
-	var foundRecord *v3.DNSDomainRecord
-
-	for _, r := range records.DNSDomainRecords {
-		if rType != nil && r.Type != *rType {
-			continue
-		}
-
-		if ident == r.Name {
-			if foundRecord != nil {
-				return nil, errors.New("more than one records were found")
-			}
-			t := r
-			foundRecord = &t
-		}
+	domainRecord, err := domainRecordsResp.FindDNSDomainRecord(ident)
+	if err != nil {
+		return nil, err
 	}
 
-	if foundRecord == nil {
-		return nil, fmt.Errorf("no records were found")
+	if rType != nil && domainRecord.Type != *rType {
+		return nil, errors.New("record not found (record type doesn't match)")
 	}
 
-	return foundRecord, nil
+	return &domainRecord, nil
 }
 
 func init() {
