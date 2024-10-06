@@ -27,7 +27,7 @@ func init() {
 func createDomain(domainName string) error {
 	ctx := gContext
 
-	decorateAsyncOperations(fmt.Sprintf("Creating DNS domain %q...", domainName), func() error {
+	err := decorateAsyncOperations(fmt.Sprintf("Creating DNS domain %q...", domainName), func() error {
 		_, err := globalstate.EgoscaleV3Client.CreateDNSDomain(ctx, v3.CreateDNSDomainRequest{UnicodeName: domainName})
 		if err != nil {
 			return err
@@ -35,6 +35,10 @@ func createDomain(domainName string) error {
 
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
 
 	if !globalstate.Quiet {
 		fmt.Printf("Domain %q was created successfully\n", domainName)

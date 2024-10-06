@@ -42,7 +42,7 @@ func deleteDomain(ident string, force bool) error {
 	}
 
 	ctx := gContext
-	decorateAsyncOperations(fmt.Sprintf("Deleting DNS domain %q...", domain.UnicodeName), func() error {
+	err = decorateAsyncOperations(fmt.Sprintf("Deleting DNS domain %q...", domain.UnicodeName), func() error {
 		op, err := globalstate.EgoscaleV3Client.DeleteDNSDomain(ctx, domain.ID)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting DNS domain: %w", err)
@@ -55,6 +55,9 @@ func deleteDomain(ident string, force bool) error {
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	if !globalstate.Quiet {
 		fmt.Printf("Domain %q was deleted successfully\n", domain.UnicodeName)

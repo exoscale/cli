@@ -115,7 +115,7 @@ func updateDomainRecord(
 	}
 
 	ctx := gContext
-	decorateAsyncOperations(fmt.Sprintf("Updating DNS record %q...", record.ID), func() error {
+	err = decorateAsyncOperations(fmt.Sprintf("Updating DNS record %q...", record.ID), func() error {
 		op, err := globalstate.EgoscaleV3Client.UpdateDNSDomainRecord(ctx, domain.ID, record.ID, recordUpdateRequest)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while updating DNS record: %w", err)
@@ -128,6 +128,9 @@ func updateDomainRecord(
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	if !globalstate.Quiet {
 		fmt.Printf("Record %q was updated successfully\n", record.ID)
