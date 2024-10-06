@@ -76,8 +76,14 @@ func GetInstancesInSecurityGroup(ctx context.Context, client *v2.Client, securit
 	return instancesInSG, nil
 }
 
-func GetInstancesAttachedToEIP(ctx context.Context, client *v2.Client, elasticIPID, zone string) ([]*v2.Instance, error) {
-	instances, err := client.ListInstances(ctx, zone, v2.ListInstancesByIpAddress(elasticIPID))
+func GetInstancesAttachedToEIP(ctx context.Context, client *v3.Client, elasticIPID string) (*v3.ListInstancesResponse, error) {
+	// Message for reviewer:
+	// It always returns the list of all instances. Why ???
+	// When no instance attached to Elastic IP, should returned an empty list
+	// When some instances attached to elastic IP, should returns only the attached instances
+	// Am I doing something wrong here ?? Is the ip-address parameter taking the Elastic IP into account ??
+	// TODO: remove comment before merging
+	instances, err := client.ListInstances(ctx, v3.ListInstancesWithIPAddress(elasticIPID))
 	if err != nil {
 		return nil, err
 	}

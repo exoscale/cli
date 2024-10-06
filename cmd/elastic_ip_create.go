@@ -3,16 +3,12 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type elasticIPCreateCmd struct {
@@ -20,18 +16,18 @@ type elasticIPCreateCmd struct {
 
 	_ bool `cli-cmd:"create"`
 
-	Description               string `cli-usage:"Elastic IP description"`
-	IPv6                      bool   `cli-flag:"ipv6" cli-usage:"create Elastic IPv6 prefix"`
-	HealthcheckInterval       int64  `cli-usage:"managed Elastic IP health checking interval in seconds"`
-	HealthcheckMode           string `cli-usage:"managed Elastic IP health checking mode (tcp|http|https)"`
-	HealthcheckPort           int64  `cli-usage:"managed Elastic IP health checking port"`
-	HealthcheckStrikesFail    int64  `cli-usage:"number of failed attempts before considering a managed Elastic IP health check unhealthy"`
-	HealthcheckStrikesOK      int64  `cli-usage:"number of successful attempts before considering a managed Elastic IP health check healthy"`
-	HealthcheckTLSSNI         string `cli-flag:"healthcheck-tls-sni" cli-usage:"managed Elastic IP health checking server name to present with SNI in https mode"`
-	HealthcheckTLSSSkipVerify bool   `cli-flag:"healthcheck-tls-skip-verify" cli-usage:"disable TLS certificate verification for managed Elastic IP health checking in https mode"`
-	HealthcheckTimeout        int64  `cli-usage:"managed Elastic IP health checking timeout in seconds"`
-	HealthcheckURI            string `cli-usage:"managed Elastic IP health checking URI (required in http(s) mode)"`
-	Zone                      string `cli-short:"z" cli-usage:"Elastic IP zone"`
+	Description               string      `cli-usage:"Elastic IP description"`
+	IPv6                      bool        `cli-flag:"ipv6" cli-usage:"create Elastic IPv6 prefix"`
+	HealthcheckInterval       int64       `cli-usage:"managed Elastic IP health checking interval in seconds"`
+	HealthcheckMode           string      `cli-usage:"managed Elastic IP health checking mode (tcp|http|https)"`
+	HealthcheckPort           int64       `cli-usage:"managed Elastic IP health checking port"`
+	HealthcheckStrikesFail    int64       `cli-usage:"number of failed attempts before considering a managed Elastic IP health check unhealthy"`
+	HealthcheckStrikesOK      int64       `cli-usage:"number of successful attempts before considering a managed Elastic IP health check healthy"`
+	HealthcheckTLSSNI         string      `cli-flag:"healthcheck-tls-sni" cli-usage:"managed Elastic IP health checking server name to present with SNI in https mode"`
+	HealthcheckTLSSSkipVerify bool        `cli-flag:"healthcheck-tls-skip-verify" cli-usage:"disable TLS certificate verification for managed Elastic IP health checking in https mode"`
+	HealthcheckTimeout        int64       `cli-usage:"managed Elastic IP health checking timeout in seconds"`
+	HealthcheckURI            string      `cli-usage:"managed Elastic IP health checking URI (required in http(s) mode)"`
+	Zone                      v3.ZoneName `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
 func (c *elasticIPCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -53,56 +49,70 @@ func (c *elasticIPCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
-	var healthcheck *egoscale.ElasticIPHealthcheck
+	var healthcheck *v3.ElasticIPHealthcheck
 	if c.HealthcheckMode != "" {
-		port := uint16(c.HealthcheckPort)
-		interval := time.Duration(c.HealthcheckInterval) * time.Second
-		timeout := time.Duration(c.HealthcheckTimeout) * time.Second
-
-		healthcheck = &egoscale.ElasticIPHealthcheck{
-			Interval:    &interval,
-			Mode:        &c.HealthcheckMode,
-			Port:        &port,
-			StrikesFail: &c.HealthcheckStrikesFail,
-			StrikesOK:   &c.HealthcheckStrikesOK,
-			Timeout:     &timeout,
-			URI: func() (v *string) {
+		healthcheck = &v3.ElasticIPHealthcheck{
+			Interval:    c.HealthcheckInterval,
+			Mode:        v3.ElasticIPHealthcheckMode(c.HealthcheckMode),
+			Port:        c.HealthcheckPort,
+			StrikesFail: c.HealthcheckStrikesFail,
+			StrikesOk:   c.HealthcheckStrikesOK,
+			Timeout:     c.HealthcheckTimeout,
+			URI: func() (v string) {
 				if strings.HasPrefix(c.HealthcheckMode, "http") {
-					v = &c.HealthcheckURI
+					v = c.HealthcheckURI
 				}
 				return
 			}(),
 		}
 
 		if c.HealthcheckMode == "https" {
-			healthcheck.TLSSkipVerify = &c.HealthcheckTLSSSkipVerify
-			healthcheck.TLSSNI = utils.NonEmptyStringPtr(c.HealthcheckTLSSNI)
+			healthcheck.TlsSkipVerify = &c.HealthcheckTLSSSkipVerify
+			healthcheck.TlsSNI = c.HealthcheckTLSSNI
 		}
 	}
 
-	elasticIP := &egoscale.ElasticIP{
-		Description: utils.NonEmptyStringPtr(c.Description),
+	createElasticIPRequest := v3.CreateElasticIPRequest{
+		Description: c.Description,
 		Healthcheck: healthcheck,
 	}
 
 	if c.IPv6 {
-		elasticIP.AddressFamily = utils.NonEmptyStringPtr("inet6")
+		createElasticIPRequest.Addressfamily = v3.CreateElasticIPRequestAddressfamilyInet6
 	}
 
-	var err error
-	decorateAsyncOperation("Creating Elastic IP...", func() {
-		elasticIP, err = globalstate.EgoscaleClient.CreateElasticIP(ctx, c.Zone, elasticIP)
+	err = decorateAsyncOperations("Creating Elastic IP...", func() error {
+		op, err := client.CreateElasticIP(ctx, createElasticIPRequest)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while creating Elastic IP: %w", err)
+		}
+
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for Elastic IP creation: %w", err)
+		}
+
+		return nil
 	})
+
 	if err != nil {
 		return err
 	}
 
 	return (&elasticIPShowCmd{
 		cliCommandSettings: c.cliCommandSettings,
-		ElasticIP:          *elasticIP.ID,
-		Zone:               c.Zone,
+		// Comment for reviewer:
+		// Is there a way to get the created Elastic IP address or UUID ???
+		// Listing all of them and comparing Addressfamily, Description,... doesn't really garantee uniquess
+		// TODO: Remove comment before merging
+		ElasticIP: "",
+		Zone:      c.Zone,
 	}).cmdRun(nil, nil)
 }
 
