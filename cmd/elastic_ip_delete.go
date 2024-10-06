@@ -6,9 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type elasticIPDeleteCmd struct {
@@ -18,8 +17,8 @@ type elasticIPDeleteCmd struct {
 
 	ElasticIP string `cli-arg:"#" cli-usage:"IP-ADDRESS|ID"`
 
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"Elastic IP zone"`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
 func (c *elasticIPDeleteCmd) cmdAliases() []string { return gRemoveAlias }
@@ -36,11 +35,20 @@ func (c *elasticIPDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *elasticIPDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		return err
+	}
+
+	elasticIPResp, err := client.ListElasticIPS(ctx)
+	if err != nil {
+		return err
+	}
+
+	elasticIP, err := elasticIPResp.FindElasticIP(c.ElasticIP)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return err
@@ -52,9 +60,20 @@ func (c *elasticIPDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting Elastic IP %s...", c.ElasticIP), func() {
-		err = globalstate.EgoscaleClient.DeleteElasticIP(ctx, c.Zone, elasticIP)
+	err = decorateAsyncOperations(fmt.Sprintf("Deleting Elastic IP %s...", c.ElasticIP), func() error {
+		op, err := client.DeleteElasticIP(ctx, elasticIP.ID)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while deleting Elastic IP: %w", err)
+		}
+
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for Elastic IP deletion: %w", err)
+		}
+
+		return nil
 	})
+
 	if err != nil {
 		return err
 	}
