@@ -10,7 +10,7 @@ import (
 )
 
 type dbaasExternalIntegrationSettingsShowDatadogOutput struct {
-	DatadogDbmEnabled bool `json:"datadog-dbm-enabled"`
+	DatadogDbmEnabled       bool `json:"datadog-dbm-enabled"`
 	DatadogPgbouncerEnabled bool `json:"datadog-pgbouncer-enabled"`
 }
 
@@ -37,7 +37,7 @@ func (c *dbaasExternalIntegrationSettingsShowCmd) showDatadog() (output.Outputte
 	}
 
 	out := &dbaasExternalIntegrationSettingsShowDatadogOutput{
-		DatadogDbmEnabled: *res.Settings.DatadogDbmEnabled,
+		DatadogDbmEnabled:       *res.Settings.DatadogDbmEnabled,
 		DatadogPgbouncerEnabled: *res.Settings.DatadogPgbouncerEnabled,
 	}
 	return out, nil

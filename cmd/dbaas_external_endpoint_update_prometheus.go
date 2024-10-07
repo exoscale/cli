@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/spf13/cobra"
 )
 
 func (c *dbaasExternalEndpointUpdateCmd) updatePrometheus(_ *cobra.Command, _ []string) error {
@@ -20,10 +20,10 @@ func (c *dbaasExternalEndpointUpdateCmd) updatePrometheus(_ *cobra.Command, _ []
 	}
 
 	if c.PrometheusBasicAuthPassword != "" {
-		prometheusRequestPayload.Settings.BasicAuthPassword= c.PrometheusBasicAuthPassword
+		prometheusRequestPayload.Settings.BasicAuthPassword = c.PrometheusBasicAuthPassword
 	}
 	if c.PrometheusBasicAuthUsername != "" {
-		prometheusRequestPayload.Settings.BasicAuthUsername= c.PrometheusBasicAuthUsername
+		prometheusRequestPayload.Settings.BasicAuthUsername = c.PrometheusBasicAuthUsername
 	}
 
 	op, err := client.UpdateDBAASExternalEndpointPrometheus(ctx, v3.UUID(c.ID), prometheusRequestPayload)

@@ -13,9 +13,9 @@ import (
 )
 
 type datadogOutput struct {
-	ID       string                  `json:"id"`
-	Name     string                  `json:"name"`
-	Type     string                  `json:"type"`
+	ID       string                                        `json:"id"`
+	Name     string                                        `json:"name"`
+	Type     string                                        `json:"type"`
 	Settings v3.DBAASExternalEndpointDatadogOutputSettings `json:"settings"`
 }
 
@@ -44,7 +44,6 @@ func (o *datadogOutput) ToTable() {
 	t.Append([]string{"Kafka Consumer Check Instances", strconv.FormatInt(settings.KafkaConsumerCheckInstances, 10)})
 	t.Append([]string{"Kafka Consumer Stats Timeout", strconv.FormatInt(settings.KafkaConsumerStatsTimeout, 10)})
 	t.Append([]string{"Max Partition Contexts", strconv.FormatInt(settings.MaxPartitionContexts, 10)})
-
 
 	if len(settings.DatadogTags) > 0 {
 		tagLines := make([]string, len(settings.DatadogTags))

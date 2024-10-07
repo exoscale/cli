@@ -71,8 +71,8 @@ func (c *dbaasExternalEndpointUpdateCmd) updateDatadog(cmd *cobra.Command, _ []s
 	if !globalstate.Quiet {
 		return (&dbaasExternalEndpointShowCmd{
 			cliCommandSettings: defaultCLICmdSettings(),
-			EndpointID: endpointID,
-			Type: "datadog",
+			EndpointID:         endpointID,
+			Type:               "datadog",
 		}).cmdRun(nil, nil)
 	}
 

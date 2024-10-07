@@ -35,7 +35,7 @@ func (c *dbaasExternalIntegrationDetachCmd) cmdPreRun(cmd *cobra.Command, args [
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func(c *dbaasExternalIntegrationDetachCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalIntegrationDetachCmd) cmdRun(cmd *cobra.Command, args []string) error {
 
 	ctx := gContext
 

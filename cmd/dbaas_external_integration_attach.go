@@ -36,7 +36,7 @@ func (c *dbaasExternalIntegrationAttachCmd) cmdPreRun(cmd *cobra.Command, args [
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func(c *dbaasExternalIntegrationAttachCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalIntegrationAttachCmd) cmdRun(cmd *cobra.Command, args []string) error {
 
 	ctx := gContext
 
@@ -52,7 +52,7 @@ func(c *dbaasExternalIntegrationAttachCmd) cmdRun(cmd *cobra.Command, args []str
 
 	req := v3.AttachDBAASServiceToEndpointRequest{
 		DestEndpointID: endpointID,
-		Type: v3.EnumExternalEndpointTypes(c.Type),
+		Type:           v3.EnumExternalEndpointTypes(c.Type),
 	}
 
 	op, err := client.AttachDBAASServiceToEndpoint(ctx, c.SourceServiceName, req)

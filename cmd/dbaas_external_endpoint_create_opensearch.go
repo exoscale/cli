@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/spf13/cobra"
 )
 
 func (c *dbaasExternalEndpointCreateCmd) createOpensearch(_ *cobra.Command, _ []string) error {

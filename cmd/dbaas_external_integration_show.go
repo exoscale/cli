@@ -12,14 +12,14 @@ import (
 )
 
 type dbaasExternalIntegrationShowOutput struct {
-	Description string `json:"description"`
-	DestEndpointName string `json:"dest-endpoint-name"`
-	DestEndpointID string  `json:"dest-endpoint-id"`
-	IntegrationID string `json:"id"`
-	Status string `json:"status"`
+	Description       string `json:"description"`
+	DestEndpointName  string `json:"dest-endpoint-name"`
+	DestEndpointID    string `json:"dest-endpoint-id"`
+	IntegrationID     string `json:"id"`
+	Status            string `json:"status"`
 	SourceServiceName string `json:"source-service-name"`
 	SourceServiceType string `json:"source-service-type"`
-	Type string `json:"type"`
+	Type              string `json:"type"`
 }
 
 func (o *dbaasExternalIntegrationShowOutput) ToJSON()  { output.JSON(o) }
@@ -53,21 +53,21 @@ func (c *dbaasExternalIntegrationShowCmd) showExternalIntegration() (output.Outp
 	}
 
 	out := &dbaasExternalIntegrationShowOutput{
-			IntegrationID: string(res.IntegrationID),
-			Type: string(res.Type),
-			Description: res.Description,
-			DestEndpointName: res.DestEndpointName,
-			DestEndpointID: res.DestEndpointID,
-			Status: res.Status,
-			SourceServiceName: res.SourceServiceName,
-			SourceServiceType: string(res.SourceServiceType),
-		}
+		IntegrationID:     string(res.IntegrationID),
+		Type:              string(res.Type),
+		Description:       res.Description,
+		DestEndpointName:  res.DestEndpointName,
+		DestEndpointID:    res.DestEndpointID,
+		Status:            res.Status,
+		SourceServiceName: res.SourceServiceName,
+		SourceServiceType: string(res.SourceServiceType),
+	}
 	return out, nil
 }
 
 func (c *dbaasExternalIntegrationShowCmd) cmdAliases() []string { return gShowAlias }
-func (c *dbaasExternalIntegrationShowCmd) cmdShort() string { return "Show External Integration"}
-func (c *dbaasExternalIntegrationShowCmd) cmdLong() string { return "Show External Integration"}
+func (c *dbaasExternalIntegrationShowCmd) cmdShort() string     { return "Show External Integration" }
+func (c *dbaasExternalIntegrationShowCmd) cmdLong() string      { return "Show External Integration" }
 func (c *dbaasExternalIntegrationShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }

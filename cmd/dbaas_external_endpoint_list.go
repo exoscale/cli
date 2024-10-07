@@ -30,8 +30,8 @@ type dbaasExternalEndpointListCmd struct {
 }
 
 func (c *dbaasExternalEndpointListCmd) cmdAliases() []string { return gListAlias }
-func (c *dbaasExternalEndpointListCmd) cmdShort() string { return "List External Endpoints"}
-func (c *dbaasExternalEndpointListCmd) cmdLong() string { return "List External Endpoints"}
+func (c *dbaasExternalEndpointListCmd) cmdShort() string     { return "List External Endpoints" }
+func (c *dbaasExternalEndpointListCmd) cmdLong() string      { return "List External Endpoints" }
 func (c *dbaasExternalEndpointListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }

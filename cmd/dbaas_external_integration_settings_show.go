@@ -1,4 +1,5 @@
 package cmd
+
 import (
 	"fmt"
 	"github.com/spf13/cobra"
@@ -14,8 +15,12 @@ type dbaasExternalIntegrationSettingsShowCmd struct {
 }
 
 func (c *dbaasExternalIntegrationSettingsShowCmd) cmdAliases() []string { return gShowAlias }
-func (c *dbaasExternalIntegrationSettingsShowCmd) cmdShort() string { return "Show External Integration Settings"}
-func (c *dbaasExternalIntegrationSettingsShowCmd) cmdLong() string { return "Show External Integration Settings"}
+func (c *dbaasExternalIntegrationSettingsShowCmd) cmdShort() string {
+	return "Show External Integration Settings"
+}
+func (c *dbaasExternalIntegrationSettingsShowCmd) cmdLong() string {
+	return "Show External Integration Settings"
+}
 func (c *dbaasExternalIntegrationSettingsShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }

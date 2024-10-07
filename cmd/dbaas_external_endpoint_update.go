@@ -13,7 +13,7 @@ type dbaasExternalEndpointUpdateCmd struct {
 	_ bool `cli-cmd:"update"`
 
 	Type string `cli-arg:"#"`
-	ID string `cli-arg:"#"`
+	ID   string `cli-arg:"#"`
 
 	HelpDatadog       bool `cli-usage:"show usage for flags specific to the datadog external endpoint type"`
 	HelpElasticsearch bool `cli-usage:"show usage for flags specific to the elasticsearch external endpoint type"`

@@ -12,14 +12,14 @@ import (
 )
 
 type dbaasExternalIntegrationListItemOutput struct {
-	Description string `json:"description"`
-	DestEndpointName string `json:"dest-endpoint-name"`
-	DestEndpointID string  `json:"dest-endpoint-id"`
-	IntegrationID string `json:"id"`
-	Status string `json:"status"`
+	Description       string `json:"description"`
+	DestEndpointName  string `json:"dest-endpoint-name"`
+	DestEndpointID    string `json:"dest-endpoint-id"`
+	IntegrationID     string `json:"id"`
+	Status            string `json:"status"`
 	SourceServiceName string `json:"source-service-name"`
 	SourceServiceType string `json:"source-service-type"`
-	Type string `json:"type"`
+	Type              string `json:"type"`
 }
 
 type dbaasExternalIntegrationListOutput []dbaasExternalIntegrationListItemOutput
@@ -37,8 +37,8 @@ type dbaasExternalIntegrationListCmd struct {
 }
 
 func (c *dbaasExternalIntegrationListCmd) cmdAliases() []string { return gListAlias }
-func (c *dbaasExternalIntegrationListCmd) cmdShort() string { return "List External Integrations"}
-func (c *dbaasExternalIntegrationListCmd) cmdLong() string { return "List External Integrations"}
+func (c *dbaasExternalIntegrationListCmd) cmdShort() string     { return "List External Integrations" }
+func (c *dbaasExternalIntegrationListCmd) cmdLong() string      { return "List External Integrations" }
 func (c *dbaasExternalIntegrationListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
@@ -51,7 +51,7 @@ func (c *dbaasExternalIntegrationListCmd) cmdRun(_ *cobra.Command, _ []string) e
 		return err
 	}
 
-	res, err := client.ListDBAASExternalIntegrations(ctx,c.ServiceName)
+	res, err := client.ListDBAASExternalIntegrations(ctx, c.ServiceName)
 	if err != nil {
 		return fmt.Errorf("error listing integrations: %w", err)
 	}
@@ -60,12 +60,12 @@ func (c *dbaasExternalIntegrationListCmd) cmdRun(_ *cobra.Command, _ []string) e
 
 	for _, integration := range res.ExternalIntegrations {
 		out = append(out, dbaasExternalIntegrationListItemOutput{
-			IntegrationID: string(integration.IntegrationID),
-			Type: string(integration.Type),
-			Description: integration.Description,
-			DestEndpointName: integration.DestEndpointName,
-			DestEndpointID: integration.DestEndpointID,
-			Status: integration.Status,
+			IntegrationID:     string(integration.IntegrationID),
+			Type:              string(integration.Type),
+			Description:       integration.Description,
+			DestEndpointName:  integration.DestEndpointName,
+			DestEndpointID:    integration.DestEndpointID,
+			Status:            integration.Status,
 			SourceServiceName: integration.SourceServiceName,
 			SourceServiceType: string(integration.SourceServiceType),
 		})
