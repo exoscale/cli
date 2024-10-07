@@ -91,7 +91,6 @@ func (c *dbaasExternalEndpointUpdateCmd) cmdShort() string {
 }
 
 func (c *dbaasExternalEndpointUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	// Implement the command's main logic here
 	switch c.Type {
 	case "datadog":
 		return c.updateDatadog(cmd, args)
