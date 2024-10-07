@@ -8,7 +8,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasExternalEndpointCreateCmd) createRsyslog(_ *cobra.Command, _ []string) error {
+func (c *dbaasExternalEndpointCreateCmd) createRsyslog(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
@@ -46,7 +46,7 @@ func (c *dbaasExternalEndpointCreateCmd) createRsyslog(_ *cobra.Command, _ []str
 	if c.RsyslogServer != "" {
 		rsyslogRequestPayload.Settings.Server = c.RsyslogServer
 	}
-	if c.RsyslogTls {
+	if cmd.Flags().Changed("rsyslog-tls") {
 		rsyslogRequestPayload.Settings.Tls = v3.Bool(c.RsyslogTls)
 	}
 

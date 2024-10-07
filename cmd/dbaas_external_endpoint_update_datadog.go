@@ -11,7 +11,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasExternalEndpointUpdateCmd) updateDatadog(_ *cobra.Command, _ []string) error {
+func (c *dbaasExternalEndpointUpdateCmd) updateDatadog(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
@@ -39,7 +39,7 @@ func (c *dbaasExternalEndpointUpdateCmd) updateDatadog(_ *cobra.Command, _ []str
 	if c.DatadogTags != "" {
 		datadogRequestPayload.Settings.DatadogTags = datadogTags
 	}
-	if c.DatadogDisableConsumerStats {
+	if cmd.Flags().Changed("datadog-disable-consumer-stats") {
 		datadogRequestPayload.Settings.DisableConsumerStats = v3.Bool(c.DatadogDisableConsumerStats)
 	}
 	if c.DatadogKafkaConsumerCheckInstances != 0 {

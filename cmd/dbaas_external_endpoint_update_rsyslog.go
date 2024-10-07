@@ -8,7 +8,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasExternalEndpointUpdateCmd) updateRsyslog(_ *cobra.Command, _ []string) error {
+func (c *dbaasExternalEndpointUpdateCmd) updateRsyslog(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
@@ -46,12 +46,9 @@ func (c *dbaasExternalEndpointUpdateCmd) updateRsyslog(_ *cobra.Command, _ []str
 	if c.RsyslogServer != "" {
 		rsyslogRequestPayload.Settings.Server = c.RsyslogServer
 	}
-	if c.RsyslogTls {
+	if cmd.Flags().Changed("rsyslog-tls") {
 		rsyslogRequestPayload.Settings.Tls = v3.Bool(c.RsyslogTls)
 	}
-
-	fmt.Printf("Sending Update request for %s\n", c.ID)
-	fmt.Printf("Sending Update request for UUID %s\n", v3.UUID(c.ID))
 
 	op, err := client.UpdateDBAASExternalEndpointRsyslog(ctx, v3.UUID(c.ID), rsyslogRequestPayload)
 	if err != nil {
