@@ -1,7 +1,9 @@
 package cmd
+
 import (
 	"fmt"
 	"os"
+
 	"github.com/spf13/cobra"
 )
 
@@ -13,15 +15,19 @@ type dbaasExternalIntegrationSettingsUpdateCmd struct {
 	Type          string `cli-arg:"#"`
 	IntegrationID string `cli-arg:"#"`
 
-	HelpDatadog       bool `cli-usage:"show usage for flags specific to the datadog external integration type"`
+	HelpDatadog bool `cli-usage:"show usage for flags specific to the datadog external integration type"`
 
-	DatadogDbmEnabled bool `cli-flag:"datadog-dbm-enabled" cli-usage:"Enable/Disable pg stats with Datadog" cli-hidden:""`
-	DatadogPgbouncerEnabled bool `cli-flag:"datadog-pgbouncer-enabled" cli-usage:"Enable/Disable pgbouncer stats with Datadog" cli-hidden:""`
+	DatadogDbmEnabled       bool `cli-flag:"datadog-dbm-enabled" cli-usage:"Enable/Disable pg stats with Datadog"`
+	DatadogPgbouncerEnabled bool `cli-flag:"datadog-pgbouncer-enabled" cli-usage:"Enable/Disable pgbouncer stats with Datadog"`
 }
 
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdAliases() []string { return nil }
-func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdShort() string { return "Update external integration settings"}
-func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdLong() string { return "Update external integration settings"}
+func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdShort() string {
+	return "Update external integration settings"
+}
+func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdLong() string {
+	return "Update external integration settings"
+}
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
