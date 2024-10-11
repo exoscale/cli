@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.80.0
 
 ### Features
 - instance pool: added min-available flag to exo compute #629
