@@ -5,9 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func init() {
@@ -38,24 +37,30 @@ func deleteDomain(ident string, force bool) error {
 		return err
 	}
 
-	if !force && !askQuestion(fmt.Sprintf("Are you sure you want to delete %q domain?", *domain.UnicodeName)) {
+	if !force && !askQuestion(fmt.Sprintf("Are you sure you want to delete %q domain?", domain.UnicodeName)) {
 		return nil
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	decorateAsyncOperation(fmt.Sprintf("Deleting DNS domain %q...", *domain.UnicodeName), func() {
-		err = globalstate.EgoscaleClient.DeleteDNSDomain(
-			ctx,
-			account.CurrentAccount.DefaultZone,
-			domain,
-		)
+	ctx := gContext
+	err = decorateAsyncOperations(fmt.Sprintf("Deleting DNS domain %q...", domain.UnicodeName), func() error {
+		op, err := globalstate.EgoscaleV3Client.DeleteDNSDomain(ctx, domain.ID)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while deleting DNS domain: %w", err)
+		}
+
+		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting DNS domain deletion: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
 	}
 
 	if !globalstate.Quiet {
-		fmt.Printf("Domain %q was deleted successfully\n", *domain.UnicodeName)
+		fmt.Printf("Domain %q was deleted successfully\n", domain.UnicodeName)
 	}
 
 	return nil
