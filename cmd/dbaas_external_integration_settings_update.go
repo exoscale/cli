@@ -40,7 +40,7 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdPreRun(cmd *cobra.Command
 
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
-	case "datadog":
+	case ExternalEndpointTypeDatadog:
 		return c.updateDatadog(cmd, args)
 	default:
 		return fmt.Errorf("unsupported updating external integration settings for type %q", c.Type)
