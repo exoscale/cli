@@ -6,6 +6,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	ExternalEndpointTypeDatadog       = "datadog"
+	ExternalEndpointTypeOpensearch    = "opensearch"
+	ExternalEndpointTypeElasticsearch = "elasticsearch"
+	ExternalEndpointTypePrometheus    = "prometheus"
+	ExternalEndpointTypeRsyslog       = "rsyslog"
+)
+
 type dbaasExternalEndpointShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
@@ -30,17 +38,16 @@ func (c *dbaasExternalEndpointShowCmd) cmdPreRun(cmd *cobra.Command, args []stri
 }
 
 func (c *dbaasExternalEndpointShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
-
 	switch c.Type {
-	case "datadog":
+	case ExternalEndpointTypeDatadog:
 		return c.outputFunc(c.showDatadog())
-	case "opensearch":
+	case ExternalEndpointTypeOpensearch:
 		return c.outputFunc(c.showOpensearch())
-	case "elasticsearch":
+	case ExternalEndpointTypeElasticsearch:
 		return c.outputFunc(c.showElasticsearch())
-	case "prometheus":
+	case ExternalEndpointTypePrometheus:
 		return c.outputFunc(c.showPrometheus())
-	case "rsyslog":
+	case ExternalEndpointTypeRsyslog:
 		return c.outputFunc(c.showRsyslog())
 	default:
 		return fmt.Errorf("unsupported external endpoint type %q", c.Type)

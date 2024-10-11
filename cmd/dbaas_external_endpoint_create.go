@@ -92,15 +92,15 @@ func (c *dbaasExternalEndpointCreateCmd) cmdShort() string {
 
 func (c *dbaasExternalEndpointCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
-	case "datadog":
+	case ExternalEndpointTypeDatadog:
 		return c.createDatadog(cmd, args)
-	case "opensearch":
+	case ExternalEndpointTypeOpensearch:
 		return c.createOpensearch(cmd, args)
-	case "elasticsearch":
+	case ExternalEndpointTypeElasticsearch:
 		return c.createElasticsearch(cmd, args)
-	case "prometheus":
+	case ExternalEndpointTypePrometheus:
 		return c.createPrometheus(cmd, args)
-	case "rsyslog":
+	case ExternalEndpointTypeRsyslog:
 		return c.createRsyslog(cmd, args)
 	default:
 		return fmt.Errorf("unsupported external endpoint type %q", c.Type)

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +28,7 @@ func (c *dbaasExternalIntegrationSettingsShowCmd) cmdPreRun(cmd *cobra.Command, 
 
 func (c *dbaasExternalIntegrationSettingsShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	switch c.Type {
-	case "datadog":
+	case ExternalEndpointTypeDatadog:
 		return c.outputFunc(c.showDatadog())
 	default:
 		return fmt.Errorf("unsupported external integration settings for type %q", c.Type)
