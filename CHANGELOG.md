@@ -4,6 +4,7 @@
 
 ### Features
 - instance pool: added min-available flag to exo compute #629
+- dbaas: external endpoints and external integration commands and sub-commands
 
 ## 1.79.1
 
