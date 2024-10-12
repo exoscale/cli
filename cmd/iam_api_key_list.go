@@ -11,8 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamAPIKeyListItemOutput struct {
@@ -35,17 +34,22 @@ func (o *iamAPIKeyListOutput) ToTable() {
 	})
 	defer t.Render()
 
+	ctx := gContext
 	zone := account.CurrentAccount.DefaultZone
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 
-	// For better UX we will print both role name and ID
 	rolesMap := map[string]string{}
-	iamRoles, err := globalstate.EgoscaleClient.ListIAMRoles(ctx, zone)
-	// If API returns error, can continue (print name only) as this is non-essential feature
+
+	// If API returns error, can continue (print UUID only) as this is non-essential feature
 	if err == nil {
-		for _, role := range iamRoles {
-			if role.ID != nil && role.Name != nil {
-				rolesMap[*role.ID] = *role.Name
+		// For better UX we will print both role name and ID
+		listIAMRolesResp, err := client.ListIAMRoles(ctx)
+		// If API returns error, can continue (print UUID only) as this is non-essential feature
+		if err == nil {
+			for _, role := range listIAMRolesResp.IAMRoles {
+				if role.ID.String() != "" && role.Name != "" {
+					rolesMap[role.ID.String()] = role.Name
+				}
 			}
 		}
 	}
@@ -86,22 +90,25 @@ func (c *iamAPIKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *iamAPIKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := gContext
 	zone := account.CurrentAccount.DefaultZone
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	if err != nil {
+		return err
+	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-	apikeys, err := globalstate.EgoscaleClient.ListAPIKeys(ctx, zone)
+	listAPIKeysResp, err := client.ListAPIKeys(ctx)
 	if err != nil {
 		return err
 	}
 
 	out := make(iamAPIKeyListOutput, 0)
 
-	for _, apikey := range apikeys {
+	for _, apikey := range listAPIKeysResp.APIKeys {
 		out = append(out, iamAPIKeyListItemOutput{
-			Name: utils.DefaultString(apikey.Name, ""),
-			Key:  utils.DefaultString(apikey.Key, ""),
-			Role: utils.DefaultString(apikey.RoleID, ""),
+			Name: apikey.Name,
+			Key:  apikey.Key,
+			Role: apikey.RoleID.String(),
 		})
 	}
 
