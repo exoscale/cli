@@ -7,11 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamAPIKeyListItemOutput struct {
@@ -35,21 +33,17 @@ func (o *iamAPIKeyListOutput) ToTable() {
 	defer t.Render()
 
 	ctx := gContext
-	zone := account.CurrentAccount.DefaultZone
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	client := globalstate.EgoscaleV3Client
 
 	rolesMap := map[string]string{}
 
+	// For better UX we will print both role name and ID
+	listIAMRolesResp, err := client.ListIAMRoles(ctx)
 	// If API returns error, can continue (print UUID only) as this is non-essential feature
 	if err == nil {
-		// For better UX we will print both role name and ID
-		listIAMRolesResp, err := client.ListIAMRoles(ctx)
-		// If API returns error, can continue (print UUID only) as this is non-essential feature
-		if err == nil {
-			for _, role := range listIAMRolesResp.IAMRoles {
-				if role.ID.String() != "" && role.Name != "" {
-					rolesMap[role.ID.String()] = role.Name
-				}
+		for _, role := range listIAMRolesResp.IAMRoles {
+			if role.ID.String() != "" && role.Name != "" {
+				rolesMap[role.ID.String()] = role.Name
 			}
 		}
 	}
@@ -91,11 +85,7 @@ func (c *iamAPIKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *iamAPIKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
-	zone := account.CurrentAccount.DefaultZone
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-	if err != nil {
-		return err
-	}
+	client := globalstate.EgoscaleV3Client
 
 	listAPIKeysResp, err := client.ListAPIKeys(ctx)
 	if err != nil {

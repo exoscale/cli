@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -36,11 +35,7 @@ func (c *iamAPIKeyDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 
 func (c *iamAPIKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
-	zone := account.CurrentAccount.DefaultZone
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-	if err != nil {
-		return err
-	}
+	client := globalstate.EgoscaleV3Client
 
 	listAPIKeysResp, err := client.ListAPIKeys(ctx)
 	if err != nil {

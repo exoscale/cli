@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -52,11 +51,7 @@ func (c *iamAPIKeyCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 
 func (c *iamAPIKeyCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
-	zone := account.CurrentAccount.DefaultZone
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-	if err != nil {
-		return err
-	}
+	client := globalstate.EgoscaleV3Client
 
 	listIAMRolesResp, err := client.ListIAMRoles(ctx)
 	if err != nil {
