@@ -9,10 +9,11 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type zoneListItemOutput struct {
-	Name string `json:"name"`
+	Name v3.ZoneName `json:"name"`
 }
 
 type zoneListOutput []zoneListItemOutput
@@ -55,7 +56,7 @@ func listZones() (output.Outputter, error) {
 	for _, zone := range zones.Zones {
 
 		out = append(out, zoneListItemOutput{
-			Name: string(zone.Name),
+			Name: zone.Name,
 		})
 	}
 
