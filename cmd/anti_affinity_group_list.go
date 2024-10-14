@@ -8,11 +8,12 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type antiAffinityGroupListItemOutput struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID   v3.UUID `json:"id"`
+	Name string  `json:"name"`
 }
 
 type antiAffinityGroupListOutput []antiAffinityGroupListItemOutput
@@ -54,7 +55,7 @@ func (c *antiAffinityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	for _, t := range antiAffinityGroups.AntiAffinityGroups {
 		out = append(out, antiAffinityGroupListItemOutput{
-			ID:   t.ID.String(),
+			ID:   t.ID,
 			Name: t.Name,
 		})
 	}
