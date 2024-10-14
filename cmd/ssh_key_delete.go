@@ -32,7 +32,6 @@ func (c *computeSSHKeyDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) er
 }
 
 func (c *computeSSHKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-
 	ctx := gContext
 
 	if !c.Force {
@@ -41,7 +40,7 @@ func (c *computeSSHKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	decorateAsyncOperations(fmt.Sprintf("Deleting SSH key %s...", c.Name), func() error {
+	err := decorateAsyncOperations(fmt.Sprintf("Deleting SSH key %s...", c.Name), func() error {
 		op, err := globalstate.EgoscaleV3Client.DeleteSSHKey(ctx, c.Name)
 
 		if err != nil {
@@ -55,6 +54,9 @@ func (c *computeSSHKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

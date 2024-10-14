@@ -62,7 +62,7 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 		PublicKey: string(publicKey),
 	}
 
-	decorateAsyncOperations(fmt.Sprintf("Registering SSH key %q...", c.Name), func() error {
+	err = decorateAsyncOperations(fmt.Sprintf("Registering SSH key %q...", c.Name), func() error {
 		op, err := client.RegisterSSHKey(ctx, registerKeyRequest)
 
 		if err != nil {
@@ -76,9 +76,11 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	if !globalstate.Quiet {
-
 		sshKey, err = client.GetSSHKey(ctx, c.Name)
 		if err != nil {
 			return err
