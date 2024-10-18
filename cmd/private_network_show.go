@@ -2,21 +2,19 @@ package cmd
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"net"
 	"os"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type privateNetworkLeaseOutput struct {
@@ -32,10 +30,10 @@ type privateNetworkOptions struct {
 }
 
 type privateNetworkShowOutput struct {
-	ID          string                      `json:"id"`
+	ID          v3.UUID                     `json:"id"`
 	Name        string                      `json:"name"`
 	Description string                      `json:"description"`
-	Zone        string                      `json:"zone"`
+	Zone        v3.ZoneName                 `json:"zone"`
 	Type        string                      `json:"type"`
 	StartIP     *string                     `json:"start_ip,omitempty"`
 	EndIP       *string                     `json:"end_ip,omitempty"`
@@ -51,10 +49,10 @@ func (o *privateNetworkShowOutput) ToTable() {
 	t.SetHeader([]string{"Private Network"})
 	defer t.Render()
 
-	t.Append([]string{"ID", o.ID})
+	t.Append([]string{"ID", o.ID.String()})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
-	t.Append([]string{"Zone", o.Zone})
+	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"Type", o.Type})
 
 	if o.Type == "managed" {
@@ -89,7 +87,7 @@ type privateNetworkShowCmd struct {
 
 	PrivateNetwork string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Zone string `cli-short:"z" cli-usage:"Private Network zone"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
 }
 
 func (c *privateNetworkShowCmd) cmdAliases() []string { return gShowAlias }
@@ -114,21 +112,34 @@ func (c *privateNetworkShowCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
+	resp, err := client.ListPrivateNetworks(ctx)
+	if err != nil {
+		return err
+	}
+
+	pn, err := resp.FindPrivateNetwork(c.PrivateNetwork)
+	if err != nil {
+		return err
+	}
+
+	privateNetwork, err := client.GetPrivateNetwork(ctx, pn.ID)
+	if err != nil {
+		return err
+	}
+
+	spew.Dump(privateNetwork)
+
 	out := privateNetworkShowOutput{
-		ID:          *privateNetwork.ID,
+		ID:          privateNetwork.ID,
 		Zone:        c.Zone,
-		Name:        *privateNetwork.Name,
-		Description: utils.DefaultString(privateNetwork.Description, ""),
+		Name:        privateNetwork.Name,
+		Description: privateNetwork.Description,
 		Type:        "manual",
 	}
 
@@ -149,14 +160,14 @@ func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		out.Leases = make([]privateNetworkLeaseOutput, 0)
 
 		for _, lease := range privateNetwork.Leases {
-			instance, err := globalstate.EgoscaleClient.GetInstance(ctx, c.Zone, *lease.InstanceID)
+			instance, err := client.GetInstance(ctx, lease.InstanceID)
 			if err != nil {
-				return fmt.Errorf("unable to retrieve Compute instance %s: %w", *lease.InstanceID, err)
+				return fmt.Errorf("unable to retrieve Compute instance %s: %w", lease.InstanceID, err)
 			}
 
 			out.Leases = append(out.Leases, privateNetworkLeaseOutput{
-				Instance:  *instance.Name,
-				IPAddress: lease.IPAddress.String(),
+				Instance:  instance.Name,
+				IPAddress: lease.IP.String(),
 			})
 		}
 	}
