@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 
@@ -23,6 +24,13 @@ type privateNetworkLeaseOutput struct {
 	IPAddress string `json:"ip_address"`
 }
 
+type privateNetworkOptions struct {
+	Routers      []net.IP `json:"routers"`
+	DNSServers   []net.IP `json:"dns-servers"`
+	NTPServers   []net.IP `json:"ntp-servers"`
+	DomainSearch []string `json:"domain-search"`
+}
+
 type privateNetworkShowOutput struct {
 	ID          string                      `json:"id"`
 	Name        string                      `json:"name"`
@@ -33,6 +41,7 @@ type privateNetworkShowOutput struct {
 	EndIP       *string                     `json:"end_ip,omitempty"`
 	Netmask     *string                     `json:"netmask,omitempty"`
 	Leases      []privateNetworkLeaseOutput `json:"leases,omitempty"`
+	Options     privateNetworkOptions       `json:"options"`
 }
 
 func (o *privateNetworkShowOutput) ToJSON() { output.JSON(o) }
