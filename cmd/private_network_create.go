@@ -13,6 +13,7 @@ import (
 	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type privateNetworkCreateCmd struct {
@@ -88,7 +89,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return (&privateNetworkShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			PrivateNetwork:     *privateNetwork.ID,
-			Zone:               c.Zone,
+			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
