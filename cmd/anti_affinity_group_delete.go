@@ -53,7 +53,7 @@ func (c *antiAffinityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		}
 	}
 
-	err = decorateAsyncOperations(fmt.Sprintf("Deleting Anti-Affinity Group %s...", c.AntiAffinityGroup), func() error {
+	return decorateAsyncOperations(fmt.Sprintf("Deleting Anti-Affinity Group %s...", c.AntiAffinityGroup), func() error {
 		op, err := globalstate.EgoscaleV3Client.DeleteAntiAffinityGroup(ctx, antiAffinityGroup.ID)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting Anti Affinity Group: %w", err)
@@ -66,11 +66,6 @@ func (c *antiAffinityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error 
 
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func init() {
