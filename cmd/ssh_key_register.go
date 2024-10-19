@@ -41,11 +41,6 @@ func (c *computeSSHKeyRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	var (
-		sshKey *v3.SSHKey
-		err    error
-	)
-
 	// Template registration can take a _long time_, raising
 	// the Exoscale API client timeout as a precaution.
 	client := globalstate.EgoscaleV3Client.WithHttpClient(&http.Client{Timeout: 30 * time.Minute})
@@ -64,32 +59,22 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 
 	err = decorateAsyncOperations(fmt.Sprintf("Registering SSH key %q...", c.Name), func() error {
 		op, err := client.RegisterSSHKey(ctx, registerKeyRequest)
-
 		if err != nil {
 			return err
 		}
 
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return err
 	})
 	if err != nil {
 		return err
 	}
 
 	if !globalstate.Quiet {
-		sshKey, err = client.GetSSHKey(ctx, c.Name)
-		if err != nil {
-			return err
-		}
-
-		return c.outputFunc(&computeSSHKeyShowOutput{
-			Fingerprint: sshKey.Fingerprint,
-			Name:        sshKey.Name,
-		}, nil)
+		return (&computeSSHKeyShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Key: c.Name,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil

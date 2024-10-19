@@ -40,25 +40,15 @@ func (c *computeSSHKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	err := decorateAsyncOperations(fmt.Sprintf("Deleting SSH key %s...", c.Name), func() error {
+	return decorateAsyncOperations(fmt.Sprintf("Deleting SSH key %s...", c.Name), func() error {
 		op, err := globalstate.EgoscaleV3Client.DeleteSSHKey(ctx, c.Name)
-
 		if err != nil {
 			return err
 		}
 
 		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-	if err != nil {
 		return err
-	}
-
-	return nil
+	})
 }
 
 func init() {
