@@ -13,10 +13,10 @@ import (
 )
 
 type elasticIPListItemOutput struct {
-	ID          v3.UUID `json:"id"`
-	IPAddress   string  `json:"ip_address"`
-	Zone        string  `json:"zone"`
-	Description string  `json:description`
+	ID          v3.UUID     `json:"id"`
+	IPAddress   string      `json:"ip_address"`
+	Zone        v3.ZoneName `json:"zone"`
+	Description string      `json:description`
 }
 
 type elasticIPListOutput []elasticIPListItemOutput
@@ -83,7 +83,7 @@ func (c *elasticIPListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			output = append(output, elasticIPListItemOutput{
 				ID:          elasticIP.ID,
 				IPAddress:   elasticIP.IP,
-				Zone:        string(zone.Name),
+				Zone:        zone.Name,
 				Description: elasticIP.Description,
 			})
 		}

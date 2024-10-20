@@ -60,25 +60,15 @@ func (c *elasticIPDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	err = decorateAsyncOperations(fmt.Sprintf("Deleting Elastic IP %s...", c.ElasticIP), func() error {
+	return decorateAsyncOperations(fmt.Sprintf("Deleting Elastic IP %s...", c.ElasticIP), func() error {
 		op, err := client.DeleteElasticIP(ctx, elasticIP.ID)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting Elastic IP: %w", err)
 		}
 
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-		if err != nil {
-			return fmt.Errorf("exoscale: error while waiting for Elastic IP deletion: %w", err)
-		}
-
-		return nil
-	})
-
-	if err != nil {
 		return err
-	}
-
-	return nil
+	})
 }
 
 func init() {
