@@ -15,7 +15,7 @@ type iamAPIKeyShowOutput struct {
 	Name   string `json:"name"`
 	Key    string `json:"key"`
 	Secret string `json:"secret"`
-	Role   string `json:"role-id"`
+	Role   v3.UUID `json:"role-id"`
 }
 
 func (o *iamAPIKeyShowOutput) ToJSON()  { output.JSON(o) }
@@ -77,7 +77,7 @@ func (c *iamAPIKeyCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		Name:   iamAPIKey.Name,
 		Key:    iamAPIKey.Key,
 		Secret: iamAPIKey.Secret,
-		Role:   iamAPIKey.RoleID.String(),
+		Role:   iamAPIKey.RoleID,
 	}
 
 	return c.outputFunc(&out, nil)

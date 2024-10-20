@@ -53,24 +53,15 @@ func (c *iamAPIKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	err = decorateAsyncOperations(fmt.Sprintf("Deleting API Key %s...", c.APIKey), func() error {
+	return decorateAsyncOperations(fmt.Sprintf("Deleting API Key %s...", c.APIKey), func() error {
 		op, err := client.DeleteAPIKey(ctx, apiKey.Key)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting IAM API Key: %w", err)
 		}
 
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-		if err != nil {
-			return fmt.Errorf("exoscale: error while waiting for IAM API Key deletion: %w", err)
-		}
-
-		return nil
-	})
-	if err != nil {
 		return err
-	}
-
-	return nil
+	})
 }
 
 func init() {
