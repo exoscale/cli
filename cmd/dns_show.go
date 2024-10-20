@@ -13,15 +13,15 @@ import (
 )
 
 type dnsShowItemOutput struct {
-	ID         v3.UUID `json:"id"`
-	DomainID   v3.UUID `json:"domain_id" output:"-"`
-	Name       string `json:"name"`
-	RecordType string `json:"record_type"`
-	Content    string `json:"content"`
-	Prio       int64  `json:"prio,omitempty"`
-	TTL        int64  `json:"ttl,omitempty"`
-	CreatedAt  string `json:"created_at,omitempty" output:"-"`
-	UpdatedAt  string `json:"updated_at,omitempty" output:"-"`
+	ID         v3.UUID                `json:"id"`
+	DomainID   v3.UUID                `json:"domain_id" output:"-"`
+	Name       string                 `json:"name"`
+	RecordType v3.DNSDomainRecordType `json:"record_type"`
+	Content    string                 `json:"content"`
+	Prio       int64                  `json:"prio,omitempty"`
+	TTL        int64                  `json:"ttl,omitempty"`
+	CreatedAt  string                 `json:"created_at,omitempty" output:"-"`
+	UpdatedAt  string                 `json:"updated_at,omitempty" output:"-"`
 }
 
 type dnsShowOutput []dnsShowItemOutput
@@ -110,12 +110,12 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 			ID:         record.ID,
 			DomainID:   domain.ID,
 			Name:       record.Name,
-			RecordType: string(record.Type),
-			Content:    StrPtrFormatOutput(&record.Content),
+			RecordType: record.Type,
+			Content:    record.Content,
 			TTL:        ttl,
 			Prio:       priority,
-			CreatedAt:  DatePtrFormatOutput(&record.CreatedAT),
-			UpdatedAt:  DatePtrFormatOutput(&record.UpdatedAT),
+			CreatedAt:  record.CreatedAT.String(),
+			UpdatedAt:  record.UpdatedAT.String(),
 		})
 	}
 
