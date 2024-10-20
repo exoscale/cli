@@ -54,11 +54,7 @@ func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
 		}
 
 		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
-		if err != nil {
-			return fmt.Errorf("exoscale: error while waiting DNS record deletion: %w", err)
-		}
-
-		return nil
+		return err
 	})
 	if err != nil {
 		return err

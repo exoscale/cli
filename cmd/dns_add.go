@@ -21,21 +21,21 @@ func init() {
 
 // Create a map to store the string to CreateDNSDomainRecordRequestType mappings
 var dnsRecordTypeMap = map[string]v3.CreateDNSDomainRecordRequestType{
-	"NS":    v3.CreateDNSDomainRecordRequestTypeNS,
-	"CAA":   v3.CreateDNSDomainRecordRequestTypeCAA,
-	"NAPTR": v3.CreateDNSDomainRecordRequestTypeNAPTR,
-	"POOL":  v3.CreateDNSDomainRecordRequestTypePOOL,
-	"A":     v3.CreateDNSDomainRecordRequestTypeA,
-	"HINFO": v3.CreateDNSDomainRecordRequestTypeHINFO,
-	"CNAME": v3.CreateDNSDomainRecordRequestTypeCNAME,
-	"SSHFP": v3.CreateDNSDomainRecordRequestTypeSSHFP,
-	"SRV":   v3.CreateDNSDomainRecordRequestTypeSRV,
-	"AAAA":  v3.CreateDNSDomainRecordRequestTypeAAAA,
-	"MX":    v3.CreateDNSDomainRecordRequestTypeMX,
-	"TXT":   v3.CreateDNSDomainRecordRequestTypeTXT,
-	"ALIAS": v3.CreateDNSDomainRecordRequestTypeALIAS,
-	"URL":   v3.CreateDNSDomainRecordRequestTypeURL,
-	"SPF":   v3.CreateDNSDomainRecordRequestTypeSPF,
+	string(v3.CreateDNSDomainRecordRequestTypeNS):    v3.CreateDNSDomainRecordRequestTypeNS,
+	string(v3.CreateDNSDomainRecordRequestTypeCAA):   v3.CreateDNSDomainRecordRequestTypeCAA,
+	string(v3.CreateDNSDomainRecordRequestTypeNAPTR): v3.CreateDNSDomainRecordRequestTypeNAPTR,
+	string(v3.CreateDNSDomainRecordRequestTypePOOL):  v3.CreateDNSDomainRecordRequestTypePOOL,
+	string(v3.CreateDNSDomainRecordRequestTypeA):     v3.CreateDNSDomainRecordRequestTypeA,
+	string(v3.CreateDNSDomainRecordRequestTypeHINFO): v3.CreateDNSDomainRecordRequestTypeHINFO,
+	string(v3.CreateDNSDomainRecordRequestTypeCNAME): v3.CreateDNSDomainRecordRequestTypeCNAME,
+	string(v3.CreateDNSDomainRecordRequestTypeSSHFP): v3.CreateDNSDomainRecordRequestTypeSSHFP,
+	string(v3.CreateDNSDomainRecordRequestTypeSRV):   v3.CreateDNSDomainRecordRequestTypeSRV,
+	string(v3.CreateDNSDomainRecordRequestTypeAAAA):  v3.CreateDNSDomainRecordRequestTypeAAAA,
+	string(v3.CreateDNSDomainRecordRequestTypeMX):    v3.CreateDNSDomainRecordRequestTypeMX,
+	string(v3.CreateDNSDomainRecordRequestTypeTXT):   v3.CreateDNSDomainRecordRequestTypeTXT,
+	string(v3.CreateDNSDomainRecordRequestTypeALIAS): v3.CreateDNSDomainRecordRequestTypeALIAS,
+	string(v3.CreateDNSDomainRecordRequestTypeURL):   v3.CreateDNSDomainRecordRequestTypeURL,
+	string(v3.CreateDNSDomainRecordRequestTypeSPF):   v3.CreateDNSDomainRecordRequestTypeSPF,
 }
 
 // Function to get the DNSDomainRecordRequestType from a string
@@ -55,8 +55,7 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 
 	ctx := gContext
 	err = decorateAsyncOperations(fmt.Sprintf("Adding DNS record %q to %q...", rType, domain.UnicodeName), func() error {
-
-		recordType, err := StringToDNSDomainRecordRequestType(rType)
+		recordType := v3.CreateDNSDomainRecordRequestType("TEST")
 		if err != nil {
 			return fmt.Errorf("exoscale: error while get DNS record type: %w", err)
 		}
@@ -73,19 +72,13 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 		}
 
 		op, err := globalstate.EgoscaleV3Client.CreateDNSDomainRecord(ctx, domain.ID, dnsDomainRecordRequest)
-
 		if err != nil {
 			return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
 		}
 
 		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
-		if err != nil {
-			return fmt.Errorf("exoscale: error while waiting for DNS record creation: %w", err)
-		}
-
-		return nil
+		return err
 	})
-
 	if err != nil {
 		return err
 	}
@@ -93,6 +86,5 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 	if !globalstate.Quiet {
 		fmt.Printf("Record %q was created successfully to %q\n", rType, domain.UnicodeName)
 	}
-
 	return nil
 }

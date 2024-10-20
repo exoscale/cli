@@ -28,7 +28,7 @@ func domainFromIdent(ident string) (*v3.DNSDomain, error) {
 		return nil, err
 	}
 
-	return &domain, err
+	return &domain, nil
 }
 
 // domainRecordFromIdent returns a DNS record from identifier (record name or ID) and optional type

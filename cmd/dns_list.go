@@ -10,11 +10,13 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
+
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dnsListItemOutput struct {
-	ID   string `json:"id"`
-	Name string `json:"name,omitempty"`
+	ID   v3.UUID `json:"id"`
+	Name string  `json:"name,omitempty"`
 }
 
 type dnsListOutput []dnsListItemOutput
@@ -29,7 +31,7 @@ func (o *dnsListOutput) ToTable() {
 
 	for _, i := range *o {
 		t.Append([]string{
-			i.ID,
+			i.ID.String(),
 			i.Name,
 		})
 	}
@@ -63,14 +65,9 @@ func listDomains(filters []string) (output.Outputter, error) {
 	out := dnsListOutput{}
 
 	for _, d := range domains.DNSDomains {
-
-		// Convert v3.UUID to string using String() method, then get a pointer to it
-		// Don't know if it is best practice
-		idStr := d.ID.String() // Convert UUID to string
-
 		o := dnsListItemOutput{
-			ID:   StrPtrFormatOutput(&idStr),
-			Name: StrPtrFormatOutput(&d.UnicodeName),
+			ID:   d.ID,
+			Name: d.UnicodeName,
 		}
 
 		if len(filters) == 0 {

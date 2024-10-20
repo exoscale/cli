@@ -9,11 +9,12 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dnsShowItemOutput struct {
-	ID         string `json:"id"`
-	DomainID   string `json:"domain_id" output:"-"`
+	ID         v3.UUID `json:"id"`
+	DomainID   v3.UUID `json:"domain_id" output:"-"`
 	Name       string `json:"name"`
 	RecordType string `json:"record_type"`
 	Content    string `json:"content"`
@@ -106,8 +107,8 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 		}
 
 		out = append(out, dnsShowItemOutput{
-			ID:         string(record.ID),
-			DomainID:   string(domain.ID),
+			ID:         record.ID,
+			DomainID:   domain.ID,
 			Name:       record.Name,
 			RecordType: string(record.Type),
 			Content:    StrPtrFormatOutput(&record.Content),
