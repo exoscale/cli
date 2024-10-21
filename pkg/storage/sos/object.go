@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/dustin/go-humanize"
+	"github.com/hashicorp/go-multierror"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 
@@ -30,28 +31,6 @@ import (
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
 )
-
-// BatchErrorList contains list of errors parsed from AWS SDK types.DeletedObject Error attribute.
-// Only Message attribute of each types.Error object is taken and converted to std Error.
-type BatchErrorList struct {
-	List []error
-}
-
-func NewBatchErrorList() *BatchErrorList {
-	return &BatchErrorList{
-		[]error{},
-	}
-}
-
-func (l BatchErrorList) Error() string {
-	return fmt.Sprintf("batch job returned %d errors", len(l.List))
-}
-
-func (l *BatchErrorList) AddErrors(errs []types.Error) {
-	for _, err := range errs {
-		l.List = append(l.List, fmt.Errorf("%v", err.Message))
-	}
-}
 
 func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recursive bool) ([]types.DeletedObject, error) {
 	deleteList := make([]types.ObjectIdentifier, 0)
@@ -67,7 +46,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 	// precaution we're batching deletes.
 	maxKeys := 1000
 	deleted := make([]types.DeletedObject, 0)
-	errs := NewBatchErrorList()
+	errs := &multierror.Error{}
 
 	for i := 0; i < len(deleteList); i += maxKeys {
 		j := i + maxKeys
@@ -84,14 +63,21 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 		}
 
 		deleted = append(deleted, res.Deleted...)
-		errs.AddErrors(res.Errors)
+		for _, err := range res.Errors {
+			var e error
+			switch {
+			case err.Message != nil:
+				e = errors.New(*err.Message)
+			case err.Code != nil:
+				e = errors.New(*err.Code)
+			default:
+				e = fmt.Errorf("undefined error")
+			}
+			errs = multierror.Append(errs, e)
+		}
 	}
 
-	if len(errs.List) > 0 {
-		return deleted, errs
-	}
-
-	return deleted, nil
+	return deleted, errs.ErrorOrNil()
 }
 
 func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string, expires time.Duration) (string, error) {
