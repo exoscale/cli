@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug fixes
+
+- storage: handle errors in batch objects delete action #627
+
 ## 1.80.0
 
 ### Features

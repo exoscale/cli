@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/dustin/go-humanize"
+	"github.com/hashicorp/go-multierror"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
 
@@ -45,6 +46,7 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 	// precaution we're batching deletes.
 	maxKeys := 1000
 	deleted := make([]types.DeletedObject, 0)
+	errs := &multierror.Error{}
 
 	for i := 0; i < len(deleteList); i += maxKeys {
 		j := i + maxKeys
@@ -61,9 +63,21 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket, prefix string, recur
 		}
 
 		deleted = append(deleted, res.Deleted...)
+		for _, err := range res.Errors {
+			var e error
+			switch {
+			case err.Message != nil:
+				e = errors.New(*err.Message)
+			case err.Code != nil:
+				e = errors.New(*err.Code)
+			default:
+				e = fmt.Errorf("undefined error")
+			}
+			errs = multierror.Append(errs, e)
+		}
 	}
 
-	return deleted, nil
+	return deleted, errs.ErrorOrNil()
 }
 
 func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string, expires time.Duration) (string, error) {
