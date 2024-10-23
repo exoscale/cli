@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 
@@ -22,7 +21,7 @@ type privateNetworkLeaseOutput struct {
 	IPAddress string `json:"ip_address"`
 }
 
-type privateNetworkOptions struct {
+type privateNetworkOptionsOutput struct {
 	Routers      []net.IP `json:"routers"`
 	DNSServers   []net.IP `json:"dns-servers"`
 	NTPServers   []net.IP `json:"ntp-servers"`
@@ -39,7 +38,7 @@ type privateNetworkShowOutput struct {
 	EndIP       *string                     `json:"end_ip,omitempty"`
 	Netmask     *string                     `json:"netmask,omitempty"`
 	Leases      []privateNetworkLeaseOutput `json:"leases,omitempty"`
-	Options     privateNetworkOptions       `json:"options"`
+	Options     privateNetworkOptionsOutput `json:"options"`
 }
 
 func (o *privateNetworkShowOutput) ToJSON() { output.JSON(o) }
@@ -59,25 +58,14 @@ func (o *privateNetworkShowOutput) ToTable() {
 		t.Append([]string{"Start IP", *o.StartIP})
 		t.Append([]string{"End IP", *o.EndIP})
 		t.Append([]string{"Netmask", *o.Netmask})
+
 		t.Append([]string{
-			"Leases", func(leases []privateNetworkLeaseOutput) string {
-				if len(leases) > 0 {
-					buf := bytes.NewBuffer(nil)
-					at := table.NewEmbeddedTable(buf)
-					at.SetHeader([]string{" "})
-					at.SetAlignment(tablewriter.ALIGN_LEFT)
-
-					for _, lease := range leases {
-						at.Append([]string{lease.Instance, lease.IPAddress})
-					}
-					at.Render()
-
-					return buf.String()
-				}
-				return "-"
-			}(o.Leases),
+			"Leases", formatLeases(o.Leases),
 		})
 	}
+	t.Append([]string{
+		"Options", formatOptions(o.Options),
+	})
 }
 
 type privateNetworkShowCmd struct {
@@ -133,14 +121,23 @@ func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	spew.Dump(privateNetwork)
-
 	out := privateNetworkShowOutput{
 		ID:          privateNetwork.ID,
 		Zone:        c.Zone,
 		Name:        privateNetwork.Name,
 		Description: privateNetwork.Description,
 		Type:        "manual",
+		Options: func() privateNetworkOptionsOutput {
+			if privateNetwork.Options == nil {
+				return privateNetworkOptionsOutput{}
+			}
+			return privateNetworkOptionsOutput{
+				Routers:      privateNetwork.Options.Routers,
+				DNSServers:   privateNetwork.Options.DNSServers,
+				NTPServers:   privateNetwork.Options.NtpServers,
+				DomainSearch: privateNetwork.Options.DomainSearch,
+			}
+		}(),
 	}
 
 	if privateNetwork.StartIP != nil {
@@ -179,4 +176,60 @@ func init() {
 	cobra.CheckErr(registerCLICommand(privateNetworkCmd, &privateNetworkShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
+}
+
+func ipSliceToStringSlice(ips []net.IP) []string {
+	result := make([]string, len(ips))
+	for i, ip := range ips {
+		result[i] = ip.String()
+	}
+	return result
+}
+
+func formatLeases(leases []privateNetworkLeaseOutput) string {
+	if len(leases) == 0 {
+		return "-"
+	}
+
+	buf := bytes.NewBuffer(nil)
+	at := table.NewEmbeddedTable(buf)
+	at.SetHeader([]string{" "})
+	at.SetAlignment(tablewriter.ALIGN_LEFT)
+
+	for _, lease := range leases {
+		at.Append([]string{lease.Instance, lease.IPAddress})
+	}
+	at.Render()
+
+	return buf.String()
+}
+
+func formatOptions(opts privateNetworkOptionsOutput) string {
+	hasOptions := len(opts.Routers) > 0 || len(opts.DNSServers) > 0 ||
+		len(opts.NTPServers) > 0 || len(opts.DomainSearch) > 0
+
+	if !hasOptions {
+		return "-"
+	}
+
+	buf := bytes.NewBuffer(nil)
+	at := table.NewEmbeddedTable(buf)
+	at.SetHeader([]string{" "})
+	at.SetAlignment(tablewriter.ALIGN_LEFT)
+
+	if len(opts.Routers) > 0 {
+		at.Append([]string{"Routers", strings.Join(ipSliceToStringSlice(opts.Routers), ", ")})
+	}
+	if len(opts.DNSServers) > 0 {
+		at.Append([]string{"DNS Servers", strings.Join(ipSliceToStringSlice(opts.DNSServers), ", ")})
+	}
+	if len(opts.NTPServers) > 0 {
+		at.Append([]string{"NTP Servers", strings.Join(ipSliceToStringSlice(opts.NTPServers), ", ")})
+	}
+	if len(opts.DomainSearch) > 0 {
+		at.Append([]string{"Domain Search", strings.Join(opts.DomainSearch, ", ")})
+	}
+
+	at.Render()
+	return buf.String()
 }
