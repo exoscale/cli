@@ -7,7 +7,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.0.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/aws/smithy-go v1.1.0
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/dustin/go-humanize v1.0.1
 	github.com/exoscale/egoscale v0.102.4
 	github.com/exoscale/egoscale/v3 v3.1.8-0.20241016080528-0a04c8745bca
@@ -65,6 +64,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
 	github.com/danielgtaylor/go-jmespath-plus v0.0.0-20200228063638-e0b6f132acba // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deepmap/oapi-codegen v1.14.0 // indirect
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
