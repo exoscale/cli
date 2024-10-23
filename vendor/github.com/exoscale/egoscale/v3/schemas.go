@@ -2707,6 +2707,10 @@ type PrivateNetworkLease struct {
 type PrivateNetworkOptions struct {
 	// DNS Servers
 	DNSServers []net.IP `json:"dns-servers,omitempty"`
+	// Domain search list, limited to 255 octets
+	DomainSearch []string `json:"domain-search,omitempty"`
+	// NTP Servers
+	NtpServers []net.IP `json:"ntp-servers,omitempty"`
 	// Routers
 	Routers []net.IP `json:"routers,omitempty"`
 }
