@@ -7,12 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -23,11 +20,12 @@ type privateNetworkCreateCmd struct {
 
 	Name string `cli-arg:"#"`
 
-	Description string `cli-usage:"Private Network description"`
-	EndIP       string `cli-usage:"managed Private Network range end IP address"`
-	Netmask     string `cli-usage:"managed Private Network netmask"`
-	StartIP     string `cli-usage:"managed Private Network range start IP address"`
-	Zone        string `cli-short:"z" cli-usage:"Private Network zone"`
+	Description string      `cli-usage:"Private Network description"`
+	EndIP       string      `cli-usage:"managed Private Network range end IP address"`
+	Netmask     string      `cli-usage:"managed Private Network netmask"`
+	StartIP     string      `cli-usage:"managed Private Network range start IP address"`
+	Zone        v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
+	Option      []string    `cli-usage:"DHCP network option (format: option1=\"value1 value2\")" cli-flag-multi:"true"`
 }
 
 func (c *privateNetworkCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -49,37 +47,90 @@ func (c *privateNetworkCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 }
 
 func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
-	privateNetwork := &egoscale.PrivateNetwork{
-		Description: utils.NonEmptyStringPtr(c.Description),
-		EndIP: func() (v *net.IP) {
+	req := v3.CreatePrivateNetworkRequest{
+		Description: func() string {
+			if c.Description != "" {
+				return *utils.NonEmptyStringPtr(c.Description)
+			}
+			return ""
+		}(),
+		EndIP: func() net.IP {
 			if c.EndIP != "" {
-				ip := net.ParseIP(c.EndIP)
-				v = &ip
+				return net.ParseIP(c.EndIP)
 			}
-			return
+			return nil
 		}(),
-		Name: &c.Name,
-		Netmask: func() (v *net.IP) {
+		Name: c.Name,
+		Netmask: func() net.IP {
 			if c.Netmask != "" {
-				ip := net.ParseIP(c.Netmask)
-				v = &ip
+				return net.ParseIP(c.Netmask)
 			}
-			return
+			return nil
 		}(),
-		StartIP: func() (v *net.IP) {
+		StartIP: func() net.IP {
 			if c.StartIP != "" {
-				ip := net.ParseIP(c.StartIP)
-				v = &ip
+				return net.ParseIP(c.StartIP)
 			}
-			return
+			return nil
 		}(),
 	}
 
-	var err error
+	if len(c.Option) > 0 {
+		opts := &v3.PrivateNetworkOptions{}
+		optionsMap := make(map[string][]string)
+
+		// Process each option flag
+		for _, opt := range c.Option {
+			keyValue := strings.SplitN(opt, "=", 2)
+			if len(keyValue) != 2 {
+				continue
+			}
+			key := keyValue[0]
+			values := strings.Split(keyValue[1], " ")
+			optionsMap[key] = append(optionsMap[key], values...)
+		}
+
+		// Process collected values
+		for key, values := range optionsMap {
+			switch key {
+			case "dns-servers":
+				for _, v := range values {
+					if ip := net.ParseIP(v); ip != nil {
+						opts.DNSServers = append(opts.DNSServers, ip)
+					}
+				}
+			case "ntp-servers":
+				for _, v := range values {
+					if ip := net.ParseIP(v); ip != nil {
+						opts.NtpServers = append(opts.NtpServers, ip)
+					}
+				}
+			case "routers":
+				for _, v := range values {
+					if ip := net.ParseIP(v); ip != nil {
+						opts.Routers = append(opts.Routers, ip)
+					}
+				}
+			case "domain-search":
+				opts.DomainSearch = values
+			}
+		}
+		req.Options = opts
+	}
+
+	op, err := client.CreatePrivateNetwork(ctx, req)
+	if err != nil {
+		return err
+	}
+
 	decorateAsyncOperation(fmt.Sprintf("Creating Private Network %q...", c.Name), func() {
-		privateNetwork, err = globalstate.EgoscaleClient.CreatePrivateNetwork(ctx, c.Zone, privateNetwork)
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -88,7 +139,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&privateNetworkShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			PrivateNetwork:     *privateNetwork.ID,
+			PrivateNetwork:     c.Name,
 			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
