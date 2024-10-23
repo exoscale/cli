@@ -84,6 +84,9 @@ case "$(uname -m)" in
     x86_64)
         CPUARCHITECTURE="amd64"
         ;;
+    aarch64)
+        CPUARCHITECTURE="arm64"
+        ;;
     armv7l)
         CPUARCHITECTURE="armv7"
         ;;
