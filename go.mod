@@ -1,7 +1,5 @@
 module github.com/exoscale/cli
 
-replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.42.0
-
 require (
 	github.com/aws/aws-sdk-go-v2 v1.2.0
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
