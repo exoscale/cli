@@ -788,4 +788,3 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# gopkg.ini/ini.v1 => github.com/go-ini/ini v1.42.0
