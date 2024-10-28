@@ -94,46 +94,7 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Option)) {
-		opts := &v3.PrivateNetworkOptions{}
-		optionsMap := make(map[string][]string)
-
-		// Process each option flag
-		for _, opt := range c.Option {
-			keyValue := strings.SplitN(opt, "=", 2)
-			if len(keyValue) != 2 {
-				continue
-			}
-			key := keyValue[0]
-			values := strings.Split(keyValue[1], " ")
-			optionsMap[key] = append(optionsMap[key], values...)
-		}
-
-		// Process collected values
-		for key, values := range optionsMap {
-			switch key {
-			case "dns-servers":
-				for _, v := range values {
-					if ip := net.ParseIP(v); ip != nil {
-						opts.DNSServers = append(opts.DNSServers, ip)
-					}
-				}
-			case "ntp-servers":
-				for _, v := range values {
-					if ip := net.ParseIP(v); ip != nil {
-						opts.NtpServers = append(opts.NtpServers, ip)
-					}
-				}
-			case "routers":
-				for _, v := range values {
-					if ip := net.ParseIP(v); ip != nil {
-						opts.Routers = append(opts.Routers, ip)
-					}
-				}
-			case "domain-search":
-				opts.DomainSearch = values
-			}
-		}
-		updateReq.Options = opts
+		updateReq.Options = processPrivateNetworkOptions(c.Option)
 		updated = true
 	}
 

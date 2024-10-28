@@ -1,13 +1,60 @@
 package cmd
 
 import (
+	"net"
+	"strings"
+
 	"github.com/spf13/cobra"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var privateNetworkCmd = &cobra.Command{
 	Use:     "private-network",
 	Short:   "Private Networks management",
 	Aliases: []string{"privnet"},
+}
+
+func processPrivateNetworkOptions(options []string) *v3.PrivateNetworkOptions {
+	opts := &v3.PrivateNetworkOptions{}
+	optionsMap := make(map[string][]string)
+
+	// Process each option flag
+	for _, opt := range options {
+		keyValue := strings.SplitN(opt, "=", 2)
+		if len(keyValue) != 2 {
+			continue
+		}
+		key := keyValue[0]
+		values := strings.Split(keyValue[1], " ")
+		optionsMap[key] = append(optionsMap[key], values...)
+	}
+
+	// Process collected values
+	for key, values := range optionsMap {
+		switch key {
+		case "dns-servers":
+			for _, v := range values {
+				if ip := net.ParseIP(v); ip != nil {
+					opts.DNSServers = append(opts.DNSServers, ip)
+				}
+			}
+		case "ntp-servers":
+			for _, v := range values {
+				if ip := net.ParseIP(v); ip != nil {
+					opts.NtpServers = append(opts.NtpServers, ip)
+				}
+			}
+		case "routers":
+			for _, v := range values {
+				if ip := net.ParseIP(v); ip != nil {
+					opts.Routers = append(opts.Routers, ip)
+				}
+			}
+		case "domain-search":
+			opts.DomainSearch = values
+		}
+	}
+	return opts
 }
 
 func init() {
