@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"net"
 	"fmt"
+	"net"
 	"strings"
 
-	"github.com/spf13/cobra"
 	v3 "github.com/exoscale/egoscale/v3"
+	"github.com/spf13/cobra"
 )
 
 var privateNetworkCmd = &cobra.Command{
