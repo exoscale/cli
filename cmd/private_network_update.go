@@ -94,7 +94,11 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Option)) {
-		updateReq.Options = processPrivateNetworkOptions(c.Option)
+		opts, err := processPrivateNetworkOptions(c.Option)
+		if err != nil {
+			return err
+		}
+		updateReq.Options = opts
 		updated = true
 	}
 

@@ -82,7 +82,11 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if len(c.Option) > 0 {
-		req.Options = processPrivateNetworkOptions(c.Option)
+		opts, err := processPrivateNetworkOptions(c.Option)
+		if err != nil {
+			return err
+		}
+		req.Options = opts
 	}
 
 	op, err := client.CreatePrivateNetwork(ctx, req)

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"net"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,7 +15,7 @@ var privateNetworkCmd = &cobra.Command{
 	Aliases: []string{"privnet"},
 }
 
-func processPrivateNetworkOptions(options []string) *v3.PrivateNetworkOptions {
+func processPrivateNetworkOptions(options []string) (*v3.PrivateNetworkOptions, error) {
 	opts := &v3.PrivateNetworkOptions{}
 	optionsMap := make(map[string][]string)
 
@@ -22,7 +23,7 @@ func processPrivateNetworkOptions(options []string) *v3.PrivateNetworkOptions {
 	for _, opt := range options {
 		keyValue := strings.SplitN(opt, "=", 2)
 		if len(keyValue) != 2 {
-			continue
+			return nil, fmt.Errorf("malformed option %q: must be in format key=\"value1 value2\"", opt)
 		}
 		key := keyValue[0]
 		values := strings.Split(keyValue[1], " ")
@@ -52,9 +53,11 @@ func processPrivateNetworkOptions(options []string) *v3.PrivateNetworkOptions {
 			}
 		case "domain-search":
 			opts.DomainSearch = values
+		default:
+			return nil, fmt.Errorf("unrecognized option key %q: supported keys are: 'dns-servers', 'ntp-servers', 'routers', 'domain-search'", key)
 		}
 	}
-	return opts
+	return opts, nil
 }
 
 func init() {
