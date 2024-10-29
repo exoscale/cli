@@ -84,10 +84,9 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}(),
 	}
 
-	// Process DHCP options if any are specified
-	if len(c.DNSServers) > 0 || len(c.NTPServers) > 0 || len(c.Routers) > 0 || len(c.DomainSearch) > 0 {
-		opts := &v3.PrivateNetworkOptions{}
+	opts := &v3.PrivateNetworkOptions{}
 
+	if len(c.DNSServers) > 0 {
 		for _, server := range c.DNSServers {
 			if ip := net.ParseIP(server); ip != nil {
 				opts.DNSServers = append(opts.DNSServers, ip)
@@ -95,7 +94,9 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				return fmt.Errorf("invalid DNS server IP address: %q", server)
 			}
 		}
-
+	}
+	
+	if len(c.NTPServers) > 0 {
 		for _, server := range c.NTPServers {
 			if ip := net.ParseIP(server); ip != nil {
 				opts.NtpServers = append(opts.NtpServers, ip)
@@ -103,7 +104,9 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				return fmt.Errorf("invalid NTP server IP address: %q", server)
 			}
 		}
+	}
 
+	if len(c.Routers) > 0 {  
 		for _, router := range c.Routers {
 			if ip := net.ParseIP(router); ip != nil {
 				opts.Routers = append(opts.Routers, ip)
@@ -111,10 +114,13 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				return fmt.Errorf("invalid router IP address: %q", router)
 			}
 		}
-
-		opts.DomainSearch = c.DomainSearch
-		req.Options = opts
 	}
+
+	if len(c.DomainSearch) > 0 {
+		opts.DomainSearch = c.DomainSearch
+	}
+
+	req.Options = opts
 
 	op, err := client.CreatePrivateNetwork(ctx, req)
 	if err != nil {

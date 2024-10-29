@@ -96,14 +96,9 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	// Process DHCP options if any are changed
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DNSServers)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.NTPServers)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Routers)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DomainSearch)) {
+	opts := &v3.PrivateNetworkOptions{}
 
-		opts := &v3.PrivateNetworkOptions{}
-
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DNSServers)) {
 		for _, server := range c.DNSServers {
 			if ip := net.ParseIP(server); ip != nil {
 				opts.DNSServers = append(opts.DNSServers, ip)
@@ -111,7 +106,9 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 				return fmt.Errorf("invalid DNS server IP address: %q", server)
 			}
 		}
+	}
 
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.NTPServers)) {
 		for _, server := range c.NTPServers {
 			if ip := net.ParseIP(server); ip != nil {
 				opts.NtpServers = append(opts.NtpServers, ip)
@@ -119,7 +116,9 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 				return fmt.Errorf("invalid NTP server IP address: %q", server)
 			}
 		}
+	}
 
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Routers)) {
 		for _, router := range c.Routers {
 			if ip := net.ParseIP(router); ip != nil {
 				opts.Routers = append(opts.Routers, ip)
@@ -127,11 +126,14 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 				return fmt.Errorf("invalid router IP address: %q", router)
 			}
 		}
-
-		opts.DomainSearch = c.DomainSearch
-		updateReq.Options = opts
-		updated = true
 	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DomainSearch)) {
+		opts.DomainSearch = c.DomainSearch
+	}
+
+	updateReq.Options = opts
+	updated = true
 
 	if updated {
 		op, err := client.UpdatePrivateNetwork(ctx, pn.ID, updateReq)
