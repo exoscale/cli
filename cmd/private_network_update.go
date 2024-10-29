@@ -19,13 +19,16 @@ type privateNetworkUpdateCmd struct {
 
 	PrivateNetwork string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Description string      `cli-usage:"Private Network description"`
-	EndIP       string      `cli-usage:"managed Private Network range end IP address"`
-	Name        string      `cli-usage:"Private Network name"`
-	Netmask     string      `cli-usage:"managed Private Network netmask"`
-	StartIP     string      `cli-usage:"managed Private Network range start IP address"`
-	Zone        v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
-	Option      []string    `cli-usage:"DHCP network option (format: option1=\"value1 value2\")" cli-flag-multi:"true"`
+	Description  string      `cli-usage:"Private Network description"`
+	EndIP        string      `cli-usage:"managed Private Network range end IP address"`
+	Name         string      `cli-usage:"Private Network name"`
+	StartIP      string      `cli-usage:"managed Private Network range start IP address"`
+	Zone         v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
+	Netmask      string      `cli-usage:"managed Private Network netmask"`
+	DNSServers   []string    `cli-usage:"DNS servers"`
+	NTPServers   []string    `cli-usage:"NTP servers"`
+	Routers      []string    `cli-usage:"Routers"`
+	DomainSearch []string    `cli-usage:"Domain search list, limited to 255 octets"`
 }
 
 func (c *privateNetworkUpdateCmd) cmdAliases() []string { return nil }
@@ -93,11 +96,39 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Option)) {
-		opts, err := processPrivateNetworkOptions(c.Option)
-		if err != nil {
-			return err
+	// Process DHCP options if any are changed
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DNSServers)) ||
+		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.NTPServers)) ||
+		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Routers)) ||
+		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DomainSearch)) {
+
+		opts := &v3.PrivateNetworkOptions{}
+
+		for _, server := range c.DNSServers {
+			if ip := net.ParseIP(server); ip != nil {
+				opts.DNSServers = append(opts.DNSServers, ip)
+			} else {
+				return fmt.Errorf("invalid DNS server IP address: %q", server)
+			}
 		}
+
+		for _, server := range c.NTPServers {
+			if ip := net.ParseIP(server); ip != nil {
+				opts.NtpServers = append(opts.NtpServers, ip)
+			} else {
+				return fmt.Errorf("invalid NTP server IP address: %q", server)
+			}
+		}
+
+		for _, router := range c.Routers {
+			if ip := net.ParseIP(router); ip != nil {
+				opts.Routers = append(opts.Routers, ip)
+			} else {
+				return fmt.Errorf("invalid router IP address: %q", router)
+			}
+		}
+
+		opts.DomainSearch = c.DomainSearch
 		updateReq.Options = opts
 		updated = true
 	}

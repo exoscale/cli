@@ -20,12 +20,15 @@ type privateNetworkCreateCmd struct {
 
 	Name string `cli-arg:"#"`
 
-	Description string      `cli-usage:"Private Network description"`
-	EndIP       string      `cli-usage:"managed Private Network range end IP address"`
-	Netmask     string      `cli-usage:"managed Private Network netmask"`
-	StartIP     string      `cli-usage:"managed Private Network range start IP address"`
-	Zone        v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
-	Option      []string    `cli-usage:"DHCP network option (format: option1=\"value1 value2\")" cli-flag-multi:"true"`
+	Description  string      `cli-usage:"Private Network description"`
+	EndIP        string      `cli-usage:"managed Private Network range end IP address"`
+	StartIP      string      `cli-usage:"managed Private Network range start IP address"`
+	Zone         v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
+	Netmask      string      `cli-usage:"managed Private Network netmask"`
+	DNSServers   []string    `cli-usage:"DNS servers"`
+	NTPServers   []string    `cli-usage:"NTP servers"`
+	Routers      []string    `cli-usage:"Routers"`
+	DomainSearch []string    `cli-usage:"Domain search list, limited to 255 octets"`
 }
 
 func (c *privateNetworkCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -81,11 +84,35 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}(),
 	}
 
-	if len(c.Option) > 0 {
-		opts, err := processPrivateNetworkOptions(c.Option)
-		if err != nil {
-			return err
+	// Process DHCP options if any are specified
+	if len(c.DNSServers) > 0 || len(c.NTPServers) > 0 || len(c.Routers) > 0 || len(c.DomainSearch) > 0 {
+		opts := &v3.PrivateNetworkOptions{}
+
+		for _, server := range c.DNSServers {
+			if ip := net.ParseIP(server); ip != nil {
+				opts.DNSServers = append(opts.DNSServers, ip)
+			} else {
+				return fmt.Errorf("invalid DNS server IP address: %q", server)
+			}
 		}
+
+		for _, server := range c.NTPServers {
+			if ip := net.ParseIP(server); ip != nil {
+				opts.NtpServers = append(opts.NtpServers, ip)
+			} else {
+				return fmt.Errorf("invalid NTP server IP address: %q", server)
+			}
+		}
+
+		for _, router := range c.Routers {
+			if ip := net.ParseIP(router); ip != nil {
+				opts.Routers = append(opts.Routers, ip)
+			} else {
+				return fmt.Errorf("invalid router IP address: %q", router)
+			}
+		}
+
+		opts.DomainSearch = c.DomainSearch
 		req.Options = opts
 	}
 
