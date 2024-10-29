@@ -20,15 +20,15 @@ type privateNetworkUpdateCmd struct {
 	PrivateNetwork string `cli-arg:"#" cli-usage:"NAME|ID"`
 
 	Description  string      `cli-usage:"Private Network description"`
-	EndIP        string      `cli-usage:"managed Private Network range end IP address"`
+	EndIP        string      `cli-usage:"Private Network range end IP address"`
 	Name         string      `cli-usage:"Private Network name"`
-	StartIP      string      `cli-usage:"managed Private Network range start IP address"`
+	StartIP      string      `cli-usage:"Private Network range start IP address"`
 	Zone         v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
-	Netmask      string      `cli-usage:"managed Private Network netmask"`
-	DNSServers   []string    `cli-usage:"DNS servers"`
-	NTPServers   []string    `cli-usage:"NTP servers"`
-	Routers      []string    `cli-usage:"Routers"`
-	DomainSearch []string    `cli-usage:"Domain search list, limited to 255 octets"`
+	Netmask      string      `cli-usage:"DHCP option 1: Subnet netmask"`
+	DNSServers   []string    `cli-usage:"DHCP option 6: DNS servers"`
+	NTPServers   []string    `cli-usage:"DHCP option 42: NTP servers"`
+	Routers      []string    `cli-usage:"DHCP option 3: Routers"`
+	DomainSearch []string    `cli-usage:"DHCP option 119: domain search list (limited to 255 octets)"`
 }
 
 func (c *privateNetworkUpdateCmd) cmdAliases() []string { return nil }
