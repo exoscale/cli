@@ -95,7 +95,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			}
 		}
 	}
-	
+
 	if len(c.NTPServers) > 0 {
 		for _, server := range c.NTPServers {
 			if ip := net.ParseIP(server); ip != nil {
@@ -106,7 +106,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	if len(c.Routers) > 0 {  
+	if len(c.Routers) > 0 {
 		for _, router := range c.Routers {
 			if ip := net.ParseIP(router); ip != nil {
 				opts.Routers = append(opts.Routers, ip)
@@ -137,7 +137,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&privateNetworkShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			PrivateNetwork:     c.Name,
+			PrivateNetwork:     op.Reference.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}

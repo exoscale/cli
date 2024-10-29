@@ -135,11 +135,15 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	updateReq.Options = opts
 	updated = true
 
+	var privnetID v3.UUID
+
 	if updated {
 		op, err := client.UpdatePrivateNetwork(ctx, pn.ID, updateReq)
 		if err != nil {
 			return err
 		}
+		privnetID = op.Reference.ID
+
 		decorateAsyncOperation(fmt.Sprintf("Updating Private Network %q...", c.Name), func() {
 			op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
@@ -151,7 +155,7 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&privateNetworkShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			PrivateNetwork:     pn.ID.String(),
+			PrivateNetwork:     privnetID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
