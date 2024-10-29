@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -20,21 +19,10 @@ import (
 	"github.com/exoscale/cli/cmd"
 )
 
-const frontmatter = `---
-date: %s
-title: %q
-slug: %q
-url: %s
-description: %q
-type: %s
----
-`
-
 func main() {
 
 	var flagError pflag.ErrorHandling
 	docCmd := pflag.NewFlagSet("", flagError)
-	var isHugo = docCmd.BoolP("is-hugo", "", true, "set false if you dont want to generate fot hugo (https://gohugo.io/)")
 	var manPage = docCmd.BoolP("man-page", "", false, "Generate exo manual pages")
 	var filesDir = docCmd.StringP("doc-path", "", "./website/content", "Path directory where you want generate doc files")
 	var help = docCmd.BoolP("help", "h", false, "Help about any command")
@@ -64,25 +52,7 @@ func main() {
 		return
 	}
 
-	filePrepender := func(filename string, cmd *cobra.Command) string {
-		now := time.Now().Format(time.RFC3339)
-		name := filepath.Base(filename)
-		base := strings.TrimSuffix(name, path.Ext(name))
-		url := fmt.Sprintf("/%s/", strings.ToLower(base))
-		slug := strings.ReplaceAll(base, "_", " ")
-		typeExo := `"command"`
-		if strings.Count(base, "_") > 1 {
-			typeExo = `"subcommand"`
-		}
-		return fmt.Sprintf(frontmatter, now, slug, base, url, cmd.Short, typeExo)
-	}
-
-	linkHandler := func(name string) string {
-		base := strings.TrimSuffix(name, path.Ext(name))
-		return fmt.Sprintf("/cli/%s/", strings.ToLower(base))
-	}
-
-	if err := exoGenMarkdownTreeCustom(cmd.RootCmd, *filesDir, filePrepender, linkHandler, *isHugo); err != nil {
+	if err := exoGenMarkdownTreeCustom(cmd.RootCmd, *filesDir); err != nil {
 		log.Fatal(err)
 	}
 
@@ -97,18 +67,25 @@ func main() {
 // beginning cobra/doc custom src code
 //
 
-func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender func(string, *cobra.Command) string, linkHandler func(string) string, isHugo bool) error {
+func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string) error {
 	for _, c := range cmd.Commands() {
 		if !c.IsAvailableCommand() || c.IsAdditionalHelpTopicCommand() {
 			continue
 		}
-		if err := exoGenMarkdownTreeCustom(c, dir, filePrepender, linkHandler, isHugo); err != nil {
+		if err := os.MkdirAll(filepath.Join(dir, cmd.Name()), 0750); err != nil {
+			return err
+		}
+		if err := exoGenMarkdownTreeCustom(c, filepath.Join(dir, cmd.Name())); err != nil {
 			return err
 		}
 	}
 
-	basename := strings.ReplaceAll(cmd.CommandPath(), " ", "_") + ".md"
-	filename := filepath.Join(dir, basename)
+	filename := ""
+	if cmd.HasSubCommands() {
+		filename = filepath.Join(dir, cmd.Name(), "_index.md")
+	} else {
+		filename = filepath.Join(dir, cmd.Name()+".md")
+	}
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -117,11 +94,7 @@ func exoGenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender func
 
 	fmt.Printf("exo: create file : %s\n", filename)
 
-	if _, err := io.WriteString(f, filePrepender(filename, cmd)); err != nil {
-		return err
-	}
-
-	return exoGenMarkdownCustom(cmd, f, linkHandler, isHugo)
+	return exoGenMarkdownCustom(cmd, f)
 }
 
 type byName []*cobra.Command
@@ -130,31 +103,39 @@ func (s byName) Len() int           { return len(s) }
 func (s byName) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s byName) Less(i, j int) bool { return s[i].Name() < s[j].Name() }
 
-func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(string) string, ishugo bool) error {
+func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 	cmd.InitDefaultHelpCmd()
 	cmd.InitDefaultHelpFlag()
 
 	buf := new(bytes.Buffer)
 	name := cmd.CommandPath()
 
-	if !ishugo {
-		short := cmd.Short
-		buf.WriteString("## " + name + "\n\n")
-		buf.WriteString(short + "\n\n")
+	linkTitle := cmd.Name()
+	title := name
+	if !cmd.HasParent() {
+		linkTitle = "Command Reference"
+		title = "Command Reference"
 	}
-
-	if ishugo {
-		buf.WriteString("<!--more-->\n\n")
-	}
+	fmt.Fprintln(buf, "---")
+	fmt.Fprintln(buf, "date:", time.Now().Format(time.RFC3339))
+	fmt.Fprintln(buf, "linkTitle:", linkTitle)
+	fmt.Fprintln(buf, "title:", title)
+	fmt.Fprintln(buf, "description:", cmd.Short)
+	fmt.Fprintln(buf, "---")
 
 	long := cmd.Long
 	if len(long) != 0 {
-		buf.WriteString("### Synopsis\n\n")
-		buf.WriteString(long + "\n\n")
+		fmt.Fprintln(buf, "### Description")
+		fmt.Fprintln(buf)
+		fmt.Fprintln(buf, long)
+		fmt.Fprintln(buf)
 	}
 
 	if cmd.Runnable() {
-		buf.WriteString(fmt.Sprintf("```\n%s\n```\n\n", cmd.UseLine()))
+		fmt.Fprintln(buf, "```")
+		fmt.Fprintln(buf, cmd.UseLine())
+		fmt.Fprintln(buf, "```")
+		fmt.Fprintln(buf)
 	} else {
 		splitedLine := strings.Split(cmd.UseLine(), " ")
 
@@ -164,25 +145,35 @@ func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(stri
 
 		line := strings.Join(splitedLine, " ")
 
-		buf.WriteString(fmt.Sprintf("```\n%s\n```\n\n", line))
+		fmt.Fprintln(buf, "```")
+		fmt.Fprintln(buf, line)
+		fmt.Fprintln(buf, "```")
+		fmt.Fprintln(buf)
 	}
 
 	if len(cmd.Example) > 0 {
-		buf.WriteString("### Examples\n\n")
-		buf.WriteString(fmt.Sprintf("```\n%s\n```\n\n", cmd.Example))
+		fmt.Fprintln(buf, "### Examples")
+		fmt.Fprintln(buf)
+		fmt.Fprintln(buf, "```")
+		fmt.Fprintln(buf, cmd.Example)
+		fmt.Fprintln(buf, "```")
+		fmt.Fprintln(buf)
 	}
 
 	if err := printOptions(buf, cmd); err != nil {
 		return err
 	}
 	if hasSeeAlso(cmd) {
-		buf.WriteString("### SEE ALSO\n\n")
+		fmt.Fprintln(buf, "### Related Commands")
+		fmt.Fprintln(buf)
 		if cmd.HasParent() {
 			parent := cmd.Parent()
-			pname := parent.CommandPath()
-			link := pname + ".md"
-			link = strings.ReplaceAll(link, " ", "_")
-			buf.WriteString(fmt.Sprintf("* [%s](%s)\t - %s\n", pname, linkHandler(link), parent.Short))
+			pname := parent.Name()
+			link := "../"
+			if !cmd.HasSubCommands() {
+				link += pname
+			}
+			fmt.Fprintln(buf, renderRelatedLink(pname, link, parent.Short))
 		}
 
 		children := cmd.Commands()
@@ -193,43 +184,59 @@ func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(stri
 				continue
 			}
 			cname := name + " " + child.Name()
-			link := cname + ".md"
-			link = strings.ReplaceAll(link, " ", "_")
-			buf.WriteString(fmt.Sprintf("* [%s](%s)\t - %s\n\n", cname, linkHandler(link), child.Short))
+			link := child.Name()
+			fmt.Fprintln(buf, renderRelatedLink(cname, link, child.Short))
+			fmt.Fprintln(buf)
 		}
-		buf.WriteString("\n")
+		fmt.Fprintln(buf)
 	}
 
 	_, err := buf.WriteTo(w)
 	return err
 }
 
-func writeFlag(buffer *bytes.Buffer, flag *pflag.Flag) {
+func renderRelatedLink(name, link, short string) string {
+	return fmt.Sprintf("* [%s]({{< ref \"%s\">}})\t - %s", name, link, short)
+}
+
+func tableEscape(s string) string {
+	return strings.ReplaceAll(html.EscapeString(s), "|", `\|`)
+}
+
+func writeFlag(buf *bytes.Buffer, flag *pflag.Flag) {
 	usage := strings.Replace(flag.Usage, "[required]", "(**required**)", 1)
 	if flag.Shorthand != "" {
-		buffer.WriteString(fmt.Sprintf("`--%s, -%s` - %s\n", flag.Name, flag.Shorthand, html.EscapeString(usage)))
+		fmt.Fprintf(buf, "|`--%s, -%s` | %s |\n", flag.Name, flag.Shorthand, tableEscape(usage))
 		return
 	}
-	buffer.WriteString(fmt.Sprintf("`--%s` - %s\n", flag.Name, html.EscapeString(usage)))
+	fmt.Fprintf(buf, "|`--%s` | %s |\n", flag.Name, tableEscape(usage))
 }
 
 func printOptions(buf *bytes.Buffer, cmd *cobra.Command) error {
 	flags := cmd.NonInheritedFlags()
 	if flags.HasAvailableFlags() {
-		buf.WriteString("### Options\n\n")
+		fmt.Fprintln(buf, "### Options")
+		fmt.Fprintln(buf)
+		fmt.Fprintln(buf, "| Option | Description |")
+		fmt.Fprintln(buf, "|---------|------------|")
 		flags.VisitAll(func(flag *pflag.Flag) {
 			writeFlag(buf, flag)
 		})
-		buf.WriteString("\n\n")
+		fmt.Fprintln(buf)
+		fmt.Fprintln(buf)
 	}
 
 	parentFlags := cmd.InheritedFlags()
 	if parentFlags.HasAvailableFlags() {
-		buf.WriteString("### Options inherited from parent commands\n\n")
+		fmt.Fprintln(buf, "### Options inherited from parent commands")
+		fmt.Fprintln(buf)
+		fmt.Fprintln(buf, "| Option | Description |")
+		fmt.Fprintln(buf, "|---------|------------|")
 		parentFlags.VisitAll(func(flag *pflag.Flag) {
 			writeFlag(buf, flag)
 		})
-		buf.WriteString("\n\n")
+		fmt.Fprintln(buf)
+		fmt.Fprintln(buf)
 	}
 	return nil
 }
