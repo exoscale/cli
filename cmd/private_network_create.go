@@ -25,10 +25,10 @@ type privateNetworkCreateCmd struct {
 	StartIP      string      `cli-usage:"Private Network range start IP address"`
 	Zone         v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
 	Netmask      string      `cli-usage:"DHCP option 1: Subnet netmask"`
-	DNSServers   []string    `cli-flag:"dns-server" cli-usage:"DHCP option 6: DNS servers"`
-	NTPServers   []string    `cli-flag:"ntp-server" cli-usage:"DHCP option 42: NTP servers"`
-	Routers      []string    `cli-flag:"router" cli-usage:"DHCP option 3: Routers"`
-	DomainSearch []string    `cli-usage:"DHCP option 119: domain search list (limited to 255 octets)"`
+	DNSServers   []string    `cli-flag:"dns-server" cli-usage:"DHCP option 6: DNS servers (can be specified multiple times)"`
+	NTPServers   []string    `cli-flag:"ntp-server" cli-usage:"DHCP option 42: NTP servers (can be specified multiple times)"`
+	Routers      []string    `cli-flag:"router" cli-usage:"DHCP option 3: Routers (can be specified multiple times)"`
+	DomainSearch []string    `cli-usage:"DHCP option 119: domain search list (limited to 255 octets, can be specified multiple times)"`
 }
 
 func (c *privateNetworkCreateCmd) cmdAliases() []string { return gCreateAlias }
