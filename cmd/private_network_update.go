@@ -156,7 +156,7 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return (&privateNetworkShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			PrivateNetwork:     privnetID.String(),
-			Zone:               v3.ZoneName(c.Zone),
+			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
 

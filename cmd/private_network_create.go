@@ -9,7 +9,6 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -57,31 +56,11 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	req := v3.CreatePrivateNetworkRequest{
-		Description: func() string {
-			if c.Description != "" {
-				return *utils.NonEmptyStringPtr(c.Description)
-			}
-			return ""
-		}(),
-		EndIP: func() net.IP {
-			if c.EndIP != "" {
-				return net.ParseIP(c.EndIP)
-			}
-			return nil
-		}(),
-		Name: c.Name,
-		Netmask: func() net.IP {
-			if c.Netmask != "" {
-				return net.ParseIP(c.Netmask)
-			}
-			return nil
-		}(),
-		StartIP: func() net.IP {
-			if c.StartIP != "" {
-				return net.ParseIP(c.StartIP)
-			}
-			return nil
-		}(),
+		Name:        c.Name,
+		Description: c.Description,
+		EndIP:       net.ParseIP(c.EndIP),
+		Netmask:     net.ParseIP(c.Netmask),
+		StartIP:     net.ParseIP(c.StartIP),
 	}
 
 	opts := &v3.PrivateNetworkOptions{}
@@ -138,7 +117,7 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return (&privateNetworkShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			PrivateNetwork:     op.Reference.ID.String(),
-			Zone:               v3.ZoneName(c.Zone),
+			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
 

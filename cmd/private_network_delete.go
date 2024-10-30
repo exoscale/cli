@@ -50,18 +50,13 @@ func (c *privateNetworkDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	privateNetwork, err := client.GetPrivateNetwork(ctx, pn.ID)
-	if err != nil {
-		return err
-	}
-
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Private Network %s?", c.PrivateNetwork)) {
 			return nil
 		}
 	}
 
-	op, err := client.DeletePrivateNetwork(ctx, privateNetwork.ID)
+	op, err := client.DeletePrivateNetwork(ctx, pn.ID)
 	if err != nil {
 		return err
 	}
