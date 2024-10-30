@@ -197,8 +197,8 @@ github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7
 github.com/envoyproxy/protoc-gen-validate v0.6.2/go.mod h1:2t7qjJNvHPx8IjnBOzl9E9/baC+qXE/TeeyBRzgJDws=
 github.com/exoscale/egoscale v0.102.4 h1:GBKsZMIOzwBfSu+4ZmWka3Ejf2JLiaBDHp4CQUgvp2E=
 github.com/exoscale/egoscale v0.102.4/go.mod h1:ROSmPtle0wvf91iLZb09++N/9BH2Jo9XxIpAEumvocA=
-github.com/exoscale/egoscale/v3 v3.1.8-0.20241016080528-0a04c8745bca h1:oZsrZbq/0qfm1t7DTLFiRIP+wxPg/z04yBJ4qo3U1Ow=
-github.com/exoscale/egoscale/v3 v3.1.8-0.20241016080528-0a04c8745bca/go.mod h1:GHKucK/J26v8PGWztGdhxWNMjrjG9PbelxKCJ4YI11Q=
+github.com/exoscale/egoscale/v3 v3.1.8-0.20241030091536-ae458f356181 h1:kg7eYWVEMjIdj9bKd+ajZ/AEqHG5zbweTTmsTUaFISI=
+github.com/exoscale/egoscale/v3 v3.1.8-0.20241030091536-ae458f356181/go.mod h1:GHKucK/J26v8PGWztGdhxWNMjrjG9PbelxKCJ4YI11Q=
 github.com/exoscale/openapi-cli-generator v1.1.0 h1:fYjmPqHR5vxlOBrbvde7eo7bISNQIFxsGn4A5/acwKA=
 github.com/exoscale/openapi-cli-generator v1.1.0/go.mod h1:TZBnbT7f3hJ5ImyUphJwRM+X5xF/zCQZ6o8a42gQeTs=
 github.com/fatih/camelcase v1.0.0 h1:hxNvNX/xYBp0ovncs8WyWZrOrpBNub/JfaMvbURyft8=
