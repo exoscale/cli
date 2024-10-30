@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Features
+
+- Private Network: support for DHCP options (dns-server/ntp-server/router/domain-search)
+
+### Improvements
+
+- Private Network: related commands are migrated to egoscale v3
+
 ### Bug fixes
 
 - storage: handle errors in batch objects delete action #627
