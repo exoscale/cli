@@ -238,6 +238,24 @@ func ForEachZone(zones []string, f func(zone string) error) error {
 	return meg.Wait().ErrorOrNil()
 }
 
+// ForEveryZone executes the function f for every specified zone, and return a multierror.Error containing all
+// errors that may have occurred during execution.
+
+// TODO: This is a copy paste from the function above, but suitable for egoscale v3 calls.
+// remove the old one
+func ForEveryZone(zones []v3.Zone, f func(zone v3.Zone) error) error {
+	meg := new(multierror.Group)
+
+	for _, zone := range zones {
+		zone := zone
+		meg.Go(func() error {
+			return f(zone)
+		})
+	}
+
+	return meg.Wait().ErrorOrNil()
+}
+
 // ParseInstanceType returns an v3.InstanceType with family and name.
 func ParseInstanceType(instanceType string) v3.InstanceType {
 	var typeFamily, typeSize string

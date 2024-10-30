@@ -9,6 +9,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -62,35 +63,45 @@ func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-
 		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
 	out := make(privateNetworkListOutput, 0)
+	res := make(chan privateNetworkListItemOutput)
+	done := make(chan struct{})
 
-	var responseError error
-	var errorZones []string
+	go func() {
+		for nlb := range res {
+			out = append(out, nlb)
+		}
+		done <- struct{}{}
+	}()
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
 
-	for _, zone := range zones {
-		c := client.WithEndpoint(zone.APIEndpoint)
-
+		c := client.WithEndpoint((zone.APIEndpoint))
 		resp, err := c.ListPrivateNetworks(ctx)
 		if err != nil {
-			responseError = err
-			errorZones = append(errorZones, string(zone.Name))
-		} else {
-			for _, p := range resp.PrivateNetworks {
-				out = append(out, privateNetworkListItemOutput{
-					ID:   p.ID,
-					Name: p.Name,
-					Zone: zone.Name,
-				})
+			return fmt.Errorf("unable to list Private Networks in zone %s: %w", zone, err)
+		}
+
+		for _, p := range resp.PrivateNetworks {
+			res <- privateNetworkListItemOutput{
+				ID:   p.ID,
+				Name: p.Name,
+				Zone: zone.Name,
 			}
 		}
+
+		return nil
+	})
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr,
+			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
-	if responseError != nil {
-		fmt.Fprintf(os.Stderr, "warning: error during listing private networks in %s zones, results might be incomplete:\n%s\n", errorZones, responseError) // nolint:golint
-	}
+
+	close(res)
+	<-done
+
 	return c.outputFunc(&out, nil)
 }
 
