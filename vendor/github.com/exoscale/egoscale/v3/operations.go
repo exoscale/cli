@@ -18,10 +18,18 @@ type ListAntiAffinityGroupsResponse struct {
 
 // FindAntiAffinityGroup attempts to find an AntiAffinityGroup by nameOrID.
 func (l ListAntiAffinityGroupsResponse) FindAntiAffinityGroup(nameOrID string) (AntiAffinityGroup, error) {
+	var result []AntiAffinityGroup
 	for i, elem := range l.AntiAffinityGroups {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.AntiAffinityGroups[i], nil
+			result = append(result, l.AntiAffinityGroups[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return AntiAffinityGroup{}, fmt.Errorf("%q too many found in ListAntiAffinityGroupsResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return AntiAffinityGroup{}, fmt.Errorf("%q not found in ListAntiAffinityGroupsResponse: %w", nameOrID, ErrNotFound)
@@ -223,10 +231,18 @@ type ListAPIKeysResponse struct {
 
 // FindIAMAPIKey attempts to find an IAMAPIKey by nameOrKey.
 func (l ListAPIKeysResponse) FindIAMAPIKey(nameOrKey string) (IAMAPIKey, error) {
+	var result []IAMAPIKey
 	for i, elem := range l.APIKeys {
 		if string(elem.Name) == nameOrKey || string(elem.Key) == nameOrKey {
-			return l.APIKeys[i], nil
+			result = append(result, l.APIKeys[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return IAMAPIKey{}, fmt.Errorf("%q too many found in ListAPIKeysResponse: %w", nameOrKey, ErrConflict)
 	}
 
 	return IAMAPIKey{}, fmt.Errorf("%q not found in ListAPIKeysResponse: %w", nameOrKey, ErrNotFound)
@@ -428,10 +444,18 @@ type ListBlockStorageVolumesResponse struct {
 
 // FindBlockStorageVolume attempts to find an BlockStorageVolume by nameOrID.
 func (l ListBlockStorageVolumesResponse) FindBlockStorageVolume(nameOrID string) (BlockStorageVolume, error) {
+	var result []BlockStorageVolume
 	for i, elem := range l.BlockStorageVolumes {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.BlockStorageVolumes[i], nil
+			result = append(result, l.BlockStorageVolumes[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return BlockStorageVolume{}, fmt.Errorf("%q too many found in ListBlockStorageVolumesResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return BlockStorageVolume{}, fmt.Errorf("%q not found in ListBlockStorageVolumesResponse: %w", nameOrID, ErrNotFound)
@@ -565,10 +589,18 @@ type ListBlockStorageSnapshotsResponse struct {
 
 // FindBlockStorageSnapshot attempts to find an BlockStorageSnapshot by nameOrID.
 func (l ListBlockStorageSnapshotsResponse) FindBlockStorageSnapshot(nameOrID string) (BlockStorageSnapshot, error) {
+	var result []BlockStorageSnapshot
 	for i, elem := range l.BlockStorageSnapshots {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.BlockStorageSnapshots[i], nil
+			result = append(result, l.BlockStorageSnapshots[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return BlockStorageSnapshot{}, fmt.Errorf("%q too many found in ListBlockStorageSnapshotsResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return BlockStorageSnapshot{}, fmt.Errorf("%q not found in ListBlockStorageSnapshotsResponse: %w", nameOrID, ErrNotFound)
@@ -2342,10 +2374,18 @@ type ListDBAASExternalEndpointsResponse struct {
 
 // FindDBAASExternalEndpoint attempts to find an DBAASExternalEndpoint by nameOrID.
 func (l ListDBAASExternalEndpointsResponse) FindDBAASExternalEndpoint(nameOrID string) (DBAASExternalEndpoint, error) {
+	var result []DBAASExternalEndpoint
 	for i, elem := range l.DBAASEndpoints {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.DBAASEndpoints[i], nil
+			result = append(result, l.DBAASEndpoints[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return DBAASExternalEndpoint{}, fmt.Errorf("%q too many found in ListDBAASExternalEndpointsResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return DBAASExternalEndpoint{}, fmt.Errorf("%q not found in ListDBAASExternalEndpointsResponse: %w", nameOrID, ErrNotFound)
@@ -7264,10 +7304,18 @@ type ListDBAASServicesResponse struct {
 
 // FindDBAASServiceCommon attempts to find an DBAASServiceCommon by name.
 func (l ListDBAASServicesResponse) FindDBAASServiceCommon(name string) (DBAASServiceCommon, error) {
+	var result []DBAASServiceCommon
 	for i, elem := range l.DBAASServices {
 		if string(elem.Name) == name {
-			return l.DBAASServices[i], nil
+			result = append(result, l.DBAASServices[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return DBAASServiceCommon{}, fmt.Errorf("%q too many found in ListDBAASServicesResponse: %w", name, ErrConflict)
 	}
 
 	return DBAASServiceCommon{}, fmt.Errorf("%q not found in ListDBAASServicesResponse: %w", name, ErrNotFound)
@@ -7452,10 +7500,18 @@ type ListDBAASServiceTypesResponse struct {
 
 // FindDBAASServiceType attempts to find an DBAASServiceType by name.
 func (l ListDBAASServiceTypesResponse) FindDBAASServiceType(name string) (DBAASServiceType, error) {
+	var result []DBAASServiceType
 	for i, elem := range l.DBAASServiceTypes {
 		if string(elem.Name) == name {
-			return l.DBAASServiceTypes[i], nil
+			result = append(result, l.DBAASServiceTypes[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return DBAASServiceType{}, fmt.Errorf("%q too many found in ListDBAASServiceTypesResponse: %w", name, ErrConflict)
 	}
 
 	return DBAASServiceType{}, fmt.Errorf("%q not found in ListDBAASServiceTypesResponse: %w", name, ErrNotFound)
@@ -8128,10 +8184,18 @@ type ListDeployTargetsResponse struct {
 
 // FindDeployTarget attempts to find an DeployTarget by nameOrID.
 func (l ListDeployTargetsResponse) FindDeployTarget(nameOrID string) (DeployTarget, error) {
+	var result []DeployTarget
 	for i, elem := range l.DeployTargets {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.DeployTargets[i], nil
+			result = append(result, l.DeployTargets[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return DeployTarget{}, fmt.Errorf("%q too many found in ListDeployTargetsResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return DeployTarget{}, fmt.Errorf("%q not found in ListDeployTargetsResponse: %w", nameOrID, ErrNotFound)
@@ -8231,10 +8295,18 @@ type ListDNSDomainsResponse struct {
 
 // FindDNSDomain attempts to find an DNSDomain by idOrUnicodeName.
 func (l ListDNSDomainsResponse) FindDNSDomain(idOrUnicodeName string) (DNSDomain, error) {
+	var result []DNSDomain
 	for i, elem := range l.DNSDomains {
 		if string(elem.ID) == idOrUnicodeName || string(elem.UnicodeName) == idOrUnicodeName {
-			return l.DNSDomains[i], nil
+			result = append(result, l.DNSDomains[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return DNSDomain{}, fmt.Errorf("%q too many found in ListDNSDomainsResponse: %w", idOrUnicodeName, ErrConflict)
 	}
 
 	return DNSDomain{}, fmt.Errorf("%q not found in ListDNSDomainsResponse: %w", idOrUnicodeName, ErrNotFound)
@@ -8347,10 +8419,18 @@ type ListDNSDomainRecordsResponse struct {
 
 // FindDNSDomainRecord attempts to find an DNSDomainRecord by nameOrID.
 func (l ListDNSDomainRecordsResponse) FindDNSDomainRecord(nameOrID string) (DNSDomainRecord, error) {
+	var result []DNSDomainRecord
 	for i, elem := range l.DNSDomainRecords {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.DNSDomainRecords[i], nil
+			result = append(result, l.DNSDomainRecords[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return DNSDomainRecord{}, fmt.Errorf("%q too many found in ListDNSDomainRecordsResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return DNSDomainRecord{}, fmt.Errorf("%q not found in ListDNSDomainRecordsResponse: %w", nameOrID, ErrNotFound)
@@ -8776,10 +8856,18 @@ type ListElasticIPSResponse struct {
 
 // FindElasticIP attempts to find an ElasticIP by idOrIP.
 func (l ListElasticIPSResponse) FindElasticIP(idOrIP string) (ElasticIP, error) {
+	var result []ElasticIP
 	for i, elem := range l.ElasticIPS {
 		if string(elem.ID) == idOrIP || string(elem.IP) == idOrIP {
-			return l.ElasticIPS[i], nil
+			result = append(result, l.ElasticIPS[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return ElasticIP{}, fmt.Errorf("%q too many found in ListElasticIPSResponse: %w", idOrIP, ErrConflict)
 	}
 
 	return ElasticIP{}, fmt.Errorf("%q not found in ListElasticIPSResponse: %w", idOrIP, ErrNotFound)
@@ -9375,10 +9463,18 @@ type ListIAMRolesResponse struct {
 
 // FindIAMRole attempts to find an IAMRole by nameOrID.
 func (l ListIAMRolesResponse) FindIAMRole(nameOrID string) (IAMRole, error) {
+	var result []IAMRole
 	for i, elem := range l.IAMRoles {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.IAMRoles[i], nil
+			result = append(result, l.IAMRoles[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return IAMRole{}, fmt.Errorf("%q too many found in ListIAMRolesResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return IAMRole{}, fmt.Errorf("%q not found in ListIAMRolesResponse: %w", nameOrID, ErrNotFound)
@@ -9738,10 +9834,18 @@ type ListInstancesResponse struct {
 
 // FindListInstancesResponseInstances attempts to find an ListInstancesResponseInstances by nameOrID.
 func (l ListInstancesResponse) FindListInstancesResponseInstances(nameOrID string) (ListInstancesResponseInstances, error) {
+	var result []ListInstancesResponseInstances
 	for i, elem := range l.Instances {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.Instances[i], nil
+			result = append(result, l.Instances[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return ListInstancesResponseInstances{}, fmt.Errorf("%q too many found in ListInstancesResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return ListInstancesResponseInstances{}, fmt.Errorf("%q not found in ListInstancesResponse: %w", nameOrID, ErrNotFound)
@@ -9911,10 +10015,18 @@ type ListInstancePoolsResponse struct {
 
 // FindInstancePool attempts to find an InstancePool by nameOrID.
 func (l ListInstancePoolsResponse) FindInstancePool(nameOrID string) (InstancePool, error) {
+	var result []InstancePool
 	for i, elem := range l.InstancePools {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.InstancePools[i], nil
+			result = append(result, l.InstancePools[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return InstancePool{}, fmt.Errorf("%q too many found in ListInstancePoolsResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return InstancePool{}, fmt.Errorf("%q not found in ListInstancePoolsResponse: %w", nameOrID, ErrNotFound)
@@ -10423,10 +10535,18 @@ type ListInstanceTypesResponse struct {
 
 // FindInstanceType attempts to find an InstanceType by id.
 func (l ListInstanceTypesResponse) FindInstanceType(id string) (InstanceType, error) {
+	var result []InstanceType
 	for i, elem := range l.InstanceTypes {
 		if string(elem.ID) == id {
-			return l.InstanceTypes[i], nil
+			result = append(result, l.InstanceTypes[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return InstanceType{}, fmt.Errorf("%q too many found in ListInstanceTypesResponse: %w", id, ErrConflict)
 	}
 
 	return InstanceType{}, fmt.Errorf("%q not found in ListInstanceTypesResponse: %w", id, ErrNotFound)
@@ -11326,10 +11446,18 @@ type ListLoadBalancersResponse struct {
 
 // FindLoadBalancer attempts to find an LoadBalancer by nameOrID.
 func (l ListLoadBalancersResponse) FindLoadBalancer(nameOrID string) (LoadBalancer, error) {
+	var result []LoadBalancer
 	for i, elem := range l.LoadBalancers {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.LoadBalancers[i], nil
+			result = append(result, l.LoadBalancers[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return LoadBalancer{}, fmt.Errorf("%q too many found in ListLoadBalancersResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return LoadBalancer{}, fmt.Errorf("%q not found in ListLoadBalancersResponse: %w", nameOrID, ErrNotFound)
@@ -12036,10 +12164,18 @@ type ListPrivateNetworksResponse struct {
 
 // FindPrivateNetwork attempts to find an PrivateNetwork by nameOrID.
 func (l ListPrivateNetworksResponse) FindPrivateNetwork(nameOrID string) (PrivateNetwork, error) {
+	var result []PrivateNetwork
 	for i, elem := range l.PrivateNetworks {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.PrivateNetworks[i], nil
+			result = append(result, l.PrivateNetworks[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return PrivateNetwork{}, fmt.Errorf("%q too many found in ListPrivateNetworksResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return PrivateNetwork{}, fmt.Errorf("%q not found in ListPrivateNetworksResponse: %w", nameOrID, ErrNotFound)
@@ -12927,10 +13063,18 @@ type ListSecurityGroupsResponse struct {
 
 // FindSecurityGroup attempts to find an SecurityGroup by nameOrID.
 func (l ListSecurityGroupsResponse) FindSecurityGroup(nameOrID string) (SecurityGroup, error) {
+	var result []SecurityGroup
 	for i, elem := range l.SecurityGroups {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.SecurityGroups[i], nil
+			result = append(result, l.SecurityGroups[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return SecurityGroup{}, fmt.Errorf("%q too many found in ListSecurityGroupsResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return SecurityGroup{}, fmt.Errorf("%q not found in ListSecurityGroupsResponse: %w", nameOrID, ErrNotFound)
@@ -13522,10 +13666,18 @@ type ListSKSClustersResponse struct {
 
 // FindSKSCluster attempts to find an SKSCluster by nameOrID.
 func (l ListSKSClustersResponse) FindSKSCluster(nameOrID string) (SKSCluster, error) {
+	var result []SKSCluster
 	for i, elem := range l.SKSClusters {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.SKSClusters[i], nil
+			result = append(result, l.SKSClusters[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return SKSCluster{}, fmt.Errorf("%q too many found in ListSKSClustersResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return SKSCluster{}, fmt.Errorf("%q not found in ListSKSClustersResponse: %w", nameOrID, ErrNotFound)
@@ -14753,10 +14905,18 @@ type ListSnapshotsResponse struct {
 
 // FindSnapshot attempts to find an Snapshot by nameOrID.
 func (l ListSnapshotsResponse) FindSnapshot(nameOrID string) (Snapshot, error) {
+	var result []Snapshot
 	for i, elem := range l.Snapshots {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.Snapshots[i], nil
+			result = append(result, l.Snapshots[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return Snapshot{}, fmt.Errorf("%q too many found in ListSnapshotsResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return Snapshot{}, fmt.Errorf("%q not found in ListSnapshotsResponse: %w", nameOrID, ErrNotFound)
@@ -15008,10 +15168,18 @@ type ListSOSBucketsUsageResponse struct {
 
 // FindSOSBucketUsage attempts to find an SOSBucketUsage by name.
 func (l ListSOSBucketsUsageResponse) FindSOSBucketUsage(name string) (SOSBucketUsage, error) {
+	var result []SOSBucketUsage
 	for i, elem := range l.SOSBucketsUsage {
 		if string(elem.Name) == name {
-			return l.SOSBucketsUsage[i], nil
+			result = append(result, l.SOSBucketsUsage[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return SOSBucketUsage{}, fmt.Errorf("%q too many found in ListSOSBucketsUsageResponse: %w", name, ErrConflict)
 	}
 
 	return SOSBucketUsage{}, fmt.Errorf("%q not found in ListSOSBucketsUsageResponse: %w", name, ErrNotFound)
@@ -15131,10 +15299,18 @@ type ListSSHKeysResponse struct {
 
 // FindSSHKey attempts to find an SSHKey by nameOrFingerprint.
 func (l ListSSHKeysResponse) FindSSHKey(nameOrFingerprint string) (SSHKey, error) {
+	var result []SSHKey
 	for i, elem := range l.SSHKeys {
 		if string(elem.Name) == nameOrFingerprint || string(elem.Fingerprint) == nameOrFingerprint {
-			return l.SSHKeys[i], nil
+			result = append(result, l.SSHKeys[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return SSHKey{}, fmt.Errorf("%q too many found in ListSSHKeysResponse: %w", nameOrFingerprint, ErrConflict)
 	}
 
 	return SSHKey{}, fmt.Errorf("%q not found in ListSSHKeysResponse: %w", nameOrFingerprint, ErrNotFound)
@@ -15336,10 +15512,18 @@ type ListTemplatesResponse struct {
 
 // FindTemplate attempts to find an Template by nameOrID.
 func (l ListTemplatesResponse) FindTemplate(nameOrID string) (Template, error) {
+	var result []Template
 	for i, elem := range l.Templates {
 		if string(elem.Name) == nameOrID || string(elem.ID) == nameOrID {
-			return l.Templates[i], nil
+			result = append(result, l.Templates[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return Template{}, fmt.Errorf("%q too many found in ListTemplatesResponse: %w", nameOrID, ErrConflict)
 	}
 
 	return Template{}, fmt.Errorf("%q not found in ListTemplatesResponse: %w", nameOrID, ErrNotFound)
@@ -15711,10 +15895,18 @@ type ListZonesResponse struct {
 
 // FindZone attempts to find an Zone by nameOrAPIEndpoint.
 func (l ListZonesResponse) FindZone(nameOrAPIEndpoint string) (Zone, error) {
+	var result []Zone
 	for i, elem := range l.Zones {
 		if string(elem.Name) == nameOrAPIEndpoint || string(elem.APIEndpoint) == nameOrAPIEndpoint {
-			return l.Zones[i], nil
+			result = append(result, l.Zones[i])
 		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return Zone{}, fmt.Errorf("%q too many found in ListZonesResponse: %w", nameOrAPIEndpoint, ErrConflict)
 	}
 
 	return Zone{}, fmt.Errorf("%q not found in ListZonesResponse: %w", nameOrAPIEndpoint, ErrNotFound)
