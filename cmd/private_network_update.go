@@ -144,7 +144,7 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 		privnetID = op.Reference.ID
 
-		decorateAsyncOperation(fmt.Sprintf("Updating Private Network %q...", c.Name), func() {
+		decorateAsyncOperation(fmt.Sprintf("Updating Private Network %q...", c.PrivateNetwork), func() {
 			op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 		if err != nil {
