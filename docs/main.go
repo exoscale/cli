@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"time"
@@ -103,6 +104,21 @@ func (s byName) Len() int           { return len(s) }
 func (s byName) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s byName) Less(i, j int) bool { return s[i].Name() < s[j].Name() }
 
+// readCommitTime will obtain the commit time out the build info, if any
+// If the commit time cannot be found, will return the current time in the same format
+func readCommitTime() string {
+	if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range buildInfo.Settings {
+			if setting.Key == "vcs.time" {
+				return setting.Value
+			}
+		}
+	}
+	return time.Now().Format(time.RFC3339)
+}
+
+var date string = readCommitTime()
+
 func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 	cmd.InitDefaultHelpCmd()
 	cmd.InitDefaultHelpFlag()
@@ -117,7 +133,7 @@ func exoGenMarkdownCustom(cmd *cobra.Command, w io.Writer) error {
 		title = "Command Reference"
 	}
 	fmt.Fprintln(buf, "---")
-	fmt.Fprintln(buf, "date:", time.Now().Format(time.RFC3339))
+	fmt.Fprintln(buf, "date:", date)
 	fmt.Fprintln(buf, "linkTitle:", linkTitle)
 	fmt.Fprintln(buf, "title:", title)
 	fmt.Fprintln(buf, "description:", cmd.Short)
