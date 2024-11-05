@@ -102,6 +102,9 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			}
 
 			if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
+				var client *egoscale3.Client
+				client, err = switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, egoscale3.ZoneName(c.Zone))
+
 				var value egoscale3.UUID
 				var op *egoscale3.Operation
 				value, err = egoscale3.ParseUUID(*instance.ID)
@@ -109,16 +112,15 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 					return
 				}
 				if c.Protection {
-					op, err = globalstate.EgoscaleV3Client.AddInstanceProtection(ctx, value)
+					op, err = client.AddInstanceProtection(ctx, value)
 				} else {
-					op, err = globalstate.EgoscaleV3Client.RemoveInstanceProtection(ctx, value)
+					op, err = client.RemoveInstanceProtection(ctx, value)
 				}
 				if err != nil {
 					return
 				}
-				_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, egoscale3.OperationStateSuccess)
+				_, err = client.Wait(ctx, op, egoscale3.OperationStateSuccess)
 			}
-
 		})
 
 		if err != nil {
