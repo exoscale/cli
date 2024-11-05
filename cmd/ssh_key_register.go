@@ -77,7 +77,7 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 	if !globalstate.Quiet {
 		return (&computeSSHKeyShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Key: c.Name,
+			Key:                c.Name,
 		}).cmdRun(nil, nil)
 	}
 
