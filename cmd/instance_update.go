@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	egoscale3 "github.com/exoscale/egoscale/v3"
-
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/account"
@@ -14,6 +12,7 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceUpdateCmd struct {
@@ -102,27 +101,26 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			}
 
 			if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
-				var client *egoscale3.Client
-				client, err = switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, egoscale3.ZoneName(c.Zone))
+				var client *v3.Client
+				client, err = switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 
-				var value egoscale3.UUID
-				var op *egoscale3.Operation
-				value, err = egoscale3.ParseUUID(*instance.ID)
+				var instanceID v3.UUID
+				var op *v3.Operation
+				instanceID, err = v3.ParseUUID(*instance.ID)
 				if err != nil {
 					return
 				}
 				if c.Protection {
-					op, err = client.AddInstanceProtection(ctx, value)
+					op, err = client.AddInstanceProtection(ctx, instanceID)
 				} else {
-					op, err = client.RemoveInstanceProtection(ctx, value)
+					op, err = client.RemoveInstanceProtection(ctx, instanceID)
 				}
 				if err != nil {
 					return
 				}
-				_, err = client.Wait(ctx, op, egoscale3.OperationStateSuccess)
+				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 			}
 		})
-
 		if err != nil {
 			return err
 		}
