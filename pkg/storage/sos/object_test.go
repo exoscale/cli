@@ -15,6 +15,7 @@ import (
 	s3manager "github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/hashicorp/go-multierror"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -103,6 +104,7 @@ func TestDeleteObjects(t *testing.T) {
 	commonPrefix := "myobjects/"
 	objectKeys := []string{commonPrefix + "object1", commonPrefix + "object2", commonPrefix + "object3"}
 
+	// Happy path
 	nCalls := 0
 	expectedDeleteInput := &s3.DeleteObjectsInput{
 		Bucket: &bucket,
@@ -149,6 +151,7 @@ func TestDeleteObjects(t *testing.T) {
 		assert.Equal(t, objectKeys[i], *key.Key)
 	}
 
+	// General error
 	client = sos.Client{
 		S3Client: &MockS3API{
 			mockDeleteObjects: func(ctx context.Context, params *s3.DeleteObjectsInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
@@ -169,6 +172,50 @@ func TestDeleteObjects(t *testing.T) {
 
 	_, err = client.DeleteObjects(context.Background(), bucket, commonPrefix, false)
 	assert.Error(t, err)
+
+	// Individual error in batch delete
+	client = sos.Client{
+		S3Client: &MockS3API{
+			mockDeleteObjects: func(ctx context.Context, params *s3.DeleteObjectsInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectsOutput, error) {
+				nCalls++
+				assert.Equal(t, expectedDeleteInput, params)
+				return &s3.DeleteObjectsOutput{
+					Deleted: []types.DeletedObject{
+						{Key: aws.String(objectKeys[0])},
+						{Key: aws.String(objectKeys[2])},
+					},
+					Errors: []types.Error{
+						{
+							Code:      aws.String("AccessDenied"),
+							Key:       aws.String("1"),
+							Message:   aws.String("Access Denied"),
+							VersionId: aws.String("1"),
+						},
+					},
+				}, nil
+			},
+			mockListObjectsV2: func(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error) {
+				return &s3.ListObjectsV2Output{
+					IsTruncated: false,
+					Contents: []types.Object{
+						{Key: aws.String(objectKeys[0])},
+						{Key: aws.String(objectKeys[1])},
+						{Key: aws.String(objectKeys[2])},
+					},
+				}, nil
+			},
+		},
+	}
+	deleted, err = client.DeleteObjects(context.Background(), bucket, commonPrefix, false)
+
+	assert.Equal(t, 2, len(deleted))
+	assert.Error(t, err)
+	if merr, ok := err.(*multierror.Error); ok {
+		assert.Equal(t, 1, len(merr.Errors))
+		assert.Equal(t, "Access Denied", merr.Errors[0].Error())
+	} else {
+		assert.NoError(t, err)
+	}
 }
 
 type MockUploader struct {

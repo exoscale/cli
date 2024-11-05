@@ -1,7 +1,5 @@
 module github.com/exoscale/cli
 
-replace gopkg.ini/ini.v1 => github.com/go-ini/ini v1.42.0
-
 require (
 	github.com/aws/aws-sdk-go-v2 v1.2.0
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
@@ -11,7 +9,7 @@ require (
 	github.com/aws/smithy-go v1.1.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/exoscale/egoscale v0.102.4
-	github.com/exoscale/egoscale/v3 v3.1.4
+	github.com/exoscale/egoscale/v3 v3.1.8-0.20241030091536-ae458f356181
 	github.com/exoscale/openapi-cli-generator v1.1.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/google/uuid v1.4.0

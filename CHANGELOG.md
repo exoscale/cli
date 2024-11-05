@@ -3,7 +3,23 @@
 ## Unreleased
 
 ### Features
-- instance pool: added min-available flag to exo compute #629
+
+- Private Network: support for DHCP options (dns-server/ntp-server/router/domain-search)
+
+### Improvements
+
+- Private Network: related commands are migrated to egoscale v3
+
+### Bug fixes
+
+- Storage: handle errors in batch objects delete action #627
+- Instance: Fix instance protection flag update zone context #648
+
+## 1.80.0
+
+### Features
+- Instance pool: added min-available flag to exo compute #629
+- dbaas: external endpoints and external integration commands and sub-commands
 
 ## 1.79.1
 
