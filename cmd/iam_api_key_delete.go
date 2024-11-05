@@ -60,7 +60,11 @@ func (c *iamAPIKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-		return err
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for IAM API Key deletion: %w", err)
+		}
+
+		return nil
 	})
 }
 

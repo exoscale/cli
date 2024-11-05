@@ -9,6 +9,7 @@
 ### Improvements
 
 - Private Network: related commands are migrated to egoscale v3
+- refactor(iam-api-key): Update IAM API Key manipulation to egoscale v3 #643
 
 ### Bug fixes
 
