@@ -12,9 +12,9 @@ import (
 )
 
 type iamAPIKeyShowOutput struct {
-	Name   string `json:"name"`
-	Key    string `json:"key"`
-	Secret string `json:"secret"`
+	Name   string  `json:"name"`
+	Key    string  `json:"key"`
+	Secret string  `json:"secret"`
 	Role   v3.UUID `json:"role-id"`
 }
 
