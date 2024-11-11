@@ -15,7 +15,7 @@
 
 - Storage: handle errors in batch objects delete action #627
 - Instance: Fix instance protection flag update zone context #648
-- Anti-affinity group: fix show command to print all the attached instances from different zones
+- Anti-affinity group: fix show command to print all the attached instances from different zones #649
 
 ## 1.80.0
 
