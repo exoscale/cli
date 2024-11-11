@@ -50,7 +50,7 @@ func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
 	if err != nil {
-		return fmt.Errorf("unable to retrieve list of anti-affinity %q: %w", err)
+		return fmt.Errorf("unable to retrieve list of anti-affinity %w", err)
 	}
 
 	antiAffinityGroup, err := antiAffinityGroupsResp.FindAntiAffinityGroup(c.AntiAffinityGroup)
