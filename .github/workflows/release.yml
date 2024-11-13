@@ -6,6 +6,12 @@ on:
       - 'v[0-9]+\.[0-9]+\.[0-9]+'
 
 jobs:
+  community-docs:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.EXOSCALE_BUILD_GH_TOKEN }}
+    steps:
+      - run: gh workflow run gen-cli.yaml -R exoscale/community-ng -f version=${{ github.ref_name }}
   goreleaser:
     runs-on: ubuntu-latest
 
