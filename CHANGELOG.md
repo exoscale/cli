@@ -1,10 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.81.0
 
 ### Features
 
-- Private Network: support for DHCP options (dns-server/ntp-server/router/domain-search)
+- Private Network: support for DHCP options (dns-server/ntp-server/router/domain-search) #644
 
 ### Improvements
 
