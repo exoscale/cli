@@ -82,7 +82,7 @@ Supported output template annotations:
 
 		storage, err := sos.NewStorageClient(
 			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			sos.ClientOptZoneFromBucketWithZone(gContext, bucket, zone),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)

@@ -184,6 +184,39 @@ func ClientOptZoneFromBucket(ctx context.Context, bucket string) ClientOpt {
 	}
 }
 
+
+func ClientOptZoneFromBucketWithZone(ctx context.Context, bucket string, zone string) ClientOpt {
+	return func(c *Client) error {
+		cfg, err := awsconfig.LoadDefaultConfig(
+			ctx,
+			append(CommonConfigOptFns,
+				awsconfig.WithEndpointResolver(aws.EndpointResolverFunc(
+					func(service, region string) (aws.Endpoint, error) {
+						sosURL := strings.Replace(
+							account.CurrentAccount.SosEndpoint,
+							"{zone}",
+							zone,
+							1,
+						)
+						return aws.Endpoint{URL: sosURL}, nil
+					})),
+			)...)
+		if err != nil {
+			return err
+		}
+
+		region, err := s3manager.GetBucketRegion(ctx, s3.NewFromConfig(cfg), bucket, func(o *s3.Options) {
+			o.UsePathStyle = true
+		})
+		if err != nil {
+			return err
+		}
+
+		c.Zone = region
+		return nil
+	}
+}
+
 func NewStorageClient(ctx context.Context, opts ...ClientOpt) (*Client, error) {
 	var (
 		client = Client{
