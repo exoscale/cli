@@ -1,4 +1,7 @@
 # Changelog
+## Unreleased
+### Bug fixes
+- config: fixing bug sosEndpoint lost after user switch account #652
 
 ## 1.81.0
 
