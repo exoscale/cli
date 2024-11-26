@@ -184,7 +184,8 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 		}
 
 		if _, err := os.Stat(dst); err == nil && !config.Overwrite {
-			return fmt.Errorf("file %q already exists, use flag `-f` to overwrite", dst)
+			fmt.Printf("error: file %q already exists, use flag `-f` to overwrite\n", dst)
+			continue
 		}
 
 		if err := c.DownloadFile(ctx, config.Bucket, object, dst); err != nil {
