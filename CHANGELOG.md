@@ -1,4 +1,8 @@
 # Changelog
+## Unreleased
+### Features
+
+- storage: Adding recursive feature to the storage command #653
 
 ## 1.81.0
 
