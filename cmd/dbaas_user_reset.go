@@ -20,7 +20,7 @@ type dbaasUserResetCmd struct {
 
 	Password string `cli-flag:"password" cli-usage:"Use a specific password instead of an automatically generated one" cli-hidden:""`
 
-	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	HelpMysql bool `cli-usage:"show usage for flags specific to the mysql type"`
 
 	// "mysql" type specific flags
 	MysqlAuthenticationMethod string `cli-flag:"mysql-password" cli-usage:"authentication method to be used (\"caching_sha2_password\" or \"mysql_native_password\")." cli-hidden:""`
