@@ -25,7 +25,7 @@ func (c *dbaasUserDeleteCmd) cmdAliases() []string { return nil }
 func (c *dbaasUserDeleteCmd) cmdShort() string { return "Delete DBAAS user" }
 
 func (c *dbaasUserDeleteCmd) cmdLong() string {
-	return fmt.Sprintf(`This command deletes a DBAAS user for the specified service.`)
+	return `This command deletes a DBAAS user for the specified service.`
 }
 
 func (c *dbaasUserDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -52,9 +52,10 @@ func (c *dbaasUserDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.deleteOpensearch(cmd, args)
 	case "redis":
 		return c.deleteRedis(cmd, args)
+	default:
+		return fmt.Errorf("deleting user unsupported for service of type %q", dbType)
 	}
 
-	return nil
 }
 
 func init() {

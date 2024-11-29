@@ -31,7 +31,7 @@ func (c *dbaasUserResetCmd) cmdAliases() []string { return nil }
 func (c *dbaasUserResetCmd) cmdShort() string { return "Reset the credentials of a DBAAS user" }
 
 func (c *dbaasUserResetCmd) cmdLong() string {
-	return fmt.Sprintf(`This command resets the credentials of a DBAAS user for the specified service.`)
+	return `This command resets the credentials of a DBAAS user for the specified service.`
 }
 
 func (c *dbaasUserResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -68,9 +68,10 @@ func (c *dbaasUserResetCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.resetRedis(cmd, args)
 	case "grafana":
 		return c.resetGrafana(cmd, args)
+	default:
+		return fmt.Errorf("reseting user credentials unsupported for service of type %q", dbType)
 	}
 
-	return nil
 }
 
 func init() {

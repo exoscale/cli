@@ -33,7 +33,7 @@ func (c *dbaasUserCreateCmd) cmdAliases() []string { return nil }
 func (c *dbaasUserCreateCmd) cmdShort() string { return "Create DBAAS user" }
 
 func (c *dbaasUserCreateCmd) cmdLong() string {
-	return fmt.Sprintf(`This command creates a DBAAS user for the specified service.`)
+	return `This command creates a DBAAS user for the specified service.`
 }
 
 func (c *dbaasUserCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -71,9 +71,10 @@ func (c *dbaasUserCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.createOpensearch(cmd, args)
 	case "redis":
 		return c.createRedis(cmd, args)
+	default:
+		return fmt.Errorf("creating user unsupported for service of type %q", dbType)
 	}
 
-	return nil
 }
 
 func init() {
