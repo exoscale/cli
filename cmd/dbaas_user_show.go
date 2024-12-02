@@ -93,7 +93,7 @@ func (c *dbaasUserShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	case "grafana":
 		return c.outputFunc(c.showGrafana(ctx))
 	default:
-		return fmt.Errorf("Listing users unsupported for service of type %q", db.Type)
+		return fmt.Errorf("listing users unsupported for service of type %q", db.Type)
 
 	}
 

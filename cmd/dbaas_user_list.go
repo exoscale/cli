@@ -65,7 +65,7 @@ func (c *dbaasUserListCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	case "grafana":
 		return c.listGrafana(cmd, args)
 	default:
-		return fmt.Errorf("Listing users unsupported for service of type %q", db.Type)
+		return fmt.Errorf("listing users unsupported for service of type %q", db.Type)
 
 	}
 
