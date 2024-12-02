@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/spf13/cobra"
 )
 
 type dbaasKafkaUserShowOutput struct {
@@ -24,9 +24,7 @@ func (o *dbaasKafkaUserShowOutput) formatUser(t *table.Table) {
 	t.Append([]string{"Access Cert Expiry", o.AccessCertExpiry.String()})
 }
 
-func (c *dbaasUserShowCmd) showKafka(cmd *cobra.Command, _ []string) (output.Outputter, error) {
-
-	ctx := gContext
+func (c *dbaasUserShowCmd) showKafka(ctx context.Context) (output.Outputter, error) {
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {

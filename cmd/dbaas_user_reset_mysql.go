@@ -5,7 +5,6 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -43,10 +42,11 @@ func (c *dbaasUserResetCmd) resetMysql(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
-			Name: c.Name,
-			Zone: c.Zone,
-		}).showDatabaseServiceMysql(exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))))
+		return c.outputFunc((&dbaasUserShowCmd{
+			Name:     c.Name,
+			Zone:     c.Zone,
+			Username: c.Username,
+		}).showMysql(ctx))
 	}
 
 	return nil

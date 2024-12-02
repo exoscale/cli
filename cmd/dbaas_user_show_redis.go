@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/spf13/cobra"
 )
 
 type dbaasRedisUserShowOutput struct {
@@ -34,9 +34,7 @@ func (o *dbaasRedisUserShowOutput) formatUser(t *table.Table) {
 	}()})
 }
 
-func (c *dbaasUserShowCmd) showRedis(cmd *cobra.Command, _ []string) (output.Outputter, error) {
-
-	ctx := gContext
+func (c *dbaasUserShowCmd) showRedis(ctx context.Context) (output.Outputter, error) {
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {

@@ -81,17 +81,17 @@ func (c *dbaasUserShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 
 	switch db.Type {
 	case "mysql":
-		return c.outputFunc(c.showMysql(cmd, args))
+		return c.outputFunc(c.showMysql(ctx))
 	case "kafka":
-		return c.outputFunc(c.showKafka(cmd, args))
+		return c.outputFunc(c.showKafka(ctx))
 	case "pg":
-		return c.outputFunc(c.showPG(cmd, args))
+		return c.outputFunc(c.showPG(ctx))
 	case "opensearch":
-		return c.outputFunc(c.showOpensearch(cmd, args))
+		return c.outputFunc(c.showOpensearch(ctx))
 	case "redis":
-		return c.outputFunc(c.showRedis(cmd, args))
+		return c.outputFunc(c.showRedis(ctx))
 	case "grafana":
-		return c.outputFunc(c.showGrafana(cmd, args))
+		return c.outputFunc(c.showGrafana(ctx))
 	default:
 		return fmt.Errorf("Listing users unsupported for service of type %q", db.Type)
 

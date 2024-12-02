@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/exoscale/cli/pkg/account"
@@ -8,7 +9,6 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/spf13/cobra"
 )
 
 type dbaasMysqlUserShowOutput struct {
@@ -19,9 +19,7 @@ func (o *dbaasMysqlUserShowOutput) formatUser(t *table.Table) {
 	t.Append([]string{"Authentication", o.Authentication})
 }
 
-func (c *dbaasUserShowCmd) showMysql(cmd *cobra.Command, _ []string) (output.Outputter, error) {
-
-	ctx := gContext
+func (c *dbaasUserShowCmd) showMysql(ctx context.Context) (output.Outputter, error) {
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {

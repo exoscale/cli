@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
-	"github.com/spf13/cobra"
 )
 
 type dbaasPGUserShowOutput struct {
@@ -22,9 +22,7 @@ func (o *dbaasPGUserShowOutput) formatUser(t *table.Table) {
 	}
 }
 
-func (c *dbaasUserShowCmd) showPG(cmd *cobra.Command, _ []string) (output.Outputter, error) {
-
-	ctx := gContext
+func (c *dbaasUserShowCmd) showPG(ctx context.Context) (output.Outputter, error) {
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
