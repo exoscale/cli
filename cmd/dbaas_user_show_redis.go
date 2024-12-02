@@ -49,14 +49,19 @@ func (c *dbaasUserShowCmd) showRedis(ctx context.Context) (output.Outputter, err
 	for _, u := range s.Users {
 
 		if u.Username == c.Username {
-			return &dbaasUserShowOutput{
+			o := &dbaasUserShowOutput{
 				Username: c.Username,
 				Password: u.Password,
 				Type:     u.Type,
-				Redis: &dbaasRedisUserShowOutput{
+			}
+
+			if u.AccessControl != nil {
+				o.Redis = &dbaasRedisUserShowOutput{
 					AccessControl: *u.AccessControl,
-				},
-			}, nil
+				}
+			}
+
+			return o, nil
 		}
 
 	}
