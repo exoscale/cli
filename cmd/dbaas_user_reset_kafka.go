@@ -19,7 +19,7 @@ func (c *dbaasUserResetCmd) resetKafka(cmd *cobra.Command, _ []string) error {
 	}
 
 	req := v3.ResetDBAASKafkaUserPasswordRequest{}
-	if req.Password != "" {
+	if c.Password != "" {
 		req.Password = v3.DBAASUserPassword(c.Password)
 	}
 

@@ -27,7 +27,6 @@ func (c *dbaasUserShowCmd) showGrafana(ctx context.Context) (output.Outputter, e
 		if u.Username == c.Username {
 			return &dbaasUserShowOutput{
 				Username: c.Username,
-				Password: u.Password,
 				Type:     u.Type,
 			}, nil
 		}

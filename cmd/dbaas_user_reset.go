@@ -16,12 +16,12 @@ type dbaasUserResetCmd struct {
 	Username string `cli-arg:"#"`
 	Zone     string `cli-short:"z" cli-usage:"Database Service zone"`
 
-	Password string `cli-flag:"password" cli-usage:"Use a specific password instead of an automatically generated one" cli-hidden:""`
+	Password string `cli-flag:"password" cli-usage:"Use a specific password instead of an automatically generated one"`
 
 	HelpMysql bool `cli-usage:"show usage for flags specific to the mysql type"`
 
 	// "mysql" type specific flags
-	MysqlAuthenticationMethod string `cli-flag:"mysql-password" cli-usage:"authentication method to be used (\"caching_sha2_password\" or \"mysql_native_password\")." cli-hidden:""`
+	MysqlAuthenticationMethod string `cli-flag:"mysql-auhentication-method" cli-usage:"authentication method to be used (\"caching_sha2_password\" or \"mysql_native_password\")." cli-hidden:""`
 }
 
 func (c *dbaasUserResetCmd) cmdAliases() []string { return nil }

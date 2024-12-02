@@ -19,7 +19,7 @@ func (c *dbaasUserResetCmd) resetOpensearch(cmd *cobra.Command, _ []string) erro
 	}
 
 	req := v3.ResetDBAASOpensearchUserPasswordRequest{}
-	if req.Password != "" {
+	if c.Password != "" {
 		req.Password = v3.DBAASUserPassword(c.Password)
 	}
 

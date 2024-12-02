@@ -40,7 +40,6 @@ func (c *dbaasUserShowCmd) showKafka(ctx context.Context) (output.Outputter, err
 		if u.Username == c.Username {
 			return &dbaasUserShowOutput{
 				Username: c.Username,
-				Password: u.Password,
 				Type:     u.Type,
 				Kafka: &dbaasKafkaUserShowOutput{
 					AccessKey:        u.AccessKey,

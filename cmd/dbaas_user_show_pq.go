@@ -39,7 +39,6 @@ func (c *dbaasUserShowCmd) showPG(ctx context.Context) (output.Outputter, error)
 		if u.Username == c.Username {
 			return &dbaasUserShowOutput{
 				Username: c.Username,
-				Password: u.Password,
 				Type:     u.Type,
 				PG: &dbaasPGUserShowOutput{
 					AllowReplication: u.AllowReplication,

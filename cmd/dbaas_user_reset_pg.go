@@ -19,7 +19,7 @@ func (c *dbaasUserResetCmd) resetPG(cmd *cobra.Command, _ []string) error {
 	}
 
 	req := v3.ResetDBAASPostgresUserPasswordRequest{}
-	if req.Password != "" {
+	if c.Password != "" {
 		req.Password = v3.DBAASUserPassword(c.Password)
 	}
 

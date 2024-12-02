@@ -12,7 +12,6 @@ import (
 type dbaasUserShowOutput struct {
 	Username string `json:"username,omitempty"`
 	Type     string `json:"type,omitempty"`
-	Password string `json:"password,omitempty"`
 
 	// Additional user info for some DBAAS Services
 	MySQL *dbaasMysqlUserShowOutput `json:"mysql,omitempty"`
@@ -31,7 +30,6 @@ func (o *dbaasUserShowOutput) ToTable() {
 
 	t.Append([]string{"Username", o.Username})
 	t.Append([]string{"Type", o.Type})
-	t.Append([]string{"Password", o.Password})
 
 	switch {
 	case o.MySQL != nil:
