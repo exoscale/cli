@@ -3,8 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/exoscale/cli/pkg/account"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/spf13/cobra"
 )
 
@@ -35,13 +33,13 @@ func (c *dbaasUserDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 
 func (c *dbaasUserDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
+	ctx := gContext
+	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	switch dbType {
+	switch db.Type {
 	case "mysql":
 		return c.deleteMysql(cmd, args)
 	case "kafka":
@@ -53,7 +51,7 @@ func (c *dbaasUserDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	case "redis":
 		return c.deleteRedis(cmd, args)
 	default:
-		return fmt.Errorf("deleting user unsupported for service of type %q", dbType)
+		return fmt.Errorf("deleting user unsupported for service of type %q", db.Type)
 	}
 
 }
