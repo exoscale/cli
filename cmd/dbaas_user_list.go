@@ -60,8 +60,6 @@ func (c *dbaasUserListCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.listPG(cmd, args)
 	case "opensearch":
 		return c.listOpensearch(cmd, args)
-	case "redis":
-		return c.listRedis(cmd, args)
 	case "grafana":
 		return c.listGrafana(cmd, args)
 	default:

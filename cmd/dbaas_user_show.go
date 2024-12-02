@@ -17,7 +17,6 @@ type dbaasUserShowOutput struct {
 	// Additional user info for some DBAAS Services
 	MySQL *dbaasMysqlUserShowOutput `json:"mysql,omitempty"`
 	Kafka *dbaasKafkaUserShowOutput `json:"kafka,omitempty"`
-	Redis *dbaasRedisUserShowOutput `json:"redis,omitempty"`
 	PG    *dbaasPGUserShowOutput    `json:"pg,omitempty"`
 }
 
@@ -39,8 +38,6 @@ func (o *dbaasUserShowOutput) ToTable() {
 		o.MySQL.formatUser(t)
 	case o.Kafka != nil:
 		o.Kafka.formatUser(t)
-	case o.Redis != nil:
-		o.Redis.formatUser(t)
 	case o.PG != nil:
 		o.PG.formatUser(t)
 	}
@@ -88,8 +85,6 @@ func (c *dbaasUserShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.outputFunc(c.showPG(ctx))
 	case "opensearch":
 		return c.outputFunc(c.showOpensearch(ctx))
-	case "redis":
-		return c.outputFunc(c.showRedis(ctx))
 	case "grafana":
 		return c.outputFunc(c.showGrafana(ctx))
 	default:

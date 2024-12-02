@@ -62,8 +62,6 @@ func (c *dbaasUserResetCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.resetPG(cmd, args)
 	case "opensearch":
 		return c.resetOpensearch(cmd, args)
-	case "redis":
-		return c.resetRedis(cmd, args)
 	case "grafana":
 		return c.resetGrafana(cmd, args)
 	default:

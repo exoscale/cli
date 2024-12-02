@@ -48,8 +48,6 @@ func (c *dbaasUserDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.deletePg(cmd, args)
 	case "opensearch":
 		return c.deleteOpensearch(cmd, args)
-	case "redis":
-		return c.deleteRedis(cmd, args)
 	default:
 		return fmt.Errorf("deleting user unsupported for service of type %q", db.Type)
 	}

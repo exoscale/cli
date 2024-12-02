@@ -66,8 +66,6 @@ func (c *dbaasUserCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.createPg(cmd, args)
 	case "opensearch":
 		return c.createOpensearch(cmd, args)
-	case "redis":
-		return c.createRedis(cmd, args)
 	default:
 		return fmt.Errorf("creating user unsupported for service of type %q", db.Type)
 	}
