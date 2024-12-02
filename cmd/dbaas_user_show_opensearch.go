@@ -27,7 +27,8 @@ func (c *dbaasUserShowCmd) showOpensearch(ctx context.Context) (output.Outputter
 		if u.Username == c.Username {
 			return &dbaasUserShowOutput{
 				Username: c.Username,
-				Type:     u.Type,
+
+				Type: u.Type,
 			}, nil
 		}
 

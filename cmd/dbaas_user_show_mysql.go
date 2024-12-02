@@ -36,7 +36,8 @@ func (c *dbaasUserShowCmd) showMysql(ctx context.Context) (output.Outputter, err
 		if u.Username == c.Username {
 			return &dbaasUserShowOutput{
 				Username: c.Username,
-				Type:     u.Type,
+
+				Type: u.Type,
 				MySQL: &dbaasMysqlUserShowOutput{
 					Authentication: u.Authentication,
 				},
