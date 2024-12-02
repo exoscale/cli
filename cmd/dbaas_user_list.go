@@ -34,7 +34,7 @@ func (c *dbaasUserListCmd) cmdAliases() []string { return nil }
 func (c *dbaasUserListCmd) cmdShort() string { return "List users of a DBAAS service" }
 
 func (c *dbaasUserListCmd) cmdLong() string {
-	return `This command list users and their details for a specified DBAAS service.`
+	return `This command list users and their role for a specified DBAAS service.`
 }
 
 func (c *dbaasUserListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
