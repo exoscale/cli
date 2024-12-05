@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -21,7 +20,7 @@ func (o *dbaasMysqlUserShowOutput) formatUser(t *table.Table) {
 
 func (c *dbaasUserShowCmd) showMysql(ctx context.Context) (output.Outputter, error) {
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return &dbaasUserShowOutput{}, err
 	}

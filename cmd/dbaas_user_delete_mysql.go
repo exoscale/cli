@@ -14,7 +14,7 @@ func (c *dbaasUserDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) error {
 
 	ctx := gContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}

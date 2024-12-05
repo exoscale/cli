@@ -14,7 +14,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/xeipuuv/gojsonschema"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -181,7 +180,7 @@ func dbaasGetType(ctx context.Context, name, zone string) (string, error) {
 
 func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, error) {
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 	if err != nil {
 		return v3.DBAASServiceCommon{}, err
 	}

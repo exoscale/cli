@@ -14,7 +14,7 @@ func (c *dbaasUserDeleteCmd) deleteOpensearch(cmd *cobra.Command, _ []string) er
 
 	ctx := gContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
