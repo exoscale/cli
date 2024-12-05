@@ -16,6 +16,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/table"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var dbServiceMaintenanceDOWs = []string{
@@ -175,4 +176,25 @@ func dbaasGetType(ctx context.Context, name, zone string) (string, error) {
 	}
 
 	return "", fmt.Errorf("%q Database Service not found in zone %q", name, zone)
+}
+
+func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, error) {
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	if err != nil {
+		return v3.DBAASServiceCommon{}, err
+	}
+
+	dbs, err := client.ListDBAASServices(ctx)
+	if err != nil {
+		return v3.DBAASServiceCommon{}, err
+	}
+
+	for _, db := range dbs.DBAASServices {
+		if string(db.Name) == name {
+			return db, nil
+		}
+	}
+
+	return v3.DBAASServiceCommon{}, fmt.Errorf("%q Database Service not found in zone %q", name, zone)
 }
