@@ -2,6 +2,7 @@
 ## Unreleased
 ### Bug fixes
 - config: fixing bug sosEndpoint lost after user switch account #652
+- dbaas: added commands for managing service users #654
 
 ## 1.81.0
 
