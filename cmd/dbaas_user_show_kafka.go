@@ -43,7 +43,6 @@ func (c *dbaasUserShowCmd) showKafka(ctx context.Context) (output.Outputter, err
 				Kafka: &dbaasKafkaUserShowOutput{
 					AccessCert:       u.AccessCert,
 					AccessCertExpiry: u.AccessCertExpiry,
-					AccessKey:        "xxxxxx",
 				},
 			}, nil
 		}
