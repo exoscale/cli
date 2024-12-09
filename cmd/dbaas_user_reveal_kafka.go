@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"time"
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -10,11 +11,16 @@ import (
 )
 
 type dbaasKafkaUserRevealOutput struct {
-	AccessKey string `json:"access-key,omitempty"`
+	AccessKey        string    `json:"access-key,omitempty"`
+	AccessCert       string    `json:"access-cert,omitempty"`
+	AccessCertExpiry time.Time `json:"access-cert-expiry,omitempty"`
 }
 
 func (o *dbaasKafkaUserRevealOutput) formatUser(t *table.Table) {
+	t.Append([]string{"Access Cert", o.AccessCert})
 	t.Append([]string{"Access Key", o.AccessKey})
+	t.Append([]string{"Access Cert Expiry", o.AccessCertExpiry.String()})
+
 }
 
 func (c *dbaasUserRevealCmd) revealKafka(ctx context.Context) (output.Outputter, error) {
@@ -32,7 +38,9 @@ func (c *dbaasUserRevealCmd) revealKafka(ctx context.Context) (output.Outputter,
 	return &dbaasUserRevealOutput{
 		Password: s.Password,
 		Kafka: &dbaasKafkaUserRevealOutput{
-			AccessKey: s.AccessKey,
+			AccessKey:        s.AccessKey,
+			AccessCert:       s.AccessCert,
+			AccessCertExpiry: s.AccessCertExpiry,
 		},
 	}, nil
 }

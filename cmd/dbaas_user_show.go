@@ -15,7 +15,6 @@ type dbaasUserShowOutput struct {
 
 	// Additional user info for some DBAAS Services
 	MySQL *dbaasMysqlUserShowOutput `json:"mysql,omitempty"`
-	Kafka *dbaasKafkaUserShowOutput `json:"kafka,omitempty"`
 	PG    *dbaasPGUserShowOutput    `json:"pg,omitempty"`
 }
 
@@ -34,8 +33,6 @@ func (o *dbaasUserShowOutput) ToTable() {
 	switch {
 	case o.MySQL != nil:
 		o.MySQL.formatUser(t)
-	case o.Kafka != nil:
-		o.Kafka.formatUser(t)
 	case o.PG != nil:
 		o.PG.formatUser(t)
 	}
