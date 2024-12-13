@@ -103,6 +103,9 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
 				var client *v3.Client
 				client, err = switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+				if err != nil {
+					return
+				}
 
 				var instanceID v3.UUID
 				var op *v3.Operation

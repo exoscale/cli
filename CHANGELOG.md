@@ -1,4 +1,10 @@
 # Changelog
+
+## Unreleased
+
+### Bug fixes
+- instance update: fixing no err check after creating client #657
+
 ## 1.82.0
 
 ### Features
