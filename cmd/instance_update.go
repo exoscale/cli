@@ -26,7 +26,7 @@ type instanceUpdateCmd struct {
 	CloudInitCompress bool              `cli-flag:"cloud-init-compress" cli-usage:"compress instance cloud-init user data"`
 	Labels            map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	Name              string            `cli-short:"n" cli-usage:"instance name"`
-	Protection        bool              `cli-flag:"protection" cli-usage:"enable delete protection"`
+	Protection        bool              `cli-flag:"protection" cli-usage:"delete protection; set --protection=false to disable instance protection"`
 	Zone              string            `cli-short:"z" cli-usage:"instance zone"`
 	ReverseDNS        string            `cli-usage:"Reverse DNS Domain"`
 }

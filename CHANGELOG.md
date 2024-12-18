@@ -1,8 +1,11 @@
 # Changelog
+
 ## Unreleased
+
 ### Features
 
 - storage: Adding recursive feature to the storage command #653
+- Update help for instance protection #658
 
 ## Unreleased
 
