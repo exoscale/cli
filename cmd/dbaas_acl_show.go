@@ -34,8 +34,8 @@ type dbaasAclShowCmd struct {
 	_           bool   `cli-cmd:"show"`
 	Name        string `cli-flag:"name" cli-usage:"Name of the DBaaS service"`
 	Username    string `cli-flag:"username" cli-usage:"Username of the ACL entry"`
-	ServiceType string `cli-short:"t" cli-usage:"type of the DBaaS service (e.g., kafka, opensearch)"`
-	Zone        string `cli-short:"z" cli-usage:"Database Service zone"`
+	ServiceType string `cli-flag:"type" cli-short:"t" cli-usage:"type of the DBaaS service (e.g., kafka, opensearch)"`
+	Zone        string `cli-flag:"zone" cli-short:"z" cli-usage:"Database Service zone"`
 }
 
 func (c *dbaasAclShowCmd) cmdAliases() []string { return nil }
@@ -55,8 +55,8 @@ func (c *dbaasAclShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *dbaasAclShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	ctx := gContext
 
-	if c.Name == "" || c.Username == "" {
-		return fmt.Errorf("both --name and --username flags must be specified")
+	if c.Name == "" || c.Username == "" || c.ServiceType == "" {
+		return fmt.Errorf("both --name, --username and --type flags must be specified")
 	}
 
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
@@ -64,12 +64,16 @@ func (c *dbaasAclShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error retrieving DBaaS service %q in zone %q: %w", c.Name, c.Zone, err)
 	}
 
+	if string(db.Type) != c.ServiceType {
+		return fmt.Errorf("mismatched service type: expected %q but got %q for service %q", c.ServiceType, db.Type, c.Name)
+	}
+
 	var output output.Outputter
 	switch db.Type {
 	case "kafka":
 		output, err = c.showKafka(ctx, c.Name)
-		//case "opensearch":
-		//output, err = c.showOpensearch(ctx)
+	case "opensearch":
+		output, err = c.showOpensearch(ctx, c.Name)
 	default:
 		return fmt.Errorf("listing ACL unsupported for service of type %q", db.Type)
 	}
