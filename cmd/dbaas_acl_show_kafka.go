@@ -8,6 +8,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
+// Fetch OpenSearch ACL configuration and process its details
 func (c *dbaasAclShowCmd) showKafka(ctx context.Context, serviceName string) (output.Outputter, error) {
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
