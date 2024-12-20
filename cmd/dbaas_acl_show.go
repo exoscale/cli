@@ -19,13 +19,13 @@ func (o *dbaasAclShowOutput) ToJSON() { output.JSON(o) }
 func (o *dbaasAclShowOutput) ToText() { output.Text(o) }
 
 func (o *dbaasAclShowOutput) ToTable() {
-	t := table.NewTable(os.Stdout)
-	t.SetHeader([]string{"ACL Entry"})
-	defer t.Render()
+	table := table.NewTable(os.Stdout)
+	table.SetHeader([]string{"ACL Entry"})
+	defer table.Render()
 
-	t.Append([]string{"Username", o.Username})
-	t.Append([]string{"Topic", o.Topic})
-	t.Append([]string{"Permission", o.Permission})
+	table.Append([]string{"Username", o.Username})
+	table.Append([]string{"Topic", o.Topic})
+	table.Append([]string{"Permission", o.Permission})
 }
 
 // Main command for showing ACLs

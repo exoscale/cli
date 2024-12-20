@@ -24,17 +24,17 @@ func (o *dbaasAclShowOpensearchOutput) ToText() { output.Text(o) }
 
 // ToTable Define table output formatting for OpenSearch
 func (o *dbaasAclShowOpensearchOutput) ToTable() {
-	t := table.NewTable(os.Stdout)
-	t.SetHeader([]string{"Field", "Value"})
-	defer t.Render()
+	table := table.NewTable(os.Stdout)
+	table.SetHeader([]string{"Field", "Value"})
+	defer table.Render()
 
 	// Display whether ACL and extended ACL are enabled
-	t.Append([]string{"ACL Enabled", fmt.Sprintf("%t", o.AclEnabled)})
-	t.Append([]string{"Extended ACL Enabled", fmt.Sprintf("%t", o.ExtendedAclEnabled)})
+	table.Append([]string{"ACL Enabled", fmt.Sprintf("%t", o.AclEnabled)})
+	table.Append([]string{"Extended ACL Enabled", fmt.Sprintf("%t", o.ExtendedAclEnabled)})
 
 	// Iterate over rules and display each
 	for _, rule := range o.Rules {
-		t.Append([]string{"Rule", fmt.Sprintf("ACL pattern: %s, Permission: %s", rule.Index, rule.Permission)})
+		table.Append([]string{"Rule", fmt.Sprintf("ACL pattern: %s, Permission: %s", rule.Index, rule.Permission)})
 	}
 }
 
