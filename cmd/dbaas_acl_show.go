@@ -28,6 +28,7 @@ func (o *dbaasAclShowOutput) ToTable() {
 	t.Append([]string{"Permission", o.Permission})
 }
 
+// Main command for showing ACLs
 type dbaasAclShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
@@ -38,36 +39,44 @@ type dbaasAclShowCmd struct {
 	Zone        string `cli-flag:"zone" cli-short:"z" cli-usage:"Database Service zone"`
 }
 
+// Command aliases (none in this case)
 func (c *dbaasAclShowCmd) cmdAliases() []string { return nil }
 
+// Short description for the command
 func (c *dbaasAclShowCmd) cmdShort() string { return "Show the details of an acl" }
 
+// Long description for the command
 func (c *dbaasAclShowCmd) cmdLong() string {
 	return `This command show an acl entty and its details for a specified DBAAS service.`
 }
 
+// Pre-run validation for required flags and default zone setting
 func (c *dbaasAclShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-
-	return cliCommandDefaultPreRun(c, cmd, args)
+	cmdSetZoneFlagFromDefault(cmd)               // Set the default zone if not specified
+	return cliCommandDefaultPreRun(c, cmd, args) // Run default validations
 }
 
+// Main run logic for showing ACL details
 func (c *dbaasAclShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	ctx := gContext
 
+	// Validate required flags
 	if c.Name == "" || c.Username == "" || c.ServiceType == "" {
 		return fmt.Errorf("both --name, --username and --type flags must be specified")
 	}
 
+	// Fetch DBaaS service details
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return fmt.Errorf("error retrieving DBaaS service %q in zone %q: %w", c.Name, c.Zone, err)
 	}
 
+	// Validate that the service type matches the expected type
 	if string(db.Type) != c.ServiceType {
 		return fmt.Errorf("mismatched service type: expected %q but got %q for service %q", c.ServiceType, db.Type, c.Name)
 	}
 
+	// Call the appropriate method based on the service type
 	var output output.Outputter
 	switch db.Type {
 	case "kafka":
@@ -82,9 +91,11 @@ func (c *dbaasAclShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// Output the fetched details
 	return c.outputFunc(output, nil)
 }
 
+// Register the command
 func init() {
 	cobra.CheckErr(registerCLICommand(dbaasAclCmd, &dbaasAclShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
