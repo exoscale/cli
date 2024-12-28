@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/hashicorp/go-multierror"
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/storage/sos"
@@ -86,7 +88,15 @@ argument with "/":
 
 		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive)
 		if err != nil {
-			return fmt.Errorf("unable to delete objects: %w", err)
+			if merr, ok := err.(*multierror.Error); ok {
+				// Error in individual files, print to stderr & continue
+				for _, e := range merr.Errors {
+					fmt.Fprintln(os.Stderr, e)
+				}
+			} else {
+				// Global error, exit
+				return fmt.Errorf("unable to delete objects: %w", err)
+			}
 		}
 
 		if verbose {

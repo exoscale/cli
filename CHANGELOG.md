@@ -3,7 +3,45 @@
 ## Unreleased
 
 ### Features
-- instance pool: added min-available flag to exo compute #629
+
+- storage: Adding recursive feature to the storage command #653
+- Update help for instance protection #658
+
+## Unreleased
+
+### Bug fixes
+- instance update: fixing no err check after creating client #657
+
+## 1.82.0
+
+### Features
+- dbaas: added commands for managing service users #654
+
+### Bug fixes
+- config: fixing bug sosEndpoint lost after user switch account #652
+
+## 1.81.0
+
+### Features
+
+- Private Network: support for DHCP options (dns-server/ntp-server/router/domain-search) #644
+
+### Improvements
+
+- Private Network: related commands are migrated to egoscale v3
+- refactor(iam-api-key): Update IAM API Key manipulation to egoscale v3 #643
+
+### Bug fixes
+
+- Storage: handle errors in batch objects delete action #627
+- Instance: Fix instance protection flag update zone context #648
+- Anti-affinity group: fix show command to print all the attached instances from different zones #649
+
+## 1.80.0
+
+### Features
+- Instance pool: added min-available flag to exo compute #629
+- dbaas: external endpoints and external integration commands and sub-commands
 
 ## 1.79.1
 

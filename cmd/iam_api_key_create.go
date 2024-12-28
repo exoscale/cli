@@ -4,22 +4,18 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	exoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamAPIKeyShowOutput struct {
-	Name   string `json:"name"`
-	Key    string `json:"key"`
-	Secret string `json:"secret"`
-	Role   string `json:"role-id"`
+	Name   string  `json:"name"`
+	Key    string  `json:"key"`
+	Secret string  `json:"secret"`
+	Role   v3.UUID `json:"role-id"`
 }
 
 func (o *iamAPIKeyShowOutput) ToJSON()  { output.JSON(o) }
@@ -54,46 +50,34 @@ func (c *iamAPIKeyCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *iamAPIKeyCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone),
-	)
+	ctx := gContext
+	client := globalstate.EgoscaleV3Client
 
-	if _, err := uuid.Parse(c.Role); err != nil {
-		roles, err := globalstate.EgoscaleClient.ListIAMRoles(ctx, zone)
-		if err != nil {
-			return err
-		}
-
-		for _, role := range roles {
-			if role.Name != nil && *role.Name == c.Role {
-				c.Role = *role.ID
-				break
-			}
-		}
-	}
-
-	role, err := globalstate.EgoscaleClient.GetIAMRole(ctx, zone, c.Role)
+	listIAMRolesResp, err := client.ListIAMRoles(ctx)
 	if err != nil {
 		return err
 	}
 
-	apikey := &exoscale.APIKey{
-		Name:   &c.Name,
-		RoleID: role.ID,
+	iamRole, err := listIAMRolesResp.FindIAMRole(c.Role)
+	if err != nil {
+		return err
 	}
 
-	k, secret, err := globalstate.EgoscaleClient.CreateAPIKey(ctx, zone, apikey)
+	createAPIKeyReq := v3.CreateAPIKeyRequest{
+		Name:   c.Name,
+		RoleID: iamRole.ID,
+	}
+
+	iamAPIKey, err := client.CreateAPIKey(ctx, createAPIKeyReq)
 	if err != nil {
 		return err
 	}
 
 	out := iamAPIKeyShowOutput{
-		Name:   utils.DefaultString(k.Name, ""),
-		Key:    utils.DefaultString(k.Key, ""),
-		Secret: secret,
-		Role:   utils.DefaultString(k.RoleID, ""),
+		Name:   iamAPIKey.Name,
+		Key:    iamAPIKey.Key,
+		Secret: iamAPIKey.Secret,
+		Role:   iamAPIKey.RoleID,
 	}
 
 	return c.outputFunc(&out, nil)

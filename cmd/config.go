@@ -139,6 +139,9 @@ func saveConfig(filePath string, newAccounts *account.Config) error {
 		if acc.Account != "" {
 			accounts[i]["account"] = acc.Account
 		}
+		if acc.SosEndpoint != "" {
+			accounts[i]["sosendpoint"] = acc.SosEndpoint
+		}
 		if len(acc.SecretCommand) != 0 {
 			accounts[i]["secretCommand"] = acc.SecretCommand
 		} else {

@@ -198,7 +198,20 @@ type DBAASDatadogTag struct {
 	Tag string `json:"tag" validate:"required,gte=1,lte=200"`
 }
 
-type DBAASEndpointDatadog struct {
+type DBAASEndpointDatadogCommon struct {
+	// Custom tags provided by user
+	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
+	// Disable consumer group metrics
+	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
+	// Number of separate instances to fetch kafka consumer statistics with
+	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
+	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
+	// Maximum number of partition contexts to send
+	MaxPartitionContexts int64 `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
+}
+
+type DBAASEndpointDatadogInputCreateSettings struct {
 	// Datadog API key
 	DatadogAPIKey string `json:"datadog-api-key" validate:"required,gte=1,lte=256"`
 	// Custom tags provided by user
@@ -214,7 +227,62 @@ type DBAASEndpointDatadog struct {
 	Site                 EnumDatadogSite `json:"site" validate:"required"`
 }
 
+type DBAASEndpointDatadogInputCreate struct {
+	Settings *DBAASEndpointDatadogInputCreateSettings `json:"settings,omitempty"`
+}
+
+type DBAASEndpointDatadogInputUpdateSettings struct {
+	// Datadog API key
+	DatadogAPIKey string `json:"datadog-api-key,omitempty" validate:"omitempty,gte=1,lte=256"`
+	// Custom tags provided by user
+	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
+	// Disable consumer group metrics
+	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
+	// Number of separate instances to fetch kafka consumer statistics with
+	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
+	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
+	// Maximum number of partition contexts to send
+	MaxPartitionContexts int64           `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
+	Site                 EnumDatadogSite `json:"site,omitempty"`
+}
+
+type DBAASEndpointDatadogInputUpdate struct {
+	Settings *DBAASEndpointDatadogInputUpdateSettings `json:"settings,omitempty"`
+}
+
+// External integration DataDog configuration
+type DBAASEndpointDatadogSettingsSettings struct {
+	// Custom tags provided by user
+	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
+	// Disable consumer group metrics
+	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
+	// Number of separate instances to fetch kafka consumer statistics with
+	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
+	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
+	// Maximum number of partition contexts to send
+	MaxPartitionContexts int64           `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
+	Site                 EnumDatadogSite `json:"site,omitempty"`
+}
+
+type DBAASEndpointDatadogSettings struct {
+	// External integration DataDog configuration
+	Settings *DBAASEndpointDatadogSettingsSettings `json:"settings,omitempty"`
+}
+
 type DBAASEndpointElasticsearch struct {
+	// Maximum number of days of logs to keep
+	IndexDaysMax int64 `json:"index-days-max,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// Elasticsearch index prefix
+	IndexPrefix string `json:"index-prefix" validate:"required,gte=1,lte=1000"`
+	// Elasticsearch request timeout limit
+	Timeout int64 `json:"timeout,omitempty" validate:"omitempty,gte=10,lte=120"`
+	// Elasticsearch connection URL
+	URL string `json:"url" validate:"required,gte=12,lte=2048"`
+}
+
+type DBAASEndpointElasticsearchInputCreateSettings struct {
 	// PEM encoded CA certificate
 	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
 	// Maximum number of days of logs to keep
@@ -227,25 +295,80 @@ type DBAASEndpointElasticsearch struct {
 	URL string `json:"url" validate:"required,gte=12,lte=2048"`
 }
 
+type DBAASEndpointElasticsearchInputCreate struct {
+	Settings *DBAASEndpointElasticsearchInputCreateSettings `json:"settings,omitempty"`
+}
+
+type DBAASEndpointElasticsearchInputUpdateSettings struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
+	// Maximum number of days of logs to keep
+	IndexDaysMax int64 `json:"index-days-max,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// Elasticsearch index prefix
+	IndexPrefix string `json:"index-prefix,omitempty" validate:"omitempty,gte=1,lte=1000"`
+	// Elasticsearch request timeout limit
+	Timeout int64 `json:"timeout,omitempty" validate:"omitempty,gte=10,lte=120"`
+	// Elasticsearch connection URL
+	URL string `json:"url,omitempty" validate:"omitempty,gte=12,lte=2048"`
+}
+
+type DBAASEndpointElasticsearchInputUpdate struct {
+	Settings *DBAASEndpointElasticsearchInputUpdateSettings `json:"settings,omitempty"`
+}
+
+type DBAASEndpointElasticsearchOptionalFields struct {
+	// Maximum number of days of logs to keep
+	IndexDaysMax int64 `json:"index-days-max,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// Elasticsearch index prefix
+	IndexPrefix string `json:"index-prefix,omitempty" validate:"omitempty,gte=1,lte=1000"`
+	// Elasticsearch request timeout limit
+	Timeout int64 `json:"timeout,omitempty" validate:"omitempty,gte=10,lte=120"`
+	// Elasticsearch connection URL
+	URL string `json:"url,omitempty" validate:"omitempty,gte=12,lte=2048"`
+}
+
 type DBAASEndpointElasticsearchOutput struct {
 	// External integration endpoint id
 	ID UUID `json:"id,omitempty"`
 	// External integration endpoint name
-	Name     string                      `json:"name,omitempty"`
-	Settings *DBAASEndpointElasticsearch `json:"settings,omitempty"`
-	Type     EnumExternalEndpointTypes   `json:"type,omitempty"`
+	Name     string                                    `json:"name,omitempty"`
+	Settings *DBAASEndpointElasticsearchOptionalFields `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes                 `json:"type,omitempty"`
+}
+
+type DBAASEndpointElasticsearchSecrets struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
+}
+
+// External integration Prometheus configuration
+type DBAASEndpointExternalPrometheusOutputSettings struct {
+	// Prometheus basic authentication username
+	BasicAuthUsername string `json:"basic-auth-username,omitempty" validate:"omitempty,gte=5,lte=32"`
 }
 
 type DBAASEndpointExternalPrometheusOutput struct {
 	// External integration endpoint id
 	ID UUID `json:"id,omitempty"`
 	// External integration endpoint name
-	Name     string                    `json:"name,omitempty"`
-	Settings *DBAASEndpointPrometheus  `json:"settings,omitempty"`
-	Type     EnumExternalEndpointTypes `json:"type,omitempty"`
+	Name string `json:"name,omitempty"`
+	// External integration Prometheus configuration
+	Settings *DBAASEndpointExternalPrometheusOutputSettings `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes                      `json:"type,omitempty"`
 }
 
 type DBAASEndpointOpensearch struct {
+	// Maximum number of days of logs to keep
+	IndexDaysMax int64 `json:"index-days-max,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// OpenSearch index prefix
+	IndexPrefix string `json:"index-prefix" validate:"required,gte=1,lte=1000"`
+	// OpenSearch request timeout limit
+	Timeout int64 `json:"timeout,omitempty" validate:"omitempty,gte=10,lte=120"`
+	// OpenSearch connection URL
+	URL string `json:"url" validate:"required,gte=12,lte=2048"`
+}
+
+type DBAASEndpointOpensearchInputCreateSettings struct {
 	// PEM encoded CA certificate
 	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
 	// Maximum number of days of logs to keep
@@ -258,23 +381,90 @@ type DBAASEndpointOpensearch struct {
 	URL string `json:"url" validate:"required,gte=12,lte=2048"`
 }
 
+type DBAASEndpointOpensearchInputCreate struct {
+	Settings *DBAASEndpointOpensearchInputCreateSettings `json:"settings,omitempty"`
+}
+
+type DBAASEndpointOpensearchInputUpdateSettings struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
+	// Maximum number of days of logs to keep
+	IndexDaysMax int64 `json:"index-days-max,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// OpenSearch index prefix
+	IndexPrefix string `json:"index-prefix,omitempty" validate:"omitempty,gte=1,lte=1000"`
+	// OpenSearch request timeout limit
+	Timeout int64 `json:"timeout,omitempty" validate:"omitempty,gte=10,lte=120"`
+	// OpenSearch connection URL
+	URL string `json:"url,omitempty" validate:"omitempty,gte=12,lte=2048"`
+}
+
+type DBAASEndpointOpensearchInputUpdate struct {
+	Settings *DBAASEndpointOpensearchInputUpdateSettings `json:"settings,omitempty"`
+}
+
+type DBAASEndpointOpensearchOptionalFields struct {
+	// Maximum number of days of logs to keep
+	IndexDaysMax int64 `json:"index-days-max,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// OpenSearch index prefix
+	IndexPrefix string `json:"index-prefix,omitempty" validate:"omitempty,gte=1,lte=1000"`
+	// OpenSearch request timeout limit
+	Timeout int64 `json:"timeout,omitempty" validate:"omitempty,gte=10,lte=120"`
+	// OpenSearch connection URL
+	URL string `json:"url,omitempty" validate:"omitempty,gte=12,lte=2048"`
+}
+
 type DBAASEndpointOpensearchOutput struct {
 	// External integration endpoint id
 	ID UUID `json:"id,omitempty"`
 	// External integration endpoint name
-	Name     string                    `json:"name,omitempty"`
-	Settings *DBAASEndpointOpensearch  `json:"settings,omitempty"`
-	Type     EnumExternalEndpointTypes `json:"type,omitempty"`
+	Name     string                                 `json:"name,omitempty"`
+	Settings *DBAASEndpointOpensearchOptionalFields `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes              `json:"type,omitempty"`
+}
+
+type DBAASEndpointOpensearchSecrets struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
 }
 
 type DBAASEndpointPrometheus struct {
+	// Prometheus basic authentication username
+	BasicAuthUsername string `json:"basic-auth-username,omitempty" validate:"omitempty,gte=5,lte=32"`
+}
+
+type DBAASEndpointPrometheusPayloadSettings struct {
 	// Prometheus basic authentication password
 	BasicAuthPassword string `json:"basic-auth-password,omitempty" validate:"omitempty,gte=8,lte=64"`
 	// Prometheus basic authentication username
 	BasicAuthUsername string `json:"basic-auth-username,omitempty" validate:"omitempty,gte=5,lte=32"`
 }
 
+type DBAASEndpointPrometheusPayload struct {
+	Settings *DBAASEndpointPrometheusPayloadSettings `json:"settings,omitempty"`
+}
+
+type DBAASEndpointPrometheusSecrets struct {
+	// Prometheus basic authentication password
+	BasicAuthPassword string `json:"basic-auth-password,omitempty" validate:"omitempty,gte=8,lte=64"`
+}
+
 type DBAASEndpointRsyslog struct {
+	Format EnumRsyslogFormat `json:"format" validate:"required"`
+	// Custom syslog message format
+	Logline string `json:"logline,omitempty" validate:"omitempty,gte=1,lte=512"`
+	// Rsyslog max message size
+	MaxMessageSize int64 `json:"max-message-size,omitempty" validate:"omitempty,gte=2048,lte=2.147483647e+09"`
+	// Rsyslog server port
+	Port int64 `json:"port" validate:"required,gte=1,lte=65535"`
+	// Structured data block for log message
+	SD string `json:"sd,omitempty" validate:"omitempty,lte=1024"`
+	// Rsyslog server IP address or hostname
+	Server string `json:"server" validate:"required,gte=4,lte=255"`
+	// Require TLS
+	Tls *bool `json:"tls" validate:"required"`
+}
+
+type DBAASEndpointRsyslogInputCreateSettings struct {
 	// PEM encoded CA certificate
 	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
 	// PEM encoded client certificate
@@ -296,6 +486,61 @@ type DBAASEndpointRsyslog struct {
 	Tls *bool `json:"tls" validate:"required"`
 }
 
+type DBAASEndpointRsyslogInputCreate struct {
+	Settings *DBAASEndpointRsyslogInputCreateSettings `json:"settings,omitempty"`
+}
+
+type DBAASEndpointRsyslogInputUpdateSettings struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
+	// PEM encoded client certificate
+	Cert   string            `json:"cert,omitempty" validate:"omitempty,lte=16384"`
+	Format EnumRsyslogFormat `json:"format,omitempty"`
+	// PEM encoded client key
+	Key string `json:"key,omitempty" validate:"omitempty,lte=16384"`
+	// Custom syslog message format
+	Logline string `json:"logline,omitempty" validate:"omitempty,gte=1,lte=512"`
+	// Rsyslog max message size
+	MaxMessageSize int64 `json:"max-message-size,omitempty" validate:"omitempty,gte=2048,lte=2.147483647e+09"`
+	// Rsyslog server port
+	Port int64 `json:"port,omitempty" validate:"omitempty,gte=1,lte=65535"`
+	// Structured data block for log message
+	SD string `json:"sd,omitempty" validate:"omitempty,lte=1024"`
+	// Rsyslog server IP address or hostname
+	Server string `json:"server,omitempty" validate:"omitempty,gte=4,lte=255"`
+	// Require TLS
+	Tls *bool `json:"tls,omitempty"`
+}
+
+type DBAASEndpointRsyslogInputUpdate struct {
+	Settings *DBAASEndpointRsyslogInputUpdateSettings `json:"settings,omitempty"`
+}
+
+type DBAASEndpointRsyslogOptionalFields struct {
+	Format EnumRsyslogFormat `json:"format,omitempty"`
+	// Custom syslog message format
+	Logline string `json:"logline,omitempty" validate:"omitempty,gte=1,lte=512"`
+	// Rsyslog max message size
+	MaxMessageSize int64 `json:"max-message-size,omitempty" validate:"omitempty,gte=2048,lte=2.147483647e+09"`
+	// Rsyslog server port
+	Port int64 `json:"port,omitempty" validate:"omitempty,gte=1,lte=65535"`
+	// Structured data block for log message
+	SD string `json:"sd,omitempty" validate:"omitempty,lte=1024"`
+	// Rsyslog server IP address or hostname
+	Server string `json:"server,omitempty" validate:"omitempty,gte=4,lte=255"`
+	// Require TLS
+	Tls *bool `json:"tls,omitempty"`
+}
+
+type DBAASEndpointRsyslogSecrets struct {
+	// PEM encoded CA certificate
+	CA string `json:"ca,omitempty" validate:"omitempty,lte=16384"`
+	// PEM encoded client certificate
+	Cert string `json:"cert,omitempty" validate:"omitempty,lte=16384"`
+	// PEM encoded client key
+	Key string `json:"key,omitempty" validate:"omitempty,lte=16384"`
+}
+
 type DBAASExternalEndpoint struct {
 	// External integration endpoint id
 	ID UUID `json:"id,omitempty"`
@@ -304,22 +549,38 @@ type DBAASExternalEndpoint struct {
 	Type EnumExternalEndpointTypes `json:"type,omitempty"`
 }
 
+// External integration DataDog configuration
+type DBAASExternalEndpointDatadogOutputSettings struct {
+	// Custom tags provided by user
+	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
+	// Disable consumer group metrics
+	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
+	// Number of separate instances to fetch kafka consumer statistics with
+	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
+	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
+	// Maximum number of partition contexts to send
+	MaxPartitionContexts int64           `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
+	Site                 EnumDatadogSite `json:"site,omitempty"`
+}
+
 type DBAASExternalEndpointDatadogOutput struct {
 	// External integration endpoint id
 	ID UUID `json:"id,omitempty"`
 	// External integration endpoint name
-	Name     string                    `json:"name,omitempty"`
-	Settings *DBAASEndpointDatadog     `json:"settings,omitempty"`
-	Type     EnumExternalEndpointTypes `json:"type,omitempty"`
+	Name string `json:"name,omitempty"`
+	// External integration DataDog configuration
+	Settings *DBAASExternalEndpointDatadogOutputSettings `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes                   `json:"type,omitempty"`
 }
 
 type DBAASExternalEndpointRsyslogOutput struct {
 	// External integration endpoint id
 	ID UUID `json:"id,omitempty"`
 	// External integration endpoint name
-	Name     string                    `json:"name,omitempty"`
-	Settings *DBAASEndpointRsyslog     `json:"settings,omitempty"`
-	Type     EnumExternalEndpointTypes `json:"type,omitempty"`
+	Name     string                              `json:"name,omitempty"`
+	Settings *DBAASEndpointRsyslogOptionalFields `json:"settings,omitempty"`
+	Type     EnumExternalEndpointTypes           `json:"type,omitempty"`
 }
 
 // Integrations with other services
@@ -331,7 +592,7 @@ type DBAASExternalIntegration struct {
 	// External destination endpoint name
 	DestEndpointName string `json:"dest-endpoint-name,omitempty"`
 	// Endpoint integration UUID
-	ID UUID `json:"id,omitempty"`
+	IntegrationID UUID `json:"integration-id,omitempty"`
 	// DBaaS source service name
 	SourceServiceName string               `json:"source-service-name" validate:"required"`
 	SourceServiceType DBAASServiceTypeName `json:"source-service-type" validate:"required,gte=0,lte=64"`
@@ -2426,6 +2687,8 @@ type PrivateNetwork struct {
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Private Network netmask
 	Netmask net.IP `json:"netmask,omitempty"`
+	// Private Network DHCP Options
+	Options *PrivateNetworkOptions `json:"options,omitempty"`
 	// Private Network start IP address
 	StartIP net.IP `json:"start-ip,omitempty"`
 	// Private Network VXLAN ID
@@ -2438,6 +2701,18 @@ type PrivateNetworkLease struct {
 	InstanceID UUID `json:"instance-id,omitempty"`
 	// Private Network IP address
 	IP net.IP `json:"ip,omitempty"`
+}
+
+// Private Network DHCP Options
+type PrivateNetworkOptions struct {
+	// DNS Servers
+	DNSServers []net.IP `json:"dns-servers,omitempty"`
+	// Domain search list, limited to 255 octets
+	DomainSearch []string `json:"domain-search,omitempty"`
+	// NTP Servers
+	NtpServers []net.IP `json:"ntp-servers,omitempty"`
+	// Routers
+	Routers []net.IP `json:"routers,omitempty"`
 }
 
 type PublicIPAssignment string

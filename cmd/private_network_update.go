@@ -1,17 +1,15 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type privateNetworkUpdateCmd struct {
@@ -21,12 +19,16 @@ type privateNetworkUpdateCmd struct {
 
 	PrivateNetwork string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Description string `cli-usage:"Private Network description"`
-	EndIP       string `cli-usage:"managed Private Network range end IP address"`
-	Name        string `cli-usage:"Private Network name"`
-	Netmask     string `cli-usage:"managed Private Network netmask"`
-	StartIP     string `cli-usage:"managed Private Network range start IP address"`
-	Zone        string `cli-short:"z" cli-usage:"Private Network zone"`
+	Description  string      `cli-usage:"Private Network description"`
+	EndIP        string      `cli-usage:"Private Network range end IP address"`
+	Name         string      `cli-usage:"Private Network name"`
+	StartIP      string      `cli-usage:"Private Network range start IP address"`
+	Zone         v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
+	Netmask      string      `cli-usage:"DHCP option 1: Subnet netmask"`
+	DNSServers   []string    `cli-flag:"dns-server" cli-usage:"DHCP option 6: DNS servers (can be specified multiple times)"`
+	NTPServers   []string    `cli-flag:"ntp-server" cli-usage:"DHCP option 42: NTP servers (can be specified multiple times)"`
+	Routers      []string    `cli-flag:"router" cli-usage:"DHCP option 3: Routers (can be specified multiple times)"`
+	DomainSearch []string    `cli-usage:"DHCP option 119: domain search list (limited to 255 octets, can be specified multiple times)"`
 }
 
 func (c *privateNetworkUpdateCmd) cmdAliases() []string { return nil }
@@ -49,49 +51,115 @@ func (c *privateNetworkUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetwork)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
+	resp, err := client.ListPrivateNetworks(ctx)
+	if err != nil {
+		return err
+	}
+
+	pn, err := resp.FindPrivateNetwork(c.PrivateNetwork)
+	if err != nil {
+		return err
+	}
+
+	updateReq := v3.UpdatePrivateNetworkRequest{}
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		privateNetwork.Description = &c.Description
+		updateReq.Description = c.Description
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.EndIP)) {
 		ip := net.ParseIP(c.EndIP)
-		privateNetwork.EndIP = &ip
+		updateReq.EndIP = ip
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
-		privateNetwork.Name = &c.Name
+		updateReq.Name = c.Name
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Netmask)) {
 		ip := net.ParseIP(c.Netmask)
-		privateNetwork.Netmask = &ip
+		updateReq.Netmask = ip
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.StartIP)) {
 		ip := net.ParseIP(c.StartIP)
-		privateNetwork.StartIP = &ip
+		updateReq.StartIP = ip
 		updated = true
 	}
 
-	if updated {
-		decorateAsyncOperation(fmt.Sprintf("Updating Private Network %q...", c.PrivateNetwork), func() {
-			if err = globalstate.EgoscaleClient.UpdatePrivateNetwork(ctx, c.Zone, privateNetwork); err != nil {
-				return
+	opts := pn.Options
+	if opts == nil {
+		opts = &v3.PrivateNetworkOptions{}
+	}
+
+	optionsChanged := false
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DNSServers)) {
+		opts.DNSServers = nil // Reset before adding new values
+		for _, server := range c.DNSServers {
+			if ip := net.ParseIP(server); ip != nil {
+				opts.DNSServers = append(opts.DNSServers, ip)
+			} else {
+				return fmt.Errorf("invalid DNS server IP address: %q", server)
 			}
+		}
+		optionsChanged = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.NTPServers)) {
+		opts.NtpServers = nil // Reset before adding new values
+		for _, server := range c.NTPServers {
+			if ip := net.ParseIP(server); ip != nil {
+				opts.NtpServers = append(opts.NtpServers, ip)
+			} else {
+				return fmt.Errorf("invalid NTP server IP address: %q", server)
+			}
+		}
+		optionsChanged = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Routers)) {
+		opts.Routers = nil // Reset before adding new values
+		for _, router := range c.Routers {
+			if ip := net.ParseIP(router); ip != nil {
+				opts.Routers = append(opts.Routers, ip)
+			} else {
+				return fmt.Errorf("invalid router IP address: %q", router)
+			}
+		}
+		optionsChanged = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DomainSearch)) {
+		opts.DomainSearch = c.DomainSearch
+		optionsChanged = true
+	}
+
+	if optionsChanged {
+		updateReq.Options = opts
+		updated = true
+	}
+
+	var privnetID v3.UUID
+
+	if updated {
+		op, err := client.UpdatePrivateNetwork(ctx, pn.ID, updateReq)
+		if err != nil {
+			return err
+		}
+		privnetID = op.Reference.ID
+
+		decorateAsyncOperation(fmt.Sprintf("Updating Private Network %q...", c.PrivateNetwork), func() {
+			op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 		if err != nil {
 			return err
@@ -101,7 +169,7 @@ func (c *privateNetworkUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&privateNetworkShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			PrivateNetwork:     *privateNetwork.ID,
+			PrivateNetwork:     privnetID.String(),
 			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}

@@ -2,17 +2,16 @@ package cmd
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type computeSSHKeyRegisterCmd struct {
@@ -42,37 +41,44 @@ func (c *computeSSHKeyRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) 
 }
 
 func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	var (
-		sshKey *egoscale.SSHKey
-		err    error
-	)
-
 	// Template registration can take a _long time_, raising
 	// the Exoscale API client timeout as a precaution.
-	globalstate.EgoscaleClient.SetTimeout(30 * time.Minute)
+	client := globalstate.EgoscaleV3Client.WithHttpClient(&http.Client{Timeout: 30 * time.Minute})
 
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
+	ctx := gContext
 
 	publicKey, err := os.ReadFile(c.PublicKeyFile)
 	if err != nil {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Registering SSH key %q...", c.Name), func() {
-		sshKey, err = globalstate.EgoscaleClient.RegisterSSHKey(ctx, account.CurrentAccount.DefaultZone, c.Name, string(publicKey))
+	registerKeyRequest := v3.RegisterSSHKeyRequest{
+		Name:      c.Name,
+		PublicKey: string(publicKey),
+	}
+
+	err = decorateAsyncOperations(fmt.Sprintf("Registering SSH key %q...", c.Name), func() error {
+		op, err := client.RegisterSSHKey(ctx, registerKeyRequest)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while registering SSH key: %w", err)
+		}
+
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for SSH key registration: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc(&computeSSHKeyShowOutput{
-			Fingerprint: *sshKey.Fingerprint,
-			Name:        *sshKey.Name,
-		}, nil)
+		return (&computeSSHKeyShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			Key:                c.Name,
+		}).cmdRun(nil, nil)
 	}
 
 	return nil
