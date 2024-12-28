@@ -7,17 +7,16 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type privateNetworkListItemOutput struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Zone string `json:"zone"`
+	ID   v3.UUID     `json:"id"`
+	Name string      `json:"name"`
+	Zone v3.ZoneName `json:"zone"`
 }
 
 type privateNetworkListOutput []privateNetworkListItemOutput
@@ -31,7 +30,7 @@ type privateNetworkListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *privateNetworkListCmd) cmdAliases() []string { return gListAlias }
@@ -50,12 +49,21 @@ func (c *privateNetworkListCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	var zones []string
+	client := globalstate.EgoscaleV3Client
+	ctx := gContext
+
+	resp, err := client.ListZones(ctx)
+	if err != nil {
+		return err
+	}
+	zones := resp.Zones
 
 	if c.Zone != "" {
-		zones = []string{c.Zone}
-	} else {
-		zones = utils.AllZones
+		endpoint, err := client.GetZoneAPIEndpoint(ctx, c.Zone)
+		if err != nil {
+			return err
+		}
+		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
 	out := make(privateNetworkListOutput, 0)
@@ -68,19 +76,19 @@ func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
 
-		list, err := globalstate.EgoscaleClient.ListPrivateNetworks(ctx, zone)
+		c := client.WithEndpoint((zone.APIEndpoint))
+		resp, err := c.ListPrivateNetworks(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list Private Networks in zone %s: %w", zone, err)
 		}
 
-		for _, p := range list {
+		for _, p := range resp.PrivateNetworks {
 			res <- privateNetworkListItemOutput{
-				ID:   *p.ID,
-				Name: *p.Name,
-				Zone: zone,
+				ID:   p.ID,
+				Name: p.Name,
+				Zone: zone.Name,
 			}
 		}
 

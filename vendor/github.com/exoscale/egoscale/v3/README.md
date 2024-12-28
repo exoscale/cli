@@ -93,6 +93,7 @@ fmt.Println(pool.Name)
 
 From the root repo
 ```Bash
+make pull-oapi-spec # Optional(to pull latest Exoscale Open-API spec)
 make generate
 ```
 
