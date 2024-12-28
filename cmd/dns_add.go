@@ -38,9 +38,8 @@ var dnsRecordTypeMap = map[string]v3.CreateDNSDomainRecordRequestType{
 	string(v3.CreateDNSDomainRecordRequestTypeSPF):   v3.CreateDNSDomainRecordRequestTypeSPF,
 }
 
-// Function to get the DNSDomainRecordRequestType from a string
+// StringToDNSDomainRecordRequestType gets the DNSDomainRecordRequestType from a string
 func StringToDNSDomainRecordRequestType(recordType string) (v3.CreateDNSDomainRecordRequestType, error) {
-	// Lookup the record type in the map
 	if recordType, exists := dnsRecordTypeMap[recordType]; exists {
 		return recordType, nil
 	}
@@ -55,7 +54,7 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 
 	ctx := gContext
 	err = decorateAsyncOperations(fmt.Sprintf("Adding DNS record %q to %q...", rType, domain.UnicodeName), func() error {
-		recordType := v3.CreateDNSDomainRecordRequestType("TEST")
+		recordType, err := StringToDNSDomainRecordRequestType(rType)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while get DNS record type: %w", err)
 		}
@@ -77,7 +76,11 @@ func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priori
 		}
 
 		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
-		return err
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for DNS record creation: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err

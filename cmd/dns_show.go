@@ -76,10 +76,6 @@ func showDNS(ident, name string, types []string) (output.Outputter, error) {
 	}
 
 	for _, r := range records.DNSDomainRecords {
-		if r.Name == "" || r.Type == "" {
-			continue
-		}
-
 		if name != "" && r.Name != name {
 			continue
 		}

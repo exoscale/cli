@@ -122,7 +122,11 @@ func updateDomainRecord(
 		}
 
 		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
-		return err
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for DNS record update: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
