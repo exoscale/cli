@@ -94,7 +94,11 @@ func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-		return err
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for Elastic IP creation: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err

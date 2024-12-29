@@ -152,9 +152,6 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if elasticIP.Healthcheck != nil {
 		out.Type = "managed"
-		// Message for reviewer:
-		// I don't really like to use this function for only one this parameter, if you have a better solution, please feel free to suggest it
-		// TODO: remove comment before merging
 		out.HealthcheckMode = utils.NonEmptyStringPtr(string(elasticIP.Healthcheck.Mode))
 		out.HealthcheckPort = &elasticIP.Healthcheck.Port
 		out.HealthcheckURI = &elasticIP.Healthcheck.URI
