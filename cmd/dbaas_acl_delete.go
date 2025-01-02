@@ -51,11 +51,11 @@ func (c *dbaasAclDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	// Iterate through zones to find the service
 	var found bool
 	var serviceZone string
-	var dbType v3.DBAASDatabaseName // Use DBAASDatabaseName for consistency
+	var dbType v3.DBAASDatabaseName
 	for _, zone := range zones.Zones {
 		db, err := dbaasGetV3(ctx, c.Name, string(zone.Name))
 		if err == nil {
-			dbType = v3.DBAASDatabaseName(db.Type) // Save the type for validation
+			dbType = v3.DBAASDatabaseName(db.Type)
 			found = true
 			serviceZone = string(zone.Name)
 			break
@@ -81,8 +81,6 @@ func (c *dbaasAclDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	switch dbType {
 	case "kafka":
 		err = c.deleteKafkaACL(ctx, client, c.Name, c.Username)
-	case "opensearch": //TODO
-		//err = c.deleteOpenSearchACL(ctx, client, c.Name, c.Username)
 	default:
 		return fmt.Errorf("deleting ACL unsupported for service type %q", dbType)
 	}
