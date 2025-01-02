@@ -37,7 +37,7 @@ func (c *dbaasAclUpdateCmd) updateOpensearch(ctx context.Context, zone, serviceN
 			updatedEntry = &v3.DBAASOpensearchAclConfigAcls{
 				Username: v3.DBAASUserUsername(newUsername),
 				Rules: []v3.DBAASOpensearchAclConfigAclsRules{
-					{Index: c.Index, Permission: v3.EnumOpensearchRulePermission(c.Permission)},
+					{Index: c.Pattern, Permission: v3.EnumOpensearchRulePermission(c.Permission)},
 				},
 			}
 		} else {

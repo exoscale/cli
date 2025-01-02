@@ -16,7 +16,7 @@ type dbaasAclUpdateCmd struct {
 	Username    string `cli-flag:"username" cli-usage:"Current username of the ACL entry to update"`
 	NewUsername string `cli-flag:"new-username" cli-usage:"New username to replace the current one (optional)"`
 	ServiceType string `cli-flag:"type" cli-short:"t" cli-usage:"Type of the DBaaS service (e.g., opensearch)"`
-	Index       string `cli-flag:"index" cli-usage:"The index pattern for the ACL rule"`
+	Pattern     string `cli-flag:"pattern" cli-usage:"The pattern for the ACL rule (index* for OpenSearch or topic for Kafka, max 249 characters)"`
 	Permission  string `cli-flag:"permission" cli-usage:"Permission to apply (should be one of admin, read, readwrite, write, or deny (only for OpenSearch))"`
 }
 
