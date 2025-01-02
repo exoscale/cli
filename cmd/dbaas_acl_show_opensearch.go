@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -39,12 +38,7 @@ func (o *dbaasAclShowOpensearchOutput) ToTable() {
 }
 
 // Fetch OpenSearch ACL configuration and process its details
-func (c *dbaasAclShowCmd) showOpensearch(ctx context.Context, serviceName string) (output.Outputter, error) {
-	// Switch to the appropriate client for the specified zone
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-	if err != nil {
-		return nil, fmt.Errorf("error initializing client for zone %s: %w", c.Zone, err)
-	}
+func (c *dbaasAclShowCmd) showOpensearch(ctx context.Context, client *v3.Client, serviceName string) (output.Outputter, error) {
 
 	// Fetch OpenSearch ACL configuration for the specified service
 	aclsConfig, err := client.GetDBAASOpensearchAclConfig(ctx, serviceName)

@@ -3,17 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 // Fetch OpenSearch ACL configuration and process its details
-func (c *dbaasAclShowCmd) showKafka(ctx context.Context, serviceName string) (output.Outputter, error) {
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
-	if err != nil {
-		return nil, fmt.Errorf("error initializing client for zone %s: %w", c.Zone, err)
-	}
+func (c *dbaasAclShowCmd) showKafka(ctx context.Context, client *v3.Client, serviceName string) (output.Outputter, error) {
 
 	// Fetch Kafka ACLs for the specified service
 	acls, err := client.GetDBAASKafkaAclConfig(ctx, serviceName)

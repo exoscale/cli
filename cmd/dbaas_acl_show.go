@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/exoscale/cli/pkg/globalstate"
+	v3 "github.com/exoscale/egoscale/v3"
 	"os"
 
 	"github.com/exoscale/cli/pkg/output"
@@ -36,7 +38,6 @@ type dbaasAclShowCmd struct {
 	Name        string `cli-flag:"name" cli-usage:"Name of the DBaaS service"`
 	Username    string `cli-flag:"username" cli-usage:"Username of the ACL entry"`
 	ServiceType string `cli-flag:"type" cli-short:"t" cli-usage:"type of the DBaaS service (e.g., kafka, opensearch)"`
-	Zone        string `cli-flag:"zone" cli-short:"z" cli-usage:"Database Service zone"`
 }
 
 // Command aliases (none in this case)
@@ -52,7 +53,6 @@ func (c *dbaasAclShowCmd) cmdLong() string {
 
 // Pre-run validation for required flags and default zone setting
 func (c *dbaasAclShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)               // Set the default zone if not specified
 	return cliCommandDefaultPreRun(c, cmd, args) // Run default validations
 }
 
@@ -65,26 +65,32 @@ func (c *dbaasAclShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("both --name, --username and --type flags must be specified")
 	}
 
-	// Fetch DBaaS service details
-	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
+	// Search for the service in each zone
+	service, zone, err := FindServiceAcrossZones(ctx, globalstate.EgoscaleV3Client, c.Name)
 	if err != nil {
-		return fmt.Errorf("error retrieving DBaaS service %q in zone %q: %w", c.Name, c.Zone, err)
+		return fmt.Errorf("error finding service: %w", err)
 	}
 
-	// Validate that the service type matches the expected type
-	if string(db.Type) != c.ServiceType {
-		return fmt.Errorf("mismatched service type: expected %q but got %q for service %q", c.ServiceType, db.Type, c.Name)
+	// Switch client to the appropriate zone
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	if err != nil {
+		return fmt.Errorf("error initializing client for zone %s: %w", zone, err)
+	}
+
+	// Validate the service type
+	if string(service.Type) != c.ServiceType {
+		return fmt.Errorf("service type mismatch: expected %q but got %q for service %q", c.ServiceType, service.Type, c.Name)
 	}
 
 	// Call the appropriate method based on the service type
 	var output output.Outputter
-	switch db.Type {
+	switch service.Type {
 	case "kafka":
-		output, err = c.showKafka(ctx, c.Name)
+		output, err = c.showKafka(ctx, client, c.Name)
 	case "opensearch":
-		output, err = c.showOpensearch(ctx, c.Name)
+		output, err = c.showOpensearch(ctx, client, c.Name)
 	default:
-		return fmt.Errorf("listing ACL unsupported for service of type %q", db.Type)
+		return fmt.Errorf("listing ACL unsupported for service of type %q", service.Type)
 	}
 
 	if err != nil {
