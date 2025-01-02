@@ -198,3 +198,22 @@ func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, 
 
 	return v3.DBAASServiceCommon{}, fmt.Errorf("%q Database Service not found in zone %q", name, zone)
 }
+
+// FindServiceAcrossZones searches for a DBaaS service across all available zones.
+func FindServiceAcrossZones(ctx context.Context, client *v3.Client, serviceName string) (v3.DBAASServiceCommon, string, error) {
+	// Fetch all available zones
+	zones, err := client.ListZones(ctx)
+	if err != nil {
+		return v3.DBAASServiceCommon{}, "", fmt.Errorf("error fetching zones: %w", err)
+	}
+
+	// Iterate through zones to find the service
+	for _, zone := range zones.Zones {
+		db, err := dbaasGetV3(ctx, serviceName, string(zone.Name))
+		if err == nil {
+			return db, string(zone.Name), nil
+		}
+	}
+
+	return v3.DBAASServiceCommon{}, "", fmt.Errorf("service %q not found in any zone", serviceName)
+}
