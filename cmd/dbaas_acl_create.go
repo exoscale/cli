@@ -45,47 +45,28 @@ func (c *dbaasAclCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("all --name, --username, --type, --permission and --pattern flags must be specified")
 	}
 
-	// Fetch all available zones
-	zones, err := globalstate.EgoscaleV3Client.ListZones(ctx)
+	service, zone, err := FindServiceAcrossZones(ctx, globalstate.EgoscaleV3Client, c.Name)
 	if err != nil {
-		return fmt.Errorf("error fetching zones: %w", err)
+		return fmt.Errorf("error finding service: %w", err)
 	}
 
-	// Iterate through zones to find the service
-	var serviceZone string
-	var dbType v3.DBAASDatabaseName
-	var client *v3.Client
-	found := false
-
-	for _, zone := range zones.Zones {
-		db, err := dbaasGetV3(ctx, c.Name, string(zone.Name))
-		if err == nil {
-			dbType = v3.DBAASDatabaseName(db.Type)
-			serviceZone = string(zone.Name)
-			client, err = switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(serviceZone))
-			if err != nil {
-				return fmt.Errorf("error initializing client for zone %s: %w", serviceZone, err)
-			}
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("service %q not found in any zone", c.Name)
+	// Switch client to the appropriate zone
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	if err != nil {
+		return fmt.Errorf("error initializing client for zone %s: %w", zone, err)
 	}
 	// Validate the service type
-	if string(dbType) != c.ServiceType {
-		return fmt.Errorf("service type mismatch: expected %q but got %q for service %q", c.ServiceType, dbType, c.Name)
+	if string(service.Type) != c.ServiceType {
+		return fmt.Errorf("service type mismatch: expected %q but got %q for service %q", c.ServiceType, service.Type, c.Name)
 	}
 
-	switch dbType {
+	switch service.Type {
 	case "kafka":
 		return c.createKafka(ctx, client, c.Name)
 	case "opensearch":
 		return c.createOpensearch(ctx, client, c.Name)
 	default:
-		return fmt.Errorf("create ACL unsupported for service type %q", dbType)
+		return fmt.Errorf("create ACL unsupported for service type %q", service.Type)
 	}
 }
 func init() {
