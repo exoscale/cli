@@ -46,42 +46,29 @@ func (c *dbaasAclUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("both --name, --username, and --type flags must be specified")
 	}
 
-	// Fetch all available zones
-	zones, err := globalstate.EgoscaleV3Client.ListZones(ctx)
+	// Search for the service in each zone
+	service, zone, err := FindServiceAcrossZones(ctx, globalstate.EgoscaleV3Client, c.Name)
 	if err != nil {
-		return fmt.Errorf("error fetching zones: %w", err)
+		return fmt.Errorf("error finding service: %w", err)
 	}
 
-	// Iterate through zones to find the service
-	var found bool
-	var serviceZone string
-	var dbType v3.DBAASDatabaseName
-	for _, zone := range zones.Zones {
-		db, err := dbaasGetV3(ctx, c.Name, string(zone.Name))
-		if err == nil {
-			dbType = v3.DBAASDatabaseName(db.Type)
-			found = true
-			serviceZone = string(zone.Name)
-			break
-		}
-	}
-
-	// Handle case where service is not found in any zone
-	if !found {
-		return fmt.Errorf("service %q not found in any zone", c.Name)
+	// Switch client to the appropriate zone
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	if err != nil {
+		return fmt.Errorf("error initializing client for zone %s: %w", zone, err)
 	}
 
 	// Validate the service type
-	if string(dbType) != c.ServiceType {
-		return fmt.Errorf("service type mismatch: expected %q but got %q for service %q", c.ServiceType, dbType, c.Name)
+	if string(service.Type) != c.ServiceType {
+		return fmt.Errorf("service type mismatch: expected %q but got %q for service %q", c.ServiceType, service.Type, c.Name)
 	}
 
 	// Determine the appropriate update logic based on the service type
-	switch dbType {
+	switch service.Type {
 	case "opensearch":
-		return c.updateOpensearch(ctx, serviceZone, c.Name)
+		return c.updateOpensearch(ctx, client, c.Name)
 	default:
-		return fmt.Errorf("update ACL unsupported for service type %q", dbType)
+		return fmt.Errorf("update ACL unsupported for service type %q", service.Type)
 	}
 }
 

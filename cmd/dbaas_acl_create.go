@@ -45,6 +45,7 @@ func (c *dbaasAclCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("all --name, --username, --type, --permission and --pattern flags must be specified")
 	}
 
+	// Search for the service in each zone
 	service, zone, err := FindServiceAcrossZones(ctx, globalstate.EgoscaleV3Client, c.Name)
 	if err != nil {
 		return fmt.Errorf("error finding service: %w", err)

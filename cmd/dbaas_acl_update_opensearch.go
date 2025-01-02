@@ -4,15 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasAclUpdateCmd) updateOpensearch(ctx context.Context, zone, serviceName string) error {
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
-	if err != nil {
-		return fmt.Errorf("error initializing client for zone %s: %w", zone, err)
-	}
+func (c *dbaasAclUpdateCmd) updateOpensearch(ctx context.Context, client *v3.Client, serviceName string) error {
 
 	aclsConfig, err := client.GetDBAASOpensearchAclConfig(ctx, serviceName)
 	if err != nil {
