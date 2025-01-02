@@ -7,7 +7,6 @@ import (
 
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasAclListCmd struct {
@@ -49,7 +48,7 @@ func (c *dbaasAclListCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error finding service: %w", err)
 	}
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, zone)
 	if err != nil {
 		return fmt.Errorf("error initializing client for zone %s: %w", zone, err)
 	}

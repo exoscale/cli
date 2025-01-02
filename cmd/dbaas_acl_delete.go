@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/exoscale/cli/pkg/globalstate"
-	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +47,7 @@ func (c *dbaasAclDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("error finding service: %w", err)
 	}
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, zone)
 	if err != nil {
 		return fmt.Errorf("error initializing client for zone %s: %w", zone, err)
 	}

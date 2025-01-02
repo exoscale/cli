@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/exoscale/cli/pkg/globalstate"
-	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -52,7 +51,7 @@ func (c *dbaasAclCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 	}
 
 	// Switch client to the appropriate zone
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, zone)
 	if err != nil {
 		return fmt.Errorf("error initializing client for zone %s: %w", zone, err)
 	}
