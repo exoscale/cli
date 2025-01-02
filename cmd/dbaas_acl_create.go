@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/spf13/cobra"
@@ -37,7 +36,7 @@ func (c *dbaasAclCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 // Main run logic for showing ACL details
 func (c *dbaasAclCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	ctx := gContext
 
 	// Validate required inputs
 	if c.Name == "" || c.Username == "" || c.ServiceType == "" || c.Permission == "" || c.Pattern == "" {

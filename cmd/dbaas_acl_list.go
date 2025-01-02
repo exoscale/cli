@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"github.com/spf13/cobra"
 
@@ -35,7 +34,7 @@ func (c *dbaasAclListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 // Main run logic for listing ACLs
 func (c *dbaasAclListCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	ctx := gContext
 
 	// Validate required flags
 	if c.Name == "" || c.ServiceType == "" {

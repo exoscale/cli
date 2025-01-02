@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/exoscale/cli/pkg/globalstate"
@@ -34,7 +33,7 @@ func (c *dbaasAclDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 // Main run logic for showing ACL details
 func (c *dbaasAclDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
+	ctx := gContext
 
 	// Validate required flags
 	if c.Name == "" || c.ServiceType == "" || c.Username == "" {
