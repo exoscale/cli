@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net"
 	"strconv"
@@ -49,15 +50,21 @@ func GetInstancesInSecurityGroup(ctx context.Context, client *v2.Client, securit
 
 		instances, err := client.ListInstances(ctx, zone)
 		if err != nil {
-			return err
+			if !errors.Is(err, exoapi.ErrNotFound) {
+				return err
+			}
+		} else {
+			allInstances = append(allInstances, instances...)
 		}
-
-		allInstances = append(allInstances, instances...)
 
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		if allInstances == nil {
+			return nil, err
+		} else {
+			fmt.Printf("error while listing instances in security group: %s", err)
+		}
 	}
 
 	var instancesInSG []*v2.Instance
