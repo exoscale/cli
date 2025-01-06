@@ -7,17 +7,19 @@
 - storage: Adding recursive feature to the storage command #653
 - Update help for instance protection #658
 
-## Unreleased
-
 ### Bug fixes
+
 - instance update: fixing no err check after creating client #657
+- fix(error): Improve error message on snapshot creation (#655)
 
 ## 1.82.0
 
 ### Features
+
 - dbaas: added commands for managing service users #654
 
 ### Bug fixes
+
 - config: fixing bug sosEndpoint lost after user switch account #652
 
 ## 1.81.0
