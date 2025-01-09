@@ -17,6 +17,15 @@ func (c *dbaasUserCreateCmd) createOpensearch(cmd *cobra.Command, _ []string) er
 		return err
 	}
 
+	s, err := client.GetDBAASServiceOpensearch(ctx, c.Name)
+	if err != nil {
+		return err
+	}
+
+	if len(s.Users) == 0 {
+		return fmt.Errorf("service %q is not ready for user creation", c.Name)
+	}
+
 	req := v3.CreateDBAASOpensearchUserRequest{Username: v3.DBAASUserUsername(c.Username)}
 
 	op, err := client.CreateDBAASOpensearchUser(ctx, c.Name, req)

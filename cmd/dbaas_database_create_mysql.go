@@ -24,7 +24,7 @@ func (c dbaasDatabaseCreateCmd) createMysql(cmd *cobra.Command, _ []string) erro
 		return err
 	}
 
-	if s.State != "running" {
+	if len(s.Databases) == 0 {
 		return fmt.Errorf("service %q is not ready for database creation", c.Name)
 	}
 

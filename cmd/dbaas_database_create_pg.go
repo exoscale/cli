@@ -22,7 +22,7 @@ func (c dbaasDatabaseCreateCmd) createPg(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if s.State != "running" {
+	if len(s.Databases) == 0 {
 		return fmt.Errorf("service %q is not ready for database creation", c.Name)
 	}
 
