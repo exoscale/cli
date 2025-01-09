@@ -123,7 +123,7 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 				}(),
 				"\n")
 		}
-		return ""
+		return "n/a"
 	}()})
 
 }

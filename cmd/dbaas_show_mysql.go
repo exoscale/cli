@@ -92,7 +92,7 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 				}(),
 				"\n")
 		}
-		return ""
+		return "n/a"
 	}()})
 }
 
