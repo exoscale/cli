@@ -26,6 +26,7 @@ func (c *dbaasUserDeleteCmd) deleteOpensearch(cmd *cobra.Command, _ []string) er
 	userFound := false
 	for _, u := range s.Users {
 		if u.Username == c.Username {
+			userFound = true
 			break
 		}
 	}
