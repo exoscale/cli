@@ -10,46 +10,42 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (c *dbaasUserDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
-
+func (c dbaasDatabaseCreateCmd) createPg(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
-
 	s, err := client.GetDBAASServicePG(ctx, c.Name)
 	if err != nil {
 		return err
 	}
-	userFound := false
-	for _, u := range s.Users {
-		if u.Username == c.Username {
-			userFound = true
-			break
-		}
-	}
-	if !userFound {
-		return fmt.Errorf("user %q not found for service %q", c.Username, c.Name)
-	}
-	if !c.Force {
-		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to delete user %q", c.Username)) {
-			return nil
-		}
+
+	if len(s.Databases) == 0 {
+		return fmt.Errorf("service %q is not ready for database creation", c.Name)
 	}
 
-	op, err := client.DeleteDBAASPostgresUser(ctx, c.Name, c.Username)
+	req := v3.CreateDBAASPGDatabaseRequest{
+		DatabaseName: v3.DBAASDatabaseName(c.Database),
+	}
 
+	if c.PgLcCollate != "" {
+		req.LCCollate = c.PgLcCollate
+	}
+
+	if c.PgLcCtype != "" {
+		req.LCCtype = c.PgLcCtype
+	}
+
+	op, err := client.CreateDBAASPGDatabase(ctx, c.Name, req)
 	if err != nil {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deletng DBaaS user %q", c.Username), func() {
+	decorateAsyncOperation(fmt.Sprintf("Creating DBaaS database %q", c.Database), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
-
 	if err != nil {
 		return err
 	}
@@ -61,6 +57,5 @@ func (c *dbaasUserDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
 		}).showDatabaseServicePG(exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))))
 	}
 
-	return nil
-
+	return err
 }

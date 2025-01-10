@@ -26,6 +26,7 @@ func (c *dbaasUserDeleteCmd) deleteKafka(cmd *cobra.Command, _ []string) error {
 	userFound := false
 	for _, u := range s.Users {
 		if u.Username == c.Username {
+			userFound = true
 			break
 		}
 	}

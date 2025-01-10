@@ -17,6 +17,15 @@ func (c *dbaasUserCreateCmd) createMysql(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
+	s, err := client.GetDBAASServiceMysql(ctx, c.Name)
+	if err != nil {
+		return err
+	}
+
+	if len(s.Users) == 0 {
+		return fmt.Errorf("service %q is not ready for user creation", c.Name)
+	}
+
 	req := v3.CreateDBAASMysqlUserRequest{Username: v3.DBAASUserUsername(c.Username)}
 	if c.MysqlAuthenticationMethod != "" {
 		req.Authentication = v3.EnumMysqlAuthenticationPlugin(c.MysqlAuthenticationMethod)

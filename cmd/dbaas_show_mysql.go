@@ -37,6 +37,7 @@ type dbServiceMysqlUserShowOutput struct {
 type dbServiceMysqlShowOutput struct {
 	BackupSchedule string                              `json:"backup_schedule"`
 	Components     []dbServiceMysqlComponentShowOutput `json:"components"`
+	Databases      []string                            `json:"databases"`
 	IPFilter       []string                            `json:"ip_filter"`
 	URI            string                              `json:"uri"`
 	URIParams      map[string]interface{}              `json:"uri_params"`
@@ -49,7 +50,6 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 	t.Append([]string{"Backup Schedule", o.BackupSchedule})
 	t.Append([]string{"URI", redactDatabaseServiceURI(o.URI)})
 	t.Append([]string{"IP Filter", strings.Join(o.IPFilter, ", ")})
-
 	t.Append([]string{"Components", func() string {
 		buf := bytes.NewBuffer(nil)
 		ct := table.NewEmbeddedTable(buf)
@@ -76,6 +76,19 @@ func formatDatabaseServiceMysqlTable(t *table.Table, o *dbServiceMysqlShowOutput
 						users[i] = fmt.Sprintf("%s (%s)", o.Users[i].Username, o.Users[i].Type)
 					}
 					return users
+				}(),
+				"\n")
+		}
+		return "n/a"
+	}()})
+
+	t.Append([]string{"Databases", func() string {
+		if len(o.Databases) > 0 {
+			return strings.Join(
+				func() []string {
+					dbs := make([]string, len(o.Databases))
+					copy(dbs, o.Databases)
+					return dbs
 				}(),
 				"\n")
 		}
@@ -230,6 +243,16 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceMysql(ctx context.Context) (out
 							Route:     string(c.Route),
 							Usage:     string(c.Usage),
 						})
+					}
+				}
+				return
+			}(),
+
+			Databases: func() (v []string) {
+				if databaseService.Databases != nil {
+					v = make([]string, len(*databaseService.Databases))
+					for i, d := range *databaseService.Databases {
+						v[i] = string(d)
 					}
 				}
 				return

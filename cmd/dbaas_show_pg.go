@@ -47,6 +47,7 @@ type dbServicePGUserShowOutput struct {
 type dbServicePGShowOutput struct {
 	BackupSchedule  string                           `json:"backup_schedule"`
 	Components      []dbServicePGComponentShowOutput `json:"components"`
+	Databases       []string                         `json:"databases"`
 	ConnectionPools []dbServicePGConnectionPool      `json:"connection_pools"`
 	IPFilter        []string                         `json:"ip_filter"`
 	URI             string                           `json:"uri"`
@@ -111,6 +112,20 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 		}
 		return "n/a"
 	}()})
+
+	t.Append([]string{"Databases", func() string {
+		if len(o.Databases) > 0 {
+			return strings.Join(
+				func() []string {
+					dbs := make([]string, len(o.Databases))
+					copy(dbs, o.Databases)
+					return dbs
+				}(),
+				"\n")
+		}
+		return "n/a"
+	}()})
+
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output.Outputter, error) {
@@ -264,6 +279,16 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 							Route:     string(c.Route),
 							Usage:     string(c.Usage),
 						})
+					}
+				}
+				return
+			}(),
+
+			Databases: func() (v []string) {
+				if databaseService.Databases != nil {
+					v = make([]string, len(*databaseService.Databases))
+					for i, d := range *databaseService.Databases {
+						v[i] = string(d)
 					}
 				}
 				return

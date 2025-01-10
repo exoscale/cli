@@ -17,6 +17,15 @@ func (c *dbaasUserCreateCmd) createPg(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
+	s, err := client.GetDBAASServicePG(ctx, c.Name)
+	if err != nil {
+		return err
+	}
+
+	if len(s.Users) == 0 {
+		return fmt.Errorf("service %q is not ready for user creation", c.Name)
+	}
+
 	req := v3.CreateDBAASPostgresUserRequest{Username: v3.DBAASUserUsername(c.Username), AllowReplication: &c.PostgresAllowReplication}
 
 	op, err := client.CreateDBAASPostgresUser(ctx, c.Name, req)

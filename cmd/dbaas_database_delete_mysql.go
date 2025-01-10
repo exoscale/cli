@@ -10,8 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (c *dbaasUserDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
-
+func (c dbaasDatabaseDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) error {
 	ctx := gContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
@@ -19,37 +18,37 @@ func (c *dbaasUserDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	s, err := client.GetDBAASServicePG(ctx, c.Name)
+	s, err := client.GetDBAASServiceMysql(ctx, c.Name)
 	if err != nil {
 		return err
 	}
-	userFound := false
-	for _, u := range s.Users {
-		if u.Username == c.Username {
-			userFound = true
+
+	dbFound := false
+	for _, db := range s.Databases {
+		if db == v3.DBAASMysqlDatabaseName(c.Database) {
+			dbFound = true
 			break
 		}
 	}
-	if !userFound {
-		return fmt.Errorf("user %q not found for service %q", c.Username, c.Name)
+
+	if !dbFound {
+		return fmt.Errorf("database %q not found for service %q", c.Database, c.Name)
 	}
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to delete user %q", c.Username)) {
+			"Are you sure you want to delete database %q", c.Database)) {
 			return nil
 		}
 	}
 
-	op, err := client.DeleteDBAASPostgresUser(ctx, c.Name, c.Username)
-
+	op, err := client.DeleteDBAASMysqlDatabase(ctx, c.Name, c.Database)
 	if err != nil {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deletng DBaaS user %q", c.Username), func() {
+	decorateAsyncOperation(fmt.Sprintf("Deleting DBaaS database %q", c.Database), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
-
 	if err != nil {
 		return err
 	}
@@ -58,9 +57,8 @@ func (c *dbaasUserDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServicePG(exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))))
+		}).showDatabaseServiceMysql(exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))))
 	}
 
-	return nil
-
+	return err
 }

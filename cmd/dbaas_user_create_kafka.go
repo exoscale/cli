@@ -17,6 +17,15 @@ func (c *dbaasUserCreateCmd) createKafka(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
+	s, err := client.GetDBAASServicePG(ctx, c.Name)
+	if err != nil {
+		return err
+	}
+
+	if len(s.Users) == 0 {
+		return fmt.Errorf("service %q is not ready for user creation", c.Name)
+	}
+
 	req := v3.CreateDBAASKafkaUserRequest{Username: v3.DBAASUserUsername(c.Username)}
 
 	op, err := client.CreateDBAASKafkaUser(ctx, c.Name, req)
