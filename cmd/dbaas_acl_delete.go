@@ -12,7 +12,7 @@ type dbaasAclDeleteCmd struct {
 
 	_           bool   `cli-cmd:"delete"`
 	Name        string `cli-flag:"name" cli-usage:"Name of the DBaaS service"`
-	ServiceType string `cli-flag:"type" cli-short:"t" cli-usage:"DBaaS service type (e.g., kafka, opensearch)"`
+	ServiceType string `cli-flag:"type" cli-short:"t" cli-usage:"DBaaS service type (currently only kafka supported)"`
 	Username    string `cli-flag:"username" cli-usage:"Username of the ACL entry"`
 }
 
