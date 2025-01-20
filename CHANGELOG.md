@@ -13,6 +13,7 @@
 - instance update: fixing no err check after creating client #657
 - fix(error): Improve error message on snapshot creation (#655)
 - security-group show: fix empty response if an API endpoint is misbehaving #660
+- Fix broken zone flag for sks update command #662
 
 ## 1.82.0
 
