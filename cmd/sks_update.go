@@ -24,7 +24,7 @@ type sksUpdateCmd struct {
 	Labels         map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
 	Name           string            `cli-usage:"SKS cluster name"`
 	EnableCSIAddon bool              `cli-usage:"enable the Exoscale CSI driver"`
-	Zone           string            `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Zone           v3.ZoneName       `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksUpdateCmd) cmdAliases() []string { return nil }
@@ -48,8 +48,12 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
 	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
 
-	clusters, err := globalstate.EgoscaleV3Client.ListSKSClusters(ctx)
+	clusters, err := client.ListSKSClusters(ctx)
 	if err != nil {
 		return err
 	}
@@ -87,13 +91,13 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if updated {
-		op, err := globalstate.EgoscaleV3Client.UpdateSKSCluster(ctx, cluster.ID, updateReq)
+		op, err := client.UpdateSKSCluster(ctx, cluster.ID, updateReq)
 		if err != nil {
 			return err
 		}
 
 		decorateAsyncOperation(fmt.Sprintf("Updating SKS cluster %q...", c.Cluster), func() {
-			_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 
 		if err != nil {
@@ -105,7 +109,7 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return (&sksShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            string(cluster.ID),
-			Zone:               c.Zone,
+			Zone:               string(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
