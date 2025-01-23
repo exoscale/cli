@@ -129,53 +129,43 @@ type DownloadConfig struct {
 }
 
 func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) error {
-	config.Destination = filepath.Clean(strings.TrimRight(config.Destination, string(os.PathSeparator)))
-	dstInfo, err := os.Stat(config.Destination)
-	if err == nil {
-		if !dstInfo.IsDir() {
-			return fmt.Errorf("destination %q is not a directory, use flag `-f` to overwrite", config.Destination)
-		}
-	} else if os.IsNotExist(err) {
-		if err := os.MkdirAll(config.Destination, 0o755); err != nil {
-			return fmt.Errorf("failed to create destination directory: %w", err)
-		}
-	} else {
-		return fmt.Errorf("error checking destination path: %w", err)
-	}
-
 	if config.DryRun {
 		fmt.Println("[DRY-RUN]")
 	}
 
-	for _, object := range config.Objects {
-		dst := func() string {
-			if config.Recursive {
-				relativePath := strings.TrimPrefix(aws.ToString(object.Key), config.Prefix)
-				if !strings.HasPrefix(config.Prefix, "/") && !strings.HasPrefix(relativePath, config.Prefix) {
-					relativePath = filepath.Join(config.Prefix, relativePath)
-				}
-				return filepath.Join(config.Destination, relativePath)
-			}
+	config.Destination = filepath.Clean(config.Destination)
 
-			if strings.HasSuffix(config.Destination, string(os.PathSeparator)) || dstInfo.IsDir() {
-				return filepath.Join(config.Destination, path.Base(aws.ToString(object.Key)))
-			}
-
-			return filepath.Clean(config.Destination)
-		}()
-
-		if strings.HasSuffix(aws.ToString(object.Key), "/") {
-			if err := os.MkdirAll(dst, 0o755); err != nil {
-				return fmt.Errorf("failed to create directory %s: %w", dst, err)
-			}
-			continue
+	// Validate destination
+	dstInfo, err := os.Stat(config.Destination)
+	switch {
+	case err != nil && os.IsNotExist(err):
+		// Only acceptable for 1 object (implemented as a file rename).
+		if len(config.Objects) != 1 {
+			return fmt.Errorf("destination folder %q does not exist", config.Destination)
+		}
+	case err != nil: //err == nil implicit after this case
+		return fmt.Errorf("error checking destination path %w", err)
+	case dstInfo.Mode().IsRegular():
+		if len(config.Objects) != 1 {
+			return fmt.Errorf("multiple objects but destination is a file")
 		}
 
-		parentDir := filepath.Dir(dst)
-		if _, err := os.Stat(parentDir); os.IsNotExist(err) {
-			if err := os.MkdirAll(parentDir, 0o755); err != nil {
-				return fmt.Errorf("failed to create directories: %w", err)
-			}
+		if !config.Overwrite {
+			return fmt.Errorf("file %q already exists, use flag `-f` to overwrite", config.Destination)
+		}
+	case dstInfo.IsDir():
+		// Mark folder with explicit ending separator to differ from file rename.
+		if !strings.HasSuffix(config.Destination, string(filepath.Separator)) {
+			config.Destination = config.Destination + string(filepath.Separator)
+		}
+	default:
+		return fmt.Errorf("destination provided exists but is not a regular file or folder")
+	}
+
+	for _, object := range config.Objects {
+		dst := config.Destination
+		if strings.HasSuffix(config.Destination, string(filepath.Separator)) {
+			dst = filepath.Join(config.Destination, aws.ToString(object.Key))
 		}
 
 		if config.DryRun {
@@ -183,9 +173,8 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 			continue
 		}
 
-		if _, err := os.Stat(dst); err == nil && !config.Overwrite {
-			fmt.Printf("error: file %q already exists, use flag `-f` to overwrite\n", dst)
-			continue
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+			return fmt.Errorf("failed to create directory %s: %w", dst, err)
 		}
 
 		if err := c.DownloadFile(ctx, config.Bucket, object, dst); err != nil {
