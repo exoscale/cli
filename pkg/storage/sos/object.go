@@ -149,10 +149,6 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 		if len(config.Objects) != 1 {
 			return fmt.Errorf("multiple objects but destination is a file")
 		}
-
-		if !config.Overwrite {
-			return fmt.Errorf("file %q already exists, use flag `-f` to overwrite", config.Destination)
-		}
 	case dstInfo.IsDir():
 		// Mark folder with explicit ending separator to differ from file rename.
 		if !strings.HasSuffix(config.Destination, string(filepath.Separator)) {
@@ -166,6 +162,11 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 		dst := config.Destination
 		if strings.HasSuffix(config.Destination, string(filepath.Separator)) {
 			dst = filepath.Join(config.Destination, aws.ToString(object.Key))
+		}
+
+		if _, err := os.Stat(dst); err == nil && !config.Overwrite {
+			fmt.Printf("error: file %q already exists, use flag `-f` to overwrite\n", dst)
+			continue
 		}
 
 		if config.DryRun {
