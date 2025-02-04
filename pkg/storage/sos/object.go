@@ -150,7 +150,7 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 			return fmt.Errorf("multiple objects but destination is a file")
 		}
 	case dstInfo.IsDir():
-		// Mark folder with explicit ending separator to differ from file rename.
+		// Mark folder with explicit ending path separator to differ from file rename.
 		if !strings.HasSuffix(config.Destination, string(filepath.Separator)) {
 			config.Destination = config.Destination + string(filepath.Separator)
 		}
@@ -160,22 +160,35 @@ func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) erro
 
 	for _, object := range config.Objects {
 		dst := config.Destination
-		if strings.HasSuffix(config.Destination, string(filepath.Separator)) {
-			dst = filepath.Join(config.Destination, aws.ToString(object.Key))
+		key := strings.TrimPrefix(aws.ToString(object.Key), config.Prefix)
+
+		fmt.Println("config.Destination: " + dst)
+		fmt.Println("key: " + key)
+
+		if config.Recursive {
+			if strings.HasSuffix(config.Destination, string(filepath.Separator)) {
+				dst = filepath.Join(config.Destination, key)
+			}
+
+			if !config.DryRun {
+				if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+					return fmt.Errorf("failed to create directory %s: %w", dst, err)
+				}
+			}
+		} else {
+			dst = filepath.Join(dst, filepath.Base(key))
 		}
 
-		if _, err := os.Stat(dst); err == nil && !config.Overwrite {
-			fmt.Printf("error: file %q already exists, use flag `-f` to overwrite\n", dst)
-			continue
-		}
+		fmt.Println("dst: " + dst)
 
 		if config.DryRun {
 			fmt.Printf("[DRY-RUN] %s/%s -> %s\n", config.Bucket, aws.ToString(object.Key), dst)
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
-			return fmt.Errorf("failed to create directory %s: %w", dst, err)
+		if _, err := os.Stat(dst); err == nil && !config.Overwrite {
+			fmt.Printf("error: file %q already exists, use flag `-f` to overwrite\n", dst)
+			continue
 		}
 
 		if err := c.DownloadFile(ctx, config.Bucket, object, dst); err != nil {
