@@ -14,3 +14,4 @@ jobs:
           with:
             version: latest
             args: --timeout 4m
+            install-mode: goinstall
