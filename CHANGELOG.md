@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Improvements
+
+- lint: add golangci-lint action #665
+
 ## 1.83.0
 
 ### Features
@@ -52,7 +58,7 @@
 
 ### Improvements
 - dbaas: added commands for getting and updating datadog integration settings #635
-- go.mk: upgrade to v2.0.3 #632  
+- go.mk: upgrade to v2.0.3 #632
 
 ### Bug fixes
 
@@ -67,7 +73,7 @@
 ### Improvements
 
 - DBaaS: external endpoints and integrations commands #631
-- go.mk: update to v2.0.2 #630 
+- go.mk: update to v2.0.2 #630
 
 ### Bug Fixes
 
@@ -103,15 +109,15 @@
 
 ### Improvements
 
-- egoscale/v3: use separate module v3.1.0 #621 
+- egoscale/v3: use separate module v3.1.0 #621
 
 ## 1.78.3
 
 ### Improvements
 
-- go.mk: lint with staticcheck #606 
+- go.mk: lint with staticcheck #606
 - Update deprecated goreleaser directives #607
-- sks nodepool: show instance family #615 
+- sks nodepool: show instance family #615
 - Update exo x #616
 
 ### Bug Fixes
@@ -122,7 +128,7 @@
 ## 1.78.2
 
 ### Bug Fixes
-- security-group: show instances from all zones #605 
+- security-group: show instances from all zones #605
 
 ## 1.78.1
 
@@ -132,7 +138,7 @@
 ## 1.78.0
 
 ### Features
-- blockstorage: implement updating volume and snapshot labels and names #601 
+- blockstorage: implement updating volume and snapshot labels and names #601
 
 ## 1.77.2
 
@@ -144,7 +150,7 @@
 - Block Storage: Fix volume show with snapshot #589
 - storage presign: fix panic when parsing arg[0] #590
 - dbaas migration show: fix panic #597
-- sks: enable CSI addon on existing clusters #596 
+- sks: enable CSI addon on existing clusters #596
 
 ## 1.77.1
 
