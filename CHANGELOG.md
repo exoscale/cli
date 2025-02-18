@@ -6,6 +6,9 @@
 
 - lint: add golangci-lint action #665
 
+### Bug fixes
+- Refactor sos.DownloadFiles & fix file rename #664
+
 ## 1.83.0
 
 ### Features
