@@ -117,79 +117,46 @@ func (c *Client) GenPresignedURL(ctx context.Context, method, bucket, key string
 	return psURL.URL, nil
 }
 
-type DownloadConfig struct {
-	Bucket      string
-	Prefix      string
-	Source      string
-	Destination string
-	Objects     []*types.Object
-	Recursive   bool
-	Overwrite   bool
-	DryRun      bool
-}
+func (c *Client) DownloadFiles(
+	ctx context.Context,
+	bucket, prefix, src, dst string,
+	objects []*types.Object,
+	overwrite, dryRun bool,
+) error {
+	if dst != "" {
+		dstInfo, err := os.Stat(dst)
+		switch {
+		case err != nil: //err == nil implicit after this case
+			if os.IsNotExist(err) {
+				return fmt.Errorf("destination folder %q does not exist", dst)
+			}
 
-func (c *Client) DownloadFiles(ctx context.Context, config *DownloadConfig) error {
-	config.Destination = filepath.Clean(strings.TrimRight(config.Destination, string(os.PathSeparator)))
-	dstInfo, err := os.Stat(config.Destination)
-	if err == nil {
-		if !dstInfo.IsDir() {
-			return fmt.Errorf("destination %q is not a directory, use flag `-f` to overwrite", config.Destination)
+			return fmt.Errorf("error checking destination path %w", err)
+		case !dstInfo.IsDir():
+			return fmt.Errorf("destination is not a folder")
 		}
-	} else if os.IsNotExist(err) {
-		if err := os.MkdirAll(config.Destination, 0o755); err != nil {
-			return fmt.Errorf("failed to create destination directory: %w", err)
-		}
-	} else {
-		return fmt.Errorf("error checking destination path: %w", err)
 	}
 
-	if config.DryRun {
-		fmt.Println("[DRY-RUN]")
-	}
+	for _, object := range objects {
+		key := aws.ToString(object.Key)
+		subpath := strings.TrimPrefix(key, prefix)
+		dst := filepath.Join(dst, subpath) // new local-scope dst variable!
 
-	for _, object := range config.Objects {
-		dst := func() string {
-			if config.Recursive {
-				relativePath := strings.TrimPrefix(aws.ToString(object.Key), config.Prefix)
-				if !strings.HasPrefix(config.Prefix, "/") && !strings.HasPrefix(relativePath, config.Prefix) {
-					relativePath = filepath.Join(config.Prefix, relativePath)
-				}
-				return filepath.Join(config.Destination, relativePath)
+		if !dryRun {
+			err := os.MkdirAll(filepath.Dir(dst), 0o755)
+			if err != nil {
+				return fmt.Errorf("failed to create directory %q: %w", dst, err)
 			}
+		}
 
-			if strings.HasSuffix(config.Destination, string(os.PathSeparator)) || dstInfo.IsDir() {
-				return filepath.Join(config.Destination, path.Base(aws.ToString(object.Key)))
-			}
-
-			return filepath.Clean(config.Destination)
-		}()
-
-		if strings.HasSuffix(aws.ToString(object.Key), "/") {
-			if err := os.MkdirAll(dst, 0o755); err != nil {
-				return fmt.Errorf("failed to create directory %s: %w", dst, err)
-			}
+		err := c.DownloadFile(ctx, bucket, dst, object, overwrite, dryRun)
+		if err != nil {
+			// We might have downloaded files succesfuly before this error,
+			// to quit with error now does not make much sense.
+			// Instead we print error to STDERR and continue.
+			// End result is some files complated & errors printed for those failed.
+			fmt.Fprintf(os.Stderr, "failed to dowload object %q: %v\n", key, err)
 			continue
-		}
-
-		parentDir := filepath.Dir(dst)
-		if _, err := os.Stat(parentDir); os.IsNotExist(err) {
-			if err := os.MkdirAll(parentDir, 0o755); err != nil {
-				return fmt.Errorf("failed to create directories: %w", err)
-			}
-		}
-
-		if config.DryRun {
-			fmt.Printf("[DRY-RUN] %s/%s -> %s\n", config.Bucket, aws.ToString(object.Key), dst)
-			continue
-		}
-
-		if _, err := os.Stat(dst); err == nil && !config.Overwrite {
-			fmt.Printf("error: file %q already exists, use flag `-f` to overwrite\n", dst)
-			continue
-		}
-
-		if err := c.DownloadFile(ctx, config.Bucket, object, dst); err != nil {
-			return err
 		}
 	}
 
@@ -220,7 +187,37 @@ func (prox *proxyWriterAt) WriteAt(p []byte, off int64) (n int, err error) {
 	return n, err
 }
 
-func (c *Client) DownloadFile(ctx context.Context, bucket string, object *types.Object, dst string) error {
+func (c *Client) DownloadFile(
+	ctx context.Context,
+	bucket, dst string,
+	object *types.Object,
+	overwrite, dryRun bool,
+) error {
+	if dst == "" {
+		dst = filepath.Base(aws.ToString(object.Key))
+	}
+
+	dstInfo, err := os.Stat(dst)
+	switch {
+	case err != nil: //err == nil implicit after this case
+		if !os.IsNotExist(err) {
+			return fmt.Errorf("error checking destination path: %w", err)
+		}
+	case dstInfo.Mode().IsRegular():
+		if !overwrite {
+			return fmt.Errorf("file %q already exists, use flag `-f` to overwrite", dst)
+		}
+	case dstInfo.IsDir():
+		dst = filepath.Join(dst, filepath.Base(aws.ToString(object.Key)))
+	default:
+		return fmt.Errorf("destination provided exists but is not a regular file or folder")
+	}
+
+	if dryRun {
+		fmt.Printf("[DRY-RUN] %s/%s -> %s\n", bucket, aws.ToString(object.Key), dst)
+		return nil
+	}
+
 	maxFilenameLen := 16
 
 	pb := mpb.NewWithContext(ctx,
