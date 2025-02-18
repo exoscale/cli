@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -27,7 +28,7 @@ Examples:
     # Download a single file and rename it locally
     exo storage download sos://my-bucket/file-a file-z
 
-    # Download a prefix recursively
+    # Download a prefix recursively (creating the folder tree if needed)
     exo storage download -r sos://my-bucket/public/ /tmp/public/
 `,
 
@@ -52,7 +53,7 @@ Examples:
 			prefix string
 
 			src = args[0]
-			dst = "./"
+			dst string
 		)
 
 		dryRun, err := cmd.Flags().GetBool("dry-run")
@@ -80,11 +81,7 @@ Examples:
 		}
 
 		if len(args) == 2 {
-			dst = args[1]
-		}
-
-		if strings.HasSuffix(src, "/") && !recursive {
-			return fmt.Errorf("%q is a directory, use flag `-r` to download recursively", src)
+			dst = filepath.Clean(args[1])
 		}
 
 		storage, err := sos.NewStorageClient(
@@ -103,22 +100,45 @@ Examples:
 			return fmt.Errorf("error listing objects: %s", err)
 		}
 
-		if len(objects) == 0 {
-			fmt.Printf("no objects exist at %q\n", prefix)
-
-			return nil
+		if dryRun {
+			fmt.Println("[DRY-RUN]")
 		}
 
-		return storage.DownloadFiles(gContext, &sos.DownloadConfig{
-			Bucket:      bucket,
-			Prefix:      prefix,
-			Source:      src,
-			Objects:     objects,
-			Destination: dst,
-			Recursive:   recursive,
-			Overwrite:   force,
-			DryRun:      dryRun,
-		})
+		switch len(objects) {
+		case 0:
+			fmt.Printf("no objects exist at %q\n", prefix)
+		case 1: // single file download (with optional rename)
+			object := objects[0]
+
+			err := storage.DownloadFile(
+				gContext,
+				bucket,
+				dst,
+				object,
+				force,
+				dryRun,
+			)
+			if err != nil {
+				return fmt.Errorf("failed to download single file: %w", err)
+			}
+		default:
+			err := storage.DownloadFiles(
+				gContext,
+				bucket,
+				prefix,
+				src,
+				dst,
+				objects,
+				force,
+				dryRun,
+			)
+
+			if err != nil {
+				return fmt.Errorf("batch file download failed: %w", err)
+			}
+		}
+
+		return nil
 	},
 }
 
