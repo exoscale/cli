@@ -9,12 +9,12 @@ import (
 )
 
 func init() {
-	storageBucketReplicationGetCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
-	storageBucketReplicationCmd.AddCommand(storageBucketReplicationGetCmd)
+	storageBucketReplicationShowCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
+	storageBucketReplicationCmd.AddCommand(storageBucketReplicationShowCmd)
 }
 
-var storageBucketReplicationGetCmd = &cobra.Command{
-	Use:   "get sos://BUCKET",
+var storageBucketReplicationShowCmd = &cobra.Command{
+	Use:   "show sos://BUCKET",
 	Short: "Retrieve replication configuration",
 	Args:  cobra.ExactArgs(1),
 	PreRunE: func(cmd *cobra.Command, args []string) error {

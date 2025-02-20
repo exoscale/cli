@@ -16,9 +16,30 @@ func init() {
 }
 
 var storageBucketReplicationPutCmd = &cobra.Command{
-	Use:   "put sos://BUCKET file://configuration.json",
+	Use:   "put sos://BUCKET file://replication.json",
 	Short: "Put replication configuration",
-	Args:  cobra.ExactArgs(2),
+	Long: `Put a replication configuration for a bucket. Bucket versioning needs to be enabled
+for both source and target bucket
+
+Example of a valid replication configuration:
+{
+    "Role": "role-uuid",
+    "Rules": [
+        {
+            "Status": "Enabled",
+            "Priority": 1,
+            "DeleteMarkerReplication": { "Status": "Disabled" },
+            "Filter" : { "Prefix": ""},
+            "Destination": {
+                "Bucket": "target-bucket"
+            },
+            "ID": "foo"
+        }
+    ]
+}
+
+More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-replication.html#options & https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html`,
+	Args: cobra.ExactArgs(2),
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
