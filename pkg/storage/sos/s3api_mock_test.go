@@ -26,6 +26,9 @@ type MockS3API struct {
 	mockPutBucketVersioning        func(ctx context.Context, params *s3.PutBucketVersioningInput, optFns ...func(*s3.Options)) (*s3.PutBucketVersioningOutput, error)
 	mockListMultipartUploads       func(ctx context.Context, params *s3.ListMultipartUploadsInput, optFns ...func(*s3.Options)) (*s3.ListMultipartUploadsOutput, error)
 	mockDeleteBucket               func(ctx context.Context, params *s3.DeleteBucketInput, optFns ...func(*s3.Options)) (*s3.DeleteBucketOutput, error)
+	mockGetBucketReplication       func(ctx context.Context, params *s3.GetBucketReplicationInput, optFns ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error)
+	mockPutBucketReplication       func(ctx context.Context, params *s3.PutBucketReplicationInput, optFns ...func(*s3.Options)) (*s3.PutBucketReplicationOutput, error)
+	mockDeleteBucketReplication    func(ctx context.Context, params *s3.DeleteBucketReplicationInput, optFns ...func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error)
 
 	// s3manager.UploadAPIClient
 	mockPutObject               func(context.Context, *s3.PutObjectInput, ...func(*s3.Options)) (*s3.PutObjectOutput, error)
@@ -130,4 +133,16 @@ func (m *MockS3API) CompleteMultipartUpload(ctx context.Context, params *s3.Comp
 
 func (m *MockS3API) AbortMultipartUpload(ctx context.Context, params *s3.AbortMultipartUploadInput, optFns ...func(*s3.Options)) (*s3.AbortMultipartUploadOutput, error) {
 	return m.mockAbortMultipartUpload(ctx, params, optFns...)
+}
+
+func (m *MockS3API) GetBucketReplication(ctx context.Context, params *s3.GetBucketReplicationInput, optFns ...func(*s3.Options)) (*s3.GetBucketReplicationOutput, error) {
+	return m.mockGetBucketReplication(ctx, params, optFns...)
+}
+
+func (m *MockS3API) PutBucketReplication(ctx context.Context, params *s3.PutBucketReplicationInput, optFns ...func(*s3.Options)) (*s3.PutBucketReplicationOutput, error) {
+	return m.mockPutBucketReplication(ctx, params, optFns...)
+}
+
+func (m *MockS3API) DeleteBucketReplication(ctx context.Context, params *s3.DeleteBucketReplicationInput, optFns ...func(*s3.Options)) (*s3.DeleteBucketReplicationOutput, error) {
+	return m.mockDeleteBucketReplication(ctx, params, optFns...)
 }
