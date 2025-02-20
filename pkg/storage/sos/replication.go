@@ -15,11 +15,11 @@ import (
 
 // Decoding json into the default types.ReplicationRuleFilter fails so we
 // partially recreate the original struct with conversion methods
-type bucketReplicationConfRuleFilter struct {
+type BucketReplicationConfRuleFilter struct {
 	Prefix string
 }
 
-type bucketReplicationRule struct {
+type BucketReplicationRule struct {
 	Destination *types.Destination
 
 	Status types.ReplicationRuleStatus
@@ -28,7 +28,7 @@ type bucketReplicationRule struct {
 
 	ExistingObjectReplication *types.ExistingObjectReplication
 
-	Filter bucketReplicationConfRuleFilter
+	Filter BucketReplicationConfRuleFilter
 
 	ID *string
 
@@ -39,7 +39,7 @@ type bucketReplicationRule struct {
 
 type BucketReplicationConf struct {
 	Role  *string
-	Rules []bucketReplicationRule
+	Rules []BucketReplicationRule
 }
 
 type bucketReplication struct {
@@ -70,18 +70,18 @@ func (o *BucketReplicationConf) ToS3() *types.ReplicationConfiguration {
 
 func (o *BucketReplicationConf) FromS3(c *types.ReplicationConfiguration) {
 	o.Role = c.Role
-	o.Rules = make([]bucketReplicationRule, len(c.Rules))
+	o.Rules = make([]BucketReplicationRule, len(c.Rules))
 
 	for i, r := range c.Rules {
 
 		p := r.Filter.(*types.ReplicationRuleFilterMemberPrefix)
 
-		o.Rules[i] = bucketReplicationRule{
+		o.Rules[i] = BucketReplicationRule{
 			Destination:               r.Destination,
 			Status:                    r.Status,
 			DeleteMarkerReplication:   r.DeleteMarkerReplication,
 			ExistingObjectReplication: r.ExistingObjectReplication,
-			Filter:                    bucketReplicationConfRuleFilter{Prefix: p.Value},
+			Filter:                    BucketReplicationConfRuleFilter{Prefix: p.Value},
 			ID:                        r.ID,
 			Priority:                  r.Priority,
 			SourceSelectionCriteria:   r.SourceSelectionCriteria,

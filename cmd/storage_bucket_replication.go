@@ -12,6 +12,7 @@ func init() {
 var storageBucketReplicationCmd = &cobra.Command{
 	Use:   "replication",
 	Short: "Object Storage Bucket replication management",
+	Long:  storageBucketReplicationCmdLongHelp(),
 }
 
 var storageBucketReplicationCmdLongHelp = func() string {
