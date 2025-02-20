@@ -46,8 +46,6 @@ var storageBucketReplicationShowCmd = &cobra.Command{
 			return err
 		}
 
-		printOutput(o, nil)
-
-		return nil
+		return printOutput(o, nil)
 	},
 }
