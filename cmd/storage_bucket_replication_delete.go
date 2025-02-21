@@ -38,7 +38,7 @@ var storageBucketReplicationDeleteCmd = &cobra.Command{
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		err = storage.DeleteBucketReplication(cmd.Context(), bucket)
+		err = storage.DeleteBucketReplication(gContext, bucket)
 		return err
 	},
 }

@@ -41,7 +41,7 @@ var storageBucketReplicationShowCmd = &cobra.Command{
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		o, err := storage.GetBucketReplication(cmd.Context(), bucket)
+		o, err := storage.GetBucketReplication(gContext, bucket)
 		if err != nil {
 			return err
 		}

@@ -11,14 +11,14 @@ import (
 )
 
 func init() {
-	storageBucketReplicationPutCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
-	storageBucketReplicationCmd.AddCommand(storageBucketReplicationPutCmd)
+	storageBucketReplicationSetCmd.Flags().StringP(zoneFlagLong, zoneFlagShort, "", zoneFlagMsg)
+	storageBucketReplicationCmd.AddCommand(storageBucketReplicationSetCmd)
 }
 
-var storageBucketReplicationPutCmd = &cobra.Command{
-	Use:   "put sos://BUCKET file://replication.json",
-	Short: "Put replication configuration",
-	Long: `Put a replication configuration for a bucket. Bucket versioning needs to be enabled
+var storageBucketReplicationSetCmd = &cobra.Command{
+	Use:   "set sos://BUCKET file://replication.json",
+	Short: "set replication configuration",
+	Long: `Set a replication configuration for a bucket. Bucket versioning needs to be enabled
 for both source and target bucket
 
 Example of a valid replication configuration:
@@ -78,7 +78,7 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 
 		s3conf := configuration.ToS3()
 
-		err = storage.PutBucketReplication(cmd.Context(), bucket, s3conf)
+		err = storage.PutBucketReplication(gContext, bucket, s3conf)
 
 		return err
 	},
