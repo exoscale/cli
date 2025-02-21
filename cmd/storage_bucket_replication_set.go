@@ -16,7 +16,7 @@ func init() {
 }
 
 var storageBucketReplicationSetCmd = &cobra.Command{
-	Use:   "set sos://BUCKET file://replication.json",
+	Use:   "set sos://BUCKET path/to/replication.json",
 	Short: "set replication configuration",
 	Long: `Set a replication configuration for a bucket. Bucket versioning needs to be enabled
 for both source and target bucket
@@ -43,7 +43,6 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
-		args[1] = strings.TrimPrefix(args[1], "file://")
 
 		return nil
 	},
