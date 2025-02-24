@@ -44,7 +44,8 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		return nil
+		cmdSetZoneFlagFromDefault(cmd)
+		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 

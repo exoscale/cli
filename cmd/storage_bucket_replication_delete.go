@@ -20,7 +20,9 @@ var storageBucketReplicationDeleteCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
-		return nil
+
+		cmdSetZoneFlagFromDefault(cmd)
+		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		bucket := args[0]
