@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- storage: bucket replication support #668 
+
 ## 1.83.1
 
 ### Improvements

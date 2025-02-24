@@ -598,6 +598,9 @@ func (c *Client) ShowObject(ctx context.Context, bucket, key string) (*ShowObjec
 		Headers:      ObjectHeadersFromS3(obj),
 		URL:          fmt.Sprintf("https://sos-%s.exo.io/%s/%s", c.Zone, bucket, key),
 	}
+	if obj.ReplicationStatus != "" {
+		out.ReplicationStatus = string(obj.ReplicationStatus)
+	}
 
 	return &out, nil
 }
@@ -634,14 +637,15 @@ func ObjectHeadersFromS3(o *s3.GetObjectOutput) map[string]string {
 }
 
 type ShowObjectOutput struct {
-	Path         string            `json:"name"`
-	Bucket       string            `json:"bucket"`
-	LastModified string            `json:"last_modified"`
-	Size         int64             `json:"size"`
-	ACL          ACL               `json:"acl"`
-	Metadata     map[string]string `json:"metadata"`
-	Headers      map[string]string `json:"headers"`
-	URL          string            `json:"url"`
+	Path              string            `json:"name"`
+	Bucket            string            `json:"bucket"`
+	LastModified      string            `json:"last_modified"`
+	Size              int64             `json:"size"`
+	ACL               ACL               `json:"acl"`
+	Metadata          map[string]string `json:"metadata"`
+	Headers           map[string]string `json:"headers"`
+	URL               string            `json:"url"`
+	ReplicationStatus string            `json:"replication_status"`
 }
 
 func (o *ShowObjectOutput) ToJSON() { output.JSON(o) }
@@ -656,6 +660,9 @@ func (o *ShowObjectOutput) ToTable() {
 	t.Append([]string{"Last Modified", fmt.Sprint(o.LastModified)})
 	t.Append([]string{"Size", humanize.IBytes(uint64(o.Size))})
 	t.Append([]string{"URL", o.URL})
+	if o.ReplicationStatus != "" {
+		t.Append([]string{"Replication Status", o.ReplicationStatus})
+	}
 
 	t.Append([]string{"ACL", func() string {
 		buf := bytes.NewBuffer(nil)
