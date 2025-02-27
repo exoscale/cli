@@ -153,7 +153,7 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 			return fmt.Errorf("unable to retrieve SKS versions: %w", err)
 		}
 		if versions == nil || len(versions.SKSClusterVersions) == 0 {
-			err = errors.New("no version returned by the API")
+			return errors.New("no version returned by the API")
 		}
 
 		clusterReq.Version = versions.SKSClusterVersions[0]
@@ -168,9 +168,9 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 			IssuerURL:      c.OIDCIssuerURL,
 			UsernameClaim:  c.OIDCUsernameClaim,
 			UsernamePrefix: c.OIDCUsernamePrefix,
-			RequiredClaim: func() (v map[string]string) {
+			RequiredClaim: func() map[string]string {
 				if len(c.OIDCRequiredClaim) > 0 {
-					v = c.OIDCRequiredClaim
+					return c.OIDCRequiredClaim
 				}
 				return map[string]string{}
 			}(),
@@ -195,7 +195,7 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 			Description:    c.NodepoolDescription,
 			DiskSize:       c.NodepoolDiskSize,
 			InstancePrefix: c.NodepoolInstancePrefix,
-			Labels: func() (v map[string]string) {
+			Labels: func() map[string]string {
 				if len(c.NodepoolLabels) > 0 {
 					return c.NodepoolLabels
 				}
