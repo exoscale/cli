@@ -529,7 +529,7 @@ type CreateBlockStorageVolumeRequest struct {
 	Name string `json:"name,omitempty" validate:"omitempty,lte=255"`
 	// Volume size in GiB.
 	// When a snapshot ID is supplied, this defaults to the size of the source volume, but can be set to a larger value.
-	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10"`
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=1"`
 }
 
 // Create a block storage volume
@@ -1099,7 +1099,7 @@ func (c Client) DetachBlockStorageVolume(ctx context.Context, id UUID) (*Operati
 
 type ResizeBlockStorageVolumeRequest struct {
 	// Volume size in GiB
-	Size int64 `json:"size" validate:"required,gte=11"`
+	Size int64 `json:"size" validate:"required,gte=0"`
 }
 
 // This operation resizes a Block storage volume. Note: the volume can only grow, cannot be shrunk.
@@ -9457,6 +9457,50 @@ func (c Client) UpdateIAMOrganizationPolicy(ctx context.Context, req IAMPolicy) 
 	return bodyresp, nil
 }
 
+// Reset IAM Organization Policy
+func (c Client) ResetIAMOrganizationPolicy(ctx context.Context) (*Operation, error) {
+	path := "/iam-organization-policy:reset"
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ResetIAMOrganizationPolicy: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ResetIAMOrganizationPolicy: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ResetIAMOrganizationPolicy: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "reset-iam-organization-policy")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ResetIAMOrganizationPolicy: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ResetIAMOrganizationPolicy: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ResetIAMOrganizationPolicy: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 type ListIAMRolesResponse struct {
 	IAMRoles []IAMRole `json:"iam-roles,omitempty"`
 }
@@ -13750,7 +13794,11 @@ type CreateSKSClusterRequest struct {
 	Cni CreateSKSClusterRequestCni `json:"cni,omitempty"`
 	// Cluster description
 	Description *string `json:"description,omitempty" validate:"omitempty,lte=255"`
-	Labels      Labels  `json:"labels,omitempty"`
+	// Indicates whether to deploy the Kubernetes network proxy. When unspecified, defaults to `true` unless Cilium CNI is selected
+	EnableKubeProxy *bool `json:"enable-kube-proxy,omitempty"`
+	// A list of Kubernetes-only Alpha features to enable for API server component
+	FeatureGates []string `json:"feature-gates"`
+	Labels       Labels   `json:"labels,omitempty"`
 	// Cluster service level
 	Level CreateSKSClusterRequestLevel `json:"level" validate:"required"`
 	// Cluster name
@@ -14070,7 +14118,9 @@ type UpdateSKSClusterRequest struct {
 	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
 	// Cluster description
 	Description *string `json:"description,omitempty" validate:"omitempty,lte=255"`
-	Labels      Labels  `json:"labels,omitempty"`
+	// A list of Kubernetes-only Alpha features to enable for API server component
+	FeatureGates []string `json:"feature-gates"`
+	Labels       Labels   `json:"labels,omitempty"`
 	// Cluster name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// SKS Cluster OpenID config map
@@ -15884,6 +15934,231 @@ func (c Client) UpdateTemplate(ctx context.Context, id UUID, req UpdateTemplateR
 	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateTemplate: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type ListUsersResponse struct {
+	Users []User `json:"users,omitempty"`
+}
+
+// FindUser attempts to find an User by id.
+func (l ListUsersResponse) FindUser(id string) (User, error) {
+	var result []User
+	for i, elem := range l.Users {
+		if string(elem.ID) == id {
+			result = append(result, l.Users[i])
+		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return User{}, fmt.Errorf("%q too many found in ListUsersResponse: %w", id, ErrConflict)
+	}
+
+	return User{}, fmt.Errorf("%q not found in ListUsersResponse: %w", id, ErrNotFound)
+}
+
+// List Users
+func (c Client) ListUsers(ctx context.Context) (*ListUsersResponse, error) {
+	path := "/user"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ListUsers: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ListUsers: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ListUsers: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "list-users")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ListUsers: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ListUsers: http response: %w", err)
+	}
+
+	bodyresp := &ListUsersResponse{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ListUsers: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type CreateUserRequest struct {
+	// User Email
+	Email string `json:"email" validate:"required"`
+	// IAM Role
+	Role *IAMRole `json:"role,omitempty"`
+}
+
+// Create a User
+func (c Client) CreateUser(ctx context.Context, req CreateUserRequest) (*Operation, error) {
+	path := "/user"
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateUser: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("CreateUser: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CreateUser: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CreateUser: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "create-user")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CreateUser: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CreateUser: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CreateUser: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Delete User
+func (c Client) DeleteUser(ctx context.Context, id UUID) (*Operation, error) {
+	path := fmt.Sprintf("/user/%v", id)
+
+	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteUser: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("DeleteUser: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("DeleteUser: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "delete-user")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteUser: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("DeleteUser: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("DeleteUser: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type UpdateUserRoleRequest struct {
+	// IAM Role
+	Role *IAMRole `json:"role,omitempty"`
+}
+
+// Update a User's IAM role
+func (c Client) UpdateUserRole(ctx context.Context, id UUID, req UpdateUserRoleRequest) (*Operation, error) {
+	path := fmt.Sprintf("/user/%v", id)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateUserRole: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateUserRole: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("UpdateUserRole: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("UpdateUserRole: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "update-user-role")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateUserRole: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("UpdateUserRole: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("UpdateUserRole: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httputil"
 	"os"
@@ -40,26 +41,46 @@ func ParseUUID(s string) (UUID, error) {
 // Final states are one of: failure, success, timeout.
 // If states argument are given, returns an error if the final state not match on of those.
 func (c Client) Wait(ctx context.Context, op *Operation, states ...OperationState) (*Operation, error) {
+	const abortErrorsCount = 5
+
 	if op == nil {
 		return nil, fmt.Errorf("operation is nil")
 	}
 
-	ticker := time.NewTicker(c.pollingInterval)
+	startTime := time.Now()
+
+	ticker := time.NewTicker(pollInterval(0))
 	defer ticker.Stop()
 
 	if op.State != OperationStatePending {
 		return op, nil
 	}
 
+	var subsequentErrors int
 	var operation *Operation
 polling:
 	for {
 		select {
 		case <-ticker.C:
+			runTime := time.Since(startTime)
+
+			if c.waitTimeout != 0 && runTime > c.waitTimeout {
+				return nil, fmt.Errorf("operation: %q: max wait timeout reached", op.ID)
+			}
+
+			newInterval := pollInterval(runTime)
+			ticker.Reset(newInterval)
+
 			o, err := c.GetOperation(ctx, op.ID)
 			if err != nil {
-				return nil, err
+				subsequentErrors++
+				if subsequentErrors >= abortErrorsCount {
+					return nil, err
+				}
+				continue
 			}
+			subsequentErrors = 0
+
 			if o.State == OperationStatePending {
 				continue
 			}
@@ -138,6 +159,28 @@ func (c Client) Validate(s any) error {
 	}
 
 	return err
+}
+
+// pollInterval returns the wait interval (as a time.Duration) before the next poll, based on the current runtime of a job.
+// The polling frequency is:
+//   - every 3 seconds for the first 30 seconds
+//   - then increases linearly to reach 1 minute at 15 minutes of runtime
+//   - after 15 minutes, it stays at 1 minute intervals
+func pollInterval(runTime time.Duration) time.Duration {
+	runTimeSeconds := runTime.Seconds()
+
+	// Coefficients for the linear equation y = a * x + b
+	a := 57.0 / 870.0
+	b := 3.0 - 30.0*a
+
+	minWait := 3.0
+	maxWait := 60.0
+
+	interval := a*runTimeSeconds + b
+	interval = math.Max(minWait, interval)
+	interval = math.Min(maxWait, interval)
+
+	return time.Duration(interval) * time.Second
 }
 
 func prepareJSONBody(body any) (*bytes.Reader, error) {
@@ -257,4 +300,35 @@ func dumpResponse(resp *http.Response) {
 			fmt.Fprintln(os.Stderr, "----------------------------------------------------------------------")
 		}
 	}
+}
+
+// FindInstanceType attempts to find an InstanceType by id, or by a string or the form FAMILY.SIZE or SIZE,
+// where family defaults to "standard"
+func (l ListInstanceTypesResponse) FindInstanceTypeByIdOrFamilyAndSize(familyAndSizeOrId string) (InstanceType, error) {
+	var result []InstanceType
+
+	var typeFamily, typeSize string
+	parts := strings.SplitN(familyAndSizeOrId, ".", 2)
+	if l := len(parts); l > 0 {
+		if l == 1 {
+			typeFamily, typeSize = "standard", strings.ToLower(parts[0])
+		} else {
+			typeFamily, typeSize = strings.ToLower(parts[0]), strings.ToLower(parts[1])
+		}
+	}
+
+	for i, elem := range l.InstanceTypes {
+		if string(elem.ID) == familyAndSizeOrId || (string(elem.Size) == typeSize && string(elem.Family) == typeFamily) {
+			result = append(result, l.InstanceTypes[i])
+		}
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+
+	if len(result) > 1 {
+		return InstanceType{}, fmt.Errorf("%q too many found in ListInstanceTypesResponse: %w", familyAndSizeOrId, ErrConflict)
+	}
+
+	return InstanceType{}, fmt.Errorf("%q not found in ListInstanceTypesResponse: %w", familyAndSizeOrId, ErrNotFound)
 }
