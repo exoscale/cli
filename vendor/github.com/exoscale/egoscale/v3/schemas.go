@@ -111,7 +111,7 @@ type BlockStorageSnapshot struct {
 	// Snapshot name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Snapshot size
-	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10"`
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=1"`
 	// Snapshot state
 	State BlockStorageSnapshotState `json:"state,omitempty"`
 	// Original Volume size
@@ -154,7 +154,7 @@ type BlockStorageVolume struct {
 	// Volume name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Volume size
-	Size int64 `json:"size,omitempty" validate:"omitempty,gte=10"`
+	Size int64 `json:"size,omitempty" validate:"omitempty,gte=1"`
 	// Volume state
 	State BlockStorageVolumeState `json:"state,omitempty"`
 }
@@ -201,13 +201,13 @@ type DBAASDatadogTag struct {
 type DBAASEndpointDatadogCommon struct {
 	// Custom tags provided by user
 	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
-	// Disable consumer group metrics
+	// Disable kafka consumer group metrics. Applies only when attached to kafka services.
 	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
-	// Number of separate instances to fetch kafka consumer statistics with
+	// Number of separate instances to fetch kafka consumer statistics with. Applies only when attached to kafka services.
 	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
-	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	// Number of seconds that datadog will wait to get consumer statistics from brokers. Applies only when attached to kafka services.
 	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
-	// Maximum number of partition contexts to send
+	// Maximum number of partition contexts to send. Applies only when attached to kafka services.
 	MaxPartitionContexts int64 `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
 }
 
@@ -216,13 +216,13 @@ type DBAASEndpointDatadogInputCreateSettings struct {
 	DatadogAPIKey string `json:"datadog-api-key" validate:"required,gte=1,lte=256"`
 	// Custom tags provided by user
 	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
-	// Disable consumer group metrics
+	// Disable kafka consumer group metrics. Applies only when attached to kafka services.
 	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
-	// Number of separate instances to fetch kafka consumer statistics with
+	// Number of separate instances to fetch kafka consumer statistics with. Applies only when attached to kafka services.
 	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
-	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	// Number of seconds that datadog will wait to get consumer statistics from brokers. Applies only when attached to kafka services.
 	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
-	// Maximum number of partition contexts to send
+	// Maximum number of partition contexts to send. Applies only when attached to kafka services.
 	MaxPartitionContexts int64           `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
 	Site                 EnumDatadogSite `json:"site" validate:"required"`
 }
@@ -233,16 +233,16 @@ type DBAASEndpointDatadogInputCreate struct {
 
 type DBAASEndpointDatadogInputUpdateSettings struct {
 	// Datadog API key
-	DatadogAPIKey string `json:"datadog-api-key,omitempty" validate:"omitempty,gte=1,lte=256"`
+	DatadogAPIKey string `json:"datadog-api-key" validate:"required,gte=1,lte=256"`
 	// Custom tags provided by user
 	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
-	// Disable consumer group metrics
+	// Disable kafka consumer group metrics. Applies only when attached to kafka services.
 	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
-	// Number of separate instances to fetch kafka consumer statistics with
+	// Number of separate instances to fetch kafka consumer statistics with. Applies only when attached to kafka services.
 	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
-	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	// Number of seconds that datadog will wait to get consumer statistics from brokers. Applies only when attached to kafka services.
 	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
-	// Maximum number of partition contexts to send
+	// Maximum number of partition contexts to send. Applies only when attached to kafka services.
 	MaxPartitionContexts int64           `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
 	Site                 EnumDatadogSite `json:"site,omitempty"`
 }
@@ -255,13 +255,13 @@ type DBAASEndpointDatadogInputUpdate struct {
 type DBAASEndpointDatadogSettingsSettings struct {
 	// Custom tags provided by user
 	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
-	// Disable consumer group metrics
+	// Disable kafka consumer group metrics. Applies only when attached to kafka services.
 	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
-	// Number of separate instances to fetch kafka consumer statistics with
+	// Number of separate instances to fetch kafka consumer statistics with. Applies only when attached to kafka services.
 	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
-	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	// Number of seconds that datadog will wait to get consumer statistics from brokers. Applies only when attached to kafka services.
 	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
-	// Maximum number of partition contexts to send
+	// Maximum number of partition contexts to send. Applies only when attached to kafka services.
 	MaxPartitionContexts int64           `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
 	Site                 EnumDatadogSite `json:"site,omitempty"`
 }
@@ -553,13 +553,13 @@ type DBAASExternalEndpoint struct {
 type DBAASExternalEndpointDatadogOutputSettings struct {
 	// Custom tags provided by user
 	DatadogTags []DBAASDatadogTag `json:"datadog-tags,omitempty"`
-	// Disable consumer group metrics
+	// Disable kafka consumer group metrics. Applies only when attached to kafka services.
 	DisableConsumerStats *bool `json:"disable-consumer-stats,omitempty"`
-	// Number of separate instances to fetch kafka consumer statistics with
+	// Number of separate instances to fetch kafka consumer statistics with. Applies only when attached to kafka services.
 	KafkaConsumerCheckInstances int64 `json:"kafka-consumer-check-instances,omitempty" validate:"omitempty,gte=1,lte=100"`
-	// Number of seconds that datadog will wait to get consumer statistics from brokers
+	// Number of seconds that datadog will wait to get consumer statistics from brokers. Applies only when attached to kafka services.
 	KafkaConsumerStatsTimeout int64 `json:"kafka-consumer-stats-timeout,omitempty" validate:"omitempty,gte=2,lte=300"`
-	// Maximum number of partition contexts to send
+	// Maximum number of partition contexts to send. Applies only when attached to kafka services.
 	MaxPartitionContexts int64           `json:"max-partition-contexts,omitempty" validate:"omitempty,gte=200,lte=200000"`
 	Site                 EnumDatadogSite `json:"site,omitempty"`
 }
@@ -809,8 +809,8 @@ type DBAASPGTargetVersions string
 
 const (
 	DBAASPGTargetVersions14 DBAASPGTargetVersions = "14"
+	DBAASPGTargetVersions17 DBAASPGTargetVersions = "17"
 	DBAASPGTargetVersions15 DBAASPGTargetVersions = "15"
-	DBAASPGTargetVersions12 DBAASPGTargetVersions = "12"
 	DBAASPGTargetVersions13 DBAASPGTargetVersions = "13"
 	DBAASPGTargetVersions16 DBAASPGTargetVersions = "16"
 )
@@ -823,6 +823,8 @@ type DBAASPlan struct {
 	BackupConfig *DBAASBackupConfig `json:"backup-config,omitempty"`
 	// DBaaS plan disk space
 	DiskSpace int64 `json:"disk-space,omitempty"`
+	// Instance family subset which the service can use
+	Family string `json:"family,omitempty"`
 	// DBaaS plan max memory allocated percentage
 	MaxMemoryPercent int64 `json:"max-memory-percent,omitempty" validate:"omitempty,gt=0"`
 	// DBaaS plan name
@@ -833,6 +835,8 @@ type DBAASPlan struct {
 	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gt=0"`
 	// DBaaS plan memory count per node
 	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gt=0"`
+	// Zones where the plan is available
+	Zones []string `json:"zones,omitempty"`
 }
 
 type DBAASPostgresUsersUsers struct {
@@ -1602,6 +1606,92 @@ type DBAASServiceUpdate struct {
 	StartAT time.Time `json:"start-at,omitempty"`
 }
 
+type DBAASServiceValkeyComponents struct {
+	// Service component name
+	Component string `json:"component" validate:"required"`
+	// DNS name for connecting to the service component
+	Host string `json:"host" validate:"required"`
+	// Port number for connecting to the service component
+	Port  int64              `json:"port" validate:"required,gte=0,lte=65535"`
+	Route EnumComponentRoute `json:"route" validate:"required"`
+	// Whether the endpoint is encrypted or accepts plaintext.
+	// By default endpoints are always encrypted and
+	// this property is only included for service components that may disable encryption.
+	SSL   *bool              `json:"ssl,omitempty"`
+	Usage EnumComponentUsage `json:"usage" validate:"required"`
+}
+
+// Valkey connection information properties
+type DBAASServiceValkeyConnectionInfo struct {
+	Password string   `json:"password,omitempty"`
+	Slave    []string `json:"slave,omitempty"`
+	URI      []string `json:"uri,omitempty"`
+}
+
+type DBAASServiceValkeyUsersAccessControl struct {
+	Categories []string `json:"categories,omitempty"`
+	Channels   []string `json:"channels,omitempty"`
+	Commands   []string `json:"commands,omitempty"`
+	Keys       []string `json:"keys,omitempty"`
+}
+
+type DBAASServiceValkeyUsers struct {
+	AccessControl *DBAASServiceValkeyUsersAccessControl `json:"access-control,omitempty"`
+	Password      string                                `json:"password,omitempty"`
+	Type          string                                `json:"type,omitempty"`
+	Username      string                                `json:"username,omitempty"`
+}
+
+type DBAASServiceValkey struct {
+	// List of backups for the service
+	Backups []DBAASServiceBackup `json:"backups,omitempty"`
+	// Service component information objects
+	Components []DBAASServiceValkeyComponents `json:"components,omitempty"`
+	// Valkey connection information properties
+	ConnectionInfo *DBAASServiceValkeyConnectionInfo `json:"connection-info,omitempty"`
+	// Service creation timestamp (ISO 8601)
+	CreatedAT time.Time `json:"created-at,omitempty"`
+	// TODO UNIT disk space for data storage
+	DiskSize int64 `json:"disk-size,omitempty" validate:"omitempty,gte=0"`
+	// Service integrations
+	Integrations []DBAASIntegration `json:"integrations,omitempty"`
+	// Allowed CIDR address blocks for incoming connections
+	IPFilter []string `json:"ip-filter,omitempty"`
+	// Automatic maintenance settings
+	Maintenance *DBAASServiceMaintenance `json:"maintenance,omitempty"`
+	Name        DBAASServiceName         `json:"name" validate:"required,gte=0,lte=63"`
+	// Number of service nodes in the active plan
+	NodeCount int64 `json:"node-count,omitempty" validate:"omitempty,gte=0"`
+	// Number of CPUs for each node
+	NodeCPUCount int64 `json:"node-cpu-count,omitempty" validate:"omitempty,gte=0"`
+	// TODO UNIT of memory for each node
+	NodeMemory int64 `json:"node-memory,omitempty" validate:"omitempty,gte=0"`
+	// State of individual service nodes
+	NodeStates []DBAASNodeState `json:"node-states,omitempty"`
+	// Service notifications
+	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
+	// Subscription plan
+	Plan  string           `json:"plan" validate:"required"`
+	State EnumServiceState `json:"state,omitempty"`
+	// Service is protected against termination and powering off
+	TerminationProtection *bool                `json:"termination-protection,omitempty"`
+	Type                  DBAASServiceTypeName `json:"type" validate:"required,gte=0,lte=64"`
+	// Service last update timestamp (ISO 8601)
+	UpdatedAT time.Time `json:"updated-at,omitempty"`
+	// URI for connecting to the service (may be absent)
+	URI string `json:"uri,omitempty"`
+	// service_uri parameterized into key-value pairs
+	URIParams map[string]any `json:"uri-params,omitempty"`
+	// List of service users
+	Users []DBAASServiceValkeyUsers `json:"users,omitempty"`
+	// Valkey settings
+	ValkeySettings *JSONSchemaValkey `json:"valkey-settings,omitempty"`
+	// Valkey version
+	Version string `json:"version,omitempty"`
+	// The zone where the service is running
+	Zone string `json:"zone,omitempty"`
+}
+
 type DBAASTaskResultCodes struct {
 	Code   string `json:"code,omitempty"`
 	Dbname string `json:"dbname,omitempty"`
@@ -1743,6 +1833,8 @@ type DNSDomainRecord struct {
 	Name string `json:"name,omitempty"`
 	// DNS domain record priority
 	Priority int64 `json:"priority,omitempty" validate:"omitempty,gte=0"`
+	// DNS domain record system status
+	SystemRecord *bool `json:"system-record,omitempty"`
 	// DNS domain record TTL
 	Ttl int64 `json:"ttl,omitempty" validate:"omitempty,gte=0"`
 	// DNS domain record type
@@ -2201,14 +2293,16 @@ type InstanceTarget struct {
 type InstanceTypeFamily string
 
 const (
-	InstanceTypeFamilyGpu3     InstanceTypeFamily = "gpu3"
-	InstanceTypeFamilyGpu2     InstanceTypeFamily = "gpu2"
-	InstanceTypeFamilyGpu      InstanceTypeFamily = "gpu"
-	InstanceTypeFamilyMemory   InstanceTypeFamily = "memory"
-	InstanceTypeFamilyStorage  InstanceTypeFamily = "storage"
-	InstanceTypeFamilyStandard InstanceTypeFamily = "standard"
-	InstanceTypeFamilyColossus InstanceTypeFamily = "colossus"
-	InstanceTypeFamilyCPU      InstanceTypeFamily = "cpu"
+	InstanceTypeFamilyGpu3      InstanceTypeFamily = "gpu3"
+	InstanceTypeFamilyGpu3080ti InstanceTypeFamily = "gpu3080ti"
+	InstanceTypeFamilyGpu2      InstanceTypeFamily = "gpu2"
+	InstanceTypeFamilyGpu       InstanceTypeFamily = "gpu"
+	InstanceTypeFamilyMemory    InstanceTypeFamily = "memory"
+	InstanceTypeFamilyGpua5000  InstanceTypeFamily = "gpua5000"
+	InstanceTypeFamilyStorage   InstanceTypeFamily = "storage"
+	InstanceTypeFamilyStandard  InstanceTypeFamily = "standard"
+	InstanceTypeFamilyColossus  InstanceTypeFamily = "colossus"
+	InstanceTypeFamilyCPU       InstanceTypeFamily = "cpu"
 )
 
 type InstanceTypeSize string
@@ -2305,6 +2399,8 @@ type JSONSchemaGrafana struct {
 	AuthGoogle map[string]any `json:"auth_google,omitempty"`
 	// Cookie SameSite attribute: 'strict' prevents sending cookie for cross-site requests, effectively disabling direct linking from other sites to Grafana. 'lax' is the default value.
 	CookieSamesite JSONSchemaGrafanaCookieSamesite `json:"cookie_samesite,omitempty"`
+	// Serve the web frontend using a custom CNAME pointing to the Aiven DNS name
+	CustomDomain *string `json:"custom_domain,omitempty" validate:"omitempty,lte=255"`
 	// This feature is new in Grafana 9 and is quite resource intensive. It may cause low-end plans to work more slowly while the dashboard previews are rendering.
 	DashboardPreviewsEnabled *bool `json:"dashboard_previews_enabled,omitempty"`
 	// Signed sequence of decimal numbers, followed by a unit suffix (ms, s, m, h, d), e.g. 30s, 1h
@@ -2339,25 +2435,592 @@ type JSONSchemaGrafana struct {
 	UserAutoAssignOrgRole JSONSchemaGrafanaUserAutoAssignOrgRole `json:"user_auto_assign_org_role,omitempty"`
 	// Users with view-only permission can edit but not save dashboards
 	ViewersCanEdit *bool `json:"viewers_can_edit,omitempty"`
+	// Setting to enable/disable Write-Ahead Logging. The default value is false (disabled).
+	Wal *bool `json:"wal,omitempty"`
 }
 
+type JSONSchemaKafkaCompressionType string
+
+const (
+	JSONSchemaKafkaCompressionTypeGzip         JSONSchemaKafkaCompressionType = "gzip"
+	JSONSchemaKafkaCompressionTypeSnappy       JSONSchemaKafkaCompressionType = "snappy"
+	JSONSchemaKafkaCompressionTypeLz4          JSONSchemaKafkaCompressionType = "lz4"
+	JSONSchemaKafkaCompressionTypeZstd         JSONSchemaKafkaCompressionType = "zstd"
+	JSONSchemaKafkaCompressionTypeUncompressed JSONSchemaKafkaCompressionType = "uncompressed"
+	JSONSchemaKafkaCompressionTypeProducer     JSONSchemaKafkaCompressionType = "producer"
+)
+
+// Configure log cleaner for topic compaction
+type JSONSchemaKafkaLogCleanupAndCompaction struct {
+	// How long are delete records retained?
+	LogCleanerDeleteRetentionMS int `json:"log_cleaner_delete_retention_ms,omitempty" validate:"omitempty,gte=0,lte=3.1556926e+11"`
+	// The maximum amount of time message will remain uncompacted. Only applicable for logs that are being compacted
+	LogCleanerMaxCompactionLagMS int `json:"log_cleaner_max_compaction_lag_ms,omitempty" validate:"omitempty,gte=30000,lte=9.223372036854776e+18"`
+	// Controls log compactor frequency. Larger value means more frequent compactions but also more space wasted for logs. Consider setting log.cleaner.max.compaction.lag.ms to enforce compactions sooner, instead of setting a very high value for this option.
+	LogCleanerMinCleanableRatio float64 `json:"log_cleaner_min_cleanable_ratio,omitempty" validate:"omitempty,gte=0.2,lte=0.9"`
+	// The minimum time a message will remain uncompacted in the log. Only applicable for logs that are being compacted.
+	LogCleanerMinCompactionLagMS int `json:"log_cleaner_min_compaction_lag_ms,omitempty" validate:"omitempty,gte=0,lte=9.223372036854776e+18"`
+	// The default cleanup policy for segments beyond the retention window
+	LogCleanupPolicy string `json:"log_cleanup_policy,omitempty"`
+}
+
+type JSONSchemaKafkaLogMessageTimestampType string
+
+const (
+	JSONSchemaKafkaLogMessageTimestampTypeCreateTime    JSONSchemaKafkaLogMessageTimestampType = "CreateTime"
+	JSONSchemaKafkaLogMessageTimestampTypeLogAppendTime JSONSchemaKafkaLogMessageTimestampType = "LogAppendTime"
+)
+
 // Kafka broker configuration values
-type JSONSchemaKafka map[string]any
+type JSONSchemaKafka struct {
+	// Enable auto creation of topics
+	AutoCreateTopicsEnable *bool `json:"auto_create_topics_enable,omitempty"`
+	// Specify the final compression type for a given topic. This configuration accepts the standard compression codecs ('gzip', 'snappy', 'lz4', 'zstd'). It additionally accepts 'uncompressed' which is equivalent to no compression; and 'producer' which means retain the original compression codec set by the producer.
+	CompressionType JSONSchemaKafkaCompressionType `json:"compression_type,omitempty"`
+	// Idle connections timeout: the server socket processor threads close the connections that idle for longer than this.
+	ConnectionsMaxIdleMS int `json:"connections_max_idle_ms,omitempty" validate:"omitempty,gte=1000,lte=3.6e+06"`
+	// Replication factor for autocreated topics
+	DefaultReplicationFactor int `json:"default_replication_factor,omitempty" validate:"omitempty,gte=1,lte=10"`
+	// The amount of time, in milliseconds, the group coordinator will wait for more consumers to join a new group before performing the first rebalance. A longer delay means potentially fewer rebalances, but increases the time until processing begins. The default value for this is 3 seconds. During development and testing it might be desirable to set this to 0 in order to not delay test execution time.
+	GroupInitialRebalanceDelayMS int `json:"group_initial_rebalance_delay_ms,omitempty" validate:"omitempty,gte=0,lte=300000"`
+	// The maximum allowed session timeout for registered consumers. Longer timeouts give consumers more time to process messages in between heartbeats at the cost of a longer time to detect failures.
+	GroupMaxSessionTimeoutMS int `json:"group_max_session_timeout_ms,omitempty" validate:"omitempty,gte=0,lte=1.8e+06"`
+	// The minimum allowed session timeout for registered consumers. Longer timeouts give consumers more time to process messages in between heartbeats at the cost of a longer time to detect failures.
+	GroupMinSessionTimeoutMS int `json:"group_min_session_timeout_ms,omitempty" validate:"omitempty,gte=0,lte=60000"`
+	// Configure log cleaner for topic compaction
+	LogCleanupAndCompaction *JSONSchemaKafkaLogCleanupAndCompaction `json:"log-cleanup-and-compaction,omitempty"`
+	// The number of messages accumulated on a log partition before messages are flushed to disk
+	LogFlushIntervalMessages int `json:"log_flush_interval_messages,omitempty" validate:"omitempty,gte=1,lte=9.223372036854776e+18"`
+	// The maximum time in ms that a message in any topic is kept in memory before flushed to disk. If not set, the value in log.flush.scheduler.interval.ms is used
+	LogFlushIntervalMS int `json:"log_flush_interval_ms,omitempty" validate:"omitempty,gte=0,lte=9.223372036854776e+18"`
+	// The interval with which Kafka adds an entry to the offset index
+	LogIndexIntervalBytes int `json:"log_index_interval_bytes,omitempty" validate:"omitempty,gte=0,lte=1.048576e+08"`
+	// The maximum size in bytes of the offset index
+	LogIndexSizeMaxBytes int `json:"log_index_size_max_bytes,omitempty" validate:"omitempty,gte=1.048576e+06,lte=1.048576e+08"`
+	// The maximum size of local log segments that can grow for a partition before it gets eligible for deletion. If set to -2, the value of log.retention.bytes is used. The effective value should always be less than or equal to log.retention.bytes value.
+	LogLocalRetentionBytes int `json:"log_local_retention_bytes,omitempty" validate:"omitempty,gte=-2,lte=9.223372036854776e+18"`
+	// The number of milliseconds to keep the local log segments before it gets eligible for deletion. If set to -2, the value of log.retention.ms is used. The effective value should always be less than or equal to log.retention.ms value.
+	LogLocalRetentionMS int `json:"log_local_retention_ms,omitempty" validate:"omitempty,gte=-2,lte=9.223372036854776e+18"`
+	// This configuration controls whether down-conversion of message formats is enabled to satisfy consume requests.
+	LogMessageDownconversionEnable *bool `json:"log_message_downconversion_enable,omitempty"`
+	// The maximum difference allowed between the timestamp when a broker receives a message and the timestamp specified in the message
+	LogMessageTimestampDifferenceMaxMS int `json:"log_message_timestamp_difference_max_ms,omitempty" validate:"omitempty,gte=0,lte=9.223372036854776e+18"`
+	// Define whether the timestamp in the message is message create time or log append time.
+	LogMessageTimestampType JSONSchemaKafkaLogMessageTimestampType `json:"log_message_timestamp_type,omitempty"`
+	// Should pre allocate file when create new segment?
+	LogPreallocate *bool `json:"log_preallocate,omitempty"`
+	// The maximum size of the log before deleting messages
+	LogRetentionBytes int `json:"log_retention_bytes,omitempty" validate:"omitempty,gte=-1,lte=9.223372036854776e+18"`
+	// The number of hours to keep a log file before deleting it
+	LogRetentionHours int `json:"log_retention_hours,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
+	// The number of milliseconds to keep a log file before deleting it (in milliseconds), If not set, the value in log.retention.minutes is used. If set to -1, no time limit is applied.
+	LogRetentionMS int `json:"log_retention_ms,omitempty" validate:"omitempty,gte=-1,lte=9.223372036854776e+18"`
+	// The maximum jitter to subtract from logRollTimeMillis (in milliseconds). If not set, the value in log.roll.jitter.hours is used
+	LogRollJitterMS int `json:"log_roll_jitter_ms,omitempty" validate:"omitempty,gte=0,lte=9.223372036854776e+18"`
+	// The maximum time before a new log segment is rolled out (in milliseconds).
+	LogRollMS int `json:"log_roll_ms,omitempty" validate:"omitempty,gte=1,lte=9.223372036854776e+18"`
+	// The maximum size of a single log file
+	LogSegmentBytes int `json:"log_segment_bytes,omitempty" validate:"omitempty,gte=1.048576e+07,lte=1.073741824e+09"`
+	// The amount of time to wait before deleting a file from the filesystem
+	LogSegmentDeleteDelayMS int `json:"log_segment_delete_delay_ms,omitempty" validate:"omitempty,gte=0,lte=3.6e+06"`
+	// The maximum number of connections allowed from each ip address (defaults to 2147483647).
+	MaxConnectionsPerIP int `json:"max_connections_per_ip,omitempty" validate:"omitempty,gte=256,lte=2.147483647e+09"`
+	// The maximum number of incremental fetch sessions that the broker will maintain.
+	MaxIncrementalFetchSessionCacheSlots int `json:"max_incremental_fetch_session_cache_slots,omitempty" validate:"omitempty,gte=1000,lte=10000"`
+	// The maximum size of message that the server can receive.
+	MessageMaxBytes int `json:"message_max_bytes,omitempty" validate:"omitempty,gte=0,lte=1.000012e+08"`
+	// When a producer sets acks to 'all' (or '-1'), min.insync.replicas specifies the minimum number of replicas that must acknowledge a write for the write to be considered successful.
+	MinInsyncReplicas int `json:"min_insync_replicas,omitempty" validate:"omitempty,gte=1,lte=7"`
+	// Number of partitions for autocreated topics
+	NumPartitions int `json:"num_partitions,omitempty" validate:"omitempty,gte=1,lte=1000"`
+	// Log retention window in minutes for offsets topic
+	OffsetsRetentionMinutes int `json:"offsets_retention_minutes,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+	// The purge interval (in number of requests) of the producer request purgatory(defaults to 1000).
+	ProducerPurgatoryPurgeIntervalRequests int `json:"producer_purgatory_purge_interval_requests,omitempty" validate:"omitempty,gte=10,lte=10000"`
+	// The number of bytes of messages to attempt to fetch for each partition (defaults to 1048576). This is not an absolute maximum, if the first record batch in the first non-empty partition of the fetch is larger than this value, the record batch will still be returned to ensure that progress can be made.
+	ReplicaFetchMaxBytes int `json:"replica_fetch_max_bytes,omitempty" validate:"omitempty,gte=1.048576e+06,lte=1.048576e+08"`
+	// Maximum bytes expected for the entire fetch response (defaults to 10485760). Records are fetched in batches, and if the first record batch in the first non-empty partition of the fetch is larger than this value, the record batch will still be returned to ensure that progress can be made. As such, this is not an absolute maximum.
+	ReplicaFetchResponseMaxBytes int `json:"replica_fetch_response_max_bytes,omitempty" validate:"omitempty,gte=1.048576e+07,lte=1.048576e+09"`
+	// The (optional) comma-delimited setting for the broker to use to verify that the JWT was issued for one of the expected audiences.
+	SaslOauthbearerExpectedAudience string `json:"sasl_oauthbearer_expected_audience,omitempty" validate:"omitempty,lte=128"`
+	// Optional setting for the broker to use to verify that the JWT was created by the expected issuer.
+	SaslOauthbearerExpectedIssuer string `json:"sasl_oauthbearer_expected_issuer,omitempty" validate:"omitempty,lte=128"`
+	// OIDC JWKS endpoint URL. By setting this the SASL SSL OAuth2/OIDC authentication is enabled. See also other options for SASL OAuth2/OIDC.
+	SaslOauthbearerJwksEndpointURL string `json:"sasl_oauthbearer_jwks_endpoint_url,omitempty" validate:"omitempty,lte=2048"`
+	// Name of the scope from which to extract the subject claim from the JWT. Defaults to sub.
+	SaslOauthbearerSubClaimName string `json:"sasl_oauthbearer_sub_claim_name,omitempty" validate:"omitempty,lte=128"`
+	// The maximum number of bytes in a socket request (defaults to 104857600).
+	SocketRequestMaxBytes int `json:"socket_request_max_bytes,omitempty" validate:"omitempty,gte=1.048576e+07,lte=2.097152e+08"`
+	// Enable verification that checks that the partition has been added to the transaction before writing transactional records to the partition
+	TransactionPartitionVerificationEnable *bool `json:"transaction_partition_verification_enable,omitempty"`
+	// The interval at which to remove transactions that have expired due to transactional.id.expiration.ms passing (defaults to 3600000 (1 hour)).
+	TransactionRemoveExpiredTransactionCleanupIntervalMS int `json:"transaction_remove_expired_transaction_cleanup_interval_ms,omitempty" validate:"omitempty,gte=600000,lte=3.6e+06"`
+	// The transaction topic segment bytes should be kept relatively small in order to facilitate faster log compaction and cache loads (defaults to 104857600 (100 mebibytes)).
+	TransactionStateLogSegmentBytes int `json:"transaction_state_log_segment_bytes,omitempty" validate:"omitempty,gte=1.048576e+06,lte=2.147483647e+09"`
+}
+
+type JSONSchemaKafkaConnectConnectorClientConfigOverridePolicy string
+
+const (
+	JSONSchemaKafkaConnectConnectorClientConfigOverridePolicyNone JSONSchemaKafkaConnectConnectorClientConfigOverridePolicy = "None"
+	JSONSchemaKafkaConnectConnectorClientConfigOverridePolicyAll  JSONSchemaKafkaConnectConnectorClientConfigOverridePolicy = "All"
+)
+
+type JSONSchemaKafkaConnectConsumerAutoOffsetReset string
+
+const (
+	JSONSchemaKafkaConnectConsumerAutoOffsetResetEarliest JSONSchemaKafkaConnectConsumerAutoOffsetReset = "earliest"
+	JSONSchemaKafkaConnectConsumerAutoOffsetResetLatest   JSONSchemaKafkaConnectConsumerAutoOffsetReset = "latest"
+)
+
+type JSONSchemaKafkaConnectConsumerIsolationLevel string
+
+const (
+	JSONSchemaKafkaConnectConsumerIsolationLevelReadUncommitted JSONSchemaKafkaConnectConsumerIsolationLevel = "read_uncommitted"
+	JSONSchemaKafkaConnectConsumerIsolationLevelReadCommitted   JSONSchemaKafkaConnectConsumerIsolationLevel = "read_committed"
+)
+
+type JSONSchemaKafkaConnectProducerCompressionType string
+
+const (
+	JSONSchemaKafkaConnectProducerCompressionTypeGzip   JSONSchemaKafkaConnectProducerCompressionType = "gzip"
+	JSONSchemaKafkaConnectProducerCompressionTypeSnappy JSONSchemaKafkaConnectProducerCompressionType = "snappy"
+	JSONSchemaKafkaConnectProducerCompressionTypeLz4    JSONSchemaKafkaConnectProducerCompressionType = "lz4"
+	JSONSchemaKafkaConnectProducerCompressionTypeZstd   JSONSchemaKafkaConnectProducerCompressionType = "zstd"
+	JSONSchemaKafkaConnectProducerCompressionTypeNone   JSONSchemaKafkaConnectProducerCompressionType = "none"
+)
 
 // Kafka Connect configuration values
-type JSONSchemaKafkaConnect map[string]any
+type JSONSchemaKafkaConnect struct {
+	// Defines what client configurations can be overridden by the connector. Default is None
+	ConnectorClientConfigOverridePolicy JSONSchemaKafkaConnectConnectorClientConfigOverridePolicy `json:"connector_client_config_override_policy,omitempty"`
+	// What to do when there is no initial offset in Kafka or if the current offset does not exist any more on the server. Default is earliest
+	ConsumerAutoOffsetReset JSONSchemaKafkaConnectConsumerAutoOffsetReset `json:"consumer_auto_offset_reset,omitempty"`
+	// Records are fetched in batches by the consumer, and if the first record batch in the first non-empty partition of the fetch is larger than this value, the record batch will still be returned to ensure that the consumer can make progress. As such, this is not a absolute maximum.
+	ConsumerFetchMaxBytes int `json:"consumer_fetch_max_bytes,omitempty" validate:"omitempty,gte=1.048576e+06,lte=1.048576e+08"`
+	// Transaction read isolation level. read_uncommitted is the default, but read_committed can be used if consume-exactly-once behavior is desired.
+	ConsumerIsolationLevel JSONSchemaKafkaConnectConsumerIsolationLevel `json:"consumer_isolation_level,omitempty"`
+	// Records are fetched in batches by the consumer.If the first record batch in the first non-empty partition of the fetch is larger than this limit, the batch will still be returned to ensure that the consumer can make progress.
+	ConsumerMaxPartitionFetchBytes int `json:"consumer_max_partition_fetch_bytes,omitempty" validate:"omitempty,gte=1.048576e+06,lte=1.048576e+08"`
+	// The maximum delay in milliseconds between invocations of poll() when using consumer group management (defaults to 300000).
+	ConsumerMaxPollIntervalMS int `json:"consumer_max_poll_interval_ms,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+	// The maximum number of records returned in a single call to poll() (defaults to 500).
+	ConsumerMaxPollRecords int `json:"consumer_max_poll_records,omitempty" validate:"omitempty,gte=1,lte=10000"`
+	// The interval at which to try committing offsets for tasks (defaults to 60000).
+	OffsetFlushIntervalMS int `json:"offset_flush_interval_ms,omitempty" validate:"omitempty,gte=1,lte=1e+08"`
+	// Maximum number of milliseconds to wait for records to flush and partition offset data to be committed to offset storage before cancelling the process and restoring the offset data to be committed in a future attempt (defaults to 5000).
+	OffsetFlushTimeoutMS int `json:"offset_flush_timeout_ms,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+	// This setting gives the upper bound of the batch size to be sent. If there are fewer than this many bytes accumulated for this partition, the producer will 'linger' for the linger.ms time waiting for more records to show up. A batch size of zero will disable batching entirely (defaults to 16384).
+	ProducerBatchSize int `json:"producer_batch_size,omitempty" validate:"omitempty,gte=0,lte=5.24288e+06"`
+	// The total bytes of memory the producer can use to buffer records waiting to be sent to the broker (defaults to 33554432).
+	ProducerBufferMemory int `json:"producer_buffer_memory,omitempty" validate:"omitempty,gte=5.24288e+06,lte=1.34217728e+08"`
+	// Specify the default compression type for producers. This configuration accepts the standard compression codecs ('gzip', 'snappy', 'lz4', 'zstd'). It additionally accepts 'none' which is the default and equivalent to no compression.
+	ProducerCompressionType JSONSchemaKafkaConnectProducerCompressionType `json:"producer_compression_type,omitempty"`
+	// This setting gives the upper bound on the delay for batching: once there is batch.size worth of records for a partition it will be sent immediately regardless of this setting, however if there are fewer than this many bytes accumulated for this partition the producer will 'linger' for the specified time waiting for more records to show up. Defaults to 0.
+	ProducerLingerMS int `json:"producer_linger_ms,omitempty" validate:"omitempty,gte=0,lte=5000"`
+	// This setting will limit the number of record batches the producer will send in a single request to avoid sending huge requests.
+	ProducerMaxRequestSize int `json:"producer_max_request_size,omitempty" validate:"omitempty,gte=131072,lte=6.7108864e+07"`
+	// The maximum delay that is scheduled in order to wait for the return of one or more departed workers before rebalancing and reassigning their connectors and tasks to the group. During this period the connectors and tasks of the departed workers remain unassigned. Defaults to 5 minutes.
+	ScheduledRebalanceMaxDelayMS int `json:"scheduled_rebalance_max_delay_ms,omitempty" validate:"omitempty,gte=0,lte=600000"`
+	// The timeout in milliseconds used to detect failures when using Kafka’s group management facilities (defaults to 10000).
+	SessionTimeoutMS int `json:"session_timeout_ms,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+}
+
+type JSONSchemaKafkaRestConsumerRequestTimeoutMS int
+
+const (
+	JSONSchemaKafkaRestConsumerRequestTimeoutMS1000  JSONSchemaKafkaRestConsumerRequestTimeoutMS = 1000
+	JSONSchemaKafkaRestConsumerRequestTimeoutMS15000 JSONSchemaKafkaRestConsumerRequestTimeoutMS = 15000
+	JSONSchemaKafkaRestConsumerRequestTimeoutMS30000 JSONSchemaKafkaRestConsumerRequestTimeoutMS = 30000
+)
+
+type JSONSchemaKafkaRestNameStrategy string
+
+const (
+	JSONSchemaKafkaRestNameStrategyTopicName       JSONSchemaKafkaRestNameStrategy = "topic_name"
+	JSONSchemaKafkaRestNameStrategyRecordName      JSONSchemaKafkaRestNameStrategy = "record_name"
+	JSONSchemaKafkaRestNameStrategyTopicRecordName JSONSchemaKafkaRestNameStrategy = "topic_record_name"
+)
+
+type JSONSchemaKafkaRestProducerCompressionType string
+
+const (
+	JSONSchemaKafkaRestProducerCompressionTypeGzip   JSONSchemaKafkaRestProducerCompressionType = "gzip"
+	JSONSchemaKafkaRestProducerCompressionTypeSnappy JSONSchemaKafkaRestProducerCompressionType = "snappy"
+	JSONSchemaKafkaRestProducerCompressionTypeLz4    JSONSchemaKafkaRestProducerCompressionType = "lz4"
+	JSONSchemaKafkaRestProducerCompressionTypeZstd   JSONSchemaKafkaRestProducerCompressionType = "zstd"
+	JSONSchemaKafkaRestProducerCompressionTypeNone   JSONSchemaKafkaRestProducerCompressionType = "none"
+)
 
 // Kafka REST configuration
-type JSONSchemaKafkaRest map[string]any
+type JSONSchemaKafkaRest struct {
+	// If true the consumer's offset will be periodically committed to Kafka in the background
+	ConsumerEnableAutoCommit *bool `json:"consumer_enable_auto_commit,omitempty"`
+	// Maximum number of bytes in unencoded message keys and values by a single request
+	ConsumerRequestMaxBytes int `json:"consumer_request_max_bytes,omitempty" validate:"omitempty,gte=0,lte=6.7108864e+08"`
+	// The maximum total time to wait for messages for a request if the maximum number of messages has not yet been reached
+	ConsumerRequestTimeoutMS JSONSchemaKafkaRestConsumerRequestTimeoutMS `json:"consumer_request_timeout_ms,omitempty"`
+	// Name strategy to use when selecting subject for storing schemas
+	NameStrategy JSONSchemaKafkaRestNameStrategy `json:"name_strategy,omitempty"`
+	// If true, validate that given schema is registered under expected subject name by the used name strategy when producing messages.
+	NameStrategyValidation *bool `json:"name_strategy_validation,omitempty"`
+	// The number of acknowledgments the producer requires the leader to have received before considering a request complete. If set to 'all' or '-1', the leader will wait for the full set of in-sync replicas to acknowledge the record.
+	ProducerAcks string `json:"producer_acks,omitempty"`
+	// Specify the default compression type for producers. This configuration accepts the standard compression codecs ('gzip', 'snappy', 'lz4', 'zstd'). It additionally accepts 'none' which is the default and equivalent to no compression.
+	ProducerCompressionType JSONSchemaKafkaRestProducerCompressionType `json:"producer_compression_type,omitempty"`
+	// Wait for up to the given delay to allow batching records together
+	ProducerLingerMS int `json:"producer_linger_ms,omitempty" validate:"omitempty,gte=0,lte=5000"`
+	// The maximum size of a request in bytes. Note that Kafka broker can also cap the record batch size.
+	ProducerMaxRequestSize int `json:"producer_max_request_size,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// Maximum number of SimpleConsumers that can be instantiated per broker
+	SimpleconsumerPoolSizeMax int `json:"simpleconsumer_pool_size_max,omitempty" validate:"omitempty,gte=10,lte=250"`
+}
+
+type JSONSchemaMysqlInternalTmpMemStorageEngine string
+
+const (
+	JSONSchemaMysqlInternalTmpMemStorageEngineTempTable JSONSchemaMysqlInternalTmpMemStorageEngine = "TempTable"
+	JSONSchemaMysqlInternalTmpMemStorageEngineMEMORY    JSONSchemaMysqlInternalTmpMemStorageEngine = "MEMORY"
+)
 
 // mysql.conf configuration values
-type JSONSchemaMysql map[string]any
+type JSONSchemaMysql struct {
+	// The number of seconds that the mysqld server waits for a connect packet before responding with Bad handshake
+	ConnectTimeout int `json:"connect_timeout,omitempty" validate:"omitempty,gte=2,lte=3600"`
+	// Default server time zone as an offset from UTC (from -12:00 to +12:00), a time zone name, or 'SYSTEM' to use the MySQL server default.
+	DefaultTimeZone string `json:"default_time_zone,omitempty" validate:"omitempty,gte=2,lte=100"`
+	// The maximum permitted result length in bytes for the GROUP_CONCAT() function.
+	GroupConcatMaxLen int `json:"group_concat_max_len,omitempty" validate:"omitempty,gte=4,lte=1.8446744073709552e+19"`
+	// The time, in seconds, before cached statistics expire
+	InformationSchemaStatsExpiry int `json:"information_schema_stats_expiry,omitempty" validate:"omitempty,gte=900,lte=3.1536e+07"`
+	// Maximum size for the InnoDB change buffer, as a percentage of the total size of the buffer pool. Default is 25
+	InnodbChangeBufferMaxSize int `json:"innodb_change_buffer_max_size,omitempty" validate:"omitempty,gte=0,lte=50"`
+	// Specifies whether flushing a page from the InnoDB buffer pool also flushes other dirty pages in the same extent (default is 1): 0 - dirty pages in the same extent are not flushed, 1 - flush contiguous dirty pages in the same extent, 2 - flush dirty pages in the same extent
+	InnodbFlushNeighbors int `json:"innodb_flush_neighbors,omitempty" validate:"omitempty,gte=0,lte=2"`
+	// Minimum length of words that are stored in an InnoDB FULLTEXT index. Changing this parameter will lead to a restart of the MySQL service.
+	InnodbFTMinTokenSize int `json:"innodb_ft_min_token_size,omitempty" validate:"omitempty,gte=0,lte=16"`
+	// This option is used to specify your own InnoDB FULLTEXT index stopword list for all InnoDB tables.
+	InnodbFTServerStopwordTable *string `json:"innodb_ft_server_stopword_table,omitempty" validate:"omitempty,lte=1024"`
+	// The length of time in seconds an InnoDB transaction waits for a row lock before giving up. Default is 120.
+	InnodbLockWaitTimeout int `json:"innodb_lock_wait_timeout,omitempty" validate:"omitempty,gte=1,lte=3600"`
+	// The size in bytes of the buffer that InnoDB uses to write to the log files on disk.
+	InnodbLogBufferSize int `json:"innodb_log_buffer_size,omitempty" validate:"omitempty,gte=1.048576e+06,lte=4.294967295e+09"`
+	// The upper limit in bytes on the size of the temporary log files used during online DDL operations for InnoDB tables.
+	InnodbOnlineAlterLogMaxSize int `json:"innodb_online_alter_log_max_size,omitempty" validate:"omitempty,gte=65536,lte=1.099511627776e+12"`
+	// When enabled, information about all deadlocks in InnoDB user transactions is recorded in the error log. Disabled by default.
+	InnodbPrintAllDeadlocks *bool `json:"innodb_print_all_deadlocks,omitempty"`
+	// The number of I/O threads for read operations in InnoDB. Default is 4. Changing this parameter will lead to a restart of the MySQL service.
+	InnodbReadIoThreads int `json:"innodb_read_io_threads,omitempty" validate:"omitempty,gte=1,lte=64"`
+	// When enabled a transaction timeout causes InnoDB to abort and roll back the entire transaction. Changing this parameter will lead to a restart of the MySQL service.
+	InnodbRollbackOnTimeout *bool `json:"innodb_rollback_on_timeout,omitempty"`
+	// Defines the maximum number of threads permitted inside of InnoDB. Default is 0 (infinite concurrency - no limit)
+	InnodbThreadConcurrency int `json:"innodb_thread_concurrency,omitempty" validate:"omitempty,gte=0,lte=1000"`
+	// The number of I/O threads for write operations in InnoDB. Default is 4. Changing this parameter will lead to a restart of the MySQL service.
+	InnodbWriteIoThreads int `json:"innodb_write_io_threads,omitempty" validate:"omitempty,gte=1,lte=64"`
+	// The number of seconds the server waits for activity on an interactive connection before closing it.
+	InteractiveTimeout int `json:"interactive_timeout,omitempty" validate:"omitempty,gte=30,lte=604800"`
+	// The storage engine for in-memory internal temporary tables.
+	InternalTmpMemStorageEngine JSONSchemaMysqlInternalTmpMemStorageEngine `json:"internal_tmp_mem_storage_engine,omitempty"`
+	// The slow log output destination when slow_query_log is ON. To enable MySQL AI Insights, choose INSIGHTS. To use MySQL AI Insights and the mysql.slow_log table at the same time, choose INSIGHTS,TABLE. To only use the mysql.slow_log table, choose TABLE. To silence slow logs, choose NONE.
+	LogOutput string `json:"log_output,omitempty"`
+	// The slow_query_logs work as SQL statements that take more than long_query_time seconds to execute. Default is 10s
+	LongQueryTime float64 `json:"long_query_time,omitempty" validate:"omitempty,gte=0,lte=3600"`
+	// Size of the largest message in bytes that can be received by the server. Default is 67108864 (64M)
+	MaxAllowedPacket int `json:"max_allowed_packet,omitempty" validate:"omitempty,gte=102400,lte=1.073741824e+09"`
+	// Limits the size of internal in-memory tables. Also set tmp_table_size. Default is 16777216 (16M)
+	MaxHeapTableSize int `json:"max_heap_table_size,omitempty" validate:"omitempty,gte=1.048576e+06,lte=1.073741824e+09"`
+	// Start sizes of connection buffer and result buffer. Default is 16384 (16K). Changing this parameter will lead to a restart of the MySQL service.
+	NetBufferLength int `json:"net_buffer_length,omitempty" validate:"omitempty,gte=1024,lte=1.048576e+06"`
+	// The number of seconds to wait for more data from a connection before aborting the read.
+	NetReadTimeout int `json:"net_read_timeout,omitempty" validate:"omitempty,gte=1,lte=3600"`
+	// The number of seconds to wait for a block to be written to a connection before aborting the write.
+	NetWriteTimeout int `json:"net_write_timeout,omitempty" validate:"omitempty,gte=1,lte=3600"`
+	// Slow query log enables capturing of slow queries. Setting slow_query_log to false also truncates the mysql.slow_log table. Default is off
+	SlowQueryLog *bool `json:"slow_query_log,omitempty"`
+	// Sort buffer size in bytes for ORDER BY optimization. Default is 262144 (256K)
+	SortBufferSize int `json:"sort_buffer_size,omitempty" validate:"omitempty,gte=32768,lte=1.073741824e+09"`
+	// Global SQL mode. Set to empty to use MySQL server defaults. When creating a new service and not setting this field Aiven default SQL mode (strict, SQL standard compliant) will be assigned.
+	SQLMode string `json:"sql_mode,omitempty" validate:"omitempty,lte=1024"`
+	// Require primary key to be defined for new tables or old tables modified with ALTER TABLE and fail if missing. It is recommended to always have primary keys because various functionality may break if any large table is missing them.
+	SQLRequirePrimaryKey *bool `json:"sql_require_primary_key,omitempty"`
+	// Limits the size of internal in-memory tables. Also set max_heap_table_size. Default is 16777216 (16M)
+	TmpTableSize int `json:"tmp_table_size,omitempty" validate:"omitempty,gte=1.048576e+06,lte=1.073741824e+09"`
+	// The number of seconds the server waits for activity on a noninteractive connection before closing it.
+	WaitTimeout int `json:"wait_timeout,omitempty" validate:"omitempty,gte=1,lte=2.147483e+06"`
+}
+
+// Opensearch Email Sender Settings
+type JSONSchemaOpensearchEmailSender struct {
+	// This should be identical to the Sender name defined in Opensearch dashboards
+	EmailSenderName string `json:"email_sender_name" validate:"required,lte=40"`
+	// Sender password for Opensearch alerts to authenticate with SMTP server
+	EmailSenderPassword string `json:"email_sender_password" validate:"required,lte=1024"`
+	// Sender username for Opensearch alerts
+	EmailSenderUsername string `json:"email_sender_username" validate:"required,lte=320"`
+}
+
+// Opensearch ISM History Settings
+type JSONSchemaOpensearchIsmHistory struct {
+	// Specifies whether ISM is enabled or not
+	IsmEnabled *bool `json:"ism_enabled" validate:"required"`
+	// Specifies whether audit history is enabled or not. The logs from ISM are automatically indexed to a logs document.
+	IsmHistoryEnabled *bool `json:"ism_history_enabled,omitempty"`
+	// The maximum age before rolling over the audit history index in hours
+	IsmHistoryMaxAge int `json:"ism_history_max_age,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+	// The maximum number of documents before rolling over the audit history index.
+	IsmHistoryMaxDocs int `json:"ism_history_max_docs,omitempty" validate:"omitempty,gte=1,lte=9.223372036854776e+18"`
+	// The time between rollover checks for the audit history index in hours.
+	IsmHistoryRolloverCheckPeriod int `json:"ism_history_rollover_check_period,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+	// How long audit history indices are kept in days.
+	IsmHistoryRolloverRetentionPeriod int `json:"ism_history_rollover_retention_period,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+}
 
 // OpenSearch settings
-type JSONSchemaOpensearch map[string]any
+type JSONSchemaOpensearch struct {
+	// Explicitly allow or block automatic creation of indices. Defaults to true
+	ActionAutoCreateIndexEnabled *bool `json:"action_auto_create_index_enabled,omitempty"`
+	// Require explicit index names when deleting
+	ActionDestructiveRequiresName *bool `json:"action_destructive_requires_name,omitempty"`
+	// Opensearch Security Plugin Settings
+	AuthFailureListeners map[string]any `json:"auth_failure_listeners,omitempty"`
+	// Controls the number of shards allowed in the cluster per data node
+	ClusterMaxShardsPerNode int `json:"cluster_max_shards_per_node,omitempty" validate:"omitempty,gte=100,lte=10000"`
+	// How many concurrent incoming/outgoing shard recoveries (normally replicas) are allowed to happen on a node. Defaults to 2.
+	ClusterRoutingAllocationNodeConcurrentRecoveries int `json:"cluster_routing_allocation_node_concurrent_recoveries,omitempty" validate:"omitempty,gte=2,lte=16"`
+	// Opensearch Email Sender Settings
+	EmailSender *JSONSchemaOpensearchEmailSender `json:"email-sender,omitempty"`
+	// Enable/Disable security audit
+	EnableSecurityAudit *bool `json:"enable_security_audit,omitempty"`
+	// Maximum content length for HTTP requests to the OpenSearch HTTP API, in bytes.
+	HTTPMaxContentLength int `json:"http_max_content_length,omitempty" validate:"omitempty,gte=1,lte=2.147483647e+09"`
+	// The max size of allowed headers, in bytes
+	HTTPMaxHeaderSize int `json:"http_max_header_size,omitempty" validate:"omitempty,gte=1024,lte=262144"`
+	// The max length of an HTTP URL, in bytes
+	HTTPMaxInitialLineLength int `json:"http_max_initial_line_length,omitempty" validate:"omitempty,gte=1024,lte=65536"`
+	// Relative amount. Maximum amount of heap memory used for field data cache. This is an expert setting; decreasing the value too much will increase overhead of loading field data; too much memory used for field data cache will decrease amount of heap available for other operations.
+	IndicesFielddataCacheSize *int `json:"indices_fielddata_cache_size,omitempty" validate:"omitempty,gte=3,lte=100"`
+	// Percentage value. Default is 10%. Total amount of heap used for indexing buffer, before writing segments to disk. This is an expert setting. Too low value will slow down indexing; too high value will increase indexing performance but causes performance issues for query performance.
+	IndicesMemoryIndexBufferSize int `json:"indices_memory_index_buffer_size,omitempty" validate:"omitempty,gte=3,lte=40"`
+	// Absolute value. Default is unbound. Doesn't work without indices.memory.index_buffer_size. Maximum amount of heap used for query cache, an absolute indices.memory.index_buffer_size maximum hard limit.
+	IndicesMemoryMaxIndexBufferSize int `json:"indices_memory_max_index_buffer_size,omitempty" validate:"omitempty,gte=3,lte=2048"`
+	// Absolute value. Default is 48mb. Doesn't work without indices.memory.index_buffer_size. Minimum amount of heap used for query cache, an absolute indices.memory.index_buffer_size minimal hard limit.
+	IndicesMemoryMinIndexBufferSize int `json:"indices_memory_min_index_buffer_size,omitempty" validate:"omitempty,gte=3,lte=2048"`
+	// Percentage value. Default is 10%. Maximum amount of heap used for query cache. This is an expert setting. Too low value will decrease query performance and increase performance for other operations; too high value will cause issues with other OpenSearch functionality.
+	IndicesQueriesCacheSize int `json:"indices_queries_cache_size,omitempty" validate:"omitempty,gte=3,lte=40"`
+	// Maximum number of clauses Lucene BooleanQuery can have. The default value (1024) is relatively high, and increasing it may cause performance issues. Investigate other approaches first before increasing this value.
+	IndicesQueryBoolMaxClauseCount int `json:"indices_query_bool_max_clause_count,omitempty" validate:"omitempty,gte=64,lte=4096"`
+	// Limits total inbound and outbound recovery traffic for each node. Applies to both peer recoveries as well as snapshot recoveries (i.e., restores from a snapshot). Defaults to 40mb
+	IndicesRecoveryMaxBytesPerSec int `json:"indices_recovery_max_bytes_per_sec,omitempty" validate:"omitempty,gte=40,lte=400"`
+	// Number of file chunks sent in parallel for each recovery. Defaults to 2.
+	IndicesRecoveryMaxConcurrentFileChunks int `json:"indices_recovery_max_concurrent_file_chunks,omitempty" validate:"omitempty,gte=2,lte=5"`
+	// Opensearch ISM History Settings
+	IsmHistory *JSONSchemaOpensearchIsmHistory `json:"ism-history,omitempty"`
+	// Enable or disable KNN memory circuit breaker. Defaults to true.
+	KnnMemoryCircuitBreakerEnabled *bool `json:"knn_memory_circuit_breaker_enabled,omitempty"`
+	// Maximum amount of memory that can be used for KNN index. Defaults to 50% of the JVM heap size.
+	KnnMemoryCircuitBreakerLimit int `json:"knn_memory_circuit_breaker_limit,omitempty" validate:"omitempty,gte=3,lte=100"`
+	// Compatibility mode sets OpenSearch to report its version as 7.10 so clients continue to work. Default is false
+	OverrideMainResponseVersion *bool `json:"override_main_response_version,omitempty"`
+	// Enable or disable filtering of alerting by backend roles. Requires Security plugin. Defaults to false
+	PluginsAlertingFilterByBackendRoles *bool `json:"plugins_alerting_filter_by_backend_roles,omitempty"`
+	// Whitelisted addresses for reindexing. Changing this value will cause all OpenSearch instances to restart.
+	ReindexRemoteWhitelist []string `json:"reindex_remote_whitelist"`
+	// Script compilation circuit breaker limits the number of inline script compilations within a period of time. Default is use-context
+	ScriptMaxCompilationsRate string `json:"script_max_compilations_rate,omitempty" validate:"omitempty,lte=1024"`
+	// Search Backpressure Settings
+	SearchBackpressure map[string]any `json:"search_backpressure,omitempty"`
+	// Maximum number of aggregation buckets allowed in a single response. OpenSearch default value is used when this is not defined.
+	SearchMaxBuckets *int `json:"search_max_buckets,omitempty" validate:"omitempty,gte=1,lte=1e+06"`
+	// Shard indexing back pressure settings
+	ShardIndexingPressure map[string]any `json:"shard_indexing_pressure,omitempty"`
+	// Size for the thread pool queue. See documentation for exact details.
+	ThreadPoolAnalyzeQueueSize int `json:"thread_pool_analyze_queue_size,omitempty" validate:"omitempty,gte=10,lte=2000"`
+	// Size for the thread pool. See documentation for exact details. Do note this may have maximum value depending on CPU count - value is automatically lowered if set to higher than maximum value.
+	ThreadPoolAnalyzeSize int `json:"thread_pool_analyze_size,omitempty" validate:"omitempty,gte=1,lte=128"`
+	// Size for the thread pool. See documentation for exact details. Do note this may have maximum value depending on CPU count - value is automatically lowered if set to higher than maximum value.
+	ThreadPoolForceMergeSize int `json:"thread_pool_force_merge_size,omitempty" validate:"omitempty,gte=1,lte=128"`
+	// Size for the thread pool queue. See documentation for exact details.
+	ThreadPoolGetQueueSize int `json:"thread_pool_get_queue_size,omitempty" validate:"omitempty,gte=10,lte=2000"`
+	// Size for the thread pool. See documentation for exact details. Do note this may have maximum value depending on CPU count - value is automatically lowered if set to higher than maximum value.
+	ThreadPoolGetSize int `json:"thread_pool_get_size,omitempty" validate:"omitempty,gte=1,lte=128"`
+	// Size for the thread pool queue. See documentation for exact details.
+	ThreadPoolSearchQueueSize int `json:"thread_pool_search_queue_size,omitempty" validate:"omitempty,gte=10,lte=2000"`
+	// Size for the thread pool. See documentation for exact details. Do note this may have maximum value depending on CPU count - value is automatically lowered if set to higher than maximum value.
+	ThreadPoolSearchSize int `json:"thread_pool_search_size,omitempty" validate:"omitempty,gte=1,lte=128"`
+	// Size for the thread pool queue. See documentation for exact details.
+	ThreadPoolSearchThrottledQueueSize int `json:"thread_pool_search_throttled_queue_size,omitempty" validate:"omitempty,gte=10,lte=2000"`
+	// Size for the thread pool. See documentation for exact details. Do note this may have maximum value depending on CPU count - value is automatically lowered if set to higher than maximum value.
+	ThreadPoolSearchThrottledSize int `json:"thread_pool_search_throttled_size,omitempty" validate:"omitempty,gte=1,lte=128"`
+	// Size for the thread pool queue. See documentation for exact details.
+	ThreadPoolWriteQueueSize int `json:"thread_pool_write_queue_size,omitempty" validate:"omitempty,gte=10,lte=2000"`
+	// Size for the thread pool. See documentation for exact details. Do note this may have maximum value depending on CPU count - value is automatically lowered if set to higher than maximum value.
+	ThreadPoolWriteSize int `json:"thread_pool_write_size,omitempty" validate:"omitempty,gte=1,lte=128"`
+}
+
+// Autovacuum settings
+type JSONSchemaPGAutovacuum struct {
+	// Specifies a fraction of the table size to add to autovacuum_analyze_threshold when deciding whether to trigger an ANALYZE. The default is 0.2 (20% of table size)
+	AutovacuumAnalyzeScaleFactor float64 `json:"autovacuum_analyze_scale_factor,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// Specifies the minimum number of inserted, updated or deleted tuples needed to trigger an ANALYZE in any one table. The default is 50 tuples.
+	AutovacuumAnalyzeThreshold int `json:"autovacuum_analyze_threshold,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// Specifies the maximum age (in transactions) that a table's pg_class.relfrozenxid field can attain before a VACUUM operation is forced to prevent transaction ID wraparound within the table. Note that the system will launch autovacuum processes to prevent wraparound even when autovacuum is otherwise disabled. This parameter will cause the server to be restarted.
+	AutovacuumFreezeMaxAge int `json:"autovacuum_freeze_max_age,omitempty" validate:"omitempty,gte=2e+08,lte=1.5e+09"`
+	// Specifies the maximum number of autovacuum processes (other than the autovacuum launcher) that may be running at any one time. The default is three. This parameter can only be set at server start.
+	AutovacuumMaxWorkers int `json:"autovacuum_max_workers,omitempty" validate:"omitempty,gte=1,lte=20"`
+	// Specifies the minimum delay between autovacuum runs on any given database. The delay is measured in seconds, and the default is one minute
+	AutovacuumNaptime int `json:"autovacuum_naptime,omitempty" validate:"omitempty,gte=1,lte=86400"`
+	// Specifies the cost delay value that will be used in automatic VACUUM operations. If -1 is specified, the regular vacuum_cost_delay value will be used. The default value is 20 milliseconds
+	AutovacuumVacuumCostDelay int `json:"autovacuum_vacuum_cost_delay,omitempty" validate:"omitempty,gte=-1,lte=100"`
+	// Specifies the cost limit value that will be used in automatic VACUUM operations. If -1 is specified (which is the default), the regular vacuum_cost_limit value will be used.
+	AutovacuumVacuumCostLimit int `json:"autovacuum_vacuum_cost_limit,omitempty" validate:"omitempty,gte=-1,lte=10000"`
+	// Specifies a fraction of the table size to add to autovacuum_vacuum_threshold when deciding whether to trigger a VACUUM. The default is 0.2 (20% of table size)
+	AutovacuumVacuumScaleFactor float64 `json:"autovacuum_vacuum_scale_factor,omitempty" validate:"omitempty,gte=0,lte=1"`
+	// Specifies the minimum number of updated or deleted tuples needed to trigger a VACUUM in any one table. The default is 50 tuples
+	AutovacuumVacuumThreshold int `json:"autovacuum_vacuum_threshold,omitempty" validate:"omitempty,gte=0,lte=2.147483647e+09"`
+	// Causes each action executed by autovacuum to be logged if it ran for at least the specified number of milliseconds. Setting this to zero logs all autovacuum actions. Minus-one (the default) disables logging autovacuum actions.
+	LogAutovacuumMinDuration int `json:"log_autovacuum_min_duration,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
+}
+
+// Background (BG) writer settings
+type JSONSchemaPGBGWriter struct {
+	// Specifies the delay between activity rounds for the background writer in milliseconds. Default is 200.
+	BgwriterDelay int `json:"bgwriter_delay,omitempty" validate:"omitempty,gte=10,lte=10000"`
+	// Whenever more than bgwriter_flush_after bytes have been written by the background writer, attempt to force the OS to issue these writes to the underlying storage. Specified in kilobytes, default is 512. Setting of 0 disables forced writeback.
+	BgwriterFlushAfter int `json:"bgwriter_flush_after,omitempty" validate:"omitempty,gte=0,lte=2048"`
+	// In each round, no more than this many buffers will be written by the background writer. Setting this to zero disables background writing. Default is 100.
+	BgwriterLruMaxpages int `json:"bgwriter_lru_maxpages,omitempty" validate:"omitempty,gte=0,lte=1.073741823e+09"`
+	// The average recent need for new buffers is multiplied by bgwriter_lru_multiplier to arrive at an estimate of the number that will be needed during the next round, (up to bgwriter_lru_maxpages). 1.0 represents a “just in time” policy of writing exactly the number of buffers predicted to be needed. Larger values provide some cushion against spikes in demand, while smaller values intentionally leave writes to be done by server processes. The default is 2.0.
+	BgwriterLruMultiplier float64 `json:"bgwriter_lru_multiplier,omitempty" validate:"omitempty,gte=0,lte=10"`
+}
+
+type JSONSchemaPGDefaultToastCompression string
+
+const (
+	JSONSchemaPGDefaultToastCompressionLz4  JSONSchemaPGDefaultToastCompression = "lz4"
+	JSONSchemaPGDefaultToastCompressionPglz JSONSchemaPGDefaultToastCompression = "pglz"
+)
+
+type JSONSchemaPGLogErrorVerbosity string
+
+const (
+	JSONSchemaPGLogErrorVerbosityTERSE   JSONSchemaPGLogErrorVerbosity = "TERSE"
+	JSONSchemaPGLogErrorVerbosityDEFAULT JSONSchemaPGLogErrorVerbosity = "DEFAULT"
+	JSONSchemaPGLogErrorVerbosityVERBOSE JSONSchemaPGLogErrorVerbosity = "VERBOSE"
+)
+
+type JSONSchemaPGPGStatStatementsTrack string
+
+const (
+	JSONSchemaPGPGStatStatementsTrackAll  JSONSchemaPGPGStatStatementsTrack = "all"
+	JSONSchemaPGPGStatStatementsTrackTop  JSONSchemaPGPGStatStatementsTrack = "top"
+	JSONSchemaPGPGStatStatementsTrackNone JSONSchemaPGPGStatStatementsTrack = "none"
+)
+
+type JSONSchemaPGTrackCommitTimestamp string
+
+const (
+	JSONSchemaPGTrackCommitTimestampOff JSONSchemaPGTrackCommitTimestamp = "off"
+	JSONSchemaPGTrackCommitTimestampOn  JSONSchemaPGTrackCommitTimestamp = "on"
+)
+
+type JSONSchemaPGTrackFunctions string
+
+const (
+	JSONSchemaPGTrackFunctionsAll  JSONSchemaPGTrackFunctions = "all"
+	JSONSchemaPGTrackFunctionsPL   JSONSchemaPGTrackFunctions = "pl"
+	JSONSchemaPGTrackFunctionsNone JSONSchemaPGTrackFunctions = "none"
+)
+
+type JSONSchemaPGTrackIoTiming string
+
+const (
+	JSONSchemaPGTrackIoTimingOff JSONSchemaPGTrackIoTiming = "off"
+	JSONSchemaPGTrackIoTimingOn  JSONSchemaPGTrackIoTiming = "on"
+)
+
+// Write-ahead log (WAL) settings
+type JSONSchemaPGWal struct {
+	// PostgreSQL maximum WAL size (MB) reserved for replication slots. Default is -1 (unlimited). wal_keep_size minimum WAL size setting takes precedence over this.
+	MaxSlotWalKeepSize int `json:"max_slot_wal_keep_size,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
+	// PostgreSQL maximum WAL senders
+	MaxWalSenders int `json:"max_wal_senders,omitempty" validate:"omitempty,gte=20,lte=64"`
+	// Terminate replication connections that are inactive for longer than this amount of time, in milliseconds.
+	WalSenderTimeout int `json:"wal_sender_timeout,omitempty" validate:"omitempty,gte=0,lte=1.08e+07"`
+	// WAL flush interval in milliseconds. Note that setting this value to lower than the default 200ms may negatively impact performance
+	WalWriterDelay int `json:"wal_writer_delay,omitempty" validate:"omitempty,gte=10,lte=200"`
+}
 
 // postgresql.conf configuration values
-type JSONSchemaPG map[string]any
+type JSONSchemaPG struct {
+	// Autovacuum settings
+	Autovacuum *JSONSchemaPGAutovacuum `json:"autovacuum,omitempty"`
+	// Background (BG) writer settings
+	BGWriter *JSONSchemaPGBGWriter `json:"bg-writer,omitempty"`
+	// This is the amount of time, in milliseconds, to wait on a lock before checking to see if there is a deadlock condition.
+	DeadlockTimeout int `json:"deadlock_timeout,omitempty" validate:"omitempty,gte=500,lte=1.8e+06"`
+	// Specifies the default TOAST compression method for values of compressible columns (the default is lz4).
+	DefaultToastCompression JSONSchemaPGDefaultToastCompression `json:"default_toast_compression,omitempty"`
+	// Time out sessions with open transactions after this number of milliseconds
+	IdleInTransactionSessionTimeout int `json:"idle_in_transaction_session_timeout,omitempty" validate:"omitempty,gte=0,lte=6.048e+08"`
+	// Controls system-wide use of Just-in-Time Compilation (JIT).
+	Jit *bool `json:"jit,omitempty"`
+	// Controls the amount of detail written in the server log for each message that is logged.
+	LogErrorVerbosity JSONSchemaPGLogErrorVerbosity `json:"log_error_verbosity,omitempty"`
+	// Choose from one of the available log-formats. These can support popular log analyzers like pgbadger, pganalyze etc.
+	LogLinePrefix string `json:"log_line_prefix,omitempty"`
+	// Log statements that take more than this number of milliseconds to run, -1 disables
+	LogMinDurationStatement int `json:"log_min_duration_statement,omitempty" validate:"omitempty,gte=-1,lte=8.64e+07"`
+	// Log statements for each temporary file created larger than this number of kilobytes, -1 disables
+	LogTempFiles int `json:"log_temp_files,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
+	// PostgreSQL maximum number of files that can be open per process
+	MaxFilesPerProcess int `json:"max_files_per_process,omitempty" validate:"omitempty,gte=1000,lte=4096"`
+	// PostgreSQL maximum locks per transaction
+	MaxLocksPerTransaction int `json:"max_locks_per_transaction,omitempty" validate:"omitempty,gte=64,lte=6400"`
+	// PostgreSQL maximum logical replication workers (taken from the pool of max_parallel_workers)
+	MaxLogicalReplicationWorkers int `json:"max_logical_replication_workers,omitempty" validate:"omitempty,gte=4,lte=64"`
+	// Sets the maximum number of workers that the system can support for parallel queries
+	MaxParallelWorkers int `json:"max_parallel_workers,omitempty" validate:"omitempty,gte=0,lte=96"`
+	// Sets the maximum number of workers that can be started by a single Gather or Gather Merge node
+	MaxParallelWorkersPerGather int `json:"max_parallel_workers_per_gather,omitempty" validate:"omitempty,gte=0,lte=96"`
+	// PostgreSQL maximum predicate locks per transaction
+	MaxPredLocksPerTransaction int `json:"max_pred_locks_per_transaction,omitempty" validate:"omitempty,gte=64,lte=5120"`
+	// PostgreSQL maximum prepared transactions
+	MaxPreparedTransactions int `json:"max_prepared_transactions,omitempty" validate:"omitempty,gte=0,lte=10000"`
+	// PostgreSQL maximum replication slots
+	MaxReplicationSlots int `json:"max_replication_slots,omitempty" validate:"omitempty,gte=8,lte=64"`
+	// Maximum depth of the stack in bytes
+	MaxStackDepth int `json:"max_stack_depth,omitempty" validate:"omitempty,gte=2.097152e+06,lte=6.291456e+06"`
+	// Max standby archive delay in milliseconds
+	MaxStandbyArchiveDelay int `json:"max_standby_archive_delay,omitempty" validate:"omitempty,gte=1,lte=4.32e+07"`
+	// Max standby streaming delay in milliseconds
+	MaxStandbyStreamingDelay int `json:"max_standby_streaming_delay,omitempty" validate:"omitempty,gte=1,lte=4.32e+07"`
+	// Sets the maximum number of background processes that the system can support
+	MaxWorkerProcesses int `json:"max_worker_processes,omitempty" validate:"omitempty,gte=8,lte=96"`
+	// Sets the time interval to run pg_partman's scheduled tasks
+	PGPartmanBgwInterval int `json:"pg_partman_bgw.interval,omitempty" validate:"omitempty,gte=3600,lte=604800"`
+	// Controls which role to use for pg_partman's scheduled background tasks.
+	PGPartmanBgwRole string `json:"pg_partman_bgw.role,omitempty" validate:"omitempty,lte=64"`
+	// Enables or disables query plan monitoring
+	PGStatMonitorPgsmEnableQueryPlan *bool `json:"pg_stat_monitor.pgsm_enable_query_plan,omitempty"`
+	// Sets the maximum number of buckets
+	PGStatMonitorPgsmMaxBuckets int `json:"pg_stat_monitor.pgsm_max_buckets,omitempty" validate:"omitempty,gte=1,lte=10"`
+	// Controls which statements are counted. Specify top to track top-level statements (those issued directly by clients), all to also track nested statements (such as statements invoked within functions), or none to disable statement statistics collection. The default value is top.
+	PGStatStatementsTrack JSONSchemaPGPGStatStatementsTrack `json:"pg_stat_statements.track,omitempty"`
+	// PostgreSQL temporary file limit in KiB, -1 for unlimited
+	TempFileLimit int `json:"temp_file_limit,omitempty" validate:"omitempty,gte=-1,lte=2.147483647e+09"`
+	// PostgreSQL service timezone
+	Timezone string `json:"timezone,omitempty" validate:"omitempty,lte=64"`
+	// Specifies the number of bytes reserved to track the currently executing command for each active session.
+	TrackActivityQuerySize int `json:"track_activity_query_size,omitempty" validate:"omitempty,gte=1024,lte=10240"`
+	// Record commit time of transactions.
+	TrackCommitTimestamp JSONSchemaPGTrackCommitTimestamp `json:"track_commit_timestamp,omitempty"`
+	// Enables tracking of function call counts and time used.
+	TrackFunctions JSONSchemaPGTrackFunctions `json:"track_functions,omitempty"`
+	// Enables timing of database I/O calls. This parameter is off by default, because it will repeatedly query the operating system for the current time, which may cause significant overhead on some platforms.
+	TrackIoTiming JSONSchemaPGTrackIoTiming `json:"track_io_timing,omitempty"`
+	// Write-ahead log (WAL) settings
+	Wal *JSONSchemaPGWal `json:"wal,omitempty"`
+}
 
 type JSONSchemaPgbouncerAutodbPoolMode string
 
@@ -2379,6 +3042,8 @@ type JSONSchemaPgbouncer struct {
 	AutodbPoolSize int `json:"autodb_pool_size,omitempty" validate:"omitempty,gte=0,lte=10000"`
 	// List of parameters to ignore when given in startup packet
 	IgnoreStartupParameters []string `json:"ignore_startup_parameters,omitempty"`
+	// PgBouncer tracks protocol-level named prepared statements related commands sent by the client in transaction and statement pooling modes when max_prepared_statements is set to a non-zero value. Setting it to 0 disables prepared statements. max_prepared_statements defaults to 100, and its maximum is 3000.
+	MaxPreparedStatements int `json:"max_prepared_statements,omitempty" validate:"omitempty,gte=0,lte=3000"`
 	// Add more server connections to pool if below this number. Improves behavior when usual load comes suddenly back after period of total inactivity. The value is effectively capped at the pool size.
 	MinPoolSize int `json:"min_pool_size,omitempty" validate:"omitempty,gte=0,lte=10000"`
 	// If a server connection has been idle more than this many seconds it will be dropped. If 0 then timeout is disabled. [seconds]
@@ -2449,12 +3114,70 @@ type JSONSchemaRedis struct {
 }
 
 // Schema Registry configuration
-type JSONSchemaSchemaRegistry map[string]any
+type JSONSchemaSchemaRegistry struct {
+	// If true, Karapace / Schema Registry on the service nodes can participate in leader election. It might be needed to disable this when the schemas topic is replicated to a secondary cluster and Karapace / Schema Registry there must not participate in leader election. Defaults to `true`.
+	LeaderEligibility *bool `json:"leader_eligibility,omitempty"`
+	// The durable single partition topic that acts as the durable log for the data. This topic must be compacted to avoid losing data due to retention policy. Please note that changing this configuration in an existing Schema Registry / Karapace setup leads to previous schemas being inaccessible, data encoded with them potentially unreadable and schema ID sequence put out of order. It's only possible to do the switch while Schema Registry / Karapace is disabled. Defaults to `_schemas`.
+	TopicName string `json:"topic_name,omitempty" validate:"omitempty,gte=1,lte=249"`
+}
 
 // System-wide settings for the timescaledb extension
 type JSONSchemaTimescaledb struct {
 	// The number of background workers for timescaledb operations. You should configure this setting to the sum of your number of databases and the total number of concurrent background workers you want running at any given point in time.
 	MaxBackgroundWorkers int `json:"max_background_workers,omitempty" validate:"omitempty,gte=1,lte=4096"`
+}
+
+type JSONSchemaValkeyAclChannelsDefault string
+
+const (
+	JSONSchemaValkeyAclChannelsDefaultAllchannels   JSONSchemaValkeyAclChannelsDefault = "allchannels"
+	JSONSchemaValkeyAclChannelsDefaultResetchannels JSONSchemaValkeyAclChannelsDefault = "resetchannels"
+)
+
+type JSONSchemaValkeyMaxmemoryPolicy string
+
+const (
+	JSONSchemaValkeyMaxmemoryPolicyNoeviction     JSONSchemaValkeyMaxmemoryPolicy = "noeviction"
+	JSONSchemaValkeyMaxmemoryPolicyAllkeysLru     JSONSchemaValkeyMaxmemoryPolicy = "allkeys-lru"
+	JSONSchemaValkeyMaxmemoryPolicyVolatileLru    JSONSchemaValkeyMaxmemoryPolicy = "volatile-lru"
+	JSONSchemaValkeyMaxmemoryPolicyAllkeysRandom  JSONSchemaValkeyMaxmemoryPolicy = "allkeys-random"
+	JSONSchemaValkeyMaxmemoryPolicyVolatileRandom JSONSchemaValkeyMaxmemoryPolicy = "volatile-random"
+	JSONSchemaValkeyMaxmemoryPolicyVolatileTtl    JSONSchemaValkeyMaxmemoryPolicy = "volatile-ttl"
+	JSONSchemaValkeyMaxmemoryPolicyVolatileLfu    JSONSchemaValkeyMaxmemoryPolicy = "volatile-lfu"
+	JSONSchemaValkeyMaxmemoryPolicyAllkeysLfu     JSONSchemaValkeyMaxmemoryPolicy = "allkeys-lfu"
+)
+
+type JSONSchemaValkeyPersistence string
+
+const (
+	JSONSchemaValkeyPersistenceOff JSONSchemaValkeyPersistence = "off"
+	JSONSchemaValkeyPersistenceRdb JSONSchemaValkeyPersistence = "rdb"
+)
+
+// Valkey settings
+type JSONSchemaValkey struct {
+	// Determines default pub/sub channels' ACL for new users if ACL is not supplied. When this option is not defined, all_channels is assumed to keep backward compatibility. This option doesn't affect Valkey configuration acl-pubsub-default.
+	AclChannelsDefault JSONSchemaValkeyAclChannelsDefault `json:"acl_channels_default,omitempty"`
+	// Set Valkey IO thread count. Changing this will cause a restart of the Valkey service.
+	IoThreads int `json:"io_threads,omitempty" validate:"omitempty,gte=1,lte=32"`
+	// LFU maxmemory-policy counter decay time in minutes
+	LfuDecayTime int `json:"lfu_decay_time,omitempty" validate:"omitempty,gte=1,lte=120"`
+	// Counter logarithm factor for volatile-lfu and allkeys-lfu maxmemory-policies
+	LfuLogFactor int `json:"lfu_log_factor,omitempty" validate:"omitempty,gte=0,lte=100"`
+	// Valkey maxmemory-policy
+	MaxmemoryPolicy JSONSchemaValkeyMaxmemoryPolicy `json:"maxmemory_policy,omitempty"`
+	// Set notify-keyspace-events option
+	NotifyKeyspaceEvents string `json:"notify_keyspace_events,omitempty" validate:"omitempty,lte=32"`
+	// Set number of Valkey databases. Changing this will cause a restart of the Valkey service.
+	NumberOfDatabases int `json:"number_of_databases,omitempty" validate:"omitempty,gte=1,lte=128"`
+	// When persistence is 'rdb', Valkey does RDB dumps each 10 minutes if any key is changed. Also RDB dumps are done according to backup schedule for backup purposes. When persistence is 'off', no RDB dumps and backups are done, so data can be lost at any moment if service is restarted for any reason, or if service is powered off. Also service can't be forked.
+	Persistence JSONSchemaValkeyPersistence `json:"persistence,omitempty"`
+	// Set output buffer limit for pub / sub clients in MB. The value is the hard limit, the soft limit is 1/4 of the hard limit. When setting the limit, be mindful of the available memory in the selected service plan.
+	PubsubClientOutputBufferLimit int `json:"pubsub_client_output_buffer_limit,omitempty" validate:"omitempty,gte=32,lte=512"`
+	// Require SSL to access Valkey
+	SSL *bool `json:"ssl,omitempty"`
+	// Valkey idle connection timeout in seconds
+	Timeout int `json:"timeout,omitempty" validate:"omitempty,gte=0,lte=3.1536e+07"`
 }
 
 // Kubelet image GC options

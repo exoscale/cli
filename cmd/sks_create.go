@@ -7,12 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var (
@@ -33,6 +31,7 @@ type sksCreateCmd struct {
 	AutoUpgrade                  bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version"`
 	CNI                          string            `cli-usage:"CNI plugin to deploy. e.g. 'calico', or 'cilium'"`
 	Description                  string            `cli-usage:"SKS cluster description"`
+	EnableKubeProxy              bool              `cli-flag:"enable-kube-proxy" cli-usage:"deploy the Kubernetes network proxy"`
 	KubernetesVersion            string            `cli-usage:"SKS cluster control plane Kubernetes version"`
 	Labels                       map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
 	NoCNI                        bool              `cli-usage:"do not deploy a default Container Network Interface plugin in the cluster control plane"`
@@ -93,29 +92,41 @@ func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
-	cluster := &egoscale.SKSCluster{
+func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
+
+	clusterReq := v3.CreateSKSClusterRequest{
 		AutoUpgrade: &c.AutoUpgrade,
-		CNI:         &c.CNI,
+		Cni:         v3.CreateSKSClusterRequestCni(c.CNI),
 		Description: utils.NonEmptyStringPtr(c.Description),
-		Labels: func() (v *map[string]string) {
+		Labels: func() v3.Labels {
 			if len(c.Labels) > 0 {
-				return &c.Labels
+				return c.Labels
 			}
-			return
+			return map[string]string{}
 		}(),
-		Name:         &c.Name,
-		ServiceLevel: &c.ServiceLevel,
-		Version:      &c.KubernetesVersion,
+		Name:    c.Name,
+		Level:   v3.CreateSKSClusterRequestLevel(c.ServiceLevel),
+		Version: c.KubernetesVersion,
+		EnableKubeProxy: func() *bool {
+			if cmd.Flags().Changed("enable-kube-proxy") {
+				return &c.EnableKubeProxy
+			}
+			return nil
+		}(),
+		FeatureGates: []string{},
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
 
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 	if c.NoCNI {
-		cluster.CNI = nil
+		clusterReq.Cni = ""
 	}
 
-	cluster.AddOns = func() (v *[]string) {
+	clusterReq.Addons = func() (v []string) {
 		addOns := make([]string, 0)
 
 		if !c.NoExoscaleCCM {
@@ -131,137 +142,166 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:goc
 		}
 
 		if len(addOns) > 0 {
-			v = &addOns
+			v = addOns
 		}
 		return
 	}()
 
-	if *cluster.Version == "latest" {
-		versions, err := globalstate.EgoscaleClient.ListSKSClusterVersions(ctx)
-		if err != nil || len(versions) == 0 {
-			if len(versions) == 0 {
-				err = errors.New("no version returned by the API")
-			}
+	if clusterReq.Version == "latest" {
+		versions, err := client.ListSKSClusterVersions(ctx)
+		if err != nil || len(versions.SKSClusterVersions) == 0 {
 			return fmt.Errorf("unable to retrieve SKS versions: %w", err)
 		}
-		cluster.Version = &versions[0]
+		if versions == nil || len(versions.SKSClusterVersions) == 0 {
+			err = errors.New("no version returned by the API")
+		}
+
+		clusterReq.Version = versions.SKSClusterVersions[0]
 	}
 
-	var opts []egoscale.CreateSKSClusterOpt
 	if c.OIDCClientID != "" {
-		opts = append(opts, egoscale.CreateSKSClusterWithOIDC(&egoscale.SKSClusterOIDCConfig{
-			ClientID:     &c.OIDCClientID,
-			GroupsClaim:  utils.NonEmptyStringPtr(c.OIDCGroupsClaim),
-			GroupsPrefix: utils.NonEmptyStringPtr(c.OIDCGroupsPrefix),
-			IssuerURL:    &c.OIDCIssuerURL,
-			RequiredClaim: func() (v *map[string]string) {
+
+		clusterReq.Oidc = &v3.SKSOidc{
+			ClientID:       c.OIDCClientID,
+			GroupsClaim:    c.OIDCGroupsClaim,
+			GroupsPrefix:   c.OIDCGroupsPrefix,
+			IssuerURL:      c.OIDCIssuerURL,
+			UsernameClaim:  c.OIDCUsernameClaim,
+			UsernamePrefix: c.OIDCUsernamePrefix,
+			RequiredClaim: func() (v map[string]string) {
 				if len(c.OIDCRequiredClaim) > 0 {
-					v = &c.OIDCRequiredClaim
+					v = c.OIDCRequiredClaim
 				}
-				return
+				return map[string]string{}
 			}(),
-			UsernameClaim:  utils.NonEmptyStringPtr(c.OIDCUsernameClaim),
-			UsernamePrefix: utils.NonEmptyStringPtr(c.OIDCUsernamePrefix),
-		}))
+		}
 	}
 
-	var err error
-	decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", *cluster.Name), func() {
-		cluster, err = globalstate.EgoscaleClient.CreateSKSCluster(ctx, c.Zone, cluster, opts...)
+	op, err := client.CreateSKSCluster(ctx, clusterReq)
+	if err != nil {
+		return err
+	}
+	decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", clusterReq.Name), func() {
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
 	}
 
+	clusterId := op.Reference.ID
+
 	if c.NodepoolSize > 0 {
-		nodepool := &egoscale.SKSNodepool{
-			Description:    utils.NonEmptyStringPtr(c.NodepoolDescription),
-			DiskSize:       &c.NodepoolDiskSize,
-			InstancePrefix: utils.NonEmptyStringPtr(c.NodepoolInstancePrefix),
-			Labels: func() (v *map[string]string) {
+		nodepoolReq := v3.CreateSKSNodepoolRequest{
+			Description:    c.NodepoolDescription,
+			DiskSize:       c.NodepoolDiskSize,
+			InstancePrefix: c.NodepoolInstancePrefix,
+			Labels: func() (v map[string]string) {
 				if len(c.NodepoolLabels) > 0 {
-					return &c.NodepoolLabels
+					return c.NodepoolLabels
 				}
-				return
+				return map[string]string{}
 			}(),
-			Name: utils.NonEmptyStringPtr(func() string {
+			Name: func() string {
 				if c.NodepoolName != "" {
 					return c.NodepoolName
 				}
 				return c.Name
-			}()),
-			Size: &c.NodepoolSize,
-			KubeletImageGc: &egoscale.SKSNodepoolKubeletImageGc{
-				MinAge:        &c.NodepoolImageGcMinAge,
-				LowThreshold:  &c.NodepoolImageGcLowThreshold,
-				HighThreshold: &c.NodepoolImageGcHighThreshold,
+			}(),
+			Size: c.NodepoolSize,
+			KubeletImageGC: &v3.KubeletImageGC{
+				MinAge:        c.NodepoolImageGcMinAge,
+				LowThreshold:  c.NodepoolImageGcLowThreshold,
+				HighThreshold: c.NodepoolImageGcHighThreshold,
 			},
 		}
 
 		if l := len(c.NodepoolAntiAffinityGroups); l > 0 {
-			nodepoolAntiAffinityGroupIDs := make([]string, l)
+			nodepoolReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, l)
 			for i, v := range c.NodepoolAntiAffinityGroups {
-				antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, v)
+				antiAffinityGroupList, err := client.ListAntiAffinityGroups(ctx)
+				if err != nil {
+					return err
+				}
+				aaG, err := antiAffinityGroupList.FindAntiAffinityGroup(v)
 				if err != nil {
 					return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 				}
-				nodepoolAntiAffinityGroupIDs[i] = *antiAffinityGroup.ID
+				nodepoolReq.AntiAffinityGroups[i] = aaG
 			}
-			nodepool.AntiAffinityGroupIDs = &nodepoolAntiAffinityGroupIDs
 		}
 
 		if c.NodepoolDeployTarget != "" {
-			deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.NodepoolDeployTarget)
+			deployTargetList, err := client.ListDeployTargets(ctx)
+			if err != nil {
+				return err
+			}
+			deployTarget, err := deployTargetList.FindDeployTarget(c.NodepoolDeployTarget)
 			if err != nil {
 				return fmt.Errorf("error retrieving Deploy Target: %w", err)
 			}
-			nodepool.DeployTargetID = deployTarget.ID
+			nodepoolReq.DeployTarget = &deployTarget
 		}
 
-		nodepoolInstanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.NodepoolInstanceType)
+		nodepoolInstanceTypeList, err := client.ListInstanceTypes(ctx)
+		if err != nil {
+			return err
+		}
+		nodepoolInstanceType, err := nodepoolInstanceTypeList.FindInstanceTypeByIdOrFamilyAndSize(c.NodepoolInstanceType)
 		if err != nil {
 			return fmt.Errorf("error retrieving instance type: %w", err)
 		}
-		nodepool.InstanceTypeID = nodepoolInstanceType.ID
+		nodepoolReq.InstanceType = &nodepoolInstanceType
 
 		if l := len(c.NodepoolPrivateNetworks); l > 0 {
-			nodepoolPrivateNetworkIDs := make([]string, l)
+			nodepoolPrivateNetworks := make([]v3.PrivateNetwork, l)
 			for i, v := range c.NodepoolPrivateNetworks {
-				privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, v)
+				privateNetworksList, err := client.ListPrivateNetworks(ctx)
+				if err != nil {
+					return err
+				}
+				privateNetwork, err := privateNetworksList.FindPrivateNetwork(v)
 				if err != nil {
 					return fmt.Errorf("error retrieving Private Network: %w", err)
 				}
-				nodepoolPrivateNetworkIDs[i] = *privateNetwork.ID
+				nodepoolPrivateNetworks[i] = privateNetwork
 			}
-			nodepool.PrivateNetworkIDs = &nodepoolPrivateNetworkIDs
+			nodepoolReq.PrivateNetworks = nodepoolPrivateNetworks
 		}
 
 		if l := len(c.NodepoolSecurityGroups); l > 0 {
-			nodepoolSecurityGroupIDs := make([]string, l)
+			nodepoolSecurityGroups := make([]v3.SecurityGroup, l)
 			for i, v := range c.NodepoolSecurityGroups {
-				securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, v)
+				securityGroupList, err := client.ListSecurityGroups(ctx)
+				if err != nil {
+					return err
+				}
+				securityGroup, err := securityGroupList.FindSecurityGroup(v)
 				if err != nil {
 					return fmt.Errorf("error retrieving Security Group: %w", err)
 				}
-				nodepoolSecurityGroupIDs[i] = *securityGroup.ID
+				nodepoolSecurityGroups[i] = securityGroup
 			}
-			nodepool.SecurityGroupIDs = &nodepoolSecurityGroupIDs
+			nodepoolReq.SecurityGroups = nodepoolSecurityGroups
 		}
 
 		if len(c.NodepoolTaints) > 0 {
-			taints := make(map[string]*egoscale.SKSNodepoolTaint)
+			taints := make(v3.SKSNodepoolTaints)
 			for _, t := range c.NodepoolTaints {
-				key, taint, err := parseSKSNodepoolTaint(t)
+				key, taint, err := parseSKSNodepoolTaintV3(t)
 				if err != nil {
 					return fmt.Errorf("invalid taint value %q: %w", t, err)
 				}
-				taints[key] = taint
+				taints[key] = *taint
 			}
-			nodepool.Taints = &taints
+			nodepoolReq.Taints = taints
 		}
 
-		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", *nodepool.Name), func() {
-			_, err = globalstate.EgoscaleClient.CreateSKSNodepool(ctx, c.Zone, cluster, nodepool)
+		op, err := client.CreateSKSNodepool(ctx, clusterId, nodepoolReq)
+		if err != nil {
+			return err
+		}
+		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolReq.Name), func() {
+			op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 		if err != nil {
 			return err
@@ -271,7 +311,7 @@ func (c *sksCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:goc
 	if !globalstate.Quiet {
 		return (&sksShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Cluster:            *cluster.ID,
+			Cluster:            clusterId.String(),
 			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
