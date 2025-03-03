@@ -4,7 +4,8 @@
 
 ### Features
 
-- storage: bucket replication support #668 
+- storage: bucket replication support #668
+- SKS Cluster: add rotate operators CA cmd
 
 ## 1.83.1
 
