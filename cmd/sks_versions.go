@@ -6,10 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksClusterVersionsItemOutput struct {
@@ -27,7 +26,7 @@ type sksVersionsCmd struct {
 
 	_ bool `cli-cmd:"versions"`
 
-	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *sksVersionsCmd) cmdAliases() []string { return gListAlias }
@@ -47,17 +46,21 @@ func (c *sksVersionsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksVersionsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	out := make(sksClusterVersionsOutput, 0)
-
-	versions, err := globalstate.EgoscaleClient.ListSKSClusterVersions(ctx)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	for _, v := range versions {
-		out = append(out, sksClusterVersionsItemOutput{Version: v})
+	out := make(sksClusterVersionsOutput, 0)
+
+	versions, err := client.ListSKSClusterVersions(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range versions.SKSClusterVersions {
+		_ = append(out, sksClusterVersionsItemOutput{Version: v})
 	}
 
 	return c.outputFunc(&out, nil)
