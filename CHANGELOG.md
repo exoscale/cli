@@ -7,6 +7,7 @@
 ### Features
 
 - sks: move cluster creation to egoscale v3 + enable-kube-proxy flag
+- sks: add rotate operators CA cmd; more related egoscale v3 migrations
 
 ### Bug fixes
 
