@@ -6,6 +6,7 @@
 
 - storage: bucket replication support #668
 - sks: move cluster creation to egoscale v3 + enable-kube-proxy flag
+- SKS Cluster: add rotate operators CA cmd
 
 ## 1.83.1
 
