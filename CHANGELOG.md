@@ -4,7 +4,8 @@
 
 ### Features
 
-- storage: bucket replication support #668 
+- storage: bucket replication support #668
+- sks: move cluster creation to egoscale v3 + enable-kube-proxy flag
 
 ## 1.83.1
 
