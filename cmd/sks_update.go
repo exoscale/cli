@@ -111,7 +111,7 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return (&sksShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            string(cluster.ID),
-			Zone:               string(c.Zone),
+			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
 

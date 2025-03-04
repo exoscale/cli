@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksUpgradeServiceLevelCmd struct {
@@ -18,8 +16,8 @@ type sksUpgradeServiceLevelCmd struct {
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksUpgradeServiceLevelCmd) cmdAliases() []string { return nil }
@@ -40,29 +38,42 @@ func (c *sksUpgradeServiceLevelCmd) cmdPreRun(cmd *cobra.Command, args []string)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
+func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(cluster string) bool {
+	return askQuestion(fmt.Sprintf(
+		"Are you sure you want to upgrade the cluster %q to service level pro?",
+		c.Cluster,
+	))
+}
+
 func (c *sksUpgradeServiceLevelCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to upgrade the cluster %q to service level pro?",
-			c.Cluster,
-		)) {
+		if !c.confirmUpgrade(c.Cluster) {
 			return nil
 		}
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
+	resp, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	op, err := client.UpgradeSKSClusterServiceLevel(ctx, cluster.ID)
+
 	decorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q service level...", c.Cluster), func() {
-		err = globalstate.EgoscaleClient.UpgradeSKSClusterServiceLevel(ctx, c.Zone, cluster)
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
+
 	if err != nil {
 		return err
 	}
@@ -70,7 +81,7 @@ func (c *sksUpgradeServiceLevelCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&sksShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Cluster:            *cluster.ID,
+			Cluster:            cluster.ID.String(),
 			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
