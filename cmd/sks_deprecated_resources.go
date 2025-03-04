@@ -13,6 +13,9 @@ import (
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
+// TODO: full v3 migration is blocked by
+// https://app.shortcut.com/exoscale/story/122943/bug-in-egoscale-v3-listsksclusterdeprecatedresources
+
 type sksListDeprecatedResourcesItemOutput struct {
 	Group          string `json:"group"`
 	Version        string `json:"version"`
