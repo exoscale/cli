@@ -60,7 +60,7 @@ func (c *sksVersionsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	for _, v := range versions.SKSClusterVersions {
-		_ = append(out, sksClusterVersionsItemOutput{Version: v})
+		out = append(out, sksClusterVersionsItemOutput{Version: v})
 	}
 
 	return c.outputFunc(&out, nil)
