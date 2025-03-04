@@ -10,7 +10,8 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	v3 "github.com/exoscale/egoscale/v3"
+	egoscale "github.com/exoscale/egoscale/v2"
+	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 var (
@@ -313,6 +314,8 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            clusterId.String(),
 			Zone:               c.Zone,
+			Cluster:            *cluster.ID,
+			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
