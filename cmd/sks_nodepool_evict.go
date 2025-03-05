@@ -12,6 +12,7 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksNodepoolEvictCmd struct {
@@ -105,7 +106,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            *cluster.ID,
 			Nodepool:           *nodepool.ID,
-			Zone:               c.Zone,
+			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
