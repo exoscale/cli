@@ -132,7 +132,7 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	sksNodepools := make([]sksNodepoolShowOutput, 0)
 	for _, np := range cluster.Nodepools {
 		sksNodepools = append(sksNodepools, sksNodepoolShowOutput{
-			ID:   np.ID.String(),
+			ID:   np.ID,
 			Name: np.Name,
 		})
 	}
