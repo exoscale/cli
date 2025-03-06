@@ -26,6 +26,10 @@
 - dbaas: remove redis create
 - SKS cluster: display enable kube proxy #675
 
+### Improvements
+
+- SKS: related commands are migrated to egoscale v3
+
 ## 1.83.1
 
 ### Improvements

@@ -103,6 +103,7 @@ func createNodepoolRequest(
 			if err != nil {
 				return nodepoolReq, err
 			}
+
 			aaG, err := antiAffinityGroupList.FindAntiAffinityGroup(v)
 			if err != nil {
 				return nodepoolReq, fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
