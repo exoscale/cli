@@ -7,11 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -24,8 +21,8 @@ type sksNodepoolScaleCmd struct {
 	Nodepool string `cli-arg:"#" cli-usage:"NODEPOOL-NAME|ID"`
 	Size     int64  `cli-arg:"#"`
 
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksNodepoolScaleCmd) cmdAliases() []string { return nil }
@@ -61,20 +58,26 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	var nodepool *egoscale.SKSNodepool
+	resp, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	var nodepool *v3.SKSNodepool
 	for _, n := range cluster.Nodepools {
-		if *n.ID == c.Nodepool || *n.Name == c.Nodepool {
-			nodepool = n
+		if n.ID.String() == c.Nodepool || n.Name == c.Nodepool {
+			nodepool = &n
 			break
 		}
 	}
@@ -82,8 +85,17 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return errors.New("nodepool not found")
 	}
 
+	req := v3.ScaleSKSNodepoolRequest{
+		Size: c.Size,
+	}
+
+	op, err := client.ScaleSKSNodepool(ctx, cluster.ID, nodepool.ID, req)
+	if err != nil {
+		return err
+	}
+
 	decorateAsyncOperation(fmt.Sprintf("Scaling Nodepool %q...", c.Nodepool), func() {
-		err = globalstate.EgoscaleClient.ScaleSKSNodepool(ctx, c.Zone, cluster, nodepool, c.Size)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -92,9 +104,9 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&sksNodepoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Cluster:            *cluster.ID,
-			Nodepool:           *nodepool.ID,
-			Zone:               v3.ZoneName(c.Zone),
+			Cluster:            cluster.ID.String(),
+			Nodepool:           nodepool.ID.String(),
+			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
 
