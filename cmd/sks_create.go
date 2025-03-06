@@ -191,109 +191,34 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 	clusterId := op.Reference.ID
 
 	if c.NodepoolSize > 0 {
-		nodepoolReq := v3.CreateSKSNodepoolRequest{
-			Description:    c.NodepoolDescription,
-			DiskSize:       c.NodepoolDiskSize,
-			InstancePrefix: c.NodepoolInstancePrefix,
-			Labels: func() map[string]string {
-				if len(c.NodepoolLabels) > 0 {
-					return c.NodepoolLabels
-				}
-				return map[string]string{}
-			}(),
-			Name: func() string {
-				if c.NodepoolName != "" {
-					return c.NodepoolName
-				}
-				return c.Name
-			}(),
-			Size: c.NodepoolSize,
-			KubeletImageGC: &v3.KubeletImageGC{
+		nodepoolName := c.Name
+		if c.NodepoolName != "" {
+			nodepoolName = c.NodepoolName
+		}
+
+		nodepoolReq, err := createNodepoolRequest(
+			ctx,
+			client,
+			nodepoolName,
+			c.NodepoolDescription,
+			c.NodepoolDiskSize,
+			c.NodepoolInstancePrefix,
+			c.NodepoolSize,
+			c.NodepoolInstanceType,
+			c.NodepoolLabels,
+			c.NodepoolAntiAffinityGroups,
+			c.NodepoolDeployTarget,
+			c.NodepoolPrivateNetworks,
+			c.NodepoolSecurityGroups,
+			c.NodepoolTaints,
+			&v3.KubeletImageGC{
 				MinAge:        c.NodepoolImageGcMinAge,
 				LowThreshold:  c.NodepoolImageGcLowThreshold,
 				HighThreshold: c.NodepoolImageGcHighThreshold,
 			},
-		}
-
-		if l := len(c.NodepoolAntiAffinityGroups); l > 0 {
-			nodepoolReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, l)
-			for i, v := range c.NodepoolAntiAffinityGroups {
-				antiAffinityGroupList, err := client.ListAntiAffinityGroups(ctx)
-				if err != nil {
-					return err
-				}
-				aaG, err := antiAffinityGroupList.FindAntiAffinityGroup(v)
-				if err != nil {
-					return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
-				}
-				nodepoolReq.AntiAffinityGroups[i] = aaG
-			}
-		}
-
-		if c.NodepoolDeployTarget != "" {
-			deployTargetList, err := client.ListDeployTargets(ctx)
-			if err != nil {
-				return err
-			}
-			deployTarget, err := deployTargetList.FindDeployTarget(c.NodepoolDeployTarget)
-			if err != nil {
-				return fmt.Errorf("error retrieving Deploy Target: %w", err)
-			}
-			nodepoolReq.DeployTarget = &deployTarget
-		}
-
-		nodepoolInstanceTypeList, err := client.ListInstanceTypes(ctx)
+		)
 		if err != nil {
 			return err
-		}
-		nodepoolInstanceType, err := nodepoolInstanceTypeList.FindInstanceTypeByIdOrFamilyAndSize(c.NodepoolInstanceType)
-		if err != nil {
-			return fmt.Errorf("error retrieving instance type: %w", err)
-		}
-		nodepoolReq.InstanceType = &nodepoolInstanceType
-
-		if l := len(c.NodepoolPrivateNetworks); l > 0 {
-			nodepoolPrivateNetworks := make([]v3.PrivateNetwork, l)
-			for i, v := range c.NodepoolPrivateNetworks {
-				privateNetworksList, err := client.ListPrivateNetworks(ctx)
-				if err != nil {
-					return err
-				}
-				privateNetwork, err := privateNetworksList.FindPrivateNetwork(v)
-				if err != nil {
-					return fmt.Errorf("error retrieving Private Network: %w", err)
-				}
-				nodepoolPrivateNetworks[i] = privateNetwork
-			}
-			nodepoolReq.PrivateNetworks = nodepoolPrivateNetworks
-		}
-
-		if l := len(c.NodepoolSecurityGroups); l > 0 {
-			nodepoolSecurityGroups := make([]v3.SecurityGroup, l)
-			for i, v := range c.NodepoolSecurityGroups {
-				securityGroupList, err := client.ListSecurityGroups(ctx)
-				if err != nil {
-					return err
-				}
-				securityGroup, err := securityGroupList.FindSecurityGroup(v)
-				if err != nil {
-					return fmt.Errorf("error retrieving Security Group: %w", err)
-				}
-				nodepoolSecurityGroups[i] = securityGroup
-			}
-			nodepoolReq.SecurityGroups = nodepoolSecurityGroups
-		}
-
-		if len(c.NodepoolTaints) > 0 {
-			taints := make(v3.SKSNodepoolTaints)
-			for _, t := range c.NodepoolTaints {
-				key, taint, err := parseSKSNodepoolTaintV3(t)
-				if err != nil {
-					return fmt.Errorf("invalid taint value %q: %w", t, err)
-				}
-				taints[key] = *taint
-			}
-			nodepoolReq.Taints = taints
 		}
 
 		op, err := client.CreateSKSNodepool(ctx, clusterId, nodepoolReq)
