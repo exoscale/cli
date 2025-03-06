@@ -7,11 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -24,8 +21,8 @@ type sksNodepoolEvictCmd struct {
 	Nodepool string   `cli-arg:"#" cli-usage:"NODEPOOL-NAME|ID"`
 	Nodes    []string `cli-arg:"*" cli-usage:"NODE-NAME|ID"`
 
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksNodepoolEvictCmd) cmdAliases() []string { return nil }
@@ -64,20 +61,26 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	var nodepool *egoscale.SKSNodepool
+	resp, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	var nodepool *v3.SKSNodepool
 	for _, n := range cluster.Nodepools {
-		if *n.ID == c.Nodepool || *n.Name == c.Nodepool {
-			nodepool = n
+		if n.ID.String() == c.Nodepool || n.Name == c.Nodepool {
+			nodepool = &n
 			break
 		}
 	}
@@ -85,17 +88,31 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("nodepool not found")
 	}
 
-	nodes := make([]string, len(c.Nodes))
+	nodes := make([]v3.UUID, len(c.Nodes))
 	for i, n := range c.Nodes {
-		instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, n)
+		resp, err := client.ListInstances(ctx)
+		if err != nil {
+			return err
+		}
+
+		instance, err := resp.FindListInstancesResponseInstances(n)
 		if err != nil {
 			return fmt.Errorf("invalid Node %q: %w", n, err)
 		}
-		nodes[i] = *instance.ID
+		nodes[i] = instance.ID
+	}
+
+	req := v3.EvictSKSNodepoolMembersRequest{
+		Instances: nodes,
+	}
+
+	op, err := client.EvictSKSNodepoolMembers(ctx, cluster.ID, nodepool.ID, req)
+	if err != nil {
+		return err
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Evicting Nodes from Nodepool %q...", c.Nodepool), func() {
-		err = globalstate.EgoscaleClient.EvictSKSNodepoolMembers(ctx, c.Zone, cluster, nodepool, nodes)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -104,8 +121,8 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&sksNodepoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Cluster:            *cluster.ID,
-			Nodepool:           *nodepool.ID,
+			Cluster:            cluster.ID.String(),
+			Nodepool:           nodepool.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
