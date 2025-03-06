@@ -123,7 +123,7 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            cluster.ID.String(),
 			Nodepool:           nodepool.ID.String(),
-			Zone:               v3.ZoneName(c.Zone),
+			Zone:               c.Zone,
 		}).cmdRun(nil, nil)
 	}
 
