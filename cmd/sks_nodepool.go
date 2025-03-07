@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	egoscale "github.com/exoscale/egoscale/v2"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -24,29 +23,8 @@ var errExpectedFormatNodepoolTaint = errors.New("expected format KEY=VALUE:EFFEC
 // https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#taint
 // We will support only: KEY=VALUE:EFFECT for the moment as the API support only this format.
 // or an error if the input value parsing failed.
-func parseSKSNodepoolTaint(v string) (string, *egoscale.SKSNodepoolTaint, error) {
-	kv := strings.Split(v, "=")
-	if len(kv) != 2 {
-		return "", nil, errExpectedFormatNodepoolTaint
-	}
 
-	valueEffect := strings.Split(kv[1], ":")
-	if len(valueEffect) != 2 {
-		return "", nil, errExpectedFormatNodepoolTaint
-	}
-
-	taintKey := kv[0]
-	taintValue := valueEffect[0]
-	taintEffect := valueEffect[1]
-
-	if taintKey == "" || taintValue == "" || taintEffect == "" {
-		return "", nil, errExpectedFormatNodepoolTaint
-	}
-
-	return taintKey, &egoscale.SKSNodepoolTaint{Effect: taintEffect, Value: taintValue}, nil
-}
-
-func parseSKSNodepoolTaintV3(v string) (string, *v3.SKSNodepoolTaint, error) {
+func parseSKSNodepoolTaint(v string) (string, *v3.SKSNodepoolTaint, error) {
 	kv := strings.Split(v, "=")
 	if len(kv) != 2 {
 		return "", nil, errExpectedFormatNodepoolTaint
@@ -96,80 +74,40 @@ func createNodepoolRequest(
 		KubeletImageGC: kubeletImageGC,
 	}
 
-	if l := len(antiAffinityGroups); l > 0 {
-		nodepoolReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, l)
-		for i, v := range antiAffinityGroups {
-			antiAffinityGroupList, err := client.ListAntiAffinityGroups(ctx)
-			if err != nil {
-				return nodepoolReq, err
-			}
-
-			aaG, err := antiAffinityGroupList.FindAntiAffinityGroup(v)
-			if err != nil {
-				return nodepoolReq, fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
-			}
-			nodepoolReq.AntiAffinityGroups[i] = aaG
-		}
-	}
-
-	if deployTarget != "" {
-		deployTargetList, err := client.ListDeployTargets(ctx)
-		if err != nil {
-			return nodepoolReq, err
-		}
-		deployTarget, err := deployTargetList.FindDeployTarget(deployTarget)
-		if err != nil {
-			return nodepoolReq, fmt.Errorf("error retrieving Deploy Target: %w", err)
-		}
-		nodepoolReq.DeployTarget = &deployTarget
-	}
-
-	nodepoolInstanceTypeList, err := client.ListInstanceTypes(ctx)
+	aaGroups, err := lookupAntiAffinityGroups(ctx, client, antiAffinityGroups)
 	if err != nil {
 		return nodepoolReq, err
 	}
-	nodepoolInstanceType, err := nodepoolInstanceTypeList.FindInstanceTypeByIdOrFamilyAndSize(instanceType)
+	nodepoolReq.AntiAffinityGroups = aaGroups
+
+	dt, err := lookupDeployTarget(ctx, client, deployTarget)
 	if err != nil {
-		return nodepoolReq, fmt.Errorf("error retrieving instance type: %w", err)
+		return nodepoolReq, err
 	}
-	nodepoolReq.InstanceType = &nodepoolInstanceType
+	nodepoolReq.DeployTarget = dt
 
-	if l := len(privateNetworks); l > 0 {
-		nodepoolPrivateNetworks := make([]v3.PrivateNetwork, l)
-		for i, v := range privateNetworks {
-			privateNetworksList, err := client.ListPrivateNetworks(ctx)
-			if err != nil {
-				return nodepoolReq, err
-			}
-			privateNetwork, err := privateNetworksList.FindPrivateNetwork(v)
-			if err != nil {
-				return nodepoolReq, fmt.Errorf("error retrieving Private Network: %w", err)
-			}
-			nodepoolPrivateNetworks[i] = privateNetwork
-		}
-		nodepoolReq.PrivateNetworks = nodepoolPrivateNetworks
+	it, err := lookupInstanceType(ctx, client, instanceType)
+	if err != nil {
+		return nodepoolReq, err
 	}
+	nodepoolReq.InstanceType = it
 
-	if l := len(securityGroups); l > 0 {
-		nodepoolSecurityGroups := make([]v3.SecurityGroup, l)
-		for i, v := range securityGroups {
-			securityGroupList, err := client.ListSecurityGroups(ctx)
-			if err != nil {
-				return nodepoolReq, err
-			}
-			securityGroup, err := securityGroupList.FindSecurityGroup(v)
-			if err != nil {
-				return nodepoolReq, fmt.Errorf("error retrieving Security Group: %w", err)
-			}
-			nodepoolSecurityGroups[i] = securityGroup
-		}
-		nodepoolReq.SecurityGroups = nodepoolSecurityGroups
+	pn, err := lookupPrivateNetworks(ctx, client, privateNetworks)
+	if err != nil {
+		return nodepoolReq, err
 	}
+	nodepoolReq.PrivateNetworks = pn
+
+	sg, err := lookupSecurityGroups(ctx, client, securityGroups)
+	if err != nil {
+		return nodepoolReq, err
+	}
+	nodepoolReq.SecurityGroups = sg
 
 	if len(taints) > 0 {
 		nodepoolTaints := make(v3.SKSNodepoolTaints)
 		for _, t := range taints {
-			key, taint, err := parseSKSNodepoolTaintV3(t)
+			key, taint, err := parseSKSNodepoolTaint(t)
 			if err != nil {
 				return nodepoolReq, fmt.Errorf("invalid taint value %q: %w", t, err)
 			}
@@ -179,6 +117,94 @@ func createNodepoolRequest(
 	}
 
 	return nodepoolReq, nil
+}
+
+func lookupAntiAffinityGroups(ctx context.Context, client *v3.Client, names []string) ([]v3.AntiAffinityGroup, error) {
+	if len(names) == 0 {
+		return nil, nil
+	}
+
+	groups := make([]v3.AntiAffinityGroup, len(names))
+	for i, name := range names {
+		antiAffinityGroupList, err := client.ListAntiAffinityGroups(ctx)
+		if err != nil {
+			return nil, err
+		}
+		group, err := antiAffinityGroupList.FindAntiAffinityGroup(name)
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
+		}
+		groups[i] = group
+	}
+	return groups, nil
+}
+
+func lookupDeployTarget(ctx context.Context, client *v3.Client, name string) (*v3.DeployTarget, error) {
+	if name == "" {
+		return nil, nil
+	}
+
+	deployTargetList, err := client.ListDeployTargets(ctx)
+	if err != nil {
+		return nil, err
+	}
+	deployTarget, err := deployTargetList.FindDeployTarget(name)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving Deploy Target: %w", err)
+	}
+	return &deployTarget, nil
+}
+
+func lookupInstanceType(ctx context.Context, client *v3.Client, name string) (*v3.InstanceType, error) {
+	instanceTypeList, err := client.ListInstanceTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	instanceType, err := instanceTypeList.FindInstanceTypeByIdOrFamilyAndSize(name)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving instance type: %w", err)
+	}
+	return &instanceType, nil
+}
+
+func lookupPrivateNetworks(ctx context.Context, client *v3.Client, names []string) ([]v3.PrivateNetwork, error) {
+	if len(names) == 0 {
+		return nil, nil
+	}
+
+	networks := make([]v3.PrivateNetwork, len(names))
+	for i, name := range names {
+		networksList, err := client.ListPrivateNetworks(ctx)
+		if err != nil {
+			return nil, err
+		}
+		network, err := networksList.FindPrivateNetwork(name)
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving Private Network: %w", err)
+		}
+		networks[i] = network
+	}
+	return networks, nil
+}
+
+func lookupSecurityGroups(ctx context.Context, client *v3.Client, names []string) ([]v3.SecurityGroup, error) {
+	if len(names) == 0 {
+		return nil, nil
+	}
+
+	groups := make([]v3.SecurityGroup, len(names))
+	for i, name := range names {
+		groupsList, err := client.ListSecurityGroups(ctx)
+		if err != nil {
+			return nil, err
+		}
+		group, err := groupsList.FindSecurityGroup(name)
+		if err != nil {
+			return nil, fmt.Errorf("error retrieving Security Group: %w", err)
+		}
+		groups[i] = group
+	}
+	return groups, nil
 }
 
 func init() {
