@@ -3,7 +3,7 @@ package cmd
 import (
 	"testing"
 
-	egoscale "github.com/exoscale/egoscale/v2"
+	v3 "github.com/exoscale/egoscale/v3"
 
 	"github.com/stretchr/testify/require"
 )
@@ -12,19 +12,19 @@ func TestParseSKSNodepoolTaint(t *testing.T) {
 	testTaints := []struct {
 		input         string
 		expectedKey   string
-		expectedTaint egoscale.SKSNodepoolTaint
+		expectedTaint v3.SKSNodepoolTaint
 		err           error
 	}{
 		{
 			input:         "key=value:effect",
 			expectedKey:   "key",
-			expectedTaint: egoscale.SKSNodepoolTaint{Value: "value", Effect: "effect"},
+			expectedTaint: v3.SKSNodepoolTaint{Value: "value", Effect: "effect"},
 			err:           nil,
 		},
 		{
 			input:         "exoscale.com/key=value:effect",
 			expectedKey:   "exoscale.com/key",
-			expectedTaint: egoscale.SKSNodepoolTaint{Value: "value", Effect: "effect"},
+			expectedTaint: v3.SKSNodepoolTaint{Value: "value", Effect: "effect"},
 			err:           nil,
 		},
 		{
