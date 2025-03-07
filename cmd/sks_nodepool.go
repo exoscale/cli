@@ -46,67 +46,71 @@ func parseSKSNodepoolTaint(v string) (string, *v3.SKSNodepoolTaint, error) {
 	return taintKey, &v3.SKSNodepoolTaint{Effect: v3.SKSNodepoolTaintEffect(taintEffect), Value: taintValue}, nil
 }
 
+type CreateNodepoolOpts struct {
+	Name               string
+	Description        string
+	DiskSize           int64
+	InstancePrefix     string
+	Size               int64
+	InstanceType       string
+	Labels             map[string]string
+	AntiAffinityGroups []string
+	DeployTarget       string
+	PrivateNetworks    []string
+	SecurityGroups     []string
+	Taints             []string
+	KubeletImageGC     *v3.KubeletImageGC
+}
+
 func createNodepoolRequest(
 	ctx context.Context,
 	client *v3.Client,
-	name string,
-	description string,
-	diskSize int64,
-	instancePrefix string,
-	size int64,
-	instanceType string,
-	labels map[string]string,
-	antiAffinityGroups []string,
-	deployTarget string,
-	privateNetworks []string,
-	securityGroups []string,
-	taints []string,
-	kubeletImageGC *v3.KubeletImageGC,
+	opts CreateNodepoolOpts,
 ) (v3.CreateSKSNodepoolRequest, error) {
 
 	nodepoolReq := v3.CreateSKSNodepoolRequest{
-		Description:    description,
-		DiskSize:       diskSize,
-		InstancePrefix: instancePrefix,
-		Name:           name,
-		Size:           size,
-		Labels:         labels,
-		KubeletImageGC: kubeletImageGC,
+		Description:    opts.Description,
+		DiskSize:       opts.DiskSize,
+		InstancePrefix: opts.InstancePrefix,
+		Name:           opts.Name,
+		Size:           opts.Size,
+		Labels:         opts.Labels,
+		KubeletImageGC: opts.KubeletImageGC,
 	}
 
-	aaGroups, err := lookupAntiAffinityGroups(ctx, client, antiAffinityGroups)
+	aaGroups, err := lookupAntiAffinityGroups(ctx, client, opts.AntiAffinityGroups)
 	if err != nil {
 		return nodepoolReq, err
 	}
 	nodepoolReq.AntiAffinityGroups = aaGroups
 
-	dt, err := lookupDeployTarget(ctx, client, deployTarget)
+	dt, err := lookupDeployTarget(ctx, client, opts.DeployTarget)
 	if err != nil {
 		return nodepoolReq, err
 	}
 	nodepoolReq.DeployTarget = dt
 
-	it, err := lookupInstanceType(ctx, client, instanceType)
+	it, err := lookupInstanceType(ctx, client, opts.InstanceType)
 	if err != nil {
 		return nodepoolReq, err
 	}
 	nodepoolReq.InstanceType = it
 
-	pn, err := lookupPrivateNetworks(ctx, client, privateNetworks)
+	pn, err := lookupPrivateNetworks(ctx, client, opts.PrivateNetworks)
 	if err != nil {
 		return nodepoolReq, err
 	}
 	nodepoolReq.PrivateNetworks = pn
 
-	sg, err := lookupSecurityGroups(ctx, client, securityGroups)
+	sg, err := lookupSecurityGroups(ctx, client, opts.SecurityGroups)
 	if err != nil {
 		return nodepoolReq, err
 	}
 	nodepoolReq.SecurityGroups = sg
 
-	if len(taints) > 0 {
+	if len(opts.Taints) > 0 {
 		nodepoolTaints := make(v3.SKSNodepoolTaints)
-		for _, t := range taints {
+		for _, t := range opts.Taints {
 			key, taint, err := parseSKSNodepoolTaint(t)
 			if err != nil {
 				return nodepoolReq, fmt.Errorf("invalid taint value %q: %w", t, err)
