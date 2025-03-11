@@ -526,17 +526,35 @@ func (c *Client) UploadFile(ctx context.Context, bucket, file, key, acl string) 
 		putObjectInput.ACL = types.ObjectCannedACL(acl)
 	}
 
-	_, err = c.NewUploader(c.S3Client, partSizeOpt).
-		Upload(ctx, &putObjectInput)
+	uploadDone := make(chan struct{})
+
+	var uploadErr error
+
+	go func() {
+		_, uploadErr = c.NewUploader(c.S3Client, partSizeOpt).Upload(ctx, &putObjectInput)
+		close(uploadDone)
+	}()
+
+	select {
+	case <-uploadDone:
+		if uploadErr != nil {
+			bar.Abort(true)
+			return uploadErr
+		}
+
+	case <-ctx.Done():
+		bar.Abort(true)
+		uploadErr = context.Canceled
+	}
 
 	pb.Wait()
 
-	if errors.Is(err, context.Canceled) {
+	if errors.Is(uploadErr, context.Canceled) {
 		fmt.Fprintf(os.Stderr, "\rUpload interrupted by user\n")
 		return nil
 	}
 
-	return err
+	return uploadErr
 }
 
 func (c *Client) EstimatePartSize(f *os.File) (int64, error) {
