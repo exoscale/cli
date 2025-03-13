@@ -75,6 +75,7 @@ type dbServiceShowOutput struct {
 	Mysql      *dbServiceMysqlShowOutput      `json:"mysql,omitempty"`
 	PG         *dbServicePGShowOutput         `json:"pg,omitempty"`
 	Redis      *dbServiceRedisShowOutput      `json:"redis,omitempty"`
+	Valkey     *dbServiceValkeyShowOutput     `json:"valkey,omitempty"`
 	Opensearch *dbServiceOpensearchShowOutput `json:"opensearch,omitempty"`
 }
 
@@ -118,6 +119,8 @@ func (o *dbServiceShowOutput) ToTable() {
 		formatDatabaseServicePGTable(t, o.PG)
 	case o.Redis != nil:
 		formatDatabaseServiceRedisTable(t, o.Redis)
+	case o.Valkey != nil:
+		formatDatabaseServiceValkeyTable(t, o.Valkey)
 	}
 }
 
@@ -214,6 +217,8 @@ func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return c.outputFunc(c.showDatabaseServicePG(ctx))
 	case "redis":
 		return c.outputFunc(c.showDatabaseServiceRedis(ctx))
+	case "valkey":
+		return c.outputFunc(c.showDatabaseServiceValkey(ctx))
 	default:
 		return fmt.Errorf("unsupported service type %q", dbType)
 	}
