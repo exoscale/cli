@@ -1,28 +1,26 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksShowOutput struct {
-	ID           string                  `json:"id"`
+	ID           v3.UUID                 `json:"id"`
 	Name         string                  `json:"name"`
 	Description  string                  `json:"description"`
 	CreationDate string                  `json:"creation_date"`
 	AutoUpgrade  bool                    `json:"auto_upgrade"`
-	Zone         string                  `json:"zone"`
+	Zone         v3.ZoneName             `json:"zone"`
 	Endpoint     string                  `json:"endpoint"`
 	Version      string                  `json:"version"`
 	ServiceLevel string                  `json:"service_level"`
@@ -40,10 +38,10 @@ func (o *sksShowOutput) ToTable() {
 	t.SetHeader([]string{"SKS Cluster"})
 	defer t.Render()
 
-	t.Append([]string{"ID", o.ID})
+	t.Append([]string{"ID", o.ID.String()})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
-	t.Append([]string{"Zone", o.Zone})
+	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"Creation Date", o.CreationDate})
 	t.Append([]string{"Auto-upgrade", fmt.Sprint(o.AutoUpgrade)})
 	t.Append([]string{"Endpoint", o.Endpoint})
@@ -91,7 +89,7 @@ type sksShowCmd struct {
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Zone string `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksShowCmd) cmdAliases() []string { return gShowAlias }
@@ -111,49 +109,62 @@ func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
+		return err
+	}
+	resp, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	clst, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := client.GetSKSCluster(ctx, clst.ID)
+	if err != nil {
 		return err
 	}
 
 	sksNodepools := make([]sksNodepoolShowOutput, 0)
 	for _, np := range cluster.Nodepools {
 		sksNodepools = append(sksNodepools, sksNodepoolShowOutput{
-			ID:   *np.ID,
-			Name: *np.Name,
+			ID:   np.ID,
+			Name: np.Name,
 		})
 	}
+
+	cni := string(cluster.Cni)
+	description := string(cluster.Description)
 
 	return c.outputFunc(
 		&sksShowOutput{
 			AddOns: func() (v []string) {
-				if cluster.AddOns != nil {
-					v = *cluster.AddOns
+				if cluster.Addons != nil {
+					v = cluster.Addons
 				}
 				return
 			}(),
-			CNI:          utils.DefaultString(cluster.CNI, "-"),
-			CreationDate: cluster.CreatedAt.String(),
+			CNI:          utils.DefaultString(&cni, "-"),
+			CreationDate: cluster.CreatedAT.String(),
 			AutoUpgrade:  *cluster.AutoUpgrade,
-			Description:  utils.DefaultString(cluster.Description, ""),
-			Endpoint:     *cluster.Endpoint,
-			ID:           *cluster.ID,
+			Description:  utils.DefaultString(&description, ""),
+			Endpoint:     cluster.Endpoint,
+			ID:           cluster.ID,
 			Labels: func() (v map[string]string) {
 				if cluster.Labels != nil {
-					v = *cluster.Labels
+					v = cluster.Labels
 				}
 				return
 			}(),
-			Name:         *cluster.Name,
+			Name:         cluster.Name,
 			Nodepools:    sksNodepools,
-			ServiceLevel: *cluster.ServiceLevel,
-			State:        *cluster.State,
-			Version:      *cluster.Version,
+			ServiceLevel: string(cluster.Level),
+			State:        string(cluster.State),
+			Version:      cluster.Version,
 			Zone:         c.Zone,
 		},
 		nil)

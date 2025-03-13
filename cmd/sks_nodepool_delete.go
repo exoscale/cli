@@ -6,9 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksNodepoolDeleteCmd struct {
@@ -19,8 +18,8 @@ type sksNodepoolDeleteCmd struct {
 	Cluster  string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 	Nodepool string `cli-arg:"#" cli-usage:"NODEPOOL-NAME|ID"`
 
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksNodepoolDeleteCmd) cmdAliases() []string { return gRemoveAlias }
@@ -41,21 +40,32 @@ func (c *sksNodepoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
+		return err
+	}
+
+	resp, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
 		return err
 	}
 
 	for _, nodepool := range cluster.Nodepools {
-		if *nodepool.ID == c.Nodepool || *nodepool.Name == c.Nodepool {
+		if nodepool.ID.String() == c.Nodepool || nodepool.Name == c.Nodepool {
 			nodepool := nodepool
-			decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", *nodepool.Name), func() {
-				err = globalstate.EgoscaleClient.DeleteSKSNodepool(ctx, c.Zone, cluster, nodepool)
+
+			op, err := client.DeleteSKSNodepool(ctx, cluster.ID, nodepool.ID)
+			if err != nil {
+				return err
+			}
+			decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", nodepool.Name), func() {
+				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 			})
 			if err != nil {
 				return err

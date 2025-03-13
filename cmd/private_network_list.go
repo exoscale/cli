@@ -71,8 +71,8 @@ func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	done := make(chan struct{})
 
 	go func() {
-		for nlb := range res {
-			out = append(out, nlb)
+		for pn := range res {
+			out = append(out, pn)
 		}
 		done <- struct{}{}
 	}()
