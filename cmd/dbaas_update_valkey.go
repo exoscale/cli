@@ -10,42 +10,45 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-func (c *dbaasServiceCreateCmd) createValkey(_ *cobra.Command, _ []string) error {
-	var err error
+func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) error {
+	var updated bool
 
 	ctx := gContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 
-	databaseService := v3.CreateDBAASServiceValkeyRequest{
-		Plan:                  c.Plan,
-		TerminationProtection: &c.TerminationProtection,
-	}
+	databaseService := v3.UpdateDBAASServiceValkeyRequest{}
 
 	settingsSchema, err := client.GetDBAASSettingsValkey(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
 
-	if c.ValkeyForkFrom != "" {
-		databaseService.ForkFromService = v3.DBAASServiceName(c.ValkeyForkFrom)
-		if c.ValkeyRecoveryBackupName != "" {
-			databaseService.RecoveryBackupName = c.ValkeyRecoveryBackupName
-		}
-	}
-
-	if len(c.ValkeyIPFilter) > 0 {
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeyIPFilter)) {
 		databaseService.IPFilter = c.ValkeyIPFilter
+		updated = true
 	}
 
-	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		databaseService.Maintenance = &v3.CreateDBAASServiceValkeyRequestMaintenance{
-			Dow:  v3.CreateDBAASServiceValkeyRequestMaintenanceDow(c.MaintenanceDOW),
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
+		databaseService.Plan = c.Plan
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
+		databaseService.TerminationProtection = &c.TerminationProtection
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
+		databaseService.Maintenance = &v3.UpdateDBAASServiceValkeyRequestMaintenance{
+			Dow:  v3.UpdateDBAASServiceValkeyRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
 		}
+		updated = true
 	}
 
-	if c.ValkeySettings != "" {
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeySettings)) {
 		settings, err := validateDatabaseServiceSettings(c.ValkeySettings, settingsSchema.Settings.Valkey)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
@@ -89,10 +92,11 @@ func (c *dbaasServiceCreateCmd) createValkey(_ *cobra.Command, _ []string) error
 		}
 
 		databaseService.ValkeySettings = valkeysettings
+		updated = true
 	}
 
-	if c.ValkeyMigrationHost != "" {
-		databaseService.Migration = &v3.CreateDBAASServiceValkeyRequestMigration{
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeyMigrationHost)) {
+		databaseService.Migration = &v3.UpdateDBAASServiceValkeyRequestMigration{
 			Host:     c.ValkeyMigrationHost,
 			Port:     c.ValkeyMigrationPort,
 			Password: c.ValkeyMigrationPassword,
@@ -108,30 +112,29 @@ func (c *dbaasServiceCreateCmd) createValkey(_ *cobra.Command, _ []string) error
 		if len(c.ValkeyMigrationIgnoreDbs) > 0 {
 			databaseService.Migration.IgnoreDbs = strings.Join(c.ValkeyMigrationIgnoreDbs, ",")
 		}
+		updated = true
 	}
 
-	op, err := client.CreateDBAASServiceValkey(ctx, c.Name, databaseService)
+	if updated {
+		op, err := client.UpdateDBAASServiceValkey(ctx, c.Name, databaseService)
+		if err != nil {
+			return err
+		}
 
-	if err != nil {
-		return err
+		decorateAsyncOperation(fmt.Sprintf("Updating DBaaS Datadog external Endpoint %q", c.Name), func() {
+			op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
+
+		if err != nil {
+			return err
+		}
 	}
-
-	decorateAsyncOperation(fmt.Sprintf("Creating DBaaS Datadog external Endpoint %q", c.Name), func() {
-		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-	})
-
-	if err != nil {
-		return err
-	}
-
-	serviceName := op.Reference.ID.String()
 
 	if !globalstate.Quiet {
 		return c.outputFunc((&dbaasServiceShowCmd{
-			Name: serviceName,
+			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceValkey(ctx))
 	}
-
 	return nil
 }
