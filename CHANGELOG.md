@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- fixing bigfile upload stuck issue. #671
+
 ### Features
 
 - storage: bucket replication support #668
