@@ -103,20 +103,6 @@ type dbaasServiceCreateCmd struct {
 	PGMigrationMethod    string   `cli-flag:"pg-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
 	PGMigrationIgnoreDbs []string `cli-flag:"pg-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
 
-	// "redis" type specific flags
-	RedisForkFrom           string   `cli-flag:"redis-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
-	RedisIPFilter           []string `cli-flag:"redis-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
-	RedisRecoveryBackupName string   `cli-flag:"redis-recovery-backup-name" cli-usage:"the name of the backup to restore when forking from a Database Service" cli-hidden:""`
-	RedisSettings           string   `cli-flag:"redis-settings" cli-usage:"Redis configuration settings (JSON format)" cli-hidden:""`
-	RedisMigrationHost      string   `cli-flag:"redis-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
-	RedisMigrationPort      int64    `cli-flag:"redis-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
-	RedisMigrationPassword  string   `cli-flag:"redis-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
-	RedisMigrationSSL       bool     `cli-flag:"redis-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
-	RedisMigrationUsername  string   `cli-flag:"redis-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
-	RedisMigrationDBName    string   `cli-flag:"redis-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
-	RedisMigrationMethod    string   `cli-flag:"redis-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
-	RedisMigrationIgnoreDbs []string `cli-flag:"redis-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
-
 	// "valkey" type specific flags
 	ValkeyForkFrom           string   `cli-flag:"valkey-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
 	ValkeyIPFilter           []string `cli-flag:"valkey-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
@@ -194,8 +180,6 @@ func (c *dbaasServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 		return c.createMysql(cmd, args)
 	case "pg":
 		return c.createPG(cmd, args)
-	case "redis":
-		return c.createRedis(cmd, args)
 	case "valkey":
 		return c.createValkey(cmd, args)
 	default:
