@@ -17,6 +17,10 @@ func (c *dbaasServiceCreateCmd) createValkey(_ *cobra.Command, _ []string) error
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 
+	if err != nil {
+		return fmt.Errorf("unable to create client: %w", err)
+	}
+
 	databaseService := v3.CreateDBAASServiceValkeyRequest{
 		Plan:                  c.Plan,
 		TerminationProtection: &c.TerminationProtection,

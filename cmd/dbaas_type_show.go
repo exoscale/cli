@@ -138,6 +138,7 @@ Supported Database Service type settings:
 * %s
 * %s
 * %s
+* %s
 
 Supported output template annotations:
 
@@ -341,7 +342,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 			}
 			
 			if c.ShowSettings == "valkey" {
-				settings = *&res.Settings.Valkey.Properties
+				settings = res.Settings.Valkey.Properties
 			}
 
 			dbaasShowSettings(settings)

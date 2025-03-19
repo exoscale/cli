@@ -82,6 +82,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (ou
 		globalstate.EgoscaleV3Client,
 		v3.ZoneName(c.Zone),
 	)
+
+	if err != nil {
+		return nil, err
+	}
+
 	databaseService, err := client.GetDBAASServiceValkey(ctx, c.Name)
 	if err != nil {
 		return nil, err
