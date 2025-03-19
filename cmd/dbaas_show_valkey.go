@@ -92,7 +92,6 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (ou
 		return nil, err
 	}
 
-
 	switch {
 	case c.ShowBackups:
 		out := make(dbServiceBackupListOutput, 0)
