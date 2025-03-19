@@ -23,7 +23,7 @@ type dbaasServiceCreateCmd struct {
 	HelpOpensearch bool `cli-usage:"show usage for flags specific to the opensearch type"`
 	HelpMysql      bool `cli-usage:"show usage for flags specific to the mysql type"`
 	HelpPg         bool `cli-usage:"show usage for flags specific to the pg type"`
-	HelpRedis      bool `cli-usage:"show usage for flags specific to the redis type"`
+	HelpValkey     bool `cli-usage:"show usage for flags specific to the valkey type"`
 	HelpGrafana    bool `cli-usage:"show usage for flags specific to the grafana type"`
 
 	MaintenanceDOW        string `cli-flag:"maintenance-dow" cli-usage:"automated Database Service maintenance day-of-week"`
@@ -116,6 +116,20 @@ type dbaasServiceCreateCmd struct {
 	RedisMigrationDBName    string   `cli-flag:"redis-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
 	RedisMigrationMethod    string   `cli-flag:"redis-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
 	RedisMigrationIgnoreDbs []string `cli-flag:"redis-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
+
+	// "valkey" type specific flags
+	ValkeyForkFrom           string   `cli-flag:"valkey-fork-from" cli-usage:"name of a Database Service to fork from" cli-hidden:""`
+	ValkeyIPFilter           []string `cli-flag:"valkey-ip-filter" cli-usage:"allow incoming connections from CIDR address block" cli-hidden:""`
+	ValkeyRecoveryBackupName string   `cli-flag:"valkey-recovery-backup-name" cli-usage:"the name of the backup to restore when forking from a Database Service" cli-hidden:""`
+	ValkeySettings           string   `cli-flag:"valkey-settings" cli-usage:"Valkey configuration settings (JSON format)" cli-hidden:""`
+	ValkeyMigrationHost      string   `cli-flag:"valkey-migration-host" cli-usage:"hostname or IP address of the source server where to migrate data from" cli-hidden:""`
+	ValkeyMigrationPort      int64    `cli-flag:"valkey-migration-port" cli-usage:"port number of the source server where to migrate data from" cli-hidden:""`
+	ValkeyMigrationPassword  string   `cli-flag:"valkey-migration-password" cli-usage:"password for authenticating to the source server" cli-hidden:""`
+	ValkeyMigrationSSL       bool     `cli-flag:"valkey-migration-ssl" cli-usage:"connect to the source server using SSL" cli-hidden:""`
+	ValkeyMigrationUsername  string   `cli-flag:"valkey-migration-username" cli-usage:"username for authenticating to the source server" cli-hidden:""`
+	ValkeyMigrationDBName    string   `cli-flag:"valkey-migration-dbname" cli-usage:"database name for bootstrapping the initial connection" cli-hidden:""`
+	ValkeyMigrationMethod    string   `cli-flag:"valkey-migration-method" cli-usage:"migration method to be used (\"dump\" or \"replication\")" cli-hidden:""`
+	ValkeyMigrationIgnoreDbs []string `cli-flag:"valkey-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
 }
 
 func (c *dbaasServiceCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -149,8 +163,8 @@ func (c *dbaasServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 	case cmd.Flags().Changed("help-pg"):
 		cmdShowHelpFlags(cmd.Flags(), "pg-")
 		os.Exit(0)
-	case cmd.Flags().Changed("help-redis"):
-		cmdShowHelpFlags(cmd.Flags(), "redis-")
+	case cmd.Flags().Changed("help-valkey"):
+		cmdShowHelpFlags(cmd.Flags(), "valkey-")
 		os.Exit(0)
 	}
 
@@ -182,6 +196,8 @@ func (c *dbaasServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 		return c.createPG(cmd, args)
 	case "redis":
 		return c.createRedis(cmd, args)
+	case "valkey":
+		return c.createValkey(cmd, args)
 	default:
 		return fmt.Errorf("unsupported service type %q", c.Type)
 	}
