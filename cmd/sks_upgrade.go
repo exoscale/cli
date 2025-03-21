@@ -12,7 +12,11 @@ import (
 	"github.com/exoscale/cli/utils"
 	v2 "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
+
+// TODO: full v3 migration is blocked by
+// https://app.shortcut.com/exoscale/story/122943/bug-in-egoscale-v3-listsksclusterdeprecatedresources
 
 type sksUpgradeCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
@@ -95,7 +99,7 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return (&sksShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Cluster:            *cluster.ID,
-			Zone:               c.Zone,
+			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
