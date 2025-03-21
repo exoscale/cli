@@ -7100,6 +7100,50 @@ func (c Client) StopDBAASRedisMigration(ctx context.Context, name string) (*Oper
 	return bodyresp, nil
 }
 
+// Initiate Redis upgrade to Valkey
+func (c Client) StartDBAASRedisToValkeyUpgrade(ctx context.Context, name string) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-redis/%v/upgrade-type", name)
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("StartDBAASRedisToValkeyUpgrade: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("StartDBAASRedisToValkeyUpgrade: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("StartDBAASRedisToValkeyUpgrade: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "start-dbaas-redis-to-valkey-upgrade")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("StartDBAASRedisToValkeyUpgrade: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("StartDBAASRedisToValkeyUpgrade: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("StartDBAASRedisToValkeyUpgrade: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 type CreateDBAASRedisUserRequest struct {
 	Username DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
 }
@@ -8075,6 +8119,67 @@ func (c Client) GetDBAASSettingsRedis(ctx context.Context) (*GetDBAASSettingsRed
 	return bodyresp, nil
 }
 
+// Valkey configuration values
+type GetDBAASSettingsValkeyResponseSettingsValkey struct {
+	AdditionalProperties *bool          `json:"additionalProperties,omitempty"`
+	Properties           map[string]any `json:"properties,omitempty"`
+	Title                string         `json:"title,omitempty"`
+	Type                 string         `json:"type,omitempty"`
+}
+
+type GetDBAASSettingsValkeyResponseSettings struct {
+	// Valkey configuration values
+	Valkey *GetDBAASSettingsValkeyResponseSettingsValkey `json:"valkey,omitempty"`
+}
+
+type GetDBAASSettingsValkeyResponse struct {
+	Settings *GetDBAASSettingsValkeyResponseSettings `json:"settings,omitempty"`
+}
+
+// Returns the default settings for Valkey.
+func (c Client) GetDBAASSettingsValkey(ctx context.Context) (*GetDBAASSettingsValkeyResponse, error) {
+	path := "/dbaas-settings-valkey"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsValkey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsValkey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsValkey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-dbaas-settings-valkey")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsValkey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsValkey: http response: %w", err)
+	}
+
+	bodyresp := &GetDBAASSettingsValkeyResponse{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetDBAASSettingsValkey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 type CreateDBAASTaskMigrationCheckRequest struct {
 	// Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)
 	IgnoreDbs string              `json:"ignore-dbs,omitempty" validate:"omitempty,gte=1,lte=2048"`
@@ -8173,6 +8278,595 @@ func (c Client) GetDBAASTask(ctx context.Context, service string, id UUID) (*DBA
 	bodyresp := &DBAASTask{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("GetDBAASTask: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Delete a Valkey service
+func (c Client) DeleteDBAASServiceValkey(ctx context.Context, name string) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v", name)
+
+	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceValkey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceValkey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceValkey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "delete-dbaas-service-valkey")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceValkey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceValkey: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASServiceValkey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Get a DBaaS Valkey service
+func (c Client) GetDBAASServiceValkey(ctx context.Context, name string) (*DBAASServiceValkey, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v", name)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceValkey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceValkey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceValkey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-dbaas-service-valkey")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceValkey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceValkey: http response: %w", err)
+	}
+
+	bodyresp := &DBAASServiceValkey{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetDBAASServiceValkey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type CreateDBAASServiceValkeyRequestMaintenanceDow string
+
+const (
+	CreateDBAASServiceValkeyRequestMaintenanceDowSaturday  CreateDBAASServiceValkeyRequestMaintenanceDow = "saturday"
+	CreateDBAASServiceValkeyRequestMaintenanceDowTuesday   CreateDBAASServiceValkeyRequestMaintenanceDow = "tuesday"
+	CreateDBAASServiceValkeyRequestMaintenanceDowNever     CreateDBAASServiceValkeyRequestMaintenanceDow = "never"
+	CreateDBAASServiceValkeyRequestMaintenanceDowWednesday CreateDBAASServiceValkeyRequestMaintenanceDow = "wednesday"
+	CreateDBAASServiceValkeyRequestMaintenanceDowSunday    CreateDBAASServiceValkeyRequestMaintenanceDow = "sunday"
+	CreateDBAASServiceValkeyRequestMaintenanceDowFriday    CreateDBAASServiceValkeyRequestMaintenanceDow = "friday"
+	CreateDBAASServiceValkeyRequestMaintenanceDowMonday    CreateDBAASServiceValkeyRequestMaintenanceDow = "monday"
+	CreateDBAASServiceValkeyRequestMaintenanceDowThursday  CreateDBAASServiceValkeyRequestMaintenanceDow = "thursday"
+)
+
+// Automatic maintenance settings
+type CreateDBAASServiceValkeyRequestMaintenance struct {
+	// Day of week for installing updates
+	Dow CreateDBAASServiceValkeyRequestMaintenanceDow `json:"dow" validate:"required"`
+	// Time for installing updates, UTC
+	Time string `json:"time" validate:"required,gte=8,lte=8"`
+}
+
+// Migrate data from existing server
+type CreateDBAASServiceValkeyRequestMigration struct {
+	// Database name for bootstrapping the initial connection
+	Dbname string `json:"dbname,omitempty" validate:"omitempty,gte=1,lte=63"`
+	// Hostname or IP address of the server where to migrate data from
+	Host string `json:"host" validate:"required,gte=1,lte=255"`
+	// Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)
+	IgnoreDbs string              `json:"ignore-dbs,omitempty" validate:"omitempty,gte=1,lte=2048"`
+	Method    EnumMigrationMethod `json:"method,omitempty"`
+	// Password for authentication with the server where to migrate data from
+	Password string `json:"password,omitempty" validate:"omitempty,gte=1,lte=255"`
+	// Port number of the server where to migrate data from
+	Port int64 `json:"port" validate:"required,gte=1,lte=65535"`
+	// The server where to migrate data from is secured with SSL
+	SSL *bool `json:"ssl,omitempty"`
+	// User name for authentication with the server where to migrate data from
+	Username string `json:"username,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
+type CreateDBAASServiceValkeyRequest struct {
+	ForkFromService DBAASServiceName `json:"fork-from-service,omitempty" validate:"omitempty,gte=0,lte=63"`
+	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
+	IPFilter []string `json:"ip-filter,omitempty"`
+	// Automatic maintenance settings
+	Maintenance *CreateDBAASServiceValkeyRequestMaintenance `json:"maintenance,omitempty"`
+	// Migrate data from existing server
+	Migration *CreateDBAASServiceValkeyRequestMigration `json:"migration,omitempty"`
+	// Subscription plan
+	Plan string `json:"plan" validate:"required,gte=1,lte=128"`
+	// Name of a backup to recover from for services that support backup names
+	RecoveryBackupName string `json:"recovery-backup-name,omitempty" validate:"omitempty,gte=1"`
+	// Service is protected against termination and powering off
+	TerminationProtection *bool `json:"termination-protection,omitempty"`
+	// Valkey settings
+	ValkeySettings *JSONSchemaValkey `json:"valkey-settings,omitempty"`
+}
+
+// Create a DBaaS Valkey service
+func (c Client) CreateDBAASServiceValkey(ctx context.Context, name string, req CreateDBAASServiceValkeyRequest) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v", name)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceValkey: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceValkey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceValkey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceValkey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "create-dbaas-service-valkey")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceValkey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceValkey: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CreateDBAASServiceValkey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type UpdateDBAASServiceValkeyRequestMaintenanceDow string
+
+const (
+	UpdateDBAASServiceValkeyRequestMaintenanceDowSaturday  UpdateDBAASServiceValkeyRequestMaintenanceDow = "saturday"
+	UpdateDBAASServiceValkeyRequestMaintenanceDowTuesday   UpdateDBAASServiceValkeyRequestMaintenanceDow = "tuesday"
+	UpdateDBAASServiceValkeyRequestMaintenanceDowNever     UpdateDBAASServiceValkeyRequestMaintenanceDow = "never"
+	UpdateDBAASServiceValkeyRequestMaintenanceDowWednesday UpdateDBAASServiceValkeyRequestMaintenanceDow = "wednesday"
+	UpdateDBAASServiceValkeyRequestMaintenanceDowSunday    UpdateDBAASServiceValkeyRequestMaintenanceDow = "sunday"
+	UpdateDBAASServiceValkeyRequestMaintenanceDowFriday    UpdateDBAASServiceValkeyRequestMaintenanceDow = "friday"
+	UpdateDBAASServiceValkeyRequestMaintenanceDowMonday    UpdateDBAASServiceValkeyRequestMaintenanceDow = "monday"
+	UpdateDBAASServiceValkeyRequestMaintenanceDowThursday  UpdateDBAASServiceValkeyRequestMaintenanceDow = "thursday"
+)
+
+// Automatic maintenance settings
+type UpdateDBAASServiceValkeyRequestMaintenance struct {
+	// Day of week for installing updates
+	Dow UpdateDBAASServiceValkeyRequestMaintenanceDow `json:"dow" validate:"required"`
+	// Time for installing updates, UTC
+	Time string `json:"time" validate:"required,gte=8,lte=8"`
+}
+
+// Migrate data from existing server
+type UpdateDBAASServiceValkeyRequestMigration struct {
+	// Database name for bootstrapping the initial connection
+	Dbname string `json:"dbname,omitempty" validate:"omitempty,gte=1,lte=63"`
+	// Hostname or IP address of the server where to migrate data from
+	Host string `json:"host" validate:"required,gte=1,lte=255"`
+	// Comma-separated list of databases, which should be ignored during migration (supported by MySQL only at the moment)
+	IgnoreDbs string              `json:"ignore-dbs,omitempty" validate:"omitempty,gte=1,lte=2048"`
+	Method    EnumMigrationMethod `json:"method,omitempty"`
+	// Password for authentication with the server where to migrate data from
+	Password string `json:"password,omitempty" validate:"omitempty,gte=1,lte=255"`
+	// Port number of the server where to migrate data from
+	Port int64 `json:"port" validate:"required,gte=1,lte=65535"`
+	// The server where to migrate data from is secured with SSL
+	SSL *bool `json:"ssl,omitempty"`
+	// User name for authentication with the server where to migrate data from
+	Username string `json:"username,omitempty" validate:"omitempty,gte=1,lte=255"`
+}
+
+type UpdateDBAASServiceValkeyRequest struct {
+	// Allow incoming connections from CIDR address block, e.g. '10.20.0.0/16'
+	IPFilter []string `json:"ip-filter,omitempty"`
+	// Automatic maintenance settings
+	Maintenance *UpdateDBAASServiceValkeyRequestMaintenance `json:"maintenance,omitempty"`
+	// Migrate data from existing server
+	Migration *UpdateDBAASServiceValkeyRequestMigration `json:"migration,omitempty"`
+	// Subscription plan
+	Plan string `json:"plan,omitempty" validate:"omitempty,gte=1,lte=128"`
+	// Service is protected against termination and powering off
+	TerminationProtection *bool `json:"termination-protection,omitempty"`
+	// Valkey settings
+	ValkeySettings *JSONSchemaValkey `json:"valkey-settings,omitempty"`
+}
+
+// Update a DBaaS Valkey service
+func (c Client) UpdateDBAASServiceValkey(ctx context.Context, name string, req UpdateDBAASServiceValkeyRequest) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v", name)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceValkey: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceValkey: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceValkey: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceValkey: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "update-dbaas-service-valkey")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceValkey: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceValkey: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("UpdateDBAASServiceValkey: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Initiate Valkey maintenance update
+func (c Client) StartDBAASValkeyMaintenance(ctx context.Context, name string) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v/maintenance/start", name)
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("StartDBAASValkeyMaintenance: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("StartDBAASValkeyMaintenance: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("StartDBAASValkeyMaintenance: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "start-dbaas-valkey-maintenance")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("StartDBAASValkeyMaintenance: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("StartDBAASValkeyMaintenance: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("StartDBAASValkeyMaintenance: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Stop a DBaaS Valkey migration
+func (c Client) StopDBAASValkeyMigration(ctx context.Context, name string) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v/migration/stop", name)
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("StopDBAASValkeyMigration: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("StopDBAASValkeyMigration: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("StopDBAASValkeyMigration: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "stop-dbaas-valkey-migration")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("StopDBAASValkeyMigration: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("StopDBAASValkeyMigration: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("StopDBAASValkeyMigration: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type CreateDBAASValkeyUserRequest struct {
+	Username DBAASUserUsername `json:"username" validate:"required,gte=1,lte=64"`
+}
+
+// Create a DBaaS Valkey user
+func (c Client) CreateDBAASValkeyUser(ctx context.Context, serviceName string, req CreateDBAASValkeyUserRequest) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v/user", serviceName)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASValkeyUser: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASValkeyUser: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("CreateDBAASValkeyUser: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("CreateDBAASValkeyUser: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "create-dbaas-valkey-user")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("CreateDBAASValkeyUser: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("CreateDBAASValkeyUser: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("CreateDBAASValkeyUser: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Delete a DBaaS Valkey user
+func (c Client) DeleteDBAASValkeyUser(ctx context.Context, serviceName string, username string) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v/user/%v", serviceName, username)
+
+	request, err := http.NewRequestWithContext(ctx, "DELETE", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteDBAASValkeyUser: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASValkeyUser: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASValkeyUser: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "delete-dbaas-valkey-user")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("DeleteDBAASValkeyUser: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASValkeyUser: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("DeleteDBAASValkeyUser: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+type ResetDBAASValkeyUserPasswordRequest struct {
+	Password DBAASUserPassword `json:"password,omitempty" validate:"omitempty,gte=8,lte=256"`
+}
+
+// If no password is provided one will be generated automatically.
+func (c Client) ResetDBAASValkeyUserPassword(ctx context.Context, serviceName string, username string, req ResetDBAASValkeyUserPasswordRequest) (*Operation, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v/user/%v/password/reset", serviceName, username)
+
+	body, err := prepareJSONBody(req)
+	if err != nil {
+		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: prepare Json body: %w", err)
+	}
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, body)
+	if err != nil {
+		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	request.Header.Add("Content-Type", "application/json")
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "reset-dbaas-valkey-user-password")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("ResetDBAASValkeyUserPassword: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Reveal the secrets of a DBaaS Valkey user
+func (c Client) RevealDBAASValkeyUserPassword(ctx context.Context, serviceName string, username string) (*DBAASUserValkeySecrets, error) {
+	path := fmt.Sprintf("/dbaas-valkey/%v/user/%v/password/reveal", serviceName, username)
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RevealDBAASValkeyUserPassword: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RevealDBAASValkeyUserPassword: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RevealDBAASValkeyUserPassword: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "reveal-dbaas-valkey-user-password")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RevealDBAASValkeyUserPassword: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RevealDBAASValkeyUserPassword: http response: %w", err)
+	}
+
+	bodyresp := &DBAASUserValkeySecrets{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RevealDBAASValkeyUserPassword: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -14118,6 +14812,8 @@ type UpdateSKSClusterRequest struct {
 	AutoUpgrade *bool `json:"auto-upgrade,omitempty"`
 	// Cluster description
 	Description *string `json:"description,omitempty" validate:"omitempty,lte=255"`
+	// Add or remove the operators certificate authority (CA) from the list of trusted CAs of the api server. The default value is true
+	EnableOperatorsCA *bool `json:"enable-operators-ca,omitempty"`
 	// A list of Kubernetes-only Alpha features to enable for API server component
 	FeatureGates []string `json:"feature-gates"`
 	Labels       Labels   `json:"labels,omitempty"`

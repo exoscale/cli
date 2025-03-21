@@ -1771,6 +1771,14 @@ type DBAASUserRedisSecrets struct {
 
 type DBAASUserUsername string
 
+// Valkey User secrets
+type DBAASUserValkeySecrets struct {
+	// Valkey password
+	Password string `json:"password,omitempty"`
+	// Valkey username
+	Username string `json:"username,omitempty"`
+}
+
 type DeployTargetType string
 
 const (

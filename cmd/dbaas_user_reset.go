@@ -64,6 +64,8 @@ func (c *dbaasUserResetCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.resetOpensearch(cmd, args)
 	case "grafana":
 		return c.resetGrafana(cmd, args)
+	case "valkey":
+		return c.resetValkey(cmd, args)
 	default:
 		return fmt.Errorf("reseting user credentials unsupported for service of type %q", db.Type)
 	}
