@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Bug fixes
+
 - fixing bigfile upload stuck issue. #671
 
 ### Features
