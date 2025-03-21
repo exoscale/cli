@@ -5,28 +5,26 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func init() {
-	rtypes := []oapi.DnsDomainRecordType{
-		oapi.DnsDomainRecordTypeA,
-		oapi.DnsDomainRecordTypeAAAA,
-		oapi.DnsDomainRecordTypeALIAS,
-		oapi.DnsDomainRecordTypeCAA,
-		oapi.DnsDomainRecordTypeCNAME,
-		oapi.DnsDomainRecordTypeHINFO,
-		oapi.DnsDomainRecordTypeMX,
-		oapi.DnsDomainRecordTypeNAPTR,
-		oapi.DnsDomainRecordTypeNS,
-		oapi.DnsDomainRecordTypePOOL,
-		oapi.DnsDomainRecordTypeSPF,
-		oapi.DnsDomainRecordTypeSRV,
-		oapi.DnsDomainRecordTypeSSHFP,
-		oapi.DnsDomainRecordTypeTXT,
+	rtypes := []v3.DNSDomainRecordType{
+		v3.DNSDomainRecordTypeA,
+		v3.DNSDomainRecordTypeAAAA,
+		v3.DNSDomainRecordTypeALIAS,
+		v3.DNSDomainRecordTypeCAA,
+		v3.DNSDomainRecordTypeCNAME,
+		v3.DNSDomainRecordTypeHINFO,
+		v3.DNSDomainRecordTypeMX,
+		v3.DNSDomainRecordTypeNAPTR,
+		v3.DNSDomainRecordTypeNS,
+		v3.DNSDomainRecordTypePOOL,
+		v3.DNSDomainRecordTypeSPF,
+		v3.DNSDomainRecordTypeSRV,
+		v3.DNSDomainRecordTypeSSHFP,
+		v3.DNSDomainRecordTypeTXT,
 	}
 	for _, recordType := range rtypes {
 		cmdUpdateRecord := &cobra.Command{
@@ -87,7 +85,7 @@ func init() {
 
 func updateDomainRecord(
 	domainIdent, recordIdent string,
-	recordType oapi.DnsDomainRecordType,
+	recordType v3.DNSDomainRecordType,
 	name, content *string,
 	ttl, priority *int64,
 ) error {
@@ -96,35 +94,46 @@ func updateDomainRecord(
 		return err
 	}
 
-	rtype := fmt.Sprint(recordType)
-	record, err := domainRecordFromIdent(*domain.ID, recordIdent, &rtype)
+	record, err := domainRecordFromIdent(domain.ID, recordIdent, &recordType)
 	if err != nil {
 		return err
 	}
 
+	var recordUpdateRequest v3.UpdateDNSDomainRecordRequest
+
 	if name != nil {
-		record.Name = name
+		recordUpdateRequest.Name = *name
 	}
 	if content != nil {
-		record.Content = content
+		recordUpdateRequest.Content = *content
 	}
 	if ttl != nil {
-		record.TTL = ttl
+		recordUpdateRequest.Ttl = *ttl
 	}
 	if priority != nil {
-		record.Priority = priority
+		recordUpdateRequest.Priority = *priority
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	decorateAsyncOperation(fmt.Sprintf("Updating DNS record %q...", *record.ID), func() {
-		err = globalstate.EgoscaleClient.UpdateDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, *domain.ID, record)
+	ctx := gContext
+	err = decorateAsyncOperations(fmt.Sprintf("Updating DNS record %q...", record.ID), func() error {
+		op, err := globalstate.EgoscaleV3Client.UpdateDNSDomainRecord(ctx, domain.ID, record.ID, recordUpdateRequest)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while updating DNS record: %w", err)
+		}
+
+		_, err = globalstate.EgoscaleV3Client.Wait(ctx, op, v3.OperationStateSuccess)
+		if err != nil {
+			return fmt.Errorf("exoscale: error while waiting for DNS record update: %w", err)
+		}
+
+		return nil
 	})
 	if err != nil {
 		return err
 	}
 
 	if !globalstate.Quiet {
-		fmt.Printf("Record %q was updated successfully\n", *record.ID)
+		fmt.Printf("Record %q was updated successfully\n", record.ID)
 	}
 
 	return nil
