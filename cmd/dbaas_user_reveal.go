@@ -79,6 +79,8 @@ func (c *dbaasUserRevealCmd) cmdRun(cmd *cobra.Command, args []string) error {
 		return c.outputFunc(c.revealOpensearch(ctx))
 	case "grafana":
 		return c.outputFunc(c.revealGrafana(ctx))
+	case "valkey":
+		return c.outputFunc(c.revealValkey(ctx))
 	default:
 		return fmt.Errorf("listing users unsupported for service of type %q", db.Type)
 

@@ -15,6 +15,7 @@ import (
 	"github.com/exoscale/cli/utils"
 	exo "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasTypePlanListItemOutput struct {
@@ -106,7 +107,8 @@ var (
 		"pgbouncer",
 		"pglookout",
 	}
-	redisSettings = []string{"redis"}
+	redisSettings  = []string{"redis"}
+	valkeySettings = []string{"valkey"}
 )
 
 type dbaasTypeShowCmd struct {
@@ -136,6 +138,7 @@ Supported Database Service type settings:
 * %s
 * %s
 * %s
+* %s
 
 Supported output template annotations:
 
@@ -148,6 +151,7 @@ Supported output template annotations:
 		strings.Join(mysqlSettings, ", "),
 		strings.Join(pgSettings, ", "),
 		strings.Join(redisSettings, ", "),
+		strings.Join(valkeySettings, ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypeShowOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
@@ -313,6 +317,32 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 
 			if c.ShowSettings == "redis" {
 				settings = *res.JSON200.Settings.Redis.Properties
+			}
+
+			dbaasShowSettings(settings)
+
+		case "valkey":
+			if !utils.IsInList(valkeySettings, c.ShowSettings) {
+				return fmt.Errorf(
+					"invalid settings value %q, expected one of: %s",
+					c.ShowSettings,
+					strings.Join(valkeySettings, ", "),
+				)
+			}
+
+			clientV3, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+			if err != nil {
+				return err
+			}
+
+			res, err := clientV3.GetDBAASSettingsValkey(ctx)
+
+			if err != nil {
+				return err
+			}
+
+			if c.ShowSettings == "valkey" {
+				settings = res.Settings.Valkey.Properties
 			}
 
 			dbaasShowSettings(settings)
