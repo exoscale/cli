@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/globalstate"
+	utils "github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -21,11 +23,6 @@ func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) err
 	}
 
 	databaseService := v3.UpdateDBAASServiceValkeyRequest{}
-
-	settingsSchema, err := client.GetDBAASSettingsValkey(ctx)
-	if err != nil {
-		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
-	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeyIPFilter)) {
 		databaseService.IPFilter = c.ValkeyIPFilter
@@ -52,49 +49,28 @@ func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) err
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeySettings)) {
-		settings, err := validateDatabaseServiceSettings(c.ValkeySettings, settingsSchema.Settings.Valkey)
-		if err != nil {
-			return fmt.Errorf("invalid settings: %w", err)
-		}
+		if c.ValkeySettings != "" {
+			var settings map[string]interface{}
 
-		valkeysettings := &v3.JSONSchemaValkey{}
+			if err := json.Unmarshal([]byte(c.ValkeySettings), &settings); err != nil {
+				return err
+			}
 
-		if val, ok := settings["acl_channels_default"]; ok && val != nil {
-			valkeysettings.AclChannelsDefault = v3.JSONSchemaValkeyAclChannelsDefault(val.(string))
+			ssl := utils.GetSettingBool(settings, "ssl")
+			databaseService.ValkeySettings = &v3.JSONSchemaValkey{
+				AclChannelsDefault:            v3.JSONSchemaValkeyAclChannelsDefault(utils.GetSettingString(settings, "acl_channels_default")),
+				IoThreads:                     utils.GetSettingFloat64(settings, "io_threads"),
+				LfuDecayTime:                  utils.GetSettingFloat64(settings, "lfu_decay_time"),
+				LfuLogFactor:                  utils.GetSettingFloat64(settings, "lfu_log_factor"),
+				MaxmemoryPolicy:               v3.JSONSchemaValkeyMaxmemoryPolicy(utils.GetSettingString(settings, "maxmemory_policy")),
+				NotifyKeyspaceEvents:          utils.GetSettingString(settings, "notify_keyspace_events"),
+				NumberOfDatabases:             utils.GetSettingFloat64(settings, "number_of_databases"),
+				Persistence:                   v3.JSONSchemaValkeyPersistence(utils.GetSettingString(settings, "persistence")),
+				PubsubClientOutputBufferLimit: utils.GetSettingFloat64(settings, "pubsub_client_output_buffer_limit"),
+				SSL:                           &ssl,
+				Timeout:                       utils.GetSettingFloat64(settings, "timeout"),
+			}
 		}
-		if val, ok := settings["io_threads"]; ok && val != nil {
-			valkeysettings.IoThreads = int(val.(float64))
-		}
-		if val, ok := settings["lfu_decay_time"]; ok && val != nil {
-			valkeysettings.LfuDecayTime = int(val.(float64))
-		}
-		if val, ok := settings["lfu_log_factor"]; ok && val != nil {
-			valkeysettings.LfuLogFactor = int(val.(float64))
-		}
-		if val, ok := settings["maxmemory_policy"]; ok && val != nil {
-			valkeysettings.MaxmemoryPolicy = v3.JSONSchemaValkeyMaxmemoryPolicy(val.(string))
-		}
-		if val, ok := settings["notify_keyspace_events"]; ok && val != nil {
-			valkeysettings.NotifyKeyspaceEvents = val.(string)
-		}
-		if val, ok := settings["number_of_databases"]; ok && val != nil {
-			valkeysettings.NumberOfDatabases = int(val.(float64))
-		}
-		if val, ok := settings["persistence"]; ok && val != nil {
-			valkeysettings.Persistence = v3.JSONSchemaValkeyPersistence(val.(string))
-		}
-		if val, ok := settings["pubsub_client_output_buffer_limit"]; ok && val != nil {
-			valkeysettings.PubsubClientOutputBufferLimit = int(val.(float64))
-		}
-		if val, ok := settings["ssl"]; ok && val != nil {
-			ssl := val.(bool)
-			valkeysettings.SSL = &ssl
-		}
-		if val, ok := settings["timeout"]; ok && val != nil {
-			valkeysettings.Timeout = int(val.(float64))
-		}
-
-		databaseService.ValkeySettings = valkeysettings
 		updated = true
 	}
 
