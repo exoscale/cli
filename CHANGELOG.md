@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.84.0
+
 ### Bug fixes
 
 - fixing bigfile upload stuck issue. #671
