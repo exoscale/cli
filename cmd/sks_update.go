@@ -21,6 +21,7 @@ type sksUpdateCmd struct {
 
 	AutoUpgrade    bool              `cli-usage:"enable automatic upgrading of the SKS cluster control plane Kubernetes version(--auto-upgrade=false to disable again)"`
 	Description    string            `cli-usage:"SKS cluster description"`
+	FeatureGates   []string          `cli-flag:"feature-gates" cli-usage:"SKS cluster feature gates to enable"`
 	Labels         map[string]string `cli-flag:"label" cli-usage:"SKS cluster label (format: key=value)"`
 	Name           string            `cli-usage:"SKS cluster name"`
 	EnableCSIAddon bool              `cli-usage:"enable the Exoscale CSI driver"`
@@ -63,12 +64,15 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	updateReq := v3.UpdateSKSClusterRequest{
-		FeatureGates: []string{},
-	}
+	updateReq := v3.UpdateSKSClusterRequest{}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AutoUpgrade)) {
 		updateReq.AutoUpgrade = &c.AutoUpgrade
+		updated = true
+	}
+
+	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.FeatureGates)) {
+		updateReq.FeatureGates = c.FeatureGates
 		updated = true
 	}
 

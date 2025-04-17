@@ -26,6 +26,7 @@ type sksShowOutput struct {
 	ServiceLevel    string                  `json:"service_level"`
 	CNI             string                  `json:"cni"`
 	AddOns          []string                `json:"addons"`
+	FeatureGates    []string                `json:"feature_gates"`
 	State           string                  `json:"state"`
 	Labels          map[string]string       `json:"labels"`
 	Nodepools       []sksNodepoolShowOutput `json:"nodepools"`
@@ -50,6 +51,7 @@ func (o *sksShowOutput) ToTable() {
 	t.Append([]string{"Service Level", o.ServiceLevel})
 	t.Append([]string{"CNI", o.CNI})
 	t.Append([]string{"Add-Ons", strings.Join(o.AddOns, "\n")})
+	t.Append([]string{"Feature Gates", strings.Join(o.FeatureGates, "\n")})
 	t.Append([]string{"State", o.State})
 	t.Append([]string{"Labels", func() string {
 		if len(o.Labels) > 0 {
@@ -149,7 +151,13 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			EnableKubeProxy: *cluster.EnableKubeProxy,
 			Description:     cluster.Description,
 			Endpoint:        cluster.Endpoint,
-			ID:              cluster.ID,
+			FeatureGates: func() (v []string) {
+				if cluster.FeatureGates != nil {
+					v = cluster.FeatureGates
+				}
+				return
+			}(),
+			ID: cluster.ID,
 			Labels: func() (v map[string]string) {
 				if cluster.Labels != nil {
 					v = cluster.Labels
