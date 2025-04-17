@@ -10684,6 +10684,8 @@ type CreateInstanceRequest struct {
 	// Instance name
 	Name               string             `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	PublicIPAssignment PublicIPAssignment `json:"public-ip-assignment,omitempty"`
+	// [Beta] Enable secure boot
+	SecurebootEnabled *bool `json:"secureboot-enabled,omitempty"`
 	// Instance Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// SSH key
@@ -10692,6 +10694,8 @@ type CreateInstanceRequest struct {
 	SSHKeys []SSHKey `json:"ssh-keys,omitempty"`
 	// Instance template
 	Template *Template `json:"template" validate:"required"`
+	// [Beta] Enable Trusted Platform Module (TPM)
+	TpmEnabled *bool `json:"tpm-enabled,omitempty"`
 	// Instance Cloud-init user-data (base64 encoded)
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1,lte=32768"`
 }
@@ -11659,6 +11663,50 @@ func (c Client) CreateSnapshot(ctx context.Context, id UUID) (*Operation, error)
 	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("CreateSnapshot: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// [Beta] Enable tpm for the instance.
+func (c Client) EnableTpm(ctx context.Context, id UUID) (*Operation, error) {
+	path := fmt.Sprintf("/instance/%v:enable-tpm", id)
+
+	request, err := http.NewRequestWithContext(ctx, "POST", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("EnableTpm: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("EnableTpm: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("EnableTpm: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "enable-tpm")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("EnableTpm: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("EnableTpm: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("EnableTpm: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -14491,7 +14539,7 @@ type CreateSKSClusterRequest struct {
 	// Indicates whether to deploy the Kubernetes network proxy. When unspecified, defaults to `true` unless Cilium CNI is selected
 	EnableKubeProxy *bool `json:"enable-kube-proxy,omitempty"`
 	// A list of Kubernetes-only Alpha features to enable for API server component
-	FeatureGates []string `json:"feature-gates"`
+	FeatureGates []string `json:"feature-gates,omitempty"`
 	Labels       Labels   `json:"labels,omitempty"`
 	// Cluster service level
 	Level CreateSKSClusterRequestLevel `json:"level" validate:"required"`
@@ -14815,7 +14863,7 @@ type UpdateSKSClusterRequest struct {
 	// Add or remove the operators certificate authority (CA) from the list of trusted CAs of the api server. The default value is true
 	EnableOperatorsCA *bool `json:"enable-operators-ca,omitempty"`
 	// A list of Kubernetes-only Alpha features to enable for API server component
-	FeatureGates []string `json:"feature-gates"`
+	FeatureGates []string `json:"feature-gates,omitempty"`
 	Labels       Labels   `json:"labels,omitempty"`
 	// Cluster name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`

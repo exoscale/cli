@@ -941,6 +941,12 @@ type DBAASServiceGrafanaConnectionInfo struct {
 	Username string `json:"username,omitempty"`
 }
 
+// Prometheus integration URI
+type DBAASServiceGrafanaPrometheusURI struct {
+	Host string `json:"host,omitempty"`
+	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
+}
+
 type DBAASServiceGrafanaUsers struct {
 	Password string `json:"password,omitempty"`
 	Type     string `json:"type,omitempty"`
@@ -980,8 +986,10 @@ type DBAASServiceGrafana struct {
 	// Service notifications
 	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
 	// Subscription plan
-	Plan  string           `json:"plan" validate:"required"`
-	State EnumServiceState `json:"state,omitempty"`
+	Plan string `json:"plan" validate:"required"`
+	// Prometheus integration URI
+	PrometheusURI *DBAASServiceGrafanaPrometheusURI `json:"prometheus-uri" validate:"required"`
+	State         EnumServiceState                  `json:"state,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool                `json:"termination-protection,omitempty"`
 	Type                  DBAASServiceTypeName `json:"type" validate:"required,gte=0,lte=64"`
@@ -1027,6 +1035,12 @@ type DBAASServiceKafkaConnectionInfo struct {
 	Nodes       []string `json:"nodes,omitempty"`
 	RegistryURI string   `json:"registry-uri,omitempty"`
 	RestURI     string   `json:"rest-uri,omitempty"`
+}
+
+// Prometheus integration URI
+type DBAASServiceKafkaPrometheusURI struct {
+	Host string `json:"host,omitempty"`
+	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
 }
 
 type DBAASServiceKafkaUsers struct {
@@ -1080,6 +1094,8 @@ type DBAASServiceKafka struct {
 	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan" validate:"required"`
+	// Prometheus integration URI
+	PrometheusURI *DBAASServiceKafkaPrometheusURI `json:"prometheus-uri" validate:"required"`
 	// Whether Schema-Registry is enabled
 	SchemaRegistryEnabled *bool `json:"schema-registry-enabled,omitempty"`
 	// Schema Registry configuration
@@ -1164,6 +1180,12 @@ type DBAASServiceMysqlConnectionInfo struct {
 	URI     []string            `json:"uri,omitempty"`
 }
 
+// Prometheus integration URI
+type DBAASServiceMysqlPrometheusURI struct {
+	Host string `json:"host,omitempty"`
+	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
+}
+
 type DBAASServiceMysqlUsers struct {
 	Authentication string `json:"authentication,omitempty"`
 	Password       string `json:"password,omitempty"`
@@ -1206,8 +1228,10 @@ type DBAASServiceMysql struct {
 	// Service notifications
 	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
 	// Subscription plan
-	Plan  string           `json:"plan" validate:"required"`
-	State EnumServiceState `json:"state,omitempty"`
+	Plan string `json:"plan" validate:"required"`
+	// Prometheus integration URI
+	PrometheusURI *DBAASServiceMysqlPrometheusURI `json:"prometheus-uri" validate:"required"`
+	State         EnumServiceState                `json:"state,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool                `json:"termination-protection,omitempty"`
 	Type                  DBAASServiceTypeName `json:"type" validate:"required,gte=0,lte=64"`
@@ -1308,6 +1332,12 @@ type DBAASServiceOpensearchOpensearchDashboards struct {
 	OpensearchRequestTimeout int64 `json:"opensearch-request-timeout,omitempty" validate:"omitempty,gte=5000,lte=120000"`
 }
 
+// Prometheus integration URI
+type DBAASServiceOpensearchPrometheusURI struct {
+	Host string `json:"host,omitempty"`
+	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
+}
+
 type DBAASServiceOpensearchUsers struct {
 	Password string `json:"password,omitempty"`
 	Type     string `json:"type,omitempty"`
@@ -1357,8 +1387,10 @@ type DBAASServiceOpensearch struct {
 	// OpenSearch settings
 	OpensearchSettings JSONSchemaOpensearch `json:"opensearch-settings,omitempty"`
 	// Subscription plan
-	Plan  string           `json:"plan" validate:"required"`
-	State EnumServiceState `json:"state,omitempty"`
+	Plan string `json:"plan" validate:"required"`
+	// Prometheus integration URI
+	PrometheusURI *DBAASServiceOpensearchPrometheusURI `json:"prometheus-uri" validate:"required"`
+	State         EnumServiceState                     `json:"state,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool                `json:"termination-protection,omitempty"`
 	Type                  DBAASServiceTypeName `json:"type" validate:"required,gte=0,lte=64"`
@@ -1411,6 +1443,12 @@ type DBAASServicePGConnectionPools struct {
 	Name          DBAASPGPoolName     `json:"name" validate:"required,gte=1,lte=63"`
 	Size          DBAASPGPoolSize     `json:"size" validate:"required,gte=1,lte=10000"`
 	Username      DBAASPGPoolUsername `json:"username" validate:"required,gte=1,lte=64"`
+}
+
+// Prometheus integration URI
+type DBAASServicePGPrometheusURI struct {
+	Host string `json:"host,omitempty"`
+	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
 }
 
 // List of service users
@@ -1468,6 +1506,8 @@ type DBAASServicePG struct {
 	PglookoutSettings *JSONSchemaPglookout `json:"pglookout-settings,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan" validate:"required"`
+	// Prometheus integration URI
+	PrometheusURI *DBAASServicePGPrometheusURI `json:"prometheus-uri" validate:"required"`
 	// Percentage of total RAM that the database server uses for shared memory buffers. Valid range is 20-60 (float), which corresponds to 20% - 60%. This setting adjusts the shared_buffers configuration value.
 	SharedBuffersPercentage int64                        `json:"shared-buffers-percentage,omitempty" validate:"omitempty,gte=20,lte=60"`
 	State                   EnumServiceState             `json:"state,omitempty"`
@@ -1515,6 +1555,12 @@ type DBAASServiceRedisConnectionInfo struct {
 	URI      []string `json:"uri,omitempty"`
 }
 
+// Prometheus integration URI
+type DBAASServiceRedisPrometheusURI struct {
+	Host string `json:"host,omitempty"`
+	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
+}
+
 type DBAASServiceRedisUsersAccessControl struct {
 	Categories []string `json:"categories,omitempty"`
 	Channels   []string `json:"channels,omitempty"`
@@ -1559,6 +1605,8 @@ type DBAASServiceRedis struct {
 	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
 	// Subscription plan
 	Plan string `json:"plan" validate:"required"`
+	// Prometheus integration URI
+	PrometheusURI *DBAASServiceRedisPrometheusURI `json:"prometheus-uri" validate:"required"`
 	// Redis settings
 	RedisSettings *JSONSchemaRedis `json:"redis-settings,omitempty"`
 	State         EnumServiceState `json:"state,omitempty"`
@@ -1628,6 +1676,12 @@ type DBAASServiceValkeyConnectionInfo struct {
 	URI      []string `json:"uri,omitempty"`
 }
 
+// Prometheus integration URI
+type DBAASServiceValkeyPrometheusURI struct {
+	Host string `json:"host,omitempty"`
+	Port int64  `json:"port,omitempty" validate:"omitempty,gte=0,lte=65535"`
+}
+
 type DBAASServiceValkeyUsersAccessControl struct {
 	Categories []string `json:"categories,omitempty"`
 	Channels   []string `json:"channels,omitempty"`
@@ -1671,8 +1725,10 @@ type DBAASServiceValkey struct {
 	// Service notifications
 	Notifications []DBAASServiceNotification `json:"notifications,omitempty"`
 	// Subscription plan
-	Plan  string           `json:"plan" validate:"required"`
-	State EnumServiceState `json:"state,omitempty"`
+	Plan string `json:"plan" validate:"required"`
+	// Prometheus integration URI
+	PrometheusURI *DBAASServiceValkeyPrometheusURI `json:"prometheus-uri" validate:"required"`
+	State         EnumServiceState                 `json:"state,omitempty"`
 	// Service is protected against termination and powering off
 	TerminationProtection *bool                `json:"termination-protection,omitempty"`
 	Type                  DBAASServiceTypeName `json:"type" validate:"required,gte=0,lte=64"`
@@ -2302,6 +2358,7 @@ type InstanceTypeFamily string
 
 const (
 	InstanceTypeFamilyGpu3      InstanceTypeFamily = "gpu3"
+	InstanceTypeFamilyGpua30    InstanceTypeFamily = "gpua30"
 	InstanceTypeFamilyGpu3080ti InstanceTypeFamily = "gpu3080ti"
 	InstanceTypeFamilyGpu2      InstanceTypeFamily = "gpu2"
 	InstanceTypeFamilyGpu       InstanceTypeFamily = "gpu"
@@ -3595,8 +3652,14 @@ type SKSCluster struct {
 	CreatedAT time.Time `json:"created-at,omitempty"`
 	// Cluster description
 	Description string `json:"description,omitempty" validate:"omitempty,lte=255"`
+	// Indicates whether to deploy the Kubernetes network proxy.
+	EnableKubeProxy *bool `json:"enable-kube-proxy,omitempty"`
+	// Indicates whether to add operators certificate authority (CA) as part of trusted CAs for the API server.
+	EnableOperatorsCA *bool `json:"enable-operators-ca,omitempty"`
 	// Cluster endpoint
 	Endpoint string `json:"endpoint,omitempty"`
+	// A list of Kubernetes-only Alpha features to enable for API server component
+	FeatureGates []string `json:"feature-gates,omitempty"`
 	// Cluster ID
 	ID     UUID   `json:"id,omitempty"`
 	Labels Labels `json:"labels,omitempty"`
