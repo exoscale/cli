@@ -220,7 +220,7 @@ github.com/exoscale/egoscale/v2
 github.com/exoscale/egoscale/v2/api
 github.com/exoscale/egoscale/v2/oapi
 github.com/exoscale/egoscale/version
-# github.com/exoscale/egoscale/v3 v3.1.12
+# github.com/exoscale/egoscale/v3 v3.1.14
 ## explicit; go 1.22.0
 github.com/exoscale/egoscale/v3
 github.com/exoscale/egoscale/v3/credentials
@@ -657,7 +657,7 @@ go.uber.org/multierr
 # golang.org/x/arch v0.4.0
 ## explicit; go 1.17
 golang.org/x/arch/x86/x86asm
-# golang.org/x/crypto v0.35.0
+# golang.org/x/crypto v0.36.0
 ## explicit; go 1.23.0
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
@@ -680,7 +680,7 @@ golang.org/x/exp/slog/internal/buffer
 # golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 ## explicit; go 1.11
 golang.org/x/lint
-# golang.org/x/net v0.36.0
+# golang.org/x/net v0.38.0
 ## explicit; go 1.23.0
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -691,17 +691,17 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/httpcommon
 golang.org/x/net/publicsuffix
-# golang.org/x/sys v0.30.0
-## explicit; go 1.18
+# golang.org/x/sys v0.31.0
+## explicit; go 1.23.0
 golang.org/x/sys/cpu
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.29.0
-## explicit; go 1.18
+# golang.org/x/term v0.30.0
+## explicit; go 1.23.0
 golang.org/x/term
-# golang.org/x/text v0.22.0
-## explicit; go 1.18
+# golang.org/x/text v0.23.0
+## explicit; go 1.23.0
 golang.org/x/text/cases
 golang.org/x/text/encoding
 golang.org/x/text/encoding/internal

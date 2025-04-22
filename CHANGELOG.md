@@ -14,6 +14,7 @@
 - sks: move cluster creation to egoscale v3 + enable-kube-proxy flag
 - dbaas: added valkey
 - dbaas: remove redis create
+- SKS cluster: display enable kube proxy #675
 
 ## 1.83.1
 
