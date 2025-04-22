@@ -63,7 +63,9 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	updateReq := v3.UpdateSKSClusterRequest{}
+	updateReq := v3.UpdateSKSClusterRequest{
+		FeatureGates: []string{},
+	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AutoUpgrade)) {
 		updateReq.AutoUpgrade = &c.AutoUpgrade
