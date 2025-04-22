@@ -18,6 +18,7 @@ import (
 
 type instanceShowOutput struct {
 	ID                 string            `json:"id"`
+	AIJobStatus        string            `json:"ai_job_status"`
 	Name               string            `json:"name"`
 	CreationDate       string            `json:"creation_date"`
 	InstanceType       string            `json:"instance_type"`
