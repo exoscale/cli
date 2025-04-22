@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.84.1
+
 ### Features
 
 - sks: move cluster creation to egoscale v3 + enable-kube-proxy flag
