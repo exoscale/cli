@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Features
+
+- sks: move cluster creation to egoscale v3 + enable-kube-proxy flag
+
+### Bug fixes
+
+- sks update: fix missing feature gate entry #676
+
 ## 1.84.0
 
 ### Bug fixes
@@ -11,7 +19,6 @@
 ### Features
 
 - storage: bucket replication support #668
-- sks: move cluster creation to egoscale v3 + enable-kube-proxy flag
 - dbaas: added valkey
 - dbaas: remove redis create
 - SKS cluster: display enable kube proxy #675
