@@ -14,13 +14,13 @@ import (
 )
 
 type sksShowOutput struct {
-	ID              string                  `json:"id"`
+	ID              v3.UUID                 `json:"id"`
 	Name            string                  `json:"name"`
 	Description     string                  `json:"description"`
 	CreationDate    string                  `json:"creation_date"`
 	AutoUpgrade     bool                    `json:"auto_upgrade"`
 	EnableKubeProxy bool                    `json:"enable_kube_proxy"`
-	Zone            string                  `json:"zone"`
+	Zone            v3.ZoneName             `json:"zone"`
 	Endpoint        string                  `json:"endpoint"`
 	Version         string                  `json:"version"`
 	ServiceLevel    string                  `json:"service_level"`
@@ -38,10 +38,10 @@ func (o *sksShowOutput) ToTable() {
 	t.SetHeader([]string{"SKS Cluster"})
 	defer t.Render()
 
-	t.Append([]string{"ID", o.ID})
+	t.Append([]string{"ID", o.ID.String()})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
-	t.Append([]string{"Zone", o.Zone})
+	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"Creation Date", o.CreationDate})
 	t.Append([]string{"Auto-upgrade", fmt.Sprint(o.AutoUpgrade)})
 	t.Append([]string{"Enable kube-proxy", fmt.Sprint(o.EnableKubeProxy)})
@@ -90,7 +90,7 @@ type sksShowCmd struct {
 
 	Cluster string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Zone string `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksShowCmd) cmdAliases() []string { return gShowAlias }
@@ -130,7 +130,7 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	sksNodepools := make([]sksNodepoolShowOutput, 0)
 	for _, np := range cluster.Nodepools {
 		sksNodepools = append(sksNodepools, sksNodepoolShowOutput{
-			ID:   string(np.ID),
+			ID:   np.ID,
 			Name: np.Name,
 		})
 	}
@@ -149,7 +149,7 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			EnableKubeProxy: *cluster.EnableKubeProxy,
 			Description:     cluster.Description,
 			Endpoint:        cluster.Endpoint,
-			ID:              cluster.ID.String(),
+			ID:              cluster.ID,
 			Labels: func() (v map[string]string) {
 				if cluster.Labels != nil {
 					v = cluster.Labels
