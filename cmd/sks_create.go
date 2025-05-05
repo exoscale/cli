@@ -98,7 +98,7 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		AutoUpgrade: &c.AutoUpgrade,
 		Cni:         v3.CreateSKSClusterRequestCni(c.CNI),
 		Description: utils.NonEmptyStringPtr(c.Description),
-		Labels: func() v3.Labels {
+		Labels: func() v3.SKSClusterLabels {
 			if len(c.Labels) > 0 {
 				return c.Labels
 			}

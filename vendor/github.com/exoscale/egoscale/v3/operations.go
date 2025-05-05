@@ -9988,6 +9988,81 @@ func (c Client) DetachInstanceFromElasticIP(ctx context.Context, id UUID, req De
 	return bodyresp, nil
 }
 
+type GetEnvImpactResponseEnvImpactTotal struct {
+	// Impact Amount
+	Amount float64 `json:"amount,omitempty"`
+	// Impact Unit
+	Unit string `json:"unit,omitempty"`
+}
+
+type GetEnvImpactResponseEnvImpact struct {
+	Total *GetEnvImpactResponseEnvImpactTotal `json:"total,omitempty"`
+}
+
+type GetEnvImpactResponse struct {
+	EnvImpact map[string]GetEnvImpactResponseEnvImpact `json:"env_impact,omitempty"`
+}
+
+type GetEnvImpactOpt func(url.Values)
+
+func GetEnvImpactWithPeriod(period string) GetEnvImpactOpt {
+	return func(q url.Values) {
+		q.Add("period", fmt.Sprint(period))
+	}
+}
+
+// [BETA] Returns environmental impact reports for an organization
+func (c Client) GetEnvImpact(ctx context.Context, opts ...GetEnvImpactOpt) (*GetEnvImpactResponse, error) {
+	path := "/env-impact"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetEnvImpact: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if len(opts) > 0 {
+		q := request.URL.Query()
+		for _, opt := range opts {
+			opt(q)
+		}
+		request.URL.RawQuery = q.Encode()
+	}
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetEnvImpact: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetEnvImpact: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-env-impact")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetEnvImpact: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetEnvImpact: http response: %w", err)
+	}
+
+	bodyresp := &GetEnvImpactResponse{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetEnvImpact: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
 type ListEventsOpt func(url.Values)
 
 func ListEventsWithFrom(from time.Time) ListEventsOpt {
@@ -14539,8 +14614,8 @@ type CreateSKSClusterRequest struct {
 	// Indicates whether to deploy the Kubernetes network proxy. When unspecified, defaults to `true` unless Cilium CNI is selected
 	EnableKubeProxy *bool `json:"enable-kube-proxy,omitempty"`
 	// A list of Kubernetes-only Alpha features to enable for API server component
-	FeatureGates []string `json:"feature-gates,omitempty"`
-	Labels       Labels   `json:"labels,omitempty"`
+	FeatureGates []string         `json:"feature-gates,omitempty"`
+	Labels       SKSClusterLabels `json:"labels,omitempty"`
 	// Cluster service level
 	Level CreateSKSClusterRequestLevel `json:"level" validate:"required"`
 	// Cluster name
@@ -14863,8 +14938,8 @@ type UpdateSKSClusterRequest struct {
 	// Add or remove the operators certificate authority (CA) from the list of trusted CAs of the api server. The default value is true
 	EnableOperatorsCA *bool `json:"enable-operators-ca,omitempty"`
 	// A list of Kubernetes-only Alpha features to enable for API server component
-	FeatureGates []string `json:"feature-gates,omitempty"`
-	Labels       Labels   `json:"labels,omitempty"`
+	FeatureGates []string         `json:"feature-gates,omitempty"`
+	Labels       SKSClusterLabels `json:"labels,omitempty"`
 	// Cluster name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// SKS Cluster OpenID config map
@@ -15047,8 +15122,8 @@ type CreateSKSNodepoolRequest struct {
 	// Compute instance type
 	InstanceType *InstanceType `json:"instance-type" validate:"required"`
 	// Kubelet image GC options
-	KubeletImageGC *KubeletImageGC `json:"kubelet-image-gc,omitempty"`
-	Labels         Labels          `json:"labels,omitempty"`
+	KubeletImageGC *KubeletImageGC   `json:"kubelet-image-gc,omitempty"`
+	Labels         SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name, lowercase only
 	Name string `json:"name" validate:"required,gte=1,lte=255"`
 	// Nodepool Private Networks
@@ -15222,8 +15297,8 @@ type UpdateSKSNodepoolRequest struct {
 	// Prefix to apply to managed instances names (default: pool), lowercase only
 	InstancePrefix string `json:"instance-prefix,omitempty" validate:"omitempty,gte=1,lte=30"`
 	// Compute instance type
-	InstanceType *InstanceType `json:"instance-type,omitempty"`
-	Labels       Labels        `json:"labels,omitempty"`
+	InstanceType *InstanceType     `json:"instance-type,omitempty"`
+	Labels       SKSNodepoolLabels `json:"labels,omitempty"`
 	// Nodepool name, lowercase only
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
 	// Nodepool Private Networks
@@ -15493,6 +15568,50 @@ func (c Client) RotateSKSCcmCredentials(ctx context.Context, id UUID) (*Operatio
 	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("RotateSKSCcmCredentials: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Rotate Exoscale CSI credentials
+func (c Client) RotateSKSCsiCredentials(ctx context.Context, id UUID) (*Operation, error) {
+	path := fmt.Sprintf("/sks-cluster/%v/rotate-csi-credentials", id)
+
+	request, err := http.NewRequestWithContext(ctx, "PUT", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("RotateSKSCsiCredentials: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("RotateSKSCsiCredentials: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("RotateSKSCsiCredentials: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "rotate-sks-csi-credentials")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("RotateSKSCsiCredentials: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("RotateSKSCsiCredentials: http response: %w", err)
+	}
+
+	bodyresp := &Operation{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("RotateSKSCsiCredentials: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
@@ -16678,6 +16797,88 @@ func (c Client) UpdateTemplate(ctx context.Context, id UUID, req UpdateTemplateR
 	bodyresp := &Operation{}
 	if err := prepareJSONResponse(response, bodyresp); err != nil {
 		return nil, fmt.Errorf("UpdateTemplate: prepare Json response: %w", err)
+	}
+
+	return bodyresp, nil
+}
+
+// Usage
+type GetUsageReportResponseUsage struct {
+	// Description
+	Description string `json:"description,omitempty"`
+	// Period Start Date
+	From string `json:"from,omitempty"`
+	// Product
+	Product string `json:"product,omitempty"`
+	// Quantity
+	Quantity string `json:"quantity,omitempty"`
+	// Period End Date
+	To string `json:"to,omitempty"`
+	// Unit
+	Unit string `json:"unit,omitempty"`
+	// Variable
+	Variable string `json:"variable,omitempty"`
+}
+
+type GetUsageReportResponse struct {
+	Usage []GetUsageReportResponseUsage `json:"usage,omitempty"`
+}
+
+type GetUsageReportOpt func(url.Values)
+
+func GetUsageReportWithPeriod(period string) GetUsageReportOpt {
+	return func(q url.Values) {
+		q.Add("period", fmt.Sprint(period))
+	}
+}
+
+// Returns aggregated usage reports for an organization
+func (c Client) GetUsageReport(ctx context.Context, opts ...GetUsageReportOpt) (*GetUsageReportResponse, error) {
+	path := "/usage-report"
+
+	request, err := http.NewRequestWithContext(ctx, "GET", c.serverEndpoint+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("GetUsageReport: new request: %w", err)
+	}
+
+	request.Header.Add("User-Agent", c.getUserAgent())
+
+	if len(opts) > 0 {
+		q := request.URL.Query()
+		for _, opt := range opts {
+			opt(q)
+		}
+		request.URL.RawQuery = q.Encode()
+	}
+
+	if err := c.executeRequestInterceptors(ctx, request); err != nil {
+		return nil, fmt.Errorf("GetUsageReport: execute request editors: %w", err)
+	}
+
+	if err := c.signRequest(request); err != nil {
+		return nil, fmt.Errorf("GetUsageReport: sign request: %w", err)
+	}
+
+	if c.trace {
+		dumpRequest(request, "get-usage-report")
+	}
+
+	response, err := c.httpClient.Do(request)
+	if err != nil {
+		return nil, fmt.Errorf("GetUsageReport: http client do: %w", err)
+	}
+
+	if c.trace {
+		dumpResponse(response)
+	}
+
+	if err := handleHTTPErrorResp(response); err != nil {
+		return nil, fmt.Errorf("GetUsageReport: http response: %w", err)
+	}
+
+	bodyresp := &GetUsageReportResponse{}
+	if err := prepareJSONResponse(response, bodyresp); err != nil {
+		return nil, fmt.Errorf("GetUsageReport: prepare Json response: %w", err)
 	}
 
 	return bodyresp, nil
