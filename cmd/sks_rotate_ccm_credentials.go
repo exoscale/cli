@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksRotateCCMCredentialsCmd struct {
@@ -18,7 +16,7 @@ type sksRotateCCMCredentialsCmd struct {
 
 	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 
-	Zone string `cli-flag:"zone" cli-short:"z" cli-usage:"SKS cluster zone"`
+	Zone v3.ZoneName `cli-flag:"zone" cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksRotateCCMCredentialsCmd) cmdAliases() []string { return nil }
@@ -39,27 +37,32 @@ func (c *sksRotateCCMCredentialsCmd) cmdPreRun(cmd *cobra.Command, args []string
 }
 
 func (c *sksRotateCCMCredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
-	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
-		return err
-	}
-
-	decorateAsyncOperation(
-		fmt.Sprintf("Rotating SKS cluster %q Exoscale CCM credentials...", c.Cluster),
-		func() {
-			err = globalstate.EgoscaleClient.RotateSKSClusterCCMCredentials(ctx, c.Zone, cluster)
-		},
-	)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	resp, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	op, err := client.RotateSKSCcmCredentials(ctx, cluster.ID)
+	if err != nil {
+		return err
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Rotating SKS cluster %q Exoscale CCM credentials...", c.Cluster), func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+
+	return err
 }
 
 func init() {

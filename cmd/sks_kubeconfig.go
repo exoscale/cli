@@ -3,16 +3,13 @@ package cmd
 import (
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksKubeconfigCmd struct {
@@ -23,10 +20,10 @@ type sksKubeconfigCmd struct {
 	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
 	User    string `cli-arg:"#"`
 
-	ExecCredential bool     `cli-short:"x" cli-usage:"output an ExecCredential object to use with a kubeconfig user.exec mode"`
-	Groups         []string `cli-flag:"group" cli-short:"g" cli-usage:"client certificate group. Can be specified multiple times. Defaults to system:masters"`
-	TTL            int64    `cli-short:"t" cli-usage:"client certificate validity duration in seconds"`
-	Zone           string   `cli-short:"z" cli-usage:"SKS cluster zone"`
+	ExecCredential bool        `cli-short:"x" cli-usage:"output an ExecCredential object to use with a kubeconfig user.exec mode"`
+	Groups         []string    `cli-flag:"group" cli-short:"g" cli-usage:"client certificate group. Can be specified multiple times. Defaults to system:masters"`
+	TTL            int64       `cli-short:"t" cli-usage:"client certificate validity duration in seconds"`
+	Zone           v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksKubeconfigCmd) cmdAliases() []string { return []string{"kc"} }
@@ -113,34 +110,41 @@ func (c *sksKubeconfigCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
 
 	// We cannot use the flag's default here as it would be additive
 	if len(c.Groups) == 0 {
 		c.Groups = []string{"system:masters"}
 	}
 
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
-	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
-		return err
+	req := v3.SKSKubeconfigRequest{
+		User:   c.User,
+		Groups: c.Groups,
+		Ttl:    int64(c.TTL),
 	}
 
-	b64Kubeconfig, err := globalstate.EgoscaleClient.GetSKSClusterKubeconfig(
-		ctx,
-		c.Zone,
-		cluster,
-		c.User,
-		c.Groups,
-		time.Duration(c.TTL)*time.Second,
-	)
+	generateResp, err := client.GenerateSKSClusterKubeconfig(ctx, cluster.ID, req)
+	fmt.Println(generateResp)
+
 	if err != nil {
 		return fmt.Errorf("error retrieving kubeconfig: %w", err)
 	}
 
-	kubeconfig, err := base64.StdEncoding.DecodeString(b64Kubeconfig)
+	kubeconfig, err := base64.StdEncoding.DecodeString(generateResp.Kubeconfig)
 	if err != nil {
 		return fmt.Errorf("error decoding kubeconfig content: %w", err)
 	}

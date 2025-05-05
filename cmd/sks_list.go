@@ -7,17 +7,16 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksClusterListItemOutput struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Zone string `json:"zone"`
+	ID   v3.UUID     `json:"id"`
+	Name string      `json:"name"`
+	Zone v3.ZoneName `json:"zone"`
 }
 
 type sksClusterListOutput []sksClusterListItemOutput
@@ -31,7 +30,7 @@ type sksListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
 func (c *sksListCmd) cmdAliases() []string { return gListAlias }
@@ -50,12 +49,21 @@ func (c *sksListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	var zones []string
+	client := globalstate.EgoscaleV3Client
+	ctx := gContext
+
+	resp, err := client.ListZones(ctx)
+	if err != nil {
+		return err
+	}
+	zones := resp.Zones
 
 	if c.Zone != "" {
-		zones = []string{c.Zone}
-	} else {
-		zones = utils.AllZones
+		endpoint, err := client.GetZoneAPIEndpoint(ctx, c.Zone)
+		if err != nil {
+			return err
+		}
+		zones = []v3.Zone{{APIEndpoint: endpoint}}
 	}
 
 	out := make(sksClusterListOutput, 0)
@@ -68,19 +76,18 @@ func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 		done <- struct{}{}
 	}()
-	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-		list, err := globalstate.EgoscaleClient.ListSKSClusters(ctx, zone)
+	err = utils.ForEveryZone(zones, func(zone v3.Zone) error {
+		c := client.WithEndpoint((zone.APIEndpoint))
+		resp, err := c.ListSKSClusters(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list SKS clusters in zone %s: %w", zone, err)
 		}
 
-		for _, cluster := range list {
+		for _, cluster := range resp.SKSClusters {
 			res <- sksClusterListItemOutput{
-				ID:   *cluster.ID,
-				Name: *cluster.Name,
-				Zone: zone,
+				ID:   cluster.ID,
+				Name: cluster.Name,
+				Zone: zone.Name,
 			}
 		}
 

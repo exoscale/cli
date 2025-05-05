@@ -2,18 +2,16 @@ package cmd
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
-var sksAuthorityCertAuthorities = []string{
+var sksAuthorityCertAuthorities = []v3.GetSKSClusterAuthorityCertAuthority{
 	"aggregation",
 	"control-plane",
 	"kubelet",
@@ -24,10 +22,10 @@ type sksAuthorityCertCmd struct {
 
 	_ bool `cli-cmd:"authority-cert"`
 
-	Cluster   string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
-	Authority string `cli-arg:"#"`
+	Cluster   string                                 `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
+	Authority v3.GetSKSClusterAuthorityCertAuthority `cli-arg:"#"`
 
-	Zone string `cli-short:"z" cli-usage:"SKS cluster zone"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksAuthorityCertCmd) cmdAliases() []string { return nil }
@@ -37,11 +35,16 @@ func (c *sksAuthorityCertCmd) cmdShort() string {
 }
 
 func (c *sksAuthorityCertCmd) cmdLong() string {
+	stringAuthorities := make([]string, len(sksAuthorityCertAuthorities))
+	for i, v := range sksAuthorityCertAuthorities {
+		stringAuthorities[i] = string(v)
+	}
+
 	return fmt.Sprintf(`This command retrieves the certificate content for the specified Kubernetes
 cluster authority. Supported authorities:
 
 Supported authorities: %s`,
-		strings.Join(sksAuthorityCertAuthorities, ", "))
+		strings.Join(stringAuthorities, ", "))
 }
 
 func (c *sksAuthorityCertCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
@@ -61,21 +64,28 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		cmdExitOnUsageError(cmd, fmt.Sprintf("unsupported authority value %q", c.Authority))
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 
-	b64Cert, err := globalstate.EgoscaleClient.GetSKSClusterAuthorityCert(ctx, c.Zone, cluster, c.Authority)
+	resp, err := client.ListSKSClusters(ctx)
+	if err != nil {
+		return err
+	}
+
+	cluster, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	getCertResponse, err := client.GetSKSClusterAuthorityCert(ctx, cluster.ID, c.Authority)
 	if err != nil {
 		return fmt.Errorf("error retrieving certificate: %w", err)
 	}
 
-	cert, err := base64.StdEncoding.DecodeString(b64Cert)
+	cert, err := base64.StdEncoding.DecodeString(getCertResponse.Cacert)
 	if err != nil {
 		return fmt.Errorf("error decoding certificate content: %w", err)
 	}

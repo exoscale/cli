@@ -1,18 +1,15 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 const (
@@ -64,115 +61,75 @@ func (c *sksNodepoolAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	nodepool := &egoscale.SKSNodepool{
-		Description:    utils.NonEmptyStringPtr(c.Description),
-		DiskSize:       &c.DiskSize,
-		InstancePrefix: utils.NonEmptyStringPtr(c.InstancePrefix),
-		Name:           &c.Name,
-		Size:           &c.Size,
-		KubeletImageGc: &egoscale.SKSNodepoolKubeletImageGc{
-			MinAge:        &c.ImageGcMinAge,
-			LowThreshold:  &c.ImageGcLowThreshold,
-			HighThreshold: &c.ImageGcHighThreshold,
-		},
+	ctx := gContext
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
+	resp, err := client.ListSKSClusters(ctx)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		return err
+	}
+
+	cluster, err := resp.FindSKSCluster(c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	labels := make(map[string]string)
+	if len(c.Labels) > 0 {
+		labels, err = utils.SliceToMap(c.Labels)
+		if err != nil {
+			return fmt.Errorf("label: %w", err)
 		}
-		return fmt.Errorf("error retrieving cluster: %w", err)
+	}
+
+	nodepoolReq, err := createNodepoolRequest(
+		ctx,
+		client,
+		CreateNodepoolOpts{
+			Name:               c.Name,
+			Description:        c.Description,
+			DiskSize:           c.DiskSize,
+			InstancePrefix:     c.InstancePrefix,
+			Size:               c.Size,
+			InstanceType:       c.InstanceType,
+			Labels:             labels,
+			AntiAffinityGroups: c.AntiAffinityGroups,
+			DeployTarget:       c.DeployTarget,
+			PrivateNetworks:    c.PrivateNetworks,
+			SecurityGroups:     c.SecurityGroups,
+			Taints:             c.Taints,
+			KubeletImageGC: &v3.KubeletImageGC{
+				MinAge:        c.ImageGcMinAge,
+				LowThreshold:  c.ImageGcLowThreshold,
+				HighThreshold: c.ImageGcHighThreshold,
+			},
+		},
+	)
+	if err != nil {
+		return err
 	}
 
 	addOns := map[string]bool{
 		"storage-lvm": c.StorageLvm,
 	}
 
-	nodepool.AddOns = &[]string{}
+	nodepoolReq.Addons = []string{}
 	for k, v := range addOns {
 		if v {
-			*nodepool.AddOns = append(*nodepool.AddOns, k)
+			nodepoolReq.Addons = append(nodepoolReq.Addons, k)
 		}
 	}
 
-	if l := len(c.AntiAffinityGroups); l > 0 {
-		nodepoolAntiAffinityGroupIDs := make([]string, l)
-		for i := range c.AntiAffinityGroups {
-			antiAffinityGroup, err := globalstate.EgoscaleClient.FindAntiAffinityGroup(ctx, c.Zone, c.AntiAffinityGroups[i])
-			if err != nil {
-				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
-			}
-			nodepoolAntiAffinityGroupIDs[i] = *antiAffinityGroup.ID
-		}
-		nodepool.AntiAffinityGroupIDs = &nodepoolAntiAffinityGroupIDs
-	}
-
-	if c.DeployTarget != "" {
-		deployTarget, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
-		if err != nil {
-			return fmt.Errorf("error retrieving Deploy Target: %w", err)
-		}
-		nodepool.DeployTargetID = deployTarget.ID
-	}
-
-	nodepoolInstanceType, err := globalstate.EgoscaleClient.FindInstanceType(ctx, c.Zone, c.InstanceType)
+	op, err := client.CreateSKSNodepool(ctx, cluster.ID, nodepoolReq)
 	if err != nil {
-		return fmt.Errorf("error retrieving instance type: %w", err)
+		return err
 	}
-	nodepool.InstanceTypeID = nodepoolInstanceType.ID
-
-	if len(c.Labels) > 0 {
-		labels := make(map[string]string)
-		if len(c.Labels) > 0 {
-			labels, err = utils.SliceToMap(c.Labels)
-			if err != nil {
-				return fmt.Errorf("label: %w", err)
-			}
-		}
-		nodepool.Labels = &labels
-	}
-
-	if l := len(c.PrivateNetworks); l > 0 {
-		nodepoolPrivateNetworkIDs := make([]string, l)
-		for i := range c.PrivateNetworks {
-			privateNetwork, err := globalstate.EgoscaleClient.FindPrivateNetwork(ctx, c.Zone, c.PrivateNetworks[i])
-			if err != nil {
-				return fmt.Errorf("error retrieving Private Network: %w", err)
-			}
-			nodepoolPrivateNetworkIDs[i] = *privateNetwork.ID
-		}
-		nodepool.PrivateNetworkIDs = &nodepoolPrivateNetworkIDs
-	}
-
-	if l := len(c.SecurityGroups); l > 0 {
-		nodepoolSecurityGroupIDs := make([]string, l)
-		for i := range c.SecurityGroups {
-			securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, c.Zone, c.SecurityGroups[i])
-			if err != nil {
-				return fmt.Errorf("error retrieving Security Group: %w", err)
-			}
-			nodepoolSecurityGroupIDs[i] = *securityGroup.ID
-		}
-		nodepool.SecurityGroupIDs = &nodepoolSecurityGroupIDs
-	}
-
-	if len(c.Taints) > 0 {
-		taints := make(map[string]*egoscale.SKSNodepoolTaint)
-		for _, t := range c.Taints {
-			key, taint, err := parseSKSNodepoolTaint(t)
-			if err != nil {
-				return fmt.Errorf("invalid taint value %q: %w", t, err)
-			}
-			taints[key] = taint
-		}
-		nodepool.Taints = &taints
-	}
-
-	decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", *nodepool.Name), func() {
-		nodepool, err = globalstate.EgoscaleClient.CreateSKSNodepool(ctx, c.Zone, cluster, nodepool)
+	decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolReq.Name), func() {
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -181,9 +138,9 @@ func (c *sksNodepoolAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&sksNodepoolShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Cluster:            *cluster.ID,
-			Nodepool:           *nodepool.ID,
-			Zone:               c.Zone,
+			Cluster:            cluster.ID.String(),
+			Nodepool:           op.Reference.ID.String(),
+			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
