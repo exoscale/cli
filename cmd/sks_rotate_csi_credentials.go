@@ -14,8 +14,8 @@ type sksRotateCSICredentialsCmd struct {
 
 	_ bool `cli-cmd:"rotate-csi-credentials"`
 
-	Cluster string `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
-	Zone 	v3.ZoneName `cli-flag:"zone" cli-short:"z" cli-usage:"SKS cluster zone"`
+	Cluster string      `cli-arg:"#" cli-usage:"CLUSTER-NAME|ID"`
+	Zone    v3.ZoneName `cli-flag:"zone" cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
 func (c *sksRotateCSICredentialsCmd) cmdAliases() []string { return nil }
@@ -65,7 +65,7 @@ func (c *sksRotateCSICredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksRotateCCMCredentialsCmd{
+	cobra.CheckErr(registerCLICommand(sksCmd, &sksRotateCSICredentialsCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

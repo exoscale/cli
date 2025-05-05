@@ -5,7 +5,7 @@
 ### Features
 
 - sks: add rotate operators CA cmd
-- sks: add rotate csi credentials cmd
+- sks: add rotate CSI credentials cmd
 
 ### Bug fixes
 
@@ -18,7 +18,6 @@
 ### Features
 
 - sks: move cluster creation to egoscale v3 + enable-kube-proxy flag
-- sks: add rotate operators CA cmd; more related egoscale v3 migrations
 
 ### Bug fixes
 
@@ -36,10 +35,6 @@
 - dbaas: added valkey
 - dbaas: remove redis create
 - SKS cluster: display enable kube proxy #675
-
-### Improvements
-
-- SKS: related commands are migrated to egoscale v3
 
 ## 1.83.1
 
