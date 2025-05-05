@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Features
+
+- sks: add rotate operators CA cmd
+
+### Bug fixes
+
+### Improvements
+
+- SKS: more related commands are migrated to egoscale v3
+
 ## 1.84.1
 
 ### Features
