@@ -5,6 +5,7 @@
 ### Features
 
 - sks: add rotate operators CA cmd
+- sks: feature-gates support for cluster update and creation #677
 
 ### Bug fixes
 
