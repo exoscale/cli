@@ -5,9 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasCACertificateCmd struct {
@@ -33,14 +32,17 @@ func (c *dbaasCACertificateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *dbaasCACertificateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	caCertificate, err := globalstate.EgoscaleClient.GetDatabaseCACertificate(ctx, c.Zone)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
 
-	_, _ = fmt.Print(caCertificate)
+	caCertificate, err := client.GetDBAASCACertificate(ctx)
+	if err != nil {
+		return err
+	}
+	_, _ = fmt.Print(caCertificate.Certificate)
 
 	return nil
 }
