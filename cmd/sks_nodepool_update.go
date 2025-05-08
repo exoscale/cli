@@ -161,7 +161,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
 		if updateReq.Labels == nil {
-			updateReq.Labels = v3.Labels{}
+			updateReq.Labels = v3.SKSNodepoolLabels{}
 		}
 		if len(c.Labels) > 0 {
 			labels, err := utils.SliceToMap(c.Labels)

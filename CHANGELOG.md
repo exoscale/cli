@@ -5,6 +5,7 @@
 ### Features
 
 - sks: add rotate operators CA cmd
+- sks: add rotate CSI credentials cmd
 
 ### Bug fixes
 
