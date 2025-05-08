@@ -4,6 +4,8 @@
 
 ### Features
 
+- instance: enable tpm cmd
+- instance: secureboot and tpm support on create
 - sks: add rotate operators CA cmd
 - sks: add rotate CSI credentials cmd
 - sks: feature-gates support for cluster update and creation #677
