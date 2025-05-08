@@ -3,72 +3,72 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
-	db := oapi.CreateDbaasServiceOpensearchJSONRequestBody{
-		ForkFromService:          (*oapi.DbaasServiceName)(utils.NonEmptyStringPtr(c.OpensearchForkFromService)),
+	db := v3.CreateDBAASServiceOpensearchRequest{
 		KeepIndexRefreshInterval: &c.OpensearchKeepIndexRefreshInterval,
 		Plan:                     c.Plan,
-		RecoveryBackupName:       utils.NonEmptyStringPtr(c.OpensearchRecoveryBackupName),
 		TerminationProtection:    &c.TerminationProtection,
-		Version:                  utils.NonEmptyStringPtr(c.OpensearchVersion),
-		OpensearchDashboards: &struct {
-			Enabled                  *bool  "json:\"enabled,omitempty\""
-			MaxOldSpaceSize          *int64 "json:\"max-old-space-size,omitempty\""
-			OpensearchRequestTimeout *int64 "json:\"opensearch-request-timeout,omitempty\""
-		}{},
-		IndexTemplate: &struct {
-			MappingNestedObjectsLimit *int64 "json:\"mapping-nested-objects-limit,omitempty\""
-			NumberOfReplicas          *int64 "json:\"number-of-replicas,omitempty\""
-			NumberOfShards            *int64 "json:\"number-of-shards,omitempty\""
-		}{},
+		OpensearchDashboards:     &v3.CreateDBAASServiceOpensearchRequestOpensearchDashboards{},
+		IndexTemplate:            &v3.CreateDBAASServiceOpensearchRequestIndexTemplate{},
+	}
+
+	if c.OpensearchForkFromService != "" {
+		db.ForkFromService = v3.DBAASServiceName(c.OpensearchForkFromService)
+	}
+	if c.OpensearchRecoveryBackupName != "" {
+		db.RecoveryBackupName = c.OpensearchRecoveryBackupName
+	}
+	if db.Version != "" {
+		db.Version = c.OpensearchVersion
 	}
 
 	if len(c.OpensearchIPFilter) > 0 {
-		db.IpFilter = &c.OpensearchIPFilter
+		db.IPFilter = c.OpensearchIPFilter
 	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		db.Maintenance = &struct {
-			Dow  oapi.CreateDbaasServiceOpensearchJSONBodyMaintenanceDow `json:"dow"`
-			Time string                                                  `json:"time"`
-		}{
-			Dow:  oapi.CreateDbaasServiceOpensearchJSONBodyMaintenanceDow(c.MaintenanceDOW),
+		db.Maintenance = &v3.CreateDBAASServiceOpensearchRequestMaintenance{
+
+			Dow:  v3.CreateDBAASServiceOpensearchRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
 		}
 	}
 
 	if c.OpensearchSettings != "" {
-		settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
+		settingsSchema, err := client.GetDBAASSettingsOpensearch(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 		}
-		if settingsSchema.StatusCode() != http.StatusOK {
-			return fmt.Errorf("API request error: unexpected status %s", settingsSchema.Status())
-		}
 
-		settings, err := validateDatabaseServiceSettings(
+		_, err = validateDatabaseServiceSettings(
 			c.OpensearchSettings,
-			settingsSchema.JSON200.Settings.Opensearch,
+			settingsSchema.Settings.Opensearch,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		db.OpensearchSettings = &settings
+
+		settings := &v3.JSONSchemaOpensearch{}
+		if err = json.Unmarshal([]byte(c.OpensearchSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+
+		db.OpensearchSettings = *settings
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
@@ -76,47 +76,43 @@ func (c *dbaasServiceCreateCmd) createOpensearch(cmd *cobra.Command, _ []string)
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
-		db.OpensearchDashboards.OpensearchRequestTimeout = &c.OpensearchDashboardRequestTimeout
+		db.OpensearchDashboards.OpensearchRequestTimeout = c.OpensearchDashboardRequestTimeout
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
-		db.OpensearchDashboards.MaxOldSpaceSize = &c.OpensearchDashboardMaxOldSpaceSize
+		db.OpensearchDashboards.MaxOldSpaceSize = c.OpensearchDashboardMaxOldSpaceSize
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
-		db.IndexTemplate.MappingNestedObjectsLimit = &c.OpensearchIndexTemplateMappingNestedObjectsLimit
+		db.IndexTemplate.MappingNestedObjectsLimit = c.OpensearchIndexTemplateMappingNestedObjectsLimit
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
-		db.IndexTemplate.NumberOfReplicas = &c.OpensearchIndexTemplateNumberOfReplicas
+		db.IndexTemplate.NumberOfReplicas = c.OpensearchIndexTemplateNumberOfReplicas
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
-		db.IndexTemplate.NumberOfShards = &c.OpensearchIndexTemplateNumberOfShards
+		db.IndexTemplate.NumberOfShards = c.OpensearchIndexTemplateNumberOfShards
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
-		db.IndexPatterns = &[]struct {
-			MaxIndexCount    *int64                                                                  `json:"max-index-count,omitempty"`
-			Pattern          *string                                                                 `json:"pattern,omitempty"`
-			SortingAlgorithm *oapi.CreateDbaasServiceOpensearchJSONBodyIndexPatternsSortingAlgorithm `json:"sorting-algorithm,omitempty"`
-		}{}
-
-		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), db.IndexPatterns)
+		db.IndexPatterns = make([]v3.CreateDBAASServiceOpensearchRequestIndexPatterns, 0)
+		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), &db.IndexPatterns)
 		if err != nil {
 			return fmt.Errorf("failed to decode Opensearch index patterns JSON: %s", err)
 		}
 	}
 
-	var res *oapi.CreateDbaasServiceOpensearchResponse
-	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.EgoscaleClient.CreateDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name), db)
-	})
+	op, err := client.CreateDBAASServiceOpensearch(ctx, c.Name, db)
 	if err != nil {
 		return err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", res.Status())
+
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+	if err != nil {
+		return err
 	}
 
 	if !globalstate.Quiet {
