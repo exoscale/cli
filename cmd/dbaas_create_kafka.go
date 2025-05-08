@@ -1,117 +1,133 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
 
-	databaseService := oapi.CreateDbaasServiceKafkaJSONRequestBody{
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
+
+	databaseService := v3.CreateDBAASServiceKafkaRequest{
 		KafkaConnectEnabled:   &c.KafkaEnableKafkaConnect,
 		KafkaRestEnabled:      &c.KafkaEnableKafkaREST,
 		Plan:                  c.Plan,
 		SchemaRegistryEnabled: &c.KafkaEnableSchemaRegistry,
 		TerminationProtection: &c.TerminationProtection,
-		Version:               utils.NonEmptyStringPtr(c.KafkaVersion),
+		Version:               c.KafkaVersion,
 	}
 
-	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
+	if c.KafkaVersion != "" {
+		databaseService.Version = c.KafkaVersion
+	}
+
+	settingsSchema, err := client.GetDBAASSettingsKafka(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
-	if settingsSchema.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", settingsSchema.Status())
-	}
 
 	if c.KafkaEnableCertAuth || c.KafkaEnableSASLAuth {
-		databaseService.AuthenticationMethods = &struct {
-			Certificate *bool `json:"certificate,omitempty"`
-			Sasl        *bool `json:"sasl,omitempty"`
-		}{
+		databaseService.AuthenticationMethods = &v3.CreateDBAASServiceKafkaRequestAuthenticationMethods{
 			Certificate: &c.KafkaEnableCertAuth,
 			Sasl:        &c.KafkaEnableSASLAuth,
 		}
 	}
 
 	if len(c.KafkaIPFilter) > 0 {
-		databaseService.IpFilter = &c.KafkaIPFilter
+		databaseService.IPFilter = c.KafkaIPFilter
 	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		databaseService.Maintenance = &struct {
-			Dow  oapi.CreateDbaasServiceKafkaJSONBodyMaintenanceDow `json:"dow"`
-			Time string                                             `json:"time"`
-		}{
-			Dow:  oapi.CreateDbaasServiceKafkaJSONBodyMaintenanceDow(c.MaintenanceDOW),
+		databaseService.Maintenance = &v3.CreateDBAASServiceKafkaRequestMaintenance{
+			Dow:  v3.CreateDBAASServiceKafkaRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
 		}
 	}
 
 	if c.KafkaConnectSettings != "" {
-		settings, err := validateDatabaseServiceSettings(
+		_, err := validateDatabaseServiceSettings(
 			c.KafkaConnectSettings,
-			settingsSchema.JSON200.Settings.KafkaConnect,
+			settingsSchema.Settings.KafkaConnect,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaConnectSettings = &settings
+
+		settings := &v3.JSONSchemaKafkaConnect{}
+		if err = json.Unmarshal([]byte(c.KafkaConnectSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+
+		databaseService.KafkaConnectSettings = *settings
 	}
 
 	if c.KafkaRESTSettings != "" {
-		settings, err := validateDatabaseServiceSettings(
+		_, err := validateDatabaseServiceSettings(
 			c.KafkaRESTSettings,
-			settingsSchema.JSON200.Settings.KafkaRest,
+			settingsSchema.Settings.KafkaRest,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaRestSettings = &settings
+		settings := &v3.JSONSchemaKafkaRest{}
+		if err = json.Unmarshal([]byte(c.KafkaRESTSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		databaseService.KafkaRestSettings = *settings
 	}
 
 	if c.KafkaSettings != "" {
-		settings, err := validateDatabaseServiceSettings(
+		_, err := validateDatabaseServiceSettings(
 			c.KafkaSettings,
-			settingsSchema.JSON200.Settings.Kafka,
+			settingsSchema.Settings.Kafka,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.KafkaSettings = &settings
+		settings := &v3.JSONSchemaKafka{}
+		if err = json.Unmarshal([]byte(c.KafkaSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		databaseService.KafkaSettings = *settings
 	}
 
 	if c.KafkaSchemaRegistrySettings != "" {
-		settings, err := validateDatabaseServiceSettings(
+		_, err := validateDatabaseServiceSettings(
 			c.KafkaSchemaRegistrySettings,
-			settingsSchema.JSON200.Settings.SchemaRegistry,
+			settingsSchema.Settings.SchemaRegistry,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.SchemaRegistrySettings = &settings
+		settings := &v3.JSONSchemaSchemaRegistry{}
+		if err = json.Unmarshal([]byte(c.KafkaSchemaRegistrySettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		databaseService.SchemaRegistrySettings = *settings
 	}
 
-	var res *oapi.CreateDbaasServiceKafkaResponse
-	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.EgoscaleClient.CreateDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
-	})
+	op, err := client.CreateDBAASServiceKafka(ctx, c.Name, databaseService)
 	if err != nil {
 		return err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", res.Status())
+
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+	if err != nil {
+		return err
 	}
 
 	if !globalstate.Quiet {

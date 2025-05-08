@@ -125,6 +125,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 
 		switch c.ShowSettings {
 		case "grafana":
+			out, err := json.MarshalIndent(svc.GrafanaSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
@@ -132,12 +137,6 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 				strings.Join(grafanaSettings, ", "),
 			)
 		}
-
-		out, err := json.MarshalIndent(svc.GrafanaSettings, "", "  ")
-		if err != nil {
-			return nil, fmt.Errorf("unable to marshal JSON: %w", err)
-		}
-		fmt.Println(string(out))
 
 		return nil, nil
 
