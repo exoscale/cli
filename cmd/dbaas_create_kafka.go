@@ -26,7 +26,6 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 		Plan:                  c.Plan,
 		SchemaRegistryEnabled: &c.KafkaEnableSchemaRegistry,
 		TerminationProtection: &c.TerminationProtection,
-		Version:               c.KafkaVersion,
 	}
 
 	if c.KafkaVersion != "" {
