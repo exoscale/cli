@@ -36,6 +36,8 @@ type instanceCreateCmd struct {
 	DeployTarget       string            `cli-usage:"instance Deploy Target NAME|ID"`
 	DiskSize           int64             `cli-usage:"instance disk size"`
 	IPv6               bool              `cli-flag:"ipv6" cli-usage:"enable IPv6 on instance"`
+	TPM                bool              `cli-flag:"tpm" cli-usage:"enable TPM on instance"`
+	SecureBoot         bool              `cli-flag:"secureboot" cli-usage:"enable Secure boot on instance"`
 	InstanceType       string            `cli-usage:"instance type (format: [FAMILY.]SIZE)"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
@@ -88,11 +90,13 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 	}
 
 	instanceReq := v3.CreateInstanceRequest{
-		DiskSize:    c.DiskSize,
-		Ipv6Enabled: &c.IPv6,
-		Labels:      c.Labels,
-		Name:        c.Name,
-		SSHKeys:     sshKeys,
+		DiskSize:          c.DiskSize,
+		Ipv6Enabled:       &c.IPv6,
+		TpmEnabled:        &c.TPM,
+		SecurebootEnabled: &c.SecureBoot,
+		Labels:            c.Labels,
+		Name:              c.Name,
+		SSHKeys:           sshKeys,
 	}
 
 	if c.PrivateInstance {
