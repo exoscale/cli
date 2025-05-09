@@ -3,26 +3,26 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceShowOutput struct {
-	ID                 string            `json:"id"`
+	ID                 v3.UUID           `json:"id"`
 	Name               string            `json:"name"`
 	CreationDate       string            `json:"creation_date"`
 	InstanceType       string            `json:"instance_type"`
 	Template           string            `json:"template"`
-	Zone               string            `json:"zone"`
+	Zone               v3.ZoneName       `json:"zone"`
 	AntiAffinityGroups []string          `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
 	DeployTarget       string            `json:"deploy_target"`
 	SecurityGroups     []string          `json:"security_groups"`
@@ -33,9 +33,11 @@ type instanceShowOutput struct {
 	IPv6Address        string            `json:"ipv6_address" outputLabel:"IPv6 Address"`
 	SSHKey             string            `json:"ssh_key"`
 	DiskSize           string            `json:"disk_size"`
-	State              string            `json:"state"`
+	State              v3.InstanceState  `json:"state"`
 	Labels             map[string]string `json:"labels"`
-	ReverseDNS         string            `json:"reverse_dns" outputLabel:"Reverse DNS"`
+	SecureBoot         bool              `json:"secureboot"`
+	Tpm                bool              `json:"tpm"`
+	ReverseDNS         v3.DomainName     `json:"reverse_dns" outputLabel:"Reverse DNS"`
 }
 
 func (o *instanceShowOutput) Type() string { return "Compute instance" }
@@ -50,8 +52,8 @@ type instanceShowCmd struct {
 
 	Instance string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	ShowUserData bool   `cli-flag:"user-data" cli-short:"u" cli-usage:"show instance cloud-init user data configuration"`
-	Zone         string `cli-short:"z" cli-usage:"instance zone"`
+	ShowUserData bool        `cli-flag:"user-data" cli-short:"u" cli-usage:"show instance cloud-init user data configuration"`
+	Zone         v3.ZoneName `cli-short:"z" cli-usage:"instance zone"`
 }
 
 func (c *instanceShowCmd) cmdAliases() []string { return gShowAlias }
@@ -71,19 +73,30 @@ func (c *instanceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
+		return err
+	}
+
+	resp, err := client.ListInstances(ctx)
+	if err != nil {
+		return err
+	}
+
+	found_instance, err := resp.FindListInstancesResponseInstances(c.Instance)
+	if err != nil {
+		return err
+	}
+
+	instance, err := client.GetInstance(ctx, found_instance.ID)
+	if err != nil {
 		return err
 	}
 
 	if c.ShowUserData {
-		if instance.UserData != nil {
-			userData, err := userdata.DecodeUserData(*instance.UserData)
+		if instance.UserData != "" {
+			userData, err := userdata.DecodeUserData(instance.UserData)
 			if err != nil {
 				return fmt.Errorf("error decoding user data: %w", err)
 			}
@@ -93,105 +106,130 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 		return nil
 	}
+	ipv6 := net.ParseIP(instance.Ipv6Address)
 
 	out := instanceShowOutput{
 		AntiAffinityGroups: make([]string, 0),
-		CreationDate:       instance.CreatedAt.String(),
-		DiskSize:           humanize.IBytes(uint64(*instance.DiskSize << 30)),
+		CreationDate:       instance.CreatedAT.String(),
+		DiskSize:           humanize.IBytes(uint64(instance.DiskSize << 30)),
 		ElasticIPs:         make([]string, 0),
-		ID:                 *instance.ID,
-		IPAddress:          utils.DefaultIP(instance.PublicIPAddress, "-"),
-		IPv6Address:        utils.DefaultIP(instance.IPv6Address, "-"),
+		ID:                 instance.ID,
+		IPAddress:          utils.DefaultIP(&instance.PublicIP, "-"),
+		IPv6Address:        utils.DefaultIP(&ipv6, "-"),
 		Labels: func() (v map[string]string) {
 			if instance.Labels != nil {
-				v = *instance.Labels
+				v = instance.Labels
 			}
 			return
 		}(),
-		Name:            *instance.Name,
+		Name:            instance.Name,
 		PrivateNetworks: make([]string, 0),
-		SSHKey:          utils.DefaultString(instance.SSHKey, "-"),
+		SSHKey:          utils.DefaultString(&instance.SSHKey.Name, "-"),
 		SecurityGroups:  make([]string, 0),
-		State:           *instance.State,
-		Zone:            c.Zone,
+		// FIXME
+		SecureBoot: false,
+		Tpm:        false,
+
+		State: instance.State,
+		Zone:  c.Zone,
 	}
 
 	out.PrivateInstance = "No"
-	if instance.PublicIPAssignment != nil && *instance.PublicIPAssignment == "none" {
+	if instance.PublicIPAssignment != "" && instance.PublicIPAssignment == "none" {
 		out.PrivateInstance = "Yes"
 	}
 
-	if instance.AntiAffinityGroupIDs != nil {
-		for _, id := range *instance.AntiAffinityGroupIDs {
-			antiAffinityGroup, err := globalstate.EgoscaleClient.GetAntiAffinityGroup(ctx, c.Zone, id)
+	if instance.AntiAffinityGroups != nil {
+		for _, group := range instance.AntiAffinityGroups {
+			resp, err := client.ListAntiAffinityGroups(ctx)
+			if err != nil {
+				return err
+			}
+			found_group, err := resp.FindAntiAffinityGroup(group.ID.String())
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
-			out.AntiAffinityGroups = append(out.AntiAffinityGroups, *antiAffinityGroup.Name)
+			out.AntiAffinityGroups = append(out.AntiAffinityGroups, found_group.Name)
 		}
 	}
 
 	out.DeployTarget = "-"
-	if instance.DeployTargetID != nil {
-		DeployTarget, err := globalstate.EgoscaleClient.GetDeployTarget(ctx, c.Zone, *instance.DeployTargetID)
+	if instance.DeployTarget != nil {
+		resp, err := client.ListDeployTargets(ctx)
+		if err != nil {
+			return err
+		}
+		dt, err := resp.FindDeployTarget(instance.DeployTarget.ID.String())
 		if err != nil {
 			return fmt.Errorf("error retrieving Deploy Target: %w", err)
 		}
-		out.DeployTarget = *DeployTarget.Name
+		out.DeployTarget = dt.Name
 	}
 
-	if instance.ElasticIPIDs != nil {
-		for _, id := range *instance.ElasticIPIDs {
-			elasticIP, err := globalstate.EgoscaleClient.GetElasticIP(ctx, c.Zone, id)
+	if instance.ElasticIPS != nil {
+		for _, eip := range instance.ElasticIPS {
+			resp, err := client.ListElasticIPS(ctx)
+			if err != nil {
+				return err
+			}
+			found_eip, err := resp.FindElasticIP(eip.ID.String())
 			if err != nil {
 				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
-			out.ElasticIPs = append(out.ElasticIPs, elasticIP.IPAddress.String())
+			out.ElasticIPs = append(out.ElasticIPs, found_eip.IP)
 		}
 	}
 
-	instanceType, err := globalstate.EgoscaleClient.GetInstanceType(ctx, c.Zone, *instance.InstanceTypeID)
+	it, err := client.GetInstanceType(ctx, instance.InstanceType.ID)
 	if err != nil {
 		return err
 	}
-	out.InstanceType = fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size)
+	out.InstanceType = fmt.Sprintf("%s.%s", it.Family, it.Size)
 
-	if instance.PrivateNetworkIDs != nil {
-		for _, id := range *instance.PrivateNetworkIDs {
-			privateNetwork, err := globalstate.EgoscaleClient.GetPrivateNetwork(ctx, c.Zone, id)
+	if instance.PrivateNetworks != nil {
+		for _, pn := range instance.PrivateNetworks {
+			resp, err := client.ListPrivateNetworks(ctx)
+			if err != nil {
+				return err
+			}
+			found_pn, err := resp.FindPrivateNetwork(pn.ID.String())
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
-			out.PrivateNetworks = append(out.PrivateNetworks, *privateNetwork.Name)
+			out.PrivateNetworks = append(out.PrivateNetworks, found_pn.Name)
 		}
 	}
 
-	if instance.SecurityGroupIDs != nil {
-		for _, id := range *instance.SecurityGroupIDs {
-			securityGroup, err := globalstate.EgoscaleClient.GetSecurityGroup(ctx, c.Zone, id)
+	if instance.SecurityGroups != nil {
+		for _, sg := range instance.SecurityGroups {
+			resp, err := client.ListSecurityGroups(ctx)
+			if err != nil {
+				return err
+			}
+			found_sg, err := resp.FindSecurityGroup(sg.ID.String())
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
-			out.SecurityGroups = append(out.SecurityGroups, *securityGroup.Name)
+			out.SecurityGroups = append(out.SecurityGroups, found_sg.Name)
 		}
 	}
 
-	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, *instance.TemplateID)
+	template, err := client.GetTemplate(ctx, instance.Template.ID)
 	if err != nil {
 		return err
 	}
-	out.Template = *template.Name
+	out.Template = template.Name
 
-	rdns, err := globalstate.EgoscaleClient.GetInstanceReverseDNS(ctx, c.Zone, *instance.ID)
+	rdns, err := client.GetReverseDNSInstance(ctx, instance.ID)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		if errors.Is(err, v3.ErrNotFound) {
 			out.ReverseDNS = ""
 		} else {
 			return err
 		}
 	}
 
-	out.ReverseDNS = rdns
+	out.ReverseDNS = rdns.DomainName
 
 	return c.outputFunc(&out, nil)
 }

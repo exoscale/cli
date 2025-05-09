@@ -320,7 +320,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           instanceID.String(),
 			// TODO migrate instanceShow to v3 to pass v3.ZoneName
-			Zone: string(c.Zone),
+			Zone: c.Zone,
 		}).cmdRun(nil, nil)
 	}
 
