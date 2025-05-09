@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/mitchellh/go-wordwrap"
@@ -15,8 +14,6 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -129,23 +126,24 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output.Outputter, error) {
-	res, err := globalstate.EgoscaleClient.GetDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		return nil, err
+	}
+
+	databaseService, err := client.GetDBAASServicePG(ctx, c.Name)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return nil, err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("API request error: unexpected status %s", res.Status())
-	}
-	databaseService := res.JSON200
 
 	switch {
 	case c.ShowBackups:
 		out := make(dbServiceBackupListOutput, 0)
 		if databaseService.Backups != nil {
-			for _, b := range *databaseService.Backups {
+			for _, b := range databaseService.Backups {
 				out = append(out, dbServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
@@ -158,7 +156,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 	case c.ShowNotifications:
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
-			for _, n := range *databaseService.Notifications {
+			for _, n := range databaseService.Notifications {
 				out = append(out, dbServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
@@ -169,29 +167,33 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		return &out, nil
 
 	case c.ShowSettings != "":
-		var serviceSettings *map[string]interface{}
 
 		switch c.ShowSettings {
 		case "pg":
-			serviceSettings = databaseService.PgSettings
+			out, err := json.MarshalIndent(databaseService.PGSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
+
 		case "pgbouncer":
-			serviceSettings = databaseService.PgbouncerSettings
+			out, err := json.MarshalIndent(databaseService.PgbouncerSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
 		case "pglookout":
-			serviceSettings = databaseService.PglookoutSettings
+			out, err := json.MarshalIndent(databaseService.PglookoutSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
 				c.ShowSettings,
 				strings.Join(pgSettings, ", "),
 			)
-		}
-
-		if serviceSettings != nil {
-			out, err := json.MarshalIndent(serviceSettings, "", "  ")
-			if err != nil {
-				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
-			}
-			fmt.Println(string(out))
 		}
 
 		return nil, nil
@@ -207,7 +209,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 			return nil, err
 		}
 
-		uriParams := *databaseService.UriParams
+		uriParams := databaseService.URIParams
 
 		creds, err := client.RevealDBAASPostgresUserPassword(
 			ctx,
@@ -238,13 +240,13 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		Name:                  string(databaseService.Name),
 		Type:                  string(databaseService.Type),
 		Plan:                  databaseService.Plan,
-		CreationDate:          *databaseService.CreatedAt,
-		Nodes:                 *databaseService.NodeCount,
-		NodeCPUs:              *databaseService.NodeCpuCount,
-		NodeMemory:            *databaseService.NodeMemory,
-		UpdateDate:            *databaseService.UpdatedAt,
-		DiskSize:              *databaseService.DiskSize,
-		State:                 string(*databaseService.State),
+		CreationDate:          databaseService.CreatedAT,
+		Nodes:                 databaseService.NodeCount,
+		NodeCPUs:              databaseService.NodeCPUCount,
+		NodeMemory:            databaseService.NodeMemory,
+		UpdateDate:            databaseService.UpdatedAT,
+		DiskSize:              databaseService.DiskSize,
+		State:                 string(databaseService.State),
 		TerminationProtection: *databaseService.TerminationProtection,
 
 		Maintenance: func() (v *dbServiceMaintenanceShowOutput) {
@@ -262,8 +264,8 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 				if databaseService.BackupSchedule != nil {
 					v = fmt.Sprintf(
 						"%02d:%02d",
-						*databaseService.BackupSchedule.BackupHour,
-						*databaseService.BackupSchedule.BackupMinute,
+						databaseService.BackupSchedule.BackupHour,
+						databaseService.BackupSchedule.BackupMinute,
 					)
 				}
 				return
@@ -271,7 +273,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 
 			Components: func() (v []dbServicePGComponentShowOutput) {
 				if databaseService.Components != nil {
-					for _, c := range *databaseService.Components {
+					for _, c := range databaseService.Components {
 						v = append(v, dbServicePGComponentShowOutput{
 							Component: c.Component,
 							Host:      c.Host,
@@ -286,8 +288,8 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 
 			Databases: func() (v []string) {
 				if databaseService.Databases != nil {
-					v = make([]string, len(*databaseService.Databases))
-					for i, d := range *databaseService.Databases {
+					v = make([]string, len(databaseService.Databases))
+					for i, d := range databaseService.Databases {
 						v[i] = string(d)
 					}
 				}
@@ -296,9 +298,9 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 
 			ConnectionPools: func() (v []dbServicePGConnectionPool) {
 				if databaseService.ConnectionPools != nil {
-					for _, pool := range *databaseService.ConnectionPools {
+					for _, pool := range databaseService.ConnectionPools {
 						v = append(v, dbServicePGConnectionPool{
-							ConnectionURI: pool.ConnectionUri,
+							ConnectionURI: pool.ConnectionURI,
 							Database:      string(pool.Database),
 							Mode:          string(pool.Mode),
 							Name:          string(pool.Name),
@@ -311,21 +313,21 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 			}(),
 
 			IPFilter: func() (v []string) {
-				if databaseService.IpFilter != nil {
-					v = *databaseService.IpFilter
+				if databaseService.IPFilter != nil {
+					v = databaseService.IPFilter
 				}
 				return
 			}(),
 
-			URI:       *databaseService.Uri,
-			URIParams: *databaseService.UriParams,
+			URI:       databaseService.URI,
+			URIParams: databaseService.URIParams,
 
 			Users: func() (v []dbServicePGUserShowOutput) {
 				if databaseService.Users != nil {
-					for _, u := range *databaseService.Users {
+					for _, u := range databaseService.Users {
 						v = append(v, dbServicePGUserShowOutput{
 							AllowReplication: utils.DefaultBool(u.AllowReplication, false),
-							Password:         utils.DefaultString(u.Password, ""),
+							Password:         u.Password,
 							Type:             u.Type,
 							Username:         u.Username,
 						})
@@ -334,7 +336,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 				return
 			}(),
 
-			Version: utils.DefaultString(databaseService.Version, ""),
+			Version: databaseService.Version,
 		},
 	}
 

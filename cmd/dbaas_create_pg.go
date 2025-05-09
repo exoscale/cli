@@ -1,51 +1,52 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	databaseService := oapi.CreateDbaasServicePgJSONRequestBody{
-		Plan:                  c.Plan,
-		TerminationProtection: &c.TerminationProtection,
-		Version:               utils.NonEmptyStringPtr(c.PGVersion),
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
 	}
 
-	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
+	databaseService := v3.CreateDBAASServicePGRequest{
+		Plan:                  c.Plan,
+		TerminationProtection: &c.TerminationProtection,
+	}
+	if c.PGVersion != "" {
+		databaseService.Version = v3.DBAASPGTargetVersions(c.PGVersion)
+	}
+
+	settingsSchema, err := client.GetDBAASSettingsPG(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
-	if settingsSchema.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", settingsSchema.Status())
-	}
 
 	if c.PGForkFrom != "" {
-		databaseService.ForkFromService = (*oapi.DbaasServiceName)(&c.PGForkFrom)
+		databaseService.ForkFromService = v3.DBAASServiceName(c.PGForkFrom)
 		if c.PGRecoveryBackupTime != "" {
-			databaseService.RecoveryBackupTime = &c.PGRecoveryBackupTime
+			databaseService.RecoveryBackupTime = c.PGRecoveryBackupTime
 		}
 	}
 
 	if c.PGAdminPassword != "" {
-		databaseService.AdminPassword = &c.PGAdminPassword
+		databaseService.AdminPassword = c.PGAdminPassword
 	}
 
 	if c.PGAdminUsername != "" {
-		databaseService.AdminUsername = &c.PGAdminUsername
+		databaseService.AdminUsername = c.PGAdminUsername
 	}
 
 	if c.PGBackupSchedule != "" {
@@ -54,101 +55,106 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 			return err
 		}
 
-		databaseService.BackupSchedule = &struct {
-			BackupHour   *int64 `json:"backup-hour,omitempty"`
-			BackupMinute *int64 `json:"backup-minute,omitempty"`
-		}{
-			BackupHour:   &bh,
-			BackupMinute: &bm,
+		databaseService.BackupSchedule = &v3.CreateDBAASServicePGRequestBackupSchedule{
+			BackupHour:   bh,
+			BackupMinute: bm,
 		}
 	}
 
 	if len(c.PGIPFilter) > 0 {
-		databaseService.IpFilter = &c.PGIPFilter
+		databaseService.IPFilter = c.PGIPFilter
 	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		databaseService.Maintenance = &struct {
-			Dow  oapi.CreateDbaasServicePgJSONBodyMaintenanceDow `json:"dow"`
-			Time string                                          `json:"time"`
-		}{
-			Dow:  oapi.CreateDbaasServicePgJSONBodyMaintenanceDow(c.MaintenanceDOW),
+		databaseService.Maintenance = &v3.CreateDBAASServicePGRequestMaintenance{
+			Dow:  v3.CreateDBAASServicePGRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
 		}
 	}
 
 	if c.PGBouncerSettings != "" {
-		settings, err := validateDatabaseServiceSettings(
+		_, err := validateDatabaseServiceSettings(
 			c.PGBouncerSettings,
-			settingsSchema.JSON200.Settings.Pgbouncer,
+			settingsSchema.Settings.Pgbouncer,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.PgbouncerSettings = &settings
+		settings := &v3.JSONSchemaPgbouncer{}
+		if err = json.Unmarshal([]byte(c.PGBouncerSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+
+		databaseService.PgbouncerSettings = settings
 	}
 
 	if c.PGLookoutSettings != "" {
-		settings, err := validateDatabaseServiceSettings(
+		_, err := validateDatabaseServiceSettings(
 			c.PGLookoutSettings,
-			settingsSchema.JSON200.Settings.Pglookout,
+			settingsSchema.Settings.Pglookout,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.PglookoutSettings = &settings
+		settings := &v3.JSONSchemaPglookout{}
+		if err = json.Unmarshal([]byte(c.PGLookoutSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		databaseService.PglookoutSettings = settings
 	}
 
 	if c.PGSettings != "" {
-		settings, err := validateDatabaseServiceSettings(
+		_, err := validateDatabaseServiceSettings(
 			c.PGSettings,
-			settingsSchema.JSON200.Settings.Pg,
+			settingsSchema.Settings.PG,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.PgSettings = &settings
+		settings := &v3.JSONSchemaPG{}
+		if err = json.Unmarshal([]byte(c.PGSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+		databaseService.PGSettings = *settings
 	}
 
 	if c.PGMigrationHost != "" {
-		databaseService.Migration = &struct {
-			Dbname    *string                   `json:"dbname,omitempty"`
-			Host      string                    `json:"host"`
-			IgnoreDbs *string                   `json:"ignore-dbs,omitempty"`
-			Method    *oapi.EnumMigrationMethod `json:"method,omitempty"`
-			Password  *string                   `json:"password,omitempty"`
-			Port      int64                     `json:"port"`
-			Ssl       *bool                     `json:"ssl,omitempty"`
-			Username  *string                   `json:"username,omitempty"`
-		}{
-			Host:     c.PGMigrationHost,
-			Port:     c.PGMigrationPort,
-			Password: utils.NonEmptyStringPtr(c.PGMigrationPassword),
-			Username: utils.NonEmptyStringPtr(c.PGMigrationUsername),
-			Dbname:   utils.NonEmptyStringPtr(c.PGMigrationDBName),
+		databaseService.Migration = &v3.CreateDBAASServicePGRequestMigration{
+			Host: c.PGMigrationHost,
+			Port: c.PGMigrationPort,
+		}
+		if c.PGMigrationPassword != "" {
+			databaseService.Migration.Password = c.PGMigrationPassword
+		}
+		if c.PGMigrationUsername != "" {
+			databaseService.Migration.Username = c.PGMigrationUsername
+		}
+		if c.PGMigrationDBName != "" {
+			databaseService.Migration.Dbname = c.PGMigrationDBName
 		}
 		if c.PGMigrationSSL {
-			databaseService.Migration.Ssl = &c.PGMigrationSSL
+			databaseService.Migration.SSL = &c.PGMigrationSSL
 		}
 		if c.PGMigrationMethod != "" {
 			method := oapi.EnumMigrationMethod(c.PGMigrationMethod)
-			databaseService.Migration.Method = &method
+			databaseService.Migration.Method = v3.EnumMigrationMethod(method)
 		}
 		if len(c.PGMigrationIgnoreDbs) > 0 {
-			dbsJoin := strings.Join(c.PGMigrationIgnoreDbs, ",")
-			databaseService.Migration.IgnoreDbs = &dbsJoin
+			databaseService.Migration.IgnoreDbs = strings.Join(c.PGMigrationIgnoreDbs, ",")
+
 		}
 	}
 
-	var res *oapi.CreateDbaasServicePgResponse
-	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.EgoscaleClient.CreateDbaasServicePgWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
-	})
+	op, err := client.CreateDBAASServicePG(ctx, c.Name, databaseService)
 	if err != nil {
 		return err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", res.Status())
+
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+	if err != nil {
+		return err
 	}
 
 	if !globalstate.Quiet {
