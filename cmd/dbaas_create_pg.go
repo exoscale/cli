@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/egoscale/v2/oapi"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -136,7 +135,7 @@ func (c *dbaasServiceCreateCmd) createPG(_ *cobra.Command, _ []string) error {
 			databaseService.Migration.SSL = &c.PGMigrationSSL
 		}
 		if c.PGMigrationMethod != "" {
-			method := oapi.EnumMigrationMethod(c.PGMigrationMethod)
+			method := c.PGMigrationMethod
 			databaseService.Migration.Method = v3.EnumMigrationMethod(method)
 		}
 		if len(c.PGMigrationIgnoreDbs) > 0 {

@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/globalstate"
-	utils "github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -47,26 +46,25 @@ func (c *dbaasServiceCreateCmd) createValkey(_ *cobra.Command, _ []string) error
 	}
 
 	if c.ValkeySettings != "" {
-		var settings map[string]interface{}
 
+		settingsSchema, err := client.GetDBAASSettingsValkey(ctx)
+		if err != nil {
+			return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
+		}
+		_, err = validateDatabaseServiceSettings(
+			c.ValkeySettings,
+			settingsSchema.Settings.Valkey,
+		)
+		if err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+
+		settings := &v3.JSONSchemaValkey{}
 		if err := json.Unmarshal([]byte(c.ValkeySettings), &settings); err != nil {
 			return err
 		}
 
-		ssl := utils.GetSettingBool(settings, "ssl")
-		databaseService.ValkeySettings = &v3.JSONSchemaValkey{
-			AclChannelsDefault:            v3.JSONSchemaValkeyAclChannelsDefault(utils.GetSettingString(settings, "acl_channels_default")),
-			IoThreads:                     utils.GetSettingFloat64(settings, "io_threads"),
-			LfuDecayTime:                  utils.GetSettingFloat64(settings, "lfu_decay_time"),
-			LfuLogFactor:                  utils.GetSettingFloat64(settings, "lfu_log_factor"),
-			MaxmemoryPolicy:               v3.JSONSchemaValkeyMaxmemoryPolicy(utils.GetSettingString(settings, "maxmemory_policy")),
-			NotifyKeyspaceEvents:          utils.GetSettingString(settings, "notify_keyspace_events"),
-			NumberOfDatabases:             utils.GetSettingFloat64(settings, "number_of_databases"),
-			Persistence:                   v3.JSONSchemaValkeyPersistence(utils.GetSettingString(settings, "persistence")),
-			PubsubClientOutputBufferLimit: utils.GetSettingFloat64(settings, "pubsub_client_output_buffer_limit"),
-			SSL:                           &ssl,
-			Timeout:                       utils.GetSettingFloat64(settings, "timeout"),
-		}
+		databaseService.ValkeySettings = settings
 	}
 
 	if c.ValkeyMigrationHost != "" {
