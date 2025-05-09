@@ -200,13 +200,13 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsGrafanaWithResponse(ctx)
+			res, err := client.GetDBAASSettingsGrafana(ctx)
 			if err != nil {
 				return err
 			}
 
 			if c.ShowSettings == "grafana" {
-				settings = *res.JSON200.Settings.Grafana.Properties
+				settings = res.Settings.Grafana.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -219,20 +219,20 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
+			res, err := client.GetDBAASSettingsKafka(ctx)
 			if err != nil {
 				return err
 			}
 
 			switch c.ShowSettings {
 			case "kafka":
-				settings = *res.JSON200.Settings.Kafka.Properties
+				settings = res.Settings.Kafka.Properties
 			case "kafka-connect":
-				settings = *res.JSON200.Settings.KafkaConnect.Properties
+				settings = res.Settings.KafkaConnect.Properties
 			case "kafka-rest":
-				settings = *res.JSON200.Settings.KafkaRest.Properties
+				settings = res.Settings.KafkaRest.Properties
 			case "schema-registry":
-				settings = *res.JSON200.Settings.SchemaRegistry.Properties
+				settings = res.Settings.SchemaRegistry.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -246,13 +246,13 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
+			res, err := client.GetDBAASSettingsOpensearch(ctx)
 			if err != nil {
 				return err
 			}
 
 			if c.ShowSettings == "opensearch" {
-				settings = *res.JSON200.Settings.Opensearch.Properties
+				settings = res.Settings.Opensearch.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -266,13 +266,13 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
+			res, err := client.GetDBAASSettingsMysql(ctx)
 			if err != nil {
 				return err
 			}
 
 			if c.ShowSettings == "mysql" {
-				settings = *res.JSON200.Settings.Mysql.Properties
+				settings = res.Settings.Mysql.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -286,18 +286,18 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
+			res, err := client.GetDBAASSettingsPG(ctx)
 			if err != nil {
 				return err
 			}
 
 			switch c.ShowSettings {
 			case "pg":
-				settings = *res.JSON200.Settings.Pg.Properties
+				settings = res.Settings.PG.Properties
 			case "pgbouncer":
-				settings = *res.JSON200.Settings.Pgbouncer.Properties
+				settings = res.Settings.Pgbouncer.Properties
 			case "pglookout":
-				settings = *res.JSON200.Settings.Pglookout.Properties
+				settings = res.Settings.Pglookout.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -311,13 +311,13 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsRedisWithResponse(ctx)
+			res, err := client.GetDBAASSettingsRedis(ctx)
 			if err != nil {
 				return err
 			}
 
 			if c.ShowSettings == "redis" {
-				settings = *res.JSON200.Settings.Redis.Properties
+				settings = res.Settings.Redis.Properties
 			}
 
 			dbaasShowSettings(settings)

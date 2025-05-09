@@ -118,25 +118,21 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 		return &out, nil
 
 	case c.ShowSettings != "":
-		var serviceSettings *v3.JSONSchemaRedis
 
 		switch c.ShowSettings {
 		case "redis":
-			serviceSettings = databaseService.RedisSettings
+			out, err := json.MarshalIndent(databaseService.RedisSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
+
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
 				c.ShowSettings,
 				strings.Join(redisSettings, ", "),
 			)
-		}
-
-		if serviceSettings != nil {
-			out, err := json.MarshalIndent(serviceSettings, "", "  ")
-			if err != nil {
-				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
-			}
-			fmt.Println(string(out))
 		}
 
 		return nil, nil

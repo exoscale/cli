@@ -167,27 +167,24 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 		return &out, nil
 
 	case c.ShowSettings != "":
-
+		var out []byte
 		switch c.ShowSettings {
 		case "pg":
-			out, err := json.MarshalIndent(databaseService.PGSettings, "", "  ")
+			out, err = json.MarshalIndent(databaseService.PGSettings, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
 			}
-			fmt.Println(string(out))
 
 		case "pgbouncer":
-			out, err := json.MarshalIndent(databaseService.PgbouncerSettings, "", "  ")
+			out, err = json.MarshalIndent(databaseService.PgbouncerSettings, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
 			}
-			fmt.Println(string(out))
 		case "pglookout":
-			out, err := json.MarshalIndent(databaseService.PglookoutSettings, "", "  ")
+			out, err = json.MarshalIndent(databaseService.PglookoutSettings, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
 			}
-			fmt.Println(string(out))
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
@@ -196,6 +193,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 			)
 		}
 
+		fmt.Println(string(out))
 		return nil, nil
 
 	case c.ShowURI:

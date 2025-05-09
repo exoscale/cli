@@ -61,7 +61,7 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 		return fmt.Errorf("migrations not supported for database type %q", db.Type)
 	}
 
-	_, err = globalstate.EgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
+	_, err = client.GetDBAASMigrationStatus(ctx, c.Name)
 	if err != nil {
 		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("migration for database %q not running in zone %q", c.Name, c.Zone)

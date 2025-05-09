@@ -190,34 +190,31 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 		return &out, nil
 
 	case c.ShowSettings != "":
+		var out []byte
 
 		switch c.ShowSettings {
 		case "kafka":
-			out, err := json.MarshalIndent(databaseService.KafkaSettings, "", "  ")
+			out, err = json.MarshalIndent(databaseService.KafkaSettings, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
 			}
-			fmt.Println(string(out))
 
 		case "kafka-connect":
-			out, err := json.MarshalIndent(databaseService.KafkaConnectSettings, "", "  ")
+			out, err = json.MarshalIndent(databaseService.KafkaConnectSettings, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
 			}
-			fmt.Println(string(out))
 
 		case "kafka-rest":
-			out, err := json.MarshalIndent(databaseService.KafkaRestSettings, "", "  ")
+			out, err = json.MarshalIndent(databaseService.KafkaRestSettings, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
 			}
-			fmt.Println(string(out))
 		case "schema-registry":
-			out, err := json.MarshalIndent(databaseService.SchemaRegistrySettings, "", "  ")
+			out, err = json.MarshalIndent(databaseService.SchemaRegistrySettings, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
 			}
-			fmt.Println(string(out))
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
@@ -226,6 +223,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 			)
 		}
 
+		fmt.Println(string(out))
 		return nil, nil
 
 	case c.ShowURI:
