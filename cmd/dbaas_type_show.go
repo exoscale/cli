@@ -331,12 +331,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			clientV3, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
-			if err != nil {
-				return err
-			}
-
-			res, err := clientV3.GetDBAASSettingsValkey(ctx)
+			res, err := client.GetDBAASSettingsValkey(ctx)
 
 			if err != nil {
 				return err
