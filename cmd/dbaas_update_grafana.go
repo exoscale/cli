@@ -1,40 +1,41 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceUpdateCmd) updateGrafana(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	var err error
 
-	databaseService := oapi.UpdateDbaasServiceGrafanaJSONRequestBody{}
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
-	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsGrafanaWithResponse(ctx)
+	databaseService := v3.UpdateDBAASServiceGrafanaRequest{}
+
+	settingsSchema, err := client.GetDBAASSettingsGrafana(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
-	if settingsSchema.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", settingsSchema.Status())
-	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.GrafanaIPFilter)) {
-		databaseService.IpFilter = &c.GrafanaIPFilter
+		databaseService.IPFilter = c.GrafanaIPFilter
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
-		databaseService.Plan = &c.Plan
+		databaseService.Plan = c.Plan
 		updated = true
 	}
 
@@ -45,42 +46,49 @@ func (c *dbaasServiceUpdateCmd) updateGrafana(cmd *cobra.Command, _ []string) er
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
 		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
-		databaseService.Maintenance = &struct {
-			Dow  oapi.UpdateDbaasServiceGrafanaJSONBodyMaintenanceDow `json:"dow"`
-			Time string                                               `json:"time"`
-		}{
-			Dow:  oapi.UpdateDbaasServiceGrafanaJSONBodyMaintenanceDow(c.MaintenanceDOW),
+		databaseService.Maintenance = &v3.UpdateDBAASServiceGrafanaRequestMaintenance{
 			Time: c.MaintenanceTime,
+			Dow:  v3.UpdateDBAASServiceGrafanaRequestMaintenanceDow(c.MaintenanceDOW),
 		}
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.GrafanaSettings)) {
-		settings, err := validateDatabaseServiceSettings(
+		_, err := validateDatabaseServiceSettings(
 			c.GrafanaSettings,
-			settingsSchema.JSON200.Settings.Grafana,
+			settingsSchema.Settings.Grafana,
 		)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.GrafanaSettings = &settings
+
+		settings := &v3.JSONSchemaGrafana{}
+
+		if err = json.Unmarshal([]byte(c.GrafanaSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+		}
+
+		databaseService.GrafanaSettings = settings
 		updated = true
 	}
 
 	if updated {
-		var res *oapi.UpdateDbaasServiceGrafanaResponse
-		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
-			res, err = globalstate.EgoscaleClient.UpdateDbaasServiceGrafanaWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
-		})
+
+		op, err := client.UpdateDBAASServiceGrafana(ctx, c.Name, databaseService)
 		if err != nil {
-			if errors.Is(err, exoapi.ErrNotFound) {
+			if errors.Is(err, v3.ErrNotFound) {
 				return fmt.Errorf("resource not found in zone %q", c.Zone)
 			}
 			return err
 		}
-		if res.StatusCode() != http.StatusOK {
-			return fmt.Errorf("API request error: unexpected status %s", res.Status())
+
+		decorateAsyncOperation(fmt.Sprintf("Updating Database Service %q...", c.Name), func() {
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
+		if err != nil {
+			return err
 		}
+
 	}
 
 	if !globalstate.Quiet {

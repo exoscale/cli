@@ -1,51 +1,53 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
 
-	databaseService := oapi.CreateDbaasServiceMysqlJSONRequestBody{
-		Plan:                  c.Plan,
-		TerminationProtection: &c.TerminationProtection,
-		Version:               utils.NonEmptyStringPtr(c.MysqlVersion),
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
 	}
 
-	settingsSchema, err := globalstate.EgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
+	databaseService := v3.CreateDBAASServiceMysqlRequest{
+		Plan:                  c.Plan,
+		TerminationProtection: &c.TerminationProtection,
+	}
+
+	if c.MysqlVersion != "" {
+		databaseService.Version = c.MysqlVersion
+	}
+
+	settingsSchema, err := client.GetDBAASSettingsMysql(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to retrieve Database Service settings: %w", err)
 	}
-	if settingsSchema.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", settingsSchema.Status())
-	}
 
 	if c.MysqlForkFrom != "" {
-		databaseService.ForkFromService = (*oapi.DbaasServiceName)(&c.MysqlForkFrom)
+		databaseService.ForkFromService = v3.DBAASServiceName(c.MysqlForkFrom)
 		if c.MysqlRecoveryBackupTime != "" {
-			databaseService.RecoveryBackupTime = &c.MysqlRecoveryBackupTime
+			databaseService.RecoveryBackupTime = c.MysqlRecoveryBackupTime
 		}
 	}
 
 	if c.MysqlAdminPassword != "" {
-		databaseService.AdminPassword = &c.MysqlAdminPassword
+		databaseService.AdminPassword = c.MysqlAdminPassword
 	}
 
 	if c.MysqlAdminUsername != "" {
-		databaseService.AdminUsername = &c.MysqlAdminUsername
+		databaseService.AdminUsername = c.MysqlAdminUsername
 	}
 
 	if c.MysqlBackupSchedule != "" {
@@ -54,80 +56,75 @@ func (c *dbaasServiceCreateCmd) createMysql(_ *cobra.Command, _ []string) error 
 			return err
 		}
 
-		databaseService.BackupSchedule = &struct {
-			BackupHour   *int64 `json:"backup-hour,omitempty"`
-			BackupMinute *int64 `json:"backup-minute,omitempty"`
-		}{
-			BackupHour:   &bh,
-			BackupMinute: &bm,
+		databaseService.BackupSchedule = &v3.CreateDBAASServiceMysqlRequestBackupSchedule{
+			BackupHour:   bh,
+			BackupMinute: bm,
 		}
 	}
 
 	if len(c.MysqlIPFilter) > 0 {
-		databaseService.IpFilter = &c.MysqlIPFilter
+		databaseService.IPFilter = c.MysqlIPFilter
 	}
 
 	if c.MaintenanceDOW != "" && c.MaintenanceTime != "" {
-		databaseService.Maintenance = &struct {
-			Dow  oapi.CreateDbaasServiceMysqlJSONBodyMaintenanceDow `json:"dow"`
-			Time string                                             `json:"time"`
-		}{
-			Dow:  oapi.CreateDbaasServiceMysqlJSONBodyMaintenanceDow(c.MaintenanceDOW),
+		databaseService.Maintenance = &v3.CreateDBAASServiceMysqlRequestMaintenance{
+			Dow:  v3.CreateDBAASServiceMysqlRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
 		}
 	}
 
 	if c.MysqlSettings != "" {
-		settings, err := validateDatabaseServiceSettings(c.MysqlSettings, settingsSchema.JSON200.Settings.Mysql)
+		_, err := validateDatabaseServiceSettings(c.MysqlSettings, settingsSchema.Settings.Mysql)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
 		}
-		databaseService.MysqlSettings = &settings
+		settings := &v3.JSONSchemaMysql{}
+		if err = json.Unmarshal([]byte(c.MysqlSettings), settings); err != nil {
+			return fmt.Errorf("invalid settings: %w", err)
+
+		}
+		databaseService.MysqlSettings = *settings
 	}
 
 	if c.MysqlMigrationHost != "" {
-		databaseService.Migration = &struct {
-			Dbname    *string                   `json:"dbname,omitempty"`
-			Host      string                    `json:"host"`
-			IgnoreDbs *string                   `json:"ignore-dbs,omitempty"`
-			Method    *oapi.EnumMigrationMethod `json:"method,omitempty"`
-			Password  *string                   `json:"password,omitempty"`
-			Port      int64                     `json:"port"`
-			Ssl       *bool                     `json:"ssl,omitempty"`
-			Username  *string                   `json:"username,omitempty"`
-		}{
-			Host:     c.MysqlMigrationHost,
-			Port:     c.MysqlMigrationPort,
-			Password: utils.NonEmptyStringPtr(c.MysqlMigrationPassword),
-			Username: utils.NonEmptyStringPtr(c.MysqlMigrationUsername),
-			Dbname:   utils.NonEmptyStringPtr(c.MysqlMigrationDBName),
+		databaseService.Migration = &v3.CreateDBAASServiceMysqlRequestMigration{
+			Host: c.MysqlMigrationHost,
+			Port: c.MysqlMigrationPort,
+		}
+		if c.MysqlMigrationPassword != "" {
+			databaseService.Migration.Password = c.MysqlMigrationPassword
+		}
+		if c.MysqlMigrationUsername != "" {
+			databaseService.Migration.Username = c.MysqlMigrationUsername
+		}
+		if c.MysqlMigrationDBName != "" {
+			databaseService.Migration.Dbname = c.MysqlMigrationDBName
 		}
 		if c.MysqlMigrationSSL {
-			databaseService.Migration.Ssl = &c.MysqlMigrationSSL
+			databaseService.Migration.SSL = &c.MysqlMigrationSSL
 		}
 		if c.MysqlMigrationMethod != "" {
-			method := oapi.EnumMigrationMethod(c.MysqlMigrationMethod)
-			databaseService.Migration.Method = &method
+			databaseService.Migration.Method = v3.EnumMigrationMethod(c.MysqlMigrationMethod)
 		}
 		if len(c.MysqlMigrationIgnoreDbs) > 0 {
-			dbsJoin := strings.Join(c.MysqlMigrationIgnoreDbs, ",")
-			databaseService.Migration.IgnoreDbs = &dbsJoin
+			databaseService.Migration.IgnoreDbs = strings.Join(c.MysqlMigrationIgnoreDbs, ",")
 		}
 	}
 
 	if c.MysqlBinlogRetentionPeriod > 0 {
-		databaseService.BinlogRetentionPeriod = &c.MysqlBinlogRetentionPeriod
+		databaseService.BinlogRetentionPeriod = c.MysqlBinlogRetentionPeriod
 	}
 
-	var res *oapi.CreateDbaasServiceMysqlResponse
-	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
-		res, err = globalstate.EgoscaleClient.CreateDbaasServiceMysqlWithResponse(ctx, oapi.DbaasServiceName(c.Name), databaseService)
-	})
+	op, err := client.CreateDBAASServiceMysql(ctx, c.Name, databaseService)
 	if err != nil {
 		return err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", res.Status())
+
+	decorateAsyncOperation(fmt.Sprintf("Creating Database Service %q...", c.Name), func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+	if err != nil {
+		return err
 	}
 
 	if !globalstate.Quiet {

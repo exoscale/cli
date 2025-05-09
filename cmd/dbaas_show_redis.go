@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/mitchellh/go-wordwrap"
@@ -14,9 +13,6 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -80,23 +76,25 @@ func formatDatabaseServiceRedisTable(t *table.Table, o *dbServiceRedisShowOutput
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (output.Outputter, error) {
-	res, err := globalstate.EgoscaleClient.GetDbaasServiceRedisWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		return nil, err
+	}
+
+	databaseService, err := client.GetDBAASServiceRedis(ctx, c.Name)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return nil, err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("API request error: unexpected status %s", res.Status())
-	}
-	databaseService := res.JSON200
 
 	switch {
 	case c.ShowBackups:
 		out := make(dbServiceBackupListOutput, 0)
 		if databaseService.Backups != nil {
-			for _, b := range *databaseService.Backups {
+			for _, b := range databaseService.Backups {
 				out = append(out, dbServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
@@ -109,7 +107,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 	case c.ShowNotifications:
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
-			for _, n := range *databaseService.Notifications {
+			for _, n := range databaseService.Notifications {
 				out = append(out, dbServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
@@ -120,25 +118,21 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 		return &out, nil
 
 	case c.ShowSettings != "":
-		var serviceSettings *map[string]interface{}
 
 		switch c.ShowSettings {
 		case "redis":
-			serviceSettings = databaseService.RedisSettings
+			out, err := json.MarshalIndent(databaseService.RedisSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
+
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
 				c.ShowSettings,
 				strings.Join(redisSettings, ", "),
 			)
-		}
-
-		if serviceSettings != nil {
-			out, err := json.MarshalIndent(serviceSettings, "", "  ")
-			if err != nil {
-				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
-			}
-			fmt.Println(string(out))
 		}
 
 		return nil, nil
@@ -154,7 +148,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 			return nil, err
 		}
 
-		uriParams := *databaseService.UriParams
+		uriParams := databaseService.URIParams
 
 		creds, err := client.RevealDBAASRedisUserPassword(
 			ctx,
@@ -183,13 +177,13 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 		Name:                  string(databaseService.Name),
 		Type:                  string(databaseService.Type),
 		Plan:                  databaseService.Plan,
-		CreationDate:          *databaseService.CreatedAt,
-		Nodes:                 *databaseService.NodeCount,
-		NodeCPUs:              *databaseService.NodeCpuCount,
-		NodeMemory:            *databaseService.NodeMemory,
-		UpdateDate:            *databaseService.UpdatedAt,
-		DiskSize:              *databaseService.DiskSize,
-		State:                 string(*databaseService.State),
+		CreationDate:          databaseService.CreatedAT,
+		Nodes:                 databaseService.NodeCount,
+		NodeCPUs:              databaseService.NodeCPUCount,
+		NodeMemory:            databaseService.NodeMemory,
+		UpdateDate:            databaseService.UpdatedAT,
+		DiskSize:              databaseService.DiskSize,
+		State:                 string(databaseService.State),
 		TerminationProtection: *databaseService.TerminationProtection,
 
 		Maintenance: func() (v *dbServiceMaintenanceShowOutput) {
@@ -205,7 +199,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 		Redis: &dbServiceRedisShowOutput{
 			Components: func() (v []dbServiceRedisComponentShowOutput) {
 				if databaseService.Components != nil {
-					for _, c := range *databaseService.Components {
+					for _, c := range databaseService.Components {
 						v = append(v, dbServiceRedisComponentShowOutput{
 							Component: c.Component,
 							Host:      c.Host,
@@ -219,22 +213,22 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceRedis(ctx context.Context) (out
 			}(),
 
 			IPFilter: func() (v []string) {
-				if databaseService.IpFilter != nil {
-					v = *databaseService.IpFilter
+				if databaseService.IPFilter != nil {
+					v = databaseService.IPFilter
 				}
 				return
 			}(),
 
-			URI:       *databaseService.Uri,
-			URIParams: *databaseService.UriParams,
+			URI:       databaseService.URI,
+			URIParams: databaseService.URIParams,
 
 			Users: func() (v []dbServiceRedisUserShowOutput) {
 				if databaseService.Users != nil {
-					for _, u := range *databaseService.Users {
+					for _, u := range databaseService.Users {
 						v = append(v, dbServiceRedisUserShowOutput{
-							Password: utils.DefaultString(u.Password, ""),
-							Type:     utils.DefaultString(u.Type, ""),
-							Username: utils.DefaultString(u.Username, ""),
+							Password: u.Password,
+							Type:     u.Type,
+							Username: u.Username,
 						})
 					}
 				}

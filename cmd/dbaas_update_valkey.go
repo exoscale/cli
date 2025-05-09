@@ -76,11 +76,17 @@ func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) err
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeyMigrationHost)) {
 		databaseService.Migration = &v3.UpdateDBAASServiceValkeyRequestMigration{
-			Host:     c.ValkeyMigrationHost,
-			Port:     c.ValkeyMigrationPort,
-			Password: c.ValkeyMigrationPassword,
-			Username: c.ValkeyMigrationUsername,
-			Dbname:   c.ValkeyMigrationDBName,
+			Host: c.ValkeyMigrationHost,
+			Port: c.ValkeyMigrationPort,
+		}
+		if c.ValkeyMigrationPassword != "" {
+			databaseService.Migration.Password = c.ValkeyMigrationPassword
+		}
+		if c.ValkeyMigrationUsername != "" {
+			databaseService.Migration.Username = c.ValkeyMigrationUsername
+		}
+		if c.ValkeyMigrationDBName != "" {
+			databaseService.Migration.Dbname = c.ValkeyMigrationDBName
 		}
 		if c.ValkeyMigrationSSL {
 			databaseService.Migration.SSL = &c.ValkeyMigrationSSL

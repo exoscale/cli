@@ -3,9 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +56,7 @@ func (c *dbaasUserDeleteCmd) deleteOpensearch(cmd *cobra.Command, _ []string) er
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServiceOpensearch(exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))))
+		}).showDatabaseServiceOpensearch(ctx))
 	}
 
 	return nil

@@ -7,9 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type dbaasServiceUpdateCmd struct {
@@ -169,12 +167,13 @@ func (c *dbaasServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 			mustCLICommandFlagName(c, &c.MaintenanceTime))
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
 
-	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
+	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}
+	dbType := db.Type
 
 	switch dbType {
 	case "grafana":

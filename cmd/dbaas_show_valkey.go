@@ -120,25 +120,20 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (ou
 		return &out, nil
 
 	case c.ShowSettings != "":
-		var serviceSettings *v3.JSONSchemaValkey
 
 		switch c.ShowSettings {
 		case "valkey":
-			serviceSettings = databaseService.ValkeySettings
+			out, err := json.MarshalIndent(databaseService.ValkeySettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
 				c.ShowSettings,
 				strings.Join(valkeySettings, ", "),
 			)
-		}
-
-		if serviceSettings != nil {
-			out, err := json.MarshalIndent(serviceSettings, "", "  ")
-			if err != nil {
-				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
-			}
-			fmt.Println(string(out))
 		}
 
 		return nil, nil

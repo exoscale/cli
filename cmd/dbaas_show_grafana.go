@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/mitchellh/go-wordwrap"
@@ -15,8 +14,7 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbServiceGrafanaComponentShowOutput struct {
@@ -81,23 +79,26 @@ func formatDatabaseServiceGrafanaTable(t *table.Table, o *dbServiceGrafanaShowOu
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (output.Outputter, error) {
-	res, err := globalstate.EgoscaleClient.GetDbaasServiceGrafanaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		return nil, err
+	}
+
+	res, err := client.GetDBAASServiceGrafana(ctx, c.Name)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return nil, err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("API request error: unexpected status %s", res.Status())
-	}
-	databaseService := res.JSON200
+	svc := *res
 
 	switch {
 	case c.ShowBackups:
 		out := make(dbServiceBackupListOutput, 0)
-		if databaseService.Backups != nil {
-			for _, b := range *databaseService.Backups {
+		if svc.Backups != nil {
+			for _, b := range svc.Backups {
 				out = append(out, dbServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
@@ -109,8 +110,8 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 
 	case c.ShowNotifications:
 		out := make(dbServiceNotificationListOutput, 0)
-		if databaseService.Notifications != nil {
-			for _, n := range *databaseService.Notifications {
+		if svc.Notifications != nil {
+			for _, n := range svc.Notifications {
 				out = append(out, dbServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
@@ -121,11 +122,14 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 		return &out, nil
 
 	case c.ShowSettings != "":
-		var serviceSettings *map[string]interface{}
 
 		switch c.ShowSettings {
 		case "grafana":
-			serviceSettings = databaseService.GrafanaSettings
+			out, err := json.MarshalIndent(svc.GrafanaSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+			fmt.Println(string(out))
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
@@ -134,40 +138,32 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 			)
 		}
 
-		if serviceSettings != nil {
-			out, err := json.MarshalIndent(serviceSettings, "", "  ")
-			if err != nil {
-				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
-			}
-			fmt.Println(string(out))
-		}
-
 		return nil, nil
 
 	case c.ShowURI:
-		fmt.Println(utils.DefaultString(databaseService.Uri, ""))
+		fmt.Println(utils.DefaultString(&svc.URI, ""))
 		return nil, nil
 	}
 
 	out := dbServiceShowOutput{
 		Zone:                  c.Zone,
-		Name:                  string(databaseService.Name),
-		Type:                  string(databaseService.Type),
-		Plan:                  databaseService.Plan,
-		CreationDate:          *databaseService.CreatedAt,
-		Nodes:                 *databaseService.NodeCount,
-		NodeCPUs:              *databaseService.NodeCpuCount,
-		NodeMemory:            *databaseService.NodeMemory,
-		UpdateDate:            *databaseService.UpdatedAt,
-		DiskSize:              *databaseService.DiskSize,
-		State:                 string(*databaseService.State),
-		TerminationProtection: *databaseService.TerminationProtection,
+		Name:                  string(svc.Name),
+		Type:                  string(svc.Type),
+		Plan:                  svc.Plan,
+		CreationDate:          svc.CreatedAT,
+		Nodes:                 svc.NodeCount,
+		NodeCPUs:              svc.NodeCPUCount,
+		NodeMemory:            svc.NodeMemory,
+		UpdateDate:            svc.UpdatedAT,
+		DiskSize:              svc.DiskSize,
+		State:                 string(svc.State),
+		TerminationProtection: *svc.TerminationProtection,
 
 		Maintenance: func() (v *dbServiceMaintenanceShowOutput) {
-			if databaseService.Maintenance != nil {
+			if svc.Maintenance != nil {
 				v = &dbServiceMaintenanceShowOutput{
-					DOW:  string(databaseService.Maintenance.Dow),
-					Time: databaseService.Maintenance.Time,
+					DOW:  string(svc.Maintenance.Dow),
+					Time: svc.Maintenance.Time,
 				}
 			}
 			return
@@ -175,8 +171,8 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 
 		Grafana: &dbServiceGrafanaShowOutput{
 			Components: func() (v []dbServiceGrafanaComponentShowOutput) {
-				if databaseService.Components != nil {
-					for _, c := range *databaseService.Components {
+				if svc.Components != nil {
+					for _, c := range svc.Components {
 						v = append(v, dbServiceGrafanaComponentShowOutput{
 							Component: c.Component,
 							Host:      c.Host,
@@ -190,29 +186,29 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceGrafana(ctx context.Context) (o
 			}(),
 
 			IPFilter: func() (v []string) {
-				if databaseService.IpFilter != nil {
-					v = *databaseService.IpFilter
+				if svc.IPFilter != nil {
+					v = svc.IPFilter
 				}
 				return
 			}(),
 
-			URI:       *databaseService.Uri,
-			URIParams: *databaseService.UriParams,
+			URI:       svc.URI,
+			URIParams: svc.URIParams,
 
 			Users: func() (v []dbServiceGrafanaUserShowOutput) {
-				if databaseService.Users != nil {
-					for _, u := range *databaseService.Users {
+				if svc.Users != nil {
+					for _, u := range svc.Users {
 						v = append(v, dbServiceGrafanaUserShowOutput{
-							Password: utils.DefaultString(u.Password, ""),
-							Type:     utils.DefaultString(u.Type, ""),
-							Username: utils.DefaultString(u.Username, ""),
+							Password: u.Password,
+							Type:     u.Type,
+							Username: u.Username,
 						})
 					}
 				}
 				return
 			}(),
 
-			Version: utils.DefaultString(databaseService.Version, ""),
+			Version: svc.Version,
 		},
 	}
 
