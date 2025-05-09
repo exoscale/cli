@@ -4,6 +4,8 @@
 
 ### Features
 
+- instance: enable tpm cmd
+- instance: secureboot and tpm support on create
 - sks: add rotate operators CA cmd
 - sks: add rotate CSI credentials cmd
 
@@ -11,6 +13,7 @@
 
 ### Improvements
 
+- instance: show migrated to egoscale v3
 - SKS: more related commands are migrated to egoscale v3
 
 ## 1.84.1
