@@ -3,9 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +56,7 @@ func (c *dbaasUserDeleteCmd) deletePg(cmd *cobra.Command, _ []string) error {
 		return c.outputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
-		}).showDatabaseServicePG(exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))))
+		}).showDatabaseServicePG(ctx))
 	}
 
 	return nil
