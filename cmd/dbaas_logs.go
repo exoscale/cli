@@ -3,20 +3,17 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbServiceLogsItemOutput struct {
@@ -88,44 +85,52 @@ func (c *dbaasServiceLogsCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasServiceLogsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *dbaasServiceLogsCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
-	res, err := globalstate.EgoscaleClient.GetDbaasServiceLogsWithResponse(
+	svcLogRequest := v3.GetDBAASServiceLogsRequest{}
+	if cmd.Flags().Changed("limit") {
+		svcLogRequest.Limit = c.Limit
+	}
+	if cmd.Flags().Changed("offset") {
+		svcLogRequest.Offset = c.Offset
+	}
+	if cmd.Flags().Changed("sort") {
+		svcLogRequest.SortOrder = v3.EnumSortOrder(c.Sort)
+	}
+
+	res, err := client.GetDBAASServiceLogs(
 		ctx,
 		c.Name,
-		oapi.GetDbaasServiceLogsJSONRequestBody{
-			Limit:     &c.Limit,
-			Offset:    utils.NonEmptyStringPtr(c.Offset),
-			SortOrder: (*oapi.EnumSortOrder)(utils.NonEmptyStringPtr(c.Sort)),
-		},
+		svcLogRequest,
 	)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", res.Status())
-	}
 
 	out := dbServiceLogsOutput{
-		FirstLogOffset: utils.DefaultString(res.JSON200.FirstLogOffset, "-"),
-		Offset:         utils.DefaultString(res.JSON200.Offset, "-"),
-		Logs:           make([]dbServiceLogsItemOutput, len(*res.JSON200.Logs)),
+		FirstLogOffset: utils.DefaultString(&res.FirstLogOffset, "-"),
+		Offset:         utils.DefaultString(&res.Offset, "-"),
+		Logs:           make([]dbServiceLogsItemOutput, len(res.Logs)),
 	}
 
-	for i, log := range *res.JSON200.Logs {
-		ts, err := time.Parse("2006-01-02T15:04:05.000000", *log.Time)
+	for i, log := range res.Logs {
+		ts, err := time.Parse("2006-01-02T15:04:05.000000", log.Time)
 		if err != nil {
 			return fmt.Errorf("unable to parse log timestamp: %w", err)
 		}
 		out.Logs[i].Time = ts
 
-		out.Logs[i].Node = utils.DefaultString(log.Node, "-")
-		out.Logs[i].Unit = utils.DefaultString(log.Unit, "-")
-		out.Logs[i].Message = utils.DefaultString(log.Message, "-")
+		out.Logs[i].Node = utils.DefaultString(&log.Node, "-")
+		out.Logs[i].Unit = utils.DefaultString(&log.Unit, "-")
+		out.Logs[i].Message = utils.DefaultString(&log.Message, "-")
 	}
 
 	return c.outputFunc(&out, nil)
