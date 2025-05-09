@@ -49,6 +49,9 @@ func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	op, err := client.DeleteDBAASService(ctx, c.Name)
 	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
 		return err
 	}
 
@@ -56,9 +59,6 @@ func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
-		if errors.Is(err, v3.ErrNotFound) {
-			return fmt.Errorf("resource not found in zone %q", c.Zone)
-		}
 		return err
 	}
 

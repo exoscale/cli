@@ -7,9 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasMigrationStopCmd struct {
@@ -37,9 +37,13 @@ func (c *dbaasMigrationStopCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
-	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
+	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		if errors.Is(err, exoapi.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
@@ -47,14 +51,15 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 		return err
 	}
 
-	var stopMigrationFuncs = map[string]func(context.Context, string, string) error{
-		"mysql": globalstate.EgoscaleClient.StopMysqlDatabaseMigration,
-		"pg":    globalstate.EgoscaleClient.StopPgDatabaseMigration,
-		"redis": globalstate.EgoscaleClient.StopRedisDatabaseMigration,
+	var stopMigrationFuncs = map[v3.DBAASServiceTypeName]func(context.Context, string) (*v3.Operation, error){
+		"mysql":  client.StopDBAASMysqlMigration,
+		"pg":     client.StopDBAASPGMigration,
+		"redis":  client.StopDBAASRedisMigration,
+		"valkey": client.StopDBAASValkeyMigration,
 	}
 
-	if _, ok := stopMigrationFuncs[dbType]; !ok {
-		return fmt.Errorf("migrations not supported for database type %q", dbType)
+	if _, ok := stopMigrationFuncs[db.Type]; !ok {
+		return fmt.Errorf("migrations not supported for database type %q", db.Type)
 	}
 
 	_, err = globalstate.EgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
@@ -65,14 +70,18 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 		return fmt.Errorf("failed to retrieve migration status: %s", err)
 	}
 
+	op, err := stopMigrationFuncs[db.Type](ctx, c.Name)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
+			return fmt.Errorf("resource not found in zone %q", c.Zone)
+		}
+		return err
+	}
 	decorateAsyncOperation("Stopping Database Migration...", func() {
-		err = stopMigrationFuncs[dbType](ctx, c.Zone, c.Name)
+		_, err = client.Wait(ctx, op)
 	})
 
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
-			return fmt.Errorf("migration not running in zone %q", c.Zone)
-		}
 		return fmt.Errorf("failed to stop migration: %s", err)
 	}
 
