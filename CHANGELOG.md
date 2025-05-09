@@ -13,6 +13,7 @@
 
 ### Improvements
 
+- instance: show migrated to egoscale v3
 - SKS: more related commands are migrated to egoscale v3
 
 ## 1.84.1

@@ -14938,7 +14938,7 @@ type UpdateSKSClusterRequest struct {
 	// Add or remove the operators certificate authority (CA) from the list of trusted CAs of the api server. The default value is true
 	EnableOperatorsCA *bool `json:"enable-operators-ca,omitempty"`
 	// A list of Kubernetes-only Alpha features to enable for API server component
-	FeatureGates []string         `json:"feature-gates,omitempty"`
+	FeatureGates []string         `json:"feature-gates"`
 	Labels       SKSClusterLabels `json:"labels,omitempty"`
 	// Cluster name
 	Name string `json:"name,omitempty" validate:"omitempty,gte=1,lte=255"`
