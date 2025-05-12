@@ -3,16 +3,12 @@ package cmd
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type elasticIPCreateCmd struct {
@@ -53,47 +49,51 @@ func (c *elasticIPCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 }
 
 func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
-	var healthcheck *egoscale.ElasticIPHealthcheck
+	var healthcheck *v3.ElasticIPHealthcheck
 	if c.HealthcheckMode != "" {
-		port := uint16(c.HealthcheckPort)
-		interval := time.Duration(c.HealthcheckInterval) * time.Second
-		timeout := time.Duration(c.HealthcheckTimeout) * time.Second
 
-		healthcheck = &egoscale.ElasticIPHealthcheck{
-			Interval:    &interval,
-			Mode:        &c.HealthcheckMode,
-			Port:        &port,
-			StrikesFail: &c.HealthcheckStrikesFail,
-			StrikesOK:   &c.HealthcheckStrikesOK,
-			Timeout:     &timeout,
-			URI: func() (v *string) {
-				if strings.HasPrefix(c.HealthcheckMode, "http") {
-					v = &c.HealthcheckURI
-				}
-				return
-			}(),
+		healthcheck = &v3.ElasticIPHealthcheck{
+			Interval:    c.HealthcheckInterval,
+			StrikesFail: c.HealthcheckStrikesFail,
+			StrikesOk:   c.HealthcheckStrikesOK,
+			Timeout:     c.HealthcheckTimeout,
+			Mode:        v3.ElasticIPHealthcheckMode(c.HealthcheckMode),
+			Port:        c.HealthcheckPort,
+		}
+		if strings.HasPrefix(c.HealthcheckMode, "http") {
+			healthcheck.URI = c.HealthcheckURI
 		}
 
 		if c.HealthcheckMode == "https" {
-			healthcheck.TLSSkipVerify = &c.HealthcheckTLSSSkipVerify
-			healthcheck.TLSSNI = utils.NonEmptyStringPtr(c.HealthcheckTLSSNI)
+			healthcheck.TlsSkipVerify = &c.HealthcheckTLSSSkipVerify
+			if c.HealthcheckTLSSNI != "" {
+				healthcheck.TlsSNI = c.HealthcheckTLSSNI
+			}
 		}
 	}
 
-	elasticIP := &egoscale.ElasticIP{
-		Description: utils.NonEmptyStringPtr(c.Description),
+	elasticIP := v3.CreateElasticIPRequest{
 		Healthcheck: healthcheck,
+		Description: c.Description,
 	}
 
 	if c.IPv6 {
-		elasticIP.AddressFamily = utils.NonEmptyStringPtr("inet6")
+		elasticIP.Addressfamily = "inetv6"
 	}
 
-	var err error
+	op, err := client.CreateElasticIP(ctx, elasticIP)
+	if err != nil {
+		return err
+	}
+
 	decorateAsyncOperation("Creating Elastic IP...", func() {
-		elasticIP, err = globalstate.EgoscaleClient.CreateElasticIP(ctx, c.Zone, elasticIP)
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -101,7 +101,7 @@ func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	return (&elasticIPShowCmd{
 		cliCommandSettings: c.cliCommandSettings,
-		ElasticIP:          *elasticIP.ID,
+		ElasticIP:          op.Reference.ID.String(),
 		Zone:               c.Zone,
 	}).cmdRun(nil, nil)
 }
