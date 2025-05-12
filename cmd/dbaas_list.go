@@ -7,11 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasServiceListItemOutput struct {
@@ -70,18 +69,22 @@ func (c *dbaasServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		ctx := gContext
+		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+		if err != nil {
+			return err
+		}
 
-		list, err := globalstate.EgoscaleClient.ListDatabaseServices(ctx, zone)
+		list, err := client.ListDBAASServices(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list Database Services in zone %s: %w", zone, err)
 		}
 
-		for _, dbService := range list {
+		for _, dbService := range list.DBAASServices {
 			res <- dbaasServiceListItemOutput{
-				Name: *dbService.Name,
-				Type: *dbService.Type,
-				Plan: *dbService.Plan,
+				Name: string(dbService.Name),
+				Type: string(dbService.Type),
+				Plan: dbService.Plan,
 				Zone: zone,
 			}
 		}

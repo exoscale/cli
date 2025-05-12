@@ -6,10 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasServiceDeleteCmd struct {
@@ -35,7 +33,13 @@ func (c *dbaasServiceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	var err error
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
 
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Database Service %q?", c.Name)) {
@@ -43,14 +47,18 @@ func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	var err error
-	decorateAsyncOperation(fmt.Sprintf("Deleting Database Service %q...", c.Name), func() {
-		err = globalstate.EgoscaleClient.DeleteDatabaseService(ctx, c.Zone, &egoscale.DatabaseService{Name: &c.Name})
-	})
+	op, err := client.DeleteDBAASService(ctx, c.Name)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
+		return err
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Deleting Database Service %q...", c.Name), func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+	if err != nil {
 		return err
 	}
 

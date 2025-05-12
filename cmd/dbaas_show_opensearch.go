@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -17,8 +16,6 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -129,24 +126,27 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context) (output.Outputter, error) {
-	res, err := globalstate.EgoscaleClient.GetDbaasServiceOpensearchWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		return nil, err
+	}
+
+	res, err := client.GetDBAASServiceOpensearch(ctx, c.Name)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return nil, err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("API request error: unexpected status %s", res.Status())
-	}
 
 	switch {
 	case c.ShowBackups:
-		return opensearchShowBackups(res.JSON200)
+		return opensearchShowBackups(res)
 	case c.ShowNotifications:
-		return opensearchShowNotifications(res.JSON200)
+		return opensearchShowNotifications(res)
 	case c.ShowSettings != "":
-		return nil, opensearchShowSettings(c.ShowSettings, res.JSON200)
+		return nil, opensearchShowSettings(c.ShowSettings, res)
 	case c.ShowURI:
 		// Read password from dedicated endpoint
 		client, err := switchClientZoneV3(
@@ -158,11 +158,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context)
 			return nil, err
 		}
 
-		uriParams := *res.JSON200.UriParams
+		uriParams := res.URIParams
 
 		creds, err := client.RevealDBAASOpensearchUserPassword(
 			ctx,
-			string(res.JSON200.Name),
+			string(res.Name),
 			uriParams["user"].(string),
 		)
 		if err != nil {
@@ -181,35 +181,31 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context)
 		fmt.Println(uri)
 		return nil, nil
 	default:
-		return opensearchShowDatabase(res.JSON200, c.Zone)
+		return opensearchShowDatabase(res, c.Zone)
 	}
 }
 
-func opensearchShowSettings(setting string, db *oapi.DbaasServiceOpensearch) error {
-	var serviceSettings *map[string]interface{}
+func opensearchShowSettings(setting string, db *v3.DBAASServiceOpensearch) error {
 
 	switch setting {
 	case "opensearch":
-		serviceSettings = db.OpensearchSettings
-	default:
-		return fmt.Errorf("invalid settings value %q, expected one of: %s", setting, strings.Join(opensearchSettings, ", "))
-	}
-
-	if serviceSettings != nil {
-		out, err := json.MarshalIndent(serviceSettings, "", "  ")
+		out, err := json.MarshalIndent(db.OpensearchSettings, "", "  ")
 		if err != nil {
 			return fmt.Errorf("unable to marshal JSON: %w", err)
 		}
 		fmt.Println(string(out))
+
+	default:
+		return fmt.Errorf("invalid settings value %q, expected one of: %s", setting, strings.Join(opensearchSettings, ", "))
 	}
 
 	return nil
 }
 
-func opensearchShowNotifications(db *oapi.DbaasServiceOpensearch) (output.Outputter, error) {
+func opensearchShowNotifications(db *v3.DBAASServiceOpensearch) (output.Outputter, error) {
 	out := make(dbServiceNotificationListOutput, 0)
 	if db.Notifications != nil {
-		for _, n := range *db.Notifications {
+		for _, n := range db.Notifications {
 			out = append(out, dbServiceNotificationListItemOutput{
 				Level:   string(n.Level),
 				Message: wordwrap.WrapString(n.Message, 50),
@@ -220,13 +216,13 @@ func opensearchShowNotifications(db *oapi.DbaasServiceOpensearch) (output.Output
 	return &out, nil
 }
 
-func opensearchShowBackups(db *oapi.DbaasServiceOpensearch) (output.Outputter, error) {
+func opensearchShowBackups(db *v3.DBAASServiceOpensearch) (output.Outputter, error) {
 	if db.Backups == nil {
 		return &dbServiceBackupListOutput{}, nil
 	}
 
-	out := make(dbServiceBackupListOutput, 0, len(*db.Backups))
-	for _, b := range *db.Backups {
+	out := make(dbServiceBackupListOutput, 0, len(db.Backups))
+	for _, b := range db.Backups {
 		out = append(out, dbServiceBackupListItemOutput{
 			Date: b.BackupTime,
 			Name: b.BackupName,
@@ -237,10 +233,10 @@ func opensearchShowBackups(db *oapi.DbaasServiceOpensearch) (output.Outputter, e
 	return &out, nil
 }
 
-func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (output.Outputter, error) {
+func opensearchShowDatabase(db *v3.DBAASServiceOpensearch, zone string) (output.Outputter, error) {
 	var components []dbServiceOpensearchComponentsShowOutput
 	if db.Components != nil {
-		for _, c := range *db.Components {
+		for _, c := range db.Components {
 			components = append(components, dbServiceOpensearchComponentsShowOutput{
 				Component: c.Component,
 				Host:      c.Host,
@@ -253,16 +249,11 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 
 	var indexPatterns []dbServiceOpensearchIndexPatternShowOutput
 	if db.IndexPatterns != nil {
-		for _, i := range *db.IndexPatterns {
+		for _, i := range db.IndexPatterns {
 			indexPatterns = append(indexPatterns, dbServiceOpensearchIndexPatternShowOutput{
-				MaxIndexCount: utils.DefaultInt64(i.MaxIndexCount, 0),
-				Pattern:       utils.DefaultString(i.Pattern, ""),
-				SortingAlgorithm: func() string {
-					if i.SortingAlgorithm != nil {
-						return string(*i.SortingAlgorithm)
-					}
-					return ""
-				}(),
+				MaxIndexCount:    i.MaxIndexCount,
+				Pattern:          i.Pattern,
+				SortingAlgorithm: string(i.SortingAlgorithm),
 			})
 		}
 	}
@@ -270,9 +261,9 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 	var indexTemplate *dbServiceOpensearchIndexTemplateShowOutput
 	if db.IndexTemplate != nil {
 		indexTemplate = &dbServiceOpensearchIndexTemplateShowOutput{
-			MappingNestedObjectsLimit: utils.DefaultInt64(db.IndexTemplate.MappingNestedObjectsLimit, 0),
-			NumberOfReplicas:          utils.DefaultInt64(db.IndexTemplate.NumberOfReplicas, 0),
-			NumberOfShards:            utils.DefaultInt64(db.IndexTemplate.NumberOfShards, 0),
+			MappingNestedObjectsLimit: db.IndexTemplate.MappingNestedObjectsLimit,
+			NumberOfReplicas:          db.IndexTemplate.NumberOfReplicas,
+			NumberOfShards:            db.IndexTemplate.NumberOfShards,
 		}
 	}
 
@@ -280,18 +271,18 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 	if db.OpensearchDashboards != nil {
 		dashboard = &dbServiceOpensearchDashboardShowOutput{
 			Enabled:                  utils.DefaultBool(db.OpensearchDashboards.Enabled, false),
-			MaxOldSpaceSize:          utils.DefaultInt64(db.OpensearchDashboards.MaxOldSpaceSize, 0),
-			OpensearchRequestTimeout: utils.DefaultInt64(db.OpensearchDashboards.OpensearchRequestTimeout, 0),
+			MaxOldSpaceSize:          db.OpensearchDashboards.MaxOldSpaceSize,
+			OpensearchRequestTimeout: db.OpensearchDashboards.OpensearchRequestTimeout,
 		}
 	}
 
 	var users []dbServiceOpensearchUserShowOutput
 	if db.Users != nil {
-		for _, u := range *db.Users {
+		for _, u := range db.Users {
 			users = append(users, dbServiceOpensearchUserShowOutput{
-				Password: utils.DefaultString(u.Password, ""),
-				Type:     utils.DefaultString(u.Type, ""),
-				Username: utils.DefaultString(u.Username, ""),
+				Password: u.Password,
+				Type:     u.Type,
+				Username: u.Username,
 			})
 		}
 	}
@@ -302,24 +293,24 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 		Type: string(db.Type),
 		Plan: db.Plan,
 		CreationDate: func() time.Time {
-			if db.CreatedAt != nil {
-				return *db.CreatedAt
+			if !db.CreatedAT.IsZero() {
+				return db.CreatedAT
 			}
 			return time.Time{}
 		}(),
-		Nodes:      utils.DefaultInt64(db.NodeCount, 0),
-		NodeCPUs:   utils.DefaultInt64(db.NodeCpuCount, 0),
-		NodeMemory: utils.DefaultInt64(db.NodeMemory, 0),
+		Nodes:      db.NodeCount,
+		NodeCPUs:   db.NodeCPUCount,
+		NodeMemory: db.NodeMemory,
 		UpdateDate: func() time.Time {
-			if db.UpdatedAt != nil {
-				return *db.UpdatedAt
+			if !db.UpdatedAT.IsZero() {
+				return db.UpdatedAT
 			}
 			return time.Time{}
 		}(),
-		DiskSize: utils.DefaultInt64(db.DiskSize, 0),
+		DiskSize: db.DiskSize,
 		State: func() string {
-			if db.State != nil {
-				return string(*db.State)
+			if db.State != "" {
+				return string(db.State)
 			}
 			return ""
 		}(),
@@ -337,32 +328,32 @@ func opensearchShowDatabase(db *oapi.DbaasServiceOpensearch, zone string) (outpu
 
 		Opensearch: &dbServiceOpensearchShowOutput{
 			IPFilter: func() (v []string) {
-				if db.IpFilter != nil {
-					v = *db.IpFilter
+				if db.IPFilter != nil {
+					v = db.IPFilter
 				}
 				return
 			}(),
-			URI: utils.DefaultString(db.Uri, ""),
+			URI: db.URI,
 			URIParams: func() map[string]interface{} {
-				if db.UriParams != nil {
-					return *db.UriParams
+				if db.URIParams != nil {
+					return db.URIParams
 				}
 				return map[string]interface{}{}
 			}(),
-			Version:    utils.DefaultString(db.Version, ""),
+			Version:    db.Version,
 			Components: components,
 			ConnectionInfo: dbServiceOpensearchConnectionInfoShowOutput{
-				DashboardURI: utils.DefaultString(db.ConnectionInfo.DashboardUri, ""),
-				Password:     utils.DefaultString(db.ConnectionInfo.Password, ""),
+				DashboardURI: db.ConnectionInfo.DashboardURI,
+				Password:     db.ConnectionInfo.Password,
 				URI: func() []string {
-					if db.ConnectionInfo.Uri != nil {
-						return *db.ConnectionInfo.Uri
+					if db.ConnectionInfo.URI != nil {
+						return db.ConnectionInfo.URI
 					}
 					return []string{}
 				}(),
-				Username: utils.DefaultString(db.ConnectionInfo.Username, ""),
+				Username: db.ConnectionInfo.Username,
 			},
-			Description:              utils.DefaultString(db.Description, ""),
+			Description:              db.Description,
 			IndexPatterns:            indexPatterns,
 			IndexTemplate:            indexTemplate,
 			KeepIndexRefreshInterval: utils.DefaultBool(db.KeepIndexRefreshInterval, false),

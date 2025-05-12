@@ -6,11 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	v2 "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasMigrationStatusCmd struct {
@@ -37,18 +35,22 @@ func (c *dbaasMigrationStatusCmd) cmdPreRun(cmd *cobra.Command, args []string) e
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-type databaseMigrationStatus v2.DatabaseMigrationStatus
+type databaseMigrationStatus v3.DBAASMigrationStatus
 
 func (o *databaseMigrationStatus) ToJSON()  { output.JSON(o) }
 func (o *databaseMigrationStatus) ToText()  { output.Text(o) }
 func (o *databaseMigrationStatus) ToTable() { output.Table(o) }
 
 func (c *dbaasMigrationStatusCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	res, err := globalstate.EgoscaleClient.GetDatabaseMigrationStatus(ctx, c.Zone, c.Name)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		return err
+	}
+
+	res, err := client.GetDBAASMigrationStatus(ctx, c.Name)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return fmt.Errorf("failed to retrieve migration status: %s", err)

@@ -12,7 +12,7 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasTypeListItemOutput struct {
@@ -61,25 +61,28 @@ func (c *dbaasTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
 
-	dbTypes, err := globalstate.EgoscaleClient.ListDatabaseServiceTypes(ctx, account.CurrentAccount.DefaultZone)
+	ctx := gContext
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
+
+	dbTypes, err := client.ListDBAASServiceTypes(ctx)
 	if err != nil {
 		return err
 	}
 
 	out := make(dbaasTypeListOutput, 0)
 
-	for _, t := range dbTypes {
+	for _, t := range dbTypes.DBAASServiceTypes {
 		out = append(out, dbaasTypeListItemOutput{
-			Name:           *t.Name,
-			DefaultVersion: utils.DefaultString(t.DefaultVersion, "-"),
+			Name:           string(t.Name),
+			DefaultVersion: utils.DefaultString(&t.DefaultVersion, "-"),
 			AvailableVersions: func() (v []string) {
 				if t.AvailableVersions != nil {
-					v = *t.AvailableVersions
+					v = t.AvailableVersions
 				}
 				return
 			}(),

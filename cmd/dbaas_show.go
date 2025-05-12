@@ -9,10 +9,8 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type dbServiceNotificationListItemOutput struct {
@@ -197,14 +195,15 @@ func (c *dbaasServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
+	var err error
 
-	dbType, err := dbaasGetType(ctx, c.Name, c.Zone)
+	svc, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	switch dbType {
+	switch svc.Type {
 	case "grafana":
 		return c.outputFunc(c.showDatabaseServiceGrafana(ctx))
 	case "kafka":
@@ -220,7 +219,7 @@ func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	case "valkey":
 		return c.outputFunc(c.showDatabaseServiceValkey(ctx))
 	default:
-		return fmt.Errorf("unsupported service type %q", dbType)
+		return fmt.Errorf("unsupported service type %q", svc.Type)
 	}
 }
 

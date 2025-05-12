@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -16,8 +15,7 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbServiceKafkaAuthenticationShowOutput struct {
@@ -145,32 +143,30 @@ func formatDatabaseServiceKafkaTable(t *table.Table, o *dbServiceKafkaShowOutput
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (output.Outputter, error) {
-	serviceRes, err := globalstate.EgoscaleClient.GetDbaasServiceKafkaWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		return nil, err
+	}
+
+	databaseService, err := client.GetDBAASServiceKafka(ctx, c.Name)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
 			return nil, fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return nil, err
 	}
-	if serviceRes.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("API request error: unexpected status %s", serviceRes.Status())
-	}
-	databaseService := serviceRes.JSON200
 
-	aclRes, err := globalstate.EgoscaleClient.GetDbaasKafkaAclConfigWithResponse(ctx, oapi.DbaasServiceName(c.Name))
+	aclConfig, err := client.GetDBAASKafkaAclConfig(ctx, c.Name)
 	if err != nil {
 		return nil, err
 	}
-	if aclRes.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("API request error: unexpected status %s", aclRes.Status())
-	}
-	aclConfig := aclRes.JSON200
 
 	switch {
 	case c.ShowBackups:
 		out := make(dbServiceBackupListOutput, 0)
 		if databaseService.Backups != nil {
-			for _, b := range *databaseService.Backups {
+			for _, b := range databaseService.Backups {
 				out = append(out, dbServiceBackupListItemOutput{
 					Date: b.BackupTime,
 					Name: b.BackupName,
@@ -183,7 +179,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 	case c.ShowNotifications:
 		out := make(dbServiceNotificationListOutput, 0)
 		if databaseService.Notifications != nil {
-			for _, n := range *databaseService.Notifications {
+			for _, n := range databaseService.Notifications {
 				out = append(out, dbServiceNotificationListItemOutput{
 					Level:   string(n.Level),
 					Message: wordwrap.WrapString(n.Message, 50),
@@ -194,17 +190,31 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 		return &out, nil
 
 	case c.ShowSettings != "":
-		var serviceSettings *map[string]interface{}
+		var out []byte
 
 		switch c.ShowSettings {
 		case "kafka":
-			serviceSettings = databaseService.KafkaSettings
+			out, err = json.MarshalIndent(databaseService.KafkaSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+
 		case "kafka-connect":
-			serviceSettings = databaseService.KafkaConnectSettings
+			out, err = json.MarshalIndent(databaseService.KafkaConnectSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
+
 		case "kafka-rest":
-			serviceSettings = databaseService.KafkaRestSettings
+			out, err = json.MarshalIndent(databaseService.KafkaRestSettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
 		case "schema-registry":
-			serviceSettings = databaseService.SchemaRegistrySettings
+			out, err = json.MarshalIndent(databaseService.SchemaRegistrySettings, "", "  ")
+			if err != nil {
+				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
+			}
 		default:
 			return nil, fmt.Errorf(
 				"invalid settings value %q, expected one of: %s",
@@ -213,18 +223,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 			)
 		}
 
-		if serviceSettings != nil {
-			out, err := json.MarshalIndent(serviceSettings, "", "  ")
-			if err != nil {
-				return nil, fmt.Errorf("unable to marshal JSON: %w", err)
-			}
-			fmt.Println(string(out))
-		}
-
+		fmt.Println(string(out))
 		return nil, nil
 
 	case c.ShowURI:
-		fmt.Println(utils.DefaultString(databaseService.Uri, ""))
+		fmt.Println(utils.DefaultString(&databaseService.URI, ""))
 		return nil, nil
 	}
 
@@ -233,13 +236,13 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 		Name:                  string(databaseService.Name),
 		Type:                  string(databaseService.Type),
 		Plan:                  databaseService.Plan,
-		CreationDate:          *databaseService.CreatedAt,
-		Nodes:                 *databaseService.NodeCount,
-		NodeCPUs:              *databaseService.NodeCpuCount,
-		NodeMemory:            *databaseService.NodeMemory,
-		UpdateDate:            *databaseService.UpdatedAt,
-		DiskSize:              *databaseService.DiskSize,
-		State:                 string(*databaseService.State),
+		CreationDate:          databaseService.CreatedAT,
+		Nodes:                 databaseService.NodeCount,
+		NodeCPUs:              databaseService.NodeCPUCount,
+		NodeMemory:            databaseService.NodeMemory,
+		UpdateDate:            databaseService.UpdatedAT,
+		DiskSize:              databaseService.DiskSize,
+		State:                 string(databaseService.State),
 		TerminationProtection: *databaseService.TerminationProtection,
 
 		Maintenance: func() (v *dbServiceMaintenanceShowOutput) {
@@ -255,9 +258,9 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 		Kafka: &dbServiceKafkaShowOutput{
 			ACL: func() (v []dbServiceKafkaACLShowOutput) {
 				if aclConfig.TopicAcl != nil {
-					for _, acl := range *aclConfig.TopicAcl {
+					for _, acl := range aclConfig.TopicAcl {
 						v = append(v, dbServiceKafkaACLShowOutput{
-							ID:         string(*acl.Id),
+							ID:         string(acl.ID),
 							Permission: string(acl.Permission),
 							Topic:      acl.Topic,
 							Username:   acl.Username,
@@ -277,11 +280,11 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 
 			Components: func() (v []dbServiceKafkaComponentShowOutput) {
 				if databaseService.Components != nil {
-					for _, c := range *databaseService.Components {
+					for _, c := range databaseService.Components {
 						v = append(v, dbServiceKafkaComponentShowOutput{
 							Component:            c.Component,
 							Host:                 c.Host,
-							AuthenticationMethod: utils.DefaultString((*string)(c.KafkaAuthenticationMethod), "-"),
+							AuthenticationMethod: string(c.KafkaAuthenticationMethod),
 							Port:                 c.Port,
 							Route:                string(c.Route),
 							Usage:                string(c.Usage),
@@ -292,16 +295,16 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 			}(),
 
 			ConnectionInfo: dbServiceKafkaConnectionInfoShowOutput{
-				AccessCert:  databaseService.ConnectionInfo.AccessCert,
-				AccessKey:   databaseService.ConnectionInfo.AccessKey,
-				Nodes:       databaseService.ConnectionInfo.Nodes,
-				RegistryURI: databaseService.ConnectionInfo.RegistryUri,
-				RestURI:     databaseService.ConnectionInfo.RestUri,
+				AccessCert:  &databaseService.ConnectionInfo.AccessCert,
+				AccessKey:   &databaseService.ConnectionInfo.AccessKey,
+				Nodes:       &databaseService.ConnectionInfo.Nodes,
+				RegistryURI: &databaseService.ConnectionInfo.RegistryURI,
+				RestURI:     &databaseService.ConnectionInfo.RestURI,
 			},
 
 			IPFilter: func() (v []string) {
-				if databaseService.IpFilter != nil {
-					v = *databaseService.IpFilter
+				if databaseService.IPFilter != nil {
+					v = databaseService.IPFilter
 				}
 				return
 			}(),
@@ -310,26 +313,26 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceKafka(ctx context.Context) (out
 			KafkaRESTEnabled:      utils.DefaultBool(databaseService.KafkaRestEnabled, false),
 			SchemaRegistryEnabled: utils.DefaultBool(databaseService.SchemaRegistryEnabled, false),
 
-			URI:       *databaseService.Uri,
-			URIParams: *databaseService.UriParams,
+			URI:       databaseService.URI,
+			URIParams: databaseService.URIParams,
 
 			Users: func() (v []dbServiceKafkaUserShowOutput) {
 				if databaseService.Users != nil {
-					for _, u := range *databaseService.Users {
+					for _, u := range databaseService.Users {
 						v = append(v, dbServiceKafkaUserShowOutput{
-							AccessCert:       u.AccessCert,
-							AccessCertExpiry: u.AccessCertExpiry,
-							AccessKey:        u.AccessKey,
-							Password:         utils.DefaultString(u.Password, ""),
-							Type:             utils.DefaultString(u.Type, ""),
-							Username:         utils.DefaultString(u.Username, ""),
+							AccessCert:       &u.AccessCert,
+							AccessCertExpiry: &u.AccessCertExpiry,
+							AccessKey:        &u.AccessKey,
+							Password:         u.Password,
+							Type:             u.Type,
+							Username:         u.Username,
 						})
 					}
 				}
 				return
 			}(),
 
-			Version: utils.DefaultString(databaseService.Version, ""),
+			Version: databaseService.Version,
 		},
 	}
 

@@ -13,8 +13,6 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exo "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -161,12 +159,15 @@ func (c *dbaasTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
+	ctx := gContext
+	var err error
 
-	dt, err := globalstate.EgoscaleClient.GetDatabaseServiceType(ctx, account.CurrentAccount.DefaultZone, c.Name)
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
+
+	dt, err := client.GetDBAASServiceType(ctx, c.Name)
 	if err != nil {
 		return err
 	}
@@ -175,11 +176,11 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 		out := make(dbaasTypePlanListOutput, len(dt.Plans))
 		for i := range dt.Plans {
 			out[i] = dbaasTypePlanListItemOutput{
-				Name:       utils.DefaultString(dt.Plans[i].Name, ""),
-				Nodes:      utils.DefaultInt64(dt.Plans[i].Nodes, 0),
-				NodeCPUs:   utils.DefaultInt64(dt.Plans[i].NodeCPUs, 0),
-				NodeMemory: utils.DefaultInt64(dt.Plans[i].NodeMemory, 0),
-				DiskSpace:  utils.DefaultInt64(dt.Plans[i].DiskSpace, 0),
+				Name:       dt.Plans[i].Name,
+				Nodes:      dt.Plans[i].NodeCount,
+				NodeCPUs:   dt.Plans[i].NodeCPUCount,
+				NodeMemory: dt.Plans[i].NodeMemory,
+				DiskSpace:  dt.Plans[i].NodeMemory,
 				Authorized: utils.DefaultBool(dt.Plans[i].Authorized, false),
 			}
 		}
@@ -199,13 +200,13 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsGrafanaWithResponse(ctx)
+			res, err := client.GetDBAASSettingsGrafana(ctx)
 			if err != nil {
 				return err
 			}
 
 			if c.ShowSettings == "grafana" {
-				settings = *res.JSON200.Settings.Grafana.Properties
+				settings = res.Settings.Grafana.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -218,20 +219,20 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsKafkaWithResponse(ctx)
+			res, err := client.GetDBAASSettingsKafka(ctx)
 			if err != nil {
 				return err
 			}
 
 			switch c.ShowSettings {
 			case "kafka":
-				settings = *res.JSON200.Settings.Kafka.Properties
+				settings = res.Settings.Kafka.Properties
 			case "kafka-connect":
-				settings = *res.JSON200.Settings.KafkaConnect.Properties
+				settings = res.Settings.KafkaConnect.Properties
 			case "kafka-rest":
-				settings = *res.JSON200.Settings.KafkaRest.Properties
+				settings = res.Settings.KafkaRest.Properties
 			case "schema-registry":
-				settings = *res.JSON200.Settings.SchemaRegistry.Properties
+				settings = res.Settings.SchemaRegistry.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -245,13 +246,13 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsOpensearchWithResponse(ctx)
+			res, err := client.GetDBAASSettingsOpensearch(ctx)
 			if err != nil {
 				return err
 			}
 
 			if c.ShowSettings == "opensearch" {
-				settings = *res.JSON200.Settings.Opensearch.Properties
+				settings = res.Settings.Opensearch.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -265,13 +266,13 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsMysqlWithResponse(ctx)
+			res, err := client.GetDBAASSettingsMysql(ctx)
 			if err != nil {
 				return err
 			}
 
 			if c.ShowSettings == "mysql" {
-				settings = *res.JSON200.Settings.Mysql.Properties
+				settings = res.Settings.Mysql.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -285,18 +286,18 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsPgWithResponse(ctx)
+			res, err := client.GetDBAASSettingsPG(ctx)
 			if err != nil {
 				return err
 			}
 
 			switch c.ShowSettings {
 			case "pg":
-				settings = *res.JSON200.Settings.Pg.Properties
+				settings = res.Settings.PG.Properties
 			case "pgbouncer":
-				settings = *res.JSON200.Settings.Pgbouncer.Properties
+				settings = res.Settings.Pgbouncer.Properties
 			case "pglookout":
-				settings = *res.JSON200.Settings.Pglookout.Properties
+				settings = res.Settings.Pglookout.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -310,13 +311,13 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			res, err := globalstate.EgoscaleClient.GetDbaasSettingsRedisWithResponse(ctx)
+			res, err := client.GetDBAASSettingsRedis(ctx)
 			if err != nil {
 				return err
 			}
 
 			if c.ShowSettings == "redis" {
-				settings = *res.JSON200.Settings.Redis.Properties
+				settings = res.Settings.Redis.Properties
 			}
 
 			dbaasShowSettings(settings)
@@ -330,12 +331,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				)
 			}
 
-			clientV3, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
-			if err != nil {
-				return err
-			}
-
-			res, err := clientV3.GetDBAASSettingsValkey(ctx)
+			res, err := client.GetDBAASSettingsValkey(ctx)
 
 			if err != nil {
 				return err
@@ -352,9 +348,9 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 	}
 
 	if c.ShowBackupConfig != "" {
-		var bc *exo.DatabaseBackupConfig
+		var bc *v3.DBAASBackupConfig
 		for _, plan := range dt.Plans {
-			if *plan.Name == c.ShowBackupConfig {
+			if plan.Name == c.ShowBackupConfig {
 				bc = plan.BackupConfig
 				break
 			}
@@ -363,26 +359,26 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 			return fmt.Errorf("%q is not a valid plan", c.ShowBackupConfig)
 		}
 		return c.outputFunc(&dbaasTypePlanBackupOutput{
-			Interval:                   bc.Interval,
-			MaxCount:                   bc.MaxCount,
-			RecoveryMode:               bc.RecoveryMode,
-			FrequentIntervalMinutes:    bc.FrequentIntervalMinutes,
-			FrequentOldestAgeMinutes:   bc.FrequentOldestAgeMinutes,
-			InfrequentIntervalMinutes:  bc.InfrequentIntervalMinutes,
-			InfrequentOldestAgeMinutes: bc.InfrequentOldestAgeMinutes,
+			Interval:                   &bc.Interval,
+			MaxCount:                   &bc.MaxCount,
+			RecoveryMode:               &bc.RecoveryMode,
+			FrequentIntervalMinutes:    &bc.FrequentIntervalMinutes,
+			FrequentOldestAgeMinutes:   &bc.FrequentOldestAgeMinutes,
+			InfrequentIntervalMinutes:  &bc.InfrequentIntervalMinutes,
+			InfrequentOldestAgeMinutes: &bc.InfrequentOldestAgeMinutes,
 		}, nil)
 	}
 
 	return c.outputFunc(&dbaasTypeShowOutput{
-		Name:        *dt.Name,
-		Description: utils.DefaultString(dt.Description, ""),
+		Name:        string(dt.Name),
+		Description: dt.Description,
 		AvailableVersions: func() (v []string) {
 			if dt.AvailableVersions != nil {
-				v = *dt.AvailableVersions
+				v = dt.AvailableVersions
 			}
 			return
 		}(),
-		DefaultVersion: utils.DefaultString(dt.DefaultVersion, "-"),
+		DefaultVersion: utils.DefaultString(&dt.DefaultVersion, "-"),
 	}, nil)
 }
 

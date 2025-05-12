@@ -1,16 +1,14 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dbaasServiceMetricsCmd struct {
@@ -41,24 +39,30 @@ func (c *dbaasServiceMetricsCmd) cmdPreRun(cmd *cobra.Command, args []string) er
 }
 
 func (c *dbaasServiceMetricsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	res, err := globalstate.EgoscaleClient.GetDbaasServiceMetricsWithResponse(
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
+	res, err := client.GetDBAASServiceMetrics(
 		ctx,
 		c.Name,
-		oapi.GetDbaasServiceMetricsJSONRequestBody{Period: (*oapi.GetDbaasServiceMetricsJSONBodyPeriod)(&c.Period)},
+		v3.GetDBAASServiceMetricsRequest{
+			Period: v3.GetDBAASServiceMetricsRequestPeriod(c.Period),
+		},
 	)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
 		return err
 	}
-	if res.StatusCode() != http.StatusOK {
-		return fmt.Errorf("API request error: unexpected status %s", res.Status())
-	}
 
-	fmt.Println(string(res.Body))
+	out, err := json.Marshal(res.Metrics)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(out))
 
 	return nil
 }

@@ -163,21 +163,6 @@ func dbaasShowSettings(settings map[string]interface{}) {
 	}
 }
 
-func dbaasGetType(ctx context.Context, name, zone string) (string, error) {
-	dbs, err := globalstate.EgoscaleClient.ListDatabaseServices(ctx, zone)
-	if err != nil {
-		return "", fmt.Errorf("failed to retrieve database type: %w", err)
-	}
-
-	for _, db := range dbs {
-		if *db.Name == name {
-			return *db.Type, nil
-		}
-	}
-
-	return "", fmt.Errorf("%q Database Service not found in zone %q", name, zone)
-}
-
 func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, error) {
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
