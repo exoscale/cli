@@ -13,6 +13,7 @@
 
 - SKS: more related commands are migrated to egoscale v3
 - dbaas: move all commands to egoscale v3
+- EIP: move to egoscale v3 #684
 
 ## 1.84.1
 
