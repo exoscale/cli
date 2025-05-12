@@ -83,13 +83,13 @@ func GetInstancesInSecurityGroup(ctx context.Context, client *v2.Client, securit
 	return instancesInSG, nil
 }
 
-func GetInstancesAttachedToEIP(ctx context.Context, client *v2.Client, elasticIPID, zone string) ([]*v2.Instance, error) {
-	instances, err := client.ListInstances(ctx, zone, v2.ListInstancesByIpAddress(elasticIPID))
+func GetInstancesAttachedToEIP(ctx context.Context, client *v3.Client, elasticIPID string) ([]v3.ListInstancesResponseInstances, error) {
+	instanceListResponse, err := client.ListInstances(ctx, v3.ListInstancesWithIPAddress(elasticIPID))
 	if err != nil {
 		return nil, err
 	}
 
-	return instances, nil
+	return instanceListResponse.Instances, nil
 }
 
 // IsInList returns true if v exists in the specified list, false otherwise.

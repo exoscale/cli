@@ -9,33 +9,32 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type elasticIPShowOutput struct {
-	ID                       string         `json:"id"`
-	IPAddress                string         `json:"ip_address"`
-	AddressFamily            string         `json:"address_family"`
-	CIDR                     string         `json:"cidr"`
-	Description              string         `json:"description"`
-	Zone                     string         `json:"zone"`
-	Type                     string         `json:"type"`
-	ReverseDNS               string         `json:"reverse_dns"`
-	Instances                []string       `json:"instances"`
-	HealthcheckMode          *string        `json:"healthcheck_mode,omitempty"`
-	HealthcheckPort          *uint16        `json:"healthcheck_port,omitempty"`
-	HealthcheckURI           *string        `json:"healthcheck_uri,omitempty"`
-	HealthcheckInterval      *time.Duration `json:"healthcheck_interval,omitempty"`
-	HealthcheckTimeout       *time.Duration `json:"healthcheck_timeout,omitempty"`
-	HealthcheckStrikesOK     *int64         `json:"healthcheck_strikes_ok,omitempty"`
-	HealthcheckStrikesFail   *int64         `json:"healthcheck_strikes_fail,omitempty"`
-	HealthcheckTLSSNI        *string        `json:"healthcheck_tls_sni,omitempty"`
-	HealthcheckTLSSkipVerify *bool          `json:"healthcheck_tls_skip_verify,omitempty"`
+	ID                       string        `json:"id"`
+	IPAddress                string        `json:"ip_address"`
+	AddressFamily            string        `json:"address_family"`
+	CIDR                     string        `json:"cidr"`
+	Description              string        `json:"description"`
+	Zone                     string        `json:"zone"`
+	Type                     string        `json:"type"`
+	ReverseDNS               string        `json:"reverse_dns"`
+	Instances                []string      `json:"instances"`
+	HealthcheckMode          string        `json:"healthcheck_mode,omitempty"`
+	HealthcheckPort          int64         `json:"healthcheck_port,omitempty"`
+	HealthcheckURI           string        `json:"healthcheck_uri,omitempty"`
+	HealthcheckInterval      time.Duration `json:"healthcheck_interval,omitempty"`
+	HealthcheckTimeout       time.Duration `json:"healthcheck_timeout,omitempty"`
+	HealthcheckStrikesOK     int64         `json:"healthcheck_strikes_ok,omitempty"`
+	HealthcheckStrikesFail   int64         `json:"healthcheck_strikes_fail,omitempty"`
+	HealthcheckTLSSNI        string        `json:"healthcheck_tls_sni,omitempty"`
+	HealthcheckTLSSkipVerify *bool         `json:"healthcheck_tls_skip_verify,omitempty"`
 }
 
 func (o *elasticIPShowOutput) ToJSON() { output.JSON(o) }
@@ -61,18 +60,18 @@ func (o *elasticIPShowOutput) ToTable() {
 	t.Append([]string{"Instances", instances})
 
 	if o.Type == "managed" {
-		t.Append([]string{"Healthcheck Mode", *o.HealthcheckMode})
-		t.Append([]string{"Healthcheck Port", fmt.Sprint(*o.HealthcheckPort)})
-		if strings.HasPrefix(*o.HealthcheckMode, "http") {
-			t.Append([]string{"Healthcheck URI", *o.HealthcheckURI})
+		t.Append([]string{"Healthcheck Mode", o.HealthcheckMode})
+		t.Append([]string{"Healthcheck Port", fmt.Sprint(o.HealthcheckPort)})
+		if strings.HasPrefix(o.HealthcheckMode, "http") {
+			t.Append([]string{"Healthcheck URI", o.HealthcheckURI})
 		}
 		t.Append([]string{"Healthcheck Interval", fmt.Sprint(o.HealthcheckInterval)})
 		t.Append([]string{"Healthcheck Timeout", fmt.Sprint(o.HealthcheckTimeout)})
-		t.Append([]string{"Healthcheck Strikes OK", fmt.Sprint(*o.HealthcheckStrikesOK)})
-		t.Append([]string{"Healthcheck Strikes Fail", fmt.Sprint(*o.HealthcheckStrikesFail)})
-		if *o.HealthcheckMode == "https" {
-			t.Append([]string{"Healthcheck TLS SNI", utils.DefaultString(o.HealthcheckTLSSNI, "")})
-			t.Append([]string{"Healthcheck TLS Skip Verification", fmt.Sprint(utils.DefaultBool(o.HealthcheckTLSSkipVerify, false))})
+		t.Append([]string{"Healthcheck Strikes OK", fmt.Sprint(o.HealthcheckStrikesOK)})
+		t.Append([]string{"Healthcheck Strikes Fail", fmt.Sprint(o.HealthcheckStrikesFail)})
+		if o.HealthcheckMode == "https" {
+			t.Append([]string{"Healthcheck TLS SNI", o.HealthcheckTLSSNI})
+			t.Append([]string{"Healthcheck TLS Skip Verification", fmt.Sprint(o.HealthcheckTLSSkipVerify)})
 		}
 	}
 }
@@ -106,58 +105,68 @@ func (c *elasticIPShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	elasticIP, err := globalstate.EgoscaleClient.FindElasticIP(ctx, c.Zone, c.ElasticIP)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		return err
+	}
+
+	eips, err := client.ListElasticIPS(ctx)
+	if err != nil {
+		return err
+	}
+
+	elasticIp, err := eips.FindElasticIP(c.ElasticIP)
+	if err != nil {
+		if errors.Is(err, v3.ErrNotFound) {
 			return fmt.Errorf("resource not found in zone %q", c.Zone)
 		}
-
 		return err
 	}
 
 	out := elasticIPShowOutput{
-		ID:            *elasticIP.ID,
-		IPAddress:     elasticIP.IPAddress.String(),
-		AddressFamily: utils.DefaultString(elasticIP.AddressFamily, ""),
-		CIDR:          utils.DefaultString(elasticIP.CIDR, ""),
-		Description:   utils.DefaultString(elasticIP.Description, ""),
+		ID:            elasticIp.ID.String(),
+		IPAddress:     elasticIp.IP,
+		AddressFamily: string(elasticIp.Addressfamily),
+		CIDR:          elasticIp.Cidr,
+		Description:   elasticIp.Description,
 		Zone:          c.Zone,
 		Type:          "manual",
 	}
 
-	rdns, err := globalstate.EgoscaleClient.GetElasticIPReverseDNS(ctx, c.Zone, *elasticIP.ID)
+	rdns, err := client.GetReverseDNSElasticIP(ctx, elasticIp.ID)
 	if err != nil {
-		if errors.Is(err, exoapi.ErrNotFound) {
+		if errors.Is(err, v3.ErrNotFound) {
 			out.ReverseDNS = ""
 		} else {
 			return err
 		}
 	}
 
-	out.ReverseDNS = rdns
+	if rdns != nil {
+		out.ReverseDNS = string(rdns.DomainName)
+	}
 
-	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, globalstate.EgoscaleClient, elasticIP.IPAddress.String(), c.Zone)
+	attachedInstances, err := utils.GetInstancesAttachedToEIP(ctx, client, elasticIp.IP)
 	if err != nil {
 		return err
 	}
 
 	for _, instance := range attachedInstances {
-		out.Instances = append(out.Instances, *instance.Name)
+		out.Instances = append(out.Instances, instance.Name)
 	}
 
-	if elasticIP.Healthcheck != nil {
+	if elasticIp.Healthcheck != nil {
 		out.Type = "managed"
-		out.HealthcheckMode = elasticIP.Healthcheck.Mode
-		out.HealthcheckPort = elasticIP.Healthcheck.Port
-		out.HealthcheckURI = elasticIP.Healthcheck.URI
-		out.HealthcheckInterval = elasticIP.Healthcheck.Interval
-		out.HealthcheckTimeout = elasticIP.Healthcheck.Timeout
-		out.HealthcheckStrikesOK = elasticIP.Healthcheck.StrikesOK
-		out.HealthcheckStrikesFail = elasticIP.Healthcheck.StrikesFail
-		out.HealthcheckTLSSNI = elasticIP.Healthcheck.TLSSNI
-		out.HealthcheckTLSSkipVerify = elasticIP.Healthcheck.TLSSkipVerify
+		out.HealthcheckMode = string(elasticIp.Healthcheck.Mode)
+		out.HealthcheckPort = elasticIp.Healthcheck.Port
+		out.HealthcheckURI = elasticIp.Healthcheck.URI
+		out.HealthcheckInterval = time.Duration(elasticIp.Healthcheck.Interval)
+		out.HealthcheckTimeout = time.Duration(elasticIp.Healthcheck.Timeout)
+		out.HealthcheckStrikesOK = elasticIp.Healthcheck.StrikesOk
+		out.HealthcheckStrikesFail = elasticIp.Healthcheck.StrikesFail
+		out.HealthcheckTLSSNI = elasticIp.Healthcheck.TlsSNI
+		out.HealthcheckTLSSkipVerify = elasticIp.Healthcheck.TlsSkipVerify
 	}
 
 	return c.outputFunc(&out, nil)
