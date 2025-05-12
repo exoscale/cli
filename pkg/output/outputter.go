@@ -21,13 +21,13 @@ var (
 
 // JSON prints a JSON-formatted rendering of o to the terminal.
 func JSON(o interface{}) {
-	j, err := json.Marshal(o)
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetEscapeHTML(false)
+	err := enc.Encode(o)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: unable to encode output to JSON: %s\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Println(string(j))
 }
 
 // Outputter is an interface that must to be implemented by the commands output
