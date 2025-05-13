@@ -14,6 +14,7 @@
 - SKS: more related commands are migrated to egoscale v3
 - dbaas: move all commands to egoscale v3
 - dns: move to egoscale v3 #683
+- JSON output: do not escape HTML #682
 
 ## 1.84.1
 
