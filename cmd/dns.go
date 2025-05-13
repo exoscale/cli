@@ -2,14 +2,11 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exo "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var dnsCmd = &cobra.Command{
@@ -18,59 +15,41 @@ var dnsCmd = &cobra.Command{
 }
 
 // domainFromIdent returns a DNS domain from identifier (domain name or ID).
-func domainFromIdent(ident string) (*exo.DNSDomain, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	if exo.IsValidUUID(ident) {
-		return globalstate.EgoscaleClient.GetDNSDomain(ctx, account.CurrentAccount.DefaultZone, ident)
-	}
+func domainFromIdent(ident string) (*v3.DNSDomain, error) {
+	ctx := gContext
 
-	domains, err := globalstate.EgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
+	domainsResp, err := globalstate.EgoscaleV3Client.ListDNSDomains(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, domain := range domains {
-		if *domain.UnicodeName == ident {
-			return &domain, nil
-		}
+	domain, err := domainsResp.FindDNSDomain(ident)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("domain %q not found", ident)
+	return &domain, nil
 }
 
 // domainRecordFromIdent returns a DNS record from identifier (record name or ID) and optional type
-func domainRecordFromIdent(domainID, ident string, rType *string) (*exo.DNSDomainRecord, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	if exo.IsValidUUID(ident) {
-		return globalstate.EgoscaleClient.GetDNSDomainRecord(ctx, account.CurrentAccount.DefaultZone, domainID, ident)
-	}
+func domainRecordFromIdent(domainID v3.UUID, ident string, rType *v3.DNSDomainRecordType) (*v3.DNSDomainRecord, error) {
+	ctx := gContext
 
-	records, err := globalstate.EgoscaleClient.ListDNSDomainRecords(ctx, account.CurrentAccount.DefaultZone, domainID)
+	domainRecordsResp, err := globalstate.EgoscaleV3Client.ListDNSDomainRecords(ctx, domainID)
 	if err != nil {
 		return nil, err
 	}
 
-	var foundRecord *exo.DNSDomainRecord
-
-	for _, r := range records {
-		if rType != nil && *r.Type != *rType {
-			continue
-		}
-
-		if ident == *r.Name {
-			if foundRecord != nil {
-				return nil, errors.New("more than one records were found")
-			}
-			t := r
-			foundRecord = &t
-		}
+	domainRecord, err := domainRecordsResp.FindDNSDomainRecord(ident)
+	if err != nil {
+		return nil, err
 	}
 
-	if foundRecord == nil {
-		return nil, fmt.Errorf("no records were found")
+	if rType != nil && domainRecord.Type != *rType {
+		return nil, errors.New("record not found (record type doesn't match)")
 	}
 
-	return foundRecord, nil
+	return &domainRecord, nil
 }
 
 func init() {

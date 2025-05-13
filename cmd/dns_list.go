@@ -5,19 +5,18 @@ import (
 	"os"
 	"strings"
 
-	exoapi "github.com/exoscale/egoscale/v2/api"
-
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
+
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type dnsListItemOutput struct {
-	ID   string `json:"id"`
-	Name string `json:"name,omitempty"`
+	ID   v3.UUID `json:"id"`
+	Name string  `json:"name,omitempty"`
 }
 
 type dnsListOutput []dnsListItemOutput
@@ -32,7 +31,7 @@ func (o *dnsListOutput) ToTable() {
 
 	for _, i := range *o {
 		t.Append([]string{
-			i.ID,
+			i.ID.String(),
 			i.Name,
 		})
 	}
@@ -57,18 +56,18 @@ Supported output template annotations: %s`,
 }
 
 func listDomains(filters []string) (output.Outputter, error) {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	domains, err := globalstate.EgoscaleClient.ListDNSDomains(ctx, account.CurrentAccount.DefaultZone)
+	ctx := gContext
+	domains, err := globalstate.EgoscaleV3Client.ListDNSDomains(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	out := dnsListOutput{}
 
-	for _, d := range domains {
+	for _, d := range domains.DNSDomains {
 		o := dnsListItemOutput{
-			ID:   StrPtrFormatOutput(d.ID),
-			Name: StrPtrFormatOutput(d.UnicodeName),
+			ID:   d.ID,
+			Name: d.UnicodeName,
 		}
 
 		if len(filters) == 0 {
