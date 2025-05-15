@@ -10,6 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceStartCmd struct {
@@ -68,7 +69,7 @@ func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           *instance.ID,
-			Zone:               c.Zone,
+			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
