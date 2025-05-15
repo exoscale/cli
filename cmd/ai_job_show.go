@@ -5,73 +5,59 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dustin/go-humanize"
-	"github.com/spf13/cobra"
-
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/pkg/userdata"
+	exossh "github.com/exoscale/cli/pkg/ssh"
 	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+
+	"github.com/dustin/go-humanize"
+	"github.com/spf13/cobra"
 )
 
-type instanceShowOutput struct {
-	ID                 string            `json:"id"`
-	AIJobStatus        string            `json:"ai_job_status"`
-	Name               string            `json:"name"`
-	CreationDate       string            `json:"creation_date"`
-	InstanceType       string            `json:"instance_type"`
-	Template           string            `json:"template"`
-	Zone               string            `json:"zone"`
-	AntiAffinityGroups []string          `json:"anti_affinity_groups" outputLabel:"Anti-Affinity Groups"`
-	DeployTarget       string            `json:"deploy_target"`
-	SecurityGroups     []string          `json:"security_groups"`
-	PrivateInstance    string            `json:"private-instance" outputLabel:"Private Instance"`
-	PrivateNetworks    []string          `json:"private_networks"`
-	ElasticIPs         []string          `json:"elastic_ips" outputLabel:"Elastic IPs"`
-	IPAddress          string            `json:"ip_address"`
-	IPv6Address        string            `json:"ipv6_address" outputLabel:"IPv6 Address"`
-	SSHKey             string            `json:"ssh_key"`
-	DiskSize           string            `json:"disk_size"`
-	State              string            `json:"state"`
-	Labels             map[string]string `json:"labels"`
-	ReverseDNS         string            `json:"reverse_dns" outputLabel:"Reverse DNS"`
-}
+var (
+	// Job status command
+	jobStatusCommand = "sudo kubectl get job %s"
+	defaultAIJobName = "ai-job"
+)
 
-func (o *instanceShowOutput) Type() string { return "Compute instance" }
-func (o *instanceShowOutput) ToJSON()      { output.JSON(o) }
-func (o *instanceShowOutput) ToText()      { output.Text(o) }
-func (o *instanceShowOutput) ToTable()     { output.Table(o) }
-
-type instanceShowCmd struct {
+type aiJobShowCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
+	// SSH options
+	SshKey  string `cli-short:"k" cli-flag:"ssh-key" cli-usage:"instance ssh private key"`
+	SshUser string `cli-short:"u" cli-flag:"ssh-user" cli-usage:"instance ssh user"`
+	SshPort string `cli-short:"p" cli-flag:"ssh-port" cli-usage:"instance ssh port"`
+
+	// AI job options
+	JobName string `cli-short:"j" cli-flag:"job-name" cli-usage:"name of the AI job to show"`
+
 	Instance string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	ShowUserData bool   `cli-flag:"user-data" cli-short:"u" cli-usage:"show instance cloud-init user data configuration"`
-	Zone         string `cli-short:"z" cli-usage:"instance zone"`
+	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *aiJobShowCmd) cmdAliases() []string { return gShowAlias }
 
-func (c *instanceShowCmd) cmdShort() string { return "Show a Compute instance details" }
+func (c *aiJobShowCmd) cmdShort() string { return "Show an AI job status" }
 
-func (c *instanceShowCmd) cmdLong() string {
-	return fmt.Sprintf(`This command shows a Compute instance details.
+func (c *aiJobShowCmd) cmdLong() string {
+	return fmt.Sprintf(`This command shows an AI job status.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *instanceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *aiJobShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *aiJobShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
+
 	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
@@ -82,17 +68,26 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if c.ShowUserData {
-		if instance.UserData != nil {
-			userData, err := userdata.DecodeUserData(*instance.UserData)
-			if err != nil {
-				return fmt.Errorf("error decoding user data: %w", err)
-			}
+	// Assign the job command
+	if c.JobName != "" {
+		jobStatusCommand = fmt.Sprintf(jobStatusCommand, c.JobName)
+	} else {
+		jobStatusCommand = fmt.Sprintf(jobStatusCommand, defaultAIJobName)
+	}
 
-			cmd.Print(userData)
-		}
+	// SSH Port
+	if c.SshPort == "" {
+		c.SshPort = "22"
+	}
+	// SSH User
+	if c.SshUser == "" {
+		c.SshUser = "debian"
+	}
 
-		return nil
+	// Connect via the SSH tunnel and issue the command to check the job
+	cmdResponse, err := exossh.RunCmd(instance, c.SshUser, c.SshPort, c.SshKey, jobStatusCommand)
+	if err != nil {
+		return err
 	}
 
 	out := instanceShowOutput{
@@ -115,6 +110,7 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		SecurityGroups:  make([]string, 0),
 		State:           *instance.State,
 		Zone:            c.Zone,
+		AIJobStatus:     cmdResponse,
 	}
 
 	out.PrivateInstance = "No"
@@ -198,7 +194,7 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceShowCmd{
+	cobra.CheckErr(registerCLICommand(aiJobCmd, &aiJobShowCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }
