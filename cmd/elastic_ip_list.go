@@ -7,11 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type elasticIPListItemOutput struct {
@@ -51,6 +50,7 @@ func (c *elasticIPListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *elasticIPListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
+	ctx := gContext
 
 	if c.Zone != "" {
 		zones = []string{c.Zone}
@@ -69,21 +69,26 @@ func (c *elasticIPListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+		if err != nil {
+			return err
+		}
 
-		list, err := globalstate.EgoscaleClient.ListElasticIPs(ctx, zone)
+		list, err := client.ListElasticIPS(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list Elastic IP addresses in zone %s: %w", zone, err)
 		}
 
-		for _, e := range list {
-			res <- elasticIPListItemOutput{
-				ID:        *e.ID,
-				IPAddress: e.IPAddress.String(),
-				Zone:      zone,
+		if list != nil {
+			for _, e := range list.ElasticIPS {
+				res <- elasticIPListItemOutput{
+					ID:        e.ID.String(),
+					IPAddress: e.IP,
+					Zone:      zone,
+				}
 			}
-		}
 
+		}
 		return nil
 	})
 	if err != nil {
