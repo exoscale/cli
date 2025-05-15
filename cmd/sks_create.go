@@ -38,6 +38,7 @@ type sksCreateCmd struct {
 	NoExoscaleCCM                bool              `cli-usage:"do not deploy the Exoscale Cloud Controller Manager in the cluster control plane"`
 	NoMetricsServer              bool              `cli-usage:"do not deploy the Kubernetes Metrics Server in the cluster control plane"`
 	ExoscaleCSI                  bool              `cli-usage:"deploy the Exoscale Container Storage Interface on worker nodes"`
+	FeatureGates                 []string          `cli-flag:"feature-gates" cli-usage:"SKS cluster feature gates to enable"`
 	NodepoolAntiAffinityGroups   []string          `cli-flag:"nodepool-anti-affinity-group" cli-usage:"default Nodepool Anti-Affinity Group NAME|ID (can be specified multiple times)"`
 	NodepoolDeployTarget         string            `cli-usage:"default Nodepool Deploy Target NAME|ID"`
 	NodepoolDescription          string            `cli-usage:"default Nodepool description"`
@@ -113,7 +114,7 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 			}
 			return nil
 		}(),
-		FeatureGates: []string{},
+		FeatureGates: c.FeatureGates,
 	}
 
 	ctx := gContext

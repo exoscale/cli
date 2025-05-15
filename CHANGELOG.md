@@ -6,6 +6,7 @@
 
 - sks: add rotate operators CA cmd
 - sks: add rotate CSI credentials cmd
+- sks: feature-gates support for cluster update and creation #677
 
 ### Bug fixes
 
@@ -14,6 +15,8 @@
 - SKS: more related commands are migrated to egoscale v3
 - dbaas: move all commands to egoscale v3
 - EIP: move to egoscale v3 #684
+- dns: move to egoscale v3 #683
+- JSON output: do not escape HTML #682
 
 ## 1.84.1
 

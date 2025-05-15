@@ -7,7 +7,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func init() {
@@ -33,35 +33,47 @@ func init() {
 }
 
 func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
-	domain, err := domainFromIdent(domainIdent)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
 
-	record, err := domainRecordFromIdent(*domain.ID, recordIdent, nil)
+	domainsList, err := client.ListDNSDomains(ctx)
+	if err != nil {
+		return err
+	}
+	domain, err := domainsList.FindDNSDomain(domainIdent)
 	if err != nil {
 		return err
 	}
 
-	if !force && !askQuestion(fmt.Sprintf("Are you sure you want to delete record %q?", *record.ID)) {
+	domainRecordsList, err := client.ListDNSDomainRecords(ctx, domain.ID)
+	if err != nil {
+		return err
+	}
+	record, err := domainRecordsList.FindDNSDomainRecord(recordIdent)
+	if err != nil {
+		return err
+	}
+	if !force && !askQuestion(fmt.Sprintf("Are you sure you want to delete record %q?", record.ID)) {
 		return nil
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
-	decorateAsyncOperation(fmt.Sprintf("Deleting DNS record %q...", *domain.UnicodeName), func() {
-		err = globalstate.EgoscaleClient.DeleteDNSDomainRecord(
-			ctx,
-			account.CurrentAccount.DefaultZone,
-			*domain.ID,
-			record,
-		)
+	op, err := client.DeleteDNSDomainRecord(ctx, domain.ID, record.ID)
+	if err != nil {
+		return err
+	}
+
+	decorateAsyncOperation(fmt.Sprintf("Deleting DNS record %q...", domain.UnicodeName), func() {
+		_, err = client.Wait(ctx, op)
 	})
 	if err != nil {
 		return err
 	}
 
 	if !globalstate.Quiet {
-		fmt.Printf("Record %q removed successfully from %q\n", *record.ID, *domain.UnicodeName)
+		fmt.Printf("Record %q removed successfully from %q\n", record.ID, domain.UnicodeName)
 	}
 
 	return nil

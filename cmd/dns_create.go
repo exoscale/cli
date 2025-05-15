@@ -7,8 +7,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exo "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 func init() {
@@ -28,22 +27,23 @@ func init() {
 
 func createDomain(domainName string) error {
 	var err error
-	domain := &exo.DNSDomain{}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 	decorateAsyncOperation(fmt.Sprintf("Creating DNS domain %q...", domainName), func() {
-		domain, err = globalstate.EgoscaleClient.CreateDNSDomain(
-			ctx,
-			account.CurrentAccount.DefaultZone,
-			&exo.DNSDomain{UnicodeName: &domainName},
-		)
+		_, err = client.CreateDNSDomain(ctx, v3.CreateDNSDomainRequest{
+			UnicodeName: domainName,
+		})
 	})
 	if err != nil {
 		return err
 	}
 
 	if !globalstate.Quiet {
-		fmt.Printf("Domain %q was created successfully\n", *domain.UnicodeName)
+		fmt.Printf("Domain %q was created successfully\n", domainName)
 	}
 
 	return nil
