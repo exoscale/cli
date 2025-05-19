@@ -99,7 +99,7 @@ func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation("Resetting IAM org policy...", func() {
+	decorateAsyncOperation("Creating IAM role...", func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
