@@ -106,7 +106,15 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 		return nil
 	}
-	ipv6 := net.ParseIP(instance.Ipv6Address)
+	var ipV6 *net.IP
+	if parsed := net.ParseIP(instance.Ipv6Address); parsed != nil {
+		ipV6 = &parsed // only assign pointer if it's a valid IP
+	}
+
+	var sshKeyName *string
+	if instance.SSHKey != nil {
+		sshKeyName = &instance.SSHKey.Name
+	}
 
 	out := instanceShowOutput{
 		AntiAffinityGroups: make([]string, 0),
@@ -115,7 +123,7 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		ElasticIPs:         make([]string, 0),
 		ID:                 instance.ID,
 		IPAddress:          utils.DefaultIP(&instance.PublicIP, "-"),
-		IPv6Address:        utils.DefaultIP(&ipv6, "-"),
+		IPv6Address:        utils.DefaultIP(ipV6, "-"),
 		Labels: func() (v map[string]string) {
 			if instance.Labels != nil {
 				v = instance.Labels
@@ -124,14 +132,12 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}(),
 		Name:            instance.Name,
 		PrivateNetworks: make([]string, 0),
-		SSHKey:          utils.DefaultString(&instance.SSHKey.Name, "-"),
+		SSHKey:          utils.DefaultString(sshKeyName, "-"),
 		SecurityGroups:  make([]string, 0),
-		// FIXME
-		SecureBoot: false,
-		Tpm:        false,
-
-		State: instance.State,
-		Zone:  c.Zone,
+		SecureBoot:      *instance.SecurebootEnabled,
+		Tpm:             *instance.TpmEnabled,
+		State:           instance.State,
+		Zone:            c.Zone,
 	}
 
 	out.PrivateInstance = "No"
@@ -227,9 +233,11 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		} else {
 			return err
 		}
+	} else if rdns == nil {
+		out.ReverseDNS = ""
+	} else {
+		out.ReverseDNS = rdns.DomainName
 	}
-
-	out.ReverseDNS = rdns.DomainName
 
 	return c.outputFunc(&out, nil)
 }
