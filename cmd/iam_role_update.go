@@ -81,7 +81,7 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation("Update IAM role...", func() {
+	decorateAsyncOperation("Updating IAM role...", func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
