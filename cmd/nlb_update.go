@@ -6,10 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbUpdateCmd struct {
@@ -45,35 +44,47 @@ func (c *nlbUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *nlbUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
 
-	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
+	nlbs, err := client.ListLoadBalancers(ctx)
 	if err != nil {
 		return err
 	}
 
+	n, err := nlbs.FindLoadBalancer(c.NetworkLoadBalancer)
+	if err != nil {
+		return err
+	}
+
+	nlbRequest := v3.UpdateLoadBalancerRequest{}
+
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		nlb.Description = &c.Description
+		nlbRequest.Description = c.Description
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
-		nlb.Labels = &c.Labels
+		nlbRequest.Labels = c.Labels
 		updated = true
 	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
-		nlb.Name = &c.Name
+		nlbRequest.Name = c.Name
 		updated = true
 	}
 
 	if updated {
+
+		op, err := client.UpdateLoadBalancer(ctx, n.ID, nlbRequest)
+
 		decorateAsyncOperation(
 			fmt.Sprintf("Updating Network Load Balancer %q...", c.NetworkLoadBalancer),
 			func() {
-				if err = globalstate.EgoscaleClient.UpdateNetworkLoadBalancer(ctx, c.Zone, nlb); err != nil {
-					return
-				}
+				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 			})
 		if err != nil {
 			return err
@@ -83,7 +94,7 @@ func (c *nlbUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&nlbShowCmd{
 			cliCommandSettings:  c.cliCommandSettings,
-			NetworkLoadBalancer: *nlb.ID,
+			NetworkLoadBalancer: n.ID.String(),
 			Zone:                c.Zone,
 		}).cmdRun(nil, nil)
 	}

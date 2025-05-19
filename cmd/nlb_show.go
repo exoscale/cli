@@ -9,12 +9,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbShowOutput struct {
@@ -110,9 +108,19 @@ func (c *nlbShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := gContext
 
-	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
+
+	nlbs, err := client.ListLoadBalancers(ctx)
+	if err != nil {
+		return err
+	}
+
+	nlb, err := nlbs.FindLoadBalancer(c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}
@@ -120,26 +128,21 @@ func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	svcOut := make([]nlbServiceShowOutput, 0)
 	for _, svc := range nlb.Services {
 		svcOut = append(svcOut, nlbServiceShowOutput{
-			ID:   *svc.ID,
-			Name: *svc.Name,
+			ID:   string(svc.ID),
+			Name: svc.Name,
 		})
 	}
 
 	out := nlbShowOutput{
-		ID:           *nlb.ID,
-		Name:         *nlb.Name,
-		Description:  utils.DefaultString(nlb.Description, ""),
-		CreationDate: nlb.CreatedAt.String(),
+		ID:           nlb.ID.String(),
+		Name:         nlb.Name,
+		Description:  nlb.Description,
+		CreationDate: nlb.CreatedAT.String(),
 		Zone:         c.Zone,
-		IPAddress:    utils.DefaultIP(nlb.IPAddress, ""),
-		State:        *nlb.State,
+		IPAddress:    nlb.IP.String(),
+		State:        string(nlb.State),
 		Services:     svcOut,
-		Labels: func() (v map[string]string) {
-			if nlb.Labels != nil {
-				v = *nlb.Labels
-			}
-			return
-		}(),
+		Labels:       nlb.Labels,
 	}
 
 	return c.outputFunc(&out, nil)
