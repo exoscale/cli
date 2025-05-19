@@ -6,14 +6,12 @@ import (
 	"io"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamRoleUpdateCmd struct {
@@ -52,41 +50,40 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("role not provided")
 	}
 
-	zone := account.CurrentAccount.DefaultZone
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone),
-	)
-
-	if _, err := uuid.Parse(c.Role); err != nil {
-		roles, err := globalstate.EgoscaleClient.ListIAMRoles(ctx, zone)
-		if err != nil {
-			return err
-		}
-
-		for _, role := range roles {
-			if role.Name != nil && *role.Name == c.Role {
-				c.Role = *role.ID
-				break
-			}
-		}
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
 	}
 
-	role := &exoscale.IAMRole{
-		ID: &c.Role,
+	roles, err := client.ListIAMRoles(ctx)
+	if err != nil {
+		return err
 	}
+	role, err := roles.FindIAMRole(c.Role)
+	if err != nil {
+		return err
+	}
+
+	updateRole := v3.UpdateIAMRoleRequest{}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
-		role.Description = &c.Description
+		updateRole.Description = c.Description
 	}
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
-		role.Labels = c.Labels
+		updateRole.Labels = c.Labels
 	}
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Permissions)) {
-		role.Permissions = c.Permissions
+		updateRole.Permissions = c.Permissions
 	}
 
-	err := globalstate.EgoscaleClient.UpdateIAMRole(ctx, zone, role)
+	op, err := client.UpdateIAMRole(ctx, role.ID, updateRole)
+	if err != nil {
+		return err
+	}
+	decorateAsyncOperation("Update IAM role...", func() {
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
 	if err != nil {
 		return err
 	}
@@ -96,7 +93,7 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		if !globalstate.Quiet {
 			return (&iamRoleShowCmd{
 				cliCommandSettings: c.cliCommandSettings,
-				Role:               *role.ID,
+				Role:               role.ID.String(),
 			}).cmdRun(nil, nil)
 		}
 
@@ -118,9 +115,13 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to parse IAM policy: %w", err)
 	}
 
-	role.Policy = policy
-
-	err = globalstate.EgoscaleClient.UpdateIAMRolePolicy(ctx, zone, role)
+	op, err = client.UpdateIAMRolePolicy(ctx, role.ID, *policy)
+	if err != nil {
+		return err
+	}
+	decorateAsyncOperation("Updating IAM role policy...", func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
 	if err != nil {
 		return err
 	}
@@ -128,7 +129,7 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&iamRoleShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Role:               *role.ID,
+			Role:               role.ID.String(),
 		}).cmdRun(nil, nil)
 	}
 

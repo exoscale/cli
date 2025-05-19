@@ -10,7 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 
-	exoscale "github.com/exoscale/egoscale/v2"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 var iamCmd = &cobra.Command{
@@ -71,43 +71,34 @@ func (o *iamPolicyOutput) ToTable() {
 	}
 }
 
-func iamPolicyFromJSON(data []byte) (*exoscale.IAMPolicy, error) {
+func iamPolicyFromJSON(data []byte) (*v3.IAMPolicy, error) {
 	var obj iamPolicyOutput
 	err := json.Unmarshal(data, &obj)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse policy: %w", err)
 	}
 
-	policy := exoscale.IAMPolicy{
-		DefaultServiceStrategy: obj.DefaultServiceStrategy,
-		Services:               map[string]exoscale.IAMPolicyService{},
+	policy := v3.IAMPolicy{
+		DefaultServiceStrategy: v3.IAMPolicyDefaultServiceStrategy(obj.DefaultServiceStrategy),
+		Services:               map[string]v3.IAMServicePolicy{},
 	}
 
 	if len(obj.Services) > 0 {
 		for name, sv := range obj.Services {
-			service := exoscale.IAMPolicyService{
-				Type: func() *string {
-					t := sv.Type
-					return &t
-				}(),
+			service := v3.IAMServicePolicy{
+				Type: v3.IAMServicePolicyType(sv.Type),
 			}
 
 			if len(sv.Rules) > 0 {
-				service.Rules = []exoscale.IAMPolicyServiceRule{}
+				service.Rules = []v3.IAMServicePolicyRule{}
 				for _, rl := range sv.Rules {
 
-					rule := exoscale.IAMPolicyServiceRule{
-						Action: func() *string {
-							t := rl.Action
-							return &t
-						}(),
+					rule := v3.IAMServicePolicyRule{
+						Action: v3.IAMServicePolicyRuleAction(rl.Action),
 					}
 
 					if rl.Expression != "" {
-						rule.Expression = func() *string {
-							t := rl.Expression
-							return &t
-						}()
+						rule.Expression = rl.Expression
 					}
 
 					service.Rules = append(service.Rules, rule)

@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamRoleShowOutput struct {
@@ -60,24 +59,18 @@ func (c *iamRoleShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return errors.New("role ID not provided")
 	}
 
-	zone := account.CurrentAccount.DefaultZone
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-	if _, err := uuid.Parse(c.Role); err != nil {
-		roles, err := globalstate.EgoscaleClient.ListIAMRoles(ctx, zone)
-		if err != nil {
-			return err
-		}
-
-		for _, role := range roles {
-			if role.Name != nil && *role.Name == c.Role {
-				c.Role = *role.ID
-				break
-			}
-		}
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
 	}
 
-	role, err := globalstate.EgoscaleClient.GetIAMRole(ctx, zone, c.Role)
+	roles, err := client.ListIAMRoles(ctx)
+	if err != nil {
+		return err
+	}
+
+	role, err := roles.FindIAMRole(c.Role)
 	if err != nil {
 		return err
 	}
@@ -86,23 +79,23 @@ func (c *iamRoleShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		policy := role.Policy
 
 		out := iamPolicyOutput{
-			DefaultServiceStrategy: policy.DefaultServiceStrategy,
+			DefaultServiceStrategy: string(policy.DefaultServiceStrategy),
 			Services:               map[string]iamPolicyServiceOutput{},
 		}
 
 		for name, service := range policy.Services {
 			rules := []iamPolicyServiceRuleOutput{}
-			if service.Type != nil && *service.Type == "rules" {
+			if service.Type == "rules" {
 				for _, rule := range service.Rules {
 					rules = append(rules, iamPolicyServiceRuleOutput{
-						Action:     utils.DefaultString(rule.Action, ""),
-						Expression: utils.DefaultString(rule.Expression, ""),
+						Action:     string(rule.Action),
+						Expression: rule.Expression,
 					})
 				}
 			}
 
 			out.Services[name] = iamPolicyServiceOutput{
-				Type:  utils.DefaultString(service.Type, ""),
+				Type:  string(service.Type),
 				Rules: rules,
 			}
 		}
@@ -111,11 +104,11 @@ func (c *iamRoleShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := iamRoleShowOutput{
-		ID:          utils.DefaultString(role.ID, ""),
-		Description: utils.DefaultString(role.Description, ""),
+		ID:          role.ID.String(),
+		Description: role.Description,
 		Editable:    utils.DefaultBool(role.Editable, false),
 		Labels:      role.Labels,
-		Name:        utils.DefaultString(role.Name, ""),
+		Name:        role.Name,
 		Permissions: role.Permissions,
 	}
 

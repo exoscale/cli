@@ -11,8 +11,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamRoleCreateCmd struct {
@@ -55,13 +54,13 @@ func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("NAME not provided")
 	}
 
-	zone := account.CurrentAccount.DefaultZone
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone),
-	)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
-	var policy *exoscale.IAMPolicy
+	var policy *v3.IAMPolicy
 
 	// Policy is optional, if not set API will default to `allow all`
 	if c.Policy != "" {
@@ -84,8 +83,8 @@ func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	role := &exoscale.IAMRole{
-		Name:        &c.Name,
+	role := v3.CreateIAMRoleRequest{
+		Name:        c.Name,
 		Editable:    &c.Editable,
 		Labels:      c.Labels,
 		Permissions: c.Permissions,
@@ -93,10 +92,16 @@ func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	if c.Description != "" {
-		role.Description = &c.Description
+		role.Description = c.Description
 	}
 
-	r, err := globalstate.EgoscaleClient.CreateIAMRole(ctx, zone, role)
+	op, err := client.CreateIAMRole(ctx, role)
+	if err != nil {
+		return err
+	}
+	decorateAsyncOperation("Resetting IAM org policy...", func() {
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
 	if err != nil {
 		return err
 	}
@@ -104,7 +109,7 @@ func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&iamRoleShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
-			Role:               *r.ID,
+			Role:               op.Reference.ID.String(),
 		}).cmdRun(nil, nil)
 	}
 
