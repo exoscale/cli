@@ -4,16 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbServiceAddCmd struct {
@@ -57,58 +53,74 @@ func (c *nlbServiceAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	var (
-		port       = uint16(c.Port)
-		targetPort = uint16(c.TargetPort)
-		hcPort     = uint16(c.HealthcheckPort)
-		hcInterval = time.Duration(c.HealthcheckInterval) * time.Second
-		hcTimeout  = time.Duration(c.HealthcheckTimeout) * time.Second
-	)
 
-	service := &egoscale.NetworkLoadBalancerService{
-		Description: utils.NonEmptyStringPtr(c.Description),
-		Healthcheck: &egoscale.NetworkLoadBalancerServiceHealthcheck{
-			Interval: &hcInterval,
-			Mode:     &c.HealthcheckMode,
-			Port:     &hcPort,
-			Retries:  &c.HealthcheckRetries,
-			TLSSNI:   utils.NonEmptyStringPtr(c.HealthcheckTLSSNI),
-			Timeout:  &hcTimeout,
-			URI:      utils.NonEmptyStringPtr(c.HealthcheckURI),
+	service := v3.AddServiceToLoadBalancerRequest{
+		Description: c.Description,
+		Healthcheck: &v3.LoadBalancerServiceHealthcheck{
+			Interval: c.HealthcheckInterval,
+			Mode:     v3.LoadBalancerServiceHealthcheckMode(c.HealthcheckMode),
+			Retries:  c.HealthcheckRetries,
+			Timeout:  c.HealthcheckTimeout,
 		},
-		Name:       &c.Name,
-		Port:       &port,
-		Protocol:   &c.Protocol,
-		Strategy:   &c.Strategy,
-		TargetPort: &targetPort,
+		Name:       c.Name,
+		Port:       c.Port,
+		Protocol:   v3.AddServiceToLoadBalancerRequestProtocol(c.Protocol),
+		Strategy:   v3.AddServiceToLoadBalancerRequestStrategy(c.Strategy),
+		TargetPort: c.TargetPort,
 	}
 
-	if strings.HasPrefix(*service.Healthcheck.Mode, "http") && *service.Healthcheck.URI == "" {
+	ctx := gContext
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	if err != nil {
+		return err
+	}
+
+	if strings.HasPrefix(string(service.Healthcheck.Mode), "http") && service.Healthcheck.URI == "" {
 		return errors.New(`an healthcheck URI is required in "http(s)" mode`)
 	}
 
-	if *service.TargetPort == 0 {
+	if service.TargetPort == 0 {
 		service.TargetPort = service.Port
 	}
-	if *service.Healthcheck.Port == 0 {
+	if service.Healthcheck.Port == 0 {
 		service.Healthcheck.Port = service.TargetPort
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
-	if err != nil {
-		return fmt.Errorf("error retrieving Network Load Balancer: %w", err)
+	if c.HealthcheckURI != "" {
+		service.Healthcheck.URI = c.HealthcheckURI
+	}
+	if c.HealthcheckTLSSNI != "" {
+		service.Healthcheck.TlsSNI = c.HealthcheckTLSSNI
 	}
 
-	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
+	nlbs, err := client.ListLoadBalancers(ctx)
 	if err != nil {
-		return fmt.Errorf("error retrieving Instance Pool: %w", err)
+		return err
 	}
-	service.InstancePoolID = instancePool.ID
+	nlb, err := nlbs.FindLoadBalancer(c.NetworkLoadBalancer)
+	if err != nil {
+		return err
+	}
+
+	instancePools, err := client.ListInstancePools(ctx)
+	if err != nil {
+		return err
+	}
+
+	instancePool, err := instancePools.FindInstancePool(c.InstancePool)
+	if err != nil {
+		return err
+	}
+	service.InstancePool.ID = instancePool.ID
+
+	op, err := client.AddServiceToLoadBalancer(ctx, nlb.ID, service)
+	if err != nil {
+		return err
+	}
 
 	decorateAsyncOperation(fmt.Sprintf("Adding service %q...", c.Name), func() {
-		service, err = globalstate.EgoscaleClient.CreateNetworkLoadBalancerService(ctx, c.Zone, nlb, service)
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -117,8 +129,8 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&nlbServiceShowCmd{
 			cliCommandSettings:  c.cliCommandSettings,
-			NetworkLoadBalancer: *nlb.ID,
-			Service:             *service.ID,
+			NetworkLoadBalancer: nlb.ID.String(),
+			Service:             op.Reference.ID.String(),
 			Zone:                c.Zone,
 		}).cmdRun(nil, nil)
 	}
