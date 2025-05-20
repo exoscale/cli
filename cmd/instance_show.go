@@ -84,12 +84,12 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	found_instance, err := resp.FindListInstancesResponseInstances(c.Instance)
+	foundInstance, err := resp.FindListInstancesResponseInstances(c.Instance)
 	if err != nil {
 		return err
 	}
 
-	instance, err := client.GetInstance(ctx, found_instance.ID)
+	instance, err := client.GetInstance(ctx, foundInstance.ID)
 	if err != nil {
 		return err
 	}
@@ -151,11 +151,11 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			if err != nil {
 				return err
 			}
-			found_group, err := resp.FindAntiAffinityGroup(group.ID.String())
+			foundGroup, err := resp.FindAntiAffinityGroup(group.ID.String())
 			if err != nil {
 				return fmt.Errorf("error retrieving Anti-Affinity Group: %w", err)
 			}
-			out.AntiAffinityGroups = append(out.AntiAffinityGroups, found_group.Name)
+			out.AntiAffinityGroups = append(out.AntiAffinityGroups, foundGroup.Name)
 		}
 	}
 
@@ -178,11 +178,11 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			if err != nil {
 				return err
 			}
-			found_eip, err := resp.FindElasticIP(eip.ID.String())
+			foundEIP, err := resp.FindElasticIP(eip.ID.String())
 			if err != nil {
 				return fmt.Errorf("error retrieving Elastic IP: %w", err)
 			}
-			out.ElasticIPs = append(out.ElasticIPs, found_eip.IP)
+			out.ElasticIPs = append(out.ElasticIPs, foundEIP.IP)
 		}
 	}
 
@@ -198,11 +198,11 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			if err != nil {
 				return err
 			}
-			found_pn, err := resp.FindPrivateNetwork(pn.ID.String())
+			foundPN, err := resp.FindPrivateNetwork(pn.ID.String())
 			if err != nil {
 				return fmt.Errorf("error retrieving Private Network: %w", err)
 			}
-			out.PrivateNetworks = append(out.PrivateNetworks, found_pn.Name)
+			out.PrivateNetworks = append(out.PrivateNetworks, foundPN.Name)
 		}
 	}
 
@@ -212,11 +212,11 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			if err != nil {
 				return err
 			}
-			found_sg, err := resp.FindSecurityGroup(sg.ID.String())
+			foundSG, err := resp.FindSecurityGroup(sg.ID.String())
 			if err != nil {
 				return fmt.Errorf("error retrieving Security Group: %w", err)
 			}
-			out.SecurityGroups = append(out.SecurityGroups, found_sg.Name)
+			out.SecurityGroups = append(out.SecurityGroups, foundSG.Name)
 		}
 	}
 
