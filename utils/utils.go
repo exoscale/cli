@@ -1,12 +1,15 @@
 package utils
 
 import (
+	"bufio"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 
@@ -310,4 +313,48 @@ func GetSettingBool(settings map[string]interface{}, key string) bool {
 		}
 	}
 	return false
+}
+
+func readInput(ctx context.Context, reader *bufio.Reader, text, def string) (string, error) {
+	if def == "" {
+		fmt.Printf("[+] %s [%s]: ", text, "none")
+	} else {
+		fmt.Printf("[+] %s [%s]: ", text, def)
+	}
+	c := make(chan bool)
+	defer close(c)
+
+	input := ""
+	var err error
+	go func() {
+		input, err = reader.ReadString('\n')
+		c <- true
+	}()
+
+	select {
+	case <-c:
+	case <-ctx.Done():
+		err = fmt.Errorf("")
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	input = strings.TrimSpace(input)
+	if input == "" {
+		input = def
+	}
+	return input, nil
+}
+
+func AskQuestion(ctx context.Context, text string) bool {
+	reader := bufio.NewReader(os.Stdin)
+
+	resp, err := readInput(ctx, reader, text, "yN")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return (strings.ToLower(resp) == "y" || strings.ToLower(resp) == "yes")
 }
