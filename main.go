@@ -20,6 +20,7 @@ import (
 	"log"
 
 	"github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd_init"
 )
 
 var (
@@ -31,5 +32,6 @@ var (
 
 func main() {
 	log.SetFlags(0)
+	cmd_init.InitCommands()
 	cmd.Execute(version, commit)
 }
