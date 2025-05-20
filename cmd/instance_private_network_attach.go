@@ -17,7 +17,7 @@ import (
 )
 
 type instancePrivnetAttachCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"attach"`
 
@@ -28,13 +28,13 @@ type instancePrivnetAttachCmd struct {
 	Zone      string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instancePrivnetAttachCmd) cmdAliases() []string { return nil }
+func (c *instancePrivnetAttachCmd) CmdAliases() []string { return nil }
 
-func (c *instancePrivnetAttachCmd) cmdShort() string {
+func (c *instancePrivnetAttachCmd) CmdShort() string {
 	return "Attach a Compute instance to a Private Network"
 }
 
-func (c *instancePrivnetAttachCmd) cmdLong() string {
+func (c *instancePrivnetAttachCmd) CmdLong() string {
 	return fmt.Sprintf(`This command attaches a Compute instance to a Private Network.
 
 Supported output template annotations: %s`,
@@ -42,13 +42,13 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *instancePrivnetAttachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instancePrivnetAttachCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePrivnetAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instancePrivnetAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -83,17 +83,17 @@ func (c *instancePrivnetAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instancePrivnetCmd, &instancePrivnetAttachCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instancePrivnetCmd, &instancePrivnetAttachCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -15,7 +15,7 @@ import (
 )
 
 type computeSSHKeyRegisterCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"register"`
 
@@ -23,29 +23,29 @@ type computeSSHKeyRegisterCmd struct {
 	PublicKeyFile string `cli-arg:"#"`
 }
 
-func (c *computeSSHKeyRegisterCmd) cmdAliases() []string { return gCreateAlias }
+func (c *computeSSHKeyRegisterCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *computeSSHKeyRegisterCmd) cmdShort() string {
+func (c *computeSSHKeyRegisterCmd) CmdShort() string {
 	return "Register an SSH key"
 }
 
-func (c *computeSSHKeyRegisterCmd) cmdLong() string {
+func (c *computeSSHKeyRegisterCmd) CmdLong() string {
 	return fmt.Sprintf(`This command registers a new SSH key.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
 }
 
-func (c *computeSSHKeyRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *computeSSHKeyRegisterCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *computeSSHKeyRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	// Template registration can take a _long time_, raising
 	// the Exoscale API client timeout as a precaution.
 	client := globalstate.EgoscaleV3Client.WithHttpClient(&http.Client{Timeout: 30 * time.Minute})
 
-	ctx := gContext
+	ctx := GContext
 
 	publicKey, err := os.ReadFile(c.PublicKeyFile)
 	if err != nil {
@@ -76,16 +76,16 @@ func (c *computeSSHKeyRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error 
 
 	if !globalstate.Quiet {
 		return (&computeSSHKeyShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Key:                c.Name,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeSSHKeyCmd, &computeSSHKeyRegisterCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyRegisterCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -22,7 +22,7 @@ func init() {
 
 func addDomainRecord(domainIdent, name, rType, content string, ttl int64, priority *int64) error {
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err

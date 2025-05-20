@@ -30,7 +30,7 @@ Supported output template annotations:
   * When listing objects: %s`,
 		strings.Join(output.TemplateAnnotations(&sos.ListBucketsItemOutput{}), ", "),
 		strings.Join(output.TemplateAnnotations(&object.ListObjectsItemOutput{}), ", ")),
-	Aliases: gListAlias,
+	Aliases: GListAlias,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 1 {
@@ -81,8 +81,8 @@ Supported output template annotations:
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
@@ -100,11 +100,11 @@ Supported output template annotations:
 
 		if listVersions || len(versionFilters) > 0 {
 			list := storage.ListVersionedObjectsFunc(bucket, prefix, recursive, stream)
-			return printOutput(storage.ListObjectsVersions(gContext, list, recursive, stream, filters, versionFilters))
+			return printOutput(storage.ListObjectsVersions(GContext, list, recursive, stream, filters, versionFilters))
 		}
 
 		list := storage.ListObjectsFunc(bucket, prefix, recursive, stream)
-		return printOutput(storage.ListObjects(gContext, list, recursive, stream, filters))
+		return printOutput(storage.ListObjects(GContext, list, recursive, stream, filters))
 	},
 }
 
@@ -124,7 +124,7 @@ func listStorageBuckets(zone string) (output.Outputter, error) {
 	out := make(sos.ListBucketsOutput, 0)
 
 	// ListSosBucketsUsageWithResponse is a global command, use default zone
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 
 	res, err := globalstate.EgoscaleClient.ListSosBucketsUsageWithResponse(ctx)
 	if err != nil {

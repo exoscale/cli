@@ -14,7 +14,7 @@ import (
 )
 
 type sksNodepoolUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -35,11 +35,11 @@ type sksNodepoolUpdateCmd struct {
 	Zone               v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksNodepoolUpdateCmd) cmdAliases() []string { return nil }
+func (c *sksNodepoolUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *sksNodepoolUpdateCmd) cmdShort() string { return "Update an SKS cluster Nodepool" }
+func (c *sksNodepoolUpdateCmd) CmdShort() string { return "Update an SKS cluster Nodepool" }
 
-func (c *sksNodepoolUpdateCmd) cmdLong() string {
+func (c *sksNodepoolUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates an SKS Nodepool.
 
 Supported output template annotations: %s`,
@@ -47,15 +47,15 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *sksNodepoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksNodepoolUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
+func (c *sksNodepoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var updated bool
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -83,33 +83,33 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 
 	updateReq := v3.UpdateSKSNodepoolRequest{}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Description)) {
 		updateReq.Description = c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DiskSize)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DiskSize)) {
 		updateReq.DiskSize = c.DiskSize
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstancePrefix)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.InstancePrefix)) {
 		updateReq.InstancePrefix = c.InstancePrefix
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Name)) {
 		updateReq.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AntiAffinityGroups)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DeployTarget)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PrivateNetworks)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SecurityGroups)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.AntiAffinityGroups)) ||
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DeployTarget)) ||
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.InstanceType)) ||
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.PrivateNetworks)) ||
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.SecurityGroups)) {
 
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
+		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
 			aags, err := lookupAntiAffinityGroups(ctx, client, c.AntiAffinityGroups)
 			if err != nil {
 				return err
@@ -118,7 +118,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 			updated = true
 		}
 
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DeployTarget)) {
+		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DeployTarget)) {
 			dt, err := lookupDeployTarget(ctx, client, c.DeployTarget)
 			if err != nil {
 				return err
@@ -129,7 +129,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 			}
 		}
 
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) {
+		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.InstanceType)) {
 			it, err := lookupInstanceType(ctx, client, c.InstanceType)
 			if err != nil {
 				return err
@@ -140,7 +140,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 			}
 		}
 
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PrivateNetworks)) {
+		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.PrivateNetworks)) {
 			pns, err := lookupPrivateNetworks(ctx, client, c.PrivateNetworks)
 			if err != nil {
 				return err
@@ -149,7 +149,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 			updated = true
 		}
 
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SecurityGroups)) {
+		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.SecurityGroups)) {
 			sgs, err := lookupSecurityGroups(ctx, client, c.SecurityGroups)
 			if err != nil {
 				return err
@@ -159,7 +159,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 		}
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
 		if updateReq.Labels == nil {
 			updateReq.Labels = v3.SKSNodepoolLabels{}
 		}
@@ -175,7 +175,7 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Taints)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Taints)) {
 		if nodepool.Taints == nil {
 			updateReq.Taints = v3.SKSNodepoolTaints{}
 		}
@@ -202,18 +202,18 @@ func (c *sksNodepoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //
 
 	if !globalstate.Quiet {
 		return (&sksNodepoolShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Cluster:            cluster.ID.String(),
 			Nodepool:           nodepool.ID.String(),
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

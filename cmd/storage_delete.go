@@ -79,14 +79,14 @@ argument with "/":
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		deleted, err := storage.DeleteObjects(gContext, bucket, prefix, recursive)
+		deleted, err := storage.DeleteObjects(GContext, bucket, prefix, recursive)
 		if err != nil {
 			if merr, ok := err.(*multierror.Error); ok {
 				// Error in individual files, print to stderr & continue

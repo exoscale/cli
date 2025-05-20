@@ -67,10 +67,10 @@ func cmdCheckRequiredFlags(cmd *cobra.Command, flags []string) error {
 	return err.ErrorOrNil()
 }
 
-// cmdSetZoneFlagFromDefault attempts to set the "--zone" flag value based on the current active account's
+// CmdSetZoneFlagFromDefault attempts to set the "--zone" flag value based on the current active account's
 // default zone setting if set. This is a convenience helper, there is no guarantee that the flag will be
 // set once this function returns.
-func cmdSetZoneFlagFromDefault(cmd *cobra.Command) {
+func CmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 	if cmd.Flag("zone").Value.String() == "" {
 		cmd.Flag("zone").Value.Set(account.CurrentAccount.DefaultZone) // nolint:errcheck
 	}
@@ -111,16 +111,16 @@ func cmdShowHelpFlags(flags *pflag.FlagSet, prefix string) {
 	fmt.Print(buf)
 }
 
-// cliCommandSettings represents a CLI command settings.
-type cliCommandSettings struct {
-	outputFunc func(o output.Outputter, err error) error
+// CliCommandSettings represents a CLI command settings.
+type CliCommandSettings struct {
+	OutputFunc func(o output.Outputter, err error) error
 }
 
-// defaultCLICmdSettings returns a cliCommandSettings struct initialized
+// DefaultCLICmdSettings returns a cliCommandSettings struct initialized
 // with default values.
-func defaultCLICmdSettings() cliCommandSettings {
-	return cliCommandSettings{
-		outputFunc: printOutput,
+func DefaultCLICmdSettings() CliCommandSettings {
+	return CliCommandSettings{
+		OutputFunc: printOutput,
 	}
 }
 
@@ -141,11 +141,11 @@ func defaultCLICmdSettings() cliCommandSettings {
 // is certainly easier than try to implement the missing functionnality in
 // this "framework".
 type cliCommand interface {
-	cmdAliases() []string
-	cmdShort() string
-	cmdLong() string
-	cmdPreRun(*cobra.Command, []string) error
-	cmdRun(*cobra.Command, []string) error
+	CmdAliases() []string
+	CmdShort() string
+	CmdLong() string
+	CmdPreRun(*cobra.Command, []string) error
+	CmdRun(*cobra.Command, []string) error
 }
 
 // cliCommandFlagName returns the CLI flag name corresponding to the field
@@ -189,7 +189,7 @@ func convertIfSpecialEmptyMap(m map[string]string) map[string]string {
 	return m
 }
 
-func mustCLICommandFlagName(c cliCommand, field interface{}) string {
+func MustCLICommandFlagName(c cliCommand, field interface{}) string {
 	v, err := cliCommandFlagName(c, field)
 	if err != nil {
 		panic(cliCommandImplemError{fmt.Sprintf("cliCommandFlagName: %s", err)})
@@ -382,11 +382,11 @@ func cliCommandUse(c cliCommand) (string, error) {
 	return strings.Join(use, " "), nil
 }
 
-// cliCommandDefaultPreRun is a convenience helper function that can be used
+// CliCommandDefaultPreRun is a convenience helper function that can be used
 // in cliCommand.cmdPreRun() hooks to automagically retrieve values for the
 // struct flags/args fields from a cobra.Command and args provided, and set
 // corresponding fields on the struct implementing the cliCommand interface.
-func cliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) error { //nolint:gocyclo
+func CliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) error { //nolint:gocyclo
 	cv := reflect.ValueOf(c)
 
 	if cv.Kind() == reflect.Ptr {
@@ -549,9 +549,9 @@ func cliCommandDefaultPreRun(c cliCommand, cmd *cobra.Command, args []string) er
 	return nil
 }
 
-// registerCLICommand registers the specified cliCommand instance to the
+// RegisterCLICommand registers the specified cliCommand instance to the
 // current CLI framework (currently Cobra).
-func registerCLICommand(parent *cobra.Command, c cliCommand) error {
+func RegisterCLICommand(parent *cobra.Command, c cliCommand) error {
 	cmdUse, err := cliCommandUse(c)
 	if err != nil {
 		return fmt.Errorf("error initializing CLI command: %s", err)
@@ -559,11 +559,11 @@ func registerCLICommand(parent *cobra.Command, c cliCommand) error {
 
 	cmd := &cobra.Command{
 		Use:     cmdUse,
-		Aliases: c.cmdAliases(),
-		Short:   c.cmdShort(),
-		Long:    c.cmdLong(),
-		PreRunE: c.cmdPreRun,
-		RunE:    c.cmdRun,
+		Aliases: c.CmdAliases(),
+		Short:   c.CmdShort(),
+		Long:    c.CmdLong(),
+		PreRunE: c.CmdPreRun,
+		RunE:    c.CmdRun,
 	}
 
 	cmdFlags, err := cliCommandFlagSet(c)

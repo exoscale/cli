@@ -38,7 +38,7 @@ func (o *opensearchOutput) ToTable() {
 }
 
 func (c *dbaasExternalEndpointShowCmd) showOpensearch() (output.Outputter, error) {
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err

@@ -42,7 +42,7 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 
 		args[objOwnershipBucketArgIndex] = strings.TrimPrefix(args[objOwnershipBucketArgIndex], sos.BucketPrefix)
 
-		cmdSetZoneFlagFromDefault(cmd)
+		CmdSetZoneFlagFromDefault(cmd)
 
 		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
 	},
@@ -57,7 +57,7 @@ var storageBucketObjectOwnershipCmd = &cobra.Command{
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
+			GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {

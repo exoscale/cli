@@ -123,7 +123,7 @@ func (o *dbServiceShowOutput) ToTable() {
 }
 
 type dbaasServiceShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -136,11 +136,11 @@ type dbaasServiceShowCmd struct {
 	Zone              string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasServiceShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *dbaasServiceShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *dbaasServiceShowCmd) cmdShort() string { return "Show a Database Service details" }
+func (c *dbaasServiceShowCmd) CmdShort() string { return "Show a Database Service details" }
 
-func (c *dbaasServiceShowCmd) cmdLong() string {
+func (c *dbaasServiceShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Database Service details.
 
 Supported output template annotations:
@@ -189,13 +189,13 @@ Supported output template annotations:
 		strings.Join(output.TemplateAnnotations(&dbServiceNotificationListItemOutput{}), ", "))
 }
 
-func (c *dbaasServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasServiceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *dbaasServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	var err error
 
 	svc, err := dbaasGetV3(ctx, c.Name, c.Zone)
@@ -205,26 +205,26 @@ func (c *dbaasServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	switch svc.Type {
 	case "grafana":
-		return c.outputFunc(c.showDatabaseServiceGrafana(ctx))
+		return c.OutputFunc(c.showDatabaseServiceGrafana(ctx))
 	case "kafka":
-		return c.outputFunc(c.showDatabaseServiceKafka(ctx))
+		return c.OutputFunc(c.showDatabaseServiceKafka(ctx))
 	case "opensearch":
-		return c.outputFunc(c.showDatabaseServiceOpensearch(ctx))
+		return c.OutputFunc(c.showDatabaseServiceOpensearch(ctx))
 	case "mysql":
-		return c.outputFunc(c.showDatabaseServiceMysql(ctx))
+		return c.OutputFunc(c.showDatabaseServiceMysql(ctx))
 	case "pg":
-		return c.outputFunc(c.showDatabaseServicePG(ctx))
+		return c.OutputFunc(c.showDatabaseServicePG(ctx))
 	case "redis":
-		return c.outputFunc(c.showDatabaseServiceRedis(ctx))
+		return c.OutputFunc(c.showDatabaseServiceRedis(ctx))
 	case "valkey":
-		return c.outputFunc(c.showDatabaseServiceValkey(ctx))
+		return c.OutputFunc(c.showDatabaseServiceValkey(ctx))
 	default:
 		return fmt.Errorf("unsupported service type %q", svc.Type)
 	}
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasCmd, &dbaasServiceShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

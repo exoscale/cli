@@ -15,7 +15,7 @@ import (
 func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
@@ -42,23 +42,23 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PGIPFilter)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.PGIPFilter)) {
 		databaseService.IPFilter = c.PGIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServicePGRequestMaintenance{
 			Dow:  v3.UpdateDBAASServicePGRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
@@ -66,7 +66,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PGBouncerSettings)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.PGBouncerSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.PGBouncerSettings,
 			settingsSchema.Settings.Pgbouncer,
@@ -83,7 +83,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PGLookoutSettings)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.PGLookoutSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.PGLookoutSettings,
 			settingsSchema.Settings.Pglookout,
@@ -99,7 +99,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PGSettings)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.PGSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.PGSettings,
 			settingsSchema.Settings.PG,
@@ -115,7 +115,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PGMigrationHost)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.PGMigrationHost)) {
 		databaseService.Migration = &v3.UpdateDBAASServicePGRequestMigration{
 			Host: c.PGMigrationHost,
 			Port: c.PGMigrationPort,
@@ -161,7 +161,7 @@ func (c *dbaasServiceUpdateCmd) updatePG(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServicePG(ctx))

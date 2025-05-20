@@ -12,7 +12,7 @@ import (
 )
 
 type blockStorageSnapshotDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,26 +21,26 @@ type blockStorageSnapshotDeleteCmd struct {
 	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *blockStorageSnapshotDeleteCmd) cmdAliases() []string { return gDeleteAlias }
+func (c *blockStorageSnapshotDeleteCmd) CmdAliases() []string { return GDeleteAlias }
 
-func (c *blockStorageSnapshotDeleteCmd) cmdShort() string {
+func (c *blockStorageSnapshotDeleteCmd) CmdShort() string {
 	return "Delete a Block Storage Volume Snapshot"
 }
 
-func (c *blockStorageSnapshotDeleteCmd) cmdLong() string {
+func (c *blockStorageSnapshotDeleteCmd) CmdLong() string {
 	return fmt.Sprintf(`This command deletes a Block Storage Volume Snapshot.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockStorageSnapshotDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *blockStorageSnapshotDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *blockStorageSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (c *blockStorageSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

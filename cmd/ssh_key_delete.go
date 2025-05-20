@@ -10,7 +10,7 @@ import (
 )
 
 type computeSSHKeyDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -19,20 +19,20 @@ type computeSSHKeyDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *computeSSHKeyDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *computeSSHKeyDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *computeSSHKeyDeleteCmd) cmdShort() string {
+func (c *computeSSHKeyDeleteCmd) CmdShort() string {
 	return "Delete an SSH key"
 }
 
-func (c *computeSSHKeyDeleteCmd) cmdLong() string { return "" }
+func (c *computeSSHKeyDeleteCmd) CmdLong() string { return "" }
 
-func (c *computeSSHKeyDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *computeSSHKeyDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeSSHKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *computeSSHKeyDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf("Are you sure you want to delete SSH key %s?", c.Name)) {
@@ -61,7 +61,7 @@ func (c *computeSSHKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeSSHKeyCmd, &computeSSHKeyDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

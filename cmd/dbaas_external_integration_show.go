@@ -27,7 +27,7 @@ func (o *dbaasExternalIntegrationShowOutput) ToText()  { output.Text(o) }
 func (o *dbaasExternalIntegrationShowOutput) ToTable() { output.Table(o) }
 
 type dbaasExternalIntegrationShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -35,7 +35,7 @@ type dbaasExternalIntegrationShowCmd struct {
 }
 
 func (c *dbaasExternalIntegrationShowCmd) showExternalIntegration() (output.Outputter, error) {
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
@@ -65,19 +65,19 @@ func (c *dbaasExternalIntegrationShowCmd) showExternalIntegration() (output.Outp
 	return out, nil
 }
 
-func (c *dbaasExternalIntegrationShowCmd) cmdAliases() []string { return gShowAlias }
-func (c *dbaasExternalIntegrationShowCmd) cmdShort() string     { return "Show External Integration" }
-func (c *dbaasExternalIntegrationShowCmd) cmdLong() string      { return "Show External Integration" }
-func (c *dbaasExternalIntegrationShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasExternalIntegrationShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *dbaasExternalIntegrationShowCmd) CmdShort() string     { return "Show External Integration" }
+func (c *dbaasExternalIntegrationShowCmd) CmdLong() string      { return "Show External Integration" }
+func (c *dbaasExternalIntegrationShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalIntegrationShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	return c.outputFunc(c.showExternalIntegration())
+func (c *dbaasExternalIntegrationShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	return c.OutputFunc(c.showExternalIntegration())
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

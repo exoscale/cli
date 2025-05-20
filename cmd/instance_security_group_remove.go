@@ -16,7 +16,7 @@ import (
 )
 
 type instanceSGRemoveCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"remove"`
 
@@ -26,13 +26,13 @@ type instanceSGRemoveCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceSGRemoveCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *instanceSGRemoveCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *instanceSGRemoveCmd) cmdShort() string {
+func (c *instanceSGRemoveCmd) CmdShort() string {
 	return "Remove a Compute instance from Security Groups"
 }
 
-func (c *instanceSGRemoveCmd) cmdLong() string {
+func (c *instanceSGRemoveCmd) CmdLong() string {
 	return fmt.Sprintf(`This command removes a Compute instance from Security Groups.
 
 Supported output template annotations: %s`,
@@ -40,17 +40,17 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *instanceSGRemoveCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSGRemoveCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSGRemoveCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.SecurityGroups) == 0 {
 		cmdExitOnUsageError(cmd, "no Security Groups specified")
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -82,17 +82,17 @@ func (c *instanceSGRemoveCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceSGCmd, &instanceSGRemoveCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceSGCmd, &instanceSGRemoveCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

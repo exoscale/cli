@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -9,7 +10,7 @@ import (
 )
 
 func (c *dbaasExternalEndpointCreateCmd) createRsyslog(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
@@ -65,10 +66,10 @@ func (c *dbaasExternalEndpointCreateCmd) createRsyslog(cmd *cobra.Command, _ []s
 	endpointID := op.Reference.ID.String()
 	if !globalstate.Quiet {
 		return (&dbaasExternalEndpointShowCmd{
-			cliCommandSettings: defaultCLICmdSettings(),
+			CliCommandSettings: DefaultCLICmdSettings(),
 			EndpointID:         endpointID,
 			Type:               "rsyslog",
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 	return nil
 }

@@ -22,7 +22,7 @@ var (
 )
 
 type sksCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -65,11 +65,11 @@ type sksCreateCmd struct {
 	Zone                         string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *sksCreateCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *sksCreateCmd) cmdShort() string { return "Create an SKS cluster" }
+func (c *sksCreateCmd) CmdShort() string { return "Create an SKS cluster" }
 
-func (c *sksCreateCmd) cmdLong() string {
+func (c *sksCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates an SKS cluster.
 
 Note: SKS cluster Nodes' kubelet configuration is set to use the Exoscale
@@ -88,12 +88,12 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&sksShowOutput{}), ", "))
 }
 
-func (c *sksCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
+func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 
 	clusterReq := v3.CreateSKSClusterRequest{
 		AutoUpgrade: &c.AutoUpgrade,
@@ -117,7 +117,7 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		FeatureGates: c.FeatureGates,
 	}
 
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -238,18 +238,18 @@ func (c *sksCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 
 	if !globalstate.Quiet {
 		return (&sksShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Cluster:            clusterId.String(),
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		CNI:                          defaultSKSClusterCNI,
 		KubernetesVersion:            "latest",

@@ -44,7 +44,7 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		cmdSetZoneFlagFromDefault(cmd)
+		CmdSetZoneFlagFromDefault(cmd)
 		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -69,7 +69,7 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
+			GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
@@ -78,7 +78,7 @@ More information at https://docs.aws.amazon.com/cli/latest/reference/s3api/put-b
 
 		s3conf := configuration.ToS3()
 
-		err = storage.PutBucketReplication(gContext, bucket, s3conf)
+		err = storage.PutBucketReplication(GContext, bucket, s3conf)
 
 		return err
 	},

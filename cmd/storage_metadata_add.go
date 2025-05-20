@@ -72,19 +72,19 @@ Supported output template annotations: %s`,
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.AddObjectsMetadata(gContext, bucket, prefix, metadata, recursive); err != nil {
+		if err := storage.AddObjectsMetadata(GContext, bucket, prefix, metadata, recursive); err != nil {
 			return fmt.Errorf("unable to add metadata to object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(gContext, bucket, prefix))
+			return printOutput(storage.ShowObject(GContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {

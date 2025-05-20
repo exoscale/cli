@@ -69,7 +69,7 @@ func (o *privateNetworkShowOutput) ToTable() {
 }
 
 type privateNetworkShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -78,13 +78,13 @@ type privateNetworkShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
 }
 
-func (c *privateNetworkShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *privateNetworkShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *privateNetworkShowCmd) cmdShort() string {
+func (c *privateNetworkShowCmd) CmdShort() string {
 	return "Show a Private Network details"
 }
 
-func (c *privateNetworkShowCmd) cmdLong() string {
+func (c *privateNetworkShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance Private Network details.
 
 Supported output template annotations for Private Network: %s
@@ -94,13 +94,13 @@ Supported output template annotations for Private Network leases: %s`,
 		strings.Join(output.TemplateAnnotations(&privateNetworkLeaseOutput{}), ", "))
 }
 
-func (c *privateNetworkShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *privateNetworkShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *privateNetworkShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -169,12 +169,12 @@ func (c *privateNetworkShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(privateNetworkCmd, &privateNetworkShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(privateNetworkCmd, &privateNetworkShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }
 

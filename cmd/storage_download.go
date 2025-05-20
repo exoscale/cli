@@ -85,15 +85,15 @@ Examples:
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %v", err)
 		}
 
 		objects := make([]*s3types.Object, 0)
-		if err := storage.ForEachObject(gContext, bucket, prefix, recursive, func(o *s3types.Object) error {
+		if err := storage.ForEachObject(GContext, bucket, prefix, recursive, func(o *s3types.Object) error {
 			objects = append(objects, o)
 			return nil
 		}); err != nil {
@@ -111,7 +111,7 @@ Examples:
 			object := objects[0]
 
 			err := storage.DownloadFile(
-				gContext,
+				GContext,
 				bucket,
 				dst,
 				object,
@@ -123,7 +123,7 @@ Examples:
 			}
 		default:
 			err := storage.DownloadFiles(
-				gContext,
+				GContext,
 				bucket,
 				prefix,
 				src,

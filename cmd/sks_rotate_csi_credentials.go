@@ -10,7 +10,7 @@ import (
 )
 
 type sksRotateCSICredentialsCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"rotate-csi-credentials"`
 
@@ -18,25 +18,25 @@ type sksRotateCSICredentialsCmd struct {
 	Zone    v3.ZoneName `cli-flag:"zone" cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksRotateCSICredentialsCmd) cmdAliases() []string { return nil }
+func (c *sksRotateCSICredentialsCmd) CmdAliases() []string { return nil }
 
-func (c *sksRotateCSICredentialsCmd) cmdShort() string {
+func (c *sksRotateCSICredentialsCmd) CmdShort() string {
 	return "Rotate the Exoscale Container Storage Interface IAM credentials for an SKS cluster"
 }
 
-func (c *sksRotateCSICredentialsCmd) cmdLong() string {
+func (c *sksRotateCSICredentialsCmd) CmdLong() string {
 	return `This command rotates the Exoscale IAM credentials managed by the SKS control
 plane for the Kubernetes Exoscale Container Storage Interface.
 `
 }
 
-func (c *sksRotateCSICredentialsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksRotateCSICredentialsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksRotateCSICredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *sksRotateCSICredentialsCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (c *sksRotateCSICredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksRotateCSICredentialsCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksRotateCSICredentialsCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

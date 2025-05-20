@@ -15,7 +15,7 @@ import (
 func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -43,23 +43,23 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MysqlIPFilter)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MysqlIPFilter)) {
 		databaseService.IPFilter = c.MysqlIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServiceMysqlRequestMaintenance{
 			Dow:  v3.UpdateDBAASServiceMysqlRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
@@ -67,7 +67,7 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MysqlSettings)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MysqlSettings)) {
 		_, err := validateDatabaseServiceSettings(c.MysqlSettings, settingsSchema.Settings.Mysql)
 		if err != nil {
 			return fmt.Errorf("invalid settings: %w", err)
@@ -81,7 +81,7 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MysqlMigrationHost)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MysqlMigrationHost)) {
 		databaseService.Migration = &v3.UpdateDBAASServiceMysqlRequestMigration{
 			Host: c.MysqlMigrationHost,
 			Port: c.MysqlMigrationPort,
@@ -110,7 +110,7 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MysqlBinlogRetentionPeriod)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MysqlBinlogRetentionPeriod)) {
 		databaseService.BinlogRetentionPeriod = c.MysqlBinlogRetentionPeriod
 		updated = true
 	}
@@ -133,7 +133,7 @@ func (c *dbaasServiceUpdateCmd) updateMysql(cmd *cobra.Command, _ []string) erro
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceMysql(ctx))

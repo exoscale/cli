@@ -46,33 +46,33 @@ func (o *instanceTypeShowOutput) ToTable() {
 }
 
 type instanceTypeShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	Type string `cli-arg:"#" cli-usage:"[FAMILY.]SIZE"`
 }
 
-func (c *instanceTypeShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *instanceTypeShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *instanceTypeShowCmd) cmdShort() string {
+func (c *instanceTypeShowCmd) CmdShort() string {
 	return "Show a Compute instance type details"
 }
 
-func (c *instanceTypeShowCmd) cmdLong() string {
+func (c *instanceTypeShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance type details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceTypeShowOutput{}), ", "))
 }
 
-func (c *instanceTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceTypeShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
-		gContext,
+		GContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
@@ -81,7 +81,7 @@ func (c *instanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return c.outputFunc(&instanceTypeShowOutput{
+	return c.OutputFunc(&instanceTypeShowOutput{
 		ID:     *t.ID,
 		Family: *t.Family,
 		Size:   *t.Size,
@@ -98,7 +98,7 @@ func (c *instanceTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceTypeCmd, &instanceTypeShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceTypeCmd, &instanceTypeShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

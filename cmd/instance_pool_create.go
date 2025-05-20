@@ -16,7 +16,7 @@ import (
 )
 
 type instancePoolCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -43,27 +43,27 @@ type instancePoolCreateCmd struct {
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
-func (c *instancePoolCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *instancePoolCreateCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *instancePoolCreateCmd) cmdShort() string { return "Create an Instance Pool" }
+func (c *instancePoolCreateCmd) CmdShort() string { return "Create an Instance Pool" }
 
-func (c *instancePoolCreateCmd) cmdLong() string {
+func (c *instancePoolCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates an Instance Pool.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instancePoolShowOutput{}), ", "))
 }
 
-func (c *instancePoolCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *instancePoolCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
-	cmdSetZoneFlagFromDefault(cmd)
+	CmdSetZoneFlagFromDefault(cmd)
 	cmdSetTemplateFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -230,19 +230,19 @@ func (c *instancePoolCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			InstancePool:       instancePoolID.String(),
 			// TODO migrate instance_pool_show to v3 to pass v3.ZoneName
 			Zone: string(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instancePoolCmd, &instancePoolCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		DiskSize:           50,
 		InstanceType:       fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),

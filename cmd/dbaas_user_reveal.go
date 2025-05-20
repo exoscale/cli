@@ -37,7 +37,7 @@ func (o *dbaasUserRevealOutput) ToTable() {
 }
 
 type dbaasUserRevealCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reveal-secrets"`
 
@@ -46,23 +46,23 @@ type dbaasUserRevealCmd struct {
 	Zone     string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasUserRevealCmd) cmdAliases() []string { return nil }
+func (c *dbaasUserRevealCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasUserRevealCmd) cmdShort() string { return "Show the secrets of a user" }
+func (c *dbaasUserRevealCmd) CmdShort() string { return "Show the secrets of a user" }
 
-func (c *dbaasUserRevealCmd) cmdLong() string {
+func (c *dbaasUserRevealCmd) CmdLong() string {
 	return `This command reveals a user's password and other possible secrets, depending on the service type.`
 }
 
-func (c *dbaasUserRevealCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
+func (c *dbaasUserRevealCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
 
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasUserRevealCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasUserRevealCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
@@ -70,17 +70,17 @@ func (c *dbaasUserRevealCmd) cmdRun(cmd *cobra.Command, args []string) error {
 
 	switch db.Type {
 	case "mysql":
-		return c.outputFunc(c.revealMysql(ctx))
+		return c.OutputFunc(c.revealMysql(ctx))
 	case "kafka":
-		return c.outputFunc(c.revealKafka(ctx))
+		return c.OutputFunc(c.revealKafka(ctx))
 	case "pg":
-		return c.outputFunc(c.revealPG(ctx))
+		return c.OutputFunc(c.revealPG(ctx))
 	case "opensearch":
-		return c.outputFunc(c.revealOpensearch(ctx))
+		return c.OutputFunc(c.revealOpensearch(ctx))
 	case "grafana":
-		return c.outputFunc(c.revealGrafana(ctx))
+		return c.OutputFunc(c.revealGrafana(ctx))
 	case "valkey":
-		return c.outputFunc(c.revealValkey(ctx))
+		return c.OutputFunc(c.revealValkey(ctx))
 	default:
 		return fmt.Errorf("listing users unsupported for service of type %q", db.Type)
 
@@ -89,7 +89,7 @@ func (c *dbaasUserRevealCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasUserCmd, &dbaasUserRevealCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasUserCmd, &dbaasUserRevealCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

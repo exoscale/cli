@@ -26,7 +26,7 @@ func (o *deployTargetShowOutput) ToText()  { output.Text(o) }
 func (o *deployTargetShowOutput) ToTable() { output.Table(o) }
 
 type deployTargetShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -35,31 +35,31 @@ type deployTargetShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Deploy Target zone"`
 }
 
-func (c *deployTargetShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *deployTargetShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *deployTargetShowCmd) cmdShort() string { return "Show a Deploy Target details" }
+func (c *deployTargetShowCmd) CmdShort() string { return "Show a Deploy Target details" }
 
-func (c *deployTargetShowCmd) cmdLong() string {
+func (c *deployTargetShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Deploy Target details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&deployTargetShowOutput{}), ", "))
 }
 
-func (c *deployTargetShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *deployTargetShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *deployTargetShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	dt, err := globalstate.EgoscaleClient.FindDeployTarget(ctx, c.Zone, c.DeployTarget)
 	if err != nil {
 		return fmt.Errorf("error retrieving Deploy Target: %w", err)
 	}
 
-	return c.outputFunc(&deployTargetShowOutput{
+	return c.OutputFunc(&deployTargetShowOutput{
 		ID:          *dt.ID,
 		Name:        *dt.Name,
 		Description: utils.DefaultString(dt.Description, ""),
@@ -69,7 +69,7 @@ func (c *deployTargetShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(deployTargetCmd, &deployTargetShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(deployTargetCmd, &deployTargetShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

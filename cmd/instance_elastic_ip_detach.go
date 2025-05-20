@@ -15,7 +15,7 @@ import (
 )
 
 type instanceEIPDetachCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"detach"`
 
@@ -25,13 +25,13 @@ type instanceEIPDetachCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceEIPDetachCmd) cmdAliases() []string { return nil }
+func (c *instanceEIPDetachCmd) CmdAliases() []string { return nil }
 
-func (c *instanceEIPDetachCmd) cmdShort() string {
+func (c *instanceEIPDetachCmd) CmdShort() string {
 	return "Detach a Compute instance from a Elastic IP"
 }
 
-func (c *instanceEIPDetachCmd) cmdLong() string {
+func (c *instanceEIPDetachCmd) CmdLong() string {
 	return fmt.Sprintf(`This command detaches an Elastic IP address from a Compute instance.
 
 Supported output template annotations: %s`,
@@ -39,13 +39,13 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *instanceEIPDetachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceEIPDetachCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceEIPDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceEIPDetachCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -75,17 +75,17 @@ func (c *instanceEIPDetachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceEIPCmd, &instanceEIPDetachCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceEIPCmd, &instanceEIPDetachCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

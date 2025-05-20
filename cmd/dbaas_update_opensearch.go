@@ -12,7 +12,7 @@ import (
 )
 
 func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -59,52 +59,52 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchDashboardEnabled)) {
 		db.OpensearchDashboards.Enabled = &c.OpensearchDashboardEnabled
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
 		db.OpensearchDashboards.OpensearchRequestTimeout = c.OpensearchDashboardRequestTimeout
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchDashboardRequestTimeout)) {
 		db.OpensearchDashboards.MaxOldSpaceSize = c.OpensearchDashboardMaxOldSpaceSize
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchIndexTemplateMappingNestedObjectsLimit)) {
 		db.IndexTemplate.MappingNestedObjectsLimit = c.OpensearchIndexTemplateMappingNestedObjectsLimit
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfReplicas)) {
 		db.IndexTemplate.NumberOfReplicas = c.OpensearchIndexTemplateNumberOfReplicas
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchIndexTemplateNumberOfShards)) {
 		db.IndexTemplate.NumberOfShards = c.OpensearchIndexTemplateNumberOfShards
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Plan)) {
 		db.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		db.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchKeepIndexRefreshInterval)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchKeepIndexRefreshInterval)) {
 		db.KeepIndexRefreshInterval = &c.OpensearchKeepIndexRefreshInterval
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.OpensearchIndexPatterns)) {
 		db.IndexPatterns = make([]v3.UpdateDBAASServiceOpensearchRequestIndexPatterns, 0)
 		err := json.Unmarshal([]byte(c.OpensearchIndexPatterns), &db.IndexPatterns)
 		if err != nil {
@@ -131,7 +131,7 @@ func (c *dbaasServiceUpdateCmd) updateOpensearch(cmd *cobra.Command, _ []string)
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceOpensearch(ctx))

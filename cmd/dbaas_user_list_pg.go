@@ -8,7 +8,7 @@ import (
 
 func (c *dbaasUserListCmd) listPG(cmd *cobra.Command, _ []string) error {
 
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -29,5 +29,5 @@ func (c *dbaasUserListCmd) listPG(cmd *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&res, nil)
+	return c.OutputFunc(&res, nil)
 }

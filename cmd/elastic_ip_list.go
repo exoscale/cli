@@ -26,31 +26,31 @@ func (o *elasticIPListOutput) ToText()  { output.Text(o) }
 func (o *elasticIPListOutput) ToTable() { output.Table(o) }
 
 type elasticIPListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *elasticIPListCmd) cmdAliases() []string { return gListAlias }
+func (c *elasticIPListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *elasticIPListCmd) cmdShort() string { return "List Elastic IPs" }
+func (c *elasticIPListCmd) CmdShort() string { return "List Elastic IPs" }
 
-func (c *elasticIPListCmd) cmdLong() string {
+func (c *elasticIPListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Compute Elastic IPs.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&elasticIPListItemOutput{}), ", "))
 }
 
-func (c *elasticIPListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *elasticIPListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *elasticIPListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
-	ctx := gContext
+	ctx := GContext
 
 	if c.Zone != "" {
 		zones = []string{c.Zone}
@@ -99,11 +99,11 @@ func (c *elasticIPListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(elasticIPCmd, &elasticIPListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

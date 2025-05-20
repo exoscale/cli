@@ -17,7 +17,7 @@ import (
 )
 
 type instanceSCPCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	scpInfo struct {
 		ipAddress string
@@ -72,11 +72,11 @@ func (c *instanceSCPCmd) buildSCPCommand() []string {
 	return cmd
 }
 
-func (c *instanceSCPCmd) cmdAliases() []string { return nil }
+func (c *instanceSCPCmd) CmdAliases() []string { return nil }
 
-func (c *instanceSCPCmd) cmdShort() string { return "SCP files to/from a Compute instance" }
+func (c *instanceSCPCmd) CmdShort() string { return "SCP files to/from a Compute instance" }
 
-func (c *instanceSCPCmd) cmdLong() string {
+func (c *instanceSCPCmd) CmdLong() string {
 	return `This command executes the scp(1) command to send or receive files to/from the
 specified Compute instance. TARGET (or SOURCE, depending on the direction
 of the transfer) must contain the "{}" marker which will be interpolated at
@@ -90,13 +90,13 @@ Example:
 `
 }
 
-func (c *instanceSCPCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSCPCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSCPCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceSCPCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -142,8 +142,8 @@ func (c *instanceSCPCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceSCPCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceSCPCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		ReplStr: "{}",
 	}))

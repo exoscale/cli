@@ -12,7 +12,7 @@ import (
 )
 
 type instanceSnapshotDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,21 +22,21 @@ type instanceSnapshotDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *instanceSnapshotDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *instanceSnapshotDeleteCmd) cmdShort() string {
+func (c *instanceSnapshotDeleteCmd) CmdShort() string {
 	return "Delete a Compute instance snapshot"
 }
 
-func (c *instanceSnapshotDeleteCmd) cmdLong() string { return "" }
+func (c *instanceSnapshotDeleteCmd) CmdLong() string { return "" }
 
-func (c *instanceSnapshotDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSnapshotDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
@@ -63,7 +63,7 @@ func (c *instanceSnapshotDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceSnapshotCmd, &instanceSnapshotDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

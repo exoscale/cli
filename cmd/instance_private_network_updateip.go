@@ -16,7 +16,7 @@ import (
 )
 
 type instancePrivnetUpdateIPCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update-ip"`
 
@@ -27,13 +27,13 @@ type instancePrivnetUpdateIPCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instancePrivnetUpdateIPCmd) cmdAliases() []string { return nil }
+func (c *instancePrivnetUpdateIPCmd) CmdAliases() []string { return nil }
 
-func (c *instancePrivnetUpdateIPCmd) cmdShort() string {
+func (c *instancePrivnetUpdateIPCmd) CmdShort() string {
 	return "Update a Compute instance Private Network IP address"
 }
 
-func (c *instancePrivnetUpdateIPCmd) cmdLong() string {
+func (c *instancePrivnetUpdateIPCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates the IP address assigned to a Compute instance in a
 managed Private Network.
 
@@ -42,13 +42,13 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *instancePrivnetUpdateIPCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instancePrivnetUpdateIPCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instancePrivnetUpdateIPCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -80,17 +80,17 @@ func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error 
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instancePrivnetCmd, &instancePrivnetUpdateIPCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instancePrivnetCmd, &instancePrivnetUpdateIPCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

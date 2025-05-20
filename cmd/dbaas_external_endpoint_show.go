@@ -15,7 +15,7 @@ const (
 )
 
 type dbaasExternalEndpointShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -23,39 +23,39 @@ type dbaasExternalEndpointShowCmd struct {
 	EndpointID string `cli-arg:"#"`
 }
 
-func (c *dbaasExternalEndpointShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *dbaasExternalEndpointShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *dbaasExternalEndpointShowCmd) cmdShort() string {
+func (c *dbaasExternalEndpointShowCmd) CmdShort() string {
 	return "Show a Database External endpoint details"
 }
 
-func (c *dbaasExternalEndpointShowCmd) cmdLong() string {
+func (c *dbaasExternalEndpointShowCmd) CmdLong() string {
 	return "This command shows a Database Service external endpoint details."
 }
 
-func (c *dbaasExternalEndpointShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasExternalEndpointShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalEndpointShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalEndpointShowCmd) CmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
 	case ExternalEndpointTypeDatadog:
-		return c.outputFunc(c.showDatadog())
+		return c.OutputFunc(c.showDatadog())
 	case ExternalEndpointTypeOpensearch:
-		return c.outputFunc(c.showOpensearch())
+		return c.OutputFunc(c.showOpensearch())
 	case ExternalEndpointTypeElasticsearch:
-		return c.outputFunc(c.showElasticsearch())
+		return c.OutputFunc(c.showElasticsearch())
 	case ExternalEndpointTypePrometheus:
-		return c.outputFunc(c.showPrometheus())
+		return c.OutputFunc(c.showPrometheus())
 	case ExternalEndpointTypeRsyslog:
-		return c.outputFunc(c.showRsyslog())
+		return c.OutputFunc(c.showRsyslog())
 	default:
 		return fmt.Errorf("unsupported external endpoint type %q", c.Type)
 	}
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

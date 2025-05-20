@@ -23,28 +23,28 @@ func (o *antiAffinityGroupListOutput) ToText()  { output.Text(o) }
 func (o *antiAffinityGroupListOutput) ToTable() { output.Table(o) }
 
 type antiAffinityGroupListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *antiAffinityGroupListCmd) cmdAliases() []string { return gListAlias }
+func (c *antiAffinityGroupListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *antiAffinityGroupListCmd) cmdShort() string { return "List Anti-Affinity Groups" }
+func (c *antiAffinityGroupListCmd) CmdShort() string { return "List Anti-Affinity Groups" }
 
-func (c *antiAffinityGroupListCmd) cmdLong() string {
+func (c *antiAffinityGroupListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Anti-Affinity Groups.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&antiAffinityGroupListItemOutput{}), ", "))
 }
 
-func (c *antiAffinityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *antiAffinityGroupListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *antiAffinityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *antiAffinityGroupListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 
 	antiAffinityGroups, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
 	if err != nil {
@@ -60,11 +60,11 @@ func (c *antiAffinityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(antiAffinityGroupCmd, &antiAffinityGroupListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

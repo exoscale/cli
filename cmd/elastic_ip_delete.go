@@ -11,7 +11,7 @@ import (
 )
 
 type elasticIPDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,21 +21,21 @@ type elasticIPDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
-func (c *elasticIPDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *elasticIPDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *elasticIPDeleteCmd) cmdShort() string {
+func (c *elasticIPDeleteCmd) CmdShort() string {
 	return "Delete an Elastic IP"
 }
 
-func (c *elasticIPDeleteCmd) cmdLong() string { return "" }
+func (c *elasticIPDeleteCmd) CmdLong() string { return "" }
 
-func (c *elasticIPDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *elasticIPDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *elasticIPDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *elasticIPDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func (c *elasticIPDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(elasticIPCmd, &elasticIPDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

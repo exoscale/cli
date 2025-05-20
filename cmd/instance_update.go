@@ -16,7 +16,7 @@ import (
 )
 
 type instanceUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -31,11 +31,11 @@ type instanceUpdateCmd struct {
 	ReverseDNS        string            `cli-usage:"Reverse DNS Domain"`
 }
 
-func (c *instanceUpdateCmd) cmdAliases() []string { return nil }
+func (c *instanceUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *instanceUpdateCmd) cmdShort() string { return "Update an Instance " }
+func (c *instanceUpdateCmd) CmdShort() string { return "Update an Instance " }
 
-func (c *instanceUpdateCmd) cmdLong() string {
+func (c *instanceUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates an Instance .
 
 Supported output template annotations: %s`,
@@ -43,15 +43,15 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *instanceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updatedInstance, updatedRDNS bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -61,17 +61,17 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
 		instance.Labels = &c.Labels
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Name)) {
 		instance.Name = &c.Name
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.CloudInitFile)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.CloudInitFile)) {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
@@ -80,11 +80,11 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ReverseDNS)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.ReverseDNS)) {
 		updatedRDNS = true
 	}
 
-	if updatedInstance || updatedRDNS || cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
+	if updatedInstance || updatedRDNS || cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Protection)) {
 		decorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
 			if updatedInstance {
 				if err = globalstate.EgoscaleClient.UpdateInstance(ctx, c.Zone, instance); err != nil {
@@ -100,7 +100,7 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 				}
 			}
 
-			if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protection)) {
+			if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Protection)) {
 				var client *v3.Client
 				client, err = switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 				if err != nil {
@@ -131,17 +131,17 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

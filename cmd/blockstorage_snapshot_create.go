@@ -12,7 +12,7 @@ import (
 )
 
 type blockStorageSnapshotCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -22,26 +22,26 @@ type blockStorageSnapshotCreateCmd struct {
 	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage volume snapshot zone"`
 }
 
-func (c *blockStorageSnapshotCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *blockStorageSnapshotCreateCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *blockStorageSnapshotCreateCmd) cmdShort() string {
+func (c *blockStorageSnapshotCreateCmd) CmdShort() string {
 	return "Create a Block Storage Volume Snapshot"
 }
 
-func (c *blockStorageSnapshotCreateCmd) cmdLong() string {
+func (c *blockStorageSnapshotCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Block Storage Volume Snapshot.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockStorageSnapshotCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *blockStorageSnapshotCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *blockStorageSnapshotCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -81,17 +81,17 @@ func (c *blockStorageSnapshotCreateCmd) cmdRun(_ *cobra.Command, _ []string) err
 
 	if !globalstate.Quiet {
 		return (&blockStorageSnapshotShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Name:               name,
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

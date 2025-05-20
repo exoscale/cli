@@ -10,7 +10,7 @@ import (
 )
 
 type antiAffinityGroupDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -19,20 +19,20 @@ type antiAffinityGroupDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *antiAffinityGroupDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *antiAffinityGroupDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *antiAffinityGroupDeleteCmd) cmdShort() string {
+func (c *antiAffinityGroupDeleteCmd) CmdShort() string {
 	return "Delete an Anti-Affinity Group"
 }
 
-func (c *antiAffinityGroupDeleteCmd) cmdLong() string { return "" }
+func (c *antiAffinityGroupDeleteCmd) CmdLong() string { return "" }
 
-func (c *antiAffinityGroupDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *antiAffinityGroupDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *antiAffinityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 
 	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
 	if err != nil {
@@ -69,7 +69,7 @@ func (c *antiAffinityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(antiAffinityGroupCmd, &antiAffinityGroupDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

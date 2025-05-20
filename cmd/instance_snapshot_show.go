@@ -29,7 +29,7 @@ func (o *instanceSnapshotShowOutput) ToText()      { output.Text(o) }
 func (o *instanceSnapshotShowOutput) ToTable()     { output.Table(o) }
 
 type instanceSnapshotShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -38,26 +38,26 @@ type instanceSnapshotShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *instanceSnapshotShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *instanceSnapshotShowCmd) cmdShort() string {
+func (c *instanceSnapshotShowCmd) CmdShort() string {
 	return "Show a Compute instance snapshot details"
 }
 
-func (c *instanceSnapshotShowCmd) cmdLong() string {
+func (c *instanceSnapshotShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance snapshot details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceSnapshotShowOutput{}), ", "))
 }
 
-func (c *instanceSnapshotShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSnapshotShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceSnapshotShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
@@ -72,7 +72,7 @@ func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return fmt.Errorf("unable to retrieve Compute instance %s: %w", *snapshot.InstanceID, err)
 	}
 
-	return c.outputFunc(&instanceSnapshotShowOutput{
+	return c.OutputFunc(&instanceSnapshotShowOutput{
 		ID:           *snapshot.ID,
 		Name:         *snapshot.Name,
 		CreationDate: snapshot.CreatedAt.String(),
@@ -84,7 +84,7 @@ func (c *instanceSnapshotShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceSnapshotCmd, &instanceSnapshotShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

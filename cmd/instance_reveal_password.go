@@ -13,7 +13,7 @@ import (
 )
 
 type instanceRevealCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reveal-password"`
 
@@ -31,19 +31,19 @@ func (o *instanceRevealOutput) ToJSON()      { output.JSON(o) }
 func (o *instanceRevealOutput) ToText()      { output.Text(o) }
 func (o *instanceRevealOutput) ToTable()     { output.Table(o) }
 
-func (c *instanceRevealCmd) cmdAliases() []string { return nil }
+func (c *instanceRevealCmd) CmdAliases() []string { return nil }
 
-func (c *instanceRevealCmd) cmdShort() string { return "Reveal the password of a Compute instance" }
+func (c *instanceRevealCmd) CmdShort() string { return "Reveal the password of a Compute instance" }
 
-func (c *instanceRevealCmd) cmdLong() string { return "" }
+func (c *instanceRevealCmd) CmdLong() string { return "" }
 
-func (c *instanceRevealCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceRevealCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceRevealCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceRevealCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -62,11 +62,11 @@ func (c *instanceRevealCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		ID:       *instance.ID,
 		Password: pwd,
 	}
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceRevealCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceRevealCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

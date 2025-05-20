@@ -131,20 +131,20 @@ func (o *securityGroupShowOutput) ToTable() {
 }
 
 type securityGroupShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	SecurityGroup string `cli-arg:"#" cli-usage:"NAME|ID"`
 }
 
-func (c *securityGroupShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *securityGroupShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *securityGroupShowCmd) cmdShort() string {
+func (c *securityGroupShowCmd) CmdShort() string {
 	return "Show a Security Group details"
 }
 
-func (c *securityGroupShowCmd) cmdLong() string {
+func (c *securityGroupShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance Security Group details.
 
 Supported output template annotations for Security Group: %s
@@ -154,14 +154,14 @@ Supported output template annotations for Security Group rules: %s`,
 		strings.Join(output.TemplateAnnotations(&securityGroupRuleOutput{}), ", "))
 }
 
-func (c *securityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *securityGroupShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -238,11 +238,11 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(securityGroupCmd, &securityGroupShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(securityGroupCmd, &securityGroupShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

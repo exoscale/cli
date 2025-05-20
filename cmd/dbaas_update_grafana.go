@@ -14,7 +14,7 @@ import (
 func (c *dbaasServiceUpdateCmd) updateGrafana(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := gContext
+	ctx := GContext
 	var err error
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
@@ -29,23 +29,23 @@ func (c *dbaasServiceUpdateCmd) updateGrafana(cmd *cobra.Command, _ []string) er
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.GrafanaIPFilter)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.GrafanaIPFilter)) {
 		databaseService.IPFilter = c.GrafanaIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServiceGrafanaRequestMaintenance{
 			Time: c.MaintenanceTime,
 			Dow:  v3.UpdateDBAASServiceGrafanaRequestMaintenanceDow(c.MaintenanceDOW),
@@ -53,7 +53,7 @@ func (c *dbaasServiceUpdateCmd) updateGrafana(cmd *cobra.Command, _ []string) er
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.GrafanaSettings)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.GrafanaSettings)) {
 		_, err := validateDatabaseServiceSettings(
 			c.GrafanaSettings,
 			settingsSchema.Settings.Grafana,
@@ -92,7 +92,7 @@ func (c *dbaasServiceUpdateCmd) updateGrafana(cmd *cobra.Command, _ []string) er
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceGrafana(ctx))

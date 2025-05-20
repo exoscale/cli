@@ -12,7 +12,7 @@ import (
 )
 
 type instanceResetPasswordCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reset-password"`
 
@@ -21,21 +21,21 @@ type instanceResetPasswordCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceResetPasswordCmd) cmdAliases() []string { return nil }
+func (c *instanceResetPasswordCmd) CmdAliases() []string { return nil }
 
-func (c *instanceResetPasswordCmd) cmdShort() string {
+func (c *instanceResetPasswordCmd) CmdShort() string {
 	return "Reset the password of a Compute instance"
 }
 
-func (c *instanceResetPasswordCmd) cmdLong() string { return "" }
+func (c *instanceResetPasswordCmd) CmdLong() string { return "" }
 
-func (c *instanceResetPasswordCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceResetPasswordCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceResetPasswordCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceResetPasswordCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -50,7 +50,7 @@ func (c *instanceResetPasswordCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceResetPasswordCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceResetPasswordCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

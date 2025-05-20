@@ -13,7 +13,7 @@ import (
 )
 
 type sksUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -28,11 +28,11 @@ type sksUpdateCmd struct {
 	Zone           v3.ZoneName       `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksUpdateCmd) cmdAliases() []string { return nil }
+func (c *sksUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *sksUpdateCmd) cmdShort() string { return "Update an SKS cluster" }
+func (c *sksUpdateCmd) CmdShort() string { return "Update an SKS cluster" }
 
-func (c *sksUpdateCmd) cmdLong() string {
+func (c *sksUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates an SKS cluster.
 
 Supported output template annotations: %s`,
@@ -40,15 +40,15 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *sksUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -66,32 +66,32 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	updateReq := v3.UpdateSKSClusterRequest{}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AutoUpgrade)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.AutoUpgrade)) {
 		updateReq.AutoUpgrade = &c.AutoUpgrade
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.FeatureGates)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.FeatureGates)) {
 		updateReq.FeatureGates = c.FeatureGates
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
 		updateReq.Labels = c.Labels
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Name)) {
 		updateReq.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Description)) {
 		updateReq.Description = &c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.EnableCSIAddon)) && !slices.Contains(cluster.Addons, sksClusterAddonExoscaleCSI) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.EnableCSIAddon)) && !slices.Contains(cluster.Addons, sksClusterAddonExoscaleCSI) {
 		updateReq.Addons = append(cluster.Addons, sksClusterAddonExoscaleCSI) //nolint:gocritic
 		updated = true
 	}
@@ -113,17 +113,17 @@ func (c *sksUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&sksShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Cluster:            string(cluster.ID),
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type dbaasDatabaseCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -23,15 +23,15 @@ type dbaasDatabaseCreateCmd struct {
 	PgLcCtype   string `cli-usage:"Default character classification (LC_CTYPE) for PostgreSQL database" cli-hidden:""`
 }
 
-func (c *dbaasDatabaseCreateCmd) cmdAliases() []string { return nil }
+func (c *dbaasDatabaseCreateCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasDatabaseCreateCmd) cmdShort() string { return "Create DBAAS database" }
+func (c *dbaasDatabaseCreateCmd) CmdShort() string { return "Create DBAAS database" }
 
-func (c *dbaasDatabaseCreateCmd) cmdLong() string {
+func (c *dbaasDatabaseCreateCmd) CmdLong() string {
 	return `This command creates a DBAAS database for the specified service.`
 }
 
-func (c *dbaasDatabaseCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasDatabaseCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 
 	case cmd.Flags().Changed("help-mysql"):
@@ -42,13 +42,13 @@ func (c *dbaasDatabaseCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) er
 		os.Exit(0)
 	}
 
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasDatabaseCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasDatabaseCreateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
@@ -66,7 +66,7 @@ func (c *dbaasDatabaseCreateCmd) cmdRun(cmd *cobra.Command, args []string) error
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasDatabaseCmd, &dbaasDatabaseCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasDatabaseCmd, &dbaasDatabaseCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

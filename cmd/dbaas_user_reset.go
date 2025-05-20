@@ -8,7 +8,7 @@ import (
 )
 
 type dbaasUserResetCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reset-credentials"`
 
@@ -24,16 +24,16 @@ type dbaasUserResetCmd struct {
 	MysqlAuthenticationMethod string `cli-flag:"mysql-auhentication-method" cli-usage:"authentication method to be used (\"caching_sha2_password\" or \"mysql_native_password\")." cli-hidden:""`
 }
 
-func (c *dbaasUserResetCmd) cmdAliases() []string { return nil }
+func (c *dbaasUserResetCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasUserResetCmd) cmdShort() string { return "Reset the credentials of a DBAAS user" }
+func (c *dbaasUserResetCmd) CmdShort() string { return "Reset the credentials of a DBAAS user" }
 
-func (c *dbaasUserResetCmd) cmdLong() string {
+func (c *dbaasUserResetCmd) CmdLong() string {
 	return `This command resets the credentials of a DBAAS user for the specified service.`
 }
 
-func (c *dbaasUserResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
+func (c *dbaasUserResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
 
 	switch {
 
@@ -42,12 +42,12 @@ func (c *dbaasUserResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 		os.Exit(0)
 	}
 
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasUserResetCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasUserResetCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (c *dbaasUserResetCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasUserCmd, &dbaasUserResetCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasUserCmd, &dbaasUserResetCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

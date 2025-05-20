@@ -11,7 +11,7 @@ import (
 )
 
 type dbaasServiceUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -112,11 +112,11 @@ type dbaasServiceUpdateCmd struct {
 	ValkeyMigrationIgnoreDbs []string `cli-flag:"valkey-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
 }
 
-func (c *dbaasServiceUpdateCmd) cmdAliases() []string { return nil }
+func (c *dbaasServiceUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasServiceUpdateCmd) cmdShort() string { return "Update Database Service" }
+func (c *dbaasServiceUpdateCmd) CmdShort() string { return "Update Database Service" }
 
-func (c *dbaasServiceUpdateCmd) cmdLong() string {
+func (c *dbaasServiceUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates a Database Service.
 
 Supported values for --maintenance-dow: %s
@@ -127,7 +127,7 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *dbaasServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-grafana"):
 		cmdShowHelpFlags(cmd.Flags(), "grafana-")
@@ -152,22 +152,22 @@ func (c *dbaasServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 		os.Exit(0)
 	}
 
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	if (cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) &&
-		(!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
-			!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) {
+func (c *dbaasServiceUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error {
+	if (cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime))) &&
+		(!cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+			!cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime))) {
 		return fmt.Errorf(
 			"both --%s and --%s must be specified",
-			mustCLICommandFlagName(c, &c.MaintenanceDOW),
-			mustCLICommandFlagName(c, &c.MaintenanceTime))
+			MustCLICommandFlagName(c, &c.MaintenanceDOW),
+			MustCLICommandFlagName(c, &c.MaintenanceTime))
 	}
 
-	ctx := gContext
+	ctx := GContext
 
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
@@ -196,7 +196,7 @@ func (c *dbaasServiceUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasCmd, &dbaasServiceUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

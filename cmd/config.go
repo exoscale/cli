@@ -224,7 +224,7 @@ func readInput(reader *bufio.Reader, text, def string) (string, error) {
 
 	select {
 	case <-c:
-	case <-gContext.Done():
+	case <-GContext.Done():
 		err = fmt.Errorf("")
 	}
 
@@ -281,7 +281,7 @@ func getAccountByName(name string) *account.Account {
 func chooseZone(client *egoscale.Client, zones []string) (string, error) {
 	if zones == nil {
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(defaultEnvironment, defaultZone))
+		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(defaultEnvironment, defaultZone))
 		var err error
 		zones, err = client.ListZones(ctx)
 

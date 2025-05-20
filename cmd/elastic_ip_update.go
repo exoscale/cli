@@ -13,7 +13,7 @@ import (
 )
 
 type elasticIPUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -33,28 +33,28 @@ type elasticIPUpdateCmd struct {
 	ReverseDNS                string `cli-usage:"Reverse DNS Domain"`
 }
 
-func (c *elasticIPUpdateCmd) cmdAliases() []string { return nil }
+func (c *elasticIPUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *elasticIPUpdateCmd) cmdShort() string {
+func (c *elasticIPUpdateCmd) CmdShort() string {
 	return "Update an Elastic IP"
 }
 
-func (c *elasticIPUpdateCmd) cmdLong() string {
+func (c *elasticIPUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates a Compute instance Elastic IP.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&elasticIPShowOutput{}), ", "))
 }
 
-func (c *elasticIPUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *elasticIPUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *elasticIPUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updatedInstance, updatedRDNS bool
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
@@ -79,12 +79,12 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		Labels:      elasticIP.Labels,
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Description)) {
 		req.Description = c.Description
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckMode)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.HealthcheckMode)) {
 		if req.Healthcheck == nil {
 			req.Healthcheck = new(v3.ElasticIPHealthcheck)
 		}
@@ -92,63 +92,63 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ReverseDNS)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.ReverseDNS)) {
 		updatedRDNS = true
 	}
 
 	for _, flag := range []string{
-		mustCLICommandFlagName(c, &c.HealthcheckInterval),
-		mustCLICommandFlagName(c, &c.HealthcheckPort),
-		mustCLICommandFlagName(c, &c.HealthcheckStrikesFail),
-		mustCLICommandFlagName(c, &c.HealthcheckStrikesOK),
-		mustCLICommandFlagName(c, &c.HealthcheckTLSSNI),
-		mustCLICommandFlagName(c, &c.HealthcheckTLSSSkipVerify),
-		mustCLICommandFlagName(c, &c.HealthcheckTimeout),
-		mustCLICommandFlagName(c, &c.HealthcheckURI),
+		MustCLICommandFlagName(c, &c.HealthcheckInterval),
+		MustCLICommandFlagName(c, &c.HealthcheckPort),
+		MustCLICommandFlagName(c, &c.HealthcheckStrikesFail),
+		MustCLICommandFlagName(c, &c.HealthcheckStrikesOK),
+		MustCLICommandFlagName(c, &c.HealthcheckTLSSNI),
+		MustCLICommandFlagName(c, &c.HealthcheckTLSSSkipVerify),
+		MustCLICommandFlagName(c, &c.HealthcheckTimeout),
+		MustCLICommandFlagName(c, &c.HealthcheckURI),
 	} {
 		if cmd.Flags().Changed(flag) && req.Healthcheck == nil {
 			return fmt.Errorf("--%s cannot be used on a non-managed Elastic IP", flag)
 		}
 	}
 
-	if flag := mustCLICommandFlagName(c, &c.HealthcheckInterval); cmd.Flags().Changed(flag) {
+	if flag := MustCLICommandFlagName(c, &c.HealthcheckInterval); cmd.Flags().Changed(flag) {
 		req.Healthcheck.Interval = c.HealthcheckInterval
 		updatedInstance = true
 	}
 
-	if flag := mustCLICommandFlagName(c, &c.HealthcheckPort); cmd.Flags().Changed(flag) {
+	if flag := MustCLICommandFlagName(c, &c.HealthcheckPort); cmd.Flags().Changed(flag) {
 		req.Healthcheck.Port = c.HealthcheckPort
 		updatedInstance = true
 	}
 
-	if flag := mustCLICommandFlagName(c, &c.HealthcheckStrikesFail); cmd.Flags().Changed(flag) {
+	if flag := MustCLICommandFlagName(c, &c.HealthcheckStrikesFail); cmd.Flags().Changed(flag) {
 		req.Healthcheck.StrikesFail = c.HealthcheckStrikesFail
 		updatedInstance = true
 	}
 
-	if flag := mustCLICommandFlagName(c, &c.HealthcheckStrikesOK); cmd.Flags().Changed(flag) {
+	if flag := MustCLICommandFlagName(c, &c.HealthcheckStrikesOK); cmd.Flags().Changed(flag) {
 		req.Healthcheck.StrikesOk = c.HealthcheckStrikesOK
 		updatedInstance = true
 	}
 
 	if req.Healthcheck != nil && req.Healthcheck.Mode == "https" {
-		if flag := mustCLICommandFlagName(c, &c.HealthcheckTLSSSkipVerify); cmd.Flags().Changed(flag) {
+		if flag := MustCLICommandFlagName(c, &c.HealthcheckTLSSSkipVerify); cmd.Flags().Changed(flag) {
 			req.Healthcheck.TlsSkipVerify = &c.HealthcheckTLSSSkipVerify
 			updatedInstance = true
 		}
 
-		if flag := mustCLICommandFlagName(c, &c.HealthcheckTLSSNI); cmd.Flags().Changed(flag) {
+		if flag := MustCLICommandFlagName(c, &c.HealthcheckTLSSNI); cmd.Flags().Changed(flag) {
 			req.Healthcheck.TlsSNI = c.HealthcheckTLSSNI
 			updatedInstance = true
 		}
 	}
 
-	if flag := mustCLICommandFlagName(c, &c.HealthcheckTimeout); cmd.Flags().Changed(flag) {
+	if flag := MustCLICommandFlagName(c, &c.HealthcheckTimeout); cmd.Flags().Changed(flag) {
 		req.Healthcheck.Timeout = c.HealthcheckTimeout
 		updatedInstance = true
 	}
 
-	if flag := mustCLICommandFlagName(c, &c.HealthcheckURI); cmd.Flags().Changed(flag) {
+	if flag := MustCLICommandFlagName(c, &c.HealthcheckURI); cmd.Flags().Changed(flag) {
 		req.Healthcheck.URI = c.HealthcheckURI
 		updatedInstance = true
 	}
@@ -187,17 +187,17 @@ func (c *elasticIPUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&elasticIPShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			ElasticIP:          elasticIP.ID.String(),
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(elasticIPCmd, &elasticIPUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

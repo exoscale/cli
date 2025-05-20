@@ -15,7 +15,7 @@ import (
 )
 
 type instancePoolUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -42,11 +42,11 @@ type instancePoolUpdateCmd struct {
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
-func (c *instancePoolUpdateCmd) cmdAliases() []string { return nil }
+func (c *instancePoolUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *instancePoolUpdateCmd) cmdShort() string { return "Update an Instance Pool" }
+func (c *instancePoolUpdateCmd) CmdShort() string { return "Update an Instance Pool" }
 
-func (c *instancePoolUpdateCmd) cmdLong() string {
+func (c *instancePoolUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates an Instance Pool.
 
 Supported output template annotations: %s`,
@@ -54,15 +54,15 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *instancePoolUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instancePoolUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
+func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
 	var updated bool
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 	updateReq := v3.UpdateInstancePoolRequest{}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.AntiAffinityGroups)) {
 		updateReq.AntiAffinityGroups = make([]v3.AntiAffinityGroup, len(c.AntiAffinityGroups))
 		af, err := client.ListAntiAffinityGroups(ctx)
 		if err != nil {
@@ -95,7 +95,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DeployTarget)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DeployTarget)) {
 		targets, err := client.ListDeployTargets(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing Deploy Target: %w", err)
@@ -108,17 +108,17 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Description)) {
 		updateReq.Description = c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DiskSize)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DiskSize)) {
 		updateReq.DiskSize = c.DiskSize
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ElasticIPs)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.ElasticIPs)) {
 		result := []v3.ElasticIP{}
 		eipList, err := client.ListElasticIPS(ctx)
 		if err != nil {
@@ -140,32 +140,32 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		}
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstancePrefix)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.InstancePrefix)) {
 		updateReq.InstancePrefix = &c.InstancePrefix
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.IPv6)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.IPv6)) {
 		updateReq.Ipv6Enabled = &c.IPv6
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
 		updateReq.Labels = convertIfSpecialEmptyMap(c.Labels)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MinAvailable)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MinAvailable)) {
 		updateReq.MinAvailable = &c.MinAvailable
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Name)) {
 		updateReq.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.PrivateNetworks)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.PrivateNetworks)) {
 		updateReq.PrivateNetworks = make([]v3.PrivateNetwork, len(c.PrivateNetworks))
 		pn, err := client.ListPrivateNetworks(ctx)
 		if err != nil {
@@ -181,7 +181,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SecurityGroups)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.SecurityGroups)) {
 		sgs, err := client.ListSecurityGroups(ctx)
 
 		if err != nil {
@@ -199,7 +199,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.InstanceType)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.InstanceType)) {
 		instanceTypes, err := client.ListInstanceTypes(ctx)
 		if err != nil {
 			return fmt.Errorf("error listing instance type: %w", err)
@@ -219,12 +219,12 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.SSHKey)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.SSHKey)) {
 		updateReq.SSHKey = &v3.SSHKey{Name: c.SSHKey}
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Template)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Template)) {
 		templates, err := client.ListTemplates(ctx, v3.ListTemplatesWithVisibility(v3.ListTemplatesVisibility(c.TemplateVisibility)))
 		if err != nil {
 			return fmt.Errorf("error listing template with visibility %q: %w", c.TemplateVisibility, err)
@@ -242,7 +242,7 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.CloudInitFile)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.CloudInitFile)) {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
@@ -263,18 +263,18 @@ func (c *instancePoolUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error { /
 
 	if !globalstate.Quiet {
 		return (&instancePoolShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			InstancePool:       instancePool.ID.String(),
 			Zone:               string(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instancePoolCmd, &instancePoolUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		TemplateVisibility: defaultTemplateVisibility,
 	}))

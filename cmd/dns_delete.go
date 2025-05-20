@@ -15,7 +15,7 @@ func init() {
 	dnsDeleteCmd := &cobra.Command{
 		Use:     "delete DOMAIN-NAME|ID",
 		Short:   "Delete a domain",
-		Aliases: gDeleteAlias,
+		Aliases: GDeleteAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return cmd.Usage()
@@ -34,7 +34,7 @@ func init() {
 }
 
 func deleteDomain(ident string, force bool) error {
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err

@@ -13,7 +13,7 @@ import (
 )
 
 type instanceDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -23,19 +23,19 @@ type instanceDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *instanceDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *instanceDeleteCmd) cmdShort() string { return "Delete a Compute instance" }
+func (c *instanceDeleteCmd) CmdShort() string { return "Delete a Compute instance" }
 
-func (c *instanceDeleteCmd) cmdLong() string { return "" }
+func (c *instanceDeleteCmd) CmdLong() string { return "" }
 
-func (c *instanceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *instanceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(
 		ctx,
 		globalstate.EgoscaleV3Client,
@@ -103,7 +103,7 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

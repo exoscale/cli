@@ -18,7 +18,7 @@ var sksAuthorityCertAuthorities = []v3.GetSKSClusterAuthorityCertAuthority{
 }
 
 type sksAuthorityCertCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"authority-cert"`
 
@@ -28,13 +28,13 @@ type sksAuthorityCertCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksAuthorityCertCmd) cmdAliases() []string { return nil }
+func (c *sksAuthorityCertCmd) CmdAliases() []string { return nil }
 
-func (c *sksAuthorityCertCmd) cmdShort() string {
+func (c *sksAuthorityCertCmd) CmdShort() string {
 	return "Retrieve an authority certificate for an SKS cluster"
 }
 
-func (c *sksAuthorityCertCmd) cmdLong() string {
+func (c *sksAuthorityCertCmd) CmdLong() string {
 	stringAuthorities := make([]string, len(sksAuthorityCertAuthorities))
 	for i, v := range sksAuthorityCertAuthorities {
 		stringAuthorities[i] = string(v)
@@ -47,12 +47,12 @@ Supported authorities: %s`,
 		strings.Join(stringAuthorities, ", "))
 }
 
-func (c *sksAuthorityCertCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksAuthorityCertCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *sksAuthorityCertCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var authOK bool
 	for _, v := range sksAuthorityCertAuthorities {
 		if c.Authority == v {
@@ -64,7 +64,7 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		cmdExitOnUsageError(cmd, fmt.Sprintf("unsupported authority value %q", c.Authority))
 	}
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (c *sksAuthorityCertCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksAuthorityCertCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksAuthorityCertCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

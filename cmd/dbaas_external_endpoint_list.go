@@ -24,20 +24,20 @@ func (o *dbaasExternalEndpointListOutput) ToText()  { output.Text(o) }
 func (o *dbaasExternalEndpointListOutput) ToTable() { output.Table(o) }
 
 type dbaasExternalEndpointListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *dbaasExternalEndpointListCmd) cmdAliases() []string { return gListAlias }
-func (c *dbaasExternalEndpointListCmd) cmdShort() string     { return "List External Endpoints" }
-func (c *dbaasExternalEndpointListCmd) cmdLong() string      { return "List External Endpoints" }
-func (c *dbaasExternalEndpointListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasExternalEndpointListCmd) CmdAliases() []string { return GListAlias }
+func (c *dbaasExternalEndpointListCmd) CmdShort() string     { return "List External Endpoints" }
+func (c *dbaasExternalEndpointListCmd) CmdLong() string      { return "List External Endpoints" }
+func (c *dbaasExternalEndpointListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalEndpointListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *dbaasExternalEndpointListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
@@ -59,11 +59,11 @@ func (c *dbaasExternalEndpointListCmd) cmdRun(_ *cobra.Command, _ []string) erro
 		})
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

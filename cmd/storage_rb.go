@@ -42,14 +42,14 @@ var storageRbCmd = &cobra.Command{
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.DeleteBucket(gContext, bucket, recursive); err != nil {
+		if err := storage.DeleteBucket(GContext, bucket, recursive); err != nil {
 			return fmt.Errorf("unable to delete bucket: %w", err)
 		}
 

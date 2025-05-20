@@ -40,29 +40,29 @@ func (o *dbaasTypeListOutput) ToTable() {
 }
 
 type dbaasTypeListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *dbaasTypeListCmd) cmdAliases() []string { return nil }
+func (c *dbaasTypeListCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasTypeListCmd) cmdShort() string { return "List Database Service types" }
+func (c *dbaasTypeListCmd) CmdShort() string { return "List Database Service types" }
 
-func (c *dbaasTypeListCmd) cmdLong() string {
+func (c *dbaasTypeListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists available Database Service types.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&dbaasTypeListItemOutput{}), ", "))
 }
 
-func (c *dbaasTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasTypeListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
@@ -89,11 +89,11 @@ func (c *dbaasTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasTypeCmd, &dbaasTypeListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasTypeCmd, &dbaasTypeListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

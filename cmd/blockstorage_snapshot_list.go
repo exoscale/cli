@@ -25,31 +25,31 @@ func (o *blockStorageSnapshotListOutput) ToText()  { output.Text(o) }
 func (o *blockStorageSnapshotListOutput) ToTable() { output.Table(o) }
 
 type blockStorageSnapshotListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *blockStorageSnapshotListCmd) cmdAliases() []string { return gListAlias }
+func (c *blockStorageSnapshotListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *blockStorageSnapshotListCmd) cmdShort() string { return "List Block Storage Volume Snapshots" }
+func (c *blockStorageSnapshotListCmd) CmdShort() string { return "List Block Storage Volume Snapshots" }
 
-func (c *blockStorageSnapshotListCmd) cmdLong() string {
+func (c *blockStorageSnapshotListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Block Storage Volume Snapshots.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockStorageListOutput{}), ", "))
 }
 
-func (c *blockStorageSnapshotListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *blockStorageSnapshotListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
-	ctx := gContext
+	ctx := GContext
 
 	resp, err := client.ListZones(ctx)
 	if err != nil {
@@ -90,11 +90,11 @@ func (c *blockStorageSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error
 		}
 	}
 
-	return c.outputFunc(&output, nil)
+	return c.OutputFunc(&output, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

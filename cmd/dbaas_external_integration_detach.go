@@ -10,7 +10,7 @@ import (
 )
 
 type dbaasExternalIntegrationDetachCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"detach"`
 
@@ -19,25 +19,25 @@ type dbaasExternalIntegrationDetachCmd struct {
 	IntegrationID string `cli-flag:"integration-id" cli-usage:"External integration id"`
 }
 
-func (c *dbaasExternalIntegrationDetachCmd) cmdAliases() []string {
+func (c *dbaasExternalIntegrationDetachCmd) CmdAliases() []string {
 	return []string{"a"}
 }
 
-func (c *dbaasExternalIntegrationDetachCmd) cmdLong() string {
+func (c *dbaasExternalIntegrationDetachCmd) CmdLong() string {
 	return "Disable sending data from an existing DBaaS service to an external endpoint"
 }
 
-func (c *dbaasExternalIntegrationDetachCmd) cmdShort() string {
+func (c *dbaasExternalIntegrationDetachCmd) CmdShort() string {
 	return "Detach a DBaaS service from an external endpoint"
 }
 
-func (c *dbaasExternalIntegrationDetachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasExternalIntegrationDetachCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalIntegrationDetachCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalIntegrationDetachCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
@@ -67,7 +67,7 @@ func (c *dbaasExternalIntegrationDetachCmd) cmdRun(cmd *cobra.Command, args []st
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationDetachCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationDetachCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

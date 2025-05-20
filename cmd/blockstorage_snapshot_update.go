@@ -12,7 +12,7 @@ import (
 )
 
 type blockStorageSnapshotUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -22,26 +22,26 @@ type blockStorageSnapshotUpdateCmd struct {
 	Rename string            `cli-usage:"rename block storage volume snapshot"`
 }
 
-func (c *blockStorageSnapshotUpdateCmd) cmdAliases() []string { return []string{"up"} }
+func (c *blockStorageSnapshotUpdateCmd) CmdAliases() []string { return []string{"up"} }
 
-func (c *blockStorageSnapshotUpdateCmd) cmdShort() string {
+func (c *blockStorageSnapshotUpdateCmd) CmdShort() string {
 	return "Update a Block Storage Volume Snapshot"
 }
 
-func (c *blockStorageSnapshotUpdateCmd) cmdLong() string {
+func (c *blockStorageSnapshotUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates a Block Storage Volume Snapshot.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockStorageSnapshotUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *blockStorageSnapshotUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageSnapshotUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *blockStorageSnapshotUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -59,13 +59,13 @@ func (c *blockStorageSnapshotUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) e
 
 	var updated bool
 	updateReq := v3.UpdateBlockStorageSnapshotRequest{}
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
 		updateReq.Labels = convertIfSpecialEmptyMap(c.Labels)
 
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Rename)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Rename)) {
 		updateReq.Name = &c.Rename
 
 		updated = true
@@ -89,17 +89,17 @@ func (c *blockStorageSnapshotUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) e
 			name = c.Rename
 		}
 		return (&blockStorageSnapshotShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Name:               name,
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

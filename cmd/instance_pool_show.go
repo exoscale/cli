@@ -43,7 +43,7 @@ func (o *instancePoolShowOutput) ToText()      { output.Text(o) }
 func (o *instancePoolShowOutput) ToTable()     { output.Table(o) }
 
 type instancePoolShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -53,24 +53,24 @@ type instancePoolShowCmd struct {
 	Zone         string `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
-func (c *instancePoolShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *instancePoolShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *instancePoolShowCmd) cmdShort() string { return "Show an Instance Pool details" }
+func (c *instancePoolShowCmd) CmdShort() string { return "Show an Instance Pool details" }
 
-func (c *instancePoolShowCmd) cmdLong() string {
+func (c *instancePoolShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows an Instance Pool details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instancePoolShowOutput{}), ", "))
 }
 
-func (c *instancePoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instancePoolShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instancePoolShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
@@ -180,11 +180,11 @@ func (c *instancePoolShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 	out.Template = *template.Name
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instancePoolCmd, &instancePoolShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instancePoolCmd, &instancePoolShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

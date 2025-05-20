@@ -46,18 +46,18 @@ Supported output template annotations:
 			}
 
 			storage, err := sos.NewStorageClient(
-				gContext,
-				sos.ClientOptZoneFromBucket(gContext, bucket),
+				GContext,
+				sos.ClientOptZoneFromBucket(GContext, bucket),
 			)
 			if err != nil {
 				return fmt.Errorf("unable to initialize storage client: %w", err)
 			}
 
 			if key == "" {
-				return printOutput(storage.ShowBucket(gContext, bucket))
+				return printOutput(storage.ShowBucket(GContext, bucket))
 			}
 
-			return printOutput(storage.ShowObject(gContext, bucket, key))
+			return printOutput(storage.ShowObject(GContext, bucket, key))
 		},
 	})
 }

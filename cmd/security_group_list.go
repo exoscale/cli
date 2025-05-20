@@ -26,31 +26,31 @@ func (o *securityGroupListOutput) ToText()  { output.Text(o) }
 func (o *securityGroupListOutput) ToTable() { output.Table(o) }
 
 type securityGroupListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Visibility string `cli-usage:"Security Group visibility: private (default) or public"`
 }
 
-func (c *securityGroupListCmd) cmdAliases() []string { return gListAlias }
+func (c *securityGroupListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *securityGroupListCmd) cmdShort() string { return "List Security Groups" }
+func (c *securityGroupListCmd) CmdShort() string { return "List Security Groups" }
 
-func (c *securityGroupListCmd) cmdLong() string {
+func (c *securityGroupListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Security Groups.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&securityGroupListItemOutput{}), ", "))
 }
 
-func (c *securityGroupListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *securityGroupListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *securityGroupListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
-		gContext,
+		GContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
@@ -78,11 +78,11 @@ func (c *securityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		out = append(out, sg)
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(securityGroupCmd, &securityGroupListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(securityGroupCmd, &securityGroupListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

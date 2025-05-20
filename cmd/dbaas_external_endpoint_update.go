@@ -8,7 +8,7 @@ import (
 )
 
 type dbaasExternalEndpointUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -56,7 +56,7 @@ type dbaasExternalEndpointUpdateCmd struct {
 	RsyslogMaxMessageSize int64  `cli-flag:"rsyslog-max-message-size" cli-usage:"Rsyslog max message size" cli-hidden:""`
 }
 
-func (c *dbaasExternalEndpointUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalEndpointUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
 		cmdShowHelpFlags(cmd.Flags(), "datadog-")
@@ -75,22 +75,22 @@ func (c *dbaasExternalEndpointUpdateCmd) cmdPreRun(cmd *cobra.Command, args []st
 		os.Exit(0)
 	}
 
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalEndpointUpdateCmd) cmdAliases() []string {
+func (c *dbaasExternalEndpointUpdateCmd) CmdAliases() []string {
 	return nil
 }
 
-func (c *dbaasExternalEndpointUpdateCmd) cmdLong() string {
+func (c *dbaasExternalEndpointUpdateCmd) CmdLong() string {
 	return "Update an existing external endpoint for DBaaS"
 }
 
-func (c *dbaasExternalEndpointUpdateCmd) cmdShort() string {
+func (c *dbaasExternalEndpointUpdateCmd) CmdShort() string {
 	return "Update an existing external endpoint for DBaaS"
 }
 
-func (c *dbaasExternalEndpointUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalEndpointUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
 	case ExternalEndpointTypeDatadog:
 		return c.updateDatadog(cmd, args)
@@ -109,7 +109,7 @@ func (c *dbaasExternalEndpointUpdateCmd) cmdRun(cmd *cobra.Command, args []strin
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

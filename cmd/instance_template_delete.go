@@ -11,7 +11,7 @@ import (
 )
 
 type instanceTemplateDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,21 +21,21 @@ type instanceTemplateDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"template zone"`
 }
 
-func (c *instanceTemplateDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *instanceTemplateDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *instanceTemplateDeleteCmd) cmdShort() string {
+func (c *instanceTemplateDeleteCmd) CmdShort() string {
 	return "Delete a Compute instance template"
 }
 
-func (c *instanceTemplateDeleteCmd) cmdLong() string { return "" }
+func (c *instanceTemplateDeleteCmd) CmdLong() string { return "" }
 
-func (c *instanceTemplateDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceTemplateDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceTemplateDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceTemplateDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	template, err := globalstate.EgoscaleClient.GetTemplate(ctx, c.Zone, c.TemplateID)
 	if err != nil {
@@ -63,7 +63,7 @@ func (c *instanceTemplateDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceTemplateCmd, &instanceTemplateDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceTemplateCmd, &instanceTemplateDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -11,7 +11,7 @@ import (
 )
 
 type dbaasServiceCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -118,11 +118,11 @@ type dbaasServiceCreateCmd struct {
 	ValkeyMigrationIgnoreDbs []string `cli-flag:"valkey-migration-ignore-dbs" cli-usage:"list of databases which should be ignored during migration" cli-hidden:""`
 }
 
-func (c *dbaasServiceCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *dbaasServiceCreateCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *dbaasServiceCreateCmd) cmdShort() string { return "Create a Database Service" }
+func (c *dbaasServiceCreateCmd) CmdShort() string { return "Create a Database Service" }
 
-func (c *dbaasServiceCreateCmd) cmdLong() string {
+func (c *dbaasServiceCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Database Service.
 
 Supported values for --maintenance-dow: %s
@@ -132,7 +132,7 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&dbServiceShowOutput{}), ", "))
 }
 
-func (c *dbaasServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasServiceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-grafana"):
 		cmdShowHelpFlags(cmd.Flags(), "grafana-")
@@ -154,19 +154,19 @@ func (c *dbaasServiceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 		os.Exit(0)
 	}
 
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	if (cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) &&
-		(!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
-			!cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime))) {
+func (c *dbaasServiceCreateCmd) CmdRun(cmd *cobra.Command, args []string) error {
+	if (cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime))) &&
+		(!cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) ||
+			!cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime))) {
 		return fmt.Errorf(
 			"both --%s and --%s must be specified",
-			mustCLICommandFlagName(c, &c.MaintenanceDOW),
-			mustCLICommandFlagName(c, &c.MaintenanceTime))
+			MustCLICommandFlagName(c, &c.MaintenanceDOW),
+			MustCLICommandFlagName(c, &c.MaintenanceTime))
 	}
 
 	switch c.Type {
@@ -188,8 +188,8 @@ func (c *dbaasServiceCreateCmd) cmdRun(cmd *cobra.Command, args []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasCmd, &dbaasServiceCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		TerminationProtection: true,
 	}))

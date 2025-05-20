@@ -9,7 +9,7 @@ import (
 )
 
 func (c dbaasDatabaseDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -52,7 +52,7 @@ func (c dbaasDatabaseDeleteCmd) deleteMysql(cmd *cobra.Command, _ []string) erro
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceMysql(ctx))

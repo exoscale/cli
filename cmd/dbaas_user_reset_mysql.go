@@ -10,7 +10,7 @@ import (
 
 func (c *dbaasUserResetCmd) resetMysql(cmd *cobra.Command, _ []string) error {
 
-	ctx := gContext
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -41,7 +41,7 @@ func (c *dbaasUserResetCmd) resetMysql(cmd *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasUserShowCmd{
+		return c.OutputFunc((&dbaasUserShowCmd{
 			Name:     c.Name,
 			Zone:     c.Zone,
 			Username: c.Username,

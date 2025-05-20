@@ -54,19 +54,19 @@ Supported output template annotations: %s`,
 		mdKeys := args[1:]
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.DeleteObjectsMetadata(gContext, bucket, prefix, mdKeys, recursive); err != nil {
+		if err := storage.DeleteObjectsMetadata(GContext, bucket, prefix, mdKeys, recursive); err != nil {
 			return fmt.Errorf("unable to delete metadata from object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(gContext, bucket, prefix))
+			return printOutput(storage.ShowObject(GContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {

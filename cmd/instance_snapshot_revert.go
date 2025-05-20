@@ -15,7 +15,7 @@ import (
 )
 
 type instanceSnapshotRevertCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"revert"`
 
@@ -26,13 +26,13 @@ type instanceSnapshotRevertCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotRevertCmd) cmdAliases() []string { return nil }
+func (c *instanceSnapshotRevertCmd) CmdAliases() []string { return nil }
 
-func (c *instanceSnapshotRevertCmd) cmdShort() string {
+func (c *instanceSnapshotRevertCmd) CmdShort() string {
 	return "Revert a Compute instance to a snapshot"
 }
 
-func (c *instanceSnapshotRevertCmd) cmdLong() string {
+func (c *instanceSnapshotRevertCmd) CmdLong() string {
 	return fmt.Sprintf(`This command reverts a Compute instance to a snapshot.
 
 /!\ **************************************************************** /!\
@@ -45,13 +45,13 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *instanceSnapshotRevertCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSnapshotRevertCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSnapshotRevertCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceSnapshotRevertCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -89,17 +89,17 @@ func (c *instanceSnapshotRevertCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceSnapshotCmd, &instanceSnapshotRevertCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotRevertCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

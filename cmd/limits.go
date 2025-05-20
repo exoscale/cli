@@ -68,7 +68,7 @@ Supported output template annotations: %s`,
 
 		out := LimitsOutput{}
 
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
+		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone))
 
 		quotas, err := globalstate.EgoscaleClient.ListQuotas(ctx, account.CurrentAccount.DefaultZone)
 		if err != nil {

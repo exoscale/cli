@@ -13,7 +13,7 @@ import (
 )
 
 type securityGroupAddSourceCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"add"`
 
@@ -21,27 +21,27 @@ type securityGroupAddSourceCmd struct {
 	Cidr          string `cli-arg:"#" cli-usage:"CIDR"`
 }
 
-func (c *securityGroupAddSourceCmd) cmdAliases() []string { return nil }
+func (c *securityGroupAddSourceCmd) CmdAliases() []string { return nil }
 
-func (c *securityGroupAddSourceCmd) cmdShort() string {
+func (c *securityGroupAddSourceCmd) CmdShort() string {
 	return "Add an external source to a Security Group"
 }
 
-func (c *securityGroupAddSourceCmd) cmdLong() string {
+func (c *securityGroupAddSourceCmd) CmdLong() string {
 	return fmt.Sprintf(`This command adds an external source to a Compute instance Security Group.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
-func (c *securityGroupAddSourceCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *securityGroupAddSourceCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupAddSourceCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *securityGroupAddSourceCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -56,13 +56,13 @@ func (c *securityGroupAddSourceCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	return (&securityGroupShowCmd{
-		cliCommandSettings: c.cliCommandSettings,
+		CliCommandSettings: c.CliCommandSettings,
 		SecurityGroup:      *securityGroup.ID,
-	}).cmdRun(nil, nil)
+	}).CmdRun(nil, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(securityGroupSourceCmd, &securityGroupAddSourceCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(securityGroupSourceCmd, &securityGroupAddSourceCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

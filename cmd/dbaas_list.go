@@ -27,29 +27,29 @@ func (o *dbaasServiceListOutput) ToText()  { output.Text(o) }
 func (o *dbaasServiceListOutput) ToTable() { output.Table(o) }
 
 type dbaasServiceListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *dbaasServiceListCmd) cmdAliases() []string { return gListAlias }
+func (c *dbaasServiceListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *dbaasServiceListCmd) cmdShort() string { return "List Database Services" }
+func (c *dbaasServiceListCmd) CmdShort() string { return "List Database Services" }
 
-func (c *dbaasServiceListCmd) cmdLong() string {
+func (c *dbaasServiceListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Database Services.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&dbaasServiceListItemOutput{}), ", "))
 }
 
-func (c *dbaasServiceListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasServiceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasServiceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
 
 	if c.Zone != "" {
@@ -69,7 +69,7 @@ func (c *dbaasServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := gContext
+		ctx := GContext
 		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
 			return err
@@ -99,11 +99,11 @@ func (c *dbaasServiceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasCmd, &dbaasServiceListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

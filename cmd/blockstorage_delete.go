@@ -12,7 +12,7 @@ import (
 )
 
 type blockStorageDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,24 +21,24 @@ type blockStorageDeleteCmd struct {
 	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *blockStorageDeleteCmd) cmdAliases() []string { return gDeleteAlias }
+func (c *blockStorageDeleteCmd) CmdAliases() []string { return GDeleteAlias }
 
-func (c *blockStorageDeleteCmd) cmdShort() string { return "Delete a Block Storage Volume" }
+func (c *blockStorageDeleteCmd) CmdShort() string { return "Delete a Block Storage Volume" }
 
-func (c *blockStorageDeleteCmd) cmdLong() string {
+func (c *blockStorageDeleteCmd) CmdLong() string {
 	return fmt.Sprintf(`This command deletes a Block Storage Volume.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockStorageDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *blockStorageDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *blockStorageDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (c *blockStorageDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(blockstorageCmd, &blockStorageDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

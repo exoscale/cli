@@ -29,31 +29,31 @@ func (o *sksNodepoolListOutput) ToText()  { output.Text(o) }
 func (o *sksNodepoolListOutput) ToTable() { output.Table(o) }
 
 type sksNodepoolListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *sksNodepoolListCmd) cmdAliases() []string { return gListAlias }
+func (c *sksNodepoolListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *sksNodepoolListCmd) cmdShort() string { return "List SKS cluster Nodepools" }
+func (c *sksNodepoolListCmd) CmdShort() string { return "List SKS cluster Nodepools" }
 
-func (c *sksNodepoolListCmd) cmdLong() string {
+func (c *sksNodepoolListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists SKS cluster Nodepools.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&sksNodepoolListItemOutput{}), ", "))
 }
 
-func (c *sksNodepoolListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksNodepoolListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksNodepoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *sksNodepoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
-	ctx := gContext
+	ctx := GContext
 
 	resp, err := client.ListZones(ctx)
 	if err != nil {
@@ -111,11 +111,11 @@ func (c *sksNodepoolListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

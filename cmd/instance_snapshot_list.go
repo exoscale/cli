@@ -31,29 +31,29 @@ func (o *instanceSnapshotListOutput) ToText()  { output.Text(o) }
 func (o *instanceSnapshotListOutput) ToTable() { output.Table(o) }
 
 type instanceSnapshotListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *instanceSnapshotListCmd) cmdAliases() []string { return nil }
+func (c *instanceSnapshotListCmd) CmdAliases() []string { return nil }
 
-func (c *instanceSnapshotListCmd) cmdShort() string { return "List Compute instance snapshots" }
+func (c *instanceSnapshotListCmd) CmdShort() string { return "List Compute instance snapshots" }
 
-func (c *instanceSnapshotListCmd) cmdLong() string {
+func (c *instanceSnapshotListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists existing Compute instance snapshots.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceSnapshotListOutput{}), ", "))
 }
 
-func (c *instanceSnapshotListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSnapshotListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceSnapshotListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
 
 	if c.Zone != "" {
@@ -75,7 +75,7 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 		list, err := globalstate.EgoscaleClient.ListSnapshots(ctx, zone)
 		if err != nil {
@@ -114,11 +114,11 @@ func (c *instanceSnapshotListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceSnapshotCmd, &instanceSnapshotListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

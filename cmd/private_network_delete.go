@@ -10,7 +10,7 @@ import (
 )
 
 type privateNetworkDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -20,21 +20,21 @@ type privateNetworkDeleteCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"Private Network zone"`
 }
 
-func (c *privateNetworkDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *privateNetworkDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *privateNetworkDeleteCmd) cmdShort() string {
+func (c *privateNetworkDeleteCmd) CmdShort() string {
 	return "Delete a Private Network"
 }
 
-func (c *privateNetworkDeleteCmd) cmdLong() string { return "" }
+func (c *privateNetworkDeleteCmd) CmdLong() string { return "" }
 
-func (c *privateNetworkDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *privateNetworkDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *privateNetworkDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *privateNetworkDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (c *privateNetworkDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(privateNetworkCmd, &privateNetworkDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(privateNetworkCmd, &privateNetworkDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

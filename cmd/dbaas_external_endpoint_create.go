@@ -8,7 +8,7 @@ import (
 )
 
 type dbaasExternalEndpointCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -56,7 +56,7 @@ type dbaasExternalEndpointCreateCmd struct {
 	RsyslogMaxMessageSize int64  `cli-flag:"rsyslog-max-message-size" cli-usage:"Rsyslog max message size" cli-hidden:""`
 }
 
-func (c *dbaasExternalEndpointCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalEndpointCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
 		cmdShowHelpFlags(cmd.Flags(), "datadog-")
@@ -75,22 +75,22 @@ func (c *dbaasExternalEndpointCreateCmd) cmdPreRun(cmd *cobra.Command, args []st
 		os.Exit(0)
 	}
 
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalEndpointCreateCmd) cmdAliases() []string {
-	return gCreateAlias
+func (c *dbaasExternalEndpointCreateCmd) CmdAliases() []string {
+	return GCreateAlias
 }
 
-func (c *dbaasExternalEndpointCreateCmd) cmdLong() string {
+func (c *dbaasExternalEndpointCreateCmd) CmdLong() string {
 	return "Create a new external endpoint for DBaaS"
 }
 
-func (c *dbaasExternalEndpointCreateCmd) cmdShort() string {
+func (c *dbaasExternalEndpointCreateCmd) CmdShort() string {
 	return "Create a new external endpoint for DBaaS"
 }
 
-func (c *dbaasExternalEndpointCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalEndpointCreateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
 	case ExternalEndpointTypeDatadog:
 		return c.createDatadog(cmd, args)
@@ -109,7 +109,7 @@ func (c *dbaasExternalEndpointCreateCmd) cmdRun(cmd *cobra.Command, args []strin
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

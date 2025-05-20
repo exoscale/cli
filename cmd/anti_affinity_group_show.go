@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 type antiAffinityGroupShowOutput struct {
@@ -21,32 +22,32 @@ func (o *antiAffinityGroupShowOutput) ToText()  { output.Text(o) }
 func (o *antiAffinityGroupShowOutput) ToTable() { output.Table(o) }
 
 type antiAffinityGroupShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	AntiAffinityGroup string `cli-arg:"#" cli-usage:"NAME|ID"`
 }
 
-func (c *antiAffinityGroupShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *antiAffinityGroupShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *antiAffinityGroupShowCmd) cmdShort() string {
+func (c *antiAffinityGroupShowCmd) CmdShort() string {
 	return "Show an Anti-Affinity Group details"
 }
 
-func (c *antiAffinityGroupShowCmd) cmdLong() string {
+func (c *antiAffinityGroupShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance Anti-Affinity Group details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
 }
 
-func (c *antiAffinityGroupShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *antiAffinityGroupShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *antiAffinityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 
 	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
 	if err != nil {
@@ -73,11 +74,11 @@ func (c *antiAffinityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			out.Instances[i] = instance.ID.String()
 		}
 	}
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(antiAffinityGroupCmd, &antiAffinityGroupShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

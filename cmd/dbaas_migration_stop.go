@@ -12,7 +12,7 @@ import (
 )
 
 type dbaasMigrationStopCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"stop"`
 
@@ -20,23 +20,23 @@ type dbaasMigrationStopCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasMigrationStopCmd) cmdAliases() []string { return []string{} }
+func (c *dbaasMigrationStopCmd) CmdAliases() []string { return []string{} }
 
-func (c *dbaasMigrationStopCmd) cmdShort() string {
+func (c *dbaasMigrationStopCmd) CmdShort() string {
 	return "Stop running migration of a Database"
 }
 
-func (c *dbaasMigrationStopCmd) cmdLong() string {
+func (c *dbaasMigrationStopCmd) CmdLong() string {
 	return "This command stops the currently running migration of a Database."
 }
 
-func (c *dbaasMigrationStopCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasMigrationStopCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error {
-	ctx := gContext
+func (c *dbaasMigrationStopCmd) CmdRun(cmd *cobra.Command, args []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasMigrationCmd, &dbaasMigrationStopCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasMigrationCmd, &dbaasMigrationStopCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

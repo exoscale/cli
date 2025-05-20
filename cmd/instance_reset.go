@@ -15,7 +15,7 @@ import (
 )
 
 type instanceResetCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reset"`
 
@@ -28,11 +28,11 @@ type instanceResetCmd struct {
 	Zone               string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceResetCmd) cmdAliases() []string { return nil }
+func (c *instanceResetCmd) CmdAliases() []string { return nil }
 
-func (c *instanceResetCmd) cmdShort() string { return "Reset a Compute instance" }
+func (c *instanceResetCmd) CmdShort() string { return "Reset a Compute instance" }
 
-func (c *instanceResetCmd) cmdLong() string {
+func (c *instanceResetCmd) CmdLong() string {
 	return fmt.Sprintf(`This commands resets a Compute instance to a base template state,
 and optionally resizes the instance's disk'.
 
@@ -44,13 +44,13 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *instanceResetCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -92,18 +92,18 @@ func (c *instanceResetCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceResetCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceResetCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		TemplateVisibility: defaultTemplateVisibility,
 	}))

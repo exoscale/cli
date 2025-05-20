@@ -21,46 +21,46 @@ func (o *computeSSHKeyShowOutput) ToText()      { output.Text(o) }
 func (o *computeSSHKeyShowOutput) ToTable()     { output.Table(o) }
 
 type computeSSHKeyShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	Key string `cli-arg:"#"`
 }
 
-func (c *computeSSHKeyShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *computeSSHKeyShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *computeSSHKeyShowCmd) cmdShort() string {
+func (c *computeSSHKeyShowCmd) CmdShort() string {
 	return "Show an SSH key details"
 }
 
-func (c *computeSSHKeyShowCmd) cmdLong() string {
+func (c *computeSSHKeyShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows an SSH key details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&computeSSHKeyShowOutput{}), ", "))
 }
 
-func (c *computeSSHKeyShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *computeSSHKeyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeSSHKeyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *computeSSHKeyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 
 	sshKey, err := globalstate.EgoscaleV3Client.GetSSHKey(ctx, c.Key)
 	if err != nil {
 		return err
 	}
 
-	return c.outputFunc(&computeSSHKeyShowOutput{
+	return c.OutputFunc(&computeSSHKeyShowOutput{
 		Name:        sshKey.Name,
 		Fingerprint: sshKey.Fingerprint,
 	}, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeSSHKeyCmd, &computeSSHKeyShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

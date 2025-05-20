@@ -110,7 +110,7 @@ var (
 )
 
 type dbaasTypeShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -121,11 +121,11 @@ type dbaasTypeShowCmd struct {
 	ShowBackupConfig string `cli-flag:"backup-config" cli-usage:"show backup configuration for the Database Service type and Plan"`
 }
 
-func (c *dbaasTypeShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *dbaasTypeShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *dbaasTypeShowCmd) cmdShort() string { return "Show a Database Service type details" }
+func (c *dbaasTypeShowCmd) CmdShort() string { return "Show a Database Service type details" }
 
-func (c *dbaasTypeShowCmd) cmdLong() string {
+func (c *dbaasTypeShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Database Service type details.
 
 Supported Database Service type settings:
@@ -154,12 +154,12 @@ Supported output template annotations:
 		strings.Join(output.TemplateAnnotations(&dbaasTypePlanListItemOutput{}), ", "))
 }
 
-func (c *dbaasTypeShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasTypeShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
-	ctx := gContext
+func (c *dbaasTypeShowCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
+	ctx := GContext
 	var err error
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
@@ -184,7 +184,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 				Authorized: utils.DefaultBool(dt.Plans[i].Authorized, false),
 			}
 		}
-		return c.outputFunc(&out, nil)
+		return c.OutputFunc(&out, nil)
 	}
 
 	if c.ShowSettings != "" {
@@ -358,7 +358,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 		if bc == nil {
 			return fmt.Errorf("%q is not a valid plan", c.ShowBackupConfig)
 		}
-		return c.outputFunc(&dbaasTypePlanBackupOutput{
+		return c.OutputFunc(&dbaasTypePlanBackupOutput{
 			Interval:                   &bc.Interval,
 			MaxCount:                   &bc.MaxCount,
 			RecoveryMode:               &bc.RecoveryMode,
@@ -369,7 +369,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 		}, nil)
 	}
 
-	return c.outputFunc(&dbaasTypeShowOutput{
+	return c.OutputFunc(&dbaasTypeShowOutput{
 		Name:        string(dt.Name),
 		Description: dt.Description,
 		AvailableVersions: func() (v []string) {
@@ -383,7 +383,7 @@ func (c *dbaasTypeShowCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasTypeCmd, &dbaasTypeShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasTypeCmd, &dbaasTypeShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -26,31 +26,31 @@ func (o *privateNetworkListOutput) ToText()  { output.Text(o) }
 func (o *privateNetworkListOutput) ToTable() { output.Table(o) }
 
 type privateNetworkListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *privateNetworkListCmd) cmdAliases() []string { return gListAlias }
+func (c *privateNetworkListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *privateNetworkListCmd) cmdShort() string { return "List Private Networks" }
+func (c *privateNetworkListCmd) CmdShort() string { return "List Private Networks" }
 
-func (c *privateNetworkListCmd) cmdLong() string {
+func (c *privateNetworkListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instance Private Networks.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&privateNetworkListItemOutput{}), ", "))
 }
 
-func (c *privateNetworkListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *privateNetworkListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *privateNetworkListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
-	ctx := gContext
+	ctx := GContext
 
 	resp, err := client.ListZones(ctx)
 	if err != nil {
@@ -102,11 +102,11 @@ func (c *privateNetworkListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(privateNetworkCmd, &privateNetworkListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(privateNetworkCmd, &privateNetworkListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -86,7 +86,7 @@ func (o *sksShowOutput) ToTable() {
 }
 
 type sksShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -95,24 +95,24 @@ type sksShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *sksShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *sksShowCmd) cmdShort() string { return "Show an SKS cluster details" }
+func (c *sksShowCmd) CmdShort() string { return "Show an SKS cluster details" }
 
-func (c *sksShowCmd) cmdLong() string {
+func (c *sksShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows an SKS cluster details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&sksShowOutput{}), ", "))
 }
 
-func (c *sksShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *sksShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
@@ -137,7 +137,7 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(
+	return c.OutputFunc(
 		&sksShowOutput{
 			AddOns: func() (v []string) {
 				if cluster.Addons != nil {
@@ -175,7 +175,7 @@ func (c *sksShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

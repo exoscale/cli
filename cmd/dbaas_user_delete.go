@@ -7,7 +7,7 @@ import (
 )
 
 type dbaasUserDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -18,22 +18,22 @@ type dbaasUserDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *dbaasUserDeleteCmd) cmdAliases() []string { return nil }
+func (c *dbaasUserDeleteCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasUserDeleteCmd) cmdShort() string { return "Delete DBAAS user" }
+func (c *dbaasUserDeleteCmd) CmdShort() string { return "Delete DBAAS user" }
 
-func (c *dbaasUserDeleteCmd) cmdLong() string {
+func (c *dbaasUserDeleteCmd) CmdLong() string {
 	return `This command deletes a DBAAS user for the specified service.`
 }
 
-func (c *dbaasUserDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasUserDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasUserDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasUserDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (c *dbaasUserDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasUserCmd, &dbaasUserDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasUserCmd, &dbaasUserDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

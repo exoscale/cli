@@ -99,8 +99,8 @@ Supported output template annotations:
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
@@ -111,22 +111,22 @@ Supported output template annotations:
 		}
 
 		if prefix == "" {
-			if err := storage.SetBucketACL(gContext, bucket, acl); err != nil {
+			if err := storage.SetBucketACL(GContext, bucket, acl); err != nil {
 				return fmt.Errorf("unable to set ACL: %w", err)
 			}
 
 			if !globalstate.Quiet {
-				return printOutput(storage.ShowBucket(gContext, bucket))
+				return printOutput(storage.ShowBucket(GContext, bucket))
 			}
 			return nil
 		}
 
-		if err := storage.SetObjectsACL(gContext, bucket, prefix, acl, recursive); err != nil {
+		if err := storage.SetObjectsACL(GContext, bucket, prefix, acl, recursive); err != nil {
 			return fmt.Errorf("unable to set ACL: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(gContext, bucket, prefix))
+			return printOutput(storage.ShowObject(GContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {

@@ -10,7 +10,7 @@ import (
 )
 
 type sksRotateOperatorsCACmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"rotate-operators-ca"`
 
@@ -18,24 +18,24 @@ type sksRotateOperatorsCACmd struct {
 	Zone    v3.ZoneName `cli-flag:"zone" cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksRotateOperatorsCACmd) cmdAliases() []string { return nil }
+func (c *sksRotateOperatorsCACmd) CmdAliases() []string { return nil }
 
-func (c *sksRotateOperatorsCACmd) cmdShort() string {
+func (c *sksRotateOperatorsCACmd) CmdShort() string {
 	return "Rotate the Exoscale Operators Certificate Authority for an SKS cluster"
 }
 
-func (c *sksRotateOperatorsCACmd) cmdLong() string {
+func (c *sksRotateOperatorsCACmd) CmdLong() string {
 	return `This command rotates the Exoscale certificate authority (CA) used by Kubernetes operators within the SKS control plane, ensuring secure communication and certificate management for cluster operations.
 `
 }
 
-func (c *sksRotateOperatorsCACmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksRotateOperatorsCACmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksRotateOperatorsCACmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *sksRotateOperatorsCACmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (c *sksRotateOperatorsCACmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksRotateOperatorsCACmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksRotateOperatorsCACmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

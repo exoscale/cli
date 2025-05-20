@@ -58,31 +58,31 @@ func (o *instanceTypeListOutput) ToTable() {
 }
 
 type instanceTypeListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Verbose bool `cli-short:"v" cli-help:"show additional information about Compute instance types"`
 }
 
-func (c *instanceTypeListCmd) cmdAliases() []string { return nil }
+func (c *instanceTypeListCmd) CmdAliases() []string { return nil }
 
-func (c *instanceTypeListCmd) cmdShort() string { return "List Compute instance types" }
+func (c *instanceTypeListCmd) CmdShort() string { return "List Compute instance types" }
 
-func (c *instanceTypeListCmd) cmdLong() string {
+func (c *instanceTypeListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists available Compute instance types.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceTypeListItemOutput{}), ", "))
 }
 
-func (c *instanceTypeListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceTypeListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceTypeListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
-		gContext,
+		GContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
@@ -107,11 +107,11 @@ func (c *instanceTypeListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceTypeCmd, &instanceTypeListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceTypeCmd, &instanceTypeListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

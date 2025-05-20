@@ -28,11 +28,11 @@ type testCLICmd struct {
 	run     func(_ *cobra.Command, _ []string) error `cli:"-"`
 }
 
-func (c *testCLICmd) cmdAliases() []string                              { return c.aliases }
-func (c *testCLICmd) cmdShort() string                                  { return c.short }
-func (c *testCLICmd) cmdLong() string                                   { return c.long }
-func (c *testCLICmd) cmdPreRun(cmd *cobra.Command, args []string) error { return c.preRun(cmd, args) }
-func (c *testCLICmd) cmdRun(cmd *cobra.Command, args []string) error    { return c.run(cmd, args) }
+func (c *testCLICmd) CmdAliases() []string                              { return c.aliases }
+func (c *testCLICmd) CmdShort() string                                  { return c.short }
+func (c *testCLICmd) CmdLong() string                                   { return c.long }
+func (c *testCLICmd) CmdPreRun(cmd *cobra.Command, args []string) error { return c.preRun(cmd, args) }
+func (c *testCLICmd) CmdRun(cmd *cobra.Command, args []string) error    { return c.run(cmd, args) }
 
 func Test_cliCommandFlagName(t *testing.T) {
 	cmd := &testCLICmd{}
@@ -203,7 +203,7 @@ func Test_cliCommandDefaultPreRun(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			actual := new(testCLICmd)
-			err := cliCommandDefaultPreRun(actual, tt.args.cmd, tt.args.args)
+			err := CliCommandDefaultPreRun(actual, tt.args.cmd, tt.args.args)
 			if tt.wantErr {
 				require.Error(t, err)
 			} else {
@@ -241,7 +241,7 @@ func Test_registerCobraCommand(t *testing.T) {
 	}
 
 	testCmd.preRun = func(cmd *cobra.Command, args []string) error {
-		if err := cliCommandDefaultPreRun(testCmd, cmd, args); err != nil {
+		if err := CliCommandDefaultPreRun(testCmd, cmd, args); err != nil {
 			return err
 		}
 
@@ -262,7 +262,7 @@ func Test_registerCobraCommand(t *testing.T) {
 		return nil
 	}
 
-	err := registerCLICommand(rootCmd, testCmd)
+	err := RegisterCLICommand(rootCmd, testCmd)
 	require.NoError(t, err)
 	require.Len(t, rootCmd.Commands(), 1)
 
