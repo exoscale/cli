@@ -82,7 +82,9 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return errors.New("service not found")
 	}
 
-	svc := v3.UpdateLoadBalancerServiceRequest{}
+	svc := v3.UpdateLoadBalancerServiceRequest{
+		Healthcheck: service.Healthcheck,
+	}
 
 	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
 		svc.Description = c.Description
@@ -124,10 +126,10 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	// If mode is is tcp, ensure URI and TLSSNI are not set
-	if svc.Healthcheck.Mode == "tcp" && c.HealthcheckTLSSNI != "" {
+	if c.HealthcheckMode == "tcp" && c.HealthcheckTLSSNI != "" {
 		return fmt.Errorf("cannot setup healthcheck TLSSNI with TCP mode (current value: %q)", c.HealthcheckTLSSNI)
 	}
-	if svc.Healthcheck.Mode == "tcp" && c.HealthcheckURI != "" {
+	if c.HealthcheckMode == "tcp" && c.HealthcheckURI != "" {
 		return fmt.Errorf("cannot setup healthcheck URI with TCP mode (current value: %q)", c.HealthcheckURI)
 	}
 

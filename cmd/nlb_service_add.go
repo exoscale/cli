@@ -62,11 +62,12 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			Retries:  c.HealthcheckRetries,
 			Timeout:  c.HealthcheckTimeout,
 		},
-		Name:       c.Name,
-		Port:       c.Port,
-		Protocol:   v3.AddServiceToLoadBalancerRequestProtocol(c.Protocol),
-		Strategy:   v3.AddServiceToLoadBalancerRequestStrategy(c.Strategy),
-		TargetPort: c.TargetPort,
+		Name:         c.Name,
+		Port:         c.Port,
+		Protocol:     v3.AddServiceToLoadBalancerRequestProtocol(c.Protocol),
+		Strategy:     v3.AddServiceToLoadBalancerRequestStrategy(c.Strategy),
+		TargetPort:   c.TargetPort,
+		InstancePool: &v3.InstancePool{},
 	}
 
 	ctx := gContext
@@ -76,8 +77,8 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if strings.HasPrefix(string(service.Healthcheck.Mode), "http") && service.Healthcheck.URI == "" {
-		return errors.New(`an healthcheck URI is required in "http(s)" mode`)
+	if strings.HasPrefix(string(service.Healthcheck.Mode), "http") && c.HealthcheckURI == "" {
+		return errors.New(`a healthcheck URI is required in "http(s)" mode`)
 	}
 
 	if service.TargetPort == 0 {
@@ -130,7 +131,7 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return (&nlbServiceShowCmd{
 			cliCommandSettings:  c.cliCommandSettings,
 			NetworkLoadBalancer: nlb.ID.String(),
-			Service:             op.Reference.ID.String(),
+			Service:             service.Name,
 			Zone:                c.Zone,
 		}).cmdRun(nil, nil)
 	}
