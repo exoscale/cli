@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -93,7 +94,7 @@ func (o *nlbServiceShowOutput) ToTable() {
 }
 
 type nlbServiceShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -103,26 +104,26 @@ type nlbServiceShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
-func (c *nlbServiceShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *nlbServiceShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
-func (c *nlbServiceShowCmd) cmdShort() string { return "Show a Network Load Balancer service details" }
+func (c *nlbServiceShowCmd) CmdShort() string { return "Show a Network Load Balancer service details" }
 
-func (c *nlbServiceShowCmd) cmdLong() string {
+func (c *nlbServiceShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Network Load Balancer service details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&nlbServiceShowOutput{}), ", "))
 }
 
-func (c *nlbServiceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *nlbServiceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *nlbServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var svc *egoscale.NetworkLoadBalancerService
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
@@ -172,11 +173,11 @@ func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}(),
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(nlbServiceCmd, &nlbServiceShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

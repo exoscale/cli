@@ -6,14 +6,16 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type nlbUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -25,11 +27,11 @@ type nlbUpdateCmd struct {
 	Zone        string            `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
-func (c *nlbUpdateCmd) cmdAliases() []string { return nil }
+func (c *nlbUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *nlbUpdateCmd) cmdShort() string { return "Update a Network Load Balancer" }
+func (c *nlbUpdateCmd) CmdShort() string { return "Update a Network Load Balancer" }
 
-func (c *nlbUpdateCmd) cmdLong() string {
+func (c *nlbUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates a Network Load Balancer.
 
 Supported output template annotations: %s`,
@@ -37,38 +39,38 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *nlbUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *nlbUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *nlbUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *nlbUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
 		nlb.Description = &c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
 		nlb.Labels = &c.Labels
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
 		nlb.Name = &c.Name
 		updated = true
 	}
 
 	if updated {
-		decorateAsyncOperation(
+		utils.DecorateAsyncOperation(
 			fmt.Sprintf("Updating Network Load Balancer %q...", c.NetworkLoadBalancer),
 			func() {
 				if err = globalstate.EgoscaleClient.UpdateNetworkLoadBalancer(ctx, c.Zone, nlb); err != nil {
@@ -82,17 +84,17 @@ func (c *nlbUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&nlbShowCmd{
-			cliCommandSettings:  c.cliCommandSettings,
+			CliCommandSettings:  c.CliCommandSettings,
 			NetworkLoadBalancer: *nlb.ID,
 			Zone:                c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(nlbCmd, &nlbUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

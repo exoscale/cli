@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -17,7 +18,7 @@ import (
 )
 
 type nlbServiceAddCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"add"`
 
@@ -40,23 +41,23 @@ type nlbServiceAddCmd struct {
 	Zone                string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
-func (c *nlbServiceAddCmd) cmdAliases() []string { return nil }
+func (c *nlbServiceAddCmd) CmdAliases() []string { return nil }
 
-func (c *nlbServiceAddCmd) cmdShort() string { return "Add a service to a Network Load Balancer" }
+func (c *nlbServiceAddCmd) CmdShort() string { return "Add a service to a Network Load Balancer" }
 
-func (c *nlbServiceAddCmd) cmdLong() string {
+func (c *nlbServiceAddCmd) CmdLong() string {
 	return fmt.Sprintf(`This command adds a service to a Network Load Balancer.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&nlbServiceShowOutput{}), ", "))
 }
 
-func (c *nlbServiceAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *nlbServiceAddCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *nlbServiceAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var (
 		port       = uint16(c.Port)
 		targetPort = uint16(c.TargetPort)
@@ -94,7 +95,7 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		service.Healthcheck.Port = service.TargetPort
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
 	if err != nil {
@@ -107,7 +108,7 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 	service.InstancePoolID = instancePool.ID
 
-	decorateAsyncOperation(fmt.Sprintf("Adding service %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Adding service %q...", c.Name), func() {
 		service, err = globalstate.EgoscaleClient.CreateNetworkLoadBalancerService(ctx, c.Zone, nlb, service)
 	})
 	if err != nil {
@@ -116,19 +117,19 @@ func (c *nlbServiceAddCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&nlbServiceShowCmd{
-			cliCommandSettings:  c.cliCommandSettings,
+			CliCommandSettings:  c.CliCommandSettings,
 			NetworkLoadBalancer: *nlb.ID,
 			Service:             *service.ID,
 			Zone:                c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceAddCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(nlbServiceCmd, &nlbServiceAddCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		HealthcheckInterval: 10,
 		HealthcheckMode:     "tcp",

@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -28,29 +29,29 @@ func (o *nlbListOutput) ToText()  { output.Text(o) }
 func (o *nlbListOutput) ToTable() { output.Table(o) }
 
 type nlbListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *nlbListCmd) cmdAliases() []string { return gListAlias }
+func (c *nlbListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
-func (c *nlbListCmd) cmdShort() string { return "List Network Load Balancers" }
+func (c *nlbListCmd) CmdShort() string { return "List Network Load Balancers" }
 
-func (c *nlbListCmd) cmdLong() string {
+func (c *nlbListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Network Load Balancers.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&nlbListItemOutput{}), ", "))
 }
 
-func (c *nlbListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *nlbListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *nlbListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
 
 	if c.Zone != "" {
@@ -70,7 +71,7 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 		list, err := globalstate.EgoscaleClient.ListNetworkLoadBalancers(ctx, zone)
 		if err != nil {
@@ -96,11 +97,11 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(nlbCmd, &nlbListCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
