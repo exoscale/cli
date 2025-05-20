@@ -10,7 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamOrgPolicyUpdateCmd struct {
@@ -46,11 +46,11 @@ func (c *iamOrgPolicyUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) err
 }
 
 func (c *iamOrgPolicyUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
-	ctx := exoapi.WithEndpoint(
-		gContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone),
-	)
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
 	if c.Policy == "-" {
 		inputReader := cmd.InOrStdin()
@@ -67,7 +67,13 @@ func (c *iamOrgPolicyUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to parse IAM policy: %w", err)
 	}
 
-	err = globalstate.EgoscaleClient.UpdateIAMOrgPolicy(ctx, zone, policy)
+	op, err := client.UpdateIAMOrganizationPolicy(ctx, *policy)
+	if err != nil {
+		return err
+	}
+	decorateAsyncOperation("Updating IAM org policy...", func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
 	if err != nil {
 		return err
 	}

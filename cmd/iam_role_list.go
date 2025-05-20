@@ -10,7 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamRoleListItemOutput struct {
@@ -47,21 +47,23 @@ func (c *iamRoleListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *iamRoleListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-	iamRoles, err := globalstate.EgoscaleClient.ListIAMRoles(ctx, zone)
+	iamRoles, err := client.ListIAMRoles(ctx)
 	if err != nil {
 		return err
 	}
 
 	out := make(iamRoleListOutput, 0)
 
-	for _, role := range iamRoles {
+	for _, role := range iamRoles.IAMRoles {
 		out = append(out, iamRoleListItemOutput{
-			ID:       utils.DefaultString(role.ID, ""),
-			Name:     utils.DefaultString(role.Name, ""),
+			ID:       role.ID.String(),
+			Name:     role.Name,
 			Editable: utils.DefaultBool(role.Editable, false),
 		})
 	}

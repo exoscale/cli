@@ -9,8 +9,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamOrgPolicyShowCmd struct {
@@ -37,16 +36,19 @@ func (c *iamOrgPolicyShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *iamOrgPolicyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
 
-	policy, err := globalstate.EgoscaleClient.GetIAMOrgPolicy(ctx, zone)
+	policy, err := client.GetIAMOrganizationPolicy(ctx)
 	if err != nil {
 		return err
 	}
 
 	out := iamPolicyOutput{
-		DefaultServiceStrategy: policy.DefaultServiceStrategy,
+		DefaultServiceStrategy: string(policy.DefaultServiceStrategy),
 		Services:               map[string]iamPolicyServiceOutput{},
 	}
 
@@ -54,13 +56,13 @@ func (c *iamOrgPolicyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		rules := []iamPolicyServiceRuleOutput{}
 		for _, rule := range service.Rules {
 			rules = append(rules, iamPolicyServiceRuleOutput{
-				Action:     utils.DefaultString(rule.Action, ""),
-				Expression: utils.DefaultString(rule.Expression, ""),
+				Action:     string(rule.Action),
+				Expression: rule.Expression,
 			})
 		}
 
 		out.Services[name] = iamPolicyServiceOutput{
-			Type:  utils.DefaultString(service.Type, ""),
+			Type:  string(service.Type),
 			Rules: rules,
 		}
 	}

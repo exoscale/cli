@@ -66,7 +66,7 @@ func removeDomainRecord(domainIdent, recordIdent string, force bool) error {
 	}
 
 	decorateAsyncOperation(fmt.Sprintf("Deleting DNS record %q...", domain.UnicodeName), func() {
-		_, err = client.Wait(ctx, op)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err

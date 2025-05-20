@@ -5,8 +5,7 @@ import (
 
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type iamOrgPolicyResetCmd struct {
@@ -39,15 +38,26 @@ func (c *iamOrgPolicyResetCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	zone := account.CurrentAccount.DefaultZone
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-	policy := &exoscale.IAMPolicy{
-		DefaultServiceStrategy: "allow",
-		Services:               map[string]exoscale.IAMPolicyService{},
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
 	}
 
-	return globalstate.EgoscaleClient.UpdateIAMOrgPolicy(ctx, zone, policy)
+	policy := &v3.IAMPolicy{
+		DefaultServiceStrategy: "allow",
+		Services:               map[string]v3.IAMServicePolicy{},
+	}
+
+	op, err := client.UpdateIAMOrganizationPolicy(ctx, *policy)
+	if err != nil {
+		return err
+	}
+
+	decorateAsyncOperation("Resetting IAM org policy...", func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+	})
+	return err
 }
 
 func init() {

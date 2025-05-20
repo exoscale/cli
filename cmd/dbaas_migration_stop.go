@@ -77,7 +77,7 @@ func (c *dbaasMigrationStopCmd) cmdRun(cmd *cobra.Command, args []string) error 
 		return err
 	}
 	decorateAsyncOperation("Stopping Database Migration...", func() {
-		_, err = client.Wait(ctx, op)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 
 	if err != nil {
