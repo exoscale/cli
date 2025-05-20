@@ -26,28 +26,28 @@ func (o *iamRoleListOutput) ToText()  { output.Text(o) }
 func (o *iamRoleListOutput) ToTable() { output.Table(o) }
 
 type iamRoleListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *iamRoleListCmd) cmdAliases() []string { return gListAlias }
+func (c *iamRoleListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *iamRoleListCmd) cmdShort() string { return "List IAM Roles" }
+func (c *iamRoleListCmd) CmdShort() string { return "List IAM Roles" }
 
-func (c *iamRoleListCmd) cmdLong() string {
+func (c *iamRoleListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists existing IAM Roles.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamRoleListOutput{}), ", "))
 }
 
-func (c *iamRoleListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamRoleListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamRoleListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *iamRoleListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
@@ -68,11 +68,11 @@ func (c *iamRoleListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&out, err)
+	return c.OutputFunc(&out, err)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamRoleCmd, &iamRoleListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

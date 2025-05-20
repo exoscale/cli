@@ -28,7 +28,7 @@ func (o *iamRoleShowOutput) ToText()  { output.Text(o) }
 func (o *iamRoleShowOutput) ToTable() { output.Table(o) }
 
 type iamRoleShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -37,29 +37,29 @@ type iamRoleShowCmd struct {
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 }
 
-func (c *iamRoleShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *iamRoleShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *iamRoleShowCmd) cmdShort() string {
+func (c *iamRoleShowCmd) CmdShort() string {
 	return "Show Role details"
 }
 
-func (c *iamRoleShowCmd) cmdLong() string {
+func (c *iamRoleShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows IAM Role details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamRoleShowOutput{}), ", "))
 }
 
-func (c *iamRoleShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamRoleShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamRoleShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *iamRoleShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if c.Role == "" {
 		return errors.New("role ID not provided")
 	}
 
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
@@ -100,7 +100,7 @@ func (c *iamRoleShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 			}
 		}
 
-		return c.outputFunc(&out, nil)
+		return c.OutputFunc(&out, nil)
 	}
 
 	out := iamRoleShowOutput{
@@ -112,11 +112,11 @@ func (c *iamRoleShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Permissions: role.Permissions,
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamRoleCmd, &iamRoleShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }
