@@ -233,8 +233,6 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		} else {
 			return err
 		}
-	} else if rdns == nil {
-		out.ReverseDNS = ""
 	} else {
 		out.ReverseDNS = rdns.DomainName
 	}
