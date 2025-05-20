@@ -11,5 +11,5 @@ var securityGroupCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(securityGroupCmd)
+	ComputeCmd.AddCommand(securityGroupCmd)
 }

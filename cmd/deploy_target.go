@@ -11,5 +11,5 @@ var deployTargetCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(deployTargetCmd)
+	ComputeCmd.AddCommand(deployTargetCmd)
 }

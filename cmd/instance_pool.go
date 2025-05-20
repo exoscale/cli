@@ -11,5 +11,5 @@ var instancePoolCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(instancePoolCmd)
+	ComputeCmd.AddCommand(instancePoolCmd)
 }

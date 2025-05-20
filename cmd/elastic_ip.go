@@ -11,5 +11,5 @@ var elasticIPCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(elasticIPCmd)
+	ComputeCmd.AddCommand(elasticIPCmd)
 }

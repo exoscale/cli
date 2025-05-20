@@ -11,5 +11,5 @@ var antiAffinityGroupCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(antiAffinityGroupCmd)
+	ComputeCmd.AddCommand(antiAffinityGroupCmd)
 }

@@ -11,5 +11,5 @@ var blockstorageCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(blockstorageCmd)
+	ComputeCmd.AddCommand(blockstorageCmd)
 }
