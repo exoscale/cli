@@ -3,7 +3,7 @@ The purpose of this file is to initialize all of the commands, that are spread a
 and to keep the imports in one place, keeping main.go clean.
 */
 
-package cmd_init
+package subcommands
 
 import (
 	_ "github.com/exoscale/cli/cmd/compute/load_balancer"
