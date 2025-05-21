@@ -23,7 +23,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type instanceCreateCmd struct {
+type InstanceCreateCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
@@ -48,11 +48,11 @@ type instanceCreateCmd struct {
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *InstanceCreateCmd) cmdAliases() []string { return gCreateAlias }
 
-func (c *instanceCreateCmd) cmdShort() string { return "Create a Compute instance" }
+func (c *InstanceCreateCmd) cmdShort() string { return "Create a Compute instance" }
 
-func (c *instanceCreateCmd) cmdLong() string {
+func (c *InstanceCreateCmd) cmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance.
 
 Supported Compute instance type families: %s
@@ -65,13 +65,13 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *instanceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *InstanceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	cmdSetTemplateFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
+func (c *InstanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
 	var (
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey
@@ -324,7 +324,7 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceCreateCmd{
+	cobra.CheckErr(registerCLICommand(instanceCmd, &InstanceCreateCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 
 		DiskSize:           50,
