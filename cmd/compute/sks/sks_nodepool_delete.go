@@ -36,13 +36,14 @@ func (c *sksNodepoolDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 }
 
 func (c *sksNodepoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+
 	if !c.Force {
-		if !utils.AskQuestion(exocmd.GContext, fmt.Sprintf("Are you sure you want to delete Nodepool %q?", c.Nodepool)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete Nodepool %q?", c.Nodepool)) {
 			return nil
 		}
 	}
 
-	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err

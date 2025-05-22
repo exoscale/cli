@@ -49,13 +49,15 @@ func (c *sksNodepoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 }
 
 func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+
 	if len(c.Nodes) == 0 {
 		exocmd.CmdExitOnUsageError(cmd, "no nodes specified")
 	}
 
 	if !c.Force {
 		if !utils.AskQuestion(
-			exocmd.GContext,
+			ctx,
 			fmt.Sprintf(
 				"Are you sure you want to evict %v from Nodepool %q?",
 				c.Nodes,
@@ -65,7 +67,6 @@ func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err

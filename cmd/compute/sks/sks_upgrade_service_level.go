@@ -1,6 +1,7 @@
 package sks
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -40,9 +41,9 @@ func (c *sksUpgradeServiceLevelCmd) CmdPreRun(cmd *cobra.Command, args []string)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(cluster string) bool {
+func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(ctx context.Context, cluster string) bool {
 	return utils.AskQuestion(
-		exocmd.GContext,
+		ctx,
 		fmt.Sprintf(
 			"Are you sure you want to upgrade the cluster %q to service level pro?",
 			c.Cluster,
@@ -50,13 +51,14 @@ func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(cluster string) bool {
 }
 
 func (c *sksUpgradeServiceLevelCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+
 	if !c.Force {
-		if !c.confirmUpgrade(c.Cluster) {
+		if !c.confirmUpgrade(ctx, c.Cluster) {
 			return nil
 		}
 	}
 
-	ctx := exocmd.GContext
 	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
