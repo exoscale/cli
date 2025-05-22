@@ -2253,6 +2253,8 @@ type Instance struct {
 	// Instance public IPv4 address
 	PublicIP           net.IP             `json:"public-ip,omitempty"`
 	PublicIPAssignment PublicIPAssignment `json:"public-ip-assignment,omitempty"`
+	// Indicates if the instance has secure boot enabled
+	SecurebootEnabled *bool `json:"secureboot-enabled,omitempty"`
 	// Instance Security Groups
 	SecurityGroups []SecurityGroup `json:"security-groups,omitempty"`
 	// Instance Snapshots
@@ -2264,6 +2266,8 @@ type Instance struct {
 	State   InstanceState `json:"state,omitempty"`
 	// Instance template
 	Template *Template `json:"template,omitempty"`
+	// Indicates if the instance has tpm enabled
+	TpmEnabled *bool `json:"tpm-enabled,omitempty"`
 	// Instance Cloud-init user-data (base64 encoded)
 	UserData string `json:"user-data,omitempty" validate:"omitempty,gte=1"`
 }

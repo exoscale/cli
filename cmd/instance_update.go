@@ -133,7 +133,7 @@ func (c *instanceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           *instance.ID,
-			Zone:               c.Zone,
+			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 

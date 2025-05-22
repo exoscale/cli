@@ -12,6 +12,7 @@ import (
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instancePrivnetUpdateIPCmd struct {
@@ -81,7 +82,7 @@ func (c *instancePrivnetUpdateIPCmd) cmdRun(_ *cobra.Command, _ []string) error 
 		return (&instanceShowCmd{
 			cliCommandSettings: c.cliCommandSettings,
 			Instance:           *instance.ID,
-			Zone:               c.Zone,
+			Zone:               v3.ZoneName(c.Zone),
 		}).cmdRun(nil, nil)
 	}
 
