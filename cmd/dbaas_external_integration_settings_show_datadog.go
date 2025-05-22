@@ -21,7 +21,7 @@ func (o *dbaasExternalIntegrationSettingsShowDatadogOutput) ToTable() { output.T
 func (c *dbaasExternalIntegrationSettingsShowCmd) showDatadog() (output.Outputter, error) {
 	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}

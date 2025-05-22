@@ -73,16 +73,12 @@ func (c *sksUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		updated = true
 	}
 
-<<<<<<< Updated upstream:cmd/sks_update.go
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.FeatureGates)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.FeatureGates)) {
 		updateReq.FeatureGates = c.FeatureGates
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
-=======
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
->>>>>>> Stashed changes:cmd/compute/sks/sks_update.go
 		updateReq.Labels = c.Labels
 		updated = true
 	}

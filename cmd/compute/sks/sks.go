@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/cmd/compute"
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 )
 
@@ -20,5 +20,5 @@ var sksCmd = &cobra.Command{
 }
 
 func init() {
-	compute.ComputeCmd.AddCommand(sksCmd)
+	exocmd.ComputeCmd.AddCommand(sksCmd)
 }

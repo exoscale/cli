@@ -14,7 +14,7 @@ func (c *dbaasServiceCreateCmd) createGrafana(_ *cobra.Command, _ []string) erro
 	var err error
 
 	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
