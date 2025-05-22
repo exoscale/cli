@@ -111,7 +111,7 @@ func (c *sksKubeconfigCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *sksKubeconfigCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}

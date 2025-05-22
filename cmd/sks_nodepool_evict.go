@@ -48,7 +48,7 @@ func (c *sksNodepoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 
 func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.Nodes) == 0 {
-		cmdExitOnUsageError(cmd, "no nodes specified")
+		CmdExitOnUsageError(cmd, "no nodes specified")
 	}
 
 	if !c.Force {
@@ -62,7 +62,7 @@ func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}

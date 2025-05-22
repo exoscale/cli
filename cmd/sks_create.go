@@ -119,7 +119,7 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 
 	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -254,7 +254,7 @@ func init() {
 		CNI:                          defaultSKSClusterCNI,
 		KubernetesVersion:            "latest",
 		NodepoolDiskSize:             50,
-		NodepoolInstanceType:         fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
+		NodepoolInstanceType:         fmt.Sprintf("%s.%s", DefaultInstanceTypeFamily, DefaultInstanceType),
 		NodepoolImageGcLowThreshold:  kubeletImageGcLowThreshold,
 		NodepoolImageGcHighThreshold: kubeletImageGcHighThreshold,
 		NodepoolImageGcMinAge:        kubeletImageGcMinAge,

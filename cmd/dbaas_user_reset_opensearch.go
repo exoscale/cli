@@ -12,7 +12,7 @@ func (c *dbaasUserResetCmd) resetOpensearch(cmd *cobra.Command, _ []string) erro
 
 	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}

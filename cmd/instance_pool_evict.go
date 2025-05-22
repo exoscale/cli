@@ -40,7 +40,7 @@ func (c *instancePoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 
 func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.Instances) == 0 {
-		cmdExitOnUsageError(cmd, "no instances specified")
+		CmdExitOnUsageError(cmd, "no instances specified")
 	}
 
 	if !c.Force {

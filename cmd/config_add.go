@@ -43,7 +43,7 @@ func addConfigAccount(firstRun bool) error {
 	filePath := gConfig.ConfigFileUsed()
 
 	if firstRun {
-		if filePath, err = createConfigFile(defaultConfigFileName); err != nil {
+		if filePath, err = createConfigFile(DefaultConfigFileName); err != nil {
 			return err
 		}
 

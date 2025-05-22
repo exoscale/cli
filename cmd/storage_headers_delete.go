@@ -31,13 +31,13 @@ Supported output template annotations: %s`,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
-			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
+			CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 		}
 
 		var hasHeaderFlagsSet bool
@@ -55,7 +55,7 @@ Supported output template annotations: %s`,
 			}
 		}
 		if !hasHeaderFlagsSet {
-			cmdExitOnUsageError(cmd, "no header flag specified")
+			CmdExitOnUsageError(cmd, "no header flag specified")
 		}
 
 		return nil

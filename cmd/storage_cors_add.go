@@ -74,7 +74,7 @@ Example:
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)

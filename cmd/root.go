@@ -87,9 +87,9 @@ func Execute(version, commit string) {
 
 func init() {
 	account.CurrentAccount = &account.Account{
-		DefaultZone: defaultZone,
-		Environment: defaultEnvironment,
-		SosEndpoint: defaultSosEndpoint,
+		DefaultZone: DefaultZone,
+		Environment: DefaultEnvironment,
+		SosEndpoint: DefaultSosEndpoint,
 	}
 
 	gConfig = viper.New()
@@ -292,11 +292,11 @@ func initConfig() { //nolint:gocyclo
 	}
 
 	if account.CurrentAccount.Environment == "" {
-		account.CurrentAccount.Environment = defaultEnvironment
+		account.CurrentAccount.Environment = DefaultEnvironment
 	}
 
 	if account.CurrentAccount.DefaultZone == "" {
-		account.CurrentAccount.DefaultZone = defaultZone
+		account.CurrentAccount.DefaultZone = DefaultZone
 	}
 
 	// if an output format isn't specified via cli argument, use
@@ -305,12 +305,12 @@ func initConfig() { //nolint:gocyclo
 		if account.CurrentAccount.DefaultOutputFormat != "" {
 			globalstate.OutputFormat = account.CurrentAccount.DefaultOutputFormat
 		} else {
-			globalstate.OutputFormat = defaultOutputFormat
+			globalstate.OutputFormat = DefaultOutputFormat
 		}
 	}
 
 	if account.CurrentAccount.SosEndpoint == "" {
-		account.CurrentAccount.SosEndpoint = defaultSosEndpoint
+		account.CurrentAccount.SosEndpoint = DefaultSosEndpoint
 	}
 
 	clientTimeoutFromEnv := readFromEnv("EXOSCALE_API_TIMEOUT")
