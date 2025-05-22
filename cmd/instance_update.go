@@ -39,7 +39,7 @@ func (c *instanceUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates an Instance .
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }
 

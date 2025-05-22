@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"fmt"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockStorageAttachCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"attach"`
 
@@ -33,13 +35,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *blockStorageAttachCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -74,7 +76,7 @@ func (c *blockStorageAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Attaching volume %q to instance %q...", c.Volume, c.Instance), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Attaching volume %q to instance %q...", c.Volume, c.Instance), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 
@@ -82,7 +84,7 @@ func (c *blockStorageAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(blockstorageCmd, &blockStorageAttachCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageCmd, &blockStorageAttachCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

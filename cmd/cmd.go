@@ -173,7 +173,7 @@ func cliCommandFlagName(c cliCommand, field interface{}) (string, error) {
 	return "", fmt.Errorf("field not found in struct %s", cv.Type())
 }
 
-func convertIfSpecialEmptyMap(m map[string]string) map[string]string {
+func ConvertIfSpecialEmptyMap(m map[string]string) map[string]string {
 	// since it is not possible to pass an empty map
 	// with a spf13/pflag https://github.com/spf13/pflag/issues/312
 	// we use the special value of a map with only

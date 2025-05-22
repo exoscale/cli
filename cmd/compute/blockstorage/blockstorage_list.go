@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -27,14 +28,14 @@ func (o *blockStorageListOutput) ToText()  { output.Text(o) }
 func (o *blockStorageListOutput) ToTable() { output.Table(o) }
 
 type blockStorageListCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *blockStorageListCmd) CmdAliases() []string { return GListAlias }
+func (c *blockStorageListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
 func (c *blockStorageListCmd) CmdShort() string { return "List Block Storage Volumes" }
 
@@ -46,12 +47,12 @@ Supported output template annotations: %s`,
 }
 
 func (c *blockStorageListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
-	ctx := GContext
+	ctx := exocmd.GContext
 
 	resp, err := client.ListZones(ctx)
 	if err != nil {
@@ -99,7 +100,7 @@ func (c *blockStorageListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(blockstorageCmd, &blockStorageListCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageCmd, &blockStorageListCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

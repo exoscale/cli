@@ -38,7 +38,7 @@ func (c *instancePrivnetAttachCmd) CmdLong() string {
 	return fmt.Sprintf(`This command attaches a Compute instance to a Private Network.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }
 

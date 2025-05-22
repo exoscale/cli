@@ -151,7 +151,7 @@ func (c *instancePoolUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error { /
 	}
 
 	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
-		updateReq.Labels = convertIfSpecialEmptyMap(c.Labels)
+		updateReq.Labels = ConvertIfSpecialEmptyMap(c.Labels)
 		updated = true
 	}
 

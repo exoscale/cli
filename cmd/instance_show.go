@@ -16,7 +16,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type instanceShowOutput struct {
+type InstanceShowOutput struct {
 	ID                 v3.UUID           `json:"id"`
 	Name               string            `json:"name"`
 	CreationDate       string            `json:"creation_date"`
@@ -40,10 +40,10 @@ type instanceShowOutput struct {
 	ReverseDNS         v3.DomainName     `json:"reverse_dns" outputLabel:"Reverse DNS"`
 }
 
-func (o *instanceShowOutput) Type() string { return "Compute instance" }
-func (o *instanceShowOutput) ToJSON()      { output.JSON(o) }
-func (o *instanceShowOutput) ToText()      { output.Text(o) }
-func (o *instanceShowOutput) ToTable()     { output.Table(o) }
+func (o *InstanceShowOutput) Type() string { return "Compute instance" }
+func (o *InstanceShowOutput) ToJSON()      { output.JSON(o) }
+func (o *InstanceShowOutput) ToText()      { output.Text(o) }
+func (o *InstanceShowOutput) ToTable()     { output.Table(o) }
 
 type instanceShowCmd struct {
 	CliCommandSettings `cli-cmd:"-"`
@@ -64,7 +64,7 @@ func (c *instanceShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "))
 }
 
 func (c *instanceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
@@ -117,7 +117,7 @@ func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		sshKeyName = &instance.SSHKey.Name
 	}
 
-	out := instanceShowOutput{
+	out := InstanceShowOutput{
 		AntiAffinityGroups: make([]string, 0),
 		CreationDate:       instance.CreatedAT.String(),
 		DiskSize:           humanize.IBytes(uint64(instance.DiskSize << 30)),

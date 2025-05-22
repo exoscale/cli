@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"fmt"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockStorageSnapshotCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -22,7 +24,7 @@ type blockStorageSnapshotCreateCmd struct {
 	Zone   v3.ZoneName       `cli-short:"z" cli-usage:"block storage volume snapshot zone"`
 }
 
-func (c *blockStorageSnapshotCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *blockStorageSnapshotCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *blockStorageSnapshotCreateCmd) CmdShort() string {
 	return "Create a Block Storage Volume Snapshot"
@@ -36,13 +38,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *blockStorageSnapshotCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageSnapshotCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -67,7 +69,7 @@ func (c *blockStorageSnapshotCreateCmd) CmdRun(_ *cobra.Command, _ []string) err
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Snapshotting block storage volume %q...", c.Volume), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Snapshotting block storage volume %q...", c.Volume), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -91,7 +93,7 @@ func (c *blockStorageSnapshotCreateCmd) CmdRun(_ *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

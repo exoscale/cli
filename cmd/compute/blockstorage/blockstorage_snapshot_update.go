@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"fmt"
@@ -6,13 +6,14 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type blockStorageSnapshotUpdateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -36,13 +37,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *blockStorageSnapshotUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageSnapshotUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -59,13 +60,13 @@ func (c *blockStorageSnapshotUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) e
 
 	var updated bool
 	updateReq := v3.UpdateBlockStorageSnapshotRequest{}
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
-		updateReq.Labels = convertIfSpecialEmptyMap(c.Labels)
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
+		updateReq.Labels = exocmd.ConvertIfSpecialEmptyMap(c.Labels)
 
 		updated = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Rename)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Rename)) {
 		updateReq.Name = &c.Rename
 
 		updated = true
@@ -99,7 +100,7 @@ func (c *blockStorageSnapshotUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) e
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotUpdateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
