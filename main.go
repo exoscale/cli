@@ -20,7 +20,7 @@ import (
 	"log"
 
 	"github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/cmd/subcommands"
+	_ "github.com/exoscale/cli/cmd/subcommands"
 )
 
 var (
@@ -32,6 +32,5 @@ var (
 
 func main() {
 	log.SetFlags(0)
-	subcommands.InitCommands()
 	cmd.Execute(version, commit)
 }
