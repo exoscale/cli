@@ -22,6 +22,7 @@
 - JSON output: do not escape HTML #682
 - IAM org policy and roles: move to egoscale v3 #685
 - NLB: moving the logic to the corresponding folder #686
+- AntiAffinity: moving the logic to the corresponding folder #690
 
 ## 1.84.1
 
