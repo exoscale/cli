@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"crypto/rand"
@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -24,7 +25,7 @@ import (
 )
 
 type instanceCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -36,8 +37,6 @@ type instanceCreateCmd struct {
 	DeployTarget       string            `cli-usage:"instance Deploy Target NAME|ID"`
 	DiskSize           int64             `cli-usage:"instance disk size"`
 	IPv6               bool              `cli-flag:"ipv6" cli-usage:"enable IPv6 on instance"`
-	TPM                bool              `cli-flag:"tpm" cli-usage:"enable TPM on instance"`
-	SecureBoot         bool              `cli-flag:"secureboot" cli-usage:"enable Secure boot on instance"`
 	InstanceType       string            `cli-usage:"instance type (format: [FAMILY.]SIZE)"`
 	Labels             map[string]string `cli-flag:"label" cli-usage:"instance label (format: key=value)"`
 	PrivateNetworks    []string          `cli-flag:"private-network" cli-usage:"instance Private Network NAME|ID (can be specified multiple times)"`
@@ -50,7 +49,7 @@ type instanceCreateCmd struct {
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *instanceCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *instanceCreateCmd) CmdShort() string { return "Create a Compute instance" }
 
@@ -64,13 +63,13 @@ Supported Compute instance type sizes: %s
 Supported output template annotations: %s`,
 		strings.Join(instanceTypeFamilies, ", "),
 		strings.Join(instanceTypeSizes, ", "),
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "))
 }
 
 func (c *instanceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	cmdSetTemplateFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	exocmd.CmdSetTemplateFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -78,8 +77,8 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey
 	)
-	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -90,13 +89,11 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 	}
 
 	instanceReq := v3.CreateInstanceRequest{
-		DiskSize:          c.DiskSize,
-		Ipv6Enabled:       &c.IPv6,
-		TpmEnabled:        &c.TPM,
-		SecurebootEnabled: &c.SecureBoot,
-		Labels:            c.Labels,
-		Name:              c.Name,
-		SSHKeys:           sshKeys,
+		DiskSize:    c.DiskSize,
+		Ipv6Enabled: &c.IPv6,
+		Labels:      c.Labels,
+		Name:        c.Name,
+		SSHKeys:     sshKeys,
 	}
 
 	if c.PrivateInstance {
@@ -240,7 +237,7 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 	}
 
 	var instanceID v3.UUID
-	decorateAsyncOperation(fmt.Sprintf("Creating instance %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating instance %q...", c.Name), func() {
 		var op *v3.Operation
 		op, err = client.CreateInstance(ctx, instanceReq)
 		if err != nil {
@@ -319,7 +316,8 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Instance:           instanceID.String(),
-			Zone:               c.Zone,
+			// TODO migrate instanceShow to v3 to pass v3.ZoneName
+			Zone: string(c.Zone),
 		}).CmdRun(nil, nil)
 	}
 
@@ -327,11 +325,11 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		DiskSize:           50,
-		InstanceType:       fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
-		TemplateVisibility: defaultTemplateVisibility,
+		InstanceType:       fmt.Sprintf("%s.%s", exocmd.DefaultInstanceTypeFamily, exocmd.DefaultInstanceType),
+		TemplateVisibility: exocmd.DefaultTemplateVisibility,
 	}))
 }

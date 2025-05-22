@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"errors"
@@ -6,14 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceRebootCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reboot"`
 
@@ -30,12 +31,12 @@ func (c *instanceRebootCmd) CmdShort() string { return "Reboot a Compute instanc
 func (c *instanceRebootCmd) CmdLong() string { return "" }
 
 func (c *instanceRebootCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceRebootCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -46,12 +47,12 @@ func (c *instanceRebootCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to reboot instance %q?", c.Instance)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to reboot instance %q?", c.Instance)) {
 			return nil
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Rebooting instance %q...", c.Instance), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Rebooting instance %q...", c.Instance), func() {
 		err = globalstate.EgoscaleClient.RebootInstance(ctx, c.Zone, instance)
 	})
 	if err != nil {
@@ -62,7 +63,7 @@ func (c *instanceRebootCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
-			Zone:               v3.ZoneName(c.Zone),
+			Zone:               c.Zone,
 		}).CmdRun(nil, nil)
 	}
 
@@ -70,7 +71,7 @@ func (c *instanceRebootCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceRebootCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceRebootCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

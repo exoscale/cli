@@ -127,7 +127,7 @@ func formatDatabaseServiceOpensearchTable(t *table.Table, o *dbServiceOpensearch
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context) (output.Outputter, error) {
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServiceOpensearch(ctx context.Context)
 		return nil, opensearchShowSettings(c.ShowSettings, res)
 	case c.ShowURI:
 		// Read password from dedicated endpoint
-		client, err := switchClientZoneV3(
+		client, err := SwitchClientZoneV3(
 			ctx,
 			globalstate.EgoscaleV3Client,
 			v3.ZoneName(c.Zone),

@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"fmt"
@@ -6,16 +6,17 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceResetCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"reset"`
 
@@ -41,16 +42,16 @@ THIS OPERATION EFFECTIVELY WIPES ALL DATA STORED ON THE INSTANCE'S DISK
 /!\ **************************************************************** /!\
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "))
 }
 
 func (c *instanceResetCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -58,7 +59,7 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to reset instance %q?", c.Instance)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to reset instance %q?", c.Instance)) {
 			return nil
 		}
 	}
@@ -83,7 +84,7 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		opts = append(opts, egoscale.ResetInstanceWithTemplate(template))
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Resetting instance %q...", c.Instance), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Resetting instance %q...", c.Instance), func() {
 		err = globalstate.EgoscaleClient.ResetInstance(ctx, c.Zone, instance, opts...)
 	})
 	if err != nil {
@@ -94,7 +95,7 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
-			Zone:               v3.ZoneName(c.Zone),
+			Zone:               c.Zone,
 		}).CmdRun(nil, nil)
 	}
 
@@ -102,9 +103,9 @@ func (c *instanceResetCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceResetCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceResetCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
-		TemplateVisibility: defaultTemplateVisibility,
+		TemplateVisibility: exocmd.DefaultTemplateVisibility,
 	}))
 }

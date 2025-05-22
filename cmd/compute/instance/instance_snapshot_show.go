@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -29,7 +30,7 @@ func (o *instanceSnapshotShowOutput) ToText()      { output.Text(o) }
 func (o *instanceSnapshotShowOutput) ToTable()     { output.Table(o) }
 
 type instanceSnapshotShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -38,7 +39,7 @@ type instanceSnapshotShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *instanceSnapshotShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *instanceSnapshotShowCmd) CmdShort() string {
 	return "Show a Compute instance snapshot details"
@@ -52,12 +53,12 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceSnapshotShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSnapshotShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
@@ -84,7 +85,7 @@ func (c *instanceSnapshotShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

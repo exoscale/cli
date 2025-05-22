@@ -57,14 +57,14 @@ Supported output template annotations: %s`,
 func (c *instancePoolCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
 	CmdSetZoneFlagFromDefault(cmd)
-	cmdSetTemplateFlagFromDefault(cmd)
+	CmdSetTemplateFlagFromDefault(cmd)
 	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -245,9 +245,9 @@ func init() {
 		CliCommandSettings: DefaultCLICmdSettings(),
 
 		DiskSize:           50,
-		InstanceType:       fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
+		InstanceType:       fmt.Sprintf("%s.%s", DefaultInstanceTypeFamily, DefaultInstanceType),
 		Size:               1,
 		MinAvailable:       0,
-		TemplateVisibility: defaultTemplateVisibility,
+		TemplateVisibility: DefaultTemplateVisibility,
 	}))
 }

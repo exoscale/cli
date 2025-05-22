@@ -16,7 +16,7 @@ var storageRbCmd = &cobra.Command{
 
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if len(args) != 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)

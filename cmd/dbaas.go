@@ -165,7 +165,7 @@ func dbaasShowSettings(settings map[string]interface{}) {
 
 func dbaasGetV3(ctx context.Context, name, zone string) (v3.DBAASServiceCommon, error) {
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 	if err != nil {
 		return v3.DBAASServiceCommon{}, err
 	}

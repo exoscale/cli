@@ -76,20 +76,20 @@ func CmdSetZoneFlagFromDefault(cmd *cobra.Command) {
 	}
 }
 
-// cmdSetTemplateFlagFromDefault  attempts to set the "--template" flag value based on the current active account's
+// CmdSetTemplateFlagFromDefault  attempts to set the "--template" flag value based on the current active account's
 // default template setting if set. This is a convenience helper, there is no guarantee that the flag will be
 // set once this function returns.
-func cmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
+func CmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
 	if cmd.Flag("template").Value.String() == "" {
 		if account.CurrentAccount.DefaultTemplate != "" {
 			cmd.Flag("template").Value.Set(account.CurrentAccount.DefaultTemplate) // nolint:errcheck
 		} else {
-			cmd.Flag("template").Value.Set(defaultTemplate) // nolint:errcheck
+			cmd.Flag("template").Value.Set(DefaultTemplate) // nolint:errcheck
 		}
 	}
 }
 
-func cmdExitOnUsageError(cmd *cobra.Command, reason string) {
+func CmdExitOnUsageError(cmd *cobra.Command, reason string) {
 	cmd.PrintErrln(fmt.Sprintf("error: %s", reason))
 	cmd.Usage() // nolint:errcheck
 	os.Exit(1)

@@ -1,6 +1,7 @@
-package cmd
+package instance
 
 import (
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -33,5 +34,5 @@ var instanceCmd = &cobra.Command{
 }
 
 func init() {
-	ComputeCmd.AddCommand(instanceCmd)
+	exocmd.ComputeCmd.AddCommand(instanceCmd)
 }

@@ -18,17 +18,17 @@ import (
 )
 
 const (
-	legacyAPIVersion          = "compute"
-	defaultEnvironment        = "api"
-	defaultConfigFileName     = "exoscale"
-	defaultInstanceType       = "medium"
-	defaultInstanceTypeFamily = "standard"
-	defaultTemplate           = "Linux Ubuntu 22.04 LTS 64-bit"
-	defaultTemplateVisibility = "public"
-	defaultSosEndpoint        = "https://sos-{zone}.exo.io"
-	defaultZone               = "ch-dk-2"
-	defaultOutputFormat       = "table"
-	defaultClientTimeout      = 20
+	LegacyAPIVersion          = "compute"
+	DefaultEnvironment        = "api"
+	DefaultConfigFileName     = "exoscale"
+	DefaultInstanceType       = "medium"
+	DefaultInstanceTypeFamily = "standard"
+	DefaultTemplate           = "Linux Ubuntu 22.04 LTS 64-bit"
+	DefaultTemplateVisibility = "public"
+	DefaultSosEndpoint        = "https://sos-{zone}.exo.io"
+	DefaultZone               = "ch-dk-2"
+	DefaultOutputFormat       = "table"
+	DefaultClientTimeout      = 20
 )
 
 var configCmd = &cobra.Command{
@@ -281,7 +281,7 @@ func getAccountByName(name string) *account.Account {
 func chooseZone(client *egoscale.Client, zones []string) (string, error) {
 	if zones == nil {
 
-		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(defaultEnvironment, defaultZone))
+		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(DefaultEnvironment, DefaultZone))
 		var err error
 		zones, err = client.ListZones(ctx)
 

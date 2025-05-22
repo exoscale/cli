@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"fmt"
@@ -8,12 +8,14 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -23,20 +25,20 @@ type instanceDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceDeleteCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *instanceDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *instanceDeleteCmd) CmdShort() string { return "Delete a Compute instance" }
 
 func (c *instanceDeleteCmd) CmdLong() string { return "" }
 
 func (c *instanceDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := switchClientZoneV3(
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(
 		ctx,
 		globalstate.EgoscaleV3Client,
 		v3.ZoneName(c.Zone),
@@ -63,7 +65,7 @@ func (c *instanceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 
 		if !c.Force {
-			if !askQuestion(fmt.Sprintf("Are you sure you want to delete instance %q?", i)) {
+			if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete instance %q?", i)) {
 				return nil
 			}
 		}
@@ -83,7 +85,7 @@ func (c *instanceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	err = decorateAsyncOperations(fmt.Sprintf("Deleting instance %q...", strings.Join(c.Instances, ", ")), fns...)
+	err = utils.DecorateAsyncOperations(fmt.Sprintf("Deleting instance %q...", strings.Join(c.Instances, ", ")), fns...)
 	if err != nil {
 		return err
 	}
@@ -103,7 +105,7 @@ func (c *instanceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

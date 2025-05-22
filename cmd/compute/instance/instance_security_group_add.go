@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"errors"
@@ -7,18 +7,19 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type instanceSGRemoveCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+type instanceSGAddCmd struct {
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
-	_ bool `cli-cmd:"remove"`
+	_ bool `cli-cmd:"add"`
 
 	Instance       string   `cli-arg:"#" cli-usage:"INSTANCE-NAME|ID"`
 	SecurityGroups []string `cli-arg:"*" cli-usage:"SECURITY-GROUP-NAME|ID"`
@@ -26,31 +27,29 @@ type instanceSGRemoveCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceSGRemoveCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *instanceSGAddCmd) CmdAliases() []string { return nil }
 
-func (c *instanceSGRemoveCmd) CmdShort() string {
-	return "Remove a Compute instance from Security Groups"
-}
+func (c *instanceSGAddCmd) CmdShort() string { return "Add a Compute instance to Security Groups" }
 
-func (c *instanceSGRemoveCmd) CmdLong() string {
-	return fmt.Sprintf(`This command removes a Compute instance from Security Groups.
+func (c *instanceSGAddCmd) CmdLong() string {
+	return fmt.Sprintf(`This command adds a Compute instance to Security Groups.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }
 
-func (c *instanceSGRemoveCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSGAddCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instanceSGAddCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.SecurityGroups) == 0 {
-		cmdExitOnUsageError(cmd, "no Security Groups specified")
+		exocmd.CmdExitOnUsageError(cmd, "no Security Groups specified")
 	}
 
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -69,9 +68,9 @@ func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		securityGroups[i] = securityGroup
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Updating instance %q Security Groups...", c.Instance), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Updating instance %q Security Groups...", c.Instance), func() {
 		for _, securityGroup := range securityGroups {
-			if err = globalstate.EgoscaleClient.DetachInstanceFromSecurityGroup(ctx, c.Zone, instance, securityGroup); err != nil {
+			if err = globalstate.EgoscaleClient.AttachInstanceToSecurityGroup(ctx, c.Zone, instance, securityGroup); err != nil {
 				return
 			}
 		}
@@ -84,7 +83,7 @@ func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
-			Zone:               v3.ZoneName(c.Zone),
+			Zone:               c.Zone,
 		}).CmdRun(nil, nil)
 	}
 
@@ -92,7 +91,7 @@ func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceSGCmd, &instanceSGRemoveCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSGCmd, &instanceSGAddCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

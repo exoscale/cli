@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"errors"
@@ -6,15 +6,16 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
-	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceStartCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"start"`
 
@@ -32,12 +33,12 @@ func (c *instanceStartCmd) CmdShort() string { return "Start a Compute instance"
 func (c *instanceStartCmd) CmdLong() string { return "" }
 
 func (c *instanceStartCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -48,7 +49,7 @@ func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to start instance %q?", c.Instance)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to start instance %q?", c.Instance)) {
 			return nil
 		}
 	}
@@ -58,7 +59,7 @@ func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		opts = append(opts, egoscale.StartInstanceWithRescueProfile(c.RescueProfile))
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Starting instance %q...", c.Instance), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Starting instance %q...", c.Instance), func() {
 		err = globalstate.EgoscaleClient.StartInstance(ctx, c.Zone, instance, opts...)
 	})
 	if err != nil {
@@ -69,7 +70,7 @@ func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
-			Zone:               v3.ZoneName(c.Zone),
+			Zone:               c.Zone,
 		}).CmdRun(nil, nil)
 	}
 
@@ -77,7 +78,7 @@ func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceStartCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceStartCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

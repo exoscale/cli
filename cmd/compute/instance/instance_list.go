@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"fmt"
@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -17,7 +18,7 @@ import (
 )
 
 const (
-	emptyIPAddressVisualization = "-"
+	EmptyIPAddressVisualization = "-"
 )
 
 type instanceListItemOutput struct {
@@ -36,14 +37,14 @@ func (o *instanceListOutput) ToText()  { output.Text(o) }
 func (o *instanceListOutput) ToTable() { output.Table(o) }
 
 type instanceListCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *instanceListCmd) CmdAliases() []string { return GListAlias }
+func (c *instanceListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
 func (c *instanceListCmd) CmdShort() string { return "List Compute instances" }
 
@@ -55,7 +56,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -80,7 +81,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 		list, err := globalstate.EgoscaleClient.ListInstances(ctx, zone)
 		if err != nil {
@@ -108,7 +109,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				Name:      *i.Name,
 				Zone:      zone,
 				Type:      fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size),
-				IPAddress: utils.DefaultIP(i.PublicIPAddress, emptyIPAddressVisualization),
+				IPAddress: utils.DefaultIP(i.PublicIPAddress, EmptyIPAddressVisualization),
 				State:     *i.State,
 			}
 		}
@@ -127,7 +128,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceListCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceListCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

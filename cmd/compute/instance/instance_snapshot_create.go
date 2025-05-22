@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"context"
@@ -8,15 +8,17 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	egoscale "github.com/exoscale/egoscale/v2"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type instanceSnapshotCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -25,7 +27,7 @@ type instanceSnapshotCreateCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceSnapshotCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *instanceSnapshotCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *instanceSnapshotCreateCmd) CmdShort() string { return "Create a Compute instance snapshot" }
 
@@ -37,12 +39,12 @@ Supported output template annotations: %s`,
 }
 
 func (c *instanceSnapshotCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSnapshotCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -53,7 +55,7 @@ func (c *instanceSnapshotCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	var snapshot *egoscale.Snapshot
-	decorateAsyncOperation(fmt.Sprintf("Creating snapshot of instance %q...", c.Instance), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating snapshot of instance %q...", c.Instance), func() {
 		snapshot, err = globalstate.EgoscaleClient.CreateInstanceSnapshot(ctx, c.Zone, instance)
 		if err != nil {
 			if errors.Is(err, context.DeadlineExceeded) {
@@ -78,7 +80,7 @@ func (c *instanceSnapshotCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

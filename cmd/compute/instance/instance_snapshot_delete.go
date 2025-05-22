@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"errors"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type instanceSnapshotDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,7 +24,7 @@ type instanceSnapshotDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotDeleteCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *instanceSnapshotDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *instanceSnapshotDeleteCmd) CmdShort() string {
 	return "Delete a Compute instance snapshot"
@@ -31,12 +33,12 @@ func (c *instanceSnapshotDeleteCmd) CmdShort() string {
 func (c *instanceSnapshotDeleteCmd) CmdLong() string { return "" }
 
 func (c *instanceSnapshotDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
@@ -47,12 +49,12 @@ func (c *instanceSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete snapshot %s?", c.ID)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete snapshot %s?", c.ID)) {
 			return nil
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting snapshot %s...", c.ID), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting snapshot %s...", c.ID), func() {
 		err = globalstate.EgoscaleClient.DeleteSnapshot(ctx, c.Zone, snapshot)
 	})
 	if err != nil {
@@ -63,7 +65,7 @@ func (c *instanceSnapshotDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

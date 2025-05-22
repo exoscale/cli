@@ -31,12 +31,12 @@ var storageBucketObjectVersioningCmd = &cobra.Command{
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		permittedOps := collections.NewSet(objVersioningStatus, objVersioningEnable, objVersioningSuspend)
 		if !permittedOps.Contains(args[objOwnershipOpArgIndex]) {
-			cmdExitOnUsageError(cmd, "invalid operation")
+			CmdExitOnUsageError(cmd, "invalid operation")
 		}
 
 		args[objVersioningBucketArgIndex] = strings.TrimPrefix(args[objVersioningBucketArgIndex], sos.BucketPrefix)

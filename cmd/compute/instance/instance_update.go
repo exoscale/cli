@@ -1,4 +1,4 @@
-package cmd
+package instance
 
 import (
 	"errors"
@@ -7,16 +7,18 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/pkg/userdata"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceUpdateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -39,19 +41,19 @@ func (c *instanceUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates an Instance .
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "),
+		strings.Join(output.TemplateAnnotations(&InstanceShowOutput{}), ", "),
 	)
 }
 
 func (c *instanceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updatedInstance, updatedRDNS bool
 
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -61,17 +63,17 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
 		instance.Labels = &c.Labels
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
 		instance.Name = &c.Name
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.CloudInitFile)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.CloudInitFile)) {
 		userData, err := userdata.GetUserDataFromFile(c.CloudInitFile, c.CloudInitCompress)
 		if err != nil {
 			return fmt.Errorf("error parsing cloud-init user data: %w", err)
@@ -80,12 +82,12 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		updatedInstance = true
 	}
 
-	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.ReverseDNS)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.ReverseDNS)) {
 		updatedRDNS = true
 	}
 
-	if updatedInstance || updatedRDNS || cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Protection)) {
-		decorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
+	if updatedInstance || updatedRDNS || cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protection)) {
+		utils.DecorateAsyncOperation(fmt.Sprintf("Updating instance %q...", c.Instance), func() {
 			if updatedInstance {
 				if err = globalstate.EgoscaleClient.UpdateInstance(ctx, c.Zone, instance); err != nil {
 					return
@@ -100,9 +102,9 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 				}
 			}
 
-			if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Protection)) {
+			if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protection)) {
 				var client *v3.Client
-				client, err = switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+				client, err = exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 				if err != nil {
 					return
 				}
@@ -133,7 +135,7 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		return (&instanceShowCmd{
 			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
-			Zone:               v3.ZoneName(c.Zone),
+			Zone:               c.Zone,
 		}).CmdRun(nil, nil)
 	}
 
@@ -141,7 +143,7 @@ func (c *instanceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceUpdateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

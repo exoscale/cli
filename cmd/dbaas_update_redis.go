@@ -17,7 +17,7 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 
 	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 
 	if err != nil {
 		return fmt.Errorf("unable to create client: %w", err)

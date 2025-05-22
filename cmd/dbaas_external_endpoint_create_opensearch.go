@@ -11,7 +11,7 @@ import (
 
 func (c *dbaasExternalEndpointCreateCmd) createOpensearch(_ *cobra.Command, _ []string) error {
 	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
