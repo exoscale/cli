@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/cmd/compute/instance"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -46,7 +45,7 @@ func (c *blockStorageSnapshotShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Block Storage Volume Snapshot details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instance.InstanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&exocmd.InstanceShowOutput{}), ", "))
 }
 
 func (c *blockStorageSnapshotShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
