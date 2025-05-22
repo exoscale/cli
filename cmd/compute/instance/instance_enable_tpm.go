@@ -5,12 +5,14 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	utils "github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type instanceEnableTPMCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"enable-tpm"`
 
@@ -27,13 +29,13 @@ func (c *instanceEnableTPMCmd) CmdShort() string { return "Enable Trusted Platfo
 func (c *instanceEnableTPMCmd) CmdLong() string { return "" }
 
 func (c *instanceEnableTPMCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instanceEnableTPMCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -49,7 +51,7 @@ func (c *instanceEnableTPMCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to enable TPM on instance %q?", c.Instance)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to enable TPM on instance %q?", c.Instance)) {
 			return nil
 		}
 	}
@@ -59,7 +61,7 @@ func (c *instanceEnableTPMCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Enabling Trusted Platform Module %q ...", c.Instance), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Enabling Trusted Platform Module %q ...", c.Instance), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 
@@ -67,7 +69,7 @@ func (c *instanceEnableTPMCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceEnableTPMCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instanceCmd, &instanceEnableTPMCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
