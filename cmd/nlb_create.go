@@ -20,7 +20,7 @@ type nlbCreateCmd struct {
 
 	Description string            `cli-usage:"Network Load Balancer description"`
 	Labels      map[string]string `cli-flag:"label" cli-usage:"Network Load Balancer label (format: key=value)"`
-	Zone        string            `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Zone        v3.ZoneName       `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -48,7 +48,7 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	var err error
 
 	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}

@@ -18,8 +18,8 @@ type nlbServiceDeleteCmd struct {
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
 	Service             string `cli-arg:"#" cli-usage:"SERVICE-NAME|ID"`
 
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbServiceDeleteCmd) cmdAliases() []string { return gRemoveAlias }
@@ -36,7 +36,7 @@ func (c *nlbServiceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error
 func (c *nlbServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}

@@ -14,10 +14,10 @@ import (
 )
 
 type nlbListItemOutput struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Zone      string `json:"zone"`
-	IPAddress string `json:"ip_address"`
+	ID        v3.UUID     `json:"id"`
+	Name      string      `json:"name"`
+	Zone      v3.ZoneName `json:"zone"`
+	IPAddress string      `json:"ip_address"`
 }
 
 type nlbListOutput []nlbListItemOutput
@@ -83,9 +83,9 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 		for _, nlb := range list.LoadBalancers {
 			res <- nlbListItemOutput{
-				ID:        nlb.ID.String(),
+				ID:        nlb.ID,
 				Name:      nlb.Name,
-				Zone:      zone,
+				Zone:      v3.ZoneName(zone),
 				IPAddress: nlb.IP.String(),
 			}
 		}

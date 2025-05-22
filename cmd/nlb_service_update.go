@@ -20,20 +20,20 @@ type nlbServiceUpdateCmd struct {
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
 	Service             string `cli-arg:"#" cli-usage:"SERVICE-NAME|ID"`
 
-	Description         string `cli-usage:"service description"`
-	HealthcheckInterval int64  `cli-usage:"service health checking interval in seconds"`
-	HealthcheckMode     string `cli-usage:"service health checking mode (tcp|http|https)"`
-	HealthcheckPort     int64  `cli-usage:"service health checking port"`
-	HealthcheckRetries  int64  `cli-usage:"service health checking retries"`
-	HealthcheckTLSSNI   string `cli-flag:"healthcheck-tls-sni" cli-usage:"service health checking server name to present with SNI in https mode"`
-	HealthcheckTimeout  int64  `cli-usage:"service health checking timeout in seconds"`
-	HealthcheckURI      string `cli-usage:"service health checking URI (required in http(s) mode)"`
-	Name                string `cli-usage:"service name"`
-	Port                int64  `cli-usage:"service port"`
-	Protocol            string `cli-usage:"service network protocol (tcp|udp)"`
-	Strategy            string `cli-usage:"load balancing strategy (round-robin|source-hash)"`
-	TargetPort          int64  `cli-usage:"port to forward traffic to on target instances"`
-	Zone                string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Description         string      `cli-usage:"service description"`
+	HealthcheckInterval int64       `cli-usage:"service health checking interval in seconds"`
+	HealthcheckMode     string      `cli-usage:"service health checking mode (tcp|http|https)"`
+	HealthcheckPort     int64       `cli-usage:"service health checking port"`
+	HealthcheckRetries  int64       `cli-usage:"service health checking retries"`
+	HealthcheckTLSSNI   string      `cli-flag:"healthcheck-tls-sni" cli-usage:"service health checking server name to present with SNI in https mode"`
+	HealthcheckTimeout  int64       `cli-usage:"service health checking timeout in seconds"`
+	HealthcheckURI      string      `cli-usage:"service health checking URI (required in http(s) mode)"`
+	Name                string      `cli-usage:"service name"`
+	Port                int64       `cli-usage:"service port"`
+	Protocol            string      `cli-usage:"service network protocol (tcp|udp)"`
+	Strategy            string      `cli-usage:"load balancing strategy (round-robin|source-hash)"`
+	TargetPort          int64       `cli-usage:"port to forward traffic to on target instances"`
+	Zone                v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbServiceUpdateCmd) cmdAliases() []string { return nil }
@@ -56,7 +56,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	ctx := gContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}

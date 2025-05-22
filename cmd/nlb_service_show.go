@@ -97,7 +97,7 @@ type nlbServiceShowCmd struct {
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
 	Service             string `cli-arg:"#" cli-usage:"SERVICE-NAME|ID"`
 
-	Zone string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbServiceShowCmd) cmdAliases() []string { return gShowAlias }
@@ -120,7 +120,7 @@ func (c *nlbServiceShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	// var svc *egoscale.NetworkLoadBalancerService
 
 	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}

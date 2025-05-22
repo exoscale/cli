@@ -20,7 +20,7 @@ type nlbShowOutput struct {
 	Name         string                 `json:"name"`
 	Description  string                 `json:"description"`
 	CreationDate string                 `json:"creation_date"`
-	Zone         string                 `json:"zone"`
+	Zone         v3.ZoneName            `json:"zone"`
 	IPAddress    string                 `json:"ip_address"`
 	State        string                 `json:"state"`
 	Services     []nlbServiceShowOutput `json:"services"`
@@ -36,7 +36,7 @@ func (o *nlbShowOutput) ToTable() {
 
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Name", o.Name})
-	t.Append([]string{"Zone", o.Zone})
+	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"IP Address", o.IPAddress})
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Creation Date", o.CreationDate})
@@ -88,7 +88,7 @@ type nlbShowCmd struct {
 
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Zone string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbShowCmd) cmdAliases() []string { return gShowAlias }
@@ -110,7 +110,7 @@ func (c *nlbShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
