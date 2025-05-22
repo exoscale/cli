@@ -1,4 +1,4 @@
-package cmd
+package blockstorage
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
+	"github.com/exoscale/cli/cmd/compute/instance"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -28,7 +30,7 @@ func (o *blockStorageSnapshotShowOutput) ToText()      { output.Text(o) }
 func (o *blockStorageSnapshotShowOutput) ToTable()     { output.Table(o) }
 
 type blockStorageSnapshotShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -36,7 +38,7 @@ type blockStorageSnapshotShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 }
 
-func (c *blockStorageSnapshotShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *blockStorageSnapshotShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *blockStorageSnapshotShowCmd) CmdShort() string { return "Show a Block Storage Volume details" }
 
@@ -44,17 +46,17 @@ func (c *blockStorageSnapshotShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Block Storage Volume Snapshot details.
 
 Supported output template annotations: %s`,
-		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
+		strings.Join(output.TemplateAnnotations(&instance.InstanceShowOutput{}), ", "))
 }
 
 func (c *blockStorageSnapshotShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *blockStorageSnapshotShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -80,7 +82,7 @@ func (c *blockStorageSnapshotShowCmd) CmdRun(cmd *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(blockstorageSnapshotCmd, &blockStorageSnapshotShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
