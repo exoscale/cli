@@ -7,18 +7,17 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbListItemOutput struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Zone      string `json:"zone"`
-	IPAddress string `json:"ip_address"`
+	ID        v3.UUID     `json:"id"`
+	Name      string      `json:"name"`
+	Zone      v3.ZoneName `json:"zone"`
+	IPAddress string      `json:"ip_address"`
 }
 
 type nlbListOutput []nlbListItemOutput
@@ -51,6 +50,8 @@ func (c *nlbListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := gContext
+
 	var zones []string
 
 	if c.Zone != "" {
@@ -70,19 +71,22 @@ func (c *nlbListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+		if err != nil {
+			return err
+		}
 
-		list, err := globalstate.EgoscaleClient.ListNetworkLoadBalancers(ctx, zone)
+		list, err := client.ListLoadBalancers(ctx)
 		if err != nil {
 			return fmt.Errorf("unable to list Network Load Balancers in zone %s: %w", zone, err)
 		}
 
-		for _, nlb := range list {
+		for _, nlb := range list.LoadBalancers {
 			res <- nlbListItemOutput{
-				ID:        *nlb.ID,
-				Name:      *nlb.Name,
-				Zone:      zone,
-				IPAddress: utils.DefaultIP(nlb.IPAddress, ""),
+				ID:        nlb.ID,
+				Name:      nlb.Name,
+				Zone:      v3.ZoneName(zone),
+				IPAddress: nlb.IP.String(),
 			}
 		}
 

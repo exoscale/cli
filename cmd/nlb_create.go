@@ -6,12 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbCreateCmd struct {
@@ -23,7 +20,7 @@ type nlbCreateCmd struct {
 
 	Description string            `cli-usage:"Network Load Balancer description"`
 	Labels      map[string]string `cli-flag:"label" cli-usage:"Network Load Balancer label (format: key=value)"`
-	Zone        string            `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Zone        v3.ZoneName       `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbCreateCmd) cmdAliases() []string { return gCreateAlias }
@@ -43,22 +40,26 @@ func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	nlb := &egoscale.NetworkLoadBalancer{
-		Description: utils.NonEmptyStringPtr(c.Description),
-		Labels: func() (v *map[string]string) {
-			if len(c.Labels) > 0 {
-				return &c.Labels
-			}
-			return
-		}(),
-		Name: &c.Name,
+	nlb := v3.CreateLoadBalancerRequest{
+		Description: c.Description,
+		Labels:      c.Labels,
+		Name:        c.Name,
+	}
+	var err error
+
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	op, err := client.CreateLoadBalancer(ctx, nlb)
+	if err != nil {
+		return err
+	}
 
-	var err error
 	decorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", c.Name), func() {
-		nlb, err = globalstate.EgoscaleClient.CreateNetworkLoadBalancer(ctx, c.Zone, nlb)
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
@@ -67,7 +68,7 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&nlbShowCmd{
 			cliCommandSettings:  c.cliCommandSettings,
-			NetworkLoadBalancer: *nlb.ID,
+			NetworkLoadBalancer: op.Reference.ID.String(),
 			Zone:                c.Zone,
 		}).cmdRun(nil, nil)
 	}

@@ -21,6 +21,7 @@
 - dns: move to egoscale v3 #683
 - JSON output: do not escape HTML #682
 - IAM org policy and roles: move to egoscale v3 #685
+- load-balancer: move to egoscale v3 #687
 
 ## 1.84.1
 

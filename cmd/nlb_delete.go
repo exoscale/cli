@@ -5,9 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbDeleteCmd struct {
@@ -17,8 +16,8 @@ type nlbDeleteCmd struct {
 
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Force bool   `cli-short:"f" cli-usage:"don't prompt for confirmation"`
-	Zone  string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Force bool        `cli-short:"f" cli-usage:"don't prompt for confirmation"`
+	Zone  v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbDeleteCmd) cmdAliases() []string { return gRemoveAlias }
@@ -33,30 +32,41 @@ func (c *nlbDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+
+	ctx := gContext
+
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
+
+	nlbs, err := client.ListLoadBalancers(ctx)
+	if err != nil {
+		return err
+	}
+
+	nlb, err := nlbs.FindLoadBalancer(c.NetworkLoadBalancer)
+	if err != nil {
+		return err
+	}
+
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf(
 			"Are you sure you want to delete Network Load Balancer %q?",
-			c.NetworkLoadBalancer,
+			nlb.ID,
 		)) {
 			return nil
 		}
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	op, err := client.DeleteLoadBalancer(ctx, nlb.ID)
 	if err != nil {
 		return err
 	}
-
 	decorateAsyncOperation(fmt.Sprintf("Deleting Network Load Balancer %q...", c.NetworkLoadBalancer), func() {
-		err = globalstate.EgoscaleClient.DeleteNetworkLoadBalancer(ctx, c.Zone, nlb)
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func init() {
