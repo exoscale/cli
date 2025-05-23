@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -43,7 +44,7 @@ func (o *sksNodepoolShowOutput) ToText()      { output.Text(o) }
 func (o *sksNodepoolShowOutput) ToTable()     { output.Table(o) }
 
 type sksNodepoolShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -53,7 +54,7 @@ type sksNodepoolShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksNodepoolShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *sksNodepoolShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *sksNodepoolShowCmd) CmdShort() string { return "Show an SKS cluster Nodepool details" }
 
@@ -65,15 +66,15 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksNodepoolShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var nodepool *v3.SKSNodepool
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -199,7 +200,7 @@ func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

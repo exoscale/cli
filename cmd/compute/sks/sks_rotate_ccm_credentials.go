@@ -1,16 +1,18 @@
-package cmd
+package sks
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksRotateCCMCredentialsCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"rotate-ccm-credentials"`
 
@@ -32,13 +34,13 @@ plane for the Kubernetes Exoscale Cloud Controller Manager.
 }
 
 func (c *sksRotateCCMCredentialsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksRotateCCMCredentialsCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -58,7 +60,7 @@ func (c *sksRotateCCMCredentialsCmd) CmdRun(_ *cobra.Command, _ []string) error 
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Rotating SKS cluster %q Exoscale CCM credentials...", c.Cluster), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Rotating SKS cluster %q Exoscale CCM credentials...", c.Cluster), func() {
 		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 
@@ -66,7 +68,7 @@ func (c *sksRotateCCMCredentialsCmd) CmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksRotateCCMCredentialsCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksRotateCCMCredentialsCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

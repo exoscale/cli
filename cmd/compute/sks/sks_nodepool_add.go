@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -19,7 +20,7 @@ const (
 )
 
 type sksNodepoolAddCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"add"`
 
@@ -56,14 +57,14 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksNodepoolAddCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
+	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -128,7 +129,7 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolReq.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolReq.Name), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -148,11 +149,11 @@ func (c *sksNodepoolAddCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolAddCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolAddCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		Size:                 2,
-		InstanceType:         fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
+		InstanceType:         fmt.Sprintf("%s.%s", exocmd.DefaultInstanceTypeFamily, exocmd.DefaultInstanceType),
 		DiskSize:             50,
 		ImageGcLowThreshold:  kubeletImageGcLowThreshold,
 		ImageGcHighThreshold: kubeletImageGcHighThreshold,

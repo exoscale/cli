@@ -1,10 +1,11 @@
-package cmd
+package sks
 
 import (
 	"time"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 )
 
@@ -19,5 +20,5 @@ var sksCmd = &cobra.Command{
 }
 
 func init() {
-	ComputeCmd.AddCommand(sksCmd)
+	exocmd.ComputeCmd.AddCommand(sksCmd)
 }

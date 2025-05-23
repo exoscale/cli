@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
@@ -22,7 +23,7 @@ var (
 )
 
 type sksCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -65,7 +66,7 @@ type sksCreateCmd struct {
 	Zone                         string            `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *sksCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *sksCreateCmd) CmdShort() string { return "Create an SKS cluster" }
 
@@ -89,8 +90,8 @@ Supported output template annotations: %s`,
 }
 
 func (c *sksCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:gocyclo
@@ -117,9 +118,9 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		FeatureGates: c.FeatureGates,
 	}
 
-	ctx := GContext
+	ctx := exocmd.GContext
 
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -182,7 +183,7 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 	if err != nil {
 		return err
 	}
-	decorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", clusterReq.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating SKS cluster %q...", clusterReq.Name), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -228,7 +229,7 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 		if err != nil {
 			return err
 		}
-		decorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolReq.Name), func() {
+		utils.DecorateAsyncOperation(fmt.Sprintf("Adding Nodepool %q...", nodepoolReq.Name), func() {
 			op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 		if err != nil {
@@ -248,13 +249,13 @@ func (c *sksCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error { //nolint:g
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		CNI:                          defaultSKSClusterCNI,
 		KubernetesVersion:            "latest",
 		NodepoolDiskSize:             50,
-		NodepoolInstanceType:         fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),
+		NodepoolInstanceType:         fmt.Sprintf("%s.%s", exocmd.DefaultInstanceTypeFamily, exocmd.DefaultInstanceType),
 		NodepoolImageGcLowThreshold:  kubeletImageGcLowThreshold,
 		NodepoolImageGcHighThreshold: kubeletImageGcHighThreshold,
 		NodepoolImageGcMinAge:        kubeletImageGcMinAge,

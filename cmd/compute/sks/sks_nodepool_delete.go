@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"errors"
@@ -6,12 +6,14 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type sksNodepoolDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,26 +24,27 @@ type sksNodepoolDeleteCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksNodepoolDeleteCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *sksNodepoolDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *sksNodepoolDeleteCmd) CmdShort() string { return "Delete an SKS cluster Nodepool" }
 
 func (c *sksNodepoolDeleteCmd) CmdLong() string { return "" }
 
 func (c *sksNodepoolDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksNodepoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Nodepool %q?", c.Nodepool)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete Nodepool %q?", c.Nodepool)) {
 			return nil
 		}
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -64,7 +67,7 @@ func (c *sksNodepoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			if err != nil {
 				return err
 			}
-			decorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", nodepool.Name), func() {
+			utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Nodepool %q...", nodepool.Name), func() {
 				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 			})
 			if err != nil {
@@ -79,7 +82,7 @@ func (c *sksNodepoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksNodepoolCmd, &sksNodepoolDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
