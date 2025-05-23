@@ -1,7 +1,7 @@
 package elastic_ip
 
 import (
-	"github.com/exoscale/cli/cmd/compute"
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -12,5 +12,5 @@ var elasticIPCmd = &cobra.Command{
 }
 
 func init() {
-	compute.ComputeCmd.AddCommand(elasticIPCmd)
+	exocmd.ComputeCmd.AddCommand(elasticIPCmd)
 }

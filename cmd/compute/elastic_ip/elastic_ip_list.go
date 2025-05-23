@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
+	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -51,7 +51,7 @@ func (c *elasticIPListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
-	ctx := gContext
+	ctx := exocmd.GContext
 
 	if c.Zone != "" {
 		zones = []string{c.Zone}
@@ -70,14 +70,10 @@ func (c *elasticIPListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-<<<<<<< Updated upstream:cmd/elastic_ip_list.go
-		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+		client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
 		if err != nil {
 			return err
 		}
-=======
-		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
->>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_list.go
 
 		list, err := client.ListElasticIPS(ctx)
 		if err != nil {

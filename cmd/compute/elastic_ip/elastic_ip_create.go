@@ -6,13 +6,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-<<<<<<< Updated upstream:cmd/elastic_ip_create.go
-=======
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
->>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_create.go
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
@@ -53,17 +50,12 @@ func (c *elasticIPCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error 
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-<<<<<<< Updated upstream:cmd/elastic_ip_create.go
-func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
-=======
-func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
->>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_create.go
 
 	var healthcheck *v3.ElasticIPHealthcheck
 	if c.HealthcheckMode != "" {
@@ -102,27 +94,16 @@ func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-<<<<<<< Updated upstream:cmd/elastic_ip_create.go
-	decorateAsyncOperation("Creating Elastic IP...", func() {
-		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
-=======
-	var err error
 	utils.DecorateAsyncOperation("Creating Elastic IP...", func() {
-		elasticIP, err = globalstate.EgoscaleClient.CreateElasticIP(ctx, c.Zone, elasticIP)
->>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_create.go
+		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
 	}
 
 	return (&elasticIPShowCmd{
-<<<<<<< Updated upstream:cmd/elastic_ip_create.go
-		cliCommandSettings: c.cliCommandSettings,
-		ElasticIP:          op.Reference.ID.String(),
-=======
 		CliCommandSettings: c.CliCommandSettings,
-		ElasticIP:          *elasticIP.ID,
->>>>>>> Stashed changes:cmd/compute/elastic_ip/elastic_ip_create.go
+		ElasticIP:          op.Reference.ID.String(),
 		Zone:               c.Zone,
 	}).CmdRun(nil, nil)
 }

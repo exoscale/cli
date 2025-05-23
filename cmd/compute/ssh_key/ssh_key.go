@@ -1,7 +1,7 @@
 package ssh_key
 
 import (
-	"github.com/exoscale/cli/cmd/compute"
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -11,5 +11,5 @@ var computeSSHKeyCmd = &cobra.Command{
 }
 
 func init() {
-	compute.ComputeCmd.AddCommand(computeSSHKeyCmd)
+	exocmd.ComputeCmd.AddCommand(computeSSHKeyCmd)
 }
