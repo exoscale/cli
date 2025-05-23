@@ -1,4 +1,4 @@
-package cmd
+package ssh_key
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 )
@@ -22,7 +23,7 @@ func (o *computeSSHKeyListOutput) ToText()  { output.Text(o) }
 func (o *computeSSHKeyListOutput) ToTable() { output.Table(o) }
 
 type computeSSHKeyListCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
@@ -39,12 +40,12 @@ Supported output template annotations: %s`,
 }
 
 func (c *computeSSHKeyListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *computeSSHKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
-	ctx := GContext
+	ctx := exocmd.GContext
 	client := globalstate.EgoscaleV3Client
 
 	sshKeysResponse, err := client.ListSSHKeys(ctx)
@@ -65,7 +66,7 @@ func (c *computeSSHKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyListCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyListCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
