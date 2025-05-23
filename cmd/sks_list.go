@@ -26,31 +26,31 @@ func (o *sksClusterListOutput) ToText()  { output.Text(o) }
 func (o *sksClusterListOutput) ToTable() { output.Table(o) }
 
 type sksListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *sksListCmd) cmdAliases() []string { return gListAlias }
+func (c *sksListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *sksListCmd) cmdShort() string { return "List SKS clusters" }
+func (c *sksListCmd) CmdShort() string { return "List SKS clusters" }
 
-func (c *sksListCmd) cmdLong() string {
+func (c *sksListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists SKS clusters.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&sksClusterListItemOutput{}), ", "))
 }
 
-func (c *sksListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *sksListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
-	ctx := gContext
+	ctx := GContext
 
 	resp, err := client.ListZones(ctx)
 	if err != nil {
@@ -101,11 +101,11 @@ func (c *sksListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

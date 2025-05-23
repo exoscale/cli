@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -9,8 +10,8 @@ import (
 )
 
 func (c *dbaasExternalEndpointCreateCmd) createPrometheus(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -41,10 +42,10 @@ func (c *dbaasExternalEndpointCreateCmd) createPrometheus(_ *cobra.Command, _ []
 	endpointID := op.Reference.ID.String()
 	if !globalstate.Quiet {
 		return (&dbaasExternalEndpointShowCmd{
-			cliCommandSettings: defaultCLICmdSettings(),
+			CliCommandSettings: DefaultCLICmdSettings(),
 			EndpointID:         endpointID,
 			Type:               "prometheus",
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 	return nil
 }

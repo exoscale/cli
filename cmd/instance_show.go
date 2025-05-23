@@ -46,7 +46,7 @@ func (o *instanceShowOutput) ToText()      { output.Text(o) }
 func (o *instanceShowOutput) ToTable()     { output.Table(o) }
 
 type instanceShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -56,25 +56,25 @@ type instanceShowCmd struct {
 	Zone         v3.ZoneName `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *instanceShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *instanceShowCmd) cmdShort() string { return "Show a Compute instance details" }
+func (c *instanceShowCmd) CmdShort() string { return "Show a Compute instance details" }
 
-func (c *instanceShowCmd) cmdLong() string {
+func (c *instanceShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *instanceShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+func (c *instanceShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -90,6 +90,7 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	}
 
 	instance, err := client.GetInstance(ctx, foundInstance.ID)
+
 	if err != nil {
 		return err
 	}
@@ -237,11 +238,11 @@ func (c *instanceShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		out.ReverseDNS = rdns.DomainName
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

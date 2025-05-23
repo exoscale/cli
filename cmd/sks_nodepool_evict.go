@@ -13,7 +13,7 @@ import (
 )
 
 type sksNodepoolEvictCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"evict"`
 
@@ -25,11 +25,11 @@ type sksNodepoolEvictCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksNodepoolEvictCmd) cmdAliases() []string { return nil }
+func (c *sksNodepoolEvictCmd) CmdAliases() []string { return nil }
 
-func (c *sksNodepoolEvictCmd) cmdShort() string { return "Evict SKS cluster Nodepool members" }
+func (c *sksNodepoolEvictCmd) CmdShort() string { return "Evict SKS cluster Nodepool members" }
 
-func (c *sksNodepoolEvictCmd) cmdLong() string {
+func (c *sksNodepoolEvictCmd) CmdLong() string {
 	return fmt.Sprintf(`This command evicts specific members from an SKS cluster Nodepool, effectively
 scaling down the Nodepool similar to the "exo compute sks nodepool scale"
 command.
@@ -41,12 +41,12 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
-func (c *sksNodepoolEvictCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksNodepoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *sksNodepoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.Nodes) == 0 {
 		cmdExitOnUsageError(cmd, "no nodes specified")
 	}
@@ -61,8 +61,8 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -120,18 +120,18 @@ func (c *sksNodepoolEvictCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&sksNodepoolShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Cluster:            cluster.ID.String(),
 			Nodepool:           nodepool.ID.String(),
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolEvictCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolEvictCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

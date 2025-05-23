@@ -19,5 +19,5 @@ var sksCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(sksCmd)
+	ComputeCmd.AddCommand(sksCmd)
 }

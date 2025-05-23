@@ -22,29 +22,29 @@ func (o *computeSSHKeyListOutput) ToText()  { output.Text(o) }
 func (o *computeSSHKeyListOutput) ToTable() { output.Table(o) }
 
 type computeSSHKeyListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *computeSSHKeyListCmd) cmdAliases() []string { return nil }
+func (c *computeSSHKeyListCmd) CmdAliases() []string { return nil }
 
-func (c *computeSSHKeyListCmd) cmdShort() string { return "List SSH keys" }
+func (c *computeSSHKeyListCmd) CmdShort() string { return "List SSH keys" }
 
-func (c *computeSSHKeyListCmd) cmdLong() string {
+func (c *computeSSHKeyListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists SSH keys.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&computeSSHKeyListItemOutput{}), ", "))
 }
 
-func (c *computeSSHKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *computeSSHKeyListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *computeSSHKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *computeSSHKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	client := globalstate.EgoscaleV3Client
 
 	sshKeysResponse, err := client.ListSSHKeys(ctx)
@@ -61,11 +61,11 @@ func (c *computeSSHKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(computeSSHKeyCmd, &computeSSHKeyListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(computeSSHKeyCmd, &computeSSHKeyListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

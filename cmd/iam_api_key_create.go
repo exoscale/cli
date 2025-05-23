@@ -23,7 +23,7 @@ func (o *iamAPIKeyShowOutput) ToText()  { output.Text(o) }
 func (o *iamAPIKeyShowOutput) ToTable() { output.Table(o) }
 
 type iamAPIKeyCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -31,13 +31,13 @@ type iamAPIKeyCreateCmd struct {
 	Role string `cli-arg:"#" cli-usage:"ROLE-NAME|ROLE-ID"`
 }
 
-func (c *iamAPIKeyCreateCmd) cmdAliases() []string { return nil }
+func (c *iamAPIKeyCreateCmd) CmdAliases() []string { return nil }
 
-func (c *iamAPIKeyCreateCmd) cmdShort() string {
+func (c *iamAPIKeyCreateCmd) CmdShort() string {
 	return "Create API Key"
 }
 
-func (c *iamAPIKeyCreateCmd) cmdLong() string {
+func (c *iamAPIKeyCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a new API Key.
 Because Secret is only printed during API Key creation, --quiet (-Q) flag is not implemented for this command.
 
@@ -45,12 +45,12 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamAPIKeyShowOutput{}), ", "))
 }
 
-func (c *iamAPIKeyCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamAPIKeyCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamAPIKeyCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *iamAPIKeyCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := GContext
 	client := globalstate.EgoscaleV3Client
 
 	listIAMRolesResp, err := client.ListIAMRoles(ctx)
@@ -80,11 +80,11 @@ func (c *iamAPIKeyCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		Role:   iamAPIKey.RoleID,
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamAPIKeyCmd, &iamAPIKeyCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

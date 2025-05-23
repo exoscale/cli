@@ -14,7 +14,7 @@ import (
 )
 
 type securityGroupDeleteRuleCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -24,27 +24,27 @@ type securityGroupDeleteRuleCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *securityGroupDeleteRuleCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *securityGroupDeleteRuleCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *securityGroupDeleteRuleCmd) cmdShort() string {
+func (c *securityGroupDeleteRuleCmd) CmdShort() string {
 	return "Delete a Security Group rule"
 }
 
-func (c *securityGroupDeleteRuleCmd) cmdLong() string {
+func (c *securityGroupDeleteRuleCmd) CmdLong() string {
 	return fmt.Sprintf(`This command deletes a rule from a Compute instance Security Group.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
-func (c *securityGroupDeleteRuleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *securityGroupDeleteRuleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupDeleteRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *securityGroupDeleteRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -69,13 +69,13 @@ func (c *securityGroupDeleteRuleCmd) cmdRun(_ *cobra.Command, _ []string) error 
 	}
 
 	return (&securityGroupShowCmd{
-		cliCommandSettings: c.cliCommandSettings,
+		CliCommandSettings: c.CliCommandSettings,
 		SecurityGroup:      *securityGroup.ID,
-	}).cmdRun(nil, nil)
+	}).CmdRun(nil, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(securityGroupRuleCmd, &securityGroupDeleteRuleCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(securityGroupRuleCmd, &securityGroupDeleteRuleCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

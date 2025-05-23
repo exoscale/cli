@@ -19,7 +19,7 @@ import (
 // https://app.shortcut.com/exoscale/story/122943/bug-in-egoscale-v3-listsksclusterdeprecatedresources
 
 type sksUpgradeCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"upgrade"`
 
@@ -30,19 +30,19 @@ type sksUpgradeCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksUpgradeCmd) cmdAliases() []string { return nil }
+func (c *sksUpgradeCmd) CmdAliases() []string { return nil }
 
-func (c *sksUpgradeCmd) cmdShort() string { return "Upgrade an SKS cluster Kubernetes version" }
+func (c *sksUpgradeCmd) CmdShort() string { return "Upgrade an SKS cluster Kubernetes version" }
 
-func (c *sksUpgradeCmd) cmdLong() string { return "" }
+func (c *sksUpgradeCmd) CmdLong() string { return "" }
 
-func (c *sksUpgradeCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksUpgradeCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
@@ -97,10 +97,10 @@ func (c *sksUpgradeCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&sksShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Cluster:            *cluster.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
@@ -132,7 +132,7 @@ func formatDeprecatedResource(deprecatedResource *v2.SKSClusterDeprecatedResourc
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpgradeCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksUpgradeCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

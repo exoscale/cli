@@ -15,7 +15,7 @@ import (
 )
 
 type instanceResizeDiskCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"resize-disk"`
 
@@ -26,24 +26,24 @@ type instanceResizeDiskCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceResizeDiskCmd) cmdAliases() []string { return nil }
+func (c *instanceResizeDiskCmd) CmdAliases() []string { return nil }
 
-func (c *instanceResizeDiskCmd) cmdShort() string { return "Resize a Compute instance disk" }
+func (c *instanceResizeDiskCmd) CmdShort() string { return "Resize a Compute instance disk" }
 
-func (c *instanceResizeDiskCmd) cmdLong() string {
+func (c *instanceResizeDiskCmd) CmdLong() string {
 	return fmt.Sprintf(`This commands grows a Compute instance's disk to a larger size.'
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *instanceResizeDiskCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceResizeDiskCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceResizeDiskCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceResizeDiskCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -68,17 +68,17 @@ func (c *instanceResizeDiskCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceResizeDiskCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceResizeDiskCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

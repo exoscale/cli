@@ -47,7 +47,7 @@ func (o *dbServiceLogsOutput) ToTable() {
 }
 
 type dbaasServiceLogsCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"logs"`
 
@@ -59,13 +59,13 @@ type dbaasServiceLogsCmd struct {
 	Zone   string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasServiceLogsCmd) cmdAliases() []string { return gShowAlias }
+func (c *dbaasServiceLogsCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *dbaasServiceLogsCmd) cmdShort() string {
+func (c *dbaasServiceLogsCmd) CmdShort() string {
 	return "Query a Database Service logs"
 }
 
-func (c *dbaasServiceLogsCmd) cmdLong() string {
+func (c *dbaasServiceLogsCmd) CmdLong() string {
 	return fmt.Sprintf(`This command outputs a Database Service logs.
 
 Supported output template annotations: %s
@@ -80,14 +80,14 @@ Example usage with custom output containing only the actual log messages:
 		strings.Join(output.TemplateAnnotations(&dbServiceLogsItemOutput{}), ", "))
 }
 
-func (c *dbaasServiceLogsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasServiceLogsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasServiceLogsCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+func (c *dbaasServiceLogsCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -133,12 +133,12 @@ func (c *dbaasServiceLogsCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		out.Logs[i].Message = utils.DefaultString(&log.Message, "-")
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceLogsCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasCmd, &dbaasServiceLogsCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		Limit: 10,
 		Sort:  "desc",

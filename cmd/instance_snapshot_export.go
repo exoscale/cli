@@ -24,7 +24,7 @@ func (o *instanceSnapshotExportOutput) ToText()  { output.Text(o) }
 func (o *instanceSnapshotExportOutput) ToTable() { output.Table(o) }
 
 type instanceSnapshotExportCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"export"`
 
@@ -33,26 +33,26 @@ type instanceSnapshotExportCmd struct {
 	Zone string `cli-short:"z" cli-usage:"snapshot zone"`
 }
 
-func (c *instanceSnapshotExportCmd) cmdAliases() []string { return nil }
+func (c *instanceSnapshotExportCmd) CmdAliases() []string { return nil }
 
-func (c *instanceSnapshotExportCmd) cmdShort() string {
+func (c *instanceSnapshotExportCmd) CmdShort() string {
 	return "Export a Compute instance snapshot"
 }
 
-func (c *instanceSnapshotExportCmd) cmdLong() string {
+func (c *instanceSnapshotExportCmd) CmdLong() string {
 	return fmt.Sprintf(`This command exports a Compute instance snapshot.
 	
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceSnapshotExportOutput{}), ", "))
 }
 
-func (c *instanceSnapshotExportCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSnapshotExportCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceSnapshotExportCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	snapshot, err := globalstate.EgoscaleClient.GetSnapshot(ctx, c.Zone, c.ID)
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc(
+		return c.OutputFunc(
 			&instanceSnapshotExportOutput{
 				URL:      *snapshotExport.PresignedURL,
 				Checksum: *snapshotExport.MD5sum,
@@ -83,7 +83,7 @@ func (c *instanceSnapshotExportCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceSnapshotCmd, &instanceSnapshotExportCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceSnapshotCmd, &instanceSnapshotExportCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -13,31 +13,31 @@ import (
 )
 
 type iamOrgPolicyShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 }
 
-func (c *iamOrgPolicyShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *iamOrgPolicyShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *iamOrgPolicyShowCmd) cmdShort() string {
+func (c *iamOrgPolicyShowCmd) CmdShort() string {
 	return "Show Org policy details"
 }
 
-func (c *iamOrgPolicyShowCmd) cmdLong() string {
+func (c *iamOrgPolicyShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows IAM Org Policy details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamPolicyServiceOutput{}), ", "))
 }
 
-func (c *iamOrgPolicyShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamOrgPolicyShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamOrgPolicyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+func (c *iamOrgPolicyShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -67,11 +67,11 @@ func (c *iamOrgPolicyShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamOrgPolicyCmd, &iamOrgPolicyShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamOrgPolicyCmd, &iamOrgPolicyShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

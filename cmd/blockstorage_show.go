@@ -30,7 +30,7 @@ func (o *blockStorageShowOutput) ToText()      { output.Text(o) }
 func (o *blockStorageShowOutput) ToTable()     { output.Table(o) }
 
 type blockStorageShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -38,25 +38,25 @@ type blockStorageShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"block storage volume zone"`
 }
 
-func (c *blockStorageShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *blockStorageShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *blockStorageShowCmd) cmdShort() string { return "Show a Block Storage Volume details" }
+func (c *blockStorageShowCmd) CmdShort() string { return "Show a Block Storage Volume details" }
 
-func (c *blockStorageShowCmd) cmdLong() string {
+func (c *blockStorageShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Block Storage Volume details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *blockStorageShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *blockStorageShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+func (c *blockStorageShowCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (c *blockStorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 
-	return c.outputFunc(&blockStorageShowOutput{
+	return c.OutputFunc(&blockStorageShowOutput{
 		ID:                    volume.ID,
 		Name:                  volume.Name,
 		Size:                  fmt.Sprintf("%d GiB", volume.Size),
@@ -88,7 +88,7 @@ func (c *blockStorageShowCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(blockstorageCmd, &blockStorageShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

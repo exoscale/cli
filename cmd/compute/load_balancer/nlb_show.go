@@ -1,4 +1,4 @@
-package cmd
+package load_balancer
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
@@ -82,7 +83,7 @@ func (o *nlbShowOutput) ToTable() {
 }
 
 type nlbShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -91,26 +92,26 @@ type nlbShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
-func (c *nlbShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *nlbShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
-func (c *nlbShowCmd) cmdShort() string { return "Show a Network Load Balancer details" }
+func (c *nlbShowCmd) CmdShort() string { return "Show a Network Load Balancer details" }
 
-func (c *nlbShowCmd) cmdLong() string {
+func (c *nlbShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Network Load Balancer details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&nlbShowOutput{}), ", "))
 }
 
-func (c *nlbShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *nlbShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *nlbShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exocmd.GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -145,11 +146,11 @@ func (c *nlbShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		Labels:       nlb.Labels,
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(nlbCmd, &nlbShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

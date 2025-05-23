@@ -28,29 +28,29 @@ func (o *deployTargetListOutput) ToText()  { output.Text(o) }
 func (o *deployTargetListOutput) ToTable() { output.Table(o) }
 
 type deployTargetListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *deployTargetListCmd) cmdAliases() []string { return nil }
+func (c *deployTargetListCmd) CmdAliases() []string { return nil }
 
-func (c *deployTargetListCmd) cmdShort() string { return "List Deploy Targets" }
+func (c *deployTargetListCmd) CmdShort() string { return "List Deploy Targets" }
 
-func (c *deployTargetListCmd) cmdLong() string {
+func (c *deployTargetListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists existing Deploy Targets.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&deployTargetListOutput{}), ", "))
 }
 
-func (c *deployTargetListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *deployTargetListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *deployTargetListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
 
 	if c.Zone != "" {
@@ -70,7 +70,7 @@ func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 		list, err := globalstate.EgoscaleClient.ListDeployTargets(ctx, zone)
 		if err != nil {
@@ -96,11 +96,11 @@ func (c *deployTargetListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(deployTargetCmd, &deployTargetListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(deployTargetCmd, &deployTargetListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -48,7 +48,7 @@ Optional patterns can be provided to filter results by ID, or name.
 
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&dnsListOutput{}), ", ")),
-		Aliases: gListAlias,
+		Aliases: GListAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return printOutput(listDomains(args))
 		},
@@ -56,8 +56,8 @@ Supported output template annotations: %s`,
 }
 
 func listDomains(filters []string) (output.Outputter, error) {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}

@@ -13,7 +13,7 @@ import (
 )
 
 type sksNodepoolScaleCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"scale"`
 
@@ -25,11 +25,11 @@ type sksNodepoolScaleCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksNodepoolScaleCmd) cmdAliases() []string { return nil }
+func (c *sksNodepoolScaleCmd) CmdAliases() []string { return nil }
 
-func (c *sksNodepoolScaleCmd) cmdShort() string { return "Scale an SKS cluster Nodepool size" }
+func (c *sksNodepoolScaleCmd) CmdShort() string { return "Scale an SKS cluster Nodepool size" }
 
-func (c *sksNodepoolScaleCmd) cmdLong() string {
+func (c *sksNodepoolScaleCmd) CmdLong() string {
 	return fmt.Sprintf(`This command scales an SKS cluster Nodepool size up (growing) or down
 (shrinking).
 
@@ -42,12 +42,12 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
-func (c *sksNodepoolScaleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksNodepoolScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *sksNodepoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if c.Size <= 0 {
 		return errors.New("minimum Nodepool size is 1")
 	}
@@ -58,8 +58,8 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -103,18 +103,18 @@ func (c *sksNodepoolScaleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&sksNodepoolShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Cluster:            cluster.ID.String(),
 			Nodepool:           nodepool.ID.String(),
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolScaleCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolScaleCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -27,31 +27,31 @@ func (o *blockStorageListOutput) ToText()  { output.Text(o) }
 func (o *blockStorageListOutput) ToTable() { output.Table(o) }
 
 type blockStorageListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *blockStorageListCmd) cmdAliases() []string { return gListAlias }
+func (c *blockStorageListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *blockStorageListCmd) cmdShort() string { return "List Block Storage Volumes" }
+func (c *blockStorageListCmd) CmdShort() string { return "List Block Storage Volumes" }
 
-func (c *blockStorageListCmd) cmdLong() string {
+func (c *blockStorageListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Block Storage Volumes.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockStorageListOutput{}), ", "))
 }
 
-func (c *blockStorageListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *blockStorageListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *blockStorageListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	client := globalstate.EgoscaleV3Client
-	ctx := gContext
+	ctx := GContext
 
 	resp, err := client.ListZones(ctx)
 	if err != nil {
@@ -95,11 +95,11 @@ func (c *blockStorageListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	return c.outputFunc(&output, nil)
+	return c.OutputFunc(&output, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(blockstorageCmd, &blockStorageListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -10,7 +10,7 @@ import (
 )
 
 type instanceEnableTPMCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"enable-tpm"`
 
@@ -20,20 +20,20 @@ type instanceEnableTPMCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceEnableTPMCmd) cmdAliases() []string { return nil }
+func (c *instanceEnableTPMCmd) CmdAliases() []string { return nil }
 
-func (c *instanceEnableTPMCmd) cmdShort() string { return "Enable Trusted Platform Module (TPM)" }
+func (c *instanceEnableTPMCmd) CmdShort() string { return "Enable Trusted Platform Module (TPM)" }
 
-func (c *instanceEnableTPMCmd) cmdLong() string { return "" }
+func (c *instanceEnableTPMCmd) CmdLong() string { return "" }
 
-func (c *instanceEnableTPMCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceEnableTPMCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceEnableTPMCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+func (c *instanceEnableTPMCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -67,7 +67,7 @@ func (c *instanceEnableTPMCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceEnableTPMCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceEnableTPMCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

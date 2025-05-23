@@ -8,7 +8,7 @@ import (
 )
 
 type dbaasExternalIntegrationSettingsUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -21,24 +21,24 @@ type dbaasExternalIntegrationSettingsUpdateCmd struct {
 	DatadogPgbouncerEnabled bool `cli-flag:"datadog-pgbouncer-enabled" cli-usage:"Enable/Disable pgbouncer stats with Datadog"`
 }
 
-func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdAliases() []string { return nil }
-func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdShort() string {
+func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdAliases() []string { return nil }
+func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdShort() string {
 	return "Update external integration settings"
 }
-func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdLong() string {
+func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdLong() string {
 	return "Update external integration settings"
 }
-func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 	case cmd.Flags().Changed("help-datadog"):
 		cmdShowHelpFlags(cmd.Flags(), "datadog-")
 		os.Exit(0)
 	}
 
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalIntegrationSettingsUpdateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 	switch c.Type {
 	case ExternalEndpointTypeDatadog:
 		return c.updateDatadog(cmd, args)
@@ -48,7 +48,7 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) cmdRun(cmd *cobra.Command, a
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

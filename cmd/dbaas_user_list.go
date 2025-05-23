@@ -21,7 +21,7 @@ func (o *dbaasUsersListOutput) ToTable() {
 }
 
 type dbaasUserListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
@@ -29,23 +29,23 @@ type dbaasUserListCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasUserListCmd) cmdAliases() []string { return nil }
+func (c *dbaasUserListCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasUserListCmd) cmdShort() string { return "List users of a DBAAS service" }
+func (c *dbaasUserListCmd) CmdShort() string { return "List users of a DBAAS service" }
 
-func (c *dbaasUserListCmd) cmdLong() string {
+func (c *dbaasUserListCmd) CmdLong() string {
 	return `This command list users and their role for a specified DBAAS service.`
 }
 
-func (c *dbaasUserListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
+func (c *dbaasUserListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
 
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasUserListCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasUserListCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (c *dbaasUserListCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasUserCmd, &dbaasUserListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasUserCmd, &dbaasUserListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

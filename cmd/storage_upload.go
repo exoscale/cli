@@ -86,14 +86,14 @@ Examples:
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		return storage.UploadFiles(gContext, sources, &sos.StorageUploadConfig{
+		return storage.UploadFiles(GContext, sources, &sos.StorageUploadConfig{
 			Bucket:    bucket,
 			Prefix:    prefix,
 			ACL:       acl,

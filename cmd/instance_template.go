@@ -11,5 +11,5 @@ var instanceTemplateCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(instanceTemplateCmd)
+	ComputeCmd.AddCommand(instanceTemplateCmd)
 }

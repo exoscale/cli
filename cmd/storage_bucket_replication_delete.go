@@ -21,7 +21,7 @@ var storageBucketReplicationDeleteCmd = &cobra.Command{
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		cmdSetZoneFlagFromDefault(cmd)
+		CmdSetZoneFlagFromDefault(cmd)
 		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -33,14 +33,14 @@ var storageBucketReplicationDeleteCmd = &cobra.Command{
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
+			GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		err = storage.DeleteBucketReplication(gContext, bucket)
+		err = storage.DeleteBucketReplication(GContext, bucket)
 		return err
 	},
 }

@@ -112,7 +112,7 @@ func buildClient() {
 	globalstate.EgoscaleV3Client = clientV3
 }
 
-func switchClientZoneV3(ctx context.Context, client *v3.Client, zone v3.ZoneName) (*v3.Client, error) {
+func SwitchClientZoneV3(ctx context.Context, client *v3.Client, zone v3.ZoneName) (*v3.Client, error) {
 	if zone == "" {
 		return client, nil
 	}

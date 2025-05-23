@@ -11,7 +11,7 @@ import (
 )
 
 type iamRoleDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -20,24 +20,24 @@ type iamRoleDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *iamRoleDeleteCmd) cmdAliases() []string { return gDeleteAlias }
+func (c *iamRoleDeleteCmd) CmdAliases() []string { return GDeleteAlias }
 
-func (c *iamRoleDeleteCmd) cmdShort() string {
+func (c *iamRoleDeleteCmd) CmdShort() string {
 	return "Delete IAM Role"
 }
 
-func (c *iamRoleDeleteCmd) cmdLong() string {
+func (c *iamRoleDeleteCmd) CmdLong() string {
 	return `This command deletes an existing IAM Role.
 It will fail if the Role is attached to an IAM Key.`
 }
 
-func (c *iamRoleDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamRoleDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamRoleDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+func (c *iamRoleDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (c *iamRoleDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamRoleCmd, &iamRoleDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

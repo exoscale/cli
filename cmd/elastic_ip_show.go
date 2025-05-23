@@ -77,7 +77,7 @@ func (o *elasticIPShowOutput) ToTable() {
 }
 
 type elasticIPShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -86,27 +86,27 @@ type elasticIPShowCmd struct {
 	Zone string `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
-func (c *elasticIPShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *elasticIPShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *elasticIPShowCmd) cmdShort() string {
+func (c *elasticIPShowCmd) CmdShort() string {
 	return "Show an Elastic IP details"
 }
 
-func (c *elasticIPShowCmd) cmdLong() string {
+func (c *elasticIPShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance Elastic IP details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&elasticIPShowOutput{}), ", "))
 }
 
-func (c *elasticIPShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *elasticIPShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+func (c *elasticIPShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -169,11 +169,11 @@ func (c *elasticIPShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		out.HealthcheckTLSSkipVerify = elasticIp.Healthcheck.TlsSkipVerify
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(elasticIPCmd, &elasticIPShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

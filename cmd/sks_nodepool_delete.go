@@ -11,7 +11,7 @@ import (
 )
 
 type sksNodepoolDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,26 +22,26 @@ type sksNodepoolDeleteCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksNodepoolDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *sksNodepoolDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *sksNodepoolDeleteCmd) cmdShort() string { return "Delete an SKS cluster Nodepool" }
+func (c *sksNodepoolDeleteCmd) CmdShort() string { return "Delete an SKS cluster Nodepool" }
 
-func (c *sksNodepoolDeleteCmd) cmdLong() string { return "" }
+func (c *sksNodepoolDeleteCmd) CmdLong() string { return "" }
 
-func (c *sksNodepoolDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksNodepoolDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksNodepoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *sksNodepoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !c.Force {
 		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Nodepool %q?", c.Nodepool)) {
 			return nil
 		}
 	}
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (c *sksNodepoolDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

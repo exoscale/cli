@@ -15,32 +15,32 @@ import (
 func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return fmt.Errorf("unable to create client: %w", err)
 	}
 
 	databaseService := v3.UpdateDBAASServiceValkeyRequest{}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeyIPFilter)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.ValkeyIPFilter)) {
 		databaseService.IPFilter = c.ValkeyIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServiceValkeyRequestMaintenance{
 			Dow:  v3.UpdateDBAASServiceValkeyRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
@@ -48,7 +48,7 @@ func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) err
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeySettings)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.ValkeySettings)) {
 		if c.ValkeySettings != "" {
 			var settings map[string]interface{}
 
@@ -74,7 +74,7 @@ func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) err
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.ValkeyMigrationHost)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.ValkeyMigrationHost)) {
 		databaseService.Migration = &v3.UpdateDBAASServiceValkeyRequestMigration{
 			Host: c.ValkeyMigrationHost,
 			Port: c.ValkeyMigrationPort,
@@ -116,7 +116,7 @@ func (c *dbaasServiceUpdateCmd) updateValkey(cmd *cobra.Command, _ []string) err
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceValkey(ctx))

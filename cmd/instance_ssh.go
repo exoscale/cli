@@ -18,7 +18,7 @@ import (
 )
 
 type instanceSSHCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	sshInfo struct {
 		ipAddress string
@@ -63,11 +63,11 @@ func (c *instanceSSHCmd) buildSSHCommand() []string {
 	return cmd
 }
 
-func (c *instanceSSHCmd) cmdAliases() []string { return nil }
+func (c *instanceSSHCmd) CmdAliases() []string { return nil }
 
-func (c *instanceSSHCmd) cmdShort() string { return "Log into a Compute instance via SSH" }
+func (c *instanceSSHCmd) CmdShort() string { return "Log into a Compute instance via SSH" }
 
-func (c *instanceSSHCmd) cmdLong() string {
+func (c *instanceSSHCmd) CmdLong() string {
 	return `This command connects to a Compute instance via SSH (requires the ssh(1) command).
 
 To pass custom SSH options:
@@ -76,13 +76,13 @@ To pass custom SSH options:
 `
 }
 
-func (c *instanceSSHCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSSHCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSSHCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceSSHCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -150,7 +150,7 @@ func (c *instanceSSHCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceSSHCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceSSHCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

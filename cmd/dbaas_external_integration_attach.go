@@ -10,7 +10,7 @@ import (
 )
 
 type dbaasExternalIntegrationAttachCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"attach"`
 
@@ -20,27 +20,27 @@ type dbaasExternalIntegrationAttachCmd struct {
 	DestinationEndpointID string `cli-flag:"destination-endpoint-id" cli-usage:"Destination external endpoint id"`
 }
 
-func (c *dbaasExternalIntegrationAttachCmd) cmdAliases() []string {
+func (c *dbaasExternalIntegrationAttachCmd) CmdAliases() []string {
 	return []string{"a"}
 }
 
-func (c *dbaasExternalIntegrationAttachCmd) cmdLong() string {
+func (c *dbaasExternalIntegrationAttachCmd) CmdLong() string {
 	return "Enable sending data from an existing DBaaS service to an external endpoint"
 }
 
-func (c *dbaasExternalIntegrationAttachCmd) cmdShort() string {
+func (c *dbaasExternalIntegrationAttachCmd) CmdShort() string {
 	return "Attach a DBaaS service to an external endpoint"
 }
 
-func (c *dbaasExternalIntegrationAttachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasExternalIntegrationAttachCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalIntegrationAttachCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalIntegrationAttachCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (c *dbaasExternalIntegrationAttachCmd) cmdRun(cmd *cobra.Command, args []st
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationAttachCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalIntegrationCmd, &dbaasExternalIntegrationAttachCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

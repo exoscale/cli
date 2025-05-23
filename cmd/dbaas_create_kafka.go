@@ -13,9 +13,9 @@ import (
 func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func (c *dbaasServiceCreateCmd) createKafka(_ *cobra.Command, _ []string) error 
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceKafka(ctx))

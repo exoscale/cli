@@ -13,7 +13,7 @@ import (
 )
 
 type privateNetworkCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -30,27 +30,27 @@ type privateNetworkCreateCmd struct {
 	DomainSearch []string    `cli-usage:"DHCP option 119: domain search list (limited to 255 octets, can be specified multiple times)"`
 }
 
-func (c *privateNetworkCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *privateNetworkCreateCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *privateNetworkCreateCmd) cmdShort() string {
+func (c *privateNetworkCreateCmd) CmdShort() string {
 	return "Create a Private Network"
 }
 
-func (c *privateNetworkCreateCmd) cmdLong() string {
+func (c *privateNetworkCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Private Network.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&privateNetworkShowOutput{}), ", "))
 }
 
-func (c *privateNetworkCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *privateNetworkCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+func (c *privateNetworkCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -115,17 +115,17 @@ func (c *privateNetworkCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&privateNetworkShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			PrivateNetwork:     op.Reference.ID.String(),
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(privateNetworkCmd, &privateNetworkCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(privateNetworkCmd, &privateNetworkCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

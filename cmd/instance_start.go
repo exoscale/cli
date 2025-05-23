@@ -14,7 +14,7 @@ import (
 )
 
 type instanceStartCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"start"`
 
@@ -25,19 +25,19 @@ type instanceStartCmd struct {
 	Zone          string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceStartCmd) cmdAliases() []string { return nil }
+func (c *instanceStartCmd) CmdAliases() []string { return nil }
 
-func (c *instanceStartCmd) cmdShort() string { return "Start a Compute instance" }
+func (c *instanceStartCmd) CmdShort() string { return "Start a Compute instance" }
 
-func (c *instanceStartCmd) cmdLong() string { return "" }
+func (c *instanceStartCmd) CmdLong() string { return "" }
 
-func (c *instanceStartCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceStartCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceStartCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -67,17 +67,17 @@ func (c *instanceStartCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceStartCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceStartCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type dbaasUserCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -26,15 +26,15 @@ type dbaasUserCreateCmd struct {
 	PostgresAllowReplication bool `cli-flag:"pg-allow-replication" cli-usage:"" cli-hidden:""`
 }
 
-func (c *dbaasUserCreateCmd) cmdAliases() []string { return nil }
+func (c *dbaasUserCreateCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasUserCreateCmd) cmdShort() string { return "Create DBAAS user" }
+func (c *dbaasUserCreateCmd) CmdShort() string { return "Create DBAAS user" }
 
-func (c *dbaasUserCreateCmd) cmdLong() string {
+func (c *dbaasUserCreateCmd) CmdLong() string {
 	return `This command creates a DBAAS user for the specified service.`
 }
 
-func (c *dbaasUserCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasUserCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 	switch {
 
 	case cmd.Flags().Changed("help-mysql"):
@@ -45,13 +45,13 @@ func (c *dbaasUserCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error 
 		os.Exit(0)
 	}
 
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasUserCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasUserCreateCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
@@ -75,7 +75,7 @@ func (c *dbaasUserCreateCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasUserCmd, &dbaasUserCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasUserCmd, &dbaasUserCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

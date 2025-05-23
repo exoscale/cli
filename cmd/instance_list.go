@@ -36,29 +36,29 @@ func (o *instanceListOutput) ToText()  { output.Text(o) }
 func (o *instanceListOutput) ToTable() { output.Table(o) }
 
 type instanceListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *instanceListCmd) cmdAliases() []string { return gListAlias }
+func (c *instanceListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *instanceListCmd) cmdShort() string { return "List Compute instances" }
+func (c *instanceListCmd) CmdShort() string { return "List Compute instances" }
 
-func (c *instanceListCmd) cmdLong() string {
+func (c *instanceListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists Compute instances.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceListItemOutput{}), ", "))
 }
 
-func (c *instanceListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var zones []string
 
 	if c.Zone != "" {
@@ -80,7 +80,7 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 		list, err := globalstate.EgoscaleClient.ListInstances(ctx, zone)
 		if err != nil {
@@ -123,11 +123,11 @@ func (c *instanceListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	close(res)
 	<-done
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

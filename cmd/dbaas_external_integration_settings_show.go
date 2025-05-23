@@ -7,7 +7,7 @@ import (
 )
 
 type dbaasExternalIntegrationSettingsShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -15,28 +15,28 @@ type dbaasExternalIntegrationSettingsShowCmd struct {
 	IntegrationID string `cli-arg:"#"`
 }
 
-func (c *dbaasExternalIntegrationSettingsShowCmd) cmdAliases() []string { return gShowAlias }
-func (c *dbaasExternalIntegrationSettingsShowCmd) cmdShort() string {
+func (c *dbaasExternalIntegrationSettingsShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *dbaasExternalIntegrationSettingsShowCmd) CmdShort() string {
 	return "Show External Integration Settings"
 }
-func (c *dbaasExternalIntegrationSettingsShowCmd) cmdLong() string {
+func (c *dbaasExternalIntegrationSettingsShowCmd) CmdLong() string {
 	return "Show External Integration Settings"
 }
-func (c *dbaasExternalIntegrationSettingsShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasExternalIntegrationSettingsShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalIntegrationSettingsShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *dbaasExternalIntegrationSettingsShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	switch c.Type {
 	case ExternalEndpointTypeDatadog:
-		return c.outputFunc(c.showDatadog())
+		return c.OutputFunc(c.showDatadog())
 	default:
 		return fmt.Errorf("unsupported external integration settings for type %q", c.Type)
 	}
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalIntegrationSettingsCmd, &dbaasExternalIntegrationSettingsShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

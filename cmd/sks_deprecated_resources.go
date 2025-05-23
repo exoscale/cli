@@ -31,7 +31,7 @@ func (o *sksListDeprecatedResourcesOutput) ToText()  { output.Text(o) }
 func (o *sksListDeprecatedResourcesOutput) ToTable() { output.Table(o) }
 
 type sksDeprecatedResourcesCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"deprecated-resources"`
 
@@ -39,13 +39,13 @@ type sksDeprecatedResourcesCmd struct {
 	Zone    string `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksDeprecatedResourcesCmd) cmdAliases() []string { return []string{"dr"} }
+func (c *sksDeprecatedResourcesCmd) CmdAliases() []string { return []string{"dr"} }
 
-func (c *sksDeprecatedResourcesCmd) cmdShort() string {
+func (c *sksDeprecatedResourcesCmd) CmdShort() string {
 	return "List resources that will be deprecated in a futur release of Kubernetes for an SKS cluster"
 }
 
-func (c *sksDeprecatedResourcesCmd) cmdLong() string {
+func (c *sksDeprecatedResourcesCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists SKS cluster Nodepools.
 
 Supported output template annotations: %s`,
@@ -60,13 +60,13 @@ func emptyIfNil(inp *string) string {
 	return *inp
 }
 
-func (c *sksDeprecatedResourcesCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksDeprecatedResourcesCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksDeprecatedResourcesCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *sksDeprecatedResourcesCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
@@ -97,11 +97,11 @@ func (c *sksDeprecatedResourcesCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksDeprecatedResourcesCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksDeprecatedResourcesCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

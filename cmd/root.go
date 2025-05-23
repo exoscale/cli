@@ -21,7 +21,7 @@ import (
 	"github.com/exoscale/egoscale/version"
 )
 
-var gContext context.Context
+var GContext context.Context
 
 var gConfig *viper.Viper
 var gConfigFilePath string
@@ -30,11 +30,11 @@ var gConfigFilePath string
 var gAccountName string
 
 // Aliases
-var gListAlias = []string{"ls"}
-var gRemoveAlias = []string{"rm"}
-var gDeleteAlias = []string{"del"}
-var gShowAlias = []string{"get"}
-var gCreateAlias = []string{"add"}
+var GListAlias = []string{"ls"}
+var GRemoveAlias = []string{"rm"}
+var GDeleteAlias = []string{"del"}
+var GShowAlias = []string{"get"}
+var GCreateAlias = []string{"add"}
 
 var RootCmd = &cobra.Command{
 	Use:           "exo",
@@ -76,7 +76,7 @@ func Execute(version, commit string) {
 		}
 	}()
 
-	gContext = ctx
+	GContext = ctx
 
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)

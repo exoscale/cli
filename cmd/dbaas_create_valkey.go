@@ -14,9 +14,9 @@ import (
 func (c *dbaasServiceCreateCmd) createValkey(_ *cobra.Command, _ []string) error {
 	var err error
 
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 
 	if err != nil {
 		return fmt.Errorf("unable to create client: %w", err)
@@ -109,7 +109,7 @@ func (c *dbaasServiceCreateCmd) createValkey(_ *cobra.Command, _ []string) error
 	serviceName := op.Reference.ID.String()
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: serviceName,
 			Zone: c.Zone,
 		}).showDatabaseServiceValkey(ctx))

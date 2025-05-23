@@ -11,7 +11,7 @@ import (
 
 func (c *dbaasUserShowCmd) showValkey(ctx context.Context) (output.Outputter, error) {
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return &dbaasUserShowOutput{}, err
 	}

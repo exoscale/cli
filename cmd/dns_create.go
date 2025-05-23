@@ -14,7 +14,7 @@ func init() {
 	dnsCmd.AddCommand(&cobra.Command{
 		Use:     "create DOMAIN-NAME",
 		Short:   "Create a domain",
-		Aliases: gCreateAlias,
+		Aliases: GCreateAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) < 1 {
 				return cmd.Usage()
@@ -28,8 +28,8 @@ func init() {
 func createDomain(domainName string) error {
 	var err error
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}

@@ -27,7 +27,7 @@ Supported output template annotations: %s`,
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
-		cmdSetZoneFlagFromDefault(cmd)
+		CmdSetZoneFlagFromDefault(cmd)
 
 		return cmdCheckRequiredFlags(cmd, []string{"zone"})
 	},
@@ -46,19 +46,19 @@ Supported output template annotations: %s`,
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
+			GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
-		if err := storage.CreateNewBucket(gContext, bucket, acl); err != nil {
+		if err := storage.CreateNewBucket(GContext, bucket, acl); err != nil {
 			return fmt.Errorf("unable to create bucket: %w", err)
 		}
 
 		if !globalstate.Quiet {
-			return printOutput(storage.ShowBucket(gContext, bucket))
+			return printOutput(storage.ShowBucket(GContext, bucket))
 		}
 
 		return nil

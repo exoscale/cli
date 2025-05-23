@@ -32,7 +32,7 @@ func (o *iamAPIKeyListOutput) ToTable() {
 	})
 	defer t.Render()
 
-	ctx := gContext
+	ctx := GContext
 	client := globalstate.EgoscaleV3Client
 
 	rolesMap := map[string]string{}
@@ -63,28 +63,28 @@ func (o *iamAPIKeyListOutput) ToTable() {
 }
 
 type iamAPIKeyListCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 }
 
-func (c *iamAPIKeyListCmd) cmdAliases() []string { return gListAlias }
+func (c *iamAPIKeyListCmd) CmdAliases() []string { return GListAlias }
 
-func (c *iamAPIKeyListCmd) cmdShort() string { return "List API Keys" }
+func (c *iamAPIKeyListCmd) CmdShort() string { return "List API Keys" }
 
-func (c *iamAPIKeyListCmd) cmdLong() string {
+func (c *iamAPIKeyListCmd) CmdLong() string {
 	return fmt.Sprintf(`This command lists all API Keys.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamAPIKeyListOutput{}), ", "))
 }
 
-func (c *iamAPIKeyListCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamAPIKeyListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamAPIKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *iamAPIKeyListCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client := globalstate.EgoscaleV3Client
 
 	listAPIKeysResp, err := client.ListAPIKeys(ctx)
@@ -102,11 +102,11 @@ func (c *iamAPIKeyListCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&out, err)
+	return c.OutputFunc(&out, err)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamAPIKeyCmd, &iamAPIKeyListCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyListCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

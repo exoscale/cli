@@ -12,7 +12,7 @@ import (
 )
 
 type elasticIPCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -30,27 +30,27 @@ type elasticIPCreateCmd struct {
 	Zone                      string `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
-func (c *elasticIPCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *elasticIPCreateCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *elasticIPCreateCmd) cmdShort() string {
+func (c *elasticIPCreateCmd) CmdShort() string {
 	return "Create an Elastic IP"
 }
 
-func (c *elasticIPCreateCmd) cmdLong() string {
+func (c *elasticIPCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Elastic IP.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&elasticIPShowOutput{}), ", "))
 }
 
-func (c *elasticIPCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *elasticIPCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -100,15 +100,15 @@ func (c *elasticIPCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	return (&elasticIPShowCmd{
-		cliCommandSettings: c.cliCommandSettings,
+		CliCommandSettings: c.CliCommandSettings,
 		ElasticIP:          op.Reference.ID.String(),
 		Zone:               c.Zone,
-	}).cmdRun(nil, nil)
+	}).CmdRun(nil, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(elasticIPCmd, &elasticIPCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		HealthcheckInterval:    10,
 		HealthcheckStrikesFail: 2,

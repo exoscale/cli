@@ -11,7 +11,7 @@ import (
 )
 
 type sksDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,20 +22,20 @@ type sksDeleteCmd struct {
 	Zone            v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *sksDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *sksDeleteCmd) cmdShort() string { return "Delete an SKS cluster" }
+func (c *sksDeleteCmd) CmdShort() string { return "Delete an SKS cluster" }
 
-func (c *sksDeleteCmd) cmdLong() string { return "" }
+func (c *sksDeleteCmd) CmdLong() string { return "" }
 
-func (c *sksDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+func (c *sksDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (c *sksDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

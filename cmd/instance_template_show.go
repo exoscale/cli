@@ -61,7 +61,7 @@ func (o *instanceTemplateShowOutput) ToTable() {
 }
 
 type instanceTemplateShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -71,27 +71,27 @@ type instanceTemplateShowCmd struct {
 	Zone       string `cli-short:"z" cli-usage:"zone to filter results to (default: current account's default zone)"`
 }
 
-func (c *instanceTemplateShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *instanceTemplateShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *instanceTemplateShowCmd) cmdShort() string {
+func (c *instanceTemplateShowCmd) CmdShort() string {
 	return "Show a Compute instance template details"
 }
 
-func (c *instanceTemplateShowCmd) cmdLong() string {
+func (c *instanceTemplateShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows a Compute instance template details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
 }
 
-func (c *instanceTemplateShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceTemplateShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *instanceTemplateShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := exoapi.WithEndpoint(
-		gContext,
+		GContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
@@ -105,7 +105,7 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		)
 	}
 
-	return c.outputFunc(&instanceTemplateShowOutput{
+	return c.OutputFunc(&instanceTemplateShowOutput{
 		ID:              *template.ID,
 		Zone:            c.Zone,
 		Family:          utils.DefaultString(template.Family, ""),
@@ -126,8 +126,8 @@ func (c *instanceTemplateShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceTemplateCmd, &instanceTemplateShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceTemplateCmd, &instanceTemplateShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		Visibility: defaultTemplateVisibility,
 	}))

@@ -35,7 +35,7 @@ func init() {
 
 Supported output template annotations: %s`,
 			strings.Join(output.TemplateAnnotations(&configShowOutput{}), ", ")),
-		Aliases: gShowAlias,
+		Aliases: GShowAlias,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if account.GAllAccount == nil {
 				return fmt.Errorf("no accounts configured")

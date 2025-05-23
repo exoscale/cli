@@ -13,7 +13,7 @@ import (
 )
 
 type sksKubeconfigCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"kubeconfig"`
 
@@ -26,13 +26,13 @@ type sksKubeconfigCmd struct {
 	Zone           v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksKubeconfigCmd) cmdAliases() []string { return []string{"kc"} }
+func (c *sksKubeconfigCmd) CmdAliases() []string { return []string{"kc"} }
 
-func (c *sksKubeconfigCmd) cmdShort() string {
+func (c *sksKubeconfigCmd) CmdShort() string {
 	return "Generate a Kubernetes kubeconfig file for an SKS cluster"
 }
 
-func (c *sksKubeconfigCmd) cmdLong() string {
+func (c *sksKubeconfigCmd) CmdLong() string {
 	return `This command generates a kubeconfig file to be used for authenticating to an SKS
 cluster API.
 
@@ -104,14 +104,14 @@ Notes:
 `
 }
 
-func (c *sksKubeconfigCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksKubeconfigCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+func (c *sksKubeconfigCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -191,7 +191,7 @@ func (c *sksKubeconfigCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksKubeconfigCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksKubeconfigCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -11,9 +11,9 @@ import (
 )
 
 func (c *dbaasExternalIntegrationSettingsUpdateCmd) updateDatadog(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -50,10 +50,10 @@ func (c *dbaasExternalIntegrationSettingsUpdateCmd) updateDatadog(cmd *cobra.Com
 
 	if !globalstate.Quiet {
 		return (&dbaasExternalIntegrationSettingsShowCmd{
-			cliCommandSettings: defaultCLICmdSettings(),
+			CliCommandSettings: DefaultCLICmdSettings(),
 			IntegrationID:      string(integrationID),
 			Type:               "datadog",
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil

@@ -1,4 +1,4 @@
-package cmd
+package load_balancer
 
 import (
 	"errors"
@@ -7,13 +7,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbServiceUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"update"`
 
@@ -36,27 +38,27 @@ type nlbServiceUpdateCmd struct {
 	Zone                v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
-func (c *nlbServiceUpdateCmd) cmdAliases() []string { return nil }
+func (c *nlbServiceUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *nlbServiceUpdateCmd) cmdShort() string { return "Update a Network Load Balancer service" }
+func (c *nlbServiceUpdateCmd) CmdShort() string { return "Update a Network Load Balancer service" }
 
-func (c *nlbServiceUpdateCmd) cmdLong() string {
+func (c *nlbServiceUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates a Network Load Balancer service.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&nlbServiceShowOutput{}), ", "))
 }
 
-func (c *nlbServiceUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *nlbServiceUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *nlbServiceUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 
-	ctx := gContext
+	ctx := exocmd.GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -86,41 +88,41 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		Healthcheck: service.Healthcheck,
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
 		svc.Description = c.Description
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckInterval)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.HealthcheckInterval)) {
 		svc.Healthcheck.Interval = c.HealthcheckInterval
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckMode)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.HealthcheckMode)) {
 		svc.Healthcheck.Mode = v3.LoadBalancerServiceHealthcheckMode(c.HealthcheckMode)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckPort)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.HealthcheckPort)) {
 		svc.Healthcheck.Port = c.HealthcheckPort
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckRetries)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.HealthcheckRetries)) {
 		svc.Healthcheck.Retries = c.HealthcheckRetries
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckTimeout)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.HealthcheckTimeout)) {
 		svc.Healthcheck.Timeout = c.HealthcheckTimeout
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckURI)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.HealthcheckURI)) {
 		svc.Healthcheck.URI = c.HealthcheckURI
 		updated = true
 	}
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.HealthcheckTLSSNI)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.HealthcheckTLSSNI)) {
 		svc.Healthcheck.TlsSNI = c.HealthcheckTLSSNI
 		updated = true
 	}
@@ -133,27 +135,27 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("cannot setup healthcheck URI with TCP mode (current value: %q)", c.HealthcheckURI)
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Name)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
 		svc.Name = c.Name
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Port)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Port)) {
 		svc.Port = c.Port
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Protocol)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Protocol)) {
 		svc.Protocol = v3.UpdateLoadBalancerServiceRequestProtocol(c.Protocol)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Strategy)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Strategy)) {
 		svc.Strategy = v3.UpdateLoadBalancerServiceRequestStrategy(c.Strategy)
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TargetPort)) {
+	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.TargetPort)) {
 		svc.TargetPort = c.TargetPort
 		updated = true
 	}
@@ -164,7 +166,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 			return err
 		}
 
-		decorateAsyncOperation(fmt.Sprintf("Updating service %q...", c.Service), func() {
+		utils.DecorateAsyncOperation(fmt.Sprintf("Updating service %q...", c.Service), func() {
 			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 		})
 		if err != nil {
@@ -173,11 +175,11 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 		if !globalstate.Quiet {
 			return (&nlbServiceShowCmd{
-				cliCommandSettings:  c.cliCommandSettings,
+				CliCommandSettings:  c.CliCommandSettings,
 				NetworkLoadBalancer: nlb.ID.String(),
 				Service:             service.ID.String(),
 				Zone:                c.Zone,
-			}).cmdRun(nil, nil)
+			}).CmdRun(nil, nil)
 		}
 
 	}
@@ -186,7 +188,7 @@ func (c *nlbServiceUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbServiceCmd, &nlbServiceUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(nlbServiceCmd, &nlbServiceUpdateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -62,20 +62,20 @@ Supported output template annotations: %s`,
 		bucket, prefix = parts[0], parts[1]
 
 		storage, err := sos.NewStorageClient(
-			gContext,
-			sos.ClientOptZoneFromBucket(gContext, bucket),
+			GContext,
+			sos.ClientOptZoneFromBucket(GContext, bucket),
 		)
 		if err != nil {
 			return fmt.Errorf("unable to initialize storage client: %w", err)
 		}
 
 		headers := storageHeadersFromCmdFlags(cmd.Flags())
-		if err := storage.UpdateObjectsHeaders(gContext, bucket, prefix, headers, recursive); err != nil {
+		if err := storage.UpdateObjectsHeaders(GContext, bucket, prefix, headers, recursive); err != nil {
 			return fmt.Errorf("unable to add headers to object: %w", err)
 		}
 
 		if !globalstate.Quiet && !recursive && !strings.HasSuffix(prefix, "/") {
-			return printOutput(storage.ShowObject(gContext, bucket, prefix))
+			return printOutput(storage.ShowObject(GContext, bucket, prefix))
 		}
 
 		if !globalstate.Quiet {

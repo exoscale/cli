@@ -1,4 +1,4 @@
-package cmd
+package load_balancer
 
 import (
 	"fmt"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -23,23 +25,23 @@ type nlbCreateCmd struct {
 	Zone        v3.ZoneName       `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
-func (c *nlbCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *nlbCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
-func (c *nlbCreateCmd) cmdShort() string { return "Create a Network Load Balancer" }
+func (c *nlbCreateCmd) CmdShort() string { return "Create a Network Load Balancer" }
 
-func (c *nlbCreateCmd) cmdLong() string {
+func (c *nlbCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Network Load Balancer.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&nlbShowOutput{}), ", "))
 }
 
-func (c *nlbCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *nlbCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *nlbCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	nlb := v3.CreateLoadBalancerRequest{
 		Description: c.Description,
 		Labels:      c.Labels,
@@ -47,8 +49,8 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 	var err error
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -58,7 +60,7 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", c.Name), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Creating Network Load Balancer %q...", c.Name), func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -67,17 +69,17 @@ func (c *nlbCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&nlbShowCmd{
-			cliCommandSettings:  c.cliCommandSettings,
+			CliCommandSettings:  c.CliCommandSettings,
 			NetworkLoadBalancer: op.Reference.ID.String(),
 			Zone:                c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(nlbCmd, &nlbCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(nlbCmd, &nlbCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

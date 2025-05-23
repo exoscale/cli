@@ -10,7 +10,7 @@ import (
 )
 
 type sksRotateCCMCredentialsCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"rotate-ccm-credentials"`
 
@@ -19,26 +19,26 @@ type sksRotateCCMCredentialsCmd struct {
 	Zone v3.ZoneName `cli-flag:"zone" cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksRotateCCMCredentialsCmd) cmdAliases() []string { return nil }
+func (c *sksRotateCCMCredentialsCmd) CmdAliases() []string { return nil }
 
-func (c *sksRotateCCMCredentialsCmd) cmdShort() string {
+func (c *sksRotateCCMCredentialsCmd) CmdShort() string {
 	return "Rotate the Exoscale Cloud Controller IAM credentials for an SKS cluster"
 }
 
-func (c *sksRotateCCMCredentialsCmd) cmdLong() string {
+func (c *sksRotateCCMCredentialsCmd) CmdLong() string {
 	return `This command rotates the Exoscale IAM credentials managed by the SKS control
 plane for the Kubernetes Exoscale Cloud Controller Manager.
 `
 }
 
-func (c *sksRotateCCMCredentialsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksRotateCCMCredentialsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksRotateCCMCredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+func (c *sksRotateCCMCredentialsCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (c *sksRotateCCMCredentialsCmd) cmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksRotateCCMCredentialsCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksRotateCCMCredentialsCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

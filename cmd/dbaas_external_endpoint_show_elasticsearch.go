@@ -38,8 +38,8 @@ func (o *elasticsearchOutput) ToTable() {
 }
 
 func (c *dbaasExternalEndpointShowCmd) showElasticsearch() (output.Outputter, error) {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 type securityGroupDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,22 +21,22 @@ type securityGroupDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *securityGroupDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *securityGroupDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *securityGroupDeleteCmd) cmdShort() string {
+func (c *securityGroupDeleteCmd) CmdShort() string {
 	return "Delete a Security Group"
 }
 
-func (c *securityGroupDeleteCmd) cmdLong() string { return "" }
+func (c *securityGroupDeleteCmd) CmdLong() string { return "" }
 
-func (c *securityGroupDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *securityGroupDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *securityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -68,7 +68,7 @@ func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(securityGroupCmd, &securityGroupDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(securityGroupCmd, &securityGroupDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

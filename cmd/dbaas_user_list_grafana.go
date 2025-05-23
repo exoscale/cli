@@ -8,9 +8,9 @@ import (
 
 func (c *dbaasUserListCmd) listGrafana(cmd *cobra.Command, _ []string) error {
 
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -29,5 +29,5 @@ func (c *dbaasUserListCmd) listGrafana(cmd *cobra.Command, _ []string) error {
 		})
 	}
 
-	return c.outputFunc(&res, nil)
+	return c.OutputFunc(&res, nil)
 }

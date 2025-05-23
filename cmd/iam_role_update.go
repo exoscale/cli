@@ -15,7 +15,7 @@ import (
 )
 
 type iamRoleUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	Role string `cli-arg:"#" cli-usage:"ID|NAME"`
 
@@ -27,13 +27,13 @@ type iamRoleUpdateCmd struct {
 	_ bool `cli-cmd:"update"`
 }
 
-func (c *iamRoleUpdateCmd) cmdAliases() []string { return nil }
+func (c *iamRoleUpdateCmd) CmdAliases() []string { return nil }
 
-func (c *iamRoleUpdateCmd) cmdShort() string {
+func (c *iamRoleUpdateCmd) CmdShort() string {
 	return "Update an IAM Role"
 }
 
-func (c *iamRoleUpdateCmd) cmdLong() string {
+func (c *iamRoleUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command updates an IAM Role.
 When you supply '-' as a flag argument to '--policy', the new policy will be read from STDIN.
 
@@ -41,17 +41,17 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamPolicyOutput{}), ", "))
 }
 
-func (c *iamRoleUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamRoleUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *iamRoleUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if c.Role == "" {
 		return errors.New("role not provided")
 	}
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -67,13 +67,13 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	updateRole := v3.UpdateIAMRoleRequest{}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Description)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Description)) {
 		updateRole.Description = c.Description
 	}
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Labels)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Labels)) {
 		updateRole.Labels = c.Labels
 	}
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Permissions)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Permissions)) {
 		updateRole.Permissions = c.Permissions
 	}
 
@@ -92,9 +92,9 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 	if c.Policy == "" {
 		if !globalstate.Quiet {
 			return (&iamRoleShowCmd{
-				cliCommandSettings: c.cliCommandSettings,
+				CliCommandSettings: c.CliCommandSettings,
 				Role:               role.ID.String(),
-			}).cmdRun(nil, nil)
+			}).CmdRun(nil, nil)
 		}
 
 		return nil
@@ -128,16 +128,16 @@ func (c *iamRoleUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&iamRoleShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Role:               role.ID.String(),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamRoleCmd, &iamRoleUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

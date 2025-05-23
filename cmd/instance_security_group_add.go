@@ -16,7 +16,7 @@ import (
 )
 
 type instanceSGAddCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"add"`
 
@@ -26,11 +26,11 @@ type instanceSGAddCmd struct {
 	Zone string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceSGAddCmd) cmdAliases() []string { return nil }
+func (c *instanceSGAddCmd) CmdAliases() []string { return nil }
 
-func (c *instanceSGAddCmd) cmdShort() string { return "Add a Compute instance to Security Groups" }
+func (c *instanceSGAddCmd) CmdShort() string { return "Add a Compute instance to Security Groups" }
 
-func (c *instanceSGAddCmd) cmdLong() string {
+func (c *instanceSGAddCmd) CmdLong() string {
 	return fmt.Sprintf(`This command adds a Compute instance to Security Groups.
 
 Supported output template annotations: %s`,
@@ -38,17 +38,17 @@ Supported output template annotations: %s`,
 	)
 }
 
-func (c *instanceSGAddCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceSGAddCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceSGAddCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instanceSGAddCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.SecurityGroups) == 0 {
 		cmdExitOnUsageError(cmd, "no Security Groups specified")
 	}
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -80,17 +80,17 @@ func (c *instanceSGAddCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceSGCmd, &instanceSGAddCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceSGCmd, &instanceSGAddCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

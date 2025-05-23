@@ -10,7 +10,7 @@ import (
 )
 
 type iamAPIKeyDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -19,22 +19,22 @@ type iamAPIKeyDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *iamAPIKeyDeleteCmd) cmdAliases() []string { return gDeleteAlias }
+func (c *iamAPIKeyDeleteCmd) CmdAliases() []string { return GDeleteAlias }
 
-func (c *iamAPIKeyDeleteCmd) cmdShort() string {
+func (c *iamAPIKeyDeleteCmd) CmdShort() string {
 	return "Delete an API Key"
 }
 
-func (c *iamAPIKeyDeleteCmd) cmdLong() string {
+func (c *iamAPIKeyDeleteCmd) CmdLong() string {
 	return `This command deletes existing API Key.`
 }
 
-func (c *iamAPIKeyDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamAPIKeyDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamAPIKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *iamAPIKeyDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	client := globalstate.EgoscaleV3Client
 
 	listAPIKeysResp, err := client.ListAPIKeys(ctx)
@@ -69,7 +69,7 @@ func (c *iamAPIKeyDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamAPIKeyCmd, &iamAPIKeyDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamAPIKeyCmd, &iamAPIKeyDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

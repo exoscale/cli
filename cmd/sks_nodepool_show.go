@@ -43,7 +43,7 @@ func (o *sksNodepoolShowOutput) ToText()      { output.Text(o) }
 func (o *sksNodepoolShowOutput) ToTable()     { output.Table(o) }
 
 type sksNodepoolShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -53,27 +53,27 @@ type sksNodepoolShowCmd struct {
 	Zone v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksNodepoolShowCmd) cmdAliases() []string { return gShowAlias }
+func (c *sksNodepoolShowCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *sksNodepoolShowCmd) cmdShort() string { return "Show an SKS cluster Nodepool details" }
+func (c *sksNodepoolShowCmd) CmdShort() string { return "Show an SKS cluster Nodepool details" }
 
-func (c *sksNodepoolShowCmd) cmdLong() string {
+func (c *sksNodepoolShowCmd) CmdLong() string {
 	return fmt.Sprintf(`This command shows an SKS cluster Nodepool details.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&sksNodepoolShowOutput{}), ", "))
 }
 
-func (c *sksNodepoolShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksNodepoolShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *sksNodepoolShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	var nodepool *v3.SKSNodepool
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -195,11 +195,11 @@ func (c *sksNodepoolShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 	out.Template = template.Name
 
-	return c.outputFunc(&out, nil)
+	return c.OutputFunc(&out, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksNodepoolCmd, &sksNodepoolShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksNodepoolCmd, &sksNodepoolShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

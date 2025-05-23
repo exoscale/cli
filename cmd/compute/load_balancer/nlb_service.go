@@ -1,4 +1,4 @@
-package cmd
+package load_balancer
 
 import "github.com/spf13/cobra"
 

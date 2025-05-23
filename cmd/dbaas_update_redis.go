@@ -15,9 +15,9 @@ import (
 func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 
 	if err != nil {
 		return fmt.Errorf("unable to create client: %w", err)
@@ -30,23 +30,23 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 		return fmt.Errorf("unable to retrieve database Service settings: %w", err)
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.RedisIPFilter)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.RedisIPFilter)) {
 		databaseService.IPFilter = c.RedisIPFilter
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Plan)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Plan)) {
 		databaseService.Plan = c.Plan
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.TerminationProtection)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.TerminationProtection)) {
 		databaseService.TerminationProtection = &c.TerminationProtection
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
-		cmd.Flags().Changed(mustCLICommandFlagName(c, &c.MaintenanceTime)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceDOW)) &&
+		cmd.Flags().Changed(MustCLICommandFlagName(c, &c.MaintenanceTime)) {
 		databaseService.Maintenance = &v3.UpdateDBAASServiceRedisRequestMaintenance{
 			Dow:  v3.UpdateDBAASServiceRedisRequestMaintenanceDow(c.MaintenanceDOW),
 			Time: c.MaintenanceTime,
@@ -54,7 +54,7 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.RedisSettings)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.RedisSettings)) {
 		_, err = validateDatabaseServiceSettings(
 			c.RedisSettings,
 			settingsSchema.Settings.Redis,
@@ -72,7 +72,7 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 		updated = true
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.RedisMigrationHost)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.RedisMigrationHost)) {
 		databaseService.Migration = &v3.UpdateDBAASServiceRedisRequestMigration{
 			Host: c.RedisMigrationHost,
 			Port: c.RedisMigrationPort,
@@ -118,7 +118,7 @@ func (c *dbaasServiceUpdateCmd) updateRedis(cmd *cobra.Command, _ []string) erro
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc((&dbaasServiceShowCmd{
+		return c.OutputFunc((&dbaasServiceShowCmd{
 			Name: c.Name,
 			Zone: c.Zone,
 		}).showDatabaseServiceRedis(ctx))

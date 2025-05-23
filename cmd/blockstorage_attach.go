@@ -12,7 +12,7 @@ import (
 )
 
 type blockStorageAttachCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"attach"`
 
@@ -21,25 +21,25 @@ type blockStorageAttachCmd struct {
 	Zone     v3.ZoneName `cli-short:"z" cli-usage:"block storage zone"`
 }
 
-func (c *blockStorageAttachCmd) cmdAliases() []string { return []string{"a"} }
+func (c *blockStorageAttachCmd) CmdAliases() []string { return []string{"a"} }
 
-func (c *blockStorageAttachCmd) cmdShort() string { return "Attach a Block Storage Volume" }
+func (c *blockStorageAttachCmd) CmdShort() string { return "Attach a Block Storage Volume" }
 
-func (c *blockStorageAttachCmd) cmdLong() string {
+func (c *blockStorageAttachCmd) CmdLong() string {
 	return fmt.Sprintf(`This command attaches a Block Storage Volume to a Compute Instance.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&blockStorageShowOutput{}), ", "))
 }
 
-func (c *blockStorageAttachCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *blockStorageAttachCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *blockStorageAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+func (c *blockStorageAttachCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (c *blockStorageAttachCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(blockstorageCmd, &blockStorageAttachCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(blockstorageCmd, &blockStorageAttachCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

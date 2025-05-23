@@ -10,5 +10,5 @@ var instanceTypeCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(instanceTypeCmd)
+	ComputeCmd.AddCommand(instanceTypeCmd)
 }

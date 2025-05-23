@@ -13,7 +13,7 @@ import (
 )
 
 type instanceStopCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"stop"`
 
@@ -23,19 +23,19 @@ type instanceStopCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceStopCmd) cmdAliases() []string { return nil }
+func (c *instanceStopCmd) CmdAliases() []string { return nil }
 
-func (c *instanceStopCmd) cmdShort() string { return "Stop a Compute instance" }
+func (c *instanceStopCmd) CmdShort() string { return "Stop a Compute instance" }
 
-func (c *instanceStopCmd) cmdLong() string { return "" }
+func (c *instanceStopCmd) CmdLong() string { return "" }
 
-func (c *instanceStopCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *instanceStopCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceStopCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+func (c *instanceStopCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instance, err := globalstate.EgoscaleClient.FindInstance(ctx, c.Zone, c.Instance)
 	if err != nil {
@@ -60,17 +60,17 @@ func (c *instanceStopCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           *instance.ID,
 			Zone:               v3.ZoneName(c.Zone),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceStopCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceStopCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

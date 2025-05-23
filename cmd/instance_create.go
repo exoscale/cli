@@ -24,7 +24,7 @@ import (
 )
 
 type instanceCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -50,11 +50,11 @@ type instanceCreateCmd struct {
 	Zone               v3.ZoneName       `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *instanceCreateCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *instanceCreateCmd) cmdShort() string { return "Create a Compute instance" }
+func (c *instanceCreateCmd) CmdShort() string { return "Create a Compute instance" }
 
-func (c *instanceCreateCmd) cmdLong() string {
+func (c *instanceCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance.
 
 Supported Compute instance type families: %s
@@ -67,19 +67,19 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceShowOutput{}), ", "))
 }
 
-func (c *instanceCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
+func (c *instanceCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
 	cmdSetTemplateFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
+func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolint:gocyclo
 	var (
 		singleUseSSHPrivateKey *rsa.PrivateKey
 		singleUseSSHPublicKey  ssh.PublicKey
 	)
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -317,18 +317,18 @@ func (c *instanceCreateCmd) cmdRun(_ *cobra.Command, _ []string) error { //nolin
 
 	if !globalstate.Quiet {
 		return (&instanceShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Instance:           instanceID.String(),
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceCmd, &instanceCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		DiskSize:           50,
 		InstanceType:       fmt.Sprintf("%s.%s", defaultInstanceTypeFamily, defaultInstanceType),

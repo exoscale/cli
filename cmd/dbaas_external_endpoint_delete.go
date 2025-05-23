@@ -10,7 +10,7 @@ import (
 )
 
 type dbaasExternalEndpointDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -18,27 +18,27 @@ type dbaasExternalEndpointDeleteCmd struct {
 	EndpointID string `cli-arg:"#"`
 }
 
-func (c *dbaasExternalEndpointDeleteCmd) cmdAliases() []string {
-	return gDeleteAlias
+func (c *dbaasExternalEndpointDeleteCmd) CmdAliases() []string {
+	return GDeleteAlias
 }
 
-func (c *dbaasExternalEndpointDeleteCmd) cmdLong() string {
+func (c *dbaasExternalEndpointDeleteCmd) CmdLong() string {
 	return "Delete a DBaaS external endpoint"
 }
 
-func (c *dbaasExternalEndpointDeleteCmd) cmdShort() string {
+func (c *dbaasExternalEndpointDeleteCmd) CmdShort() string {
 	return "Delete a DBaaS external endpoint"
 }
 
-func (c *dbaasExternalEndpointDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasExternalEndpointDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasExternalEndpointDeleteCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasExternalEndpointDeleteCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (c *dbaasExternalEndpointDeleteCmd) cmdRun(cmd *cobra.Command, args []strin
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasExternalEndpointCmd, &dbaasExternalEndpointDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

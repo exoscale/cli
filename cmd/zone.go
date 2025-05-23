@@ -43,7 +43,7 @@ Supported output template annotations: %s`,
 
 func listZones() (output.Outputter, error) {
 
-	ctx := gContext
+	ctx := GContext
 	client := globalstate.EgoscaleV3Client
 
 	zones, err := client.ListZones(ctx)

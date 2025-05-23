@@ -12,7 +12,7 @@ import (
 )
 
 type antiAffinityGroupCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -21,25 +21,25 @@ type antiAffinityGroupCreateCmd struct {
 	Description string `cli-usage:"Anti-Affinity Group description"`
 }
 
-func (c *antiAffinityGroupCreateCmd) cmdAliases() []string { return gCreateAlias }
+func (c *antiAffinityGroupCreateCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *antiAffinityGroupCreateCmd) cmdShort() string {
+func (c *antiAffinityGroupCreateCmd) CmdShort() string {
 	return "Create an Anti-Affinity Group"
 }
 
-func (c *antiAffinityGroupCreateCmd) cmdLong() string {
+func (c *antiAffinityGroupCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a Compute instance Anti-Affinity Group.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&antiAffinityGroupShowOutput{}), ", "))
 }
 
-func (c *antiAffinityGroupCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *antiAffinityGroupCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *antiAffinityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *antiAffinityGroupCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 
 	antiAffinityGroupCreateRequest := v3.CreateAntiAffinityGroupRequest{
 		Description: c.Description,
@@ -74,13 +74,13 @@ func (c *antiAffinityGroupCreateCmd) cmdRun(_ *cobra.Command, _ []string) error 
 	}
 
 	return (&antiAffinityGroupShowCmd{
-		cliCommandSettings: c.cliCommandSettings,
+		CliCommandSettings: c.CliCommandSettings,
 		AntiAffinityGroup:  antiAffinityGroup.ID.String(),
-	}).cmdRun(nil, nil)
+	}).CmdRun(nil, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(antiAffinityGroupCmd, &antiAffinityGroupCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

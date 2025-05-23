@@ -12,7 +12,7 @@ import (
 )
 
 type dbaasServiceMetricsCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"metrics"`
 
@@ -22,25 +22,25 @@ type dbaasServiceMetricsCmd struct {
 	Zone   string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasServiceMetricsCmd) cmdAliases() []string { return gShowAlias }
+func (c *dbaasServiceMetricsCmd) CmdAliases() []string { return GShowAlias }
 
-func (c *dbaasServiceMetricsCmd) cmdShort() string {
+func (c *dbaasServiceMetricsCmd) CmdShort() string {
 	return "Query a Database Service metrics over time"
 }
 
-func (c *dbaasServiceMetricsCmd) cmdLong() string {
+func (c *dbaasServiceMetricsCmd) CmdLong() string {
 	return `This command outputs a Database Service raw metrics for the specified time
 period in JSON format.`
 }
 
-func (c *dbaasServiceMetricsCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasServiceMetricsCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasServiceMetricsCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+func (c *dbaasServiceMetricsCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -68,8 +68,8 @@ func (c *dbaasServiceMetricsCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceMetricsCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasCmd, &dbaasServiceMetricsCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		Period: "hour",
 	}))

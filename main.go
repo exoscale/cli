@@ -20,6 +20,7 @@ import (
 	"log"
 
 	"github.com/exoscale/cli/cmd"
+	_ "github.com/exoscale/cli/cmd/subcommands"
 )
 
 var (

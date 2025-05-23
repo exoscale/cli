@@ -14,22 +14,22 @@ import (
 )
 
 type iamOrgPolicyUpdateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	Policy string `cli-arg:"#"`
 
 	_ bool `cli-cmd:"update"`
 }
 
-func (c *iamOrgPolicyUpdateCmd) cmdAliases() []string {
+func (c *iamOrgPolicyUpdateCmd) CmdAliases() []string {
 	return []string{"replace"}
 }
 
-func (c *iamOrgPolicyUpdateCmd) cmdShort() string {
+func (c *iamOrgPolicyUpdateCmd) CmdShort() string {
 	return "Update Org policy"
 }
 
-func (c *iamOrgPolicyUpdateCmd) cmdLong() string {
+func (c *iamOrgPolicyUpdateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command replaces the complete IAM Organization Policy with the new one provided in JSON format.
 To read the Policy from STDIN provide '-' as an argument.
 
@@ -41,13 +41,13 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamPolicyOutput{}), ", "))
 }
 
-func (c *iamOrgPolicyUpdateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamOrgPolicyUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamOrgPolicyUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+func (c *iamOrgPolicyUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -80,15 +80,15 @@ func (c *iamOrgPolicyUpdateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&iamOrgPolicyShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
-		}).cmdRun(nil, nil)
+			CliCommandSettings: c.CliCommandSettings,
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamOrgPolicyCmd, &iamOrgPolicyUpdateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamOrgPolicyCmd, &iamOrgPolicyUpdateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

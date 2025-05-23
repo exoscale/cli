@@ -12,9 +12,9 @@ import (
 )
 
 func (c *dbaasExternalEndpointCreateCmd) createDatadog(cmd *cobra.Command, _ []string) error {
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -70,10 +70,10 @@ func (c *dbaasExternalEndpointCreateCmd) createDatadog(cmd *cobra.Command, _ []s
 
 	if !globalstate.Quiet {
 		return (&dbaasExternalEndpointShowCmd{
-			cliCommandSettings: defaultCLICmdSettings(),
+			CliCommandSettings: DefaultCLICmdSettings(),
 			EndpointID:         endpointID,
 			Type:               "datadog",
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil

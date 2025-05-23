@@ -11,5 +11,5 @@ var privateNetworkCmd = &cobra.Command{
 }
 
 func init() {
-	computeCmd.AddCommand(privateNetworkCmd)
+	ComputeCmd.AddCommand(privateNetworkCmd)
 }

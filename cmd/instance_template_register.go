@@ -16,7 +16,7 @@ import (
 )
 
 type instanceTemplateRegisterCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"register"`
 
@@ -37,21 +37,21 @@ type instanceTemplateRegisterCmd struct {
 	Zone            string `cli-short:"z" cli-usage:"zone to register the template into (default: current account's default zone)"`
 }
 
-func (c *instanceTemplateRegisterCmd) cmdAliases() []string { return gCreateAlias }
+func (c *instanceTemplateRegisterCmd) CmdAliases() []string { return GCreateAlias }
 
-func (c *instanceTemplateRegisterCmd) cmdShort() string {
+func (c *instanceTemplateRegisterCmd) CmdShort() string {
 	return "Register a new Compute instance template"
 }
 
-func (c *instanceTemplateRegisterCmd) cmdLong() string {
+func (c *instanceTemplateRegisterCmd) CmdLong() string {
 	return fmt.Sprintf(`This command registers a new Compute instance template.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&instanceTemplateShowOutput{}), ", "))
 }
 
-func (c *instanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
+func (c *instanceTemplateRegisterCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
 
 	// In case the user specified a snapshot ID using the `--from-snapshot` flag,
 	// we add empty positional argument placeholders in order to trick the
@@ -59,7 +59,7 @@ func (c *instanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args []strin
 	// but the actual command function won't use them since it will dynamically retrieve
 	// this information from the specified snapshot export information.
 
-	snapshotID, err := cmd.Flags().GetString(mustCLICommandFlagName(c, &c.FromSnapshot))
+	snapshotID, err := cmd.Flags().GetString(MustCLICommandFlagName(c, &c.FromSnapshot))
 	if err != nil {
 		return err
 	}
@@ -67,10 +67,10 @@ func (c *instanceTemplateRegisterCmd) cmdPreRun(cmd *cobra.Command, args []strin
 		args = append(args, "", "")
 	}
 
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *instanceTemplateRegisterCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var (
 		template *egoscale.Template
 		err      error
@@ -79,7 +79,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	globalstate.EgoscaleClient.SetTimeout(time.Duration(c.Timeout) * time.Second)
 
 	ctx := exoapi.WithEndpoint(
-		gContext,
+		GContext,
 		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
 	)
 
@@ -128,26 +128,26 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 
 		// Above properties are inherited from snapshot source template, unless otherwise specified
 		// by the user from the command line
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DisablePassword)) {
+		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DisablePassword)) {
 			template.PasswordEnabled = &passwordEnabled
 		} else {
 			template.PasswordEnabled = srcTemplate.PasswordEnabled
 		}
 
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.DisableSSHKey)) {
+		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.DisableSSHKey)) {
 			template.SSHKeyEnabled = &sshKeyEnabled
 		} else {
 			template.SSHKeyEnabled = srcTemplate.SSHKeyEnabled
 		}
 
-		if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.Username)) {
+		if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.Username)) {
 			template.DefaultUser = utils.NonEmptyStringPtr(c.Username)
 		} else {
 			template.DefaultUser = srcTemplate.DefaultUser
 		}
 	}
 
-	if cmd.Flags().Changed(mustCLICommandFlagName(c, &c.BootMode)) {
+	if cmd.Flags().Changed(MustCLICommandFlagName(c, &c.BootMode)) {
 		template.BootMode = &c.BootMode
 	}
 
@@ -159,7 +159,7 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 	}
 
 	if !globalstate.Quiet {
-		return c.outputFunc(&instanceTemplateShowOutput{
+		return c.OutputFunc(&instanceTemplateShowOutput{
 			ID:              *template.ID,
 			Family:          utils.DefaultString(template.Family, ""),
 			Name:            *template.Name,
@@ -182,8 +182,8 @@ func (c *instanceTemplateRegisterCmd) cmdRun(cmd *cobra.Command, _ []string) err
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceTemplateCmd, &instanceTemplateRegisterCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(instanceTemplateCmd, &instanceTemplateRegisterCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		BootMode: "legacy",
 

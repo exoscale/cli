@@ -40,7 +40,7 @@ func (o *dbaasUserShowOutput) ToTable() {
 }
 
 type dbaasUserShowCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
@@ -49,23 +49,23 @@ type dbaasUserShowCmd struct {
 	Zone     string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasUserShowCmd) cmdAliases() []string { return nil }
+func (c *dbaasUserShowCmd) CmdAliases() []string { return nil }
 
-func (c *dbaasUserShowCmd) cmdShort() string { return "Show the details of a user" }
+func (c *dbaasUserShowCmd) CmdShort() string { return "Show the details of a user" }
 
-func (c *dbaasUserShowCmd) cmdLong() string {
+func (c *dbaasUserShowCmd) CmdLong() string {
 	return `This command show a user and their details for a specified DBAAS service.`
 }
 
-func (c *dbaasUserShowCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
+func (c *dbaasUserShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
 
-	return cliCommandDefaultPreRun(c, cmd, args)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasUserShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
+func (c *dbaasUserShowCmd) CmdRun(cmd *cobra.Command, args []string) error {
 
-	ctx := gContext
+	ctx := GContext
 	db, err := dbaasGetV3(ctx, c.Name, c.Zone)
 	if err != nil {
 		return err
@@ -73,17 +73,17 @@ func (c *dbaasUserShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 
 	switch db.Type {
 	case "mysql":
-		return c.outputFunc(c.showMysql(ctx))
+		return c.OutputFunc(c.showMysql(ctx))
 	case "kafka":
-		return c.outputFunc(c.showKafka(ctx))
+		return c.OutputFunc(c.showKafka(ctx))
 	case "pg":
-		return c.outputFunc(c.showPG(ctx))
+		return c.OutputFunc(c.showPG(ctx))
 	case "opensearch":
-		return c.outputFunc(c.showOpensearch(ctx))
+		return c.OutputFunc(c.showOpensearch(ctx))
 	case "grafana":
-		return c.outputFunc(c.showGrafana(ctx))
+		return c.OutputFunc(c.showGrafana(ctx))
 	case "valkey":
-		return c.outputFunc(c.showValkey(ctx))
+		return c.OutputFunc(c.showValkey(ctx))
 	default:
 		return fmt.Errorf("listing users unsupported for service of type %q", db.Type)
 
@@ -92,7 +92,7 @@ func (c *dbaasUserShowCmd) cmdRun(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasUserCmd, &dbaasUserShowCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasUserCmd, &dbaasUserShowCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

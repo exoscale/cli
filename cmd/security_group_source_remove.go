@@ -13,7 +13,7 @@ import (
 )
 
 type securityGroupRemoveSourceCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"remove"`
 
@@ -21,27 +21,27 @@ type securityGroupRemoveSourceCmd struct {
 	Cidr          string `cli-arg:"#" cli-usage:"CIDR"`
 }
 
-func (c *securityGroupRemoveSourceCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *securityGroupRemoveSourceCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *securityGroupRemoveSourceCmd) cmdShort() string {
+func (c *securityGroupRemoveSourceCmd) CmdShort() string {
 	return "Remove an external source from a Security Group"
 }
 
-func (c *securityGroupRemoveSourceCmd) cmdLong() string {
+func (c *securityGroupRemoveSourceCmd) CmdLong() string {
 	return fmt.Sprintf(`This command removes an external source from a Compute instance Security Group.
 
 Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
-func (c *securityGroupRemoveSourceCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *securityGroupRemoveSourceCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupRemoveSourceCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *securityGroupRemoveSourceCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -56,13 +56,13 @@ func (c *securityGroupRemoveSourceCmd) cmdRun(_ *cobra.Command, _ []string) erro
 	}
 
 	return (&securityGroupShowCmd{
-		cliCommandSettings: c.cliCommandSettings,
+		CliCommandSettings: c.CliCommandSettings,
 		SecurityGroup:      *securityGroup.ID,
-	}).cmdRun(nil, nil)
+	}).CmdRun(nil, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(securityGroupSourceCmd, &securityGroupRemoveSourceCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(securityGroupSourceCmd, &securityGroupRemoveSourceCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

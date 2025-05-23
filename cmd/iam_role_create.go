@@ -15,7 +15,7 @@ import (
 )
 
 type iamRoleCreateCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -27,13 +27,13 @@ type iamRoleCreateCmd struct {
 	Policy      string            `cli-flag:"policy" cli-usage:"Role policy (use '-' to read from STDIN)"`
 }
 
-func (c *iamRoleCreateCmd) cmdAliases() []string { return nil }
+func (c *iamRoleCreateCmd) CmdAliases() []string { return nil }
 
-func (c *iamRoleCreateCmd) cmdShort() string {
+func (c *iamRoleCreateCmd) CmdShort() string {
 	return "Create IAM Role"
 }
 
-func (c *iamRoleCreateCmd) cmdLong() string {
+func (c *iamRoleCreateCmd) CmdLong() string {
 	return fmt.Sprintf(`This command creates a new IAM Role.
 To read the Policy from STDIN, append '-' to the '--policy' flag.
 
@@ -45,17 +45,17 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&iamRoleShowOutput{}), ", "))
 }
 
-func (c *iamRoleCreateCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *iamRoleCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
+func (c *iamRoleCreateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if c.Name == "" {
 		return errors.New("NAME not provided")
 	}
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
@@ -108,17 +108,17 @@ func (c *iamRoleCreateCmd) cmdRun(cmd *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&iamRoleShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Role:               op.Reference.ID.String(),
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(iamRoleCmd, &iamRoleCreateCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(iamRoleCmd, &iamRoleCreateCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 		Editable:           true,
 	}))
 }

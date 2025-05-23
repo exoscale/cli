@@ -19,9 +19,9 @@ func (o *dbaasExternalIntegrationSettingsShowDatadogOutput) ToText()  { output.T
 func (o *dbaasExternalIntegrationSettingsShowDatadogOutput) ToTable() { output.Table(o) }
 
 func (c *dbaasExternalIntegrationSettingsShowCmd) showDatadog() (output.Outputter, error) {
-	ctx := gContext
+	ctx := GContext
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return nil, err
 	}

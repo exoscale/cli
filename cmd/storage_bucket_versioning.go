@@ -41,7 +41,7 @@ var storageBucketObjectVersioningCmd = &cobra.Command{
 
 		args[objVersioningBucketArgIndex] = strings.TrimPrefix(args[objVersioningBucketArgIndex], sos.BucketPrefix)
 
-		cmdSetZoneFlagFromDefault(cmd)
+		CmdSetZoneFlagFromDefault(cmd)
 
 		return cmdCheckRequiredFlags(cmd, []string{zoneFlagLong})
 	},
@@ -56,7 +56,7 @@ var storageBucketObjectVersioningCmd = &cobra.Command{
 		}
 
 		storage, err := sos.NewStorageClient(
-			gContext,
+			GContext,
 			sos.ClientOptWithZone(zone),
 		)
 		if err != nil {

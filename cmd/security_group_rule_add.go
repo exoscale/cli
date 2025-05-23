@@ -29,7 +29,7 @@ var securityGroupRuleProtocols = []string{
 }
 
 type securityGroupAddRuleCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"add"`
 
@@ -46,13 +46,13 @@ type securityGroupAddRuleCmd struct {
 	TargetPublicSecurityGroup string `cli-flag:"public-security-group" cli-usage:"rule target Public Security Group NAME"`
 }
 
-func (c *securityGroupAddRuleCmd) cmdAliases() []string { return nil }
+func (c *securityGroupAddRuleCmd) CmdAliases() []string { return nil }
 
-func (c *securityGroupAddRuleCmd) cmdShort() string {
+func (c *securityGroupAddRuleCmd) CmdShort() string {
 	return "Add a Security Group rule"
 }
 
-func (c *securityGroupAddRuleCmd) cmdLong() string {
+func (c *securityGroupAddRuleCmd) CmdLong() string {
 	return fmt.Sprintf(`This command adds a rule to a Compute instance Security Group.
 
 Supported network protocols: %s
@@ -62,14 +62,14 @@ Supported output template annotations: %s`,
 		strings.Join(output.TemplateAnnotations(&securityGroupShowOutput{}), ", "))
 }
 
-func (c *securityGroupAddRuleCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *securityGroupAddRuleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *securityGroupAddRuleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	zone := account.CurrentAccount.DefaultZone
 
-	ctx := exoapi.WithEndpoint(gContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
@@ -168,14 +168,14 @@ func (c *securityGroupAddRuleCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	return (&securityGroupShowCmd{
-		cliCommandSettings: c.cliCommandSettings,
+		CliCommandSettings: c.CliCommandSettings,
 		SecurityGroup:      *securityGroup.ID,
-	}).cmdRun(nil, nil)
+	}).CmdRun(nil, nil)
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(securityGroupRuleCmd, &securityGroupAddRuleCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(securityGroupRuleCmd, &securityGroupAddRuleCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 
 		FlowDirection: "ingress",
 		Protocol:      "tcp",

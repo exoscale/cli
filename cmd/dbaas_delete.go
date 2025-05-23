@@ -11,7 +11,7 @@ import (
 )
 
 type dbaasServiceDeleteCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -21,22 +21,22 @@ type dbaasServiceDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"Database Service zone"`
 }
 
-func (c *dbaasServiceDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *dbaasServiceDeleteCmd) CmdAliases() []string { return GRemoveAlias }
 
-func (c *dbaasServiceDeleteCmd) cmdShort() string { return "Delete a Database Service" }
+func (c *dbaasServiceDeleteCmd) CmdShort() string { return "Delete a Database Service" }
 
-func (c *dbaasServiceDeleteCmd) cmdLong() string { return "" }
+func (c *dbaasServiceDeleteCmd) CmdLong() string { return "" }
 
-func (c *dbaasServiceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *dbaasServiceDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+func (c *dbaasServiceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
 	var err error
 
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (c *dbaasServiceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(dbaasCmd, &dbaasServiceDeleteCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(dbaasCmd, &dbaasServiceDeleteCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

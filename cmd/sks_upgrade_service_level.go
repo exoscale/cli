@@ -10,7 +10,7 @@ import (
 )
 
 type sksUpgradeServiceLevelCmd struct {
-	cliCommandSettings `cli-cmd:"-"`
+	CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"upgrade-service-level"`
 
@@ -20,22 +20,22 @@ type sksUpgradeServiceLevelCmd struct {
 	Zone  v3.ZoneName `cli-short:"z" cli-usage:"SKS cluster zone"`
 }
 
-func (c *sksUpgradeServiceLevelCmd) cmdAliases() []string { return nil }
+func (c *sksUpgradeServiceLevelCmd) CmdAliases() []string { return nil }
 
-func (c *sksUpgradeServiceLevelCmd) cmdShort() string {
+func (c *sksUpgradeServiceLevelCmd) CmdShort() string {
 	return "Upgrade an SKS cluster service level"
 }
 
-func (c *sksUpgradeServiceLevelCmd) cmdLong() string {
+func (c *sksUpgradeServiceLevelCmd) CmdLong() string {
 	return `This command upgrades an SKS cluster's service level to "pro".
 
 Note: once upgraded to pro, an SKS cluster service level cannot be downgraded
 to a lower level.`
 }
 
-func (c *sksUpgradeServiceLevelCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
-	cmdSetZoneFlagFromDefault(cmd)
-	return cliCommandDefaultPreRun(c, cmd, args)
+func (c *sksUpgradeServiceLevelCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
+	CmdSetZoneFlagFromDefault(cmd)
+	return CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(cluster string) bool {
@@ -45,15 +45,15 @@ func (c *sksUpgradeServiceLevelCmd) confirmUpgrade(cluster string) bool {
 	))
 }
 
-func (c *sksUpgradeServiceLevelCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *sksUpgradeServiceLevelCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	if !c.Force {
 		if !c.confirmUpgrade(c.Cluster) {
 			return nil
 		}
 	}
 
-	ctx := gContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := GContext
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -80,17 +80,17 @@ func (c *sksUpgradeServiceLevelCmd) cmdRun(_ *cobra.Command, _ []string) error {
 
 	if !globalstate.Quiet {
 		return (&sksShowCmd{
-			cliCommandSettings: c.cliCommandSettings,
+			CliCommandSettings: c.CliCommandSettings,
 			Cluster:            cluster.ID.String(),
 			Zone:               c.Zone,
-		}).cmdRun(nil, nil)
+		}).CmdRun(nil, nil)
 	}
 
 	return nil
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(sksCmd, &sksUpgradeServiceLevelCmd{
-		cliCommandSettings: defaultCLICmdSettings(),
+	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksUpgradeServiceLevelCmd{
+		CliCommandSettings: DefaultCLICmdSettings(),
 	}))
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var computeCmd = &cobra.Command{
+var ComputeCmd = &cobra.Command{
 	Use:        "compute",
 	Short:      "Compute services management",
 	Aliases:    []string{"c"},
@@ -12,5 +12,5 @@ var computeCmd = &cobra.Command{
 }
 
 func init() {
-	RootCmd.AddCommand(computeCmd)
+	RootCmd.AddCommand(ComputeCmd)
 }
