@@ -12,7 +12,7 @@ import (
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
-type instanceDeleteCmd struct {
+type InstanceDeleteCmd struct {
 	cliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
@@ -23,18 +23,18 @@ type instanceDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"instance zone"`
 }
 
-func (c *instanceDeleteCmd) cmdAliases() []string { return gRemoveAlias }
+func (c *InstanceDeleteCmd) cmdAliases() []string { return gRemoveAlias }
 
-func (c *instanceDeleteCmd) cmdShort() string { return "Delete a Compute instance" }
+func (c *InstanceDeleteCmd) cmdShort() string { return "Delete a Compute instance" }
 
-func (c *instanceDeleteCmd) cmdLong() string { return "" }
+func (c *InstanceDeleteCmd) cmdLong() string { return "" }
 
-func (c *instanceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
+func (c *InstanceDeleteCmd) cmdPreRun(cmd *cobra.Command, args []string) error {
 	cmdSetZoneFlagFromDefault(cmd)
 	return cliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+func (c *InstanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 	ctx := gContext
 	client, err := switchClientZoneV3(
 		ctx,
@@ -103,7 +103,7 @@ func (c *instanceDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(registerCLICommand(instanceCmd, &instanceDeleteCmd{
+	cobra.CheckErr(registerCLICommand(instanceCmd, &InstanceDeleteCmd{
 		cliCommandSettings: defaultCLICmdSettings(),
 	}))
 }

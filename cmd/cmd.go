@@ -218,16 +218,34 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 
 	for i := 0; i < cv.NumField(); i++ {
 		cTypeField := cv.Type().Field(i)
+		fieldValue := cv.Field(i)
 
 		if v, ok := cTypeField.Tag.Lookup("cli"); ok && v == "-" {
 			continue
 		}
-
 		if _, ok := cTypeField.Tag.Lookup("cli-cmd"); ok {
 			continue
 		}
-
 		if _, ok := cTypeField.Tag.Lookup("cli-arg"); ok {
+			continue
+		}
+
+		// Handle embedded structs (inheritance)
+		if cTypeField.Type.Kind() == reflect.Struct && cTypeField.Anonymous {
+			embedded := fieldValue
+			if embedded.CanAddr() {
+				embedded = embedded.Addr()
+			}
+			// Only recurse if the embedded struct implements cliCommand
+			if embedded.Type().Implements(reflect.TypeOf((*cliCommand)(nil)).Elem()) {
+				embeddedFlags, err := cliCommandFlagSet(embedded.Interface().(cliCommand))
+				if err != nil {
+					return nil, err
+				}
+				embeddedFlags.VisitAll(func(flag *pflag.Flag) {
+					fs.AddFlag(flag)
+				})
+			}
 			continue
 		}
 
@@ -246,27 +264,22 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 			flagUsage = v
 		}
 
-		flagDefaultValue := cv.Field(i).Interface()
+		flagDefaultValue := fieldValue.Interface()
 
 		switch t := cTypeField.Type.Kind(); t {
 		case reflect.String:
 			fs.StringP(flagName, flagShort, fmt.Sprint(flagDefaultValue), flagUsage)
-
 		case reflect.Int64:
 			fs.Int64P(flagName, flagShort, flagDefaultValue.(int64), flagUsage)
-
 		case reflect.Bool:
 			fs.BoolP(flagName, flagShort, flagDefaultValue.(bool), flagUsage)
-
 		case reflect.Slice:
 			if cTypeField.Type.Elem().Kind() != reflect.String {
 				return nil, cliCommandImplemError{
 					fmt.Sprintf("unsupported type []%s for field %s.%s", t, cv.Type(), cTypeField.Name),
 				}
 			}
-
 			fs.StringSliceP(flagName, flagShort, flagDefaultValue.([]string), flagUsage)
-
 		case reflect.Map:
 			if cTypeField.Type.Elem().Kind() != reflect.String {
 				return nil, cliCommandImplemError{
@@ -278,9 +291,7 @@ func cliCommandFlagSet(c cliCommand) (*pflag.FlagSet, error) {
 					),
 				}
 			}
-
 			fs.StringToStringP(flagName, flagShort, flagDefaultValue.(map[string]string), flagUsage)
-
 		default:
 			return nil, cliCommandImplemError{fmt.Sprintf("unsupported type %s", t)}
 		}
