@@ -48,7 +48,7 @@ func (c *iamRoleListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *iamRoleListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}

@@ -77,7 +77,7 @@ func formatDatabaseServiceValkeyTable(t *table.Table, o *dbServiceValkeyShowOutp
 
 func (c *dbaasServiceShowCmd) showDatabaseServiceValkey(ctx context.Context) (output.Outputter, error) {
 
-	client, err := switchClientZoneV3(
+	client, err := SwitchClientZoneV3(
 		ctx,
 		globalstate.EgoscaleV3Client,
 		v3.ZoneName(c.Zone),

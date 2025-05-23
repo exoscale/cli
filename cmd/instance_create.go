@@ -79,7 +79,7 @@ func (c *instanceCreateCmd) CmdRun(_ *cobra.Command, _ []string) error { //nolin
 		singleUseSSHPublicKey  ssh.PublicKey
 	)
 	ctx := GContext
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}

@@ -10,13 +10,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	"github.com/exoscale/cli/utils"
-	egoscale "github.com/exoscale/egoscale/v2"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbServerStatusShowOutput struct {
@@ -26,7 +23,7 @@ type nlbServerStatusShowOutput struct {
 
 type nlbServiceHealthcheckShowOutput struct {
 	Mode     string        `json:"mode"`
-	Port     uint16        `json:"port"`
+	Port     int64         `json:"port"`
 	Interval time.Duration `json:"interval"`
 	Timeout  time.Duration `json:"timeout"`
 	Retries  int64         `json:"retries"`
@@ -40,8 +37,8 @@ type nlbServiceShowOutput struct {
 	Description       string                          `json:"description"`
 	InstancePoolID    string                          `json:"instance_pool_id"`
 	Protocol          string                          `json:"protocol"`
-	Port              uint16                          `json:"port"`
-	TargetPort        uint16                          `json:"target_port"`
+	Port              int64                           `json:"port"`
+	TargetPort        int64                           `json:"target_port"`
 	Strategy          string                          `json:"strategy"`
 	Healthcheck       nlbServiceHealthcheckShowOutput `json:"healthcheck"`
 	HealthcheckStatus []nlbServerStatusShowOutput     `json:"healthcheck_status"`
@@ -101,7 +98,7 @@ type nlbServiceShowCmd struct {
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"LOAD-BALANCER-NAME|ID"`
 	Service             string `cli-arg:"#" cli-usage:"SERVICE-NAME|ID"`
 
-	Zone string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbServiceShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
@@ -121,19 +118,28 @@ func (c *nlbServiceShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	var svc *egoscale.NetworkLoadBalancerService
+	// var svc *egoscale.NetworkLoadBalancerService
 
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
-
-	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
 
-	for _, s := range nlb.Services {
-		if *s.ID == c.Service || *s.Name == c.Service {
-			svc = s
-			break
+	nlbs, err := client.ListLoadBalancers(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := nlbs.FindLoadBalancer(c.NetworkLoadBalancer)
+	if err != nil {
+		return err
+	}
+
+	var svc *v3.LoadBalancerService
+	for _, s := range n.Services {
+		fmt.Println(c.Service, s.ID.String(), s.Name)
+		if c.Service == s.ID.String() || c.Service == s.Name {
+			svc = &s
 		}
 	}
 	if svc == nil {
@@ -141,32 +147,32 @@ func (c *nlbServiceShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	out := nlbServiceShowOutput{
-		ID:             *svc.ID,
-		Name:           *svc.Name,
-		Description:    utils.DefaultString(svc.Description, ""),
-		InstancePoolID: *svc.InstancePoolID,
-		Protocol:       *svc.Protocol,
-		Port:           *svc.Port,
-		TargetPort:     *svc.TargetPort,
-		Strategy:       *svc.Strategy,
-		State:          *svc.State,
+		ID:             string(svc.ID),
+		Name:           svc.Name,
+		Description:    svc.Description,
+		InstancePoolID: string(svc.InstancePool.ID),
+		Protocol:       string(svc.Protocol),
+		Port:           svc.Port,
+		TargetPort:     svc.TargetPort,
+		Strategy:       string(svc.Strategy),
+		State:          string(svc.State),
 
 		Healthcheck: nlbServiceHealthcheckShowOutput{
-			Mode:     *svc.Healthcheck.Mode,
-			Port:     *svc.Healthcheck.Port,
-			Interval: *svc.Healthcheck.Interval,
-			Timeout:  *svc.Healthcheck.Timeout,
-			Retries:  *svc.Healthcheck.Retries,
-			URI:      utils.DefaultString(svc.Healthcheck.URI, ""),
-			TLSSNI:   utils.DefaultString(svc.Healthcheck.TLSSNI, ""),
+			Mode:     string(svc.Healthcheck.Mode),
+			Port:     svc.Healthcheck.Port,
+			Interval: time.Duration(svc.Healthcheck.Interval * int64(time.Second)),
+			Timeout:  time.Duration(svc.Healthcheck.Timeout * int64(time.Second)),
+			Retries:  svc.Healthcheck.Retries,
+			URI:      svc.Healthcheck.URI,
+			TLSSNI:   svc.Healthcheck.TlsSNI,
 		},
 
 		HealthcheckStatus: func() []nlbServerStatusShowOutput {
 			statuses := make([]nlbServerStatusShowOutput, len(svc.HealthcheckStatus))
 			for i, st := range svc.HealthcheckStatus {
 				statuses[i] = nlbServerStatusShowOutput{
-					InstanceIP: st.InstanceIP.String(),
-					Status:     *st.Status,
+					InstanceIP: st.PublicIP.String(),
+					Status:     string(st.Status),
 				}
 			}
 			return statuses

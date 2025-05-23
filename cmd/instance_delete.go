@@ -36,7 +36,7 @@ func (c *instanceDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 
 func (c *instanceDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	ctx := GContext
-	client, err := switchClientZoneV3(
+	client, err := SwitchClientZoneV3(
 		ctx,
 		globalstate.EgoscaleV3Client,
 		v3.ZoneName(c.Zone),

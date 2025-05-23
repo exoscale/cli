@@ -126,7 +126,7 @@ func formatDatabaseServicePGTable(t *table.Table, o *dbServicePGShowOutput) {
 }
 
 func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output.Outputter, error) {
-	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func (c *dbaasServiceShowCmd) showDatabaseServicePG(ctx context.Context) (output
 
 	case c.ShowURI:
 		// Read password from dedicated endpoint
-		client, err := switchClientZoneV3(
+		client, err := SwitchClientZoneV3(
 			ctx,
 			globalstate.EgoscaleV3Client,
 			v3.ZoneName(c.Zone),

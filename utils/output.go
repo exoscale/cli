@@ -46,7 +46,7 @@ func PrintOutput(o output.Outputter, err error) error {
 // utils.DecorateAsyncOperation is a cosmetic helper intended for wrapping long
 // asynchronous operations, outputting progress feedback to the user's
 // terminal.
-// TODO remove this one once all has been migrated to utils.DecorateAsyncOperationrationrationrationrationrations.
+// TODO remove this one once all has been migrated to utils.DecorateAsyncOperation.
 func DecorateAsyncOperation(message string, fn func()) {
 	p := mpb.New(
 		mpb.WithOutput(os.Stderr),

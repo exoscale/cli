@@ -7,11 +7,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbUpdateCmd struct {
@@ -24,7 +23,7 @@ type nlbUpdateCmd struct {
 	Description string            `cli-usage:"Network Load Balancer description"`
 	Labels      map[string]string `cli-flag:"label" cli-usage:"Network Load Balancer label (format: key=value)"`
 	Name        string            `cli-usage:"Network Load Balancer name"`
-	Zone        string            `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Zone        v3.ZoneName       `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbUpdateCmd) CmdAliases() []string { return nil }
@@ -47,35 +46,47 @@ func (c *nlbUpdateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 func (c *nlbUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	var updated bool
 
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exocmd.GContext
 
-	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
+	nlbs, err := client.ListLoadBalancers(ctx)
 	if err != nil {
 		return err
 	}
 
+	n, err := nlbs.FindLoadBalancer(c.NetworkLoadBalancer)
+	if err != nil {
+		return err
+	}
+
+	nlbRequest := v3.UpdateLoadBalancerRequest{}
+
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Description)) {
-		nlb.Description = &c.Description
+		nlbRequest.Description = c.Description
 		updated = true
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Labels)) {
-		nlb.Labels = &c.Labels
+		nlbRequest.Labels = c.Labels
 		updated = true
 	}
 
 	if cmd.Flags().Changed(exocmd.MustCLICommandFlagName(c, &c.Name)) {
-		nlb.Name = &c.Name
+		nlbRequest.Name = c.Name
 		updated = true
 	}
 
 	if updated {
+
+		op, err := client.UpdateLoadBalancer(ctx, n.ID, nlbRequest)
+
 		utils.DecorateAsyncOperation(
 			fmt.Sprintf("Updating Network Load Balancer %q...", c.NetworkLoadBalancer),
 			func() {
-				if err = globalstate.EgoscaleClient.UpdateNetworkLoadBalancer(ctx, c.Zone, nlb); err != nil {
-					return
-				}
+				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 			})
 		if err != nil {
 			return err
@@ -85,7 +96,7 @@ func (c *nlbUpdateCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if !globalstate.Quiet {
 		return (&nlbShowCmd{
 			CliCommandSettings:  c.CliCommandSettings,
-			NetworkLoadBalancer: *nlb.ID,
+			NetworkLoadBalancer: n.ID.String(),
 			Zone:                c.Zone,
 		}).CmdRun(nil, nil)
 	}
