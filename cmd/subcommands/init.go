@@ -7,4 +7,5 @@ package subcommands
 
 import (
 	_ "github.com/exoscale/cli/cmd/compute/load_balancer"
+	_ "github.com/exoscale/cli/cmd/compute/sks"
 )

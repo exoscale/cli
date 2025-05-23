@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/utils"
@@ -19,7 +20,7 @@ import (
 // https://app.shortcut.com/exoscale/story/122943/bug-in-egoscale-v3-listsksclusterdeprecatedresources
 
 type sksUpgradeCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"upgrade"`
 
@@ -37,12 +38,12 @@ func (c *sksUpgradeCmd) CmdShort() string { return "Upgrade an SKS cluster Kuber
 func (c *sksUpgradeCmd) CmdLong() string { return "" }
 
 func (c *sksUpgradeCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	cluster, err := globalstate.EgoscaleClient.FindSKSCluster(ctx, c.Zone, c.Cluster)
 	if err != nil {
@@ -79,16 +80,18 @@ func (c *sksUpgradeCmd) CmdRun(_ *cobra.Command, _ []string) error {
 			}
 		}
 
-		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to upgrade the cluster %q to version %s?",
-			c.Cluster,
-			c.Version,
-		)) {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to upgrade the cluster %q to version %s?",
+				c.Cluster,
+				c.Version,
+			)) {
 			return nil
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q...", c.Cluster), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Upgrading SKS cluster %q...", c.Cluster), func() {
 		err = globalstate.EgoscaleClient.UpgradeSKSCluster(ctx, c.Zone, cluster, c.Version)
 	})
 	if err != nil {
@@ -132,7 +135,7 @@ func formatDeprecatedResource(deprecatedResource *v2.SKSClusterDeprecatedResourc
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksUpgradeCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksUpgradeCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
