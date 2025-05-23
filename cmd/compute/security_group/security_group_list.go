@@ -10,8 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	exoapi "github.com/exoscale/egoscale/v2/api"
-	"github.com/exoscale/egoscale/v2/oapi"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type securityGroupListItemOutput struct {
@@ -31,7 +30,7 @@ type securityGroupListCmd struct {
 
 	_ bool `cli-cmd:"list"`
 
-	Visibility string `cli-usage:"Security Group visibility: private (default) or public"`
+	Visibility v3.ListSecurityGroupsVisibility `cli-usage:"Security Group visibility: private (default) or public"`
 }
 
 func (c *securityGroupListCmd) CmdAliases() []string { return exocmd.GListAlias }
@@ -49,29 +48,31 @@ func (c *securityGroupListCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupListCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(
-		exocmd.GContext,
-		exoapi.NewReqEndpoint(account.CurrentAccount.Environment, account.CurrentAccount.DefaultZone),
-	)
-
-	params := &oapi.ListSecurityGroupsParams{}
-	if len(c.Visibility) > 0 {
-		params = &oapi.ListSecurityGroupsParams{
-			Visibility: (*oapi.ListSecurityGroupsParamsVisibility)(&c.Visibility),
-		}
+func (c *securityGroupListCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
 	}
-	securityGroups, err := globalstate.EgoscaleClient.FindSecurityGroups(ctx, account.CurrentAccount.DefaultZone, params)
+
+	securityGroups, err := func() (*v3.ListSecurityGroupsResponse, error) {
+		if c.Visibility == "" {
+			return client.ListSecurityGroups(ctx)
+
+		} else {
+			return client.ListSecurityGroups(ctx, v3.ListSecurityGroupsWithVisibility(c.Visibility))
+		}
+	}()
 	if err != nil {
 		return err
 	}
 
 	out := make(securityGroupListOutput, 0)
 
-	for _, t := range securityGroups {
-		sg := securityGroupListItemOutput{Name: *t.Name}
-		if t.ID != nil {
-			sg.ID = *t.ID
+	for _, t := range securityGroups.SecurityGroups {
+		sg := securityGroupListItemOutput{Name: t.Name}
+		if t.ID != "" {
+			sg.ID = t.ID.String()
 			sg.Visibility = "private"
 		} else {
 			sg.Visibility = "public"
