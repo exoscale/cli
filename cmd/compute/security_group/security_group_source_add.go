@@ -10,8 +10,7 @@ import (
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type securityGroupAddSourceCmd struct {
@@ -40,27 +39,39 @@ func (c *securityGroupAddSourceCmd) CmdPreRun(cmd *cobra.Command, args []string)
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupAddSourceCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
-
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+func (c *securityGroupAddSourceCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
 
-	utils.DecorateAsyncOperation(fmt.Sprintf("Adding Security Group source %s...", c.Cidr), func() {
-		err = globalstate.EgoscaleClient.AddExternalSourceToSecurityGroup(ctx, zone, securityGroup, c.Cidr)
+	securityGroups, err := client.ListSecurityGroups(ctx)
+	if err != nil {
+		return err
+	}
+	securityGroup, err := securityGroups.FindSecurityGroup(c.SecurityGroup)
+	if err != nil {
+		return err
+	}
+
+	op, err := client.AddExternalSourceToSecurityGroup(ctx, securityGroup.ID, v3.AddExternalSourceToSecurityGroupRequest{
+		Cidr: c.Cidr,
+	})
+	decorateAsyncOperation(fmt.Sprintf("Adding Security Group source %s...", c.Cidr), func() {
+		_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
 		return err
 	}
 
-	return (&securityGroupShowCmd{
-		CliCommandSettings: c.CliCommandSettings,
-		SecurityGroup:      *securityGroup.ID,
-	}).CmdRun(nil, nil)
+	if !globalstate.Quiet {
+		return (&securityGroupShowCmd{
+			cliCommandSettings: c.cliCommandSettings,
+			SecurityGroup:      securityGroup.ID.String(),
+		}).cmdRun(nil, nil)
+	}
+	return nil
 }
 
 func init() {
