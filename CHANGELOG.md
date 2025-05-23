@@ -21,7 +21,8 @@
 - dns: move to egoscale v3 #683
 - JSON output: do not escape HTML #682
 - IAM org policy and roles: move to egoscale v3 #685
-- NLB: moving the logic to the corresponding folder #686
+- load-balancer: moving the logic to the corresponding subfolder #686
+- load-balancer: move to egoscale v3 #687
 
 ## 1.84.1
 
