@@ -1,16 +1,18 @@
-package cmd
+package anti_affinity_group
 
 import (
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type antiAffinityGroupDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -19,7 +21,7 @@ type antiAffinityGroupDeleteCmd struct {
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
 }
 
-func (c *antiAffinityGroupDeleteCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *antiAffinityGroupDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *antiAffinityGroupDeleteCmd) CmdShort() string {
 	return "Delete an Anti-Affinity Group"
@@ -28,11 +30,11 @@ func (c *antiAffinityGroupDeleteCmd) CmdShort() string {
 func (c *antiAffinityGroupDeleteCmd) CmdLong() string { return "" }
 
 func (c *antiAffinityGroupDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
+	ctx := exocmd.GContext
 
 	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
 	if err != nil {
@@ -45,7 +47,7 @@ func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error 
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf(
+		if !utils.AskQuestion(ctx, fmt.Sprintf(
 			"Are you sure you want to delete Anti-Affinity Group %s?",
 			c.AntiAffinityGroup,
 		)) {
@@ -53,7 +55,7 @@ func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error 
 		}
 	}
 
-	return decorateAsyncOperations(fmt.Sprintf("Deleting Anti-Affinity Group %s...", c.AntiAffinityGroup), func() error {
+	return utils.DecorateAsyncOperations(fmt.Sprintf("Deleting Anti-Affinity Group %s...", c.AntiAffinityGroup), func() error {
 		op, err := globalstate.EgoscaleV3Client.DeleteAntiAffinityGroup(ctx, antiAffinityGroup.ID)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting Anti Affinity Group: %w", err)
@@ -69,7 +71,7 @@ func (c *antiAffinityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error 
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -1,9 +1,10 @@
-package cmd
+package anti_affinity_group
 
 import (
 	"fmt"
 	"strings"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	v3 "github.com/exoscale/egoscale/v3"
@@ -22,14 +23,14 @@ func (o *antiAffinityGroupShowOutput) ToText()  { output.Text(o) }
 func (o *antiAffinityGroupShowOutput) ToTable() { output.Table(o) }
 
 type antiAffinityGroupShowCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"show"`
 
 	AntiAffinityGroup string `cli-arg:"#" cli-usage:"NAME|ID"`
 }
 
-func (c *antiAffinityGroupShowCmd) CmdAliases() []string { return GShowAlias }
+func (c *antiAffinityGroupShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
 
 func (c *antiAffinityGroupShowCmd) CmdShort() string {
 	return "Show an Anti-Affinity Group details"
@@ -43,11 +44,11 @@ Supported output template annotations: %s`,
 }
 
 func (c *antiAffinityGroupShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *antiAffinityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
+	ctx := exocmd.GContext
 
 	antiAffinityGroupsResp, err := globalstate.EgoscaleV3Client.ListAntiAffinityGroups(ctx)
 	if err != nil {
@@ -78,7 +79,7 @@ func (c *antiAffinityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupShowCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(antiAffinityGroupCmd, &antiAffinityGroupShowCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

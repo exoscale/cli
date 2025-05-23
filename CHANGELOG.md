@@ -23,6 +23,7 @@
 - IAM org policy and roles: move to egoscale v3 #685
 - load-balancer: moving the logic to the corresponding subfolder #686
 - load-balancer: move to egoscale v3 #687
+- anti-affinity-group: moving the logic to the corresponding subfolder #696
 
 ## 1.84.1
 

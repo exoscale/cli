@@ -1,6 +1,7 @@
-package cmd
+package anti_affinity_group
 
 import (
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -11,5 +12,5 @@ var antiAffinityGroupCmd = &cobra.Command{
 }
 
 func init() {
-	ComputeCmd.AddCommand(antiAffinityGroupCmd)
+	exocmd.ComputeCmd.AddCommand(antiAffinityGroupCmd)
 }
