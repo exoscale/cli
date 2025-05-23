@@ -1,4 +1,4 @@
-package cmd
+package instance_pool
 
 import (
 	"errors"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type instancePoolScaleCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"scale"`
 
@@ -38,8 +40,8 @@ the decision to the orchestrator.`
 }
 
 func (c *instancePoolScaleCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -47,17 +49,19 @@ func (c *instancePoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return errors.New("minimum Instance Pool size is 1")
 	}
 
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to scale Instance Pool %q to %d?",
-			c.InstancePool,
-			c.Size,
-		)) {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to scale Instance Pool %q to %d?",
+				c.InstancePool,
+				c.Size,
+			)) {
 			return nil
 		}
 	}
-
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
@@ -67,7 +71,7 @@ func (c *instancePoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Scaling Instance Pool %q...", c.InstancePool), func() {
 		err = globalstate.EgoscaleClient.ScaleInstancePool(ctx, c.Zone, instancePool, c.Size)
 	})
 	if err != nil {
@@ -86,7 +90,7 @@ func (c *instancePoolScaleCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instancePoolCmd, &instancePoolScaleCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolScaleCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

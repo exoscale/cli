@@ -1,4 +1,4 @@
-package cmd
+package instance_pool
 
 import (
 	"errors"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type instancePoolEvictCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"evict"`
 
@@ -34,26 +36,28 @@ command.`
 }
 
 func (c *instancePoolEvictCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+
 	if len(c.Instances) == 0 {
-		CmdExitOnUsageError(cmd, "no instances specified")
+		exocmd.CmdExitOnUsageError(cmd, "no instances specified")
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf(
-			"Are you sure you want to evict %v from Instance Pool %q?",
-			c.Instances,
-			c.InstancePool,
-		)) {
+		if !utils.AskQuestion(
+			ctx,
+			fmt.Sprintf(
+				"Are you sure you want to evict %v from Instance Pool %q?",
+				c.Instances,
+				c.InstancePool,
+			)) {
 			return nil
 		}
 	}
-
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
@@ -72,7 +76,7 @@ func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		instances[i] = *instance.ID
 	}
 
-	decorateAsyncOperation(
+	utils.DecorateAsyncOperation(
 		fmt.Sprintf("Evicting instances from Instance Pool %q...", c.InstancePool),
 		func() {
 			err = globalstate.EgoscaleClient.EvictInstancePoolMembers(ctx, c.Zone, instancePool, instances)
@@ -94,7 +98,7 @@ func (c *instancePoolEvictCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instancePoolCmd, &instancePoolEvictCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolEvictCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

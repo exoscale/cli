@@ -8,6 +8,7 @@ package subcommands
 import (
 	_ "github.com/exoscale/cli/cmd/compute/anti_affinity_group"
 	_ "github.com/exoscale/cli/cmd/compute/blockstorage"
+	_ "github.com/exoscale/cli/cmd/compute/instance_pool"
 	_ "github.com/exoscale/cli/cmd/compute/load_balancer"
 	_ "github.com/exoscale/cli/cmd/compute/security_group"
 	_ "github.com/exoscale/cli/cmd/compute/sks"
