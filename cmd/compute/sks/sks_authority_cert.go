@@ -1,4 +1,4 @@
-package cmd
+package sks
 
 import (
 	"encoding/base64"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	v3 "github.com/exoscale/egoscale/v3"
 )
@@ -18,7 +19,7 @@ var sksAuthorityCertAuthorities = []v3.GetSKSClusterAuthorityCertAuthority{
 }
 
 type sksAuthorityCertCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"authority-cert"`
 
@@ -48,8 +49,8 @@ Supported authorities: %s`,
 }
 
 func (c *sksAuthorityCertCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *sksAuthorityCertCmd) CmdRun(cmd *cobra.Command, _ []string) error {
@@ -61,11 +62,11 @@ func (c *sksAuthorityCertCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 		}
 	}
 	if !authOK {
-		cmdExitOnUsageError(cmd, fmt.Sprintf("unsupported authority value %q", c.Authority))
+		exocmd.CmdExitOnUsageError(cmd, fmt.Sprintf("unsupported authority value %q", c.Authority))
 	}
 
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
 	if err != nil {
 		return err
 	}
@@ -96,7 +97,7 @@ func (c *sksAuthorityCertCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(sksCmd, &sksAuthorityCertCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(sksCmd, &sksAuthorityCertCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

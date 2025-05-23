@@ -12,7 +12,7 @@ var dnsACmd = &cobra.Command{
 	Long:  `Add an "A" record that points your domain or a subdomain to an IP address.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{"address"})
@@ -55,7 +55,7 @@ var dnsAAAACmd = &cobra.Command{
 	Long:  `Add an "AAAA" record that points your domain to an IPv6 address. These records are the same as A records except they use IPv6 addresses.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{"address"})
@@ -101,7 +101,7 @@ authorities (CAs) are allowed to issue certificates for a domain.
 More information on CAA flags: https://tools.ietf.org/html/rfc6844#section-3`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{})
@@ -156,7 +156,7 @@ look up the A records for the aliased domain and return those as the records for
 the record name. Note: If you want to redirect to a URL, use a URL record instead.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{"alias"})
@@ -200,7 +200,7 @@ var dnsCNAMECmd = &cobra.Command{
 These types of records are used when a server is reached by several names. Only use CNAME records on subdomains.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
@@ -246,7 +246,7 @@ var dnsHINFOCmd = &cobra.Command{
 	Long:  `Add an "HINFO" record is used to describe the CPU and OS of a host.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
@@ -301,7 +301,7 @@ var dnsMXCmd = &cobra.Command{
 These types of records are used to describe which servers handle incoming email.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
@@ -353,7 +353,7 @@ var dnsNAPTRCmd = &cobra.Command{
 the domain name syntax to a label that is. More information can be found in RFC 2915.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
@@ -463,7 +463,7 @@ var dnsNSCmd = &cobra.Command{
 You may only delegate subdomains (for example subdomain.yourdomain.com).`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
@@ -510,7 +510,7 @@ var dnsPOOLCmd = &cobra.Command{
 part of a pool of available CNAME records. This is a DNSimple custom record type.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
@@ -556,7 +556,7 @@ var dnsSRVCmd = &cobra.Command{
 	Long:  `Add an "SRV" record to specify the location of servers for a specific service.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
@@ -636,7 +636,7 @@ var dnsSSHFPCmd = &cobra.Command{
 	Long:  `Edit an "SSHFP" record to share your SSH fingerprint with others.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{
@@ -693,7 +693,7 @@ var dnsTXTCmd = &cobra.Command{
 the standard record types. For example, Google uses this type of record for domain verification.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{"content"})
@@ -737,7 +737,7 @@ var dnsURLCmd = &cobra.Command{
 This type of record uses an HTTP redirect to redirect visitors from a domain to a web site.`,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 1 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		return cmdCheckRequiredFlags(cmd, []string{"destination-url"})
