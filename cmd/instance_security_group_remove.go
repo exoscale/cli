@@ -47,7 +47,7 @@ func (c *instanceSGRemoveCmd) CmdPreRun(cmd *cobra.Command, args []string) error
 
 func (c *instanceSGRemoveCmd) CmdRun(cmd *cobra.Command, _ []string) error {
 	if len(c.SecurityGroups) == 0 {
-		cmdExitOnUsageError(cmd, "no Security Groups specified")
+		CmdExitOnUsageError(cmd, "no Security Groups specified")
 	}
 
 	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
