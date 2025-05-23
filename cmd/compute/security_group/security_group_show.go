@@ -16,23 +16,23 @@ import (
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
 	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type securityGroupRuleOutput struct {
-	ID            string  `json:"id"`
+	ID            v3.UUID `json:"id"`
 	Description   string  `json:"description"`
-	ICMPCode      *int64  `json:"icmp_code,omitempty"`
-	ICMPType      *int64  `json:"icmp_type,omitempty"`
-	Network       *string `json:"network,omitempty"`
+	ICMPCode      int64   `json:"icmp_code,omitempty"`
+	ICMPType      int64   `json:"icmp_type,omitempty"`
+	Network       string  `json:"network,omitempty"`
 	Protocol      string  `json:"protocol"`
-	SecurityGroup *string `json:"security_group,omitempty"`
-	StartPort     *uint16 `json:"start_port,omitempty"`
-	EndPort       *uint16 `json:"end_port,omitempty"`
+	SecurityGroup string  `json:"security_group,omitempty"`
+	StartPort     uint16  `json:"start_port,omitempty"`
+	EndPort       uint16  `json:"end_port,omitempty"`
 }
 
 type securityGroupShowOutput struct {
-	ID              string                        `json:"id"`
+	ID              v3.UUID                       `json:"id"`
 	Name            string                        `json:"name"`
 	Description     string                        `json:"description"`
 	ExternalSources []string                      `json:"external_sources"`
@@ -42,10 +42,10 @@ type securityGroupShowOutput struct {
 }
 
 type securityGroupInstanceOutput struct {
-	Name     string `json:"name"`
-	PublicIP string `json:"public_ip"`
-	ID       string `json:"id"`
-	Zone     string `json:"zone"`
+	Name     string      `json:"name"`
+	PublicIP string      `json:"public_ip"`
+	ID       string      `json:"id"`
+	Zone     v3.ZoneName `json:"zone"`
 }
 
 func (o *securityGroupShowOutput) ToJSON() { output.JSON(o) }
@@ -66,22 +66,22 @@ func (o *securityGroupShowOutput) ToTable() {
 			at.SetAlignment(tablewriter.ALIGN_LEFT)
 
 			for _, rule := range rules {
-				r := []string{rule.ID, rule.Description, strings.ToUpper(rule.Protocol)}
+				r := []string{rule.ID.String(), rule.Description, strings.ToUpper(rule.Protocol)}
 
-				if rule.Network != nil {
-					r = append(r, *rule.Network)
+				if rule.Network != "" {
+					r = append(r, rule.Network)
 				} else {
-					r = append(r, *rule.SecurityGroup)
+					r = append(r, rule.SecurityGroup)
 				}
 
 				if strings.HasPrefix(rule.Protocol, "icmp") {
-					r = append(r, fmt.Sprintf("ICMP code:%d type:%d", *rule.ICMPCode, *rule.ICMPType))
-				} else if rule.StartPort != nil {
+					r = append(r, fmt.Sprintf("ICMP code:%d type:%d", rule.ICMPCode, rule.ICMPType))
+				} else if rule.StartPort != 0 {
 					r = append(r, func() string {
-						if *rule.StartPort == *rule.EndPort {
-							return fmt.Sprint(*rule.StartPort)
+						if rule.StartPort == rule.EndPort {
+							return fmt.Sprint(rule.StartPort)
 						}
-						return fmt.Sprintf("%d-%d", *rule.StartPort, *rule.EndPort)
+						return fmt.Sprintf("%d-%d", rule.StartPort, rule.EndPort)
 					}())
 				}
 
@@ -109,7 +109,7 @@ func (o *securityGroupShowOutput) ToTable() {
 			r := []string{instance.Name, instance.ID}
 
 			r = append(r, instance.PublicIP)
-			r = append(r, instance.Zone)
+			r = append(r, string(instance.Zone))
 
 			at.Append(r)
 		}
@@ -123,7 +123,7 @@ func (o *securityGroupShowOutput) ToTable() {
 	t.SetHeader([]string{"Security Group"})
 	defer t.Render()
 
-	t.Append([]string{"ID", o.ID})
+	t.Append([]string{"ID", o.ID.String()})
 	t.Append([]string{"Name", o.Name})
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Ingress Rules", formatRule(o.IngressRules)})
@@ -160,24 +160,30 @@ func (c *securityGroupShowCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
+func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := gContext
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
+	if err != nil {
+		return err
+	}
+	securityGroups, err := client.ListSecurityGroups(ctx)
+	if err != nil {
+		return err
+	}
+	securityGroup, err := securityGroups.FindSecurityGroup(c.SecurityGroup)
 
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
 	if err != nil {
 		return err
 	}
 
 	externalSources := make([]string, 0)
 	if securityGroup.ExternalSources != nil {
-		externalSources = *securityGroup.ExternalSources
+		externalSources = securityGroup.ExternalSources
 	}
 	out := securityGroupShowOutput{
-		ID:              *securityGroup.ID,
-		Name:            *securityGroup.Name,
-		Description:     utils.DefaultString(securityGroup.Description, ""),
+		ID:              securityGroup.ID,
+		Name:            securityGroup.Name,
+		Description:     securityGroup.Description,
 		ExternalSources: externalSources,
 		IngressRules:    make([]securityGroupRuleOutput, 0),
 		EgressRules:     make([]securityGroupRuleOutput, 0),
@@ -185,59 +191,61 @@ func (c *securityGroupShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 
 	for _, rule := range securityGroup.Rules {
 		or := securityGroupRuleOutput{
-			ID:          *rule.ID,
-			Description: utils.DefaultString(rule.Description, ""),
-			ICMPCode:    rule.ICMPCode,
-			ICMPType:    rule.ICMPType,
-			Network: func() *string {
-				if rule.Network != nil {
-					v := rule.Network.String()
-					return &v
+			ID:          rule.ID,
+			Description: rule.Description,
+			Network:     rule.Network,
+			Protocol:    string(rule.Protocol),
+			StartPort:   uint16(rule.StartPort),
+			EndPort:     uint16(rule.EndPort),
+		}
+
+		if rule.ICMP != nil {
+			or.ICMPCode = rule.ICMP.Code
+			or.ICMPCode = rule.ICMP.Code
+		}
+
+		if rule.SecurityGroup != nil {
+			if rule.SecurityGroup.ID != "" {
+				ruleSecurityGroup, err := client.GetSecurityGroup(ctx, rule.SecurityGroup.ID)
+				if err != nil {
+					return fmt.Errorf("error retrieving Security Group: %w", err)
 				}
-				return nil
-			}(),
-			Protocol:  *rule.Protocol,
-			StartPort: rule.StartPort,
-			EndPort:   rule.EndPort,
-		}
-
-		if rule.SecurityGroupID != nil {
-			ruleSecurityGroup, err := globalstate.EgoscaleClient.GetSecurityGroup(ctx, zone, *rule.SecurityGroupID)
-			if err != nil {
-				return fmt.Errorf("error retrieving Security Group: %w", err)
+				ruleSG := "SG:" + ruleSecurityGroup.Name
+				or.SecurityGroup = ruleSG
 			}
-			ruleSG := "SG:" + *ruleSecurityGroup.Name
-			or.SecurityGroup = &ruleSG
-		}
-		if rule.SecurityGroupName != nil {
-			ruleSG := "PUBLIC-SG:" + *rule.SecurityGroupName
-			or.SecurityGroup = &ruleSG
+			if rule.SecurityGroup.Name != "" {
+				ruleSG := "PUBLIC-SG:" + rule.SecurityGroup.Name
+				or.SecurityGroup = ruleSG
+			}
+
 		}
 
-		if *rule.FlowDirection == "ingress" {
+		if rule.FlowDirection == "ingress" {
 			out.IngressRules = append(out.IngressRules, or)
 		} else {
 			out.EgressRules = append(out.EgressRules, or)
 		}
 	}
 
-	instances, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.EgoscaleClient, *securityGroup.ID)
+	instancesByZone, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.EgoscaleV3Client, securityGroup.ID)
 	if err != nil {
 		return fmt.Errorf("error retrieving instances in Security Group: %w", err)
 	}
 
-	for _, vm := range instances {
-		publicIP := instance.EmptyIPAddressVisualization
-		if vm.PublicIPAddress != nil && (!vm.PublicIPAddress.IsUnspecified() || len(*vm.PublicIPAddress) > 0) {
-			publicIP = vm.PublicIPAddress.String()
-		}
+	for zone, instances := range instancesByZone {
+		for _, instance := range instances {
+			publicIP := emptyIPAddressVisualization
+			if instance.PublicIP != nil && (!instance.PublicIP.IsUnspecified() || len(instance.PublicIP) > 0) {
+				publicIP = instance.PublicIP.String()
+			}
 
-		out.Instances = append(out.Instances, securityGroupInstanceOutput{
-			Name:     utils.DefaultString(vm.Name, "-"),
-			PublicIP: publicIP,
-			ID:       utils.DefaultString(vm.ID, "-"),
-			Zone:     utils.DefaultString(vm.Zone, "-"),
-		})
+			out.Instances = append(out.Instances, securityGroupInstanceOutput{
+				Name:     utils.DefaultString(&instance.Name, "-"),
+				PublicIP: publicIP,
+				ID:       instance.ID.String(),
+				Zone:     zone,
+			})
+		}
 	}
 
 	return c.OutputFunc(&out, nil)
