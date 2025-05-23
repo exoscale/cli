@@ -8,8 +8,7 @@ import (
 	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type securityGroupDeleteCmd struct {
@@ -17,7 +16,7 @@ type securityGroupDeleteCmd struct {
 
 	_ bool `cli-cmd:"delete"`
 
-	DeleteRules   bool   `cli-short:"r" cli-usage:"delete rules before deleting the Security Group"`
+	DeleteRules   bool   `cli-short:"r" cli-usage:"Delete all rules but not the security group"`
 	SecurityGroup string `cli-arg:"#" cli-usage:"SECURITY-GROUP-NAME|ID"`
 
 	Force bool `cli-short:"f" cli-usage:"don't prompt for confirmation"`
@@ -35,38 +34,62 @@ func (c *securityGroupDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) er
 	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
-func (c *securityGroupDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	zone := account.CurrentAccount.DefaultZone
-
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
-
-	securityGroup, err := globalstate.EgoscaleClient.FindSecurityGroup(ctx, zone, c.SecurityGroup)
+func (c *securityGroupDeleteCmd) cmdRun(_ *cobra.Command, _ []string) error {
+	ctx := GContext
+	var err error
+	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
 	}
 
-	if !c.Force {
-		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete Security Group %s?", c.SecurityGroup)) {
-			return nil
-		}
+	securityGroups, err := client.ListSecurityGroups(ctx)
+	if err != nil {
+		return err
 	}
 
-	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Security Group %s...", c.SecurityGroup), func() {
-		if c.DeleteRules {
-			for _, rule := range securityGroup.Rules {
-				if err = globalstate.EgoscaleClient.DeleteSecurityGroupRule(ctx, zone, securityGroup, rule); err != nil {
-					return
-				}
+	securityGroup, err := securityGroups.FindSecurityGroup(c.SecurityGroup)
+	if err != nil {
+		return err
+	}
+
+	if !c.DeleteRules {
+		if !c.Force {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete Security Group %s?", c.SecurityGroup)) {
+				return nil
 			}
 		}
 
-		err = globalstate.EgoscaleClient.DeleteSecurityGroup(ctx, zone, securityGroup)
-	})
-	if err != nil {
-		return err
+		op, err := client.DeleteSecurityGroup(ctx, securityGroup.ID)
+		if err != nil {
+			return err
+		}
+
+		decorateAsyncOperation(fmt.Sprintf("Deleting Security Group %s...", c.SecurityGroup), func() {
+			_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+		})
+	} else {
+		if !c.Force {
+			if !askQuestion(fmt.Sprintf("Are you sure you want to delete the rules associated with Security Group %s?", c.SecurityGroup)) {
+				return nil
+			}
+		}
+
+		decorateAsyncOperation(fmt.Sprintf("Deleting Rules for Security Group %s...", c.SecurityGroup), func() {
+			for _, rule := range securityGroup.Rules {
+				op, err := client.DeleteRuleFromSecurityGroup(ctx, securityGroup.ID, rule.ID)
+				if err != nil {
+					return
+				}
+				_, err = client.Wait(ctx, op, v3.OperationStateSuccess)
+				if err != nil {
+					return
+				}
+			}
+		})
+
 	}
 
-	return nil
+	return err
 }
 
 func init() {

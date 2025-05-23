@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/cmd/compute/instance"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -161,7 +160,7 @@ func (c *securityGroupShowCmd) CmdPreRun(cmd *cobra.Command, args []string) erro
 }
 
 func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
-	ctx := gContext
+	ctx := GContext
 	client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(account.CurrentAccount.DefaultZone))
 	if err != nil {
 		return err
