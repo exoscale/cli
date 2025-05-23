@@ -10,12 +10,10 @@ import (
 	"github.com/spf13/cobra"
 
 	exocmd "github.com/exoscale/cli/cmd"
-	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
 	"github.com/exoscale/cli/table"
-	"github.com/exoscale/cli/utils"
-	exoapi "github.com/exoscale/egoscale/v2/api"
+	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type nlbShowOutput struct {
@@ -23,7 +21,7 @@ type nlbShowOutput struct {
 	Name         string                 `json:"name"`
 	Description  string                 `json:"description"`
 	CreationDate string                 `json:"creation_date"`
-	Zone         string                 `json:"zone"`
+	Zone         v3.ZoneName            `json:"zone"`
 	IPAddress    string                 `json:"ip_address"`
 	State        string                 `json:"state"`
 	Services     []nlbServiceShowOutput `json:"services"`
@@ -39,7 +37,7 @@ func (o *nlbShowOutput) ToTable() {
 
 	t.Append([]string{"ID", o.ID})
 	t.Append([]string{"Name", o.Name})
-	t.Append([]string{"Zone", o.Zone})
+	t.Append([]string{"Zone", string(o.Zone)})
 	t.Append([]string{"IP Address", o.IPAddress})
 	t.Append([]string{"Description", o.Description})
 	t.Append([]string{"Creation Date", o.CreationDate})
@@ -91,7 +89,7 @@ type nlbShowCmd struct {
 
 	NetworkLoadBalancer string `cli-arg:"#" cli-usage:"NAME|ID"`
 
-	Zone string `cli-short:"z" cli-usage:"Network Load Balancer zone"`
+	Zone v3.ZoneName `cli-short:"z" cli-usage:"Network Load Balancer zone"`
 }
 
 func (c *nlbShowCmd) CmdAliases() []string { return exocmd.GShowAlias }
@@ -111,9 +109,19 @@ func (c *nlbShowCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
 }
 
 func (c *nlbShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exocmd.GContext
 
-	nlb, err := globalstate.EgoscaleClient.FindNetworkLoadBalancer(ctx, c.Zone, c.NetworkLoadBalancer)
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, c.Zone)
+	if err != nil {
+		return err
+	}
+
+	nlbs, err := client.ListLoadBalancers(ctx)
+	if err != nil {
+		return err
+	}
+
+	nlb, err := nlbs.FindLoadBalancer(c.NetworkLoadBalancer)
 	if err != nil {
 		return err
 	}
@@ -121,26 +129,21 @@ func (c *nlbShowCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	svcOut := make([]nlbServiceShowOutput, 0)
 	for _, svc := range nlb.Services {
 		svcOut = append(svcOut, nlbServiceShowOutput{
-			ID:   *svc.ID,
-			Name: *svc.Name,
+			ID:   string(svc.ID),
+			Name: svc.Name,
 		})
 	}
 
 	out := nlbShowOutput{
-		ID:           *nlb.ID,
-		Name:         *nlb.Name,
-		Description:  utils.DefaultString(nlb.Description, ""),
-		CreationDate: nlb.CreatedAt.String(),
+		ID:           nlb.ID.String(),
+		Name:         nlb.Name,
+		Description:  nlb.Description,
+		CreationDate: nlb.CreatedAT.String(),
 		Zone:         c.Zone,
-		IPAddress:    utils.DefaultIP(nlb.IPAddress, ""),
-		State:        *nlb.State,
+		IPAddress:    nlb.IP.String(),
+		State:        string(nlb.State),
 		Services:     svcOut,
-		Labels: func() (v map[string]string) {
-			if nlb.Labels != nil {
-				v = *nlb.Labels
-			}
-			return
-		}(),
+		Labels:       nlb.Labels,
 	}
 
 	return c.OutputFunc(&out, nil)
