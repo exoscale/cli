@@ -33,18 +33,18 @@ Supported output template annotations: %s`,
 
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) < 2 {
-			cmdExitOnUsageError(cmd, "invalid arguments")
+			CmdExitOnUsageError(cmd, "invalid arguments")
 		}
 
 		args[0] = strings.TrimPrefix(args[0], sos.BucketPrefix)
 
 		if !strings.Contains(args[0], "/") {
-			cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
+			CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", args[0]))
 		}
 
 		for _, kv := range args[1:] {
 			if !strings.Contains(kv, "=") {
-				cmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", kv))
+				CmdExitOnUsageError(cmd, fmt.Sprintf("invalid argument: %q", kv))
 			}
 		}
 

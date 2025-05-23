@@ -89,7 +89,7 @@ func cmdSetTemplateFlagFromDefault(cmd *cobra.Command) {
 	}
 }
 
-func cmdExitOnUsageError(cmd *cobra.Command, reason string) {
+func CmdExitOnUsageError(cmd *cobra.Command, reason string) {
 	cmd.PrintErrln(fmt.Sprintf("error: %s", reason))
 	cmd.Usage() // nolint:errcheck
 	os.Exit(1)
