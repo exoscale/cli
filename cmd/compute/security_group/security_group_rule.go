@@ -1,4 +1,4 @@
-package cmd
+package security_group
 
 import (
 	"github.com/spf13/cobra"

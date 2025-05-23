@@ -1,6 +1,7 @@
-package cmd
+package security_group
 
 import (
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -11,5 +12,5 @@ var securityGroupCmd = &cobra.Command{
 }
 
 func init() {
-	ComputeCmd.AddCommand(securityGroupCmd)
+	exocmd.ComputeCmd.AddCommand(securityGroupCmd)
 }

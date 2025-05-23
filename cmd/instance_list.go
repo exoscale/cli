@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	emptyIPAddressVisualization = "-"
+	EmptyIPAddressVisualization = "-"
 )
 
 type instanceListItemOutput struct {
@@ -108,7 +108,7 @@ func (c *instanceListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 				Name:      *i.Name,
 				Zone:      zone,
 				Type:      fmt.Sprintf("%s.%s", *instanceType.Family, *instanceType.Size),
-				IPAddress: utils.DefaultIP(i.PublicIPAddress, emptyIPAddressVisualization),
+				IPAddress: utils.DefaultIP(i.PublicIPAddress, EmptyIPAddressVisualization),
 				State:     *i.State,
 			}
 		}
