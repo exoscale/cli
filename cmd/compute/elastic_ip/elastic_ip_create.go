@@ -1,4 +1,4 @@
-package cmd
+package elastic_ip
 
 import (
 	"fmt"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
+	"github.com/exoscale/cli/utils"
 	v3 "github.com/exoscale/egoscale/v3"
 )
 
 type elasticIPCreateCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"create"`
 
@@ -30,7 +32,7 @@ type elasticIPCreateCmd struct {
 	Zone                      string `cli-short:"z" cli-usage:"Elastic IP zone"`
 }
 
-func (c *elasticIPCreateCmd) CmdAliases() []string { return GCreateAlias }
+func (c *elasticIPCreateCmd) CmdAliases() []string { return exocmd.GCreateAlias }
 
 func (c *elasticIPCreateCmd) CmdShort() string {
 	return "Create an Elastic IP"
@@ -44,13 +46,13 @@ Supported output template annotations: %s`,
 }
 
 func (c *elasticIPCreateCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := GContext
-	client, err := SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
+	ctx := exocmd.GContext
+	client, err := exocmd.SwitchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(c.Zone))
 	if err != nil {
 		return err
 	}
@@ -92,7 +94,7 @@ func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	decorateAsyncOperation("Creating Elastic IP...", func() {
+	utils.DecorateAsyncOperation("Creating Elastic IP...", func() {
 		op, err = client.Wait(ctx, op, v3.OperationStateSuccess)
 	})
 	if err != nil {
@@ -107,8 +109,8 @@ func (c *elasticIPCreateCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(elasticIPCmd, &elasticIPCreateCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(elasticIPCmd, &elasticIPCreateCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 
 		HealthcheckInterval:    10,
 		HealthcheckStrikesFail: 2,
