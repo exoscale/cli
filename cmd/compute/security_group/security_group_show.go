@@ -212,7 +212,7 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 				ruleSG := "SG:" + ruleSecurityGroup.Name
 				or.SecurityGroup = ruleSG
 			}
-			if rule.SecurityGroup.Name != "" {
+			if rule.SecurityGroup.Visibility == v3.SecurityGroupResourceVisibilityPublic {
 				ruleSG := "PUBLIC-SG:" + rule.SecurityGroup.Name
 				or.SecurityGroup = ruleSG
 			}
@@ -226,25 +226,44 @@ func (c *securityGroupShowCmd) cmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	instancesByZone, err := utils.GetInstancesInSecurityGroup(ctx, globalstate.EgoscaleV3Client, securityGroup.ID)
-	if err != nil {
-		return fmt.Errorf("error retrieving instances in Security Group: %w", err)
-	}
+	zones := utils.AllZones
 
-	for zone, instances := range instancesByZone {
-		for _, instance := range instances {
-			publicIP := emptyIPAddressVisualization
-			if instance.PublicIP != nil && (!instance.PublicIP.IsUnspecified() || len(instance.PublicIP) > 0) {
-				publicIP = instance.PublicIP.String()
-			}
-
-			out.Instances = append(out.Instances, securityGroupInstanceOutput{
-				Name:     utils.DefaultString(&instance.Name, "-"),
-				PublicIP: publicIP,
-				ID:       instance.ID.String(),
-				Zone:     zone,
-			})
+	err = utils.ForEachZone(zones, func(zone string) error {
+		client, err := switchClientZoneV3(ctx, globalstate.EgoscaleV3Client, v3.ZoneName(zone))
+		if err != nil {
+			return err
 		}
+
+		instancesResp, err := client.ListInstances(ctx)
+		if err != nil {
+			return err
+		}
+
+		for _, instance := range instancesResp.Instances {
+			for _, sgID := range instance.SecurityGroups {
+				if sgID.ID == securityGroup.ID {
+
+					publicIP := emptyIPAddressVisualization
+					if instance.PublicIP != nil && (!instance.PublicIP.IsUnspecified() || len(instance.PublicIP) > 0) {
+						publicIP = instance.PublicIP.String()
+					}
+
+					out.Instances = append(out.Instances, securityGroupInstanceOutput{
+						Name:     utils.DefaultString(&instance.Name, "-"),
+						PublicIP: publicIP,
+						ID:       instance.ID.String(),
+						Zone:     v3.ZoneName(zone),
+					})
+
+				}
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr,
+			"warning: errors during listing, results might be incomplete.\n%s\n", err) // nolint:golint
 	}
 
 	return c.OutputFunc(&out, nil)
