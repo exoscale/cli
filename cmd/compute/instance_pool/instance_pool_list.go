@@ -1,4 +1,4 @@
-package cmd
+package instance_pool
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
 	"github.com/exoscale/cli/pkg/output"
@@ -29,14 +30,14 @@ func (o *instancePoolListOutput) ToText()  { output.Text(o) }
 func (o *instancePoolListOutput) ToTable() { output.Table(o) }
 
 type instancePoolListCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"list"`
 
 	Zone string `cli-short:"z" cli-usage:"zone to filter results to"`
 }
 
-func (c *instancePoolListCmd) CmdAliases() []string { return GListAlias }
+func (c *instancePoolListCmd) CmdAliases() []string { return exocmd.GListAlias }
 
 func (c *instancePoolListCmd) CmdShort() string { return "List Instance Pools" }
 
@@ -48,7 +49,7 @@ Supported output template annotations: %s`,
 }
 
 func (c *instancePoolListCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	return CliCommandDefaultPreRun(c, cmd, args)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
@@ -71,7 +72,7 @@ func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		done <- struct{}{}
 	}()
 	err := utils.ForEachZone(zones, func(zone string) error {
-		ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
+		ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, zone))
 
 		list, err := globalstate.EgoscaleClient.ListInstancePools(ctx, zone)
 		if err != nil {
@@ -102,7 +103,7 @@ func (c *instancePoolListCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instancePoolCmd, &instancePoolListCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolListCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }

@@ -1,4 +1,4 @@
-package cmd
+package instance_pool
 
 import (
 	"errors"
@@ -6,13 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 
+	exocmd "github.com/exoscale/cli/cmd"
 	"github.com/exoscale/cli/pkg/account"
 	"github.com/exoscale/cli/pkg/globalstate"
+	"github.com/exoscale/cli/utils"
 	exoapi "github.com/exoscale/egoscale/v2/api"
 )
 
 type instancePoolDeleteCmd struct {
-	CliCommandSettings `cli-cmd:"-"`
+	exocmd.CliCommandSettings `cli-cmd:"-"`
 
 	_ bool `cli-cmd:"delete"`
 
@@ -22,19 +24,19 @@ type instancePoolDeleteCmd struct {
 	Zone  string `cli-short:"z" cli-usage:"Instance Pool zone"`
 }
 
-func (c *instancePoolDeleteCmd) CmdAliases() []string { return GRemoveAlias }
+func (c *instancePoolDeleteCmd) CmdAliases() []string { return exocmd.GRemoveAlias }
 
 func (c *instancePoolDeleteCmd) CmdShort() string { return "Delete an Instance Pool" }
 
 func (c *instancePoolDeleteCmd) CmdLong() string { return "" }
 
 func (c *instancePoolDeleteCmd) CmdPreRun(cmd *cobra.Command, args []string) error {
-	CmdSetZoneFlagFromDefault(cmd)
-	return CliCommandDefaultPreRun(c, cmd, args)
+	exocmd.CmdSetZoneFlagFromDefault(cmd)
+	return exocmd.CliCommandDefaultPreRun(c, cmd, args)
 }
 
 func (c *instancePoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
-	ctx := exoapi.WithEndpoint(GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
+	ctx := exoapi.WithEndpoint(exocmd.GContext, exoapi.NewReqEndpoint(account.CurrentAccount.Environment, c.Zone))
 
 	instancePool, err := globalstate.EgoscaleClient.FindInstancePool(ctx, c.Zone, c.InstancePool)
 	if err != nil {
@@ -51,7 +53,7 @@ func (c *instancePoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 	}
 
 	if !c.Force {
-		if !askQuestion(fmt.Sprintf("Are you sure you want to delete Instance Pool %q?", c.InstancePool)) {
+		if !utils.AskQuestion(ctx, fmt.Sprintf("Are you sure you want to delete Instance Pool %q?", c.InstancePool)) {
 			return nil
 		}
 	}
@@ -69,7 +71,7 @@ func (c *instancePoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 		}
 	}
 
-	decorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", c.InstancePool), func() {
+	utils.DecorateAsyncOperation(fmt.Sprintf("Deleting Instance Pool %q...", c.InstancePool), func() {
 		err = globalstate.EgoscaleClient.DeleteInstancePool(ctx, c.Zone, instancePool)
 	})
 	if err != nil {
@@ -80,7 +82,7 @@ func (c *instancePoolDeleteCmd) CmdRun(_ *cobra.Command, _ []string) error {
 }
 
 func init() {
-	cobra.CheckErr(RegisterCLICommand(instancePoolCmd, &instancePoolDeleteCmd{
-		CliCommandSettings: DefaultCLICmdSettings(),
+	cobra.CheckErr(exocmd.RegisterCLICommand(instancePoolCmd, &instancePoolDeleteCmd{
+		CliCommandSettings: exocmd.DefaultCLICmdSettings(),
 	}))
 }
